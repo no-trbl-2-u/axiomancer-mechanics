@@ -1,13 +1,22 @@
 /**
- * Axiomancer Mechanics
- * Turn-based RPG combat mechanics with philosophical themes
+ * Axiomancer Mechanics - Main Export
+ * 
+ * This is the main entry point for the axiomancer-mechanics package.
+ * It re-exports all modules for convenient consumption.
+ * 
+ * Usage:
+ *   import { Character, Enemy, Combat } from 'axiomancer-mechanics';
+ *   // or
+ *   import { Character } from 'axiomancer-mechanics/Character';
  */
 
-export function greet(name: string): string {
-    return `Hello, ${name}! Welcome to Axiomancer Mechanics.`;
-}
+// Re-export all modules
+export * from './Character';
+export * from './NPCs';
+export * from './Enemy';
+export * from './Combat';
+export * from './Equipment';
+export * from './Skills';
+export * from './Effects';
 
-// Example usage
-if (require.main === module) {
-    console.log(greet("Axiomancer"));
-}
+// TODO: Add exports as modules grow
