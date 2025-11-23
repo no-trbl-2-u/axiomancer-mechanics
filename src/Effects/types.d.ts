@@ -1,6 +1,6 @@
 /**
  * Effects module type definitions
- * 
+ *
  * This module contains types for status effects and buffs/debuffs, including:
  * - Effect base interface
  * - Status effects (buffs, debuffs, conditions)

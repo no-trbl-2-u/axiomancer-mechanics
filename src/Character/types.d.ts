@@ -4,23 +4,67 @@
  * This module contains types for player characters, including:
  * - Character 
  * - Character stats and attributes
- * - Acquired Skills
- * - Equipped Skills
- * - Equipped Items
- * - Inventory
+ * - TODO: Acquired Skills
+ * - TODO: Equipped Skills
+ * - TODO: Equipped Items
+ * - TODO: Inventory
  */
 
-type CharacterBaseAttributes = {
+
+/**
+ * Character System Types
+ * Core types for character attributes
+ */
+
+export interface Character {
+    id: string;
+    name: string;
+    level: number;
+    // experience: number;
+    // experienceToNextLevel: number;
+    health: number;
+    maxHealth: number;
+    mana: number;
+    maxMana: number;
+    baseStats: BaseStats;
+    derivedStats: DerivedStats;
+    // availableStatPoints: number;
+}
+
+/**
+ * Base stats representing the three core attributes
+ * Heart: Emotion, willpower, charisma
+ * Body: Physical strength, constitution
+ * Mind: Intelligence, reflexes, perception
+ */
+export interface BaseStats {
     heart: number;
     body: number;
     mind: number;
 }
 
-interface Character {
-    name: string;
-    level: number;
-    baseAttributes: CharacterBaseAttributes;
-}
+/**
+ * Derived stats calculated from base stats
+ * Used in combat and skill checks
+ */
+export interface DerivedStats {
+    // Body-derived
+    physicalDefense: number;
+    constitutionSave: number;
+    strength: number; // TODO: Rename to something regarding physical prowess checks
 
-// TODO: Define Character types
-export { };
+    // Mind-derived
+    mindDefense: number;
+    reflexSave: number;
+    perception: number;
+
+    // Heart-derived
+    ailmentDefense: number;
+    willSave: number;
+    charm: number;
+
+    // Shared
+    // evasion: number;
+    // accuracy: number;
+    luck: number;
+}
