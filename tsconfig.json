@@ -9,29 +9,7 @@
     "module": "commonjs",
     "rootDir": "./src",
     "baseUrl": "./src",
-    "paths": {
-      "@Character/*": [
-        "Character/*"
-      ],
-      "@NPCs/*": [
-        "NPCs/*"
-      ],
-      "@Enemy/*": [
-        "Enemy/*"
-      ],
-      "@Combat/*": [
-        "Combat/*"
-      ],
-      "@Equipment/*": [
-        "Equipment/*"
-      ],
-      "@Skills/*": [
-        "Skills/*"
-      ],
-      "@Effects/*": [
-        "Effects/*"
-      ]
-    },
+    "paths": {},
     "moduleResolution": "node",
     "resolveJsonModule": true,
     /* Emit */

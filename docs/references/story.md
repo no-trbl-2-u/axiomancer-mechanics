@@ -1,0 +1,7 @@
+# Axiomancer Story
+
+Axiomancer is a turn-based strategy RPG where players control a character who embarks on a journey to discover their true identity and the secrets behind the veil. After the king loses their advisor and opens the gates of the city to find their successor, the player must navigate the challenges of the labyrinth to reach the heart of the city and become the new advisor.
+
+## Characters
+
+## Progression

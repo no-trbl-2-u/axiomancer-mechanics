@@ -17,7 +17,6 @@
  */
 
 export interface Character {
-    id: string;
     name: string;
     level: number;
     // experience: number;
@@ -49,22 +48,23 @@ export interface BaseStats {
  */
 export interface DerivedStats {
     // Body-derived
+    physicalSkill: number;
     physicalDefense: number;
-    constitutionSave: number;
-    strength: number; // TODO: Rename to something regarding physical prowess checks
+    physicalSave: number;
+    physicalTest: number;
 
     // Mind-derived
-    mindDefense: number;
-    reflexSave: number;
-    perception: number;
+    mentalSkill: number;
+    mentalDefense: number;
+    mentalSave: number;
+    mentalTest: number;
 
     // Heart-derived
-    ailmentDefense: number;
-    willSave: number;
-    charm: number;
+    emotionalSkill: number;
+    emotionalDefense: number;
+    emotionalSave: number;
+    emotionalTest: number;
 
     // Shared
-    // evasion: number;
-    // accuracy: number;
     luck: number;
 }
