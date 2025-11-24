@@ -5,12 +5,16 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "start": "echo Please use 'npm run dev'...",
+    "start": "echo Please use check 'package.json' or README.md for available commands...\n ",
+    "dev": "echo Please use check 'package.json' or README.md for available commands...\n ",
     "build": "tsc && tsc-alias",
-    "dev": "ts-node -r tsconfig-paths/register src/cli.ts",
+    "combat": "ts-node src/Combat/combat.cli.ts",
+    "character": "ts-node src/Character/character.cli.ts",
     "clean": "rm -rf dist",
     "prepublishOnly": "npm run clean && npm run build",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint \"**/*.ts\"",
+    "lint:fix": "eslint \"**/*.ts\" --fix"
   },
   "keywords": [
     "rpg",
@@ -37,6 +41,8 @@
     "typescript-eslint": "^8.47.0"
   },
   "dependencies": {
-    "commander": "^14.0.2"
+    "@types/inquirer": "^9.0.9",
+    "commander": "^14.0.2",
+    "inquirer": "^13.0.1"
   }
 }
