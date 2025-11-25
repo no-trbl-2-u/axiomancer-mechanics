@@ -4,4 +4,4 @@
 // TODO: Add items to MaterialLibrary and then Enumerate
 // TODO: Add items to QuestItemLibrary and then Enumerate
 
-export type Item = 'equipment' | 'consumable' | 'material' | 'quest-item'
+export type Item = 'equipment' | 'consumable' | 'material' | 'quest-item';

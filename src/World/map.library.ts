@@ -7,18 +7,27 @@
  */
 export type ContinentName =
     'coastal-continent' |
-    'northern-continent'
+    'northern-continent';
 
 /**
- * CoastalContinentMaps are all the maps in the Coastal Continent
+ * MapName is the union of all map names in the game
+ * @todo: There is no type enforcement to ensure a specific map name is part
+ *        of a specific continent.  
+ */
+export type MapName =
+    CoastalContinentMapNames |
+    NorthernContinentMapNames;
+
+/**
+ * CoastalContinentMapNames are all the maps in the Coastal Continent
  * - 'fishing-village': Starting village. Get quest to build boat
  * - 'northern-forest': Small forest. First set of encounters. Gather Wood
  * @todo: Add more maps
  * @todo: Come up with better names
  */
-export type CoastalContinentMaps =
+export type CoastalContinentMapNames =
     'fishing-village' |
-    'northern-forest'
+    'northern-forest';
 
 /**
  * NorthernContinentMaps are all the maps in the Northern Continent
@@ -32,9 +41,8 @@ export type CoastalContinentMaps =
  * @todo: Add more maps
  * @todo: Come up with better names
  */
-export type NorthernContinentMaps =
+export type NorthernContinentMapNames =
     'caverns' |
     'northern-city' |
     'connecting-river' |
-    'town-across-river'
-
+    'town-across-river';

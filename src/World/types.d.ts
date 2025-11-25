@@ -1,11 +1,22 @@
-import { Item } from 'Items/types';
-import { Enemy } from '../Enemy/types'
-import { Image } from '../Utils/types'
+import { Item } from '../Items/types';
+import { Enemy } from '../Enemy/types';
+import { Image } from '../Utils/types';
+import { ContinentName, MapName } from './map.library';
+import { QuestName } from './quest.library';
+import { NPC } from '../NPCs/types';
 
-interface Quest {
+/**
+ * Quest represents a quest in the game world
+ * @property name - The unique identifier for this quest
+ * @property description - Description of the quest objectives
+ * @property containingMap - The map where this quest takes place or is obtained
+ * @property reward - The reward granted upon quest completion
+ * @property connectingQuest - The next quest in a quest chain
+ */
+export interface Quest {
     name: QuestName;
     description: string;
-    relatedMap: string;
+    containingMap: MapName;
     reward: Reward;
     connectingQuest: QuestName;
 }

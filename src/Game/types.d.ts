@@ -1,5 +1,5 @@
 import { CombatState } from "../Combat/types";
-import { World } from "../World/types";
+import { WorldState } from "../World/types";
 import { Character } from "../Character/types";
 
 /**
@@ -18,6 +18,6 @@ import { Character } from "../Character/types";
  */
 export interface GameState {
     player: Character;
-    world: World;
+    world: WorldState;
     combatState: CombatState;
 }
