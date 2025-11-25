@@ -2,6 +2,14 @@ import { Item } from 'Items/types';
 import { Enemy } from '../Enemy/types'
 import { Image } from '../Utils/types'
 
+interface Quest {
+    name: QuestName;
+    description: string;
+    relatedMap: string;
+    reward: Reward;
+    connectingQuest: QuestName;
+}
+
 /**
  * MapEvents represents the types of events that can occur on a map
  * - 'encounter': Combat encounter with an enemy
@@ -46,6 +54,7 @@ export interface MapEvent {
  * Map is a collection of map nodes that are traversable by the player
  * Represents a game area or level with encounters, events, and NPCs.
  * @property name - The name of the map/area
+ * @property continent - The continent the map is located on
  * @property description - A brief description of the map's theme or setting
  * @property numberOfNodes - The number of nodes/locations on this map
  * @property enemies - A list of enemies that can be encountered on the map
@@ -54,7 +63,8 @@ export interface MapEvent {
  * @property images - Optional: visual assets for the map (mapImage for exploration, combatImage for battles)
  */
 export interface Map {
-    name: string;
+    name: MapName;
+    continent: ContinentName;
     description: string;
     numberOfNodes: number;
     enemies: Enemy[];
@@ -71,6 +81,7 @@ export interface Map {
  * a single source of truth for all parts of the world.
  * @property maps - Array of all maps/areas available in the game world
  */
-export type World = {
+export type WorldState = {
     maps: Map[];
+    incompleteQuests: Quest[];
 }
