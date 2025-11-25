@@ -1,5 +1,5 @@
 import { GameState } from "./types";
-import { COMBAT_ACTION } from "./reducers/combat.constants";
+import { COMBAT_ACTION } from "./reducers/ combat.constants";
 import { combatReducer } from "./reducers/combat.reducer";
 const STATE_FILE = "./game-state.json";
 
