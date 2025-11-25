@@ -10,6 +10,7 @@
     "build": "tsc && tsc-alias",
     "combat": "ts-node src/Combat/combat.cli.ts",
     "character": "ts-node src/Character/character.cli.ts",
+    "game-state": "ts-node -r tsconfig-paths/register src/Game/gameState.cli.ts",
     "clean": "rm -rf dist",
     "prepublishOnly": "npm run clean && npm run build",
     "test": "echo \"Error: no test specified\" && exit 1",

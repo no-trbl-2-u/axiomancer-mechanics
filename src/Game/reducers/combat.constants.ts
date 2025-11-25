@@ -5,4 +5,4 @@ export const COMBAT_ACTION = {
     ITEM: "item",
     FLEE: "flee",
     BACK: "back",
-}
+} as const;

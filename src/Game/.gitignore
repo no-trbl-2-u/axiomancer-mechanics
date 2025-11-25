@@ -1,0 +1,6 @@
+# Game save files
+game-state.json
+
+# Backup files
+backups/
+*.backup.json
