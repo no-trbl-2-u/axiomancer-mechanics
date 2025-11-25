@@ -12,7 +12,7 @@ interface CreateCharacterOptions {
  * @param baseStats - The base stats of the character
  * @returns The derived stats of the character
  */
-const deriveStats: (baseStats: BaseStats) => DerivedStats = ({ body, heart, mind }) => ({
+const deriveStats = ({ body, heart, mind }: BaseStats): DerivedStats => ({
     // TODO: Determine the calculations for these stats
     /* Body-derived stats */
     physicalSkill: body,
