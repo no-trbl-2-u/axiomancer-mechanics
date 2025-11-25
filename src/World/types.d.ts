@@ -5,14 +5,17 @@ import { Image } from '../Utils/types'
 /**
  * MapEvents represents the types of events that can occur on a map
  * - 'encounter': Combat encounter with an enemy
+ * - 'boss-encounter': Encounter with a boss enemy
  * - 'event': Story or scripted event
  * - 'treasure': Loot or item discovery
  * - 'gather': Resource gathering. Forced decision between gathering nodes
  * - 'quest': Quest-related event
+ * - 'shop': Shop for player to spend currency
  * - 'npc': NPC interaction
  * - 'other': Miscellaneous event type
+ * @todo: Create an EventLibrary (or EventManager) to enumerate and handle these events
  */
-export type MapEvents = 'encounter' | 'event' | 'treasure' | 'gather' | 'quest' | 'npc' | 'other';
+export type MapEvents = 'encounter' | 'boss-encounter' | 'event' | 'treasure' | 'gather' | 'quest' | 'shop' | 'npc' | 'other';
 
 /**
  * Reward types that can be obtained from events or combat
