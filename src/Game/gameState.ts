@@ -19,6 +19,7 @@ export const doesSaveFileExist: () => boolean = () => {
     /* Check if the state file exists */
     /* If no state file exists return false */
     /* If state file does exist return true */
+    return undefined as any;
 }
 
 /**
@@ -27,6 +28,7 @@ export const doesSaveFileExist: () => boolean = () => {
  */
 export const getNewGameState: () => GameState = () => {
     /* Return a new game state */
+    return undefined as any;
 }
 
 /**
@@ -39,6 +41,7 @@ export const loadState: () => GameState = () => {
     /* If state file does exist get it synchronously */
 
     /* Return the parsed state file  */
+    return undefined as any;
 }
 
 /**
