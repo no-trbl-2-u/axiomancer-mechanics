@@ -1,33 +1,89 @@
-/**
- * Character System Module
- * Handles character creation, stat calculations, and character management
- */
-
 import { BaseStats, DerivedStats, Character } from "./types";
 
-// ============================================================================
-// TYPES AND INTERFACES
-// ============================================================================
-
-/**
- * Options for creating a new character
- */
-export interface CreateCharacterOptions {
+/* Used for creating a new character */
+interface CreateCharacterOptions {
     name: string;
     level: number;
     baseStats: BaseStats;
 }
 
-// ============================================================================
-// CHARACTER CREATION
-// ============================================================================
+/**
+ * Derives the stats of a character based on their base stats
+ * @param baseStats - The base stats of the character
+ * @returns The derived stats of the character
+ */
+const deriveStats = ({ body, heart, mind }: BaseStats): DerivedStats => ({
+    // TODO: Determine the calculations for these stats
+    /* Body-derived stats */
+    physicalSkill: body,
+    physicalDefense: body * 3,
+    physicalSave: body * 2,
+    physicalTest: body * 4,
+
+    /* Mind-derived stats */
+    mentalSkill: mind,
+    mentalDefense: mind * 3,
+    mentalSave: mind * 2,
+    mentalTest: mind * 4,
+
+    /* Heart-derived stats */
+    emotionalSkill: heart,
+    emotionalDefense: heart * 3,
+    emotionalSave: heart * 2,
+    emotionalTest: heart * 4,
+
+    /* Shared stats */
+    luck: (body + heart + mind) / 3, // Average of the three stats
+})
+
+/**
+ * Determines the maximum health of a character based on their level and health stats
+ * @param level - The level of the character
+ * @param healthStats - The stats that determine your max health
+ * Equation to determine max health: level x (Average of body and heart x 10)
+ * @returns The maximum health of the character
+ */
+const detMaxHealthByLevel = (level: number) => (healthStats: Omit<BaseStats, 'mind'>) => {
+    const averageOfHealthStats = (healthStats.body + healthStats.heart) / 2;
+    return level * (averageOfHealthStats * 10);
+}
+
+/**
+ * Determines the maximum mana of a character based on their level and mana stats
+ * @param level - The level of the character
+ * @param manaStats - The stats that determine your max mana
+ * Equation to determine max mana: level x (Average of mind and heart x 10)
+ * @returns The maximum mana of the character
+ */
+const detMaxManaByLevel = (level: number) => (manaStats: Omit<BaseStats, 'body'>) => {
+    const averageOfManaStats = (manaStats.mind + manaStats.heart) / 2;
+    return level * (averageOfManaStats * 10);
+}
 
 /**
  * Creates a new character based on level, name, and given base stats
  * @param options - The options for creating a new character
- * @returns The new character with calculated derived stats and resources
- */
+ * @returns The new character
+ */ // Note: "given stats" are not the same as "starting stats"
 export function createCharacter(options: CreateCharacterOptions): Character {
+    const { name, level, baseStats } = options;
+
+    const maxHealth = detMaxHealthByLevel(level)(baseStats);
+    const health = maxHealth;
+
+    const maxMana = detMaxManaByLevel(level)(baseStats);
+    const mana = maxMana;
+
+    return {
+        name,
+        level,
+        health,
+        maxHealth,
+        mana,
+        maxMana,
+        baseStats,
+        derivedStats: deriveStats(baseStats),
+    }
 }
 
 /**
@@ -36,74 +92,6 @@ export function createCharacter(options: CreateCharacterOptions): Character {
  * @returns A new level 1 character with balanced starting stats
  */
 export function createDefaultCharacter(name: string): Character {
-}
-
-// ============================================================================
-// STAT DERIVATION
-// ============================================================================
-
-/**
- * Derives all stats of a character based on their base stats
- * @param baseStats - The base stats of the character
- * @returns The complete set of derived stats
- */
-export function deriveStats(baseStats: BaseStats): DerivedStats {
-}
-
-/**
- * Derives physical stats from body base stat
- * @param body - The body base stat value
- * @returns Object with physicalSkill, physicalDefense, physicalSave, physicalTest
- */
-export function derivePhysicalStats(body: number): Pick<DerivedStats, 'physicalSkill' | 'physicalDefense' | 'physicalSave' | 'physicalTest'> {
-}
-
-/**
- * Derives mental stats from mind base stat
- * @param mind - The mind base stat value
- * @returns Object with mentalSkill, mentalDefense, mentalSave, mentalTest
- */
-export function deriveMentalStats(mind: number): Pick<DerivedStats, 'mentalSkill' | 'mentalDefense' | 'mentalSave' | 'mentalTest'> {
-}
-
-/**
- * Derives emotional stats from heart base stat
- * @param heart - The heart base stat value
- * @returns Object with emotionalSkill, emotionalDefense, emotionalSave, emotionalTest
- */
-export function deriveEmotionalStats(heart: number): Pick<DerivedStats, 'emotionalSkill' | 'emotionalDefense' | 'emotionalSave' | 'emotionalTest'> {
-}
-
-/**
- * Calculates luck stat from all three base stats
- * @param baseStats - The base stats of the character
- * @returns The luck value (average of all base stats)
- */
-export function calculateLuck(baseStats: BaseStats): number {
-}
-
-// ============================================================================
-// RESOURCE CALCULATIONS
-// ============================================================================
-
-/**
- * Determines the maximum health of a character based on their level and stats
- * Equation: level × (Average of body and heart × 10)
- * @param level - The level of the character
- * @param baseStats - The base stats (uses body and heart)
- * @returns The maximum health of the character
- */
-export function calculateMaxHealth(level: number, baseStats: Pick<BaseStats, 'body' | 'heart'>): number {
-}
-
-/**
- * Determines the maximum mana of a character based on their level and stats
- * Equation: level × (Average of mind and heart × 10)
- * @param level - The level of the character
- * @param baseStats - The base stats (uses mind and heart)
- * @returns The maximum mana of the character
- */
-export function calculateMaxMana(level: number, baseStats: Pick<BaseStats, 'mind' | 'heart'>): number {
 }
 
 // ============================================================================

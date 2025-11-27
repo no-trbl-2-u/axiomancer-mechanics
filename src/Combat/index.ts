@@ -8,8 +8,8 @@ import { Character } from '../Character/types';
 import { Enemy } from '../Enemy/types';
 
 import {
-    ActionType,
-    Action,
+    AttackType,
+    AttackAction,
     Advantage,
     CombatPhase,
     CombatAction,
@@ -28,6 +28,7 @@ import {
  * @returns A new CombatState object with initial values
  */
 export function initializeCombat(player: Character, enemy: Enemy): CombatState {
+    return "Implement me" as any;
 }
 
 /**
@@ -36,6 +37,7 @@ export function initializeCombat(player: Character, enemy: Enemy): CombatState {
  * @returns A fresh combat state with the same player and enemy
  */
 export function resetCombat(state: CombatState): CombatState {
+    return "Implement me" as any;
 }
 
 /**
@@ -45,6 +47,7 @@ export function resetCombat(state: CombatState): CombatState {
  * @returns Updated combat state with new phase
  */
 export function updateCombatPhase(state: CombatState, phase: CombatPhase): CombatState {
+    return "Implement me" as any;
 }
 
 /**
@@ -53,6 +56,7 @@ export function updateCombatPhase(state: CombatState, phase: CombatPhase): Comba
  * @returns True if either combatant has 0 or less health
  */
 export function isCombatOngoing(state: CombatState): boolean {
+    return "Implement me" as any;
 }
 
 /**
@@ -83,7 +87,8 @@ export function determineCombatEnd(state: CombatState): 'player' | 'ko' | 'frien
  * @param defenderType - The attack type of the defender
  * @returns 'advantage' | 'disadvantage' | 'neutral'
  */
-export function determineAdvantage(attackerType: ActionType, defenderType: ActionType): Advantage {
+export function determineAdvantage(attackerType: AttackType, defenderType: AttackType): Advantage {
+    return "Implement me" as any;
 }
 
 /**
@@ -92,6 +97,7 @@ export function determineAdvantage(attackerType: ActionType, defenderType: Actio
  * @returns Numeric modifier (e.g., 1.5 for advantage, 0.75 for disadvantage, 1.0 for neutral)
  */
 export function getAdvantageModifier(advantage: Advantage): number {
+    return "Implement me" as any;
 }
 
 /**
@@ -100,7 +106,8 @@ export function getAdvantageModifier(advantage: Advantage): number {
  * @param defenderType - The attack type being compared against
  * @returns True if attacker has advantage
  */
-export function hasAdvantage(attackerType: ActionType, defenderType: ActionType): boolean {
+export function hasAdvantage(attackerType: AttackType, defenderType: AttackType): boolean {
+    return "Implement me" as any;
 }
 
 // ============================================================================
@@ -113,7 +120,8 @@ export function hasAdvantage(attackerType: ActionType, defenderType: ActionType)
  * @param type - The attack type chosen by the player
  * @returns Updated combat state with player's type choice
  */
-export function setPlayerActionType(state: CombatState, type: ActionType): CombatState {
+export function setPlayerAttackType(state: CombatState, type: AttackType): CombatState {
+    return "Implement me" as any;
 }
 
 /**
@@ -122,7 +130,8 @@ export function setPlayerActionType(state: CombatState, type: ActionType): Comba
  * @param action - The action chosen by the player
  * @returns Updated combat state with player's action choice
  */
-export function setPlayerAction(state: CombatState, action: Action): CombatState {
+export function setPlayerAction(state: CombatState, action: AttackAction): CombatState {
+    return "Implement me" as any;
 }
 
 /**
@@ -131,7 +140,8 @@ export function setPlayerAction(state: CombatState, action: Action): CombatState
  * @param enemy - The enemy making the choice
  * @returns The attack type chosen by the enemy
  */
-export function generateEnemyActionType(state: CombatState, enemy: Enemy): ActionType {
+export function generateEnemyAttackType(state: CombatState, enemy: Enemy): AttackType {
+    return "Implement me" as any;
 }
 
 /**
@@ -140,7 +150,8 @@ export function generateEnemyActionType(state: CombatState, enemy: Enemy): Actio
  * @param enemy - The enemy making the choice
  * @returns The action chosen by the enemy
  */
-export function generateEnemyAction(state: CombatState, enemy: Enemy): Action {
+export function generateEnemyAction(state: CombatState, enemy: Enemy): AttackAction {
+    return "Implement me" as any;
 }
 
 /**
@@ -149,6 +160,7 @@ export function generateEnemyAction(state: CombatState, enemy: Enemy): Action {
  * @returns True if action has both type and action defined
  */
 export function isValidCombatAction(action: Partial<CombatAction>): action is CombatAction {
+    return "Implement me" as any;
 }
 
 // ============================================================================
@@ -161,6 +173,7 @@ export function isValidCombatAction(action: Partial<CombatAction>): action is Co
  * @returns Random number between 1 and sides (inclusive)
  */
 export function rollDie(sides: number): number {
+    return "Implement me" as any;
 }
 
 /**
@@ -170,6 +183,7 @@ export function rollDie(sides: number): number {
  * @returns Object containing sum and individual rolls
  */
 export function rollDice(count: number, sides: number): { sum: number; rolls: number[] } {
+    return "Implement me" as any;
 }
 
 /**
@@ -177,6 +191,7 @@ export function rollDice(count: number, sides: number): { sum: number; rolls: nu
  * @returns Number between 1 and 20
  */
 export function rollD20(): number {
+    return "Implement me" as any;
 }
 
 /**
@@ -185,6 +200,7 @@ export function rollD20(): number {
  * @returns Object with final result and both rolls
  */
 export function rollWithAdvantage(sides: number): { result: number; rolls: [number, number] } {
+    return "Implement me" as any;
 }
 
 /**
@@ -193,6 +209,7 @@ export function rollWithAdvantage(sides: number): { result: number; rolls: [numb
  * @returns Object with final result and both rolls
  */
 export function rollWithDisadvantage(sides: number): { result: number; rolls: [number, number] } {
+    return "Implement me" as any;
 }
 
 /**
@@ -202,6 +219,7 @@ export function rollWithDisadvantage(sides: number): { result: number; rolls: [n
  * @returns Object with total result, roll, and modifier
  */
 export function rollSkillCheck(baseStat: number, advantage: Advantage): { total: number; roll: number; modifier: number } {
+    return "Implement me" as any;
 }
 
 // ============================================================================
@@ -214,7 +232,8 @@ export function rollSkillCheck(baseStat: number, advantage: Advantage): { total:
  * @param type - The attack type being used
  * @returns The skill stat value (physicalSkill, mentalSkill, or emotionalSkill)
  */
-export function getSkillStatForType(character: Character | Enemy, type: ActionType): number {
+export function getSkillStatForType(character: Character | Enemy, type: AttackType): number {
+    return "Implement me" as any;
 }
 
 /**
@@ -223,7 +242,8 @@ export function getSkillStatForType(character: Character | Enemy, type: ActionTy
  * @param type - The attack type being defended against
  * @returns The defense stat value (physicalDefense, mentalDefense, or emotionalDefense)
  */
-export function getDefenseStatForType(character: Character | Enemy, type: ActionType): number {
+export function getDefenseStatForType(character: Character | Enemy, type: AttackType): number {
+    return "Implement me" as any;
 }
 
 /**
@@ -232,18 +252,18 @@ export function getDefenseStatForType(character: Character | Enemy, type: Action
  * @param type - The attack type requiring a save
  * @returns The save stat value (physicalSave, mentalSave, or emotionalSave)
  */
-export function getSaveStatForType(character: Character | Enemy, type: ActionType): number {
+export function getSaveStatForType(character: Character | Enemy, type: AttackType): number {
+    return "Implement me" as any;
 }
 
 /**
  * Calculates the base stat value for an attack type
- * For player characters, returns the base stat (body/mind/heart)
- * For enemies, returns the appropriate skill stat since enemies don't have base stats
  * @param character - The character performing the action
  * @param type - The attack type being used
- * @returns The base stat value (body, mind, or heart for players; skill stat for enemies)
+ * @returns The base stat value (body, mind, or heart)
  */
-export function getBaseStatForType(character: Character | Enemy, type: ActionType): number {
+export function getBaseStatForType(character: Character | Enemy, type: AttackType): number {
+    return "Implement me" as any;
 }
 
 // ============================================================================
@@ -259,9 +279,10 @@ export function getBaseStatForType(character: Character | Enemy, type: ActionTyp
  */
 export function performAttackRoll(
     attacker: Character | Enemy,
-    attackType: ActionType,
+    attackType: AttackType,
     advantage: Advantage
 ): { total: number; roll: number; modifier: number; details: string } {
+    return "Implement me" as any;
 }
 
 /**
@@ -273,9 +294,10 @@ export function performAttackRoll(
  */
 export function performDefenseRoll(
     defender: Character | Enemy,
-    attackType: ActionType,
+    attackType: AttackType,
     isDefending: boolean
 ): { total: number; roll: number; modifier: number; details: string } {
+    return "Implement me" as any;
 }
 
 /**
@@ -285,6 +307,7 @@ export function performDefenseRoll(
  * @returns True if attack hits, false if it misses
  */
 export function isAttackSuccessful(attackRoll: number, defenseRoll: number): boolean {
+    return "Implement me" as any;
 }
 
 /**
@@ -293,6 +316,7 @@ export function isAttackSuccessful(attackRoll: number, defenseRoll: number): boo
  * @returns True if critical hit
  */
 export function isCriticalHit(roll: number): boolean {
+    return "Implement me" as any;
 }
 
 /**
@@ -301,6 +325,7 @@ export function isCriticalHit(roll: number): boolean {
  * @returns True if critical miss
  */
 export function isCriticalMiss(roll: number): boolean {
+    return "Implement me" as any;
 }
 
 // ============================================================================
@@ -316,9 +341,10 @@ export function isCriticalMiss(roll: number): boolean {
  */
 export function calculateBaseDamage(
     attacker: Character | Enemy,
-    attackType: ActionType,
+    attackType: AttackType,
     advantage: Advantage
 ): number {
+    return "Implement me" as any;
 }
 
 /**
@@ -330,9 +356,10 @@ export function calculateBaseDamage(
  */
 export function calculateDamageReduction(
     defender: Character | Enemy,
-    attackType: ActionType,
+    attackType: AttackType,
     isDefending: boolean
 ): number {
+    return "Implement me" as any;
 }
 
 /**
@@ -347,6 +374,7 @@ export function calculateFinalDamage(
     damageReduction: number,
     isCritical: boolean
 ): number {
+    return "Implement me" as any;
 }
 
 /**
@@ -355,6 +383,7 @@ export function calculateFinalDamage(
  * @returns Damage multiplied by critical multiplier (e.g., 2x)
  */
 export function applyCriticalMultiplier(baseDamage: number): number {
+    return "Implement me" as any;
 }
 
 /**
@@ -369,7 +398,7 @@ export function applyCriticalMultiplier(baseDamage: number): number {
 export function calculateAttackDamage(
     attacker: Character | Enemy,
     defender: Character | Enemy,
-    attackType: ActionType,
+    attackType: AttackType,
     advantage: Advantage,
     isDefending: boolean
 ): {
@@ -380,6 +409,7 @@ export function calculateAttackDamage(
     critical: boolean;
     details: string;
 } {
+    return "Implement me" as any;
 }
 
 // ============================================================================
@@ -393,6 +423,7 @@ export function calculateAttackDamage(
  * @returns Updated character with reduced health (minimum 0)
  */
 export function applyDamage(character: Character | Enemy, damage: number): Character | Enemy {
+    return "Implement me" as any;
 }
 
 /**
@@ -402,6 +433,7 @@ export function applyDamage(character: Character | Enemy, damage: number): Chara
  * @returns Updated character with increased health (maximum maxHealth)
  */
 export function healCharacter(character: Character | Enemy, amount: number): Character | Enemy {
+    return "Implement me" as any;
 }
 
 /**
@@ -410,6 +442,7 @@ export function healCharacter(character: Character | Enemy, amount: number): Cha
  * @returns True if health > 0
  */
 export function isAlive(character: Character | Enemy): boolean {
+    return "Implement me" as any;
 }
 
 /**
@@ -418,6 +451,7 @@ export function isAlive(character: Character | Enemy): boolean {
  * @returns True if health <= 0
  */
 export function isDefeated(character: Character | Enemy): boolean {
+    return "Implement me" as any;
 }
 
 /**
@@ -426,6 +460,7 @@ export function isDefeated(character: Character | Enemy): boolean {
  * @returns Health percentage (0-100)
  */
 export function getHealthPercentage(character: Character | Enemy): number {
+    return "Implement me" as any;
 }
 
 // ============================================================================
@@ -438,6 +473,7 @@ export function getHealthPercentage(character: Character | Enemy): number {
  * @returns Updated combat state with round results
  */
 export function resolveCombatRound(state: CombatState): CombatState {
+    return "Implement me" as any;
 }
 
 /**
@@ -450,6 +486,7 @@ export function processPlayerTurn(state: CombatState): {
     playerRoll: number;
     playerRollDetails: string;
 } {
+    return "Implement me" as any;
 }
 
 /**
@@ -462,6 +499,7 @@ export function processEnemyTurn(state: CombatState): {
     enemyRoll: number;
     enemyRollDetails: string;
 } {
+    return "Implement me" as any;
 }
 
 /**
@@ -471,6 +509,7 @@ export function processEnemyTurn(state: CombatState): {
  * @returns 'player' | 'enemy' for who goes first
  */
 export function determineTurnOrder(player: Character, enemy: Enemy): 'player' | 'enemy' {
+    return "Implement me" as any;
 }
 
 /**
@@ -479,6 +518,7 @@ export function determineTurnOrder(player: Character, enemy: Enemy): 'player' | 
  * @returns Initiative roll result
  */
 export function rollInitiative(character: Character | Enemy): number {
+    return "Implement me" as any;
 }
 
 // ============================================================================
@@ -503,6 +543,7 @@ export function createBattleLogEntry(
         damageToEnemy: number;
     }
 ): BattleLogEntry {
+    return "Implement me" as any;
 }
 
 /**
@@ -512,6 +553,7 @@ export function createBattleLogEntry(
  * @returns Updated combat state with new log entry
  */
 export function addBattleLogEntry(state: CombatState, entry: BattleLogEntry): CombatState {
+    return "Implement me" as any;
 }
 
 /**
@@ -520,6 +562,7 @@ export function addBattleLogEntry(state: CombatState, entry: BattleLogEntry): Co
  * @returns The most recent log entry or null
  */
 export function getLatestLogEntry(state: CombatState): BattleLogEntry | null {
+    return "Implement me" as any;
 }
 
 /**
@@ -528,6 +571,7 @@ export function getLatestLogEntry(state: CombatState): BattleLogEntry | null {
  * @returns Formatted string for display
  */
 export function formatBattleLogEntry(entry: BattleLogEntry): string {
+    return "Implement me" as any;
 }
 
 /**
@@ -536,6 +580,7 @@ export function formatBattleLogEntry(entry: BattleLogEntry): string {
  * @returns Array of formatted log strings
  */
 export function formatBattleLog(state: CombatState): string[] {
+    return "Implement me" as any;
 }
 
 // ============================================================================
@@ -549,6 +594,7 @@ export function formatBattleLog(state: CombatState): string[] {
  * @returns Updated combat state with increased friendship counter
  */
 export function incrementFriendshipCounter(state: CombatState, amount?: number): CombatState {
+    return "Implement me" as any;
 }
 
 /**
@@ -558,6 +604,7 @@ export function incrementFriendshipCounter(state: CombatState, amount?: number):
  * @returns Updated combat state with decreased friendship counter
  */
 export function decrementFriendshipCounter(state: CombatState, amount?: number): CombatState {
+    return "Implement me" as any;
 }
 
 /**
@@ -567,6 +614,7 @@ export function decrementFriendshipCounter(state: CombatState, amount?: number):
  * @returns True if counter >= threshold
  */
 export function hasFriendshipThreshold(state: CombatState, threshold: number): boolean {
+    return "Implement me" as any;
 }
 
 /**
@@ -575,6 +623,7 @@ export function hasFriendshipThreshold(state: CombatState, threshold: number): b
  * @returns Updated state with friendship event applied
  */
 export function triggerFriendshipEvent(state: CombatState): CombatState {
+    return "Implement me" as any;
 }
 
 // ============================================================================
@@ -587,6 +636,7 @@ export function triggerFriendshipEvent(state: CombatState): CombatState {
  * @returns Descriptive string of what happened
  */
 export function generateRoundResultString(entry: BattleLogEntry): string {
+    return "Implement me" as any;
 }
 
 /**
@@ -595,6 +645,7 @@ export function generateRoundResultString(entry: BattleLogEntry): string {
  * @returns Victory/defeat message
  */
 export function generateCombatResultMessage(state: CombatState): string {
+    return "Implement me" as any;
 }
 
 /**
@@ -605,10 +656,11 @@ export function generateCombatResultMessage(state: CombatState): string {
  * @returns Descriptive string of the matchup
  */
 export function generateAdvantageDescription(
-    playerType: ActionType,
-    enemyType: ActionType,
+    playerType: AttackType,
+    enemyType: AttackType,
     advantage: Advantage
 ): string {
+    return "Implement me" as any;
 }
 
 // ============================================================================
@@ -621,6 +673,7 @@ export function generateAdvantageDescription(
  * @returns Total damage dealt
  */
 export function getTotalPlayerDamage(state: CombatState): number {
+    return "Implement me" as any;
 }
 
 /**
@@ -629,6 +682,7 @@ export function getTotalPlayerDamage(state: CombatState): number {
  * @returns Total damage dealt
  */
 export function getTotalEnemyDamage(state: CombatState): number {
+    return "Implement me" as any;
 }
 
 /**
@@ -637,6 +691,7 @@ export function getTotalEnemyDamage(state: CombatState): number {
  * @returns Average damage per round
  */
 export function getAveragePlayerDamage(state: CombatState): number {
+    return "Implement me" as any;
 }
 
 /**
@@ -645,6 +700,7 @@ export function getAveragePlayerDamage(state: CombatState): number {
  * @returns Average damage per round
  */
 export function getAverageEnemyDamage(state: CombatState): number {
+    return "Implement me" as any;
 }
 
 /**
@@ -653,6 +709,7 @@ export function getAverageEnemyDamage(state: CombatState): number {
  * @returns Number of rounds with advantage
  */
 export function countPlayerAdvantageRounds(state: CombatState): number {
+    return "Implement me" as any;
 }
 
 /**
@@ -661,6 +718,7 @@ export function countPlayerAdvantageRounds(state: CombatState): number {
  * @returns Number of rounds with advantage
  */
 export function countEnemyAdvantageRounds(state: CombatState): number {
+    return "Implement me" as any;
 }
 
 /**
@@ -679,6 +737,7 @@ export function generateCombatStatistics(state: CombatState): {
     neutralRounds: number;
     friendshipCounter: number;
 } {
+    return "Implement me" as any;
 }
 
 // ============================================================================
@@ -691,6 +750,7 @@ export function generateCombatStatistics(state: CombatState): {
  * @returns True if valid, throws error if invalid
  */
 export function validateCombatState(state: CombatState): boolean {
+    return "Implement me" as any;
 }
 
 /**
@@ -699,6 +759,7 @@ export function validateCombatState(state: CombatState): boolean {
  * @returns True if both have complete actions
  */
 export function areBothActionsChosen(state: CombatState): boolean {
+    return "Implement me" as any;
 }
 
 /**
@@ -707,6 +768,7 @@ export function areBothActionsChosen(state: CombatState): boolean {
  * @returns True if valid, false otherwise
  */
 export function hasValidCombatStats(character: Character | Enemy): boolean {
+    return "Implement me" as any;
 }
 
 // ============================================================================
@@ -721,6 +783,7 @@ export function hasValidCombatStats(character: Character | Enemy): boolean {
  * @returns Clamped value
  */
 export function clamp(value: number, min: number, max: number): number {
+    return "Implement me" as any;
 }
 
 /**
@@ -730,6 +793,7 @@ export function clamp(value: number, min: number, max: number): number {
  * @returns Random integer
  */
 export function randomInt(min: number, max: number): number {
+    return "Implement me" as any;
 }
 
 /**
@@ -737,7 +801,8 @@ export function randomInt(min: number, max: number): number {
  * @param type - The attack type
  * @returns Capitalized display string
  */
-export function attackTypeToString(type: ActionType): string {
+export function attackTypeToString(type: AttackType): string {
+    return "Implement me" as any;
 }
 
 /**
@@ -745,7 +810,8 @@ export function attackTypeToString(type: ActionType): string {
  * @param action - The attack action
  * @returns Capitalized display string
  */
-export function attackActionToString(action: Action): string {
+export function attackActionToString(action: AttackAction): string {
+    return "Implement me" as any;
 }
 
 /**
@@ -754,6 +820,7 @@ export function attackActionToString(action: Action): string {
  * @returns Descriptive string
  */
 export function advantageToString(advantage: Advantage): string {
+    return "Implement me" as any;
 }
 
 /**
@@ -762,6 +829,7 @@ export function advantageToString(advantage: Advantage): string {
  * @returns Deep copy of the state
  */
 export function cloneCombatState(state: CombatState): CombatState {
+    return "Implement me" as any;
 }
 
 /**
@@ -770,4 +838,5 @@ export function cloneCombatState(state: CombatState): CombatState {
  * @returns Deep copy of the character
  */
 export function cloneCharacter<T extends Character | Enemy>(character: T): T {
+    return "Implement me" as any;
 }
