@@ -89,7 +89,6 @@ export function createEffect(
     duration: EffectDuration,
     target: EffectTarget
 ): Effect {
-    return undefined as any;
 }
 
 /**
@@ -106,7 +105,6 @@ export function createBuff(
     description: string,
     duration: EffectDuration
 ): Effect {
-    return undefined as any;
 }
 
 /**
@@ -123,7 +121,6 @@ export function createDebuff(
     description: string,
     duration: EffectDuration
 ): Effect {
-    return undefined as any;
 }
 
 /**
@@ -148,7 +145,6 @@ export function createStatModifier(
     isPercentage: boolean,
     duration: EffectDuration
 ): StatModifier {
-    return undefined as any;
 }
 
 /**
@@ -169,7 +165,6 @@ export function createDamageOverTime(
     damageType: 'body' | 'mind' | 'heart',
     turns: number
 ): DamageOverTime {
-    return undefined as any;
 }
 
 /**
@@ -188,7 +183,6 @@ export function createHealOverTime(
     healPerTurn: number,
     turns: number
 ): HealOverTime {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -202,7 +196,6 @@ export function createHealOverTime(
  * @returns Updated effect with turns set
  */
 export function setEffectDuration(effect: Effect, turns: number): Effect {
-    return undefined as any;
 }
 
 /**
@@ -211,7 +204,6 @@ export function setEffectDuration(effect: Effect, turns: number): Effect {
  * @returns Updated effect with reduced turns
  */
 export function decrementEffectDuration(effect: Effect): Effect {
-    return undefined as any;
 }
 
 /**
@@ -220,7 +212,6 @@ export function decrementEffectDuration(effect: Effect): Effect {
  * @returns True if effect has no turns remaining
  */
 export function isEffectExpired(effect: Effect): boolean {
-    return undefined as any;
 }
 
 /**
@@ -229,7 +220,6 @@ export function isEffectExpired(effect: Effect): boolean {
  * @returns True if duration is 'instant'
  */
 export function isInstantEffect(effect: Effect): boolean {
-    return undefined as any;
 }
 
 /**
@@ -238,7 +228,6 @@ export function isInstantEffect(effect: Effect): boolean {
  * @returns True if duration is 'permanent'
  */
 export function isPermanentEffect(effect: Effect): boolean {
-    return undefined as any;
 }
 
 /**
@@ -247,7 +236,6 @@ export function isPermanentEffect(effect: Effect): boolean {
  * @returns True if duration is 'temporary'
  */
 export function isTemporaryEffect(effect: Effect): boolean {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -261,7 +249,6 @@ export function isTemporaryEffect(effect: Effect): boolean {
  * @returns Updated effect with stacking enabled
  */
 export function makeEffectStackable(effect: Effect, maxStacks: number): Effect {
-    return undefined as any;
 }
 
 /**
@@ -271,7 +258,6 @@ export function makeEffectStackable(effect: Effect, maxStacks: number): Effect {
  * @returns Updated effect with increased stacks (capped at maxStacks)
  */
 export function addEffectStacks(effect: Effect, amount: number): Effect {
-    return undefined as any;
 }
 
 /**
@@ -281,7 +267,6 @@ export function addEffectStacks(effect: Effect, amount: number): Effect {
  * @returns Updated effect with decreased stacks (minimum 0)
  */
 export function removeEffectStacks(effect: Effect, amount: number): Effect {
-    return undefined as any;
 }
 
 /**
@@ -290,7 +275,6 @@ export function removeEffectStacks(effect: Effect, amount: number): Effect {
  * @returns Current stack count (1 if not stackable)
  */
 export function getEffectStacks(effect: Effect): number {
-    return undefined as any;
 }
 
 /**
@@ -299,7 +283,6 @@ export function getEffectStacks(effect: Effect): number {
  * @returns True if at max stacks (or not stackable)
  */
 export function isAtMaxStacks(effect: Effect): boolean {
-    return undefined as any;
 }
 
 /**
@@ -308,7 +291,6 @@ export function isAtMaxStacks(effect: Effect): boolean {
  * @returns True if effect is stackable
  */
 export function isStackable(effect: Effect): boolean {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -321,7 +303,6 @@ export function isStackable(effect: Effect): boolean {
  * @returns True if category is 'buff'
  */
 export function isBuff(effect: Effect): boolean {
-    return undefined as any;
 }
 
 /**
@@ -330,7 +311,6 @@ export function isBuff(effect: Effect): boolean {
  * @returns True if category is 'debuff'
  */
 export function isDebuff(effect: Effect): boolean {
-    return undefined as any;
 }
 
 /**
@@ -339,7 +319,6 @@ export function isDebuff(effect: Effect): boolean {
  * @returns True if category is 'condition'
  */
 export function isCondition(effect: Effect): boolean {
-    return undefined as any;
 }
 
 /**
@@ -348,7 +327,6 @@ export function isCondition(effect: Effect): boolean {
  * @returns True if effect has stat modification properties
  */
 export function isStatModifier(effect: Effect): effect is StatModifier {
-    return undefined as any;
 }
 
 /**
@@ -357,7 +335,6 @@ export function isStatModifier(effect: Effect): effect is StatModifier {
  * @returns True if effect deals damage over time
  */
 export function isDamageOverTime(effect: Effect): effect is DamageOverTime {
-    return undefined as any;
 }
 
 /**
@@ -366,7 +343,6 @@ export function isDamageOverTime(effect: Effect): effect is DamageOverTime {
  * @returns True if effect heals over time
  */
 export function isHealOverTime(effect: Effect): effect is HealOverTime {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -380,7 +356,6 @@ export function isHealOverTime(effect: Effect): effect is HealOverTime {
  * @returns The modified stat value
  */
 export function applyStatModifier(baseValue: number, modifier: StatModifier): number {
-    return undefined as any;
 }
 
 /**
@@ -389,7 +364,6 @@ export function applyStatModifier(baseValue: number, modifier: StatModifier): nu
  * @returns The damage value for this turn
  */
 export function calculateDamageOverTimeTick(effect: DamageOverTime): number {
-    return undefined as any;
 }
 
 /**
@@ -398,7 +372,6 @@ export function calculateDamageOverTimeTick(effect: DamageOverTime): number {
  * @returns The healing value for this turn
  */
 export function calculateHealOverTimeTick(effect: HealOverTime): number {
-    return undefined as any;
 }
 
 /**
@@ -413,7 +386,6 @@ export function applyAllStatModifiers(
     effects: Effect[],
     statType: StatModifier['statType']
 ): number {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -427,7 +399,6 @@ export function applyAllStatModifiers(
  * @returns Array of effects matching the category
  */
 export function filterEffectsByCategory(effects: Effect[], category: EffectCategory): Effect[] {
-    return undefined as any;
 }
 
 /**
@@ -436,7 +407,6 @@ export function filterEffectsByCategory(effects: Effect[], category: EffectCateg
  * @returns Array of buff effects
  */
 export function getActiveBuffs(effects: Effect[]): Effect[] {
-    return undefined as any;
 }
 
 /**
@@ -445,7 +415,6 @@ export function getActiveBuffs(effects: Effect[]): Effect[] {
  * @returns Array of debuff effects
  */
 export function getActiveDebuffs(effects: Effect[]): Effect[] {
-    return undefined as any;
 }
 
 /**
@@ -454,7 +423,6 @@ export function getActiveDebuffs(effects: Effect[]): Effect[] {
  * @returns Array of stat modifier effects
  */
 export function getStatModifiers(effects: Effect[]): StatModifier[] {
-    return undefined as any;
 }
 
 /**
@@ -463,7 +431,6 @@ export function getStatModifiers(effects: Effect[]): StatModifier[] {
  * @returns Array with expired effects removed
  */
 export function removeExpiredEffects(effects: Effect[]): Effect[] {
-    return undefined as any;
 }
 
 /**
@@ -472,7 +439,6 @@ export function removeExpiredEffects(effects: Effect[]): Effect[] {
  * @returns Updated array with decremented durations
  */
 export function updateEffectsForTurn(effects: Effect[]): Effect[] {
-    return undefined as any;
 }
 
 /**
@@ -482,7 +448,6 @@ export function updateEffectsForTurn(effects: Effect[]): Effect[] {
  * @returns The effect if found, null otherwise
  */
 export function findEffectById(effects: Effect[], id: string): Effect | null {
-    return undefined as any;
 }
 
 /**
@@ -492,7 +457,6 @@ export function findEffectById(effects: Effect[], id: string): Effect | null {
  * @returns True if effect is in the array
  */
 export function hasEffect(effects: Effect[], effectId: string): boolean {
-    return undefined as any;
 }
 
 /**
@@ -502,7 +466,6 @@ export function hasEffect(effects: Effect[], effectId: string): boolean {
  * @returns Updated effects array
  */
 export function addEffect(effects: Effect[], newEffect: Effect): Effect[] {
-    return undefined as any;
 }
 
 /**
@@ -512,7 +475,6 @@ export function addEffect(effects: Effect[], newEffect: Effect): Effect[] {
  * @returns Updated effects array without the effect
  */
 export function removeEffect(effects: Effect[], effectId: string): Effect[] {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -525,7 +487,6 @@ export function removeEffect(effects: Effect[], effectId: string): Effect[] {
  * @returns Formatted string with name, duration, and description
  */
 export function formatEffectInfo(effect: Effect): string {
-    return undefined as any;
 }
 
 /**
@@ -534,7 +495,6 @@ export function formatEffectInfo(effect: Effect): string {
  * @returns Short formatted string with name and turns remaining
  */
 export function formatEffectShort(effect: Effect): string {
-    return undefined as any;
 }
 
 /**
@@ -543,7 +503,6 @@ export function formatEffectShort(effect: Effect): string {
  * @returns Capitalized category string
  */
 export function getEffectCategoryString(effect: Effect): string {
-    return undefined as any;
 }
 
 /**
@@ -552,7 +511,6 @@ export function getEffectCategoryString(effect: Effect): string {
  * @returns Human-readable duration string
  */
 export function formatEffectDuration(effect: Effect): string {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -565,7 +523,6 @@ export function formatEffectDuration(effect: Effect): string {
  * @returns A deep copy of the effect
  */
 export function cloneEffect<T extends Effect>(effect: T): T {
-    return undefined as any;
 }
 
 /**
@@ -574,7 +531,6 @@ export function cloneEffect<T extends Effect>(effect: T): T {
  * @returns JSON string representation
  */
 export function serializeEffect(effect: Effect): string {
-    return undefined as any;
 }
 
 /**
@@ -583,7 +539,6 @@ export function serializeEffect(effect: Effect): string {
  * @returns The effect object
  */
 export function deserializeEffect(json: string): Effect {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -596,7 +551,6 @@ export function deserializeEffect(json: string): Effect {
  * @returns True if valid, throws error if invalid
  */
 export function validateEffect(effect: Effect): boolean {
-    return undefined as any;
 }
 
 /**
@@ -605,5 +559,4 @@ export function validateEffect(effect: Effect): boolean {
  * @returns True if valid, false otherwise
  */
 export function validateStatModifier(modifier: StatModifier): boolean {
-    return undefined as any;
 }

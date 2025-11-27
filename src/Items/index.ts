@@ -72,7 +72,6 @@ export interface QuestItem extends BaseItem {
  * @returns A new equipment item
  */
 export function createEquipment(id: string, name: string, description: string): Equipment {
-    return undefined as any;
 }
 
 /**
@@ -83,7 +82,6 @@ export function createEquipment(id: string, name: string, description: string): 
  * @returns A new consumable item
  */
 export function createConsumable(id: string, name: string, description: string): Consumable {
-    return undefined as any;
 }
 
 /**
@@ -94,7 +92,6 @@ export function createConsumable(id: string, name: string, description: string):
  * @returns A new material item
  */
 export function createMaterial(id: string, name: string, description: string): Material {
-    return undefined as any;
 }
 
 /**
@@ -105,7 +102,6 @@ export function createMaterial(id: string, name: string, description: string): M
  * @returns A new quest item
  */
 export function createQuestItem(id: string, name: string, description: string): QuestItem {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -118,7 +114,6 @@ export function createQuestItem(id: string, name: string, description: string): 
  * @returns True if item type is 'equipment'
  */
 export function isEquipment(item: BaseItem): item is Equipment {
-    return undefined as any;
 }
 
 /**
@@ -127,7 +122,6 @@ export function isEquipment(item: BaseItem): item is Equipment {
  * @returns True if item type is 'consumable'
  */
 export function isConsumable(item: BaseItem): item is Consumable {
-    return undefined as any;
 }
 
 /**
@@ -136,7 +130,6 @@ export function isConsumable(item: BaseItem): item is Consumable {
  * @returns True if item type is 'material'
  */
 export function isMaterial(item: BaseItem): item is Material {
-    return undefined as any;
 }
 
 /**
@@ -145,7 +138,6 @@ export function isMaterial(item: BaseItem): item is Material {
  * @returns True if item type is 'quest-item'
  */
 export function isQuestItem(item: BaseItem): item is QuestItem {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -159,7 +151,6 @@ export function isQuestItem(item: BaseItem): item is QuestItem {
  * @returns Updated equipment with stat bonuses
  */
 export function addEquipmentStats(equipment: Equipment, stats: Record<string, number>): Equipment {
-    return undefined as any;
 }
 
 /**
@@ -169,7 +160,6 @@ export function addEquipmentStats(equipment: Equipment, stats: Record<string, nu
  * @returns Updated equipment with slot assigned
  */
 export function setEquipmentSlot(equipment: Equipment, slot: string): Equipment {
-    return undefined as any;
 }
 
 /**
@@ -179,7 +169,6 @@ export function setEquipmentSlot(equipment: Equipment, slot: string): Equipment 
  * @returns The bonus value, or 0 if not found
  */
 export function getEquipmentStatBonus(equipment: Equipment, statName: string): number {
-    return undefined as any;
 }
 
 /**
@@ -188,7 +177,6 @@ export function getEquipmentStatBonus(equipment: Equipment, statName: string): n
  * @returns Object mapping stat names to total bonuses
  */
 export function calculateTotalEquipmentStats(equipment: Equipment[]): Record<string, number> {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -202,7 +190,6 @@ export function calculateTotalEquipmentStats(equipment: Equipment[]): Record<str
  * @returns Updated consumable with heal amount
  */
 export function setConsumableHealAmount(consumable: Consumable, amount: number): Consumable {
-    return undefined as any;
 }
 
 /**
@@ -212,7 +199,6 @@ export function setConsumableHealAmount(consumable: Consumable, amount: number):
  * @returns Updated consumable with mana amount
  */
 export function setConsumableManaAmount(consumable: Consumable, amount: number): Consumable {
-    return undefined as any;
 }
 
 /**
@@ -222,7 +208,6 @@ export function setConsumableManaAmount(consumable: Consumable, amount: number):
  * @returns Updated consumable with effect
  */
 export function setConsumableEffect(consumable: Consumable, effect: string): Consumable {
-    return undefined as any;
 }
 
 /**
@@ -231,7 +216,6 @@ export function setConsumableEffect(consumable: Consumable, effect: string): Con
  * @returns Object describing the effects (heal, mana, etc.)
  */
 export function useConsumable(consumable: Consumable): { heal: number; mana: number; effect?: string } {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -245,7 +229,6 @@ export function useConsumable(consumable: Consumable): { heal: number; mana: num
  * @returns Updated material with quantity
  */
 export function setMaterialQuantity(material: Material, quantity: number): Material {
-    return undefined as any;
 }
 
 /**
@@ -255,7 +238,6 @@ export function setMaterialQuantity(material: Material, quantity: number): Mater
  * @returns Updated material with increased quantity
  */
 export function addMaterialQuantity(material: Material, amount: number): Material {
-    return undefined as any;
 }
 
 /**
@@ -265,7 +247,6 @@ export function addMaterialQuantity(material: Material, amount: number): Materia
  * @returns Updated material with decreased quantity (minimum 0)
  */
 export function removeMaterialQuantity(material: Material, amount: number): Material {
-    return undefined as any;
 }
 
 /**
@@ -275,7 +256,6 @@ export function removeMaterialQuantity(material: Material, amount: number): Mate
  * @returns True if material quantity >= required
  */
 export function hasSufficientMaterial(material: Material, required: number): boolean {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -289,7 +269,6 @@ export function hasSufficientMaterial(material: Material, required: number): boo
  * @returns Updated quest item with quest ID
  */
 export function setQuestItemQuest(questItem: QuestItem, questId: string): QuestItem {
-    return undefined as any;
 }
 
 /**
@@ -299,7 +278,6 @@ export function setQuestItemQuest(questItem: QuestItem, questId: string): QuestI
  * @returns True if quest item is for this quest
  */
 export function isQuestItemForQuest(questItem: QuestItem, questId: string): boolean {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -313,7 +291,6 @@ export function isQuestItemForQuest(questItem: QuestItem, questId: string): bool
  * @returns Array of items matching the type
  */
 export function filterItemsByType(items: BaseItem[], itemType: Item): BaseItem[] {
-    return undefined as any;
 }
 
 /**
@@ -322,7 +299,6 @@ export function filterItemsByType(items: BaseItem[], itemType: Item): BaseItem[]
  * @returns Array of equipment items
  */
 export function getEquipmentItems(items: BaseItem[]): Equipment[] {
-    return undefined as any;
 }
 
 /**
@@ -331,7 +307,6 @@ export function getEquipmentItems(items: BaseItem[]): Equipment[] {
  * @returns Array of consumable items
  */
 export function getConsumableItems(items: BaseItem[]): Consumable[] {
-    return undefined as any;
 }
 
 /**
@@ -340,7 +315,6 @@ export function getConsumableItems(items: BaseItem[]): Consumable[] {
  * @returns Array of material items
  */
 export function getMaterialItems(items: BaseItem[]): Material[] {
-    return undefined as any;
 }
 
 /**
@@ -349,7 +323,6 @@ export function getMaterialItems(items: BaseItem[]): Material[] {
  * @returns Array of quest items
  */
 export function getQuestItems(items: BaseItem[]): QuestItem[] {
-    return undefined as any;
 }
 
 /**
@@ -359,7 +332,6 @@ export function getQuestItems(items: BaseItem[]): QuestItem[] {
  * @returns The item if found, null otherwise
  */
 export function findItemById(items: BaseItem[], id: string): BaseItem | null {
-    return undefined as any;
 }
 
 /**
@@ -369,7 +341,6 @@ export function findItemById(items: BaseItem[], id: string): BaseItem | null {
  * @returns The item if found, null otherwise
  */
 export function findItemByName(items: BaseItem[], name: string): BaseItem | null {
-    return undefined as any;
 }
 
 /**
@@ -378,7 +349,6 @@ export function findItemByName(items: BaseItem[], name: string): BaseItem | null
  * @returns Sorted array (A-Z)
  */
 export function sortItemsByName(items: BaseItem[]): BaseItem[] {
-    return undefined as any;
 }
 
 /**
@@ -387,7 +357,6 @@ export function sortItemsByName(items: BaseItem[]): BaseItem[] {
  * @returns Sorted array (equipment, consumable, material, quest-item)
  */
 export function sortItemsByType(items: BaseItem[]): BaseItem[] {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -400,7 +369,6 @@ export function sortItemsByType(items: BaseItem[]): BaseItem[] {
  * @returns Formatted string with name and description
  */
 export function formatItemInfo(item: BaseItem): string {
-    return undefined as any;
 }
 
 /**
@@ -409,7 +377,6 @@ export function formatItemInfo(item: BaseItem): string {
  * @returns Short formatted string
  */
 export function formatItemShort(item: BaseItem): string {
-    return undefined as any;
 }
 
 /**
@@ -418,7 +385,6 @@ export function formatItemShort(item: BaseItem): string {
  * @returns Capitalized type string
  */
 export function getItemTypeString(item: BaseItem): string {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -432,7 +398,6 @@ export function getItemTypeString(item: BaseItem): string {
  * @returns Updated inventory with new item
  */
 export function addToInventory(inventory: BaseItem[], item: BaseItem): BaseItem[] {
-    return undefined as any;
 }
 
 /**
@@ -442,7 +407,6 @@ export function addToInventory(inventory: BaseItem[], item: BaseItem): BaseItem[
  * @returns Updated inventory without the item
  */
 export function removeFromInventory(inventory: BaseItem[], itemId: string): BaseItem[] {
-    return undefined as any;
 }
 
 /**
@@ -452,7 +416,6 @@ export function removeFromInventory(inventory: BaseItem[], itemId: string): Base
  * @returns True if item is in inventory
  */
 export function hasItemInInventory(inventory: BaseItem[], itemId: string): boolean {
-    return undefined as any;
 }
 
 /**
@@ -461,7 +424,6 @@ export function hasItemInInventory(inventory: BaseItem[], itemId: string): boole
  * @returns Total number of items
  */
 export function getInventorySize(inventory: BaseItem[]): number {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -474,7 +436,6 @@ export function getInventorySize(inventory: BaseItem[]): number {
  * @returns A deep copy of the item
  */
 export function cloneItem<T extends BaseItem>(item: T): T {
-    return undefined as any;
 }
 
 /**
@@ -483,7 +444,6 @@ export function cloneItem<T extends BaseItem>(item: T): T {
  * @returns JSON string representation
  */
 export function serializeItem(item: BaseItem): string {
-    return undefined as any;
 }
 
 /**
@@ -492,7 +452,6 @@ export function serializeItem(item: BaseItem): string {
  * @returns The item object
  */
 export function deserializeItem(json: string): BaseItem {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -505,7 +464,6 @@ export function deserializeItem(json: string): BaseItem {
  * @returns True if valid, throws error if invalid
  */
 export function validateItem(item: BaseItem): boolean {
-    return undefined as any;
 }
 
 /**
@@ -514,7 +472,6 @@ export function validateItem(item: BaseItem): boolean {
  * @returns True if valid, false otherwise
  */
 export function validateEquipment(equipment: Equipment): boolean {
-    return undefined as any;
 }
 
 /**
@@ -523,5 +480,4 @@ export function validateEquipment(equipment: Equipment): boolean {
  * @returns True if valid, false otherwise
  */
 export function validateConsumable(consumable: Consumable): boolean {
-    return undefined as any;
 }

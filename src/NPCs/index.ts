@@ -24,7 +24,6 @@ export function createNPC(
     dialogue: DialogueMap,
     description?: string
 ): NPC {
-    return undefined as any;
 }
 
 /**
@@ -39,7 +38,6 @@ export function createSimpleNPC(
     greeting: string,
     description?: string
 ): NPC {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -53,7 +51,6 @@ export function createSimpleNPC(
  * @returns The dialogue string or array, or null if key not found
  */
 export function getDialogue(npc: NPC, key: string): string | string[] | null {
-    return undefined as any;
 }
 
 /**
@@ -65,7 +62,6 @@ export function getDialogue(npc: NPC, key: string): string | string[] | null {
  * @returns A single dialogue string, or null if key not found
  */
 export function getRandomDialogueLine(npc: NPC, key: string): string | null {
-    return undefined as any;
 }
 
 /**
@@ -76,7 +72,6 @@ export function getRandomDialogueLine(npc: NPC, key: string): string | null {
  * @returns Updated NPC with new dialogue
  */
 export function setDialogue(npc: NPC, key: string, dialogue: string | string[]): NPC {
-    return undefined as any;
 }
 
 /**
@@ -86,7 +81,6 @@ export function setDialogue(npc: NPC, key: string, dialogue: string | string[]):
  * @returns Updated NPC without the specified dialogue
  */
 export function removeDialogue(npc: NPC, key: string): NPC {
-    return undefined as any;
 }
 
 /**
@@ -96,7 +90,6 @@ export function removeDialogue(npc: NPC, key: string): NPC {
  * @returns True if the key exists in NPC's dialogue
  */
 export function hasDialogue(npc: NPC, key: string): boolean {
-    return undefined as any;
 }
 
 /**
@@ -105,7 +98,6 @@ export function hasDialogue(npc: NPC, key: string): boolean {
  * @returns Array of all dialogue keys
  */
 export function getAllDialogueKeys(npc: NPC): string[] {
-    return undefined as any;
 }
 
 /**
@@ -115,7 +107,6 @@ export function getAllDialogueKeys(npc: NPC): string[] {
  * @returns Updated NPC with merged dialogue
  */
 export function mergeDialogue(npc: NPC, newDialogue: DialogueMap): NPC {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -129,7 +120,6 @@ export function mergeDialogue(npc: NPC, newDialogue: DialogueMap): NPC {
  * @returns Formatted string with NPC name
  */
 export function formatDialogue(npc: NPC, dialogue: string): string {
-    return undefined as any;
 }
 
 /**
@@ -139,7 +129,6 @@ export function formatDialogue(npc: NPC, dialogue: string): string {
  * @returns Array of formatted strings
  */
 export function formatDialogueLines(npc: NPC, dialogueLines: string[]): string[] {
-    return undefined as any;
 }
 
 /**
@@ -148,7 +137,6 @@ export function formatDialogueLines(npc: NPC, dialogueLines: string[]): string[]
  * @returns Greeting string or generic greeting if not found
  */
 export function getGreeting(npc: NPC): string {
-    return undefined as any;
 }
 
 /**
@@ -157,7 +145,6 @@ export function getGreeting(npc: NPC): string {
  * @returns Farewell string or generic farewell if not found
  */
 export function getFarewell(npc: NPC): string {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -171,7 +158,6 @@ export function getFarewell(npc: NPC): string {
  * @returns Updated NPC with new name
  */
 export function setNPCName(npc: NPC, name: string): NPC {
-    return undefined as any;
 }
 
 /**
@@ -181,7 +167,6 @@ export function setNPCName(npc: NPC, name: string): NPC {
  * @returns Updated NPC with new description
  */
 export function setNPCDescription(npc: NPC, description: string): NPC {
-    return undefined as any;
 }
 
 /**
@@ -190,7 +175,6 @@ export function setNPCDescription(npc: NPC, description: string): NPC {
  * @returns The description or a default string
  */
 export function getNPCDescription(npc: NPC): string {
-    return undefined as any;
 }
 
 /**
@@ -199,7 +183,6 @@ export function getNPCDescription(npc: NPC): string {
  * @returns True if description exists
  */
 export function hasDescription(npc: NPC): boolean {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -213,7 +196,6 @@ export function hasDescription(npc: NPC): boolean {
  * @returns The dialogue response
  */
 export function talkToNPC(npc: NPC, context: string): string | string[] | null {
-    return undefined as any;
 }
 
 /**
@@ -223,7 +205,6 @@ export function talkToNPC(npc: NPC, context: string): string | string[] | null {
  * @returns True if NPC has dialogue for this context
  */
 export function canRespondTo(npc: NPC, context: string): boolean {
-    return undefined as any;
 }
 
 /**
@@ -232,7 +213,6 @@ export function canRespondTo(npc: NPC, context: string): boolean {
  * @returns Array of available dialogue keys (topics)
  */
 export function getAvailableTopics(npc: NPC): string[] {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -246,7 +226,6 @@ export function getAvailableTopics(npc: NPC): string[] {
  * @returns The NPC if found, null otherwise
  */
 export function findNPCByName(npcs: NPC[], name: string): NPC | null {
-    return undefined as any;
 }
 
 /**
@@ -256,7 +235,6 @@ export function findNPCByName(npcs: NPC[], name: string): NPC | null {
  * @returns Array of NPCs with that dialogue key
  */
 export function filterNPCsByDialogue(npcs: NPC[], dialogueKey: string): NPC[] {
-    return undefined as any;
 }
 
 /**
@@ -265,7 +243,6 @@ export function filterNPCsByDialogue(npcs: NPC[], dialogueKey: string): NPC[] {
  * @returns Sorted array (A-Z)
  */
 export function sortNPCsByName(npcs: NPC[]): NPC[] {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -278,7 +255,6 @@ export function sortNPCsByName(npcs: NPC[]): NPC[] {
  * @returns Total number of dialogue keys
  */
 export function getDialogueCount(npc: NPC): number {
-    return undefined as any;
 }
 
 /**
@@ -287,7 +263,6 @@ export function getDialogueCount(npc: NPC): number {
  * @returns 'string' or 'array'
  */
 export function getDialogueType(dialogue: string | string[]): 'string' | 'array' {
-    return undefined as any;
 }
 
 /**
@@ -296,7 +271,6 @@ export function getDialogueType(dialogue: string | string[]): 'string' | 'array'
  * @returns Array of dialogue lines
  */
 export function normalizeDialogue(dialogue: string | string[]): string[] {
-    return undefined as any;
 }
 
 /**
@@ -305,7 +279,6 @@ export function normalizeDialogue(dialogue: string | string[]): string[] {
  * @returns Total number of individual dialogue lines
  */
 export function getTotalDialogueLines(npc: NPC): number {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -318,7 +291,6 @@ export function getTotalDialogueLines(npc: NPC): number {
  * @returns A deep copy of the NPC
  */
 export function cloneNPC(npc: NPC): NPC {
-    return undefined as any;
 }
 
 /**
@@ -327,7 +299,6 @@ export function cloneNPC(npc: NPC): NPC {
  * @returns JSON string representation
  */
 export function serializeNPC(npc: NPC): string {
-    return undefined as any;
 }
 
 /**
@@ -336,7 +307,6 @@ export function serializeNPC(npc: NPC): string {
  * @returns The NPC object
  */
 export function deserializeNPC(json: string): NPC {
-    return undefined as any;
 }
 
 /**
@@ -345,7 +315,6 @@ export function deserializeNPC(json: string): NPC {
  * @returns A deep copy of the dialogue map
  */
 export function cloneDialogueMap(dialogue: DialogueMap): DialogueMap {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -358,7 +327,6 @@ export function cloneDialogueMap(dialogue: DialogueMap): DialogueMap {
  * @returns True if valid, throws error if invalid
  */
 export function validateNPC(npc: NPC): boolean {
-    return undefined as any;
 }
 
 /**
@@ -367,7 +335,6 @@ export function validateNPC(npc: NPC): boolean {
  * @returns True if valid, false otherwise
  */
 export function validateDialogueMap(dialogue: DialogueMap): boolean {
-    return undefined as any;
 }
 
 /**
@@ -376,5 +343,4 @@ export function validateDialogueMap(dialogue: DialogueMap): boolean {
  * @returns True if valid key
  */
 export function isValidDialogueKey(key: string): boolean {
-    return undefined as any;
 }

@@ -28,7 +28,6 @@ export interface CreateCharacterOptions {
  * @returns The new character with calculated derived stats and resources
  */
 export function createCharacter(options: CreateCharacterOptions): Character {
-    return undefined as any;
 }
 
 /**
@@ -37,7 +36,6 @@ export function createCharacter(options: CreateCharacterOptions): Character {
  * @returns A new level 1 character with balanced starting stats
  */
 export function createDefaultCharacter(name: string): Character {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -50,7 +48,6 @@ export function createDefaultCharacter(name: string): Character {
  * @returns The complete set of derived stats
  */
 export function deriveStats(baseStats: BaseStats): DerivedStats {
-    return undefined as any;
 }
 
 /**
@@ -59,7 +56,6 @@ export function deriveStats(baseStats: BaseStats): DerivedStats {
  * @returns Object with physicalSkill, physicalDefense, physicalSave, physicalTest
  */
 export function derivePhysicalStats(body: number): Pick<DerivedStats, 'physicalSkill' | 'physicalDefense' | 'physicalSave' | 'physicalTest'> {
-    return undefined as any;
 }
 
 /**
@@ -68,7 +64,6 @@ export function derivePhysicalStats(body: number): Pick<DerivedStats, 'physicalS
  * @returns Object with mentalSkill, mentalDefense, mentalSave, mentalTest
  */
 export function deriveMentalStats(mind: number): Pick<DerivedStats, 'mentalSkill' | 'mentalDefense' | 'mentalSave' | 'mentalTest'> {
-    return undefined as any;
 }
 
 /**
@@ -77,7 +72,6 @@ export function deriveMentalStats(mind: number): Pick<DerivedStats, 'mentalSkill
  * @returns Object with emotionalSkill, emotionalDefense, emotionalSave, emotionalTest
  */
 export function deriveEmotionalStats(heart: number): Pick<DerivedStats, 'emotionalSkill' | 'emotionalDefense' | 'emotionalSave' | 'emotionalTest'> {
-    return undefined as any;
 }
 
 /**
@@ -86,7 +80,6 @@ export function deriveEmotionalStats(heart: number): Pick<DerivedStats, 'emotion
  * @returns The luck value (average of all base stats)
  */
 export function calculateLuck(baseStats: BaseStats): number {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -101,7 +94,6 @@ export function calculateLuck(baseStats: BaseStats): number {
  * @returns The maximum health of the character
  */
 export function calculateMaxHealth(level: number, baseStats: Pick<BaseStats, 'body' | 'heart'>): number {
-    return undefined as any;
 }
 
 /**
@@ -112,7 +104,6 @@ export function calculateMaxHealth(level: number, baseStats: Pick<BaseStats, 'bo
  * @returns The maximum mana of the character
  */
 export function calculateMaxMana(level: number, baseStats: Pick<BaseStats, 'mind' | 'heart'>): number {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -126,7 +117,6 @@ export function calculateMaxMana(level: number, baseStats: Pick<BaseStats, 'mind
  * @returns Updated character with recalculated derived stats
  */
 export function updateBaseStats(character: Character, newBaseStats: BaseStats): Character {
-    return undefined as any;
 }
 
 /**
@@ -137,7 +127,6 @@ export function updateBaseStats(character: Character, newBaseStats: BaseStats): 
  * @returns Updated character with recalculated stats
  */
 export function updateSingleBaseStat(character: Character, stat: keyof BaseStats, value: number): Character {
-    return undefined as any;
 }
 
 /**
@@ -147,7 +136,6 @@ export function updateSingleBaseStat(character: Character, stat: keyof BaseStats
  * @returns Character with updated name
  */
 export function updateCharacterName(character: Character, name: string): Character {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -160,7 +148,6 @@ export function updateCharacterName(character: Character, name: string): Charact
  * @returns Character with increased level and updated max health/mana
  */
 export function levelUpCharacter(character: Character): Character {
-    return undefined as any;
 }
 
 /**
@@ -170,7 +157,6 @@ export function levelUpCharacter(character: Character): Character {
  * @returns Character at the specified level with recalculated resources
  */
 export function setCharacterLevel(character: Character, level: number): Character {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -184,7 +170,6 @@ export function setCharacterLevel(character: Character, level: number): Characte
  * @returns Character with increased health (capped at maxHealth)
  */
 export function healCharacter(character: Character, amount: number): Character {
-    return undefined as any;
 }
 
 /**
@@ -194,7 +179,6 @@ export function healCharacter(character: Character, amount: number): Character {
  * @returns Character with reduced health (minimum 0)
  */
 export function damageCharacter(character: Character, amount: number): Character {
-    return undefined as any;
 }
 
 /**
@@ -203,7 +187,6 @@ export function damageCharacter(character: Character, amount: number): Character
  * @returns Character with health set to maxHealth
  */
 export function fullyHealCharacter(character: Character): Character {
-    return undefined as any;
 }
 
 /**
@@ -213,7 +196,6 @@ export function fullyHealCharacter(character: Character): Character {
  * @returns Character with updated health (clamped between 0 and maxHealth)
  */
 export function setCharacterHealth(character: Character, health: number): Character {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -227,7 +209,6 @@ export function setCharacterHealth(character: Character, health: number): Charac
  * @returns Character with increased mana (capped at maxMana)
  */
 export function restoreMana(character: Character, amount: number): Character {
-    return undefined as any;
 }
 
 /**
@@ -237,7 +218,6 @@ export function restoreMana(character: Character, amount: number): Character {
  * @returns Character with reduced mana (minimum 0)
  */
 export function consumeMana(character: Character, amount: number): Character {
-    return undefined as any;
 }
 
 /**
@@ -246,7 +226,6 @@ export function consumeMana(character: Character, amount: number): Character {
  * @returns Character with mana set to maxMana
  */
 export function fullyRestoreMana(character: Character): Character {
-    return undefined as any;
 }
 
 /**
@@ -256,7 +235,6 @@ export function fullyRestoreMana(character: Character): Character {
  * @returns Character with updated mana (clamped between 0 and maxMana)
  */
 export function setCharacterMana(character: Character, mana: number): Character {
-    return undefined as any;
 }
 
 /**
@@ -266,7 +244,6 @@ export function setCharacterMana(character: Character, mana: number): Character 
  * @returns True if character has sufficient mana
  */
 export function hasEnoughMana(character: Character, cost: number): boolean {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -279,7 +256,6 @@ export function hasEnoughMana(character: Character, cost: number): boolean {
  * @returns True if health > 0
  */
 export function isCharacterAlive(character: Character): boolean {
-    return undefined as any;
 }
 
 /**
@@ -288,7 +264,6 @@ export function isCharacterAlive(character: Character): boolean {
  * @returns True if health <= 0
  */
 export function isCharacterDefeated(character: Character): boolean {
-    return undefined as any;
 }
 
 /**
@@ -297,7 +272,6 @@ export function isCharacterDefeated(character: Character): boolean {
  * @returns Health percentage (0-100)
  */
 export function getHealthPercentage(character: Character): number {
-    return undefined as any;
 }
 
 /**
@@ -306,7 +280,6 @@ export function getHealthPercentage(character: Character): number {
  * @returns Mana percentage (0-100)
  */
 export function getManaPercentage(character: Character): number {
-    return undefined as any;
 }
 
 /**
@@ -315,7 +288,6 @@ export function getManaPercentage(character: Character): number {
  * @returns True if health equals maxHealth
  */
 export function isAtFullHealth(character: Character): boolean {
-    return undefined as any;
 }
 
 /**
@@ -324,7 +296,6 @@ export function isAtFullHealth(character: Character): boolean {
  * @returns True if mana equals maxMana
  */
 export function isAtFullMana(character: Character): boolean {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -337,7 +308,6 @@ export function isAtFullMana(character: Character): boolean {
  * @returns A deep copy of the character
  */
 export function cloneCharacter(character: Character): Character {
-    return undefined as any;
 }
 
 /**
@@ -346,7 +316,6 @@ export function cloneCharacter(character: Character): Character {
  * @returns JSON string representation of the character
  */
 export function serializeCharacter(character: Character): string {
-    return undefined as any;
 }
 
 /**
@@ -355,7 +324,6 @@ export function serializeCharacter(character: Character): string {
  * @returns The character object
  */
 export function deserializeCharacter(json: string): Character {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -368,7 +336,6 @@ export function deserializeCharacter(json: string): Character {
  * @returns The name of the highest base stat
  */
 export function getHighestBaseStat(character: Character): keyof BaseStats {
-    return undefined as any;
 }
 
 /**
@@ -377,7 +344,6 @@ export function getHighestBaseStat(character: Character): keyof BaseStats {
  * @returns The name of the lowest base stat
  */
 export function getLowestBaseStat(character: Character): keyof BaseStats {
-    return undefined as any;
 }
 
 /**
@@ -386,7 +352,6 @@ export function getLowestBaseStat(character: Character): keyof BaseStats {
  * @returns Sum of body, mind, and heart
  */
 export function getTotalBaseStats(character: Character): number {
-    return undefined as any;
 }
 
 /**
@@ -395,7 +360,6 @@ export function getTotalBaseStats(character: Character): number {
  * @returns Average of body, mind, and heart
  */
 export function getAverageBaseStat(character: Character): number {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -408,7 +372,6 @@ export function getAverageBaseStat(character: Character): number {
  * @returns True if valid, throws error if invalid
  */
 export function validateCharacter(character: Character): boolean {
-    return undefined as any;
 }
 
 /**
@@ -417,5 +380,4 @@ export function validateCharacter(character: Character): boolean {
  * @returns True if valid, false otherwise
  */
 export function validateBaseStats(baseStats: BaseStats): boolean {
-    return undefined as any;
 }

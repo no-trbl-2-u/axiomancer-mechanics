@@ -21,7 +21,6 @@ export * from './types';
  * @returns A new WorldState with initialized maps and empty quest list
  */
 export function createWorldState(): WorldState {
-    return undefined as any;
 }
 
 /**
@@ -30,7 +29,6 @@ export function createWorldState(): WorldState {
  * @returns Restored WorldState
  */
 export function loadWorldState(data: string): WorldState {
-    return undefined as any;
 }
 
 /**
@@ -39,7 +37,6 @@ export function loadWorldState(data: string): WorldState {
  * @returns Serialized string representation
  */
 export function saveWorldState(worldState: WorldState): string {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -62,7 +59,6 @@ export function createMap(
     numberOfNodes: number,
     enemies: Enemy[]
 ): Map {
-    return undefined as any;
 }
 
 /**
@@ -72,7 +68,6 @@ export function createMap(
  * @returns Updated map with the new event
  */
 export function addEventToMap(map: Map, event: MapEvent): Map {
-    return undefined as any;
 }
 
 /**
@@ -82,7 +77,6 @@ export function addEventToMap(map: Map, event: MapEvent): Map {
  * @returns Updated map with the new NPC
  */
 export function addNPCToMap(map: Map, npc: NPC): Map {
-    return undefined as any;
 }
 
 /**
@@ -92,7 +86,6 @@ export function addNPCToMap(map: Map, npc: NPC): Map {
  * @returns Updated map with the new enemy
  */
 export function addEnemyToMap(map: Map, enemy: Enemy): Map {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -107,7 +100,6 @@ export function addEnemyToMap(map: Map, enemy: Enemy): Map {
  * @returns A new MapEvent for an encounter
  */
 export function createEncounterEvent(description: string, enemy: Enemy, reward?: Reward): MapEvent {
-    return undefined as any;
 }
 
 /**
@@ -118,7 +110,6 @@ export function createEncounterEvent(description: string, enemy: Enemy, reward?:
  * @returns A new MapEvent for a boss encounter
  */
 export function createBossEncounterEvent(description: string, enemy: Enemy, reward?: Reward): MapEvent {
-    return undefined as any;
 }
 
 /**
@@ -128,7 +119,6 @@ export function createBossEncounterEvent(description: string, enemy: Enemy, rewa
  * @returns A new MapEvent for treasure
  */
 export function createTreasureEvent(description: string, reward: Reward): MapEvent {
-    return undefined as any;
 }
 
 /**
@@ -138,7 +128,6 @@ export function createTreasureEvent(description: string, reward: Reward): MapEve
  * @returns A new MapEvent for a quest
  */
 export function createQuestEvent(description: string, reward: Reward): MapEvent {
-    return undefined as any;
 }
 
 /**
@@ -148,7 +137,6 @@ export function createQuestEvent(description: string, reward: Reward): MapEvent 
  * @returns A new MapEvent for NPC interaction
  */
 export function createNPCEvent(description: string, npc: Enemy): MapEvent {
-    return undefined as any;
 }
 
 /**
@@ -157,7 +145,6 @@ export function createNPCEvent(description: string, npc: Enemy): MapEvent {
  * @returns A new MapEvent for a story event
  */
 export function createStoryEvent(description: string): MapEvent {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -180,7 +167,6 @@ export function createQuest(
     reward: Reward,
     connectingQuest: QuestName
 ): Quest {
-    return undefined as any;
 }
 
 /**
@@ -190,7 +176,6 @@ export function createQuest(
  * @returns Updated world state with the new quest
  */
 export function addIncompleteQuest(worldState: WorldState, quest: Quest): WorldState {
-    return undefined as any;
 }
 
 /**
@@ -200,7 +185,6 @@ export function addIncompleteQuest(worldState: WorldState, quest: Quest): WorldS
  * @returns Updated world state without the quest
  */
 export function removeIncompleteQuest(worldState: WorldState, questName: QuestName): WorldState {
-    return undefined as any;
 }
 
 /**
@@ -210,7 +194,6 @@ export function removeIncompleteQuest(worldState: WorldState, questName: QuestNa
  * @returns True if quest is in incomplete list
  */
 export function hasIncompleteQuest(worldState: WorldState, questName: QuestName): boolean {
-    return undefined as any;
 }
 
 /**
@@ -220,7 +203,6 @@ export function hasIncompleteQuest(worldState: WorldState, questName: QuestName)
  * @returns The quest if found, null otherwise
  */
 export function getIncompleteQuestByName(worldState: WorldState, questName: QuestName): Quest | null {
-    return undefined as any;
 }
 
 /**
@@ -230,7 +212,6 @@ export function getIncompleteQuestByName(worldState: WorldState, questName: Ques
  * @returns Array of quests on that map
  */
 export function getQuestsForMap(worldState: WorldState, mapName: MapName): Quest[] {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -244,7 +225,6 @@ export function getQuestsForMap(worldState: WorldState, mapName: MapName): Quest
  * @returns The map if found, null otherwise
  */
 export function getMapByName(worldState: WorldState, mapName: MapName): Map | null {
-    return undefined as any;
 }
 
 /**
@@ -254,7 +234,6 @@ export function getMapByName(worldState: WorldState, mapName: MapName): Map | nu
  * @returns Array of maps on that continent
  */
 export function getMapsByContinent(worldState: WorldState, continent: ContinentName): Map[] {
-    return undefined as any;
 }
 
 /**
@@ -263,7 +242,6 @@ export function getMapsByContinent(worldState: WorldState, continent: ContinentN
  * @returns Array of all map names
  */
 export function getAllMapNames(worldState: WorldState): MapName[] {
-    return undefined as any;
 }
 
 /**
@@ -273,7 +251,6 @@ export function getAllMapNames(worldState: WorldState): MapName[] {
  * @returns True if map exists
  */
 export function mapExists(worldState: WorldState, mapName: MapName): boolean {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -286,7 +263,6 @@ export function mapExists(worldState: WorldState, mapName: MapName): boolean {
  * @returns Array of map events (empty if none)
  */
 export function getMapEvents(map: Map): MapEvent[] {
-    return undefined as any;
 }
 
 /**
@@ -295,7 +271,6 @@ export function getMapEvents(map: Map): MapEvent[] {
  * @returns A random event, or null if map has no events
  */
 export function getRandomMapEvent(map: Map): MapEvent | null {
-    return undefined as any;
 }
 
 /**
@@ -305,7 +280,6 @@ export function getRandomMapEvent(map: Map): MapEvent | null {
  * @returns Array of matching events
  */
 export function getEventsByType(map: Map, eventType: MapEvents): MapEvent[] {
-    return undefined as any;
 }
 
 /**
@@ -314,7 +288,6 @@ export function getEventsByType(map: Map, eventType: MapEvents): MapEvent[] {
  * @returns True if map has at least one event
  */
 export function hasEvents(map: Map): boolean {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -327,7 +300,6 @@ export function hasEvents(map: Map): boolean {
  * @returns Array of NPCs (empty if none)
  */
 export function getMapNPCs(map: Map): NPC[] {
-    return undefined as any;
 }
 
 /**
@@ -337,7 +309,6 @@ export function getMapNPCs(map: Map): NPC[] {
  * @returns The NPC if found, null otherwise
  */
 export function getNPCByName(map: Map, npcName: string): NPC | null {
-    return undefined as any;
 }
 
 /**
@@ -346,7 +317,6 @@ export function getNPCByName(map: Map, npcName: string): NPC | null {
  * @returns True if map has at least one NPC
  */
 export function hasNPCs(map: Map): boolean {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -359,7 +329,6 @@ export function hasNPCs(map: Map): boolean {
  * @returns Array of enemies
  */
 export function getMapEnemies(map: Map): Enemy[] {
-    return undefined as any;
 }
 
 /**
@@ -368,7 +337,6 @@ export function getMapEnemies(map: Map): Enemy[] {
  * @returns A random enemy from the map
  */
 export function getRandomEnemy(map: Map): Enemy | null {
-    return undefined as any;
 }
 
 /**
@@ -377,7 +345,6 @@ export function getRandomEnemy(map: Map): Enemy | null {
  * @returns Array of boss-tier enemies
  */
 export function getBossEnemies(map: Map): Enemy[] {
-    return undefined as any;
 }
 
 /**
@@ -386,7 +353,6 @@ export function getBossEnemies(map: Map): Enemy[] {
  * @returns Array of elite-tier enemies
  */
 export function getEliteEnemies(map: Map): Enemy[] {
-    return undefined as any;
 }
 
 /**
@@ -395,7 +361,6 @@ export function getEliteEnemies(map: Map): Enemy[] {
  * @returns Array of normal-tier enemies
  */
 export function getNormalEnemies(map: Map): Enemy[] {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -410,7 +375,6 @@ export function getNormalEnemies(map: Map): Enemy[] {
  * @returns Updated world state with the new map
  */
 export function updateMap(worldState: WorldState, mapName: MapName, updatedMap: Map): WorldState {
-    return undefined as any;
 }
 
 /**
@@ -420,7 +384,6 @@ export function updateMap(worldState: WorldState, mapName: MapName, updatedMap: 
  * @returns Updated world state with the new map
  */
 export function addMapToWorld(worldState: WorldState, map: Map): WorldState {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -434,7 +397,6 @@ export function addMapToWorld(worldState: WorldState, map: Map): WorldState {
  * @returns Number of completed nodes
  */
 export function getCompletedNodes(map: Map): number {
-    return undefined as any;
 }
 
 /**
@@ -443,7 +405,6 @@ export function getCompletedNodes(map: Map): number {
  * @returns Progress percentage (0-100)
  */
 export function getMapProgress(map: Map): number {
-    return undefined as any;
 }
 
 /**
@@ -452,7 +413,6 @@ export function getMapProgress(map: Map): number {
  * @returns True if all nodes are completed
  */
 export function isMapComplete(map: Map): boolean {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -465,7 +425,6 @@ export function isMapComplete(map: Map): boolean {
  * @returns Total map count
  */
 export function getTotalMapCount(worldState: WorldState): number {
-    return undefined as any;
 }
 
 /**
@@ -474,7 +433,6 @@ export function getTotalMapCount(worldState: WorldState): number {
  * @returns Quest count
  */
 export function getIncompleteQuestCount(worldState: WorldState): number {
-    return undefined as any;
 }
 
 /**
@@ -483,7 +441,6 @@ export function getIncompleteQuestCount(worldState: WorldState): number {
  * @returns Array of unique continent names
  */
 export function getAllContinents(worldState: WorldState): ContinentName[] {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -496,7 +453,6 @@ export function getAllContinents(worldState: WorldState): ContinentName[] {
  * @returns A deep copy of the map
  */
 export function cloneMap(map: Map): Map {
-    return undefined as any;
 }
 
 /**
@@ -505,7 +461,6 @@ export function cloneMap(map: Map): Map {
  * @returns A deep copy of the quest
  */
 export function cloneQuest(quest: Quest): Quest {
-    return undefined as any;
 }
 
 /**
@@ -514,7 +469,6 @@ export function cloneQuest(quest: Quest): Quest {
  * @returns A deep copy of the world state
  */
 export function cloneWorldState(worldState: WorldState): WorldState {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -527,7 +481,6 @@ export function cloneWorldState(worldState: WorldState): WorldState {
  * @returns True if valid, throws error if invalid
  */
 export function validateMap(map: Map): boolean {
-    return undefined as any;
 }
 
 /**
@@ -536,7 +489,6 @@ export function validateMap(map: Map): boolean {
  * @returns True if valid, throws error if invalid
  */
 export function validateQuest(quest: Quest): boolean {
-    return undefined as any;
 }
 
 /**
@@ -545,5 +497,4 @@ export function validateQuest(quest: Quest): boolean {
  * @returns True if valid, throws error if invalid
  */
 export function validateWorldState(worldState: WorldState): boolean {
-    return undefined as any;
 }

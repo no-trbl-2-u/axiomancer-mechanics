@@ -35,7 +35,6 @@ export function createSkill(
     philosophicalAspect?: SkillsStatType,
     learningRequirement?: SkillLearningRequirement
 ): Skill {
-    return undefined as any;
 }
 
 /**
@@ -56,7 +55,6 @@ export function createFallacySkill(
     manaCost: number,
     philosophicalAspect: SkillsStatType
 ): Skill {
-    return undefined as any;
 }
 
 /**
@@ -77,7 +75,6 @@ export function createParadoxSkill(
     manaCost: number,
     philosophicalAspect: SkillsStatType
 ): Skill {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -91,7 +88,6 @@ export function createParadoxSkill(
  * @returns True if character meets all requirements
  */
 export function canLearnSkill(character: Character, skill: Skill): boolean {
-    return undefined as any;
 }
 
 /**
@@ -101,7 +97,6 @@ export function canLearnSkill(character: Character, skill: Skill): boolean {
  * @returns True if character level is sufficient
  */
 export function meetsLevelRequirement(characterLevel: number, requiredLevel: number): boolean {
-    return undefined as any;
 }
 
 /**
@@ -114,7 +109,6 @@ export function meetsStatRequirement(
     character: Character,
     requirement: { statType: SkillsStatType; value: number }
 ): boolean {
-    return undefined as any;
 }
 
 /**
@@ -124,7 +118,6 @@ export function meetsStatRequirement(
  * @returns The stat value
  */
 export function getCharacterStatByType(character: Character, statType: SkillsStatType): number {
-    return undefined as any;
 }
 
 /**
@@ -133,7 +126,6 @@ export function getCharacterStatByType(character: Character, statType: SkillsSta
  * @returns Description string of requirements
  */
 export function getSkillRequirementDescription(skill: Skill): string {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -147,7 +139,6 @@ export function getSkillRequirementDescription(skill: Skill): string {
  * @returns True if character has sufficient mana
  */
 export function canUseSkill(character: Character, skill: Skill): boolean {
-    return undefined as any;
 }
 
 /**
@@ -157,7 +148,6 @@ export function canUseSkill(character: Character, skill: Skill): boolean {
  * @returns Calculated damage value
  */
 export function calculateSkillDamage(skill: Skill, character: Character): number {
-    return undefined as any;
 }
 
 /**
@@ -167,7 +157,6 @@ export function calculateSkillDamage(skill: Skill, character: Character): number
  * @returns The modifier value to add to skill rolls
  */
 export function getSkillModifier(character: Character, skill: Skill): number {
-    return undefined as any;
 }
 
 /**
@@ -177,7 +166,6 @@ export function getSkillModifier(character: Character, skill: Skill): number {
  * @returns Final mana cost (after modifiers, if any)
  */
 export function calculateEffectiveManaCost(skill: Skill, character: Character): number {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -191,7 +179,6 @@ export function calculateEffectiveManaCost(skill: Skill, character: Character): 
  * @returns Array of skills matching the category
  */
 export function filterSkillsByCategory(skills: Skill[], category: SkillCategory): Skill[] {
-    return undefined as any;
 }
 
 /**
@@ -201,7 +188,6 @@ export function filterSkillsByCategory(skills: Skill[], category: SkillCategory)
  * @returns Array of skills matching the aspect
  */
 export function filterSkillsByAspect(skills: Skill[], aspect: SkillsStatType): Skill[] {
-    return undefined as any;
 }
 
 /**
@@ -212,7 +198,6 @@ export function filterSkillsByAspect(skills: Skill[], aspect: SkillsStatType): S
  * @returns Array of skills within the level range
  */
 export function filterSkillsByLevel(skills: Skill[], minLevel: number, maxLevel: number): Skill[] {
-    return undefined as any;
 }
 
 /**
@@ -222,7 +207,6 @@ export function filterSkillsByLevel(skills: Skill[], minLevel: number, maxLevel:
  * @returns Array of skills the character can learn
  */
 export function getLearnableSkills(skills: Skill[], character: Character): Skill[] {
-    return undefined as any;
 }
 
 /**
@@ -232,7 +216,6 @@ export function getLearnableSkills(skills: Skill[], character: Character): Skill
  * @returns Array of skills the character can use
  */
 export function getUsableSkills(skills: Skill[], character: Character): Skill[] {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -245,7 +228,6 @@ export function getUsableSkills(skills: Skill[], character: Character): Skill[] 
  * @returns Sorted array (lowest mana cost first)
  */
 export function sortSkillsByManaCost(skills: Skill[]): Skill[] {
-    return undefined as any;
 }
 
 /**
@@ -254,7 +236,6 @@ export function sortSkillsByManaCost(skills: Skill[]): Skill[] {
  * @returns Sorted array (lowest level first)
  */
 export function sortSkillsByLevel(skills: Skill[]): Skill[] {
-    return undefined as any;
 }
 
 /**
@@ -263,7 +244,6 @@ export function sortSkillsByLevel(skills: Skill[]): Skill[] {
  * @returns Sorted array (A-Z)
  */
 export function sortSkillsByName(skills: Skill[]): Skill[] {
-    return undefined as any;
 }
 
 /**
@@ -273,7 +253,6 @@ export function sortSkillsByName(skills: Skill[]): Skill[] {
  * @returns Positive if A is stronger, negative if B is stronger, 0 if equal
  */
 export function compareSkillPower(skillA: Skill, skillB: Skill): number {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -286,7 +265,6 @@ export function compareSkillPower(skillA: Skill, skillB: Skill): number {
  * @returns True if skill type is 'fallacy'
  */
 export function isFallacy(skill: Skill): boolean {
-    return undefined as any;
 }
 
 /**
@@ -295,7 +273,6 @@ export function isFallacy(skill: Skill): boolean {
  * @returns True if skill type is 'paradox'
  */
 export function isParadox(skill: Skill): boolean {
-    return undefined as any;
 }
 
 /**
@@ -304,7 +281,6 @@ export function isParadox(skill: Skill): boolean {
  * @returns True if philosophicalAspect is 'body'
  */
 export function isBodySkill(skill: Skill): boolean {
-    return undefined as any;
 }
 
 /**
@@ -313,7 +289,6 @@ export function isBodySkill(skill: Skill): boolean {
  * @returns True if philosophicalAspect is 'mind'
  */
 export function isMindSkill(skill: Skill): boolean {
-    return undefined as any;
 }
 
 /**
@@ -322,7 +297,6 @@ export function isMindSkill(skill: Skill): boolean {
  * @returns True if philosophicalAspect is 'heart'
  */
 export function isHeartSkill(skill: Skill): boolean {
-    return undefined as any;
 }
 
 /**
@@ -331,7 +305,6 @@ export function isHeartSkill(skill: Skill): boolean {
  * @returns Formatted string with name, cost, and description
  */
 export function formatSkillInfo(skill: Skill): string {
-    return undefined as any;
 }
 
 /**
@@ -340,7 +313,6 @@ export function formatSkillInfo(skill: Skill): string {
  * @returns Short formatted string
  */
 export function formatSkillShort(skill: Skill): string {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -353,7 +325,6 @@ export function formatSkillShort(skill: Skill): string {
  * @returns The skill if found, null otherwise
  */
 export function getSkillById(id: string): Skill | null {
-    return undefined as any;
 }
 
 /**
@@ -362,7 +333,6 @@ export function getSkillById(id: string): Skill | null {
  * @returns The skill if found, null otherwise
  */
 export function getSkillByName(name: string): Skill | null {
-    return undefined as any;
 }
 
 /**
@@ -371,7 +341,6 @@ export function getSkillByName(name: string): Skill | null {
  * @returns Array of all skills in that category
  */
 export function getAllSkillsByCategory(category: SkillCategory): Skill[] {
-    return undefined as any;
 }
 
 /**
@@ -380,7 +349,6 @@ export function getAllSkillsByCategory(category: SkillCategory): Skill[] {
  * @returns Array of all skills with that aspect
  */
 export function getAllSkillsByAspect(aspect: SkillsStatType): Skill[] {
-    return undefined as any;
 }
 
 /**
@@ -388,7 +356,6 @@ export function getAllSkillsByAspect(aspect: SkillsStatType): Skill[] {
  * @returns Array of all fallacy skills
  */
 export function getAllFallacies(): Skill[] {
-    return undefined as any;
 }
 
 /**
@@ -396,7 +363,6 @@ export function getAllFallacies(): Skill[] {
  * @returns Array of all paradox skills
  */
 export function getAllParadoxes(): Skill[] {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -409,7 +375,6 @@ export function getAllParadoxes(): Skill[] {
  * @returns A deep copy of the skill
  */
 export function cloneSkill(skill: Skill): Skill {
-    return undefined as any;
 }
 
 /**
@@ -418,7 +383,6 @@ export function cloneSkill(skill: Skill): Skill {
  * @returns JSON string representation
  */
 export function serializeSkill(skill: Skill): string {
-    return undefined as any;
 }
 
 /**
@@ -427,7 +391,6 @@ export function serializeSkill(skill: Skill): string {
  * @returns The skill object
  */
 export function deserializeSkill(json: string): Skill {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -440,7 +403,6 @@ export function deserializeSkill(json: string): Skill {
  * @returns True if valid, throws error if invalid
  */
 export function validateSkill(skill: Skill): boolean {
-    return undefined as any;
 }
 
 /**
@@ -449,5 +411,4 @@ export function validateSkill(skill: Skill): boolean {
  * @returns True if valid, false otherwise
  */
 export function validateSkillRequirement(requirement: SkillLearningRequirement): boolean {
-    return undefined as any;
 }

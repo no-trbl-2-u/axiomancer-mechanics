@@ -33,7 +33,6 @@ export function createEnemy(
     description: string,
     tier?: 'normal' | 'elite' | 'boss'
 ): Enemy {
-    return undefined as any;
 }
 
 /**
@@ -50,7 +49,6 @@ export function createBasicEnemy(
     mapLocation: MapName,
     description: string
 ): Enemy {
-    return undefined as any;
 }
 
 /**
@@ -67,7 +65,6 @@ export function createEliteEnemy(
     mapLocation: MapName,
     description: string
 ): Enemy {
-    return undefined as any;
 }
 
 /**
@@ -84,7 +81,6 @@ export function createBossEnemy(
     mapLocation: MapName,
     description: string
 ): Enemy {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -97,7 +93,6 @@ export function createBossEnemy(
  * @returns EnemyStats object with calculated values
  */
 export function calculateEnemyStats(level: number): EnemyStats {
-    return undefined as any;
 }
 
 /**
@@ -106,7 +101,6 @@ export function calculateEnemyStats(level: number): EnemyStats {
  * @returns EnemyStats object with elite multipliers applied
  */
 export function calculateEliteStats(level: number): EnemyStats {
-    return undefined as any;
 }
 
 /**
@@ -115,7 +109,6 @@ export function calculateEliteStats(level: number): EnemyStats {
  * @returns EnemyStats object with boss multipliers applied
  */
 export function calculateBossStats(level: number): EnemyStats {
-    return undefined as any;
 }
 
 /**
@@ -125,7 +118,6 @@ export function calculateBossStats(level: number): EnemyStats {
  * @returns Scaled EnemyStats
  */
 export function scaleEnemyStats(baseStats: EnemyStats, multiplier: number): EnemyStats {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -139,7 +131,6 @@ export function scaleEnemyStats(baseStats: EnemyStats, multiplier: number): Enem
  * @returns Enemy with updated health (clamped between 0 and maxHealth)
  */
 export function setEnemyHealth(enemy: Enemy, health: number): Enemy {
-    return undefined as any;
 }
 
 /**
@@ -149,7 +140,6 @@ export function setEnemyHealth(enemy: Enemy, health: number): Enemy {
  * @returns Enemy with reduced health (minimum 0)
  */
 export function damageEnemy(enemy: Enemy, damage: number): Enemy {
-    return undefined as any;
 }
 
 /**
@@ -159,7 +149,6 @@ export function damageEnemy(enemy: Enemy, damage: number): Enemy {
  * @returns Enemy with increased health (capped at maxHealth)
  */
 export function healEnemy(enemy: Enemy, amount: number): Enemy {
-    return undefined as any;
 }
 
 /**
@@ -169,7 +158,6 @@ export function healEnemy(enemy: Enemy, amount: number): Enemy {
  * @returns Enemy with updated mana (clamped between 0 and maxMana)
  */
 export function setEnemyMana(enemy: Enemy, mana: number): Enemy {
-    return undefined as any;
 }
 
 /**
@@ -179,7 +167,6 @@ export function setEnemyMana(enemy: Enemy, mana: number): Enemy {
  * @returns Enemy with reduced mana (minimum 0)
  */
 export function consumeEnemyMana(enemy: Enemy, cost: number): Enemy {
-    return undefined as any;
 }
 
 /**
@@ -189,7 +176,6 @@ export function consumeEnemyMana(enemy: Enemy, cost: number): Enemy {
  * @returns Enemy with increased mana (capped at maxMana)
  */
 export function restoreEnemyMana(enemy: Enemy, amount: number): Enemy {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -202,7 +188,6 @@ export function restoreEnemyMana(enemy: Enemy, amount: number): Enemy {
  * @returns True if health > 0
  */
 export function isEnemyAlive(enemy: Enemy): boolean {
-    return undefined as any;
 }
 
 /**
@@ -211,7 +196,6 @@ export function isEnemyAlive(enemy: Enemy): boolean {
  * @returns True if health <= 0
  */
 export function isEnemyDefeated(enemy: Enemy): boolean {
-    return undefined as any;
 }
 
 /**
@@ -220,7 +204,6 @@ export function isEnemyDefeated(enemy: Enemy): boolean {
  * @returns Health percentage (0-100)
  */
 export function getEnemyHealthPercentage(enemy: Enemy): number {
-    return undefined as any;
 }
 
 /**
@@ -229,7 +212,6 @@ export function getEnemyHealthPercentage(enemy: Enemy): number {
  * @returns Mana percentage (0-100)
  */
 export function getEnemyManaPercentage(enemy: Enemy): number {
-    return undefined as any;
 }
 
 /**
@@ -239,7 +221,6 @@ export function getEnemyManaPercentage(enemy: Enemy): number {
  * @returns True if enemy has sufficient mana
  */
 export function enemyHasEnoughMana(enemy: Enemy, cost: number): boolean {
-    return undefined as any;
 }
 
 /**
@@ -248,7 +229,6 @@ export function enemyHasEnoughMana(enemy: Enemy, cost: number): boolean {
  * @returns True if enemy tier is 'boss'
  */
 export function isBoss(enemy: Enemy): boolean {
-    return undefined as any;
 }
 
 /**
@@ -257,7 +237,6 @@ export function isBoss(enemy: Enemy): boolean {
  * @returns True if enemy tier is 'elite'
  */
 export function isElite(enemy: Enemy): boolean {
-    return undefined as any;
 }
 
 /**
@@ -266,7 +245,6 @@ export function isElite(enemy: Enemy): boolean {
  * @returns True if enemy tier is 'normal' or undefined
  */
 export function isNormalEnemy(enemy: Enemy): boolean {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -283,7 +261,6 @@ export function determineOptimalAttackType(
     enemy: Enemy,
     playerStats: { physicalDefense: number; mentalDefense: number; emotionalDefense: number }
 ): 'body' | 'mind' | 'heart' {
-    return undefined as any;
 }
 
 /**
@@ -292,7 +269,6 @@ export function determineOptimalAttackType(
  * @returns True if enemy should defend, false if should attack
  */
 export function shouldEnemyDefend(enemy: Enemy): boolean {
-    return undefined as any;
 }
 
 /**
@@ -301,7 +277,6 @@ export function shouldEnemyDefend(enemy: Enemy): boolean {
  * @returns Aggression level (0-1, where 1 is most aggressive)
  */
 export function calculateEnemyAggression(enemy: Enemy): number {
-    return undefined as any;
 }
 
 /**
@@ -309,7 +284,6 @@ export function calculateEnemyAggression(enemy: Enemy): number {
  * @returns Random attack type
  */
 export function getRandomAttackType(): 'body' | 'mind' | 'heart' {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -323,7 +297,6 @@ export function getRandomAttackType(): 'body' | 'mind' | 'heart' {
  * @returns Positive if A is stronger, negative if B is stronger, 0 if equal
  */
 export function compareEnemyPower(enemyA: Enemy, enemyB: Enemy): number {
-    return undefined as any;
 }
 
 /**
@@ -332,7 +305,6 @@ export function compareEnemyPower(enemyA: Enemy, enemyB: Enemy): number {
  * @returns A numeric power rating
  */
 export function calculateEnemyCombatPower(enemy: Enemy): number {
-    return undefined as any;
 }
 
 /**
@@ -342,7 +314,6 @@ export function calculateEnemyCombatPower(enemy: Enemy): number {
  * @returns True if enemy is within reasonable level range
  */
 export function isAppropriateChallenge(enemy: Enemy, playerLevel: number): boolean {
-    return undefined as any;
 }
 
 /**
@@ -352,7 +323,6 @@ export function isAppropriateChallenge(enemy: Enemy, playerLevel: number): boole
  * @returns Difficulty description ('trivial' | 'easy' | 'moderate' | 'hard' | 'deadly')
  */
 export function getDifficultyRating(enemy: Enemy, playerLevel: number): string {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -365,7 +335,6 @@ export function getDifficultyRating(enemy: Enemy, playerLevel: number): string {
  * @returns A deep copy of the enemy
  */
 export function cloneEnemy(enemy: Enemy): Enemy {
-    return undefined as any;
 }
 
 /**
@@ -374,7 +343,6 @@ export function cloneEnemy(enemy: Enemy): Enemy {
  * @returns JSON string representation
  */
 export function serializeEnemy(enemy: Enemy): string {
-    return undefined as any;
 }
 
 /**
@@ -383,7 +351,6 @@ export function serializeEnemy(enemy: Enemy): string {
  * @returns The enemy object
  */
 export function deserializeEnemy(json: string): Enemy {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -396,7 +363,6 @@ export function deserializeEnemy(json: string): Enemy {
  * @returns Array of enemies found on that map
  */
 export function getEnemiesForMap(mapName: MapName): Enemy[] {
-    return undefined as any;
 }
 
 /**
@@ -405,7 +371,6 @@ export function getEnemiesForMap(mapName: MapName): Enemy[] {
  * @returns A random enemy from that map
  */
 export function getRandomEnemyFromMap(mapName: MapName): Enemy | null {
-    return undefined as any;
 }
 
 /**
@@ -414,7 +379,6 @@ export function getRandomEnemyFromMap(mapName: MapName): Enemy | null {
  * @returns The enemy if found, null otherwise
  */
 export function getEnemyById(id: string): Enemy | null {
-    return undefined as any;
 }
 
 // ============================================================================
@@ -427,7 +391,6 @@ export function getEnemyById(id: string): Enemy | null {
  * @returns True if valid, throws error if invalid
  */
 export function validateEnemy(enemy: Enemy): boolean {
-    return undefined as any;
 }
 
 /**
@@ -436,5 +399,4 @@ export function validateEnemy(enemy: Enemy): boolean {
  * @returns True if valid, false otherwise
  */
 export function validateEnemyStats(stats: EnemyStats): boolean {
-    return undefined as any;
 }
