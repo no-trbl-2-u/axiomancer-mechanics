@@ -18,7 +18,7 @@ const Disatree_01: Enemy = {
         emotionalDefense: 1,
     },
     mapLocation: {
-        name: 'Northern Forest',
+        name: 'northern-forest',
     },
     enemyTier: 'normal',
     description: 'A tree who disagrees with you',

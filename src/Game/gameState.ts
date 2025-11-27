@@ -4,6 +4,14 @@ import { combatReducer } from "./reducers/combat.reducer";
 const STATE_FILE = "./game-state.json";
 
 /**
+ * GameAction represents any action that can be dispatched to the game reducer
+ */
+export interface GameAction {
+    type: string;
+    payload?: any;
+}
+
+/**
  * doesSaveFileExist checks if the state file exists
  * @returns true if the state file exists, false otherwise
  */
@@ -11,7 +19,7 @@ export const doesSaveFileExist: () => boolean = () => {
     /* Check if the state file exists */
     /* If no state file exists return false */
     /* If state file does exist return true */
-    return undefined;
+    return undefined as any;
 }
 
 /**
@@ -20,7 +28,7 @@ export const doesSaveFileExist: () => boolean = () => {
  */
 export const getNewGameState: () => GameState = () => {
     /* Return a new game state */
-    return undefined;
+    return undefined as any;
 }
 
 /**
@@ -33,7 +41,7 @@ export const loadState: () => GameState = () => {
     /* If state file does exist get it synchronously */
 
     /* Return the parsed state file  */
-    return undefined;
+    return undefined as any;
 }
 
 /**

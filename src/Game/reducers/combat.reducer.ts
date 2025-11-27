@@ -4,9 +4,10 @@
  */
 
 import { GameState } from "Game/types";
+import { GameAction } from "../gameState";
 
 // @todo: implement combat reducer
 // combatReducer :: Combat -> Action -> Combat
-export const combatReducer = (state: GameState, action: string) => {
+export const combatReducer = (state: GameState, action: GameAction) => {
     return state;
 };

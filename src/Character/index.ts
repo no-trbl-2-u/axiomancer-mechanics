@@ -66,6 +66,7 @@ const detMaxManaByLevel = (level: number) => (manaStats: Omit<BaseStats, 'body'>
  * @returns The new character
  */ // Note: "given stats" are not the same as "starting stats"
 export function createCharacter(options: CreateCharacterOptions): Character {
+    return undefined as any;
     const { name, level, baseStats } = options;
 
     const maxHealth = detMaxHealthByLevel(level)(baseStats);
@@ -84,4 +85,41 @@ export function createCharacter(options: CreateCharacterOptions): Character {
         baseStats,
         derivedStats: deriveStats(baseStats),
     }
+}
+
+// ============================================================================
+// HEALTH MANAGEMENT
+// ============================================================================
+
+/**
+ * Applies damage to a character
+ * @param character - The character taking damage
+ * @param amount - Amount of damage to apply
+ * @returns Character with reduced health (minimum 0)
+ */
+export function damageCharacter(character: Character, amount: number): Character {
+    return undefined as any;
+}
+
+/**
+ * Heals a character
+ * @param character - The character to heal
+ * @param amount - Amount of health to restore
+ * @returns Character with increased health (capped at maxHealth)
+ */
+export function healCharacter(character: Character, amount: number): Character {
+    return undefined as any;
+}
+
+// ============================================================================
+// CHARACTER STATE CHECKS
+// ============================================================================
+
+/**
+ * Checks if a character is alive
+ * @param character - The character to check
+ * @returns True if health > 0
+ */
+export function isCharacterAlive(character: Character): boolean {
+    return undefined as any;
 }
