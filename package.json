@@ -14,7 +14,9 @@
     "prepublishOnly": "npm run clean && npm run build",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint \"**/*.ts\"",
-    "lint:fix": "eslint \"**/*.ts\" --fix"
+    "lint:fix": "eslint \"**/*.ts\" --fix",
+    "type-check": "tsc --noEmit",
+    "check": "npm run lint && npm run type-check"
   },
   "keywords": [
     "rpg",
@@ -32,17 +34,20 @@
     "@eslint/js": "^9.39.1",
     "@types/commander": "^2.12.0",
     "@types/node": "^22.10.2",
+    "@typescript-eslint/eslint-plugin": "^8.48.1",
     "eslint": "^9.39.1",
     "globals": "^16.5.0",
+    "jiti": "^2.6.1",
     "ts-node": "^10.9.2",
     "tsc-alias": "^1.8.16",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.7.2",
-    "typescript-eslint": "^8.47.0"
+    "typescript-eslint": "^8.48.1"
   },
   "dependencies": {
     "@types/inquirer": "^9.0.9",
     "commander": "^14.0.2",
+    "eslint-plugin-typescript": "^0.14.0",
     "inquirer": "^13.0.1"
   }
 }

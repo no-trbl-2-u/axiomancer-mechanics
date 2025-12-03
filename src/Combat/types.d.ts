@@ -63,9 +63,8 @@ export interface CombatAction {
  * - 'choosing_skill': Player is selecting skill to use
  * - 'resolving': Combat round is being calculated and resolved
  * - 'ended': Combat has concluded
- * - null: No active combat
  */
-export type CombatPhase = 'choosing_type' | 'choosing_action' | 'choosing_skill' | 'resolving' | 'ended' | null;
+export type CombatPhase = 'choosing_type' | 'choosing_action' | 'choosing_skill' | 'resolving' | 'ended';
 
 
 /**

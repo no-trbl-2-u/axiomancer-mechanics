@@ -74,14 +74,22 @@ export function createCharacter(options: CreateCharacterOptions): Character {
     const maxMana = detMaxManaByLevel(level)(baseStats);
     const mana = maxMana;
 
+    const experience = (level - 1) * 1000;
+    const experienceToNextLevel = level * 1000;
+
     return {
         name,
         level,
+        experience,
+        experienceToNextLevel,
         health,
         maxHealth,
         mana,
         maxMana,
         baseStats,
         derivedStats: deriveStats(baseStats),
+        inventory: [],
+        equipped: null,
+        skills: null
     }
 }

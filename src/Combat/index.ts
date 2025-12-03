@@ -8,8 +8,8 @@ import { Character } from '../Character/types';
 import { Enemy } from '../Enemy/types';
 
 import {
-    AttackType,
-    AttackAction,
+    ActionType,
+    Action,
     Advantage,
     CombatPhase,
     CombatAction,
@@ -87,7 +87,7 @@ export function determineCombatEnd(state: CombatState): 'player' | 'ko' | 'frien
  * @param defenderType - The attack type of the defender
  * @returns 'advantage' | 'disadvantage' | 'neutral'
  */
-export function determineAdvantage(attackerType: AttackType, defenderType: AttackType): Advantage {
+export function determineAdvantage(attackerType: ActionType, defenderType: ActionType): Advantage {
     return "Implement me" as any;
 }
 
@@ -106,7 +106,7 @@ export function getAdvantageModifier(advantage: Advantage): number {
  * @param defenderType - The attack type being compared against
  * @returns True if attacker has advantage
  */
-export function hasAdvantage(attackerType: AttackType, defenderType: AttackType): boolean {
+export function hasAdvantage(attackerType: ActionType, defenderType: ActionType): boolean {
     return "Implement me" as any;
 }
 
@@ -120,7 +120,7 @@ export function hasAdvantage(attackerType: AttackType, defenderType: AttackType)
  * @param type - The attack type chosen by the player
  * @returns Updated combat state with player's type choice
  */
-export function setPlayerAttackType(state: CombatState, type: AttackType): CombatState {
+export function setPlayerAttackType(state: CombatState, type: ActionType): CombatState {
     return "Implement me" as any;
 }
 
@@ -130,7 +130,7 @@ export function setPlayerAttackType(state: CombatState, type: AttackType): Comba
  * @param action - The action chosen by the player
  * @returns Updated combat state with player's action choice
  */
-export function setPlayerAction(state: CombatState, action: AttackAction): CombatState {
+export function setPlayerAction(state: CombatState, action: Action): CombatState {
     return "Implement me" as any;
 }
 
@@ -140,7 +140,7 @@ export function setPlayerAction(state: CombatState, action: AttackAction): Comba
  * @param enemy - The enemy making the choice
  * @returns The attack type chosen by the enemy
  */
-export function generateEnemyAttackType(state: CombatState, enemy: Enemy): AttackType {
+export function generateEnemyAttackType(state: CombatState, enemy: Enemy): ActionType {
     return "Implement me" as any;
 }
 
@@ -150,7 +150,7 @@ export function generateEnemyAttackType(state: CombatState, enemy: Enemy): Attac
  * @param enemy - The enemy making the choice
  * @returns The action chosen by the enemy
  */
-export function generateEnemyAction(state: CombatState, enemy: Enemy): AttackAction {
+export function generateEnemyAction(state: CombatState, enemy: Enemy): Action {
     return "Implement me" as any;
 }
 
@@ -232,7 +232,7 @@ export function rollSkillCheck(baseStat: number, advantage: Advantage): { total:
  * @param type - The attack type being used
  * @returns The skill stat value (physicalSkill, mentalSkill, or emotionalSkill)
  */
-export function getSkillStatForType(character: Character | Enemy, type: AttackType): number {
+export function getSkillStatForType(character: Character | Enemy, type: ActionType): number {
     return "Implement me" as any;
 }
 
@@ -242,7 +242,7 @@ export function getSkillStatForType(character: Character | Enemy, type: AttackTy
  * @param type - The attack type being defended against
  * @returns The defense stat value (physicalDefense, mentalDefense, or emotionalDefense)
  */
-export function getDefenseStatForType(character: Character | Enemy, type: AttackType): number {
+export function getDefenseStatForType(character: Character | Enemy, type: ActionType): number {
     return "Implement me" as any;
 }
 
@@ -252,7 +252,7 @@ export function getDefenseStatForType(character: Character | Enemy, type: Attack
  * @param type - The attack type requiring a save
  * @returns The save stat value (physicalSave, mentalSave, or emotionalSave)
  */
-export function getSaveStatForType(character: Character | Enemy, type: AttackType): number {
+export function getSaveStatForType(character: Character | Enemy, type: ActionType): number {
     return "Implement me" as any;
 }
 
@@ -262,7 +262,7 @@ export function getSaveStatForType(character: Character | Enemy, type: AttackTyp
  * @param type - The attack type being used
  * @returns The base stat value (body, mind, or heart)
  */
-export function getBaseStatForType(character: Character | Enemy, type: AttackType): number {
+export function getBaseStatForType(character: Character | Enemy, type: ActionType): number {
     return "Implement me" as any;
 }
 
@@ -279,7 +279,7 @@ export function getBaseStatForType(character: Character | Enemy, type: AttackTyp
  */
 export function performAttackRoll(
     attacker: Character | Enemy,
-    attackType: AttackType,
+    attackType: ActionType,
     advantage: Advantage
 ): { total: number; roll: number; modifier: number; details: string } {
     return "Implement me" as any;
@@ -294,7 +294,7 @@ export function performAttackRoll(
  */
 export function performDefenseRoll(
     defender: Character | Enemy,
-    attackType: AttackType,
+    attackType: ActionType,
     isDefending: boolean
 ): { total: number; roll: number; modifier: number; details: string } {
     return "Implement me" as any;
@@ -341,7 +341,7 @@ export function isCriticalMiss(roll: number): boolean {
  */
 export function calculateBaseDamage(
     attacker: Character | Enemy,
-    attackType: AttackType,
+    attackType: ActionType,
     advantage: Advantage
 ): number {
     return "Implement me" as any;
@@ -356,7 +356,7 @@ export function calculateBaseDamage(
  */
 export function calculateDamageReduction(
     defender: Character | Enemy,
-    attackType: AttackType,
+    attackType: ActionType,
     isDefending: boolean
 ): number {
     return "Implement me" as any;
@@ -398,7 +398,7 @@ export function applyCriticalMultiplier(baseDamage: number): number {
 export function calculateAttackDamage(
     attacker: Character | Enemy,
     defender: Character | Enemy,
-    attackType: AttackType,
+    attackType: ActionType,
     advantage: Advantage,
     isDefending: boolean
 ): {
@@ -656,8 +656,8 @@ export function generateCombatResultMessage(state: CombatState): string {
  * @returns Descriptive string of the matchup
  */
 export function generateAdvantageDescription(
-    playerType: AttackType,
-    enemyType: AttackType,
+    playerType: ActionType,
+    enemyType: ActionType,
     advantage: Advantage
 ): string {
     return "Implement me" as any;
@@ -801,7 +801,7 @@ export function randomInt(min: number, max: number): number {
  * @param type - The attack type
  * @returns Capitalized display string
  */
-export function attackTypeToString(type: AttackType): string {
+export function attackTypeToString(type: ActionType): string {
     return "Implement me" as any;
 }
 
@@ -810,7 +810,7 @@ export function attackTypeToString(type: AttackType): string {
  * @param action - The attack action
  * @returns Capitalized display string
  */
-export function attackActionToString(action: AttackAction): string {
+export function ActionToString(action: Action): string {
     return "Implement me" as any;
 }
 

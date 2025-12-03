@@ -14,10 +14,10 @@ import { Character } from "../Character/types";
  * This is the root state object that contains all game data.
  * @property player - The player character with all their stats and progression
  * @property world - The game world containing all maps, NPCs, and events
- * @property combatState - The current combat state (if in combat) or inactive combat state
+ * @property combatState - The current combat state (if in combat) or null (inactive combat state)
  */
 export interface GameState {
     player: Character;
     world: WorldState;
-    combatState: CombatState;
+    combatState: CombatState | null;
 }

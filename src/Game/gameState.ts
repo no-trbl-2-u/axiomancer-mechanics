@@ -1,6 +1,8 @@
+import fs from "fs";
 import { GameState } from "./types";
-import { COMBAT_ACTION } from "./reducers/combat.constants";
-import { combatReducer } from "./reducers/combat.reducer";
+import { createCharacter } from "Character";
+import { createStartingWorld } from "World";
+
 const STATE_FILE = "./game-state.json";
 
 /**
@@ -8,19 +10,28 @@ const STATE_FILE = "./game-state.json";
  * @returns true if the state file exists, false otherwise
  */
 export const doesSaveFileExist: () => boolean = () => {
-    /* Check if the state file exists */
-    /* If no state file exists return false */
-    /* If state file does exist return true */
-    return undefined;
+    return fs.existsSync(STATE_FILE);
 }
 
+// NOTE: GameState is still in flux as we define more of the game
 /**
  * getNewGameState returns a new game state
  * @returns a new, initialized game state
  */
 export const getNewGameState: () => GameState = () => {
-    /* Return a new game state */
-    return undefined;
+    return {
+        player: createCharacter({
+            name: "Player",
+            level: 1,
+            baseStats: {
+                heart: 1,
+                body: 1,
+                mind: 1
+            }
+        }),
+        world: createStartingWorld(),
+        combatState: null,
+    };
 }
 
 /**
@@ -28,12 +39,12 @@ export const getNewGameState: () => GameState = () => {
  * @returns the currently saved game state JSON file
  */
 export const loadState: () => GameState = () => {
-    /* If no state file exists run getNewGameState */
+    if (!doesSaveFileExist()) {
+        return getNewGameState();
+    }
 
-    /* If state file does exist get it synchronously */
-
-    /* Return the parsed state file  */
-    return undefined;
+    const state = fs.readFileSync(STATE_FILE, "utf-8");
+    return JSON.parse(state);
 }
 
 /**
@@ -52,28 +63,11 @@ export const saveState: (state: GameState) => void = (state: GameState) => {
  * @param action the action to perform
  * @returns the new game state
  */
-export const gameReducer: (state: GameState, action: GameAction) => GameState = (state: GameState, action: GameAction) => {
-    /* Takes current state and action */
-    /* Returns the new state */
-    /* Neber mutates original state */
-
-    // @todo: Implement this reducer in such a way where:
-    // -> combatReducer returns CombatState
-    // -> worldReducer returns WorldState
-    // -> characterReducer returns CharacterState
-    // -> Below we just put the state all together
-    switch (action.type) {
-        case COMBAT_ACTION.ATTACK:
-        case COMBAT_ACTION.DEFEND:
-        case COMBAT_ACTION.SKILL:
-        case COMBAT_ACTION.ITEM:
-        case COMBAT_ACTION.FLEE:
-        case COMBAT_ACTION.BACK:
-            return combatReducer(state, action);
-        default:
-            return state;
-    }
-}
+// export const gameReducer: (state: GameState, action: GameAction) => GameState = (state: GameState, action: GameAction) => {
+/* Takes current state and action */
+/* Returns the new state */
+/* Neer mutates original state */
+// }
 
 // TODO: TJ ---> Start here tomorrow. Good luck bud
 // -> I believe in you! You're smarter than you give yourself

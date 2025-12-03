@@ -1,3 +1,5 @@
+import { Item } from '../Items/types';
+
 /**
  * Character module type definitions
  *
@@ -30,14 +32,17 @@
 export interface Character {
     name: string;
     level: number;
-    // experience: number;
-    // experienceToNextLevel: number;
+    experience: number;
+    experienceToNextLevel: number;
     health: number;
     maxHealth: number;
     mana: number;
     maxMana: number;
     baseStats: BaseStats;
     derivedStats: DerivedStats;
+    inventory: Item[] | [];
+    equipped?: null // TODO: Implement Equipment types
+    skills?: null // TODO: Implement Skills types
     // availableStatPoints: number;
 }
 
