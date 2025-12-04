@@ -64,19 +64,20 @@ export interface MapEvent {
 
 /**
  * A Unique Event is an event that can only occur once in the game
+ * @property id - Unique identifier for this event
  * @property name - The type of event that occurs
  * @property description - Narration presented for event
  * @property nodeLocation - The coordinates of the node where this event occurs
  * @property completed - Whether or not this event has been completed
- * @todo Implement this type fully
+ * @todo Implement this type fully with proper event data
  */
 interface UniqueEvent {
-    // name: MapEvents;
-    // description: string;
-    // nodeLocation: [number, number];
-    // completed: boolean;
-    // TODO: Implement more properties
-    undefined
+    id: string;
+    name: MapEvents;
+    description: string;
+    nodeLocation: [number, number];
+    completed: boolean;
+    // TODO: Add more properties as needed (rewards, requirements, etc.)
 }
 
 /**
@@ -116,13 +117,13 @@ export interface Map {
     continent: ContinentName;
     description: string;
     startingNode: MapNode;
-    completedNodes: NodeId[] | [];
-    availableNodes: NodeId[] | [];
-    lockedNodes: NodeId[] | [];
+    completedNodes: NodeId[];
+    availableNodes: NodeId[];
+    lockedNodes: NodeId[];
     npcs?: NPC[];
     enemies?: Enemy[];
     availableEvents: MapEvent[];
-    uniqueEvents: UniqueEvent[] | [];
+    uniqueEvents: UniqueEvent[];
     images?: {
         mapImage: Image,
         combatImage: Image
@@ -144,8 +145,8 @@ export interface Continent {
     name: ContinentName;
     description: string;
     availableMaps: MapName[];
-    lockedMaps: MapName[] | [];
-    completedMaps: MapName[] | [];
+    lockedMaps: MapName[];
+    completedMaps: MapName[];
 }
 
 /**

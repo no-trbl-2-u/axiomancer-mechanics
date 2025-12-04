@@ -40,9 +40,9 @@ export interface Character {
     maxMana: number;
     baseStats: BaseStats;
     derivedStats: DerivedStats;
-    inventory: Item[] | [];
-    equipped?: null // TODO: Implement Equipment types
-    skills?: null // TODO: Implement Skills types
+    inventory: Item[];
+    // TODO: Implement Equipment types
+    // TODO: Implement Skills types
     // availableStatPoints: number;
 }
 
