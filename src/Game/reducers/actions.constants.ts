@@ -5,4 +5,6 @@ export const COMBAT_ACTION = {
     ITEM: "item",
     FLEE: "flee",
     BACK: "back",
-}
+} as const;
+
+export type CombatActionType = typeof COMBAT_ACTION[keyof typeof COMBAT_ACTION];

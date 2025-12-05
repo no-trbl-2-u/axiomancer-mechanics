@@ -3,6 +3,16 @@ import { MapName } from "./map.library";
 import { fishingVillage, northernForest } from "./Continents/Coastal-Village/maps";
 
 /**
+ * Custom error for map not found scenarios
+ */
+class MapNotFoundError extends Error {
+    constructor(mapName: string, continent: string = 'Coastal Continent') {
+        super(`Map "${mapName}" not found in ${continent}`);
+        this.name = 'MapNotFoundError';
+    }
+}
+
+/**
  * Returns a map based on the map name
  * @param mapName The name of the map to return
  * @returns The map object
@@ -14,7 +24,8 @@ function getCoastalMap(mapName: MapName): Map {
     case 'northern-forest':
       return northernForest;
     default:
-      throw new Error('Invalid map name');
+      const exhaustiveCheck: never = mapName;
+      throw new MapNotFoundError(exhaustiveCheck);
   }
 }
 
