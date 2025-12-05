@@ -16,7 +16,6 @@ class MapNotFoundError extends Error {
  * Returns a map based on the map name
  * @param mapName The name of the map to return
  * @returns The map object
- * @throws {MapNotFoundError} If the map is not found
  */
 function getCoastalMap(mapName: MapName): Map {
   switch (mapName) {
@@ -25,8 +24,6 @@ function getCoastalMap(mapName: MapName): Map {
     case 'northern-forest':
       return northernForest;
     default:
-      // This should never happen due to MapName type constraint,
-      // but TypeScript requires exhaustiveness check
       const exhaustiveCheck: never = mapName;
       throw new MapNotFoundError(exhaustiveCheck);
   }

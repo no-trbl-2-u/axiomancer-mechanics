@@ -8,9 +8,6 @@ interface CreateCharacterOptions {
     baseStats: BaseStats;
 }
 
-/**
- * Constants for derived stat calculations
- */
 const STAT_MULTIPLIERS = {
     SKILL: 1,
     DEFENSE: 3,
@@ -55,11 +52,11 @@ const deriveStats = ({ body, heart, mind }: BaseStats): DerivedStats => ({
 })
 
 /**
- * Calculates the maximum health of a character based on their level and health stats
+ * Determines the maximum health of a character based on their level and health stats
  * @param level - The level of the character
- * @param healthStats - The stats that determine max health (body and heart)
+ * @param healthStats - The stats that determine your max health
+ * Equation to determine max health: level x (Average of body and heart x 10)
  * @returns The maximum health of the character
- * @remarks Equation: level × (average of body and heart) × HEALTH_PER_STAT
  */
 function calculateMaxHealth(level: number, healthStats: Pick<BaseStats, 'body' | 'heart'>): number {
     const averageHealthStats = (healthStats.body + healthStats.heart) / 2;
@@ -67,11 +64,11 @@ function calculateMaxHealth(level: number, healthStats: Pick<BaseStats, 'body' |
 }
 
 /**
- * Calculates the maximum mana of a character based on their level and mana stats
+ * Determines the maximum mana of a character based on their level and mana stats
  * @param level - The level of the character
- * @param manaStats - The stats that determine max mana (mind and heart)
+ * @param manaStats - The stats that determine your max mana
+ * Equation to determine max mana: level x (Average of mind and heart x 10)
  * @returns The maximum mana of the character
- * @remarks Equation: level × (average of mind and heart) × MANA_PER_STAT
  */
 function calculateMaxMana(level: number, manaStats: Pick<BaseStats, 'mind' | 'heart'>): number {
     const averageManaStats = (manaStats.mind + manaStats.heart) / 2;
@@ -82,8 +79,7 @@ function calculateMaxMana(level: number, manaStats: Pick<BaseStats, 'mind' | 'he
  * Creates a new character based on level, name, and given base stats
  * @param options - The options for creating a new character
  * @returns The new character
- * @remarks "given stats" are not the same as "starting stats" - these are the base stats at the specified level
- */
+ */ // Note: "given stats" are not the same as "starting stats"
 export function createCharacter(options: CreateCharacterOptions): Character {
     const { name, level, baseStats } = options;
 

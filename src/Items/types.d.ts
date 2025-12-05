@@ -1,9 +1,8 @@
-/**
- * Items module type definitions
- * 
- * This module contains types for items including equipment, consumables,
- * materials, and quest items using discriminated unions for type safety.
- */
+
+// TODO: Add items to EquipmentLibrary and then Enumerate
+// TODO: Add items to ConsumableLibrary and then Enumerate
+// TODO: Add items to MaterialLibrary and then Enumerate
+// TODO: Add items to QuestItemLibrary and then Enumerate
 
 /**
  * Item categories
@@ -94,8 +93,3 @@ export function isMaterial(item: Item): item is Material {
 export function isQuestItem(item: Item): item is QuestItem {
     return item.category === 'quest-item';
 }
-
-// TODO: Add items to EquipmentLibrary and then Enumerate
-// TODO: Add items to ConsumableLibrary and then Enumerate
-// TODO: Add items to MaterialLibrary and then Enumerate
-// TODO: Add items to QuestItemLibrary and then Enumerate
