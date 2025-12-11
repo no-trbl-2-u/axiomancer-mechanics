@@ -7,7 +7,7 @@ export const Player: Character = createCharacter({
     baseStats: {
         heart: 4,
         body: 3,
-        mind: 1,
+        mind: 2,
     },
 });
 

@@ -4,8 +4,9 @@
  * Heart > Body > Mind > Heart (cyclic advantage)
  */
 
+import { randomLogic } from '../Enemy/enemy.logic';
 import { Character } from '../Character/types';
-import { Enemy } from '../Enemy/types';
+import { Enemy, EnemyLogic } from '../Enemy/types';
 
 import {
     ActionType,
@@ -16,6 +17,45 @@ import {
     BattleLogEntry,
     CombatState
 } from './types';
+
+
+/**
+ * Determines the advantage state for the player based on the player's decision and the enemy's decision
+ * @param playerDecision - The action type chosen by the player
+ * @param enemyDecision - The action type chosen by the enemy
+ * @returns The advantage state for the player
+ */
+export const determinePlayerAdvantage = (playerDecision: ActionType, enemyDecision: ActionType): Advantage => {
+    if (playerDecision === enemyDecision) {
+        return 'neutral';
+    } else if (playerDecision === 'heart' && enemyDecision === 'body') {
+        return 'advantage';
+    } else if (playerDecision === 'body' && enemyDecision === 'mind') {
+        return 'advantage';
+    } else if (playerDecision === 'mind' && enemyDecision === 'heart') {
+        return 'advantage';
+    }
+    /* Should never be reached */
+    return 'neutral';
+}
+
+/**
+ * Determines the enemy's action based on the enemy's logic
+ * @param enemyLogic - The logic chosen by the enemy
+ * @returns The enemy's action
+ */
+export const determineEnemyAction = (enemyLogic: EnemyLogic) => {
+    switch (enemyLogic) {
+        case 'random':
+            return randomLogic();
+        default:
+            return randomLogic();
+    }
+}
+
+
+// ABOVE IS WHAT I NEED RIGHT NOW!
+// BELOW IS WHAT COULD BE NEEDED!
 
 // ============================================================================
 // COMBAT STATE MANAGEMENT

@@ -40,6 +40,18 @@ export interface EnemyStats {
     emotionalDefense: number;
 }
 
+
+/**
+ * Enemy logic type representing the enemy's decision-making process
+ * - 'random': The enemy will choose an action randomly
+ * - 'aggressive': The enemy will choose an action that is likely to deal damage
+ * - 'defensive': The enemy will choose an action that is likely to reduce damage
+ * - 'balanced': The enemy will choose an action that is likely to deal damage and reduce damage
+ * @todo: Add logic types keeping "Game Theory" in mind
+ * @todo: Add and adjust logic types when skills are implemented
+ */
+export type EnemyLogic = 'random' | 'aggressive' | 'defensive' | 'balanced';
+
 /**
  * Enemy represents an adversary that can be encountered in combat
  * @property id - Unique identifier for this enemy instance
@@ -62,6 +74,7 @@ export interface Enemy {
     mapLocation: Pick<Map, 'name'>;
     enemyTier?: 'normal' | 'elite' | 'boss';
     description: string;
+    logic: EnemyLogic;
     // TODO:
     // image: Image; { alt: string, src: string }
     // skills: Skill[];
