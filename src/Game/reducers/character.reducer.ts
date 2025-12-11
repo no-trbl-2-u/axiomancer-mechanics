@@ -5,4 +5,4 @@
 
 // @todo: implement character reducer
 // characterReducer :: Character -> Action -> Character
-export const characterReducer = () => undefined;
+export const characterReducer = () => undefined as any;

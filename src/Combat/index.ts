@@ -547,7 +547,7 @@ export function createBattleLogEntry(
 }
 
 /**
- * Adds a battle log entry to the combat state
+ * Uses "createBattleLogEntry" to add a new log entry to combat state for the current round of combat
  * @param state - The current combat state
  * @param entry - The log entry to add
  * @returns Updated combat state with new log entry
@@ -557,29 +557,11 @@ export function addBattleLogEntry(state: CombatState, entry: BattleLogEntry): Co
 }
 
 /**
- * Gets the most recent battle log entry
- * @param state - The current combat state
- * @returns The most recent log entry or null
- */
-export function getLatestLogEntry(state: CombatState): BattleLogEntry | null {
-    return "Implement me" as any;
-}
-
-/**
- * Formats a battle log entry into a readable string
- * @param entry - The battle log entry to format
- * @returns Formatted string for display
- */
-export function formatBattleLogEntry(entry: BattleLogEntry): string {
-    return "Implement me" as any;
-}
-
-/**
  * Gets all battle log entries as formatted strings
  * @param state - The current combat state
  * @returns Array of formatted log strings
  */
-export function formatBattleLog(state: CombatState): string[] {
+export function formatAllBattleLogs(state: CombatState): string[] {
     return "Implement me" as any;
 }
 
@@ -588,41 +570,12 @@ export function formatBattleLog(state: CombatState): string[] {
 // ============================================================================
 
 /**
- * Increments the friendship counter
+ * Used to increment friendship counter. If friendship counter is 3, end combat with friendship
  * @param state - The current combat state
- * @param amount - Amount to increment (default 1)
- * @returns Updated combat state with increased friendship counter
+ * @returns Updated state with friendship information
  */
-export function incrementFriendshipCounter(state: CombatState, amount?: number): CombatState {
-    return "Implement me" as any;
-}
-
-/**
- * Decrements the friendship counter
- * @param state - The current combat state
- * @param amount - Amount to decrement (default 1)
- * @returns Updated combat state with decreased friendship counter
- */
-export function decrementFriendshipCounter(state: CombatState, amount?: number): CombatState {
-    return "Implement me" as any;
-}
-
-/**
- * Checks if friendship counter has reached a threshold
- * @param state - The current combat state
- * @param threshold - The threshold to check against
- * @returns True if counter >= threshold
- */
-export function hasFriendshipThreshold(state: CombatState, threshold: number): boolean {
-    return "Implement me" as any;
-}
-
-/**
- * Triggers special event when friendship threshold is reached
- * @param state - The current combat state
- * @returns Updated state with friendship event applied
- */
-export function triggerFriendshipEvent(state: CombatState): CombatState {
+export function setFriendshipState(state: CombatState): CombatState {
+    // TODO: When friendship counter is incremented and is 3, set combat phase to null
     return "Implement me" as any;
 }
 
@@ -631,212 +584,10 @@ export function triggerFriendshipEvent(state: CombatState): CombatState {
 // ============================================================================
 
 /**
- * Generates a descriptive result string for the round
- * @param entry - The battle log entry
- * @returns Descriptive string of what happened
- */
-export function generateRoundResultString(entry: BattleLogEntry): string {
-    return "Implement me" as any;
-}
-
-/**
  * Generates the final combat result message
  * @param state - The final combat state
  * @returns Victory/defeat message
  */
 export function generateCombatResultMessage(state: CombatState): string {
-    return "Implement me" as any;
-}
-
-/**
- * Generates a description of the advantage matchup
- * @param playerType - Player's attack type
- * @param enemyType - Enemy's attack type
- * @param advantage - The resulting advantage
- * @returns Descriptive string of the matchup
- */
-export function generateAdvantageDescription(
-    playerType: ActionType,
-    enemyType: ActionType,
-    advantage: Advantage
-): string {
-    return "Implement me" as any;
-}
-
-// ============================================================================
-// COMBAT STATISTICS
-// ============================================================================
-
-/**
- * Calculates total damage dealt by player across all rounds
- * @param state - The current combat state
- * @returns Total damage dealt
- */
-export function getTotalPlayerDamage(state: CombatState): number {
-    return "Implement me" as any;
-}
-
-/**
- * Calculates total damage dealt by enemy across all rounds
- * @param state - The current combat state
- * @returns Total damage dealt
- */
-export function getTotalEnemyDamage(state: CombatState): number {
-    return "Implement me" as any;
-}
-
-/**
- * Calculates average damage per round for player
- * @param state - The current combat state
- * @returns Average damage per round
- */
-export function getAveragePlayerDamage(state: CombatState): number {
-    return "Implement me" as any;
-}
-
-/**
- * Calculates average damage per round for enemy
- * @param state - The current combat state
- * @returns Average damage per round
- */
-export function getAverageEnemyDamage(state: CombatState): number {
-    return "Implement me" as any;
-}
-
-/**
- * Counts how many times player had advantage
- * @param state - The current combat state
- * @returns Number of rounds with advantage
- */
-export function countPlayerAdvantageRounds(state: CombatState): number {
-    return "Implement me" as any;
-}
-
-/**
- * Counts how many times enemy had advantage
- * @param state - The current combat state
- * @returns Number of rounds with advantage
- */
-export function countEnemyAdvantageRounds(state: CombatState): number {
-    return "Implement me" as any;
-}
-
-/**
- * Generates a complete combat statistics summary
- * @param state - The final combat state
- * @returns Object with all combat statistics
- */
-export function generateCombatStatistics(state: CombatState): {
-    totalRounds: number;
-    totalPlayerDamage: number;
-    totalEnemyDamage: number;
-    averagePlayerDamage: number;
-    averageEnemyDamage: number;
-    playerAdvantageRounds: number;
-    enemyAdvantageRounds: number;
-    neutralRounds: number;
-    friendshipCounter: number;
-} {
-    return "Implement me" as any;
-}
-
-// ============================================================================
-// VALIDATION AND ERROR CHECKING
-// ============================================================================
-
-/**
- * Validates that a combat state is properly initialized
- * @param state - The combat state to validate
- * @returns True if valid, throws error if invalid
- */
-export function validateCombatState(state: CombatState): boolean {
-    return "Implement me" as any;
-}
-
-/**
- * Validates that both combatants have made their choices
- * @param state - The combat state to check
- * @returns True if both have complete actions
- */
-export function areBothActionsChosen(state: CombatState): boolean {
-    return "Implement me" as any;
-}
-
-/**
- * Validates that a character has valid stats for combat
- * @param character - The character to validate
- * @returns True if valid, false otherwise
- */
-export function hasValidCombatStats(character: Character | Enemy): boolean {
-    return "Implement me" as any;
-}
-
-// ============================================================================
-// UTILITY FUNCTIONS
-// ============================================================================
-
-/**
- * Clamps a number between min and max values
- * @param value - The value to clamp
- * @param min - Minimum value
- * @param max - Maximum value
- * @returns Clamped value
- */
-export function clamp(value: number, min: number, max: number): number {
-    return "Implement me" as any;
-}
-
-/**
- * Generates a random integer between min and max (inclusive)
- * @param min - Minimum value
- * @param max - Maximum value
- * @returns Random integer
- */
-export function randomInt(min: number, max: number): number {
-    return "Implement me" as any;
-}
-
-/**
- * Converts attack type to display string
- * @param type - The attack type
- * @returns Capitalized display string
- */
-export function attackTypeToString(type: ActionType): string {
-    return "Implement me" as any;
-}
-
-/**
- * Converts attack action to display string
- * @param action - The attack action
- * @returns Capitalized display string
- */
-export function ActionToString(action: Action): string {
-    return "Implement me" as any;
-}
-
-/**
- * Converts advantage to display string
- * @param advantage - The advantage state
- * @returns Descriptive string
- */
-export function advantageToString(advantage: Advantage): string {
-    return "Implement me" as any;
-}
-
-/**
- * Deep clones a combat state object
- * @param state - The state to clone
- * @returns Deep copy of the state
- */
-export function cloneCombatState(state: CombatState): CombatState {
-    return "Implement me" as any;
-}
-
-/**
- * Deep clones a character object
- * @param character - The character to clone
- * @returns Deep copy of the character
- */
-export function cloneCharacter<T extends Character | Enemy>(character: T): T {
     return "Implement me" as any;
 }

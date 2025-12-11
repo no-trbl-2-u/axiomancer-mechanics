@@ -39,7 +39,7 @@ export interface Equipment extends BaseItem {
  */
 export interface Consumable extends BaseItem {
     category: 'consumable';
-    effect: string;
+    effect: string; // TODO: Turn into an enum
     quantity: number;
     // TODO: Add effect types
 }
@@ -65,6 +65,11 @@ export interface QuestItem extends BaseItem {
  * Discriminated union of all item types
  */
 export type Item = Equipment | Consumable | Material | QuestItem;
+
+
+// ============================================================================
+// ITEM TYPE GUARDS
+// ============================================================================
 
 /**
  * Type guard to check if an item is Equipment

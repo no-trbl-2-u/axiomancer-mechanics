@@ -6,10 +6,10 @@ import { fishingVillage, northernForest } from "./Continents/Coastal-Village/map
  * Custom error for map not found scenarios
  */
 class MapNotFoundError extends Error {
-    constructor(mapName: string, continent: string = 'Coastal Continent') {
-        super(`Map "${mapName}" not found in ${continent}`);
-        this.name = 'MapNotFoundError';
-    }
+  constructor(mapName: string, continent: string = 'Coastal Continent') {
+    super(`Map "${mapName}" not found in ${continent}`);
+    this.name = 'MapNotFoundError';
+  }
 }
 
 /**
@@ -24,7 +24,7 @@ function getCoastalMap(mapName: MapName): Map {
     case 'northern-forest':
       return northernForest;
     default:
-      const exhaustiveCheck: never = mapName;
+      const exhaustiveCheck = mapName as never;
       throw new MapNotFoundError(exhaustiveCheck);
   }
 }
