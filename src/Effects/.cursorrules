@@ -1,0 +1,73 @@
+# Effects Module Rules
+
+## Purpose
+Manages buffs, debuffs, status effects, and conditions that modify character/enemy stats or behavior. Inspired by D&D conditions and TTRPG status effects.
+
+## Philosophical Effect Categories
+- TODO: Rename these effects based on fallacies and paradoxes
+
+### Buffs (Positive Effects)
+Temporary bonuses that enhance capabilities:
+- Stat increases (e.g. +2 to Mind skill)
+- Damage bonuses (e.g. +1 to damage rolls)
+- Defense boosts (e.g. +4 to mentalDefense)
+- Regeneration effects (e.g. heal 2hp per round)
+- Decide Enemy's next ActionType
+- Automatic Advantage
+- Other misc. effects
+
+#### Buff Examples
+- TBD
+
+### Debuffs (Negative Effects)
+Temporary penalties that hinder:
+- Stat decreases
+- Damage over time (ie. poison, burn, soul-drain, etc.)
+- Defense reduction
+- Movement/action restrictions
+- Limited ActionType decisions
+
+#### Debuff examples
+- **Stunned**: Skip next action
+- **Blinded**: -x to attack rolls
+- **Frightened**: Disadvantage on Heart actions and skills
+- **Cripple**: Disadvantage on Body actions and skills
+- **Mental Block**: Disadvantage on Mind actions and skills
+- **Poisoned**: Take damage each round
+- **Charmed**: Always pick Heart ActionType
+
+## Implementation Guidelines
+
+### Effect Structure
+```typescript
+interface Effect {
+    id: string;
+    name: string;
+    description: string;
+    type: 'buff' | 'debuff' | 'condition';
+    duration: number;  // Rounds remaining, -1 for permanent
+    stacking: 'none' | 'intensity' | 'duration';
+    onApply?: (target) => void;
+    onRemove?: (target) => void;
+    onTurnStart?: (target) => void;
+    onTurnEnd?: (target) => void;
+}
+```
+
+### Duration Handling
+- Decrement duration at end of each round
+- Remove effect when duration reaches 0
+- Some effects trigger saves to end early
+
+### Stacking Rules (D&D-Inspired)
+- **None**: Only strongest instance applies
+- **Intensity**: Effects stack (multiple poison = more damage)
+- **Duration**: Reset/extend duration on reapply
+
+## File Organization
+- `index.ts` - Effect application and removal logic and utilities
+- `buff.library.ts` - Predefined buff effects
+- `debuff.library.ts` - Predefined debuff effects
+- `types.d.ts` - Effect type definitions
+- `effects.reducer.ts` - State changes for effects
+

@@ -1,0 +1,80 @@
+# Combat Module Rules
+
+## Purpose
+Implements turn-based RPG combat with rock-paper-scissors type advantages. Combat should feel quick, tactical, and dangerous (inspired by Mörk Borg's lethal combat).
+
+## Core Mechanics
+
+### Type Advantage System (Rock-Paper-Scissors)
+```
+Heart > Body > Mind > Heart (cyclic)
+```
+- Heart attacks overwhelm Body's physical resistance with emotional manipulation
+- Body attacks overpower Mind's mental defenses with brute force  
+- Mind attacks outmaneuver Heart's emotional responses with logic
+
+### Combat Actions
+- **Attack**: Offensive action, roll against enemy defense
+- **Defend**: Boost defense, reduce incoming damage, potentially causes a status effect
+- **Skill**: Use a fallacy/paradox ability (costs mana)
+- **Item**: Use consumable from inventory
+- **Flee**: Attempt escape (may fail)
+
+### Combat Flow (Phases)
+1. `choosing_type` - Player selects Heart/Body/Mind
+2. `choosing_action` - Player selects Attack/Defend/Skill/Item/Flee
+3. `choosing_skill` - If skill action, select which skill
+4. `resolving` - Calculate and apply results
+5. `ended` - Combat concluded
+
+## Dice Rolling (D&D-Inspired)
+- Standard roll: d20 + modifier vs target number
+- Advantage: Roll 2d20, take higher
+- Disadvantage: Roll 2d20, take lower
+- Critical Hit: Natural 20 (1.5x damage)
+- Critical Miss: Natural 1 (fumble effects, like Mörk Borg)
+- Critial Hits: Cause status effects to enemies or buffs to Player
+- Critical Misses: Cause status effects to players or buffs to enemies
+
+## Damage Calculation (Basic Attack)
+```
+base_damage = dice_roll (with or without advantage) + ActionType stat
+damage_reduction = ActionType stat + (defending ? bonus : 0)
+final_damage = max(0, base_damage - damage_reduction) + (effect_bonuses + equipment_bonuses)
+```
+
+## Special Mechanics
+
+### Friendship Counters
+An alternative win condition - befriend the enemy instead of killing them:
+- Increments under specific conditions (both player and enemy choose defend)
+- If both player and enemy pick `Heart Defend`, it's an automatic 3 friendship counters
+- At 3, combat ends in friendship instead of violence
+- Player gains no experience, however they gain some other bonus (ie. new item, skill, information)
+
+### Victory Conditions
+- `player` - Enemy HP reaches 0
+- `ko` - Player HP reaches 0  
+- `friendship` - Friendship counter reaches 3
+- `fled` - Successful escape
+
+## File Organization
+- `index.ts` - Pure combat utility functions (advantage calculation, dice rolls)
+- `combat.reducer.ts` - State-modifying functions (in Game/reducers/)
+- `types.d.ts` - Combat state and action types
+- `combat.cli.ts` - Terminal UI for combat
+
+## Reducer Pattern
+Combat state changes should be pure reducer functions:
+```typescript
+// Good: Returns new state
+function resolveCombatRound(state: CombatState): CombatState {
+    return { ...state, round: state.round + 1, ... };
+}
+
+// Bad: Mutates state
+function resolveCombatRound(state: CombatState): void {
+    state.round++;  // Never do this!
+}
+```
+

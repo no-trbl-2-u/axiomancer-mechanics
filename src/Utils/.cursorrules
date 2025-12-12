@@ -1,0 +1,94 @@
+# Utils Module Rules
+
+## Purpose
+Shared utility functions and types used across multiple modules. Keep utilities pure, generic, and well-tested.
+
+## Guidelines
+
+### What Belongs Here
+- Pure utility functions (math, formatting, validation)
+- Generic type definitions used everywhere
+- Type guards for common patterns
+- Constants used across modules
+
+### What Doesn't Belong Here
+- Domain-specific logic (put in relevant module)
+- State-modifying functions (put in reducers)
+- UI components (put in respective .cli.ts files)
+
+## Current Utilities
+
+### Image Type
+Shared image reference type:
+```typescript
+interface Image {
+    alt: string;   // Accessibility text
+    src: string;   // Image path/URL
+}
+```
+
+### Type Guards
+Generic type checking utilities in `typeGuards.ts`
+
+## Suggested Utilities
+
+### Dice Rolling
+```typescript
+// Generic dice roller
+function rollDice(count: number, sides: number): number[];
+function rollD20(): number;
+function rollWithAdvantage(): { result: number; rolls: [number, number] };
+```
+
+### Math Helpers
+```typescript
+function average(...nums: number[]): number;
+function clamp(value: number, min: number, max: number): number;
+function randomInt(min: number, max: number): number;
+```
+
+### Array Utilities
+```typescript
+function randomElement<T>(array: T[]): T;
+function shuffle<T>(array: T[]): T[];
+function weightedRandom<T>(items: Array<{ item: T; weight: number }>): T;
+```
+
+### String Formatting
+```typescript
+function formatHealthBar(current: number, max: number): string;
+function formatDiceRoll(roll: number, modifier: number): string;
+```
+
+## Implementation Guidelines
+
+### Pure Functions Only
+Utilities should have no side effects:
+```typescript
+// ✅ Pure
+function average(...nums: number[]): number {
+    return nums.reduce((a, b) => a + b, 0) / nums.length;
+}
+
+// ❌ Impure (has side effect)
+function average(...nums: number[]): number {
+    console.log('Averaging:', nums);  // Side effect!
+    return nums.reduce((a, b) => a + b, 0) / nums.length;
+}
+```
+
+### Generic Types
+Write utilities that work with any type when possible:
+```typescript
+// ✅ Generic
+function randomElement<T>(array: T[]): T;
+
+// ❌ Too specific
+function randomEnemy(enemies: Enemy[]): Enemy;
+```
+
+## File Organization
+- `index.ts` - Exports and main utilities (like `average`)
+- `typeGuards.ts` - Type guard functions
+- `types.d.ts` - Shared type definitions (Image, etc.)
+

@@ -1,0 +1,90 @@
+# Items Module Rules
+
+## Purpose
+Manages the game's item system including equipment, consumables, crafting materials, and quest items. Inspired by classic RPG inventory systems.
+
+## Item Categories
+
+### Equipment
+IMPORTANT: Equipment should modify derived stats when worn.
+Gear that can be equipped to slots:
+- **Weapon**: Equipped in hand slot, modifies attack
+- **Armor**: Body protection, reduces damage taken
+- **Head/Body/Hands/Feet**: Armor piece slots
+- **Accessory**: Rings, amulets, belts - passive bonuses
+
+
+### Consumables
+Single-use items with immediate effects:
+- **Healing Potions**: Restore HP
+- **Mana Potions**: Restore MP
+- **Buff Potions**: Temporary stat boosts
+- **Throwing Items**: Combat consumables (bombs, poisons)
+
+Track quantity - consuming items decrement count.
+
+### Materials
+Crafting components (future system):
+- Gathered from world or enemy drops
+- Stack by quantity
+- Used in crafting recipes
+
+### Quest Items
+Story-critical items:
+- Cannot be sold or discarded
+- Associated with specific quests
+- Often unique/key items
+
+## Type Guards
+Use discriminated unions and type guards:
+```typescript
+if (isEquipment(item)) {
+    // TypeScript knows item is Equipment
+    equip(item.slot, item);
+}
+```
+
+## Implementation Guidelines
+
+### Item Definition (Library Files)
+Store item templates in JSON or TS files:
+```json
+{
+    "id": "health-potion-small",
+    "name": "Small Health Potion",
+    "description": "A crimson vial that restores 10 HP",
+    "category": "consumable",
+    "effect": "heal-10",
+    "quantity": 1
+}
+```
+
+### Inventory Operations (Reducers)
+State-modifying operations go in `item.reducer.ts`:
+- `addItemToInventory(state, item)` → GameState
+- `removeItemFromInventory(state, itemId)` → GameState
+- `useConsumable(state, itemId)` → GameState
+- `equipItem(state, itemId, slot)` → GameState
+
+## Item Rarity (Future Enhancement)
+Consider D&D-style rarity tiers:
+- Common (white)
+- Uncommon (green)
+- Rare (blue)
+- Very Rare (purple)
+- Legendary (orange)
+
+## File Organization
+- `index.ts` - Item utility functions
+- `item.reducer.ts` - Inventory state operations
+- `consumable.library.json` - Consumable definitions
+- `equipment.library.json` - Equipment definitions
+- `types.d.ts` - Item type hierarchy
+
+## Loot Tables
+A simple system to determine enemy drops:
+- Enemies have a stat called `loot`
+- When an enemy is defined, list all possible drops in `loot`
+- When enemy dies in combat, provide player with n-rolls on the `loot` list
+- Player will roll after combat to get drops
+

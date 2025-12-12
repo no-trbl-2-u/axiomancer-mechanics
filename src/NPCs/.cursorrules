@@ -1,0 +1,97 @@
+# NPCs Module Rules
+
+## Purpose
+Defines non-player characters the player can interact with. NPCs provide story, quests, shops, and world-building. They should feel alive and memorable.
+
+## NPC Themes (During Player Childhood)
+- NPCs should be cheery and polite
+- NPCs should inspire happiness and a perfect world
+
+## NPC Themes (During Player Adulthood)
+- NPCs should be rude, cruel, deeply insulting
+- NPCs should be themed around hatred, disgust
+- NPCs should inspire a sense of dread
+
+## NPC Design Philosophy
+- Each NPC should have a distinct personality
+- Dialogue should reveal character and world lore
+- NPCs can offer quests, trade, or provide information
+- Consider NPC relationships and factions
+
+## Core Types
+
+### NPC Structure
+```typescript
+interface NPC {
+    name: string;
+    dialogue: DialogueMap;
+    description?: string;
+    image?: Image;
+}
+```
+
+### Dialogue System
+Flexible key-based dialogue mapping:
+```typescript
+interface DialogueMap {
+    greeting: string | string[];     // First interaction
+    farewell: string | string[];     // Ending conversation
+    quest_offer: string[];           // Quest-specific
+    shop_browse: string;             // Shop context
+    [key: string]: string | string[]; // Extensible
+}
+```
+
+## NPC Categories
+
+### Quest Givers
+- Have `quest_offer` dialogue
+- Track quest state (available, active, complete)
+- May have follow-up quests
+
+### Merchants
+- Have `shop_browse`, `shop_buy`, `shop_sell` dialogue
+- Associated with item inventory
+- May have special/rare items
+
+### Informants
+- Provide world lore and hints
+- May require triggers to unlock dialogue
+- Can point to hidden locations/secrets
+
+### Story Characters
+- Important to main narrative
+- May have branching dialogue
+- Could become allies or enemies
+
+## Implementation Guidelines
+
+### Dialogue Variations
+Use arrays for variety:
+```typescript
+greeting: [
+    "Ah, a traveler! Welcome.",
+    "You again? What brings you here?",
+    "Come in, come in, out of the cold."
+]
+```
+
+### Context-Sensitive Dialogue
+Key patterns for different situations:
+- `greeting_first` - First meeting
+- `greeting_known` - Subsequent meetings
+- `quest_X_start` - Offering quest X
+- `quest_X_progress` - Quest X in progress
+- `quest_X_complete` - Quest X done
+
+## Future Enhancements
+- Relationship/reputation system
+- NPC schedules (different locations by time)
+- Faction affiliations
+- Recruitable companions
+
+## File Organization
+- `index.ts` - NPC interaction logic
+- `types.d.ts` - NPC and DialogueMap types
+- Consider: `npc.library.ts` for NPC definitions
+

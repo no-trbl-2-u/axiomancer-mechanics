@@ -1,0 +1,80 @@
+# Enemy Module Rules
+
+## Purpose
+Defines enemy characters, their AI behavior type, and encounter design. Enemies should feel dangerous but fair, with distinct personalities reflected in their combat logic.
+
+## Enemy Design Philosophy During Player Childhood (Kingdom Hearts-Inspired)
+- Enemies should be childish
+- Enemy names should be puns
+- Combat is safe - even `boss` enemyTier enemies should be easy
+
+## Enemy Design Philosophy During Player Adulthood (Mörk Borg-Inspired)
+- Enemies should be memorable and flavorful
+- Combat is dangerous - even "weak" `normal` enemies can kill
+- Descriptions should evoke feelings of dread, fear, disgust,
+
+## Enemy Tiers
+Tier system creates clear power progression:
+- **Simple**: Easy encounters, beatable without difficulty
+- **Normal**: Standard encounters, beatable by average party
+- **Elite**: Tougher enemies, require strategy or good rolls
+- **Boss**: Major encounters, unique abilities, high stakes
+- **Unique**: Can range from easier than simple to harder than a boss
+
+## Enemy Stats (Simplified from Player)
+Enemies don't have base stats, only derived combat values:
+- `maxHealth` / `maxMana`: Resource pools
+- `physicalSkill` / `physicalDefense`: Body-type combat
+- `mentalSkill` / `mentalDefense`: Mind-type combat
+- `emotionalSkill` / `emotionalDefense`: Heart-type combat
+
+## AI Logic Types
+Enemy behavior patterns for decision-making:
+- **Random**: Unpredictable, chaotic fighters
+- **Aggressive**: Prioritize attack actions, target weakest
+- **Defensive**: Prioritize defense, counterattack
+- **Balanced**: Mix of offense and defense
+
+### Future Logic Types (Game Theory-Inspired)
+Consider adding:
+- **Adaptive**: Learn from player patterns (tit-for-tat)
+- **Exploitative**: Target player's weak stat type
+- **Mimicking**: Copy player's last action type
+
+## Implementation Guidelines
+
+### Enemy Creation
+```typescript
+const enemy: Enemy = {
+    id: 'goblin-scout',
+    name: 'Goblin Scout',
+    level: 2,
+    health: 15,
+    mana: 5,
+    enemyStats: { ... },
+    mapLocation: { name: 'fishing-village' },
+    enemyTier: 'normal',
+    description: 'A sneaky creature with beady eyes...',
+    logic: 'aggressive'
+};
+```
+
+### Map Location Association
+Enemies should be tied to specific maps/areas, enabling:
+- Region-appropriate encounters
+- Difficulty scaling by area
+- Thematic consistency
+
+## File Organization
+- `index.ts` - Enemy state management
+- `enemy.library.ts` - Predefined enemy definitions
+- `enemy.logic.ts` - AI decision-making functions
+- `types.d.ts` - Enemy and EnemyStats types
+- `enemys.mock.ts` - Test fixtures
+
+## Encounter Design Tips
+- Vary enemy types within an area
+- Mix AI logic for interesting battles
+- Consider enemy "tells" that hint at their type preference
+- Boss enemies should have multiple phases or special abilities
+
