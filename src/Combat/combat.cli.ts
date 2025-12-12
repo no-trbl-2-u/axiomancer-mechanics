@@ -5,7 +5,13 @@ import inquirer from 'inquirer';
 /* MOCKED DATA */
 import { Disatree_01 } from '../Enemy/enemy.library';
 import { Player } from '../Character/characters.mock';
-import { determineEnemyAction, determinePlayerAdvantage, rollDie } from './index';
+import { BaseStats } from '../Character/types';
+import { determineEnemyAction, determineAdvantage } from './index';
+import { createDieRoll } from '../Utils';
+import { getEnemyRelatedStat } from '../Enemy';
+
+/* SIMULATION of friendship counter state */
+let friendshipCounter = 0;
 
 async function main() {
   console.log('Simulating combat as mocked player vs. mocked enemy...');
@@ -32,42 +38,124 @@ async function main() {
       name: 'actionType',
       message: 'Select the action you want to take...',
       choices: [
-        'Attack',
-        'Defend'
+        'attack',
+        'defend'
       ]
     }
   ]);
 
   /* Compute all steps of the combat turn */
   const enemyAction = determineEnemyAction(Disatree_01.logic);
-  const playerAdvantage = determinePlayerAdvantage(answer.reactionType, enemyAction.type);
+  const playerAdvantage = determineAdvantage(answer.reactionType, enemyAction.type);
+  const enemyAdvantage = determineAdvantage(enemyAction.type, answer.reactionType);
 
-  // Pseudocode for player result
-  // 1) Determine if player decided to attack or defend
-  // - If attack, determine if player has advantage
-  // - If defend, determine if player has disadvantage
-  // 2) Determine if player has advantage or disadvantage
-  // - If advantage, determine if player has advantage over enemy
-  // - If disadvantage, determine if player has disadvantage over enemy
-  // 3) Determine if player has advantage or disadvantage
-  // - If advantage, determine if player has advantage over enemy
-  // - If disadvantage, determine if player has disadvantage over enemy
-  // 4) Determine if player has advantage or disadvantage
-
-
-
-  /* Log the player's full decision */
+  /* Log the player's decision */
   console.log(`Player decided to ${answer.actionType} with his ${answer.reactionType}`);
 
-  /* Wait 2 seconds to simulate enemy thinking */
-  await new Promise(resolve => setTimeout(resolve, 2000));
+  /* Player Chose to Attack */
+  if (answer.actionType === 'attack') {
+    /* Create the player's die roll */
+    const playerDieRoll = createDieRoll(playerAdvantage);
+    const playerRollModifier = Player.baseStats[answer.reactionType as keyof BaseStats]
+    const playerRollTotal = playerDieRoll() + playerRollModifier;
 
-  /* Log the enemy's decision */
-  console.log(`Enemy decided to ${enemyAction.action} with his ${enemyAction.type}`);
+    /* Enemy chose to Attack */
+    if (enemyAction.action === 'attack') {
+      /* Calculate the enemy's roll */
+      const enemyDieRoll = createDieRoll(enemyAdvantage);
+      const enemyRollModifier = getEnemyRelatedStat(Disatree_01, enemyAction.type, false);
+      const enemyRollTotal = enemyDieRoll() + enemyRollModifier;
 
-  /* Log the advantage */
-  console.log(`Player has the ${playerAdvantage}`);
+      /* Log the player's roll, wait, then log the enemy's roll */
+      console.log('Player rolls a: ', playerRollTotal);
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      console.log('Enemy rolls a: ', enemyRollTotal);
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
+      /* Both player and enemy roll for attack */
+      if (playerRollTotal > enemyRollTotal) {
+        /* Player wins the attack */
+        console.log('Player wins the battle of wit!');
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        // Roll the player's damage
+        const playersDamageRoll = playerDieRoll() + playerRollModifier;
+        const enemyDefenseStat = getEnemyRelatedStat(Disatree_01, enemyAction.type, true);
+        const playerDamage = playersDamageRoll - enemyDefenseStat;
+        Disatree_01.health -= playerDamage;
+        console.log(`Player rolls a ${playersDamageRoll} against the enemy's ${enemyDefenseStat} ${enemyAction.type} defense, dealing ${playerDamage} damage`);
+      } else if (playerRollTotal < enemyRollTotal) {
+        /* Enemy wins the attack */
+        /* Roll the enemy's damage
+         * determine the player's defense stat
+         * calculate the damage
+         * apply the damage to the player
+         */
+        console.log('Enemy wins the attack!');
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        const enemiesDamageRoll = enemyDieRoll() + enemyRollModifier;
+        const playerDefenseStat = Player.baseStats[answer.reactionType as keyof BaseStats];
+        const enemyDamage = enemiesDamageRoll - playerDefenseStat;
+        Player.health -= enemyDamage;
+        console.log(`Enemy rolls a ${enemiesDamageRoll} against the player's ${playerDefenseStat} ${answer.reactionType} defense, dealing ${enemyDamage} damage`);
+      } else {
+        /* It's a tie */
+        console.log("Your wit clashes with the enemy's wit, you both miss!");
+      }
+
+
+      /* Enemy chose to Defend */
+    } else if (enemyAction.action === 'defend') {
+      /* Calculate the enemy's defense stat */
+      const enemyDefenseStat = getEnemyRelatedStat(Disatree_01, enemyAction.type, true) * 1.5;
+
+      /* Determine the player's damage roll */
+      const playersDamageRoll = playerDieRoll() + playerRollModifier;
+
+      /* Calculate how much damage the player deals */
+      const playerDamage = playersDamageRoll - enemyDefenseStat;
+
+      /* Apply the damage to the enemy */
+      Disatree_01.health -= playerDamage;
+
+      /* Log the player's roll, wait, then log the enemy's roll and damage */
+      console.log('Player rolls a: ', playerRollTotal);
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      console.log(`Player rolls a ${playersDamageRoll} against the enemy's ${enemyDefenseStat} ${enemyAction.type} defense, dealing ${playerDamage} damage`);
+    }
+    // TODO: Calculate the player's damage if enemy chose defend
+  } else if (answer.actionType === 'defend') {
+    /* Enemy chose to Attack */
+    if (enemyAction.action === 'attack') {
+      /* Calculate the enemy's roll */
+      const enemyDieRoll = createDieRoll(enemyAdvantage);
+      const enemyRollModifier = getEnemyRelatedStat(Disatree_01, enemyAction.type, false);
+      const enemyRollTotal = enemyDieRoll() + enemyRollModifier;
+
+      /* Calculate the player's defense stat */
+      const playerDefenseStat = Player.baseStats[answer.reactionType as keyof BaseStats] * 1.5;
+
+      /* Determine the enemy's damage roll */
+      const enemiesDamageRoll = enemyDieRoll() + enemyRollModifier;
+      const enemyDamage = enemiesDamageRoll - playerDefenseStat;
+
+      /* Apply the damage to the player */
+      Player.health -= enemyDamage;
+
+      /* Log the enemy's roll, wait, then log the player's roll and damage */
+      console.log('Enemy rolls a: ', enemyRollTotal);
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      console.log(`Enemy rolls a ${enemiesDamageRoll} against the player's ${playerDefenseStat} ${answer.reactionType} defense, dealing ${enemyDamage} damage`);
+    }
+    /* Both Enemy and Player chose to Defend */
+    else if (enemyAction.action === 'defend') {
+      /* SIMULATE friendship counter system */
+      friendshipCounter++;
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      console.log(`The player feels closer to the enemy and feel as if the enemy may become less of an enemy and more of a friend. Friendship counter: ${friendshipCounter}`);
+    }
+  }
 }
 
+// TODO: Figure out a way to loop the combat turn until one of the characters is defeated
+// --> Will likely need to create an external state in order for this to track
 main();
