@@ -30,14 +30,17 @@ export interface EnemyStats {
     maxMana: number;
 
     /* Body-themed stats */
+    physicalAttack: number;
     physicalSkill: number;
     physicalDefense: number;
 
     /* Mind-themed stats */
+    mentalAttack: number;
     mentalSkill: number;
     mentalDefense: number;
 
     /* Heart-themed stats */
+    emotionalAttack: number;
     emotionalSkill: number;
     emotionalDefense: number;
 }

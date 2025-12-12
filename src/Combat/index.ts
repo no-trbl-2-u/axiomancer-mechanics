@@ -12,32 +12,10 @@ import {
     ActionType,
     Action,
     Advantage,
-    CombatPhase,
     CombatAction,
     BattleLogEntry,
     CombatState
 } from './types';
-
-
-/**
- * Determines the advantage state for the player based on the player's decision and the enemy's decision
- * @param playerDecision - The action type chosen by the player
- * @param enemyDecision - The action type chosen by the enemy
- * @returns The advantage state for the player
- */
-export const determinePlayerAdvantage = (playerDecision: ActionType, enemyDecision: ActionType): Advantage => {
-    if (playerDecision === enemyDecision) {
-        return 'neutral';
-    } else if (playerDecision === 'heart' && enemyDecision === 'body') {
-        return 'advantage';
-    } else if (playerDecision === 'body' && enemyDecision === 'mind') {
-        return 'advantage';
-    } else if (playerDecision === 'mind' && enemyDecision === 'heart') {
-        return 'advantage';
-    }
-    /* Should never be reached */
-    return 'neutral';
-}
 
 /**
  * Determines the enemy's action based on the enemy's logic
@@ -95,7 +73,18 @@ export function determineCombatEnd(state: CombatState): 'player' | 'ko' | 'frien
  * @returns 'advantage' | 'disadvantage' | 'neutral'
  */
 export function determineAdvantage(attackerType: ActionType, defenderType: ActionType): Advantage {
-    return "Implement me" as any;
+    if (attackerType === defenderType) {
+        return 'neutral';
+    } else if (attackerType === 'heart' && defenderType === 'body') {
+        return 'advantage';
+    } else if (attackerType === 'body' && defenderType === 'mind') {
+        return 'advantage';
+    } else if (attackerType === 'mind' && defenderType === 'heart') {
+        return 'advantage';
+    }
+
+    /* Is reached if no advantage is found */
+    return 'disadvantage';
 }
 
 /**

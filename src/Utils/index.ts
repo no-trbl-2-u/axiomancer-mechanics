@@ -2,6 +2,8 @@
  * Utility functions used across the application
  */
 
+import { Advantage } from "Combat/types";
+
 /**
  * Clamps a number between min and max values
  * @param value - The value to clamp
@@ -62,6 +64,22 @@ export const max = (arr: number[]) => [...arr].sort((a, b) => b - a)[0];
 export const min = (arr: number[]) => [...arr].sort()[0];
 
 /**
+ * Determines the modifier to apply to a roll based on the advantage
+ * @param advantage - The advantage to apply to the roll
+ * @returns A function that returns the modifier to apply to the roll
+ */
+export const determineRollAdvantageModifier = (advantage: Advantage): (arr: number[]) => number => {
+  switch (advantage) {
+    case 'advantage':
+      return max;
+    case 'disadvantage':
+      return min;
+    default:
+      return sum;
+  }
+}
+
+/**
  * Creates a die roll function
  * @param sides - Number of sides on the die
  * @param timesRolled - Number of times to roll the die
@@ -82,6 +100,23 @@ export function createDie(sides: number, timesRolled: number, func?: (arr: numbe
     if (!func) return sum(Array.from({ length: timesRolled }, () => randomInt(1, sides)))
     return func(Array.from({ length: timesRolled }, () => randomInt(1, sides)))
   }
+}
+
+/**
+ * 
+ * @param advantage - The advantage to create a die roll for
+ * @returns A function that returns the result of the die roll
+ * @example
+ * const advAtk =  createDieRoll('advantage')
+ * advAtk() // Returns the highest number between 2d20
+ * 
+ * const disAdvAtk =  createDieRoll('disadvantage')
+ * disAdvAtk() // Returns the lowest number between 2d20
+ */
+export function createDieRoll(advantage: Advantage) {
+  const rollCount = advantage === 'neutral' ? 1 : 2
+  const rollAdvantageModifier = determineRollAdvantageModifier(advantage);
+  return createDie(20, rollCount, rollAdvantageModifier);
 }
 
 /**
