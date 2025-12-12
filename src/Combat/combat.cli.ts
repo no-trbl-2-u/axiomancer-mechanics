@@ -5,7 +5,7 @@ import inquirer from 'inquirer';
 /* MOCKED DATA */
 import { Disatree_01 } from '../Enemy/enemy.library';
 import { Player } from '../Character/characters.mock';
-import { determineEnemyAction, determinePlayerAdvantage } from './index';
+import { determineEnemyAction, determinePlayerAdvantage, rollDie } from './index';
 
 async function main() {
   console.log('Simulating combat as mocked player vs. mocked enemy...');
@@ -38,31 +38,36 @@ async function main() {
     }
   ]);
 
-  // Pseudocode for combat logic:
-  // 1. Generate the enemy's action -- determineEnemyAction
+  /* Compute all steps of the combat turn */
   const enemyAction = determineEnemyAction(Disatree_01.logic);
-
-  // 2. Determine the player's advantage -- determinePlayerAdvantage
   const playerAdvantage = determinePlayerAdvantage(answer.reactionType, enemyAction.type);
 
-  console.log("Player's decision:", answer.reactionType);
-  console.log("Enemy's decision:", enemyAction.type);
-  console.log("Player has the ", playerAdvantage);
+  // Pseudocode for player result
+  // 1) Determine if player decided to attack or defend
+  // - If attack, determine if player has advantage
+  // - If defend, determine if player has disadvantage
+  // 2) Determine if player has advantage or disadvantage
+  // - If advantage, determine if player has advantage over enemy
+  // - If disadvantage, determine if player has disadvantage over enemy
+  // 3) Determine if player has advantage or disadvantage
+  // - If advantage, determine if player has advantage over enemy
+  // - If disadvantage, determine if player has disadvantage over enemy
+  // 4) Determine if player has advantage or disadvantage
 
-  console.log("--------------------------------");
 
-  console.log("Player is going to ", answer.actionType);
-  console.log("Enemy is going to ", enemyAction.action);
 
-  console.log("--------------------------------");
+  /* Log the player's full decision */
+  console.log(`Player decided to ${answer.actionType} with his ${answer.reactionType}`);
 
-  // 3. If Player attacks, determine player's roll based on advantage and action type
-  // --> Use Player's stats and decision to determine bonus to roll
-  console.log("Player's roll: ");
+  /* Wait 2 seconds to simulate enemy thinking */
+  await new Promise(resolve => setTimeout(resolve, 2000));
 
-  // 4. If Enemy attacks, determine enemy's roll
-  // --> Use Enemy's stats and decision to determine bonus to roll
-  console.log("Enemy's roll: ")
+  /* Log the enemy's decision */
+  console.log(`Enemy decided to ${enemyAction.action} with his ${enemyAction.type}`);
+
+  /* Log the advantage */
+  console.log(`Player has the ${playerAdvantage}`);
+
 }
 
 main();

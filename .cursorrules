@@ -1,0 +1,48 @@
+# Axiomancer Mechanics - Project Rules
+
+## Project Overview
+This is a **Tabletop RPG mechanics engine** inspired by games like Mörk Borg, D&D, and other TTRPGs. The game features a unique **Heart/Body/Mind** stat system with rock-paper-scissors combat mechanics (Heart > Body > Mind > Heart).
+
+## Core Concepts
+- **Heart**: Emotion, willpower, charisma - strong against Body
+- **Body**: Physical strength, constitution - strong against Mind  
+- **Mind**: Intelligence, reflexes, perception - strong against Heart
+- **Skills**: Based on logical fallacies and philosophical paradoxes
+- **Combat**: Turn-based with type advantages and dice rolling
+
+## Code Conventions
+
+### File Structure
+- `index.ts` - Main module exports and pure utility functions
+- `types.d.ts` - Type definitions with JSDoc comments
+- `*.reducer.ts` - Functions that return State objects (GameState, CombatState, WorldState, etc.)
+- `*.library.ts` - Static data definitions (enemies, skills, items, maps)
+- `*.mock.ts` - Test data and fixtures
+- `*.test.ts` - Unit tests
+- `*.cli.ts` - Command-line interface components
+
+### Naming Conventions
+- Use camelCase for functions and variables
+- Use PascalCase for types and interfaces
+- Use SCREAMING_SNAKE_CASE for constants
+- Prefix reducer functions with action verbs: `initialize`, `update`, `set`, `add`, `remove`
+
+### Type System
+- All exported functions must have explicit return types
+- Use discriminated unions for item/action types
+- Prefer `Pick<T, K>` and `Partial<T>` over creating new interfaces
+- Document types with JSDoc including `@property` for each field
+
+### Functional Patterns
+- Reducers should be pure functions: `(state, action) => newState`
+- Never mutate state directly - always return new objects
+- Use spread operator for immutable updates
+- Extract calculation logic into separate pure functions
+
+### TTRPG Design Philosophy
+- Embrace randomness through dice rolls (d4, d6, d8, d10, d12, d20)
+- Stats should feel meaningful but not overwhelming
+- Combat should be quick and decisive (like Mörk Borg)
+- Failure should be interesting, not just punishing
+- Skills (fallacies/paradoxes) should have thematic flavor text
+

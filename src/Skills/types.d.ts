@@ -25,11 +25,13 @@ export type SkillCategory = 'fallacy' | 'paradox';
  * @property level - Minimum character level required to learn this skill
  * @property statRequirementType - Optional: which base stat must meet the requirement (body/mind/heart)
  * @property statRequirementValue - Optional: minimum value for the specified stat
+ * @property prerequisiteSkill - Optional: skill that must be learned before this skill can be learned
  */
 export interface SkillLearningRequirement {
     level: number;
     statRequirementType?: SkillsStatType;
     statRequirementValue?: number;
+    prerequisiteSkill?: string;
 }
 
 /**
@@ -52,23 +54,23 @@ export interface SkillCombatEffects {
  * @property name - Display name of the skill
  * @property description - Flavor text or lore description of the skill
  * @property level - (Guess) Skill level or power tier
+ * @property philosophicalAspect - Which stat type this skill is aligned with
  * @property manaCost - Mana points required to use this skill
+ * @property category - Category of skill (fallacy or paradox)
  * @property damageCalculation - Optional: formula or description for calculating damage
  * @property effect - Optional: (Guess) mechanical effect identifier or description
- * @property type - Category of skill (fallacy or paradox)
- * @property philosophicalAspect - Optional: which stat type this skill is aligned with
  * @property learningRequirement - Optional: prerequisites needed to learn this skill
  */
 export interface Skill {
     id: string;
     name: string;
+    category: SkillCategory;
+    philosophicalAspect: SkillsStatType;
     description: string;
     level: number;
     manaCost: number;
+    learningRequirement?: SkillLearningRequirement;
     damageCalculation?: string;
     effect?: string;
-    type: SkillCategory;
-    philosophicalAspect?: SkillsStatType;
-    learningRequirement?: SkillLearningRequirement;
 }
 

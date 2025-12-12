@@ -1,0 +1,115 @@
+# World Module Rules
+
+## Purpose
+Manages the game world including continents, maps, nodes, events, and quests. The world should feel interconnected yet explorable, with each area having distinct character.
+
+## World Hierarchy
+```
+World
+└── Continents (e.g., Coastal Continent)
+    └── Maps (e.g., Fishing Village, Northern Forest)
+        └── Nodes (traversable locations)
+            └── Events (encounters, treasures, NPCs)
+```
+
+## Map System
+
+### Map Structure
+```typescript
+interface Map {
+    name: MapName;
+    continent: ContinentName;
+    description: string;
+    startingNode: MapNode;
+    completedNodes: NodeId[];
+    availableNodes: NodeId[];
+    lockedNodes: NodeId[];
+    enemies?: Enemy[];
+    npcs?: NPC[];
+    availableEvents: MapEvent[];
+    uniqueEvents: UniqueEvent[];
+}
+```
+
+### Node System
+Nodes are discrete locations on a map:
+- Each node has connections to other nodes
+- Players traverse node-to-node
+- Nodes can have events, encounters, or be empty
+
+### Node ID Convention
+Use format: `{mapAcronym}-{number}`
+- `fv-1` = Fishing Village node 1
+- `nf-3` = Northern Forest node 3
+
+## Event Types
+What can happen at a node:
+- **encounter**: Random enemy battle
+- **boss-encounter**: Scripted boss fight
+- **event**: Story/narrative moment
+- **treasure**: Loot discovery
+- **gather**: Resource collection point
+- **quest**: Quest trigger or objective
+- **shop**: Merchant NPC
+- **npc**: Character interaction
+- **other**: Miscellaneous
+
+## Quest System
+```typescript
+interface Quest {
+    name: QuestName;
+    description: string;
+    containingMap: MapName;
+    reward: Reward;
+    connectingQuest?: QuestName;  // Quest chains
+}
+```
+
+## Progression Mechanics
+
+### Map Unlocking
+- Complete current map → unlock connected maps
+- Some maps require quest completion
+- Boss defeats may unlock new areas
+
+### Node Progression
+- Start at `startingNode`
+- Complete node → add to `completedNodes`
+- Connected nodes become `availableNodes`
+- Some nodes start in `lockedNodes` (key items, quests)
+
+## Unique Events
+One-time events that don't repeat:
+```typescript
+interface UniqueEvent {
+    id: string;
+    name: MapEvents;
+    description: string;
+    nodeLocation: [number, number];
+    completed: boolean;
+}
+```
+
+## Implementation Guidelines
+
+### Creating New Maps
+1. Define in `map.library.ts` as MapName
+2. Create map data in `Continents/{continent-name}/maps.ts`
+3. Add to continent's `availableMaps` or `lockedMaps`
+4. Define enemies, NPCs, and events
+
+### WorldState Management
+State-changing operations in reducers:
+- `changeMap(state, mapName)` → WorldState
+- `completeNode(state, nodeId)` → WorldState
+- `unlockNode(state, nodeId)` → WorldState
+- `triggerEvent(state, eventId)` → WorldState
+
+## File Organization
+- `index.ts` - World navigation logic
+- `map.library.ts` - Map name enumerations
+- `quest.library.ts` - Quest name enumerations
+- `world.mock.ts` - Test world data
+- `types.d.ts` - World, Map, Quest types
+- `Continents/` - Subdirectories for each continent's maps
+

@@ -1,0 +1,56 @@
+# Character Module Rules
+
+## Purpose
+Manages player character creation, progression, and state. Characters are the player's avatar in the world, with stats that determine their capabilities in combat and exploration.
+
+## Core Types
+- `Character` - Full player character with stats, resources, inventory
+- `BaseStats` - The three core attributes: heart, body, mind
+- `DerivedStats` - Calculated combat stats (skill, defense, save, test for each type)
+- When working on the Character, suggest a stat that could be helpful based off of whatever we're currently working on
+
+## Non-Derived Stats
+<!-- TBD -->
+<!-- - Non-Dereived Stats (specifics TBD) will be gained by alternative methods -->
+<!-- - They will be relevant against certain skills, effects, and equipment -->
+
+## Stat System (TTRPG-Inspired)
+Similar to D&D's ability scores, but simplified to three pillars:
+- **Heart** (like Charisma + Wisdom): Emotional intelligence, willpower, social skills
+- **Body** (like Strength + Constitution): Physical power, endurance, health
+- **Mind** (like Intelligence + Dexterity): Mental acuity, reflexes, perception
+
+### Derived Stats Pattern
+Each base stat derives four combat values (inspired by D&D's saves and skills):
+- **Skill**: Attack/action modifier (like proficiency bonus)
+- **Defense**: Passive defense threshold (like AC)
+- **Save**: Resist effects saving throw (like saving throws)
+- **Test**: Ability checks (like skill checks)
+
+## Implementation Guidelines
+
+### Character Creation
+- Use factory functions like `createCharacter(options)`
+- Calculate derived stats automatically from base stats
+- Initialize health/mana at maximum values
+- Start with empty inventory
+
+### Resource Calculations
+- `maxHealth = f(level, body, heart)` - Heartier characters survive longer
+- `maxMana = f(level, mind, heart)` - Magical characters have more mana
+- Experience scales per level (1000 XP per level)
+
+### Level Up Pattern (D&D-Inspired)
+When implementing level progression:
+- Increase stat points to allocate
+- Recalculate derived stats
+- Potentially learn new skills
+- Adjust health/mana maximums
+
+## Reducer Functions
+Any function that modifies Character state should live in a reducer file:
+- `levelUp(character)` → Character
+- `allocateStat(character, stat, points)` → Character
+- `healCharacter(character, amount)` → Character
+- `damageCharacter(character, amount)` → Character
+
