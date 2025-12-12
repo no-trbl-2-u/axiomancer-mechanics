@@ -66,7 +66,6 @@ export interface QuestItem extends BaseItem {
  */
 export type Item = Equipment | Consumable | Material | QuestItem;
 
-
 // ============================================================================
 // ITEM TYPE GUARDS
 // ============================================================================

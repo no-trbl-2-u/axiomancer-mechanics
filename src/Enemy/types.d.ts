@@ -8,6 +8,8 @@
  * - Loot tables and rewards
  */
 
+import { Item } from 'Items';
+import { Skill } from '../Skills/types';
 import { Map } from '../World/types';
 
 /**
@@ -40,7 +42,6 @@ export interface EnemyStats {
     emotionalDefense: number;
 }
 
-
 /**
  * Enemy logic type representing the enemy's decision-making process
  * - 'random': The enemy will choose an action randomly
@@ -63,20 +64,24 @@ export type EnemyLogic = 'random' | 'aggressive' | 'defensive' | 'balanced';
  * @property mapLocation - Reference to the map where this enemy can be encountered
  * @property enemyTier - Optional difficulty tier: 'normal' (standard enemy), 'elite' (stronger), or 'boss' (major encounter)
  * @property description - Flavor text or lore description of the enemy
- */
+ * @property logic - The enemy's decision-making process
+ * @property skills - Optional: list of skills the enemy can use
+ * @property loot - Optional: list of items the enemy can drop
+ * @todo: **FRONTEND ONLY**: image - Optional: visual representation of the enemy
+*/
 export interface Enemy {
     id: string;
     name: string;
+    description: string;
+    enemyTier?: 'simple' | 'normal' | 'elite' | 'boss' | 'unique';
     level: number;
     health: number;
     mana: number;
     enemyStats: EnemyStats;
     mapLocation: Pick<Map, 'name'>;
-    enemyTier?: 'normal' | 'elite' | 'boss';
-    description: string;
     logic: EnemyLogic;
-    // TODO:
+    skills?: Skill[];
+    loot?: Item[];
+    /* For Frontend Display */
     // image: Image; { alt: string, src: string }
-    // skills: Skill[];
-    // loot: LootTable;
 }
