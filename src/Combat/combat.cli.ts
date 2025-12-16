@@ -28,9 +28,9 @@ async function main() {
       name: 'reactionType',
       message: 'Select which part of yourself you choose to respond with...',
       choices: [
-        'Heart',
-        'Body',
-        'Mind'
+        { name: 'Heart', value: 'heart' },
+        { name: 'Body', value: 'body' },
+        { name: 'Mind', value: 'mind' }
       ]
     },
     {
