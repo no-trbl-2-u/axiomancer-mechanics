@@ -47,9 +47,14 @@ export type EffectCategory = 'stat' | 'damage' | 'defense' | 'control' | 'regene
 
 /**
  * Which stat type the effect targets or scales with
- * Mirrors ActionType for consistency with combat mechanics.
+ * Can target either base stats (body/mind/heart) or specific derived stats
  */
-export type EffectStatTarget = ActionType;
+export type EffectStatTarget =
+    | ActionType  // Base stats: 'body' | 'mind' | 'heart'
+    | 'physicalSkill' | 'physicalDefense' | 'physicalSave' | 'physicalTest'
+    | 'mentalSkill' | 'mentalDefense' | 'mentalSave' | 'mentalTest'
+    | 'emotionalSkill' | 'emotionalDefense' | 'emotionalSave' | 'emotionalTest'
+    | 'luck';
 
 // ===============================================
 // EFFECT MODIFIERS
@@ -57,7 +62,9 @@ export type EffectStatTarget = ActionType;
 
 /**
  * Stat modification applied by an effect
- * @property stat - Which stat type to modify (body/mind/heart)
+ * @property stat - Which stat to modify (base or derived)
+ *   - Base stats (body/mind/heart): Affect both base value and all derived stats
+ *   - Derived stats: Affect only that specific derived stat
  * @property value - Amount to add (positive) or subtract (negative)
  * @property isMultiplier - If true, value is a multiplier (e.g., 1.5 = +50%)
  */
