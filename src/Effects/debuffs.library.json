@@ -1,0 +1,647 @@
+{
+  "debuffs": [
+    {
+      "id": "debuff_all_stats_down",
+      "name": "Heap's Collapse",
+      "description": "One grain of weakness means nothing. But grain by grain, imperceptibly, you've ceased to be a heap of power at all.",
+      "type": "debuff",
+      "category": "stat",
+      "duration": 3,
+      "stacking": "intensity",
+      "payload": {
+        "statModifiers": [
+          { "stat": "body", "value": -2, "isMultiplier": false },
+          { "stat": "mind", "value": -2, "isMultiplier": false },
+          { "stat": "heart", "value": -2, "isMultiplier": false }
+        ],
+        "rollModifier": -1
+      }
+    },
+    {
+      "id": "debuff_poison",
+      "name": "Curry's Corruption",
+      "description": "If this poison harms you, then it spreads. The conditional is vacuously true. The conclusion is inevitably, recursively toxic.",
+      "type": "debuff",
+      "category": "damage",
+      "duration": 4,
+      "stacking": "intensity",
+      "payload": {
+        "damageOverTime": {
+          "damagePerRound": 3,
+          "damageType": "body"
+        }
+      }
+    },
+    {
+      "id": "debuff_strong_poison",
+      "name": "Yablo's Venom",
+      "description": "Each moment of pain refers to the next: 'All pain after this will be worse.' No self-reference, yet infinitely escalating agony.",
+      "type": "debuff",
+      "category": "damage",
+      "duration": 3,
+      "stacking": "intensity",
+      "payload": {
+        "damageOverTime": {
+          "damagePerRound": 5,
+          "damageType": "body"
+        },
+        "statModifiers": [
+          { "stat": "body", "value": -1, "isMultiplier": false }
+        ]
+      }
+    },
+    {
+      "id": "debuff_bleed",
+      "name": "Theseus' Dissolution",
+      "description": "Plank by plank, your ship comes apart. Drop by drop, you become less yourself. When does the bleeding stop being you?",
+      "type": "debuff",
+      "category": "damage",
+      "duration": 4,
+      "stacking": "intensity",
+      "payload": {
+        "damageOverTime": {
+          "damagePerRound": 2,
+          "damageType": "body"
+        }
+      }
+    },
+    {
+      "id": "debuff_burn",
+      "name": "Olbers' Fire",
+      "description": "If infinite stars fill the sky, why is it dark? Because their light is delayed. When it arrives all at once—you burn in accumulated radiance.",
+      "type": "debuff",
+      "category": "damage",
+      "duration": 3,
+      "stacking": "intensity",
+      "payload": {
+        "damageOverTime": {
+          "damagePerRound": 4,
+          "damageType": "heart"
+        },
+        "statModifiers": [
+          { "stat": "heart", "value": -1, "isMultiplier": false }
+        ]
+      }
+    },
+    {
+      "id": "debuff_frostbite",
+      "name": "Boltzmann's Chill",
+      "description": "Random fluctuations conspire against you—entropy arranges itself into impossible cold. Your movements slow toward heat death.",
+      "type": "debuff",
+      "category": "damage",
+      "duration": 3,
+      "stacking": "duration",
+      "payload": {
+        "damageOverTime": {
+          "damagePerRound": 2,
+          "damageType": "body"
+        },
+        "rollModifier": -2
+      }
+    },
+    {
+      "id": "debuff_shock",
+      "name": "Hardy's Discharge",
+      "description": "Two particles that should never meet—do. The impossible measurement occurs. Reality contradicts itself through your nervous system.",
+      "type": "debuff",
+      "category": "damage",
+      "duration": 2,
+      "stacking": "intensity",
+      "payload": {
+        "damageOverTime": {
+          "damagePerRound": 3,
+          "damageType": "mind"
+        },
+        "rollModifier": -1
+      }
+    },
+    {
+      "id": "debuff_curse",
+      "name": "Grelling's Malediction",
+      "description": "This curse is heterological—it does not describe itself. But then it does describe itself. The contradiction festers in your soul.",
+      "type": "debuff",
+      "category": "stat",
+      "duration": 5,
+      "stacking": "none",
+      "payload": {
+        "statModifiers": [
+          { "stat": "body", "value": -1, "isMultiplier": false },
+          { "stat": "mind", "value": -1, "isMultiplier": false },
+          { "stat": "heart", "value": -2, "isMultiplier": false }
+        ],
+        "rollModifier": -2
+      }
+    },
+    {
+      "id": "debuff_disease",
+      "name": "Inspection Sickness",
+      "description": "You randomly sampled this moment—but longer illnesses are more likely to be sampled. Your disease will last longer than average, paradoxically.",
+      "type": "debuff",
+      "category": "damage",
+      "duration": 4,
+      "stacking": "duration",
+      "payload": {
+        "damageOverTime": {
+          "damagePerRound": 2,
+          "damageType": "body"
+        },
+        "regeneration": {
+          "healthPerRound": -1
+        }
+      }
+    },
+    {
+      "id": "debuff_wound",
+      "name": "Berry's Injury",
+      "description": "The smallest wound not describable in fewer than eleven words. By describing it, we've created it. Definability becomes damage.",
+      "type": "debuff",
+      "category": "stat",
+      "duration": 4,
+      "stacking": "intensity",
+      "payload": {
+        "statModifiers": [
+          { "stat": "body", "value": -2, "isMultiplier": false }
+        ],
+        "defenseModifier": -2
+      }
+    },
+    {
+      "id": "debuff_stun",
+      "name": "Buridan's Paralysis",
+      "description": "Like the ass between two hay bales, you cannot choose. Perfect rationality demands sufficient reason—and you have none. You stand frozen.",
+      "type": "debuff",
+      "category": "control",
+      "duration": 1,
+      "stacking": "duration",
+      "payload": {
+        "actionRestriction": {
+          "skipTurn": true
+        }
+      }
+    },
+    {
+      "id": "debuff_sleep",
+      "name": "Sleeping Beauty's Rest",
+      "description": "You wake, uncertain if this is Monday or Tuesday—or if the coin landed heads. Unable to resolve your credence, you drift back to unconsciousness.",
+      "type": "debuff",
+      "category": "control",
+      "duration": 2,
+      "stacking": "none",
+      "payload": {
+        "actionRestriction": {
+          "skipTurn": true
+        },
+        "defenseModifier": -3
+      }
+    },
+    {
+      "id": "debuff_daze",
+      "name": "Simpson's Confusion",
+      "description": "Each part of your thinking is superior, yet combined they're inferior. Your mind's aggregation betrays its components.",
+      "type": "debuff",
+      "category": "control",
+      "duration": 2,
+      "stacking": "duration",
+      "payload": {
+        "rollModifier": -3,
+        "statModifiers": [
+          { "stat": "mind", "value": -2, "isMultiplier": false }
+        ]
+      }
+    },
+    {
+      "id": "debuff_petrify",
+      "name": "Zeno's Stillness",
+      "description": "To move, you must first move half the distance. Then half again. Infinite steps in finite time—but your muscles refuse the mathematics.",
+      "type": "debuff",
+      "category": "control",
+      "duration": 2,
+      "stacking": "none",
+      "payload": {
+        "actionRestriction": {
+          "skipTurn": true
+        },
+        "defenseModifier": -4
+      }
+    },
+    {
+      "id": "debuff_fear",
+      "name": "Grandfather's Terror",
+      "description": "You see the paradox of your own destruction—if you fight, you ensure your doom; if you flee, you ensure your doom. Either path leads backward to oblivion.",
+      "type": "debuff",
+      "category": "control",
+      "duration": 2,
+      "stacking": "duration",
+      "payload": {
+        "rollModifier": -3,
+        "statModifiers": [
+          { "stat": "heart", "value": -3, "isMultiplier": false }
+        ]
+      }
+    },
+    {
+      "id": "debuff_charm",
+      "name": "Wigner's Friendship",
+      "description": "From your perspective, your reality has collapsed into serving them. From outside, you remain in superposition. Neither view is wrong. You obey.",
+      "type": "debuff",
+      "category": "control",
+      "duration": 2,
+      "stacking": "none",
+      "payload": {
+        "actionRestriction": {
+          "forcedActionType": "heart"
+        },
+        "statModifiers": [
+          { "stat": "heart", "value": -2, "isMultiplier": false }
+        ]
+      }
+    },
+    {
+      "id": "debuff_confusion",
+      "name": "Two Envelope Delirium",
+      "description": "Should you switch? The other choice always seems better. You switch targets, switch tactics, switch again—always certain switching helps, always wrong.",
+      "type": "debuff",
+      "category": "control",
+      "duration": 3,
+      "stacking": "duration",
+      "payload": {
+        "rollModifier": -4,
+        "advantageModifier": {
+          "grantDisadvantage": ["body", "mind", "heart"]
+        }
+      }
+    },
+    {
+      "id": "debuff_blind",
+      "name": "Quantum Erasure",
+      "description": "Information about your target has been erased from reality itself. You know they exist; you cannot know where. Observation fails.",
+      "type": "debuff",
+      "category": "control",
+      "duration": 2,
+      "stacking": "duration",
+      "payload": {
+        "rollModifier": -5,
+        "advantageModifier": {
+          "grantDisadvantage": ["body", "mind"]
+        }
+      }
+    },
+    {
+      "id": "debuff_silence",
+      "name": "Moore's Muteness",
+      "description": "You believe you can speak, yet you don't believe you're speaking. The absurdity freezes your voice. Assertion becomes impossible.",
+      "type": "debuff",
+      "category": "control",
+      "duration": 3,
+      "stacking": "none",
+      "payload": {
+        "actionRestriction": {
+          "blockedActionTypes": ["heart"]
+        },
+        "statModifiers": [
+          { "stat": "heart", "value": -2, "isMultiplier": false }
+        ]
+      }
+    },
+    {
+      "id": "debuff_berserk",
+      "name": "Problem of Evil",
+      "description": "If you are all-powerful, why do you suffer? If all-knowing, why not prevent it? Your rage at the paradox consumes reason—omnipotent fury, impotent wisdom.",
+      "type": "debuff",
+      "category": "stat",
+      "duration": 3,
+      "stacking": "none",
+      "payload": {
+        "statModifiers": [
+          { "stat": "body", "value": 3, "isMultiplier": false },
+          { "stat": "mind", "value": -4, "isMultiplier": false },
+          { "stat": "heart", "value": -2, "isMultiplier": false }
+        ],
+        "defenseModifier": -3
+      }
+    },
+    {
+      "id": "debuff_fatigue",
+      "name": "Preface Exhaustion",
+      "description": "You believe each action you take is correct. You also believe some of your actions must be mistakes. The inconsistency drains you.",
+      "type": "debuff",
+      "category": "stat",
+      "duration": 4,
+      "stacking": "intensity",
+      "payload": {
+        "statModifiers": [
+          { "stat": "body", "value": -1, "isMultiplier": false },
+          { "stat": "mind", "value": -1, "isMultiplier": false }
+        ],
+        "rollModifier": -1
+      }
+    },
+    {
+      "id": "debuff_exhaustion",
+      "name": "Lottery Despair",
+      "description": "For each effort, you rationally believe it will fail. Combined, you believe nothing will succeed. Yet something must. The contradiction exhausts you.",
+      "type": "debuff",
+      "category": "stat",
+      "duration": 3,
+      "stacking": "intensity",
+      "payload": {
+        "statModifiers": [
+          { "stat": "body", "value": -2, "isMultiplier": false },
+          { "stat": "mind", "value": -2, "isMultiplier": false },
+          { "stat": "heart", "value": -2, "isMultiplier": false }
+        ],
+        "rollModifier": -2
+      }
+    },
+    {
+      "id": "debuff_slow",
+      "name": "Achilles' Burden",
+      "description": "You are Achilles—faster than any tortoise. Yet the tortoise is always ahead. No matter how swiftly you act, you're always one step behind.",
+      "type": "debuff",
+      "category": "control",
+      "duration": 3,
+      "stacking": "duration",
+      "payload": {
+        "rollModifier": -2,
+        "advantageModifier": {
+          "grantDisadvantage": ["body"]
+        }
+      }
+    },
+    {
+      "id": "debuff_root",
+      "name": "Braess Binding",
+      "description": "Adding options makes things worse. You could move, but seeing the paths available creates congestion in your muscles. Paralysis through possibility.",
+      "type": "debuff",
+      "category": "control",
+      "duration": 2,
+      "stacking": "duration",
+      "payload": {
+        "defenseModifier": -2,
+        "rollModifier": -2
+      }
+    },
+    {
+      "id": "debuff_knockdown",
+      "name": "Ross-Littlewood Fall",
+      "description": "At noon, how many balls remain? Your stance is like the paradox—adding and removing faster and faster until at the limit, nothing coherent remains.",
+      "type": "debuff",
+      "category": "control",
+      "duration": 1,
+      "stacking": "none",
+      "payload": {
+        "defenseModifier": -4,
+        "rollModifier": -3
+      }
+    },
+    {
+      "id": "debuff_vulnerability_body",
+      "name": "Richard's Exposure",
+      "description": "Your physical defenses are defined in terms of themselves—a diagonal contradiction. The enumeration reveals your weakness; Body attacks pierce deeply.",
+      "type": "debuff",
+      "category": "defense",
+      "duration": 3,
+      "stacking": "duration",
+      "payload": {
+        "statModifiers": [
+          { "stat": "body", "value": -3, "isMultiplier": false }
+        ]
+      }
+    },
+    {
+      "id": "debuff_vulnerability_mind",
+      "name": "Cantor's Gap",
+      "description": "Your mental defenses are countably infinite—impressive, until you face uncountable assault. There's always a larger infinity of thoughts to break you.",
+      "type": "debuff",
+      "category": "defense",
+      "duration": 3,
+      "stacking": "duration",
+      "payload": {
+        "statModifiers": [
+          { "stat": "mind", "value": -3, "isMultiplier": false }
+        ]
+      }
+    },
+    {
+      "id": "debuff_vulnerability_heart",
+      "name": "Burali-Forti Wound",
+      "description": "Your emotional ordinals exceed their own bounds. The set of all your feelings contains a feeling greater than all feelings. Your Heart tears itself apart.",
+      "type": "debuff",
+      "category": "defense",
+      "duration": 3,
+      "stacking": "duration",
+      "payload": {
+        "statModifiers": [
+          { "stat": "heart", "value": -3, "isMultiplier": false }
+        ]
+      }
+    },
+    {
+      "id": "debuff_mark",
+      "name": "Raven's Target",
+      "description": "Evidence confirms equivalent hypotheses. A green apple confirms all ravens are black—and confirms you are the target. Everything points to you.",
+      "type": "debuff",
+      "category": "advantage",
+      "duration": 3,
+      "stacking": "none",
+      "payload": {
+        "defenseModifier": -3,
+        "advantageModifier": {
+          "grantDisadvantage": ["body", "mind", "heart"]
+        }
+      }
+    },
+    {
+      "id": "debuff_body_attack_down",
+      "name": "Omnipotence Failure",
+      "description": "Can you create a blow so powerful you cannot throw it? The paradox resolves: no. Your physical might crumbles under logical contradiction.",
+      "type": "debuff",
+      "category": "stat",
+      "duration": 3,
+      "stacking": "intensity",
+      "payload": {
+        "statModifiers": [
+          { "stat": "body", "value": -2, "isMultiplier": false }
+        ],
+        "rollModifier": -1
+      }
+    },
+    {
+      "id": "debuff_mind_attack_down",
+      "name": "GHZ Collapse",
+      "description": "Your thoughts were entangled in perfect correlation—until measurement. Now local realism fails. Your Mind attacks scatter incoherently.",
+      "type": "debuff",
+      "category": "stat",
+      "duration": 3,
+      "stacking": "intensity",
+      "payload": {
+        "statModifiers": [
+          { "stat": "mind", "value": -2, "isMultiplier": false }
+        ],
+        "rollModifier": -1
+      }
+    },
+    {
+      "id": "debuff_heart_attack_down",
+      "name": "Toxin Hesitation",
+      "description": "Intend to feel and you get rewarded—but you know you won't follow through. Unable to genuinely commit, your Heart attacks lack conviction.",
+      "type": "debuff",
+      "category": "stat",
+      "duration": 3,
+      "stacking": "intensity",
+      "payload": {
+        "statModifiers": [
+          { "stat": "heart", "value": -2, "isMultiplier": false }
+        ],
+        "rollModifier": -1
+      }
+    },
+    {
+      "id": "debuff_evasion_down",
+      "name": "Dartboard Certainty",
+      "description": "Every point has zero probability of being hit—yet something is always hit. Probability zero doesn't mean impossible. You will be struck.",
+      "type": "debuff",
+      "category": "defense",
+      "duration": 3,
+      "stacking": "duration",
+      "payload": {
+        "defenseModifier": -3
+      }
+    },
+    {
+      "id": "debuff_accuracy_down",
+      "name": "Ellsberg's Doubt",
+      "description": "Known risks you could handle. Unknown probabilities paralyze. Your attacks carry ambiguous odds—and ambiguity breeds failure.",
+      "type": "debuff",
+      "category": "advantage",
+      "duration": 3,
+      "stacking": "duration",
+      "payload": {
+        "rollModifier": -3
+      }
+    },
+    {
+      "id": "debuff_defense_down",
+      "name": "Prisoner's Betrayal",
+      "description": "Rational self-interest dictates you defect—leave yourself exposed. Individual logic produces collective disaster. Your defenses abandon you.",
+      "type": "debuff",
+      "category": "defense",
+      "duration": 3,
+      "stacking": "intensity",
+      "payload": {
+        "defenseModifier": -3,
+        "statModifiers": [
+          { "stat": "body", "value": -1, "isMultiplier": false }
+        ]
+      }
+    },
+    {
+      "id": "debuff_dispel",
+      "name": "Skolem's Reduction",
+      "description": "Your infinite buffs are countable from outside. Enumerated, bounded, finite after all. The Löwenheim-Skolem theorem strips your power away.",
+      "type": "debuff",
+      "category": "stat",
+      "duration": 0,
+      "stacking": "none",
+      "payload": {}
+    },
+    {
+      "id": "debuff_hex",
+      "name": "Allais' Curse",
+      "description": "Your allies' pain becomes yours—you violate expected utility by feeling their losses more than logic allows. Independence fails; harm transfers.",
+      "type": "debuff",
+      "category": "damage",
+      "duration": 3,
+      "stacking": "none",
+      "payload": {
+        "damageOverTime": {
+          "damagePerRound": 2,
+          "damageType": "heart"
+        }
+      }
+    },
+    {
+      "id": "debuff_hp_decay",
+      "name": "Centipede's End",
+      "description": "Backward induction reveals the truth: at every step, you should have given up earlier. Your vitality unravels from the conclusion backward.",
+      "type": "debuff",
+      "category": "damage",
+      "duration": 4,
+      "stacking": "none",
+      "payload": {
+        "damageOverTime": {
+          "damagePerRound": 3,
+          "damageType": "body"
+        },
+        "regeneration": {
+          "healthPerRound": -2
+        }
+      }
+    },
+    {
+      "id": "debuff_moral_learning",
+      "name": "Moral Blindness",
+      "description": "To learn what's right, you must recognize right when you see it. But to recognize it, you must already know it. Your ethical compass spins uselessly.",
+      "type": "debuff",
+      "category": "control",
+      "duration": 3,
+      "stacking": "none",
+      "payload": {
+        "statModifiers": [
+          { "stat": "heart", "value": -2, "isMultiplier": false },
+          { "stat": "mind", "value": -1, "isMultiplier": false }
+        ],
+        "rollModifier": -1
+      }
+    },
+    {
+      "id": "debuff_transformative",
+      "name": "Transformative Terror",
+      "description": "You cannot know what you'll become until you become it. But the decision must be made now, with values you won't keep. Identity fractures under impossible choice.",
+      "type": "debuff",
+      "category": "control",
+      "duration": 2,
+      "stacking": "none",
+      "payload": {
+        "rollModifier": -2,
+        "statModifiers": [
+          { "stat": "mind", "value": -2, "isMultiplier": false },
+          { "stat": "heart", "value": -1, "isMultiplier": false }
+        ]
+      }
+    },
+    {
+      "id": "debuff_rational_disagreement",
+      "name": "Peer Doubt",
+      "description": "Your equal disagrees. You're both rational, both informed. Neither can claim superiority. Belief becomes impossible; action becomes paralysis.",
+      "type": "debuff",
+      "category": "stat",
+      "duration": 2,
+      "stacking": "duration",
+      "payload": {
+        "statModifiers": [
+          { "stat": "mind", "value": -3, "isMultiplier": false }
+        ],
+        "rollModifier": -2
+      }
+    },
+    {
+      "id": "debuff_causal_emergence",
+      "name": "Emergence Failure",
+      "description": "Your consciousness should have causal power—but physics is causally closed. Your will is epiphenomenal, an illusion. Commands fail to reach your limbs.",
+      "type": "debuff",
+      "category": "control",
+      "duration": 2,
+      "stacking": "none",
+      "payload": {
+        "rollModifier": -2,
+        "statModifiers": [
+          { "stat": "mind", "value": -2, "isMultiplier": false }
+        ],
+        "advantageModifier": {
+          "grantDisadvantage": ["mind"]
+        }
+      }
+    }
+  ]
+}

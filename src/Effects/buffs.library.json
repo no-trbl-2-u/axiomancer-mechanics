@@ -1,0 +1,466 @@
+{
+  "buffs": [
+    {
+      "id": "buff_body_attack_up",
+      "name": "Achilles' Momentum",
+      "description": "Like Achilles chasing the tortoise, each strike brings you inexorably closer to overwhelming force. Your Body attacks gain devastating power.",
+      "type": "buff",
+      "category": "stat",
+      "duration": 3,
+      "stacking": "intensity",
+      "payload": {
+        "statModifiers": [
+          { "stat": "body", "value": 2, "isMultiplier": false }
+        ],
+        "rollModifier": 2
+      }
+    },
+    {
+      "id": "buff_mind_attack_up",
+      "name": "Schrödinger's Focus",
+      "description": "Your mind exists in superposition—simultaneously calculating every possible outcome until observation collapses into perfect execution.",
+      "type": "buff",
+      "category": "stat",
+      "duration": 3,
+      "stacking": "intensity",
+      "payload": {
+        "statModifiers": [
+          { "stat": "mind", "value": 2, "isMultiplier": false }
+        ],
+        "rollModifier": 2
+      }
+    },
+    {
+      "id": "buff_heart_attack_up",
+      "name": "Bootstrap Passion",
+      "description": "Your conviction creates itself—passion born from passion, an endless loop of emotional intensity that defies causal logic.",
+      "type": "buff",
+      "category": "stat",
+      "duration": 3,
+      "stacking": "intensity",
+      "payload": {
+        "statModifiers": [
+          { "stat": "heart", "value": 2, "isMultiplier": false }
+        ],
+        "rollModifier": 2
+      }
+    },
+    {
+      "id": "buff_body_defense_up",
+      "name": "Theseus' Constitution",
+      "description": "Like the legendary ship, your body repairs and replaces itself—each wound healed strengthens the whole, though philosophers may debate if you remain the same.",
+      "type": "buff",
+      "category": "defense",
+      "duration": 4,
+      "stacking": "duration",
+      "payload": {
+        "statModifiers": [
+          { "stat": "body", "value": 2, "isMultiplier": false }
+        ],
+        "defenseModifier": 2
+      }
+    },
+    {
+      "id": "buff_mind_defense_up",
+      "name": "Epistemic Shield",
+      "description": "You know that you know that you know—infinite layers of meta-awareness create an impenetrable barrier against mental assault.",
+      "type": "buff",
+      "category": "defense",
+      "duration": 4,
+      "stacking": "duration",
+      "payload": {
+        "statModifiers": [
+          { "stat": "mind", "value": 2, "isMultiplier": false }
+        ],
+        "defenseModifier": 2
+      }
+    },
+    {
+      "id": "buff_heart_defense_up",
+      "name": "Paradox of Tolerance",
+      "description": "By becoming intolerant of harm, you preserve your tolerance for all else. Your emotional resilience strengthens through selective rejection.",
+      "type": "buff",
+      "category": "defense",
+      "duration": 4,
+      "stacking": "duration",
+      "payload": {
+        "statModifiers": [
+          { "stat": "heart", "value": 2, "isMultiplier": false }
+        ],
+        "defenseModifier": 2
+      }
+    },
+    {
+      "id": "buff_defend_up",
+      "name": "Hilbert's Shelter",
+      "description": "Your defense is an infinite hotel—no matter how many attacks arrive, there's always room to accommodate them without harm.",
+      "type": "buff",
+      "category": "defense",
+      "duration": 3,
+      "stacking": "none",
+      "payload": {
+        "defenseModifier": 4,
+        "statModifiers": [
+          { "stat": "body", "value": 1, "isMultiplier": false },
+          { "stat": "mind", "value": 1, "isMultiplier": false },
+          { "stat": "heart", "value": 1, "isMultiplier": false }
+        ]
+      }
+    },
+    {
+      "id": "buff_accuracy_up",
+      "name": "Bertrand's Precision",
+      "description": "In any given moment, you choose the interpretation of 'random' that most benefits your aim. Probability bends to your will.",
+      "type": "buff",
+      "category": "advantage",
+      "duration": 3,
+      "stacking": "intensity",
+      "payload": {
+        "rollModifier": 3
+      }
+    },
+    {
+      "id": "buff_evasion_up",
+      "name": "Arrow's Impossibility",
+      "description": "Like Zeno's arrow frozen in each instant, attacks that should strike you simply... don't. Motion toward harm becomes impossible.",
+      "type": "buff",
+      "category": "defense",
+      "duration": 3,
+      "stacking": "duration",
+      "payload": {
+        "defenseModifier": 3,
+        "advantageModifier": {
+          "grantDisadvantage": ["body", "mind", "heart"]
+        }
+      }
+    },
+    {
+      "id": "buff_critical_rate_up",
+      "name": "Observer's Collapse",
+      "description": "Your attacks exist in superposition until observed by your enemy. When they look, the wavefunction collapses—always into the deadliest outcome.",
+      "type": "buff",
+      "category": "advantage",
+      "duration": 4,
+      "stacking": "intensity",
+      "payload": {
+        "rollModifier": 2
+      }
+    },
+    {
+      "id": "buff_critical_damage_up",
+      "name": "Banach-Tarski Strike",
+      "description": "Your critical hits decompose and reassemble—one devastating blow becomes two, each as powerful as the original. Mathematics defies conservation.",
+      "type": "buff",
+      "category": "damage",
+      "duration": 3,
+      "stacking": "none",
+      "payload": {
+        "statModifiers": [
+          { "stat": "body", "value": 1.5, "isMultiplier": true },
+          { "stat": "mind", "value": 1.5, "isMultiplier": true },
+          { "stat": "heart", "value": 1.5, "isMultiplier": true }
+        ]
+      }
+    },
+    {
+      "id": "buff_haste",
+      "name": "Twin's Dilation",
+      "description": "While you move at relativistic speeds, time slows for your enemies. You act twice in what feels like a single moment.",
+      "type": "buff",
+      "category": "advantage",
+      "duration": 2,
+      "stacking": "none",
+      "payload": {
+        "rollModifier": 4,
+        "advantageModifier": {
+          "grantAdvantage": ["body", "mind", "heart"]
+        }
+      }
+    },
+    {
+      "id": "buff_regeneration",
+      "name": "Tristram's Recovery",
+      "description": "Like the writer who takes a year to document a day, your healing works faster than wounds accumulate. Eventually, you'll catch up.",
+      "type": "buff",
+      "category": "regeneration",
+      "duration": 5,
+      "stacking": "intensity",
+      "payload": {
+        "regeneration": {
+          "healthPerRound": 3
+        }
+      }
+    },
+    {
+      "id": "buff_max_hp_up",
+      "name": "Galileo's Infinity",
+      "description": "Your vitality is like perfect squares in natural numbers—somehow equal to the whole despite being only a part. Your maximum health expands impossibly.",
+      "type": "buff",
+      "category": "stat",
+      "duration": 5,
+      "stacking": "none",
+      "payload": {
+        "statModifiers": [
+          { "stat": "body", "value": 1.25, "isMultiplier": true }
+        ]
+      }
+    },
+    {
+      "id": "buff_barrier",
+      "name": "Gabriel's Horn",
+      "description": "A shield of infinite surface but finite volume wraps around you—attacks spread across its endless expanse, their force diluted to nothing.",
+      "type": "buff",
+      "category": "defense",
+      "duration": 3,
+      "stacking": "none",
+      "payload": {
+        "defenseModifier": 5
+      }
+    },
+    {
+      "id": "buff_damage_reduction",
+      "name": "Dichotomy Shield",
+      "description": "Every attack must first travel half the distance. Then half again. Then half again. By the time it reaches you, its power approaches zero.",
+      "type": "buff",
+      "category": "defense",
+      "duration": 3,
+      "stacking": "none",
+      "payload": {
+        "defenseModifier": 3,
+        "statModifiers": [
+          { "stat": "body", "value": 0.75, "isMultiplier": true },
+          { "stat": "mind", "value": 0.75, "isMultiplier": true },
+          { "stat": "heart", "value": 0.75, "isMultiplier": true }
+        ]
+      }
+    },
+    {
+      "id": "buff_invincibility",
+      "name": "EPR Entanglement",
+      "description": "You become quantum-entangled with a safe version of yourself in another reality. All harm befalls that other you; you remain untouched.",
+      "type": "buff",
+      "category": "defense",
+      "duration": 1,
+      "stacking": "none",
+      "payload": {
+        "defenseModifier": 99
+      }
+    },
+    {
+      "id": "buff_taunt",
+      "name": "Crocodile's Promise",
+      "description": "You present enemies with an impossible choice—attack you or face worse consequences. Like the child-stealing crocodile, your logic traps them.",
+      "type": "buff",
+      "category": "control",
+      "duration": 3,
+      "stacking": "none",
+      "payload": {
+        "defenseModifier": 2,
+        "statModifiers": [
+          { "stat": "body", "value": 1, "isMultiplier": false }
+        ]
+      }
+    },
+    {
+      "id": "buff_stealth",
+      "name": "Fermi's Absence",
+      "description": "Where are you? The paradox of your existence—you should be detectable, yet no evidence of you can be found. You are the universe's silent contradiction.",
+      "type": "buff",
+      "category": "advantage",
+      "duration": 2,
+      "stacking": "none",
+      "payload": {
+        "defenseModifier": 6,
+        "advantageModifier": {
+          "grantAdvantage": ["body", "mind", "heart"]
+        }
+      }
+    },
+    {
+      "id": "buff_all_stats_up",
+      "name": "Sorites Ascension",
+      "description": "One grain of power is nothing. Two grains still nothing. Yet somehow, grain by grain, you've become a heap of overwhelming force.",
+      "type": "buff",
+      "category": "stat",
+      "duration": 3,
+      "stacking": "none",
+      "payload": {
+        "statModifiers": [
+          { "stat": "body", "value": 2, "isMultiplier": false },
+          { "stat": "mind", "value": 2, "isMultiplier": false },
+          { "stat": "heart", "value": 2, "isMultiplier": false }
+        ],
+        "rollModifier": 1
+      }
+    },
+    {
+      "id": "buff_reflect",
+      "name": "Russell's Mirror",
+      "description": "You become the set of all things that reflect themselves. Attacks contain themselves, creating an impossible recursion that rebounds to sender.",
+      "type": "buff",
+      "category": "defense",
+      "duration": 2,
+      "stacking": "none",
+      "payload": {
+        "defenseModifier": 2
+      }
+    },
+    {
+      "id": "buff_counter",
+      "name": "Newcomb's Retribution",
+      "description": "Like the perfect predictor, you've already seen their attack coming. Your counterattack was prepared before they even decided to strike.",
+      "type": "buff",
+      "category": "advantage",
+      "duration": 3,
+      "stacking": "none",
+      "payload": {
+        "rollModifier": 2,
+        "advantageModifier": {
+          "grantAdvantage": ["body"]
+        }
+      }
+    },
+    {
+      "id": "buff_resistance_body",
+      "name": "Pole in Barn",
+      "description": "From your reference frame, physical attacks contract to fit within your defenses. Length becomes relative; harm becomes negotiable.",
+      "type": "buff",
+      "category": "defense",
+      "duration": 4,
+      "stacking": "duration",
+      "payload": {
+        "statModifiers": [
+          { "stat": "body", "value": 3, "isMultiplier": false }
+        ]
+      }
+    },
+    {
+      "id": "buff_resistance_mind",
+      "name": "Liar's Shield",
+      "description": "'This thought will not harm me.' If true, you're protected. If false, the thought didn't harm you. Either way, mental attacks fail.",
+      "type": "buff",
+      "category": "defense",
+      "duration": 4,
+      "stacking": "duration",
+      "payload": {
+        "statModifiers": [
+          { "stat": "mind", "value": 3, "isMultiplier": false }
+        ]
+      }
+    },
+    {
+      "id": "buff_resistance_heart",
+      "name": "Fiction's Wall",
+      "description": "You know emotional attacks aren't real—merely fictions. Yet somehow, knowing this provides genuine protection. The paradox shields you.",
+      "type": "buff",
+      "category": "defense",
+      "duration": 4,
+      "stacking": "duration",
+      "payload": {
+        "statModifiers": [
+          { "stat": "heart", "value": 3, "isMultiplier": false }
+        ]
+      }
+    },
+    {
+      "id": "buff_cleanse",
+      "name": "Barber's Paradox",
+      "description": "You shave away only those effects that don't remove themselves. The logical impossibility resolves—all negative conditions vanish.",
+      "type": "buff",
+      "category": "stat",
+      "duration": 0,
+      "stacking": "none",
+      "payload": {}
+    },
+    {
+      "id": "buff_buff_duration_up",
+      "name": "Unexpected Extension",
+      "description": "Your buffs will end on a day you don't expect. But by knowing this, you can never truly expect it... so they never end when expected.",
+      "type": "buff",
+      "category": "advantage",
+      "duration": 3,
+      "stacking": "none",
+      "payload": {
+        "rollModifier": 1
+      }
+    },
+    {
+      "id": "buff_status_chance_up",
+      "name": "Monty's Advantage",
+      "description": "Like switching doors, you've learned that counterintuitive choices yield better odds. Your effects land more often than probability suggests.",
+      "type": "buff",
+      "category": "advantage",
+      "duration": 4,
+      "stacking": "none",
+      "payload": {
+        "rollModifier": 3
+      }
+    },
+    {
+      "id": "buff_life_steal",
+      "name": "Maxwell's Siphon",
+      "description": "Like the demon sorting molecules, you separate your enemy's vitality from their form—fast energy to you, slow energy left behind.",
+      "type": "buff",
+      "category": "regeneration",
+      "duration": 4,
+      "stacking": "intensity",
+      "payload": {
+        "regeneration": {
+          "healthPerRound": 2
+        },
+        "rollModifier": 1
+      }
+    },
+    {
+      "id": "buff_advantage_body",
+      "name": "Predestination Strength",
+      "description": "Your physical dominance was always fated—your attempts to fight destiny only ensure your muscular superiority. Causality loops in your favor.",
+      "type": "buff",
+      "category": "advantage",
+      "duration": 3,
+      "stacking": "none",
+      "payload": {
+        "advantageModifier": {
+          "grantAdvantage": ["body"]
+        },
+        "statModifiers": [
+          { "stat": "body", "value": 1, "isMultiplier": false }
+        ]
+      }
+    },
+    {
+      "id": "buff_advantage_mind",
+      "name": "Knowability Insight",
+      "description": "If a truth is knowable, it must already be known. You know this truth: your Mind attacks will succeed. Therefore, they must.",
+      "type": "buff",
+      "category": "advantage",
+      "duration": 3,
+      "stacking": "none",
+      "payload": {
+        "advantageModifier": {
+          "grantAdvantage": ["mind"]
+        },
+        "statModifiers": [
+          { "stat": "mind", "value": 1, "isMultiplier": false }
+        ]
+      }
+    },
+    {
+      "id": "buff_advantage_heart",
+      "name": "Hedonist's Loop",
+      "description": "Pursuing happiness directly fails—so you pursue victory, and happiness follows. Your Heart surges with incidental joy made powerful.",
+      "type": "buff",
+      "category": "advantage",
+      "duration": 3,
+      "stacking": "none",
+      "payload": {
+        "advantageModifier": {
+          "grantAdvantage": ["heart"]
+        },
+        "statModifiers": [
+          { "stat": "heart", "value": 1, "isMultiplier": false }
+        ]
+      }
+    }
+  ]
+}
