@@ -1,0 +1,126 @@
+Here's a list of a bunch of buffs and debuffs: 
+
+Buffs
+Body Attack Up – Increases body attack rolls and damage.
+
+Defend Up – Get 2x modifier instead of 1.5x when defending.
+
+Mind Attack Up – Increases Mind Attack rolls and damage.
+
+Heart Attack Up – Increases Heart Attack rolls and Damage.
+
+Body Defense Up – Increases Body Defense. 
+
+Mind Defense Up – Increases Mind Defense.
+
+Heart Defense Up — Increases Heart Defense. 
+
+Accuracy Up – Increases all Attack rolls
+
+(�) Evasion Up – Increases chance to avoid attacks.
+
+Critical Rate Up – Lowers critical hit threshold from 20 to 19
+
+Critical Damage Up – Increases damage multiplier on critical hits.
+
+Speed/Haste – Provides an extra Attack per turn at half damage output (after damage vs defense).
+
+Slow – Decreases movement or action speed, giving fewer turns or AP. �Regeneration/Heal Over Time – Restores HP each round or second. �
+Anti‑Regeneration – Prevents or reduces all healing or HP recovery. �
+Max HP Up – Increases maximum hit points. �
+Max HP Down – Reduces maximum hit points. �
+Barrier/Shield – Grants a pool of temporary HP that is used before real HP. �
+Damage Reduction – Reduces all incoming damage by a percentage. �
+Invincibility – Negates all damage and harmful effects for a duration. �
+Taunt/Provoke – Forces enemies to target the taunted character. �
+Stealth/Invisibility – Prevents enemies from targeting or detecting the unit. �
+Guard/Defend – Reduces damage and sometimes improves resistance while active. �Strength Up – Raises physical power or STR attribute. �
+Strength Down/Weaken – Lowers STR, reducing physical damage. �
+Dexterity/Agility Up – Increases DEX/AGI, improving accuracy and evasion. �
+Dexterity/Agility Down – Lowers DEX/AGI, harming accuracy and defense. �
+Intelligence/Spirit Up – Increases spell power or magic resource efficiency. �
+Intelligence/Spirit Down – Reduces magical offense or resistance. �
+All‑Stats Up – Raises multiple core attributes at once. �
+
+Debuffs
+All‑Stats Down – Lowers several attributes simultaneously. �Poison – Deals damage over time each round or action. �
+Strong Poison – Higher‑tier poison that inflicts greater periodic damage. �
+Poison Sensitivity – Increases damage taken from poison effects. �
+Bleed – Inflicts physical damage over time, often scaling with attacker’s damage. �
+Burn/HP Burn – Deals damage over time, sometimes to the target’s whole team each turn. �
+Frostbite/Cold – Deals periodic damage and may slow actions or speed. �
+Shock/Paralytic Damage – Deals damage over time and may inflict stun or paralysis. �
+Curse – Reduces multiple stats or prevents certain actions, often hard to remove. �
+Disease – Reduces healing received or maximum HP, sometimes adding damage over time. �
+Injury/Wound – Lowers maximum HP or defense until treated. �Stun – Prevents all actions until it wears off or is cleared. �
+Paralysis – Often prevents actions or causes a high chance to lose turns. �
+Sleep – Target cannot act, usually wakes on damage and is vulnerable to crits. �
+Daze – Reduces effectiveness (e.g., can only take limited actions or suffers big penalties). �
+Staggered – Limits the target to a single action or significantly reduced activity. �
+Petrify/Stone – Completely immobilizes the target, often increasing damage taken. �
+Freeze – Prevents actions and sometimes increases damage received from specific elements. �
+Fear/Terror – Prevents the target from approaching or may force them to flee. �
+Charm – Temporarily turns the target to fight for the enemy. �
+Confusion – Causes the target to act randomly, potentially attacking allies. �Blind – Greatly reduces accuracy or chance to hit. �
+Dazzled – Mildly reduces attack rolls or perception. �
+Silence – Prevents casting spells or using magic abilities. �
+Mute – Blocks use of skills that require speech. �
+Deafened – Impairs sound‑based perception and some abilities. �
+Blinded by Rage/Berserk – Increases damage but removes control, lowers defense or accuracy. �
+Fatigued – Imposes small penalties to checks and actions, precursor to exhaustion. �
+Exhausted – More severe penalties to speed, attack, and checks. �
+Sickened – Applies penalties to attacks, damage, saves, and skills. �
+Nauseated – Prevents most actions except limited movement. �Haste – Grants extra actions or AP each turn. �
+Slow Time/Debuff Slow – Reduces actions per turn or AP gained. �
+Root/Trapped – Prevents movement but allows other actions. �
+Immobilize – Stops movement and sometimes reduces evasion. �
+Snare – Restricts movement area and may slow attempts to escape. �
+Knockdown/Prone – Forces the target to the ground, reducing defense and costing actions to stand. �
+Levitate/Flight – Grants movement over hazards and sometimes boosts evasion. �
+Teleport Lock/Bind – Prevents teleportation or escape abilities. �
+Haste‑like AP Boost – Increases resource gain per turn for more frequent skills. �
+Action Denial “Stunned” – A state where no actions are possible until cleared. �Reflect/Attack Reflector – Bounces certain attacks or spells back to the source. �
+Magic Reflect – Specifically reflects magic back at the caster. �
+Thorns/Counter – Returns a portion of damage when hit in melee. �
+Retaliate – Grants automatic counterattacks to those who strike the buffed target. �
+Damage Amplify/Defense Break – Increases damage the target receives from all sources. �
+Vulnerability – Increases damage taken from a specific element or type. �
+Resistance Up – Decreases damage or chance of being affected by specific elements. �
+Resistance Down – Increases chance to be afflicted or damaged by certain elements. �
+Hex – Causes targets to take damage when their allies are hit, ignoring defense. �
+Mark/Target – Makes the unit easier to hit or take bonus damage from attacks. �Invisibility Detection/True Sight – Allows seeing or targeting invisible enemies. �
+Anti‑Debuff – Prevents or automatically clears harmful status effects. �
+Cleanse – Removes existing debuffs from a target. �
+Dispel – Removes buffs from enemies or allies. �
+Immunity – Prevents a category of debuffs (e.g., immune to stun or poison). �
+Buff Restriction – Limits how many temporary buffs a unit can have. �
+Buff Duration Up – Extends the remaining time of active buffs. �
+Debuff Duration Up – Makes inflicted debuffs last longer. �
+Status Chance Up – Increases probability of inflicting conditions. �
+Status Chance Down – Reduces ability to apply conditions. �Regen MP/Resource Over Time – Restores mana or similar resources gradually. �
+Mana Burn – Removes MP over time or when acting. �
+Silence on Skill Use – Consumes resource but then blocks further casting. �
+Drain/Leech – Attacker heals based on damage dealt to an afflicted target. �
+Life Steal Buff – Grants healing equal to a portion of damage dealt. �
+Energy Shield – Damage is taken from mana or energy before HP. �
+HP Decay – HP continually decreases and cannot be restored by normal healing. �
+Resource Cost Increase – Raises resource cost of abilities. �
+Resource Lock – Prevents gaining or spending certain resources. �
+Cooldown Reduction – Shortens ability cooldown timers. �Critical Resistance – Lowers enemy chance to crit the target. �
+Evasion Down – Makes the target easier to hit. �
+Hit Rate Down – Reduces target’s accuracy. �
+Guard Break/Armor Shred – Greatly lowers physical defense or armor. �
+Magic Break – Reduces magic attack power. �
+Speed Down – Reduces action frequency or turn order priority. �
+Attack Down – Lowers physical damage output. �
+Defense Down – Increases damage received by lowering defense. �
+Elemental Infusion – Converts damage type to a chosen element, often boosting it. �
+Element Seal – Prevents the use of a specific element’s skills. �
+
+Use as many as you can from these to create a library of buffs and debuffs.
+
+1) Use "all-paradoxes.md" to help with naming and descriptions
+2) Use the Effects types to help determine the shape of these paradoxes
+3) Place them in "buffs.library.json" if it's beneficial and "debuffs.library.json" if it's detrimental 
+
+Before you begin, do you have any questions?
