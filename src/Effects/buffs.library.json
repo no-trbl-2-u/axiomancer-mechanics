@@ -226,12 +226,7 @@
       "duration": 3,
       "stacking": "none",
       "payload": {
-        "defenseModifier": 3,
-        "statModifiers": [
-          { "stat": "body", "value": 0.75, "isMultiplier": true },
-          { "stat": "mind", "value": 0.75, "isMultiplier": true },
-          { "stat": "heart", "value": 0.75, "isMultiplier": true }
-        ]
+        "defenseModifier": 5
       }
     },
     {
