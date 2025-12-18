@@ -68,32 +68,25 @@ export type Item = Equipment | Consumable | Material | QuestItem;
 
 // ============================================================================
 // ITEM TYPE GUARDS
+// Note: Type guards are implemented in index.ts - these are just type declarations
 // ============================================================================
 
 /**
  * Type guard to check if an item is Equipment
  */
-export function isEquipment(item: Item): item is Equipment {
-    return item.category === 'equipment';
-}
+export function isEquipment(item: Item): item is Equipment;
 
 /**
  * Type guard to check if an item is Consumable
  */
-export function isConsumable(item: Item): item is Consumable {
-    return item.category === 'consumable';
-}
+export function isConsumable(item: Item): item is Consumable;
 
 /**
  * Type guard to check if an item is Material
  */
-export function isMaterial(item: Item): item is Material {
-    return item.category === 'material';
-}
+export function isMaterial(item: Item): item is Material;
 
 /**
  * Type guard to check if an item is a Quest Item
  */
-export function isQuestItem(item: Item): item is QuestItem {
-    return item.category === 'quest-item';
-}
+export function isQuestItem(item: Item): item is QuestItem;

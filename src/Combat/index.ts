@@ -534,3 +534,314 @@ export function formatAllBattleLogs(state: CombatState): string[] {
 export function generateCombatResultMessage(state: CombatState): string {
     return "Implement me" as any;
 }
+
+// ============================================================================
+// COMBAT RESOLUTION LOGIC
+// ============================================================================
+
+/**
+ * Result of a combat clash between two combatants
+ */
+export interface CombatClashResult {
+    winner: 'player' | 'enemy' | 'tie';
+    damageToPlayer: number;
+    damageToEnemy: number;
+    playerRoll: number;
+    enemyRoll: number;
+    description: string;
+}
+
+/**
+ * Parameters for resolving attack vs attack combat
+ */
+export interface AttackVsAttackParams {
+    playerRoll: number;
+    playerRollModifier: number;
+    playerDamageRoll: number;
+    enemyRoll: number;
+    enemyRollModifier: number;
+    enemyDamageRoll: number;
+    playerDefenseStat: number;
+    enemyDefenseStat: number;
+}
+
+/**
+ * Resolves an attack vs attack scenario where both combatants attack
+ * The winner deals damage to the loser based on damage roll minus defense
+ * @param params - The combat parameters for both sides
+ * @returns CombatClashResult with winner, damage dealt, and rolls
+ */
+export function resolveAttackVsAttack(params: AttackVsAttackParams): CombatClashResult {
+    const {
+        playerRoll,
+        playerRollModifier,
+        playerDamageRoll,
+        enemyRoll,
+        enemyRollModifier,
+        enemyDamageRoll,
+        playerDefenseStat,
+        enemyDefenseStat,
+    } = params;
+
+    const playerRollTotal = playerRoll + playerRollModifier;
+    const enemyRollTotal = enemyRoll + enemyRollModifier;
+
+    if (playerRollTotal > enemyRollTotal) {
+        // Player wins - player deals damage to enemy
+        const damageToEnemy = Math.max(0, playerDamageRoll - enemyDefenseStat);
+        return {
+            winner: 'player',
+            damageToPlayer: 0,
+            damageToEnemy,
+            playerRoll: playerRollTotal,
+            enemyRoll: enemyRollTotal,
+            description: `Player wins the battle of wit! Deals ${damageToEnemy} damage to enemy.`,
+        };
+    } else if (playerRollTotal < enemyRollTotal) {
+        // Enemy wins - enemy deals damage to player
+        const damageToPlayer = Math.max(0, enemyDamageRoll - playerDefenseStat);
+        return {
+            winner: 'enemy',
+            damageToPlayer,
+            damageToEnemy: 0,
+            playerRoll: playerRollTotal,
+            enemyRoll: enemyRollTotal,
+            description: `Enemy wins the attack! Deals ${damageToPlayer} damage to player.`,
+        };
+    } else {
+        // Tie - no damage dealt
+        return {
+            winner: 'tie',
+            damageToPlayer: 0,
+            damageToEnemy: 0,
+            playerRoll: playerRollTotal,
+            enemyRoll: enemyRollTotal,
+            description: "Your wit clashes with the enemy's wit, you both miss!",
+        };
+    }
+}
+
+/**
+ * Parameters for resolving attack vs defend combat
+ */
+export interface AttackVsDefendParams {
+    attackerDamageRoll: number;
+    defenderDefenseStat: number;
+    defenseMultiplier?: number;
+}
+
+/**
+ * Resolves an attack vs defend scenario where attacker attacks and defender defends
+ * Defender gets a defense bonus (default 1.5x) when choosing to defend
+ * @param params - The combat parameters
+ * @returns Object with damage dealt and description
+ */
+export function resolveAttackVsDefend(params: AttackVsDefendParams): { damage: number; description: string } {
+    const {
+        attackerDamageRoll,
+        defenderDefenseStat,
+        defenseMultiplier = 1.5,
+    } = params;
+
+    const boostedDefense = defenderDefenseStat * defenseMultiplier;
+    const damage = Math.max(0, attackerDamageRoll - boostedDefense);
+
+    return {
+        damage,
+        description: `Attacker rolls ${attackerDamageRoll} against defender's ${boostedDefense} boosted defense, dealing ${damage} damage.`,
+    };
+}
+
+/**
+ * Resolves a player attack vs enemy defend scenario
+ * @param playerDamageRoll - The player's total damage roll
+ * @param enemyDefenseStat - The enemy's defense stat for the type
+ * @param defenseMultiplier - Defense bonus multiplier (default 1.5)
+ * @returns CombatClashResult with damage to enemy
+ */
+export function resolvePlayerAttackVsEnemyDefend(
+    playerDamageRoll: number,
+    enemyDefenseStat: number,
+    defenseMultiplier: number = 1.5
+): CombatClashResult {
+    const result = resolveAttackVsDefend({
+        attackerDamageRoll: playerDamageRoll,
+        defenderDefenseStat: enemyDefenseStat,
+        defenseMultiplier,
+    });
+
+    return {
+        winner: result.damage > 0 ? 'player' : 'tie',
+        damageToPlayer: 0,
+        damageToEnemy: result.damage,
+        playerRoll: playerDamageRoll,
+        enemyRoll: 0,
+        description: `Player attacks while enemy defends. ${result.description}`,
+    };
+}
+
+/**
+ * Resolves an enemy attack vs player defend scenario
+ * @param enemyDamageRoll - The enemy's total damage roll
+ * @param playerDefenseStat - The player's defense stat for the type
+ * @param defenseMultiplier - Defense bonus multiplier (default 1.5)
+ * @returns CombatClashResult with damage to player
+ */
+export function resolveEnemyAttackVsPlayerDefend(
+    enemyDamageRoll: number,
+    playerDefenseStat: number,
+    defenseMultiplier: number = 1.5
+): CombatClashResult {
+    const result = resolveAttackVsDefend({
+        attackerDamageRoll: enemyDamageRoll,
+        defenderDefenseStat: playerDefenseStat,
+        defenseMultiplier,
+    });
+
+    return {
+        winner: result.damage > 0 ? 'enemy' : 'tie',
+        damageToPlayer: result.damage,
+        damageToEnemy: 0,
+        playerRoll: 0,
+        enemyRoll: enemyDamageRoll,
+        description: `Enemy attacks while player defends. ${result.description}`,
+    };
+}
+
+/**
+ * Resolves a defend vs defend scenario where both combatants defend
+ * This increases the friendship counter as a special mechanic
+ * @param currentFriendship - Current friendship counter value
+ * @returns Object with new friendship value and description
+ */
+export function resolveDefendVsDefend(currentFriendship: number): {
+    newFriendship: number;
+    description: string;
+} {
+    const newFriendship = currentFriendship + 1;
+    return {
+        newFriendship,
+        description: `Both combatants chose to defend. The player feels closer to the enemy and feels as if the enemy may become less of an enemy and more of a friend. Friendship counter: ${newFriendship}`,
+    };
+}
+
+/**
+ * Complete combat round resolution parameters
+ */
+export interface ResolveCombatRoundParams {
+    playerAction: Action;
+    playerType: ActionType;
+    playerRoll: number;
+    playerRollModifier: number;
+    playerDamageRoll: number;
+    playerDefenseStat: number;
+    enemyAction: Action;
+    enemyType: ActionType;
+    enemyRoll: number;
+    enemyRollModifier: number;
+    enemyDamageRoll: number;
+    enemyDefenseStat: number;
+    currentFriendship: number;
+}
+
+/**
+ * Complete result of a combat round
+ */
+export interface CombatRoundResult extends CombatClashResult {
+    friendshipChange: number;
+    newFriendship: number;
+}
+
+/**
+ * Resolves a complete combat round based on both combatants' actions
+ * Handles all four combinations: attack/attack, attack/defend, defend/attack, defend/defend
+ * @param params - Complete combat round parameters
+ * @returns CombatRoundResult with all outcomes
+ */
+export function resolveCombatRoundLogic(params: ResolveCombatRoundParams): CombatRoundResult {
+    const {
+        playerAction,
+        playerRoll,
+        playerRollModifier,
+        playerDamageRoll,
+        playerDefenseStat,
+        enemyAction,
+        enemyRoll,
+        enemyRollModifier,
+        enemyDamageRoll,
+        enemyDefenseStat,
+        currentFriendship,
+    } = params;
+
+    // Attack vs Attack
+    if (playerAction === 'attack' && enemyAction === 'attack') {
+        const result = resolveAttackVsAttack({
+            playerRoll,
+            playerRollModifier,
+            playerDamageRoll,
+            enemyRoll,
+            enemyRollModifier,
+            enemyDamageRoll,
+            playerDefenseStat,
+            enemyDefenseStat,
+        });
+        return {
+            ...result,
+            friendshipChange: 0,
+            newFriendship: currentFriendship,
+        };
+    }
+
+    // Player Attack vs Enemy Defend
+    if (playerAction === 'attack' && enemyAction === 'defend') {
+        const result = resolvePlayerAttackVsEnemyDefend(
+            playerDamageRoll,
+            enemyDefenseStat
+        );
+        return {
+            ...result,
+            friendshipChange: 0,
+            newFriendship: currentFriendship,
+        };
+    }
+
+    // Player Defend vs Enemy Attack
+    if (playerAction === 'defend' && enemyAction === 'attack') {
+        const result = resolveEnemyAttackVsPlayerDefend(
+            enemyDamageRoll,
+            playerDefenseStat
+        );
+        return {
+            ...result,
+            friendshipChange: 0,
+            newFriendship: currentFriendship,
+        };
+    }
+
+    // Defend vs Defend
+    if (playerAction === 'defend' && enemyAction === 'defend') {
+        const result = resolveDefendVsDefend(currentFriendship);
+        return {
+            winner: 'tie',
+            damageToPlayer: 0,
+            damageToEnemy: 0,
+            playerRoll: 0,
+            enemyRoll: 0,
+            description: result.description,
+            friendshipChange: 1,
+            newFriendship: result.newFriendship,
+        };
+    }
+
+    // Fallback for other action types (skill, item, flee, back)
+    return {
+        winner: 'tie',
+        damageToPlayer: 0,
+        damageToEnemy: 0,
+        playerRoll: 0,
+        enemyRoll: 0,
+        description: 'No combat occurred.',
+        friendshipChange: 0,
+        newFriendship: currentFriendship,
+    };
+}
