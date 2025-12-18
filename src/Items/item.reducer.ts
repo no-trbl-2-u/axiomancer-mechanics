@@ -5,7 +5,8 @@
  */
 
 import { GameState } from "../Game/types";
-import { Item, Consumable, isConsumable } from "./types";
+import type { Item, Consumable } from "./types";
+import { isConsumable } from "./index";
 
 // ============================================================================
 // INVENTORY MANAGEMENT (GameState level)
