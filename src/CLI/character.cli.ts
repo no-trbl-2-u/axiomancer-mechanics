@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 import inquirer from 'inquirer';
-import { Character } from './types';
-import { createCharacter } from './index';
+import { Character } from '../Character/types';
+import { createCharacter } from '../Character/index';
 
 async function main() {
     console.log('Simulating character creation...');
