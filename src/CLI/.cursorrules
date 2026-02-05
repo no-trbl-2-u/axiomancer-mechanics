@@ -1,0 +1,23 @@
+# CLI Module Rules
+
+## Purpose
+This module contains all command-line interface tools for the Axiomancer game:
+- `display.ts` - Shared ASCII art, colors, formatting utilities
+- `combat-sim.cli.ts` - Standalone combat simulator
+- `library-editor.cli.ts` - Iterative questionnaire for adding skills/effects
+- `game.cli.ts` - Main game loop with exploration and combat
+
+## Conventions
+- All CLI entry points use `#!/usr/bin/env node` shebang
+- Use inquirer.js for interactive prompts
+- Use the shared `display.ts` utilities for consistent formatting
+- ASCII art and color codes live in `display.ts`, not in individual tools
+- CLI files are named `*.cli.ts` to distinguish from library code
+- Each CLI tool should be independently runnable via npm scripts
+
+## Style
+- Keep display logic separate from game logic
+- Use `delay()` for dramatic pauses in narrative moments
+- Use `typewriter()` for story text
+- Use `divider()` and `boxHeader()` for visual structure
+- Color-code by type: red=Heart, yellow=Body, cyan=Mind
