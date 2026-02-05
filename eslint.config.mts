@@ -20,10 +20,10 @@ const config: Config[] = defineConfig([
     plugins: { js },
     extends: ["js/recommended"],
     languageOptions: {
-      globals: globals.browser,
-      parserOptions: {
-        project: "./tsconfig.json"
-      }
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+      },
     }
   },
   {
@@ -31,10 +31,12 @@ const config: Config[] = defineConfig([
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
-        project: "./tsconfig.json",
         tsconfigRootDir: import.meta.dirname,
         projectService: true
       }
+    },
+    plugins: {
+      "@typescript-eslint": tseslint.plugin,
     },
     rules: {
       // === Type Checking Rules ===
@@ -93,18 +95,15 @@ const config: Config[] = defineConfig([
   // Separate configuration for .d.ts files
   {
     files: ["**/*.d.ts"],
-    extends: [
-      "eslint:recommended",
-      "plugin:@typescript-eslint/recommended-type-checked",
-    ],
-
     languageOptions: {
+      parser: tseslint.parser,
       parserOptions: {
-        project: "./tsconfig.json",
+        tsconfigRootDir: import.meta.dirname,
+        projectService: true
       },
     },
     plugins: {
-      "@typescript-eslint": tseslint,
+      "@typescript-eslint": tseslint.plugin,
     },
     rules: {
       // Type definition files often have different patterns
@@ -114,10 +113,10 @@ const config: Config[] = defineConfig([
       // === Additional .d.ts specific rules (commented examples) ===
 
       // Allow empty interfaces in type definitions
-      "@typescript-eslint/no-empty-interface": "error",
+      // "@typescript-eslint/no-empty-interface": "error",
 
       // Allow namespace declarations in .d.ts files
-      "@typescript-eslint/no-namespace": "error",
+      // "@typescript-eslint/no-namespace": "error",
 
       // Allow triple-slash references in .d.ts files
       // "@typescript-eslint/triple-slash-reference": "off",
