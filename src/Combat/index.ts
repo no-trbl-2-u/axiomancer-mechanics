@@ -6,7 +6,9 @@
 
 import { randomLogic } from '../Enemy/enemy.logic';
 import { Character } from '../Character/types';
-import { Enemy, EnemyLogic } from '../Enemy/types';
+import { Enemy } from '../Enemy/types';
+import { isCharacter, isEnemy } from '../Utils/typeGuards';
+import { randomInt, clamp } from '../Utils';
 
 import {
     ActionType,
@@ -17,12 +19,25 @@ import {
     CombatState
 } from './types';
 
+// ============================================================================
+// CONSTANTS
+// ============================================================================
+
+const ADVANTAGE_MODIFIER = 1.5;
+const DISADVANTAGE_MODIFIER = 0.75;
+const NEUTRAL_MODIFIER = 1.0;
+const CRITICAL_HIT_THRESHOLD = 20;
+const CRITICAL_MISS_THRESHOLD = 1;
+const CRITICAL_MULTIPLIER = 2;
+const DEFEND_BONUS_MULTIPLIER = 1.5;
+const D20_SIDES = 20;
+
 /**
  * Determines the enemy's action based on the enemy's logic
  * @param enemyLogic - The logic chosen by the enemy
  * @returns The enemy's action
  */
-export const determineEnemyAction = (enemyLogic: EnemyLogic) => {
+export const determineEnemyAction = (enemyLogic: 'random' | 'aggressive' | 'defensive' | 'balanced'): CombatAction => {
     switch (enemyLogic) {
         case 'random':
             return randomLogic();
@@ -36,18 +51,18 @@ export const determineEnemyAction = (enemyLogic: EnemyLogic) => {
 // ============================================================================
 
 /**
- * Checks if combat should end based on health values
+ * Checks if combat is still ongoing based on health values
  * @param state - The current combat state
- * @returns True if either combatant has 0 or less health
+ * @returns True if both combatants have health above 0 and friendship counter < 3
  */
 export function isCombatOngoing(state: CombatState): boolean {
-    return "Implement me" as any;
+    return state.player.health > 0 && state.enemy.health > 0 && state.friendshipCounter < 3;
 }
 
 /**
- * Determines the winner of the combat
+ * Determines the outcome of the combat
  * @param state - The current combat state
- * @returns 'player' | 'enemy' | 'draw'
+ * @returns 'player' | 'ko' | 'friendship' | 'ongoing'
  */
 export function determineCombatEnd(state: CombatState): 'player' | 'ko' | 'friendship' | 'ongoing' {
     if (state.enemy.health <= 0) {
@@ -83,17 +98,23 @@ export function determineAdvantage(attackerType: ActionType, defenderType: Actio
         return 'advantage';
     }
 
-    /* Is reached if no advantage is found */
     return 'disadvantage';
 }
 
 /**
  * Gets the modifier value for advantage/disadvantage
  * @param advantage - The advantage state
- * @returns Numeric modifier (e.g., 1.5 for advantage, 0.75 for disadvantage, 1.0 for neutral)
+ * @returns Numeric modifier (1.5 for advantage, 0.75 for disadvantage, 1.0 for neutral)
  */
 export function getAdvantageModifier(advantage: Advantage): number {
-    return "Implement me" as any;
+    switch (advantage) {
+        case 'advantage':
+            return ADVANTAGE_MODIFIER;
+        case 'disadvantage':
+            return DISADVANTAGE_MODIFIER;
+        case 'neutral':
+            return NEUTRAL_MODIFIER;
+    }
 }
 
 /**
@@ -103,7 +124,7 @@ export function getAdvantageModifier(advantage: Advantage): number {
  * @returns True if attacker has advantage
  */
 export function hasAdvantage(attackerType: ActionType, defenderType: ActionType): boolean {
-    return "Implement me" as any;
+    return determineAdvantage(attackerType, defenderType) === 'advantage';
 }
 
 // ============================================================================
@@ -117,7 +138,8 @@ export function hasAdvantage(attackerType: ActionType, defenderType: ActionType)
  * @returns The attack type chosen by the enemy
  */
 export function generateEnemyAttackType(state: CombatState, enemy: Enemy): ActionType {
-    return "Implement me" as any;
+    const action: CombatAction = determineEnemyAction(enemy.logic);
+    return action.type;
 }
 
 /**
@@ -127,7 +149,8 @@ export function generateEnemyAttackType(state: CombatState, enemy: Enemy): Actio
  * @returns The action chosen by the enemy
  */
 export function generateEnemyAction(state: CombatState, enemy: Enemy): Action {
-    return "Implement me" as any;
+    const action: CombatAction = determineEnemyAction(enemy.logic);
+    return action.action;
 }
 
 /**
@@ -136,7 +159,7 @@ export function generateEnemyAction(state: CombatState, enemy: Enemy): Action {
  * @returns True if action has both type and action defined
  */
 export function isValidCombatAction(action: Partial<CombatAction>): action is CombatAction {
-    return "Implement me" as any;
+    return action.type !== undefined && action.action !== undefined;
 }
 
 // ============================================================================
@@ -149,7 +172,7 @@ export function isValidCombatAction(action: Partial<CombatAction>): action is Co
  * @returns Random number between 1 and sides (inclusive)
  */
 export function rollDie(sides: number): number {
-    return "Implement me" as any;
+    return randomInt(1, sides);
 }
 
 /**
@@ -159,7 +182,9 @@ export function rollDie(sides: number): number {
  * @returns Object containing sum and individual rolls
  */
 export function rollDice(count: number, sides: number): { sum: number; rolls: number[] } {
-    return "Implement me" as any;
+    const rolls: number[] = Array.from({ length: count }, () => rollDie(sides));
+    const sum: number = rolls.reduce((acc, roll) => acc + roll, 0);
+    return { sum, rolls };
 }
 
 /**
@@ -167,7 +192,7 @@ export function rollDice(count: number, sides: number): { sum: number; rolls: nu
  * @returns Number between 1 and 20
  */
 export function rollD20(): number {
-    return "Implement me" as any;
+    return rollDie(D20_SIDES);
 }
 
 /**
@@ -176,7 +201,12 @@ export function rollD20(): number {
  * @returns Object with final result and both rolls
  */
 export function rollWithAdvantage(sides: number): { result: number; rolls: [number, number] } {
-    return "Implement me" as any;
+    const roll1: number = rollDie(sides);
+    const roll2: number = rollDie(sides);
+    return {
+        result: Math.max(roll1, roll2),
+        rolls: [roll1, roll2],
+    };
 }
 
 /**
@@ -185,7 +215,12 @@ export function rollWithAdvantage(sides: number): { result: number; rolls: [numb
  * @returns Object with final result and both rolls
  */
 export function rollWithDisadvantage(sides: number): { result: number; rolls: [number, number] } {
-    return "Implement me" as any;
+    const roll1: number = rollDie(sides);
+    const roll2: number = rollDie(sides);
+    return {
+        result: Math.min(roll1, roll2),
+        rolls: [roll1, roll2],
+    };
 }
 
 /**
@@ -195,7 +230,20 @@ export function rollWithDisadvantage(sides: number): { result: number; rolls: [n
  * @returns Object with total result, roll, and modifier
  */
 export function rollSkillCheck(baseStat: number, advantage: Advantage): { total: number; roll: number; modifier: number } {
-    return "Implement me" as any;
+    let roll: number;
+
+    if (advantage === 'advantage') {
+        roll = rollWithAdvantage(D20_SIDES).result;
+    } else if (advantage === 'disadvantage') {
+        roll = rollWithDisadvantage(D20_SIDES).result;
+    } else {
+        roll = rollD20();
+    }
+
+    const modifier: number = baseStat;
+    const total: number = roll + modifier;
+
+    return { total, roll, modifier };
 }
 
 // ============================================================================
@@ -209,7 +257,19 @@ export function rollSkillCheck(baseStat: number, advantage: Advantage): { total:
  * @returns The skill stat value (physicalSkill, mentalSkill, or emotionalSkill)
  */
 export function getSkillStatForType(character: Character | Enemy, type: ActionType): number {
-    return "Implement me" as any;
+    if (isCharacter(character)) {
+        switch (type) {
+            case 'body': return character.derivedStats.physicalSkill;
+            case 'mind': return character.derivedStats.mentalSkill;
+            case 'heart': return character.derivedStats.emotionalSkill;
+        }
+    } else {
+        switch (type) {
+            case 'body': return character.enemyStats.physicalSkill;
+            case 'mind': return character.enemyStats.mentalSkill;
+            case 'heart': return character.enemyStats.emotionalSkill;
+        }
+    }
 }
 
 /**
@@ -219,7 +279,19 @@ export function getSkillStatForType(character: Character | Enemy, type: ActionTy
  * @returns The defense stat value (physicalDefense, mentalDefense, or emotionalDefense)
  */
 export function getDefenseStatForType(character: Character | Enemy, type: ActionType): number {
-    return "Implement me" as any;
+    if (isCharacter(character)) {
+        switch (type) {
+            case 'body': return character.derivedStats.physicalDefense;
+            case 'mind': return character.derivedStats.mentalDefense;
+            case 'heart': return character.derivedStats.emotionalDefense;
+        }
+    } else {
+        switch (type) {
+            case 'body': return character.enemyStats.physicalDefense;
+            case 'mind': return character.enemyStats.mentalDefense;
+            case 'heart': return character.enemyStats.emotionalDefense;
+        }
+    }
 }
 
 /**
@@ -229,7 +301,20 @@ export function getDefenseStatForType(character: Character | Enemy, type: Action
  * @returns The save stat value (physicalSave, mentalSave, or emotionalSave)
  */
 export function getSaveStatForType(character: Character | Enemy, type: ActionType): number {
-    return "Implement me" as any;
+    if (isCharacter(character)) {
+        switch (type) {
+            case 'body': return character.derivedStats.physicalSave;
+            case 'mind': return character.derivedStats.mentalSave;
+            case 'heart': return character.derivedStats.emotionalSave;
+        }
+    } else {
+        /* Enemies don't have save stats, so fallback to defense */
+        switch (type) {
+            case 'body': return character.enemyStats.physicalDefense;
+            case 'mind': return character.enemyStats.mentalDefense;
+            case 'heart': return character.enemyStats.emotionalDefense;
+        }
+    }
 }
 
 /**
@@ -239,7 +324,19 @@ export function getSaveStatForType(character: Character | Enemy, type: ActionTyp
  * @returns The base stat value (body, mind, or heart)
  */
 export function getBaseStatForType(character: Character | Enemy, type: ActionType): number {
-    return "Implement me" as any;
+    if (isCharacter(character)) {
+        switch (type) {
+            case 'body': return character.baseStats.body;
+            case 'mind': return character.baseStats.mind;
+            case 'heart': return character.baseStats.heart;
+        }
+    } else {
+        switch (type) {
+            case 'body': return character.enemyStats.physicalAttack;
+            case 'mind': return character.enemyStats.mentalAttack;
+            case 'heart': return character.enemyStats.emotionalAttack;
+        }
+    }
 }
 
 // ============================================================================
@@ -258,7 +355,17 @@ export function performAttackRoll(
     attackType: ActionType,
     advantage: Advantage
 ): { total: number; roll: number; modifier: number; details: string } {
-    return "Implement me" as any;
+    const modifier: number = getSkillStatForType(attacker, attackType);
+    const skillCheck = rollSkillCheck(modifier, advantage);
+    const name: string = isCharacter(attacker) ? attacker.name : attacker.name;
+    const details = `${name} rolls ${skillCheck.roll} + ${modifier} (${attackType} skill) = ${skillCheck.total}`;
+
+    return {
+        total: skillCheck.total,
+        roll: skillCheck.roll,
+        modifier,
+        details,
+    };
 }
 
 /**
@@ -273,7 +380,15 @@ export function performDefenseRoll(
     attackType: ActionType,
     isDefending: boolean
 ): { total: number; roll: number; modifier: number; details: string } {
-    return "Implement me" as any;
+    const baseModifier: number = getDefenseStatForType(defender, attackType);
+    const modifier: number = isDefending ? Math.floor(baseModifier * DEFEND_BONUS_MULTIPLIER) : baseModifier;
+    const roll: number = rollD20();
+    const total: number = roll + modifier;
+    const name: string = isCharacter(defender) ? defender.name : defender.name;
+    const defendText: string = isDefending ? ' (defending)' : '';
+    const details = `${name} defends ${roll} + ${modifier} (${attackType} defense${defendText}) = ${total}`;
+
+    return { total, roll, modifier, details };
 }
 
 /**
@@ -283,7 +398,7 @@ export function performDefenseRoll(
  * @returns True if attack hits, false if it misses
  */
 export function isAttackSuccessful(attackRoll: number, defenseRoll: number): boolean {
-    return "Implement me" as any;
+    return attackRoll >= defenseRoll;
 }
 
 /**
@@ -292,7 +407,7 @@ export function isAttackSuccessful(attackRoll: number, defenseRoll: number): boo
  * @returns True if critical hit
  */
 export function isCriticalHit(roll: number): boolean {
-    return "Implement me" as any;
+    return roll === CRITICAL_HIT_THRESHOLD;
 }
 
 /**
@@ -301,7 +416,7 @@ export function isCriticalHit(roll: number): boolean {
  * @returns True if critical miss
  */
 export function isCriticalMiss(roll: number): boolean {
-    return "Implement me" as any;
+    return roll === CRITICAL_MISS_THRESHOLD;
 }
 
 // ============================================================================
@@ -320,7 +435,9 @@ export function calculateBaseDamage(
     attackType: ActionType,
     advantage: Advantage
 ): number {
-    return "Implement me" as any;
+    const baseStat: number = getBaseStatForType(attacker, attackType);
+    const advantageModifier: number = getAdvantageModifier(advantage);
+    return Math.floor(baseStat * advantageModifier);
 }
 
 /**
@@ -335,7 +452,11 @@ export function calculateDamageReduction(
     attackType: ActionType,
     isDefending: boolean
 ): number {
-    return "Implement me" as any;
+    const defenseStat: number = getDefenseStatForType(defender, attackType);
+    const reduction: number = isDefending
+        ? Math.floor(defenseStat * DEFEND_BONUS_MULTIPLIER)
+        : defenseStat;
+    return Math.max(0, reduction);
 }
 
 /**
@@ -350,16 +471,19 @@ export function calculateFinalDamage(
     damageReduction: number,
     isCritical: boolean
 ): number {
-    return "Implement me" as any;
+    const effectiveDamage: number = isCritical
+        ? applyCriticalMultiplier(baseDamage)
+        : baseDamage;
+    return Math.max(0, effectiveDamage - damageReduction);
 }
 
 /**
  * Applies critical hit multiplier to damage
  * @param baseDamage - The base damage value
- * @returns Damage multiplied by critical multiplier (e.g., 2x)
+ * @returns Damage multiplied by critical multiplier (2x)
  */
 export function applyCriticalMultiplier(baseDamage: number): number {
-    return "Implement me" as any;
+    return baseDamage * CRITICAL_MULTIPLIER;
 }
 
 /**
@@ -385,7 +509,29 @@ export function calculateAttackDamage(
     critical: boolean;
     details: string;
 } {
-    return "Implement me" as any;
+    const attackResult = performAttackRoll(attacker, attackType, advantage);
+    const defenseResult = performDefenseRoll(defender, attackType, isDefending);
+    const hit: boolean = isAttackSuccessful(attackResult.total, defenseResult.total);
+    const critical: boolean = isCriticalHit(attackResult.roll);
+
+    let damage = 0;
+    if (hit) {
+        const baseDamage: number = calculateBaseDamage(attacker, attackType, advantage);
+        const reduction: number = calculateDamageReduction(defender, attackType, isDefending);
+        damage = calculateFinalDamage(baseDamage, reduction, critical);
+    }
+
+    const hitText: string = hit ? (critical ? 'CRITICAL HIT' : 'Hit') : 'Miss';
+    const details = `${attackResult.details} vs ${defenseResult.details} - ${hitText}! ${damage} damage`;
+
+    return {
+        damage,
+        attackRoll: attackResult.total,
+        defenseRoll: defenseResult.total,
+        hit,
+        critical,
+        details,
+    };
 }
 
 // ============================================================================
@@ -399,7 +545,10 @@ export function calculateAttackDamage(
  * @returns Updated character with reduced health (minimum 0)
  */
 export function applyDamage(character: Character | Enemy, damage: number): Character | Enemy {
-    return "Implement me" as any;
+    return {
+        ...character,
+        health: Math.max(0, character.health - damage),
+    };
 }
 
 /**
@@ -409,7 +558,13 @@ export function applyDamage(character: Character | Enemy, damage: number): Chara
  * @returns Updated character with increased health (maximum maxHealth)
  */
 export function healCharacter(character: Character | Enemy, amount: number): Character | Enemy {
-    return "Implement me" as any;
+    const maxHealth: number = isCharacter(character)
+        ? character.maxHealth
+        : character.enemyStats.maxHealth;
+    return {
+        ...character,
+        health: Math.min(maxHealth, character.health + amount),
+    };
 }
 
 /**
@@ -418,7 +573,7 @@ export function healCharacter(character: Character | Enemy, amount: number): Cha
  * @returns True if health > 0
  */
 export function isAlive(character: Character | Enemy): boolean {
-    return "Implement me" as any;
+    return character.health > 0;
 }
 
 /**
@@ -427,7 +582,7 @@ export function isAlive(character: Character | Enemy): boolean {
  * @returns True if health <= 0
  */
 export function isDefeated(character: Character | Enemy): boolean {
-    return "Implement me" as any;
+    return character.health <= 0;
 }
 
 /**
@@ -436,7 +591,12 @@ export function isDefeated(character: Character | Enemy): boolean {
  * @returns Health percentage (0-100)
  */
 export function getHealthPercentage(character: Character | Enemy): number {
-    return "Implement me" as any;
+    const maxHealth: number = isCharacter(character)
+        ? character.maxHealth
+        : character.enemyStats.maxHealth;
+
+    if (maxHealth === 0) return 0;
+    return clamp((character.health / maxHealth) * 100, 0, 100);
 }
 
 // ============================================================================
@@ -453,7 +613,24 @@ export function processPlayerTurn(state: CombatState): {
     playerRoll: number;
     playerRollDetails: string;
 } {
-    return "Implement me" as any;
+    const playerAction = state.playerChoice as CombatAction;
+    const enemyAction = state.enemyChoice as CombatAction;
+    const advantage: Advantage = determineAdvantage(playerAction.type, enemyAction.type);
+    const isEnemyDefending: boolean = enemyAction.action === 'defend';
+
+    const result = calculateAttackDamage(
+        state.player,
+        state.enemy,
+        playerAction.type,
+        advantage,
+        isEnemyDefending
+    );
+
+    return {
+        damageToEnemy: result.damage,
+        playerRoll: result.attackRoll,
+        playerRollDetails: result.details,
+    };
 }
 
 /**
@@ -466,7 +643,24 @@ export function processEnemyTurn(state: CombatState): {
     enemyRoll: number;
     enemyRollDetails: string;
 } {
-    return "Implement me" as any;
+    const playerAction = state.playerChoice as CombatAction;
+    const enemyAction = state.enemyChoice as CombatAction;
+    const advantage: Advantage = determineAdvantage(enemyAction.type, playerAction.type);
+    const isPlayerDefending: boolean = playerAction.action === 'defend';
+
+    const result = calculateAttackDamage(
+        state.enemy,
+        state.player,
+        enemyAction.type,
+        advantage,
+        isPlayerDefending
+    );
+
+    return {
+        damageToPlayer: result.damage,
+        enemyRoll: result.attackRoll,
+        enemyRollDetails: result.details,
+    };
 }
 
 /**
@@ -476,7 +670,9 @@ export function processEnemyTurn(state: CombatState): {
  * @returns 'player' | 'enemy' for who goes first
  */
 export function determineTurnOrder(player: Character, enemy: Enemy): 'player' | 'enemy' {
-    return "Implement me" as any;
+    const playerInitiative: number = rollInitiative(player);
+    const enemyInitiative: number = rollInitiative(enemy);
+    return playerInitiative >= enemyInitiative ? 'player' : 'enemy';
 }
 
 /**
@@ -485,7 +681,11 @@ export function determineTurnOrder(player: Character, enemy: Enemy): 'player' | 
  * @returns Initiative roll result
  */
 export function rollInitiative(character: Character | Enemy): number {
-    return "Implement me" as any;
+    const roll: number = rollD20();
+    const modifier: number = isCharacter(character)
+        ? character.derivedStats.luck
+        : Math.floor((character.enemyStats.mentalSkill + character.enemyStats.physicalSkill) / 2);
+    return roll + modifier;
 }
 
 // ============================================================================
@@ -510,7 +710,29 @@ export function createBattleLogEntry(
         damageToEnemy: number;
     }
 ): BattleLogEntry {
-    return "Implement me" as any;
+    const playerAction = state.playerChoice as CombatAction;
+    const enemyAction = state.enemyChoice as CombatAction;
+
+    const playerHPAfter: number = Math.max(0, state.player.health - roundResults.damageToPlayer);
+    const enemyHPAfter: number = Math.max(0, state.enemy.health - roundResults.damageToEnemy);
+
+    const result = `Round ${state.round}: ${state.player.name} (${playerAction.type}/${playerAction.action}) vs ${state.enemy.name} (${enemyAction.type}/${enemyAction.action}) - ${roundResults.advantage}. Player HP: ${playerHPAfter}, Enemy HP: ${enemyHPAfter}`;
+
+    return {
+        round: state.round,
+        playerAction,
+        enemyAction,
+        advantage: roundResults.advantage,
+        playerRoll: roundResults.playerRoll,
+        playerRollDetails: roundResults.playerRollDetails,
+        enemyRoll: roundResults.enemyRoll,
+        enemyRollDetails: roundResults.enemyRollDetails,
+        damageToPlayer: roundResults.damageToPlayer,
+        damageToEnemy: roundResults.damageToEnemy,
+        playerHPAfter,
+        enemyHPAfter,
+        result,
+    };
 }
 
 /**
@@ -519,7 +741,7 @@ export function createBattleLogEntry(
  * @returns Array of formatted log strings
  */
 export function formatAllBattleLogs(state: CombatState): string[] {
-    return "Implement me" as any;
+    return state.logEntry.map((entry: BattleLogEntry) => entry.result);
 }
 
 // ============================================================================
@@ -532,5 +754,16 @@ export function formatAllBattleLogs(state: CombatState): string[] {
  * @returns Victory/defeat message
  */
 export function generateCombatResultMessage(state: CombatState): string {
-    return "Implement me" as any;
+    const outcome = determineCombatEnd(state);
+
+    switch (outcome) {
+        case 'player':
+            return `Victory! ${state.player.name} defeated ${state.enemy.name} in ${state.round} rounds!`;
+        case 'ko':
+            return `Defeat! ${state.player.name} was knocked out by ${state.enemy.name} after ${state.round} rounds.`;
+        case 'friendship':
+            return `Friendship! ${state.player.name} befriended ${state.enemy.name} after ${state.round} rounds!`;
+        case 'ongoing':
+            return `Combat is still ongoing. Round ${state.round}.`;
+    }
 }

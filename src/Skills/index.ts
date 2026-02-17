@@ -28,9 +28,17 @@ export function createSkill(
     level: number,
     manaCost: number,
     type: SkillCategory,
-    philosophicalAspect?: SkillsStatType
+    philosophicalAspect: SkillsStatType = 'mind'
 ): Skill {
-    return undefined as any;
+    return {
+        id,
+        name,
+        description,
+        level,
+        manaCost,
+        category: type,
+        philosophicalAspect,
+    };
 }
 
 // ============================================================================
@@ -44,7 +52,7 @@ export function createSkill(
  * @returns True if character has sufficient mana
  */
 export function canUseSkill(character: Character, skill: Skill): boolean {
-    return undefined as any;
+    return character.mana >= skill.manaCost;
 }
 
 /**
@@ -54,5 +62,6 @@ export function canUseSkill(character: Character, skill: Skill): boolean {
  * @returns Calculated damage value
  */
 export function calculateSkillDamage(skill: Skill, character: Character): number {
-    return undefined as any;
+    const baseStat: number = character.baseStats[skill.philosophicalAspect];
+    return Math.floor(skill.level * baseStat * 1.5);
 }

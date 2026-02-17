@@ -1,11 +1,11 @@
-import { Map } from "World/types";
+import { Map } from "../../types";
 
 /**
  * CoastalContinentMapNames are all the maps in the Coastal Continent
  * - 'fishing-village': Starting village. Get quest to build boat
  * - 'northern-forest': Small forest. First set of encounters. Gather Wood
- * @todo: Add more maps
- * @todo: Come up with better names
+ * @todo Add more maps
+ * @todo Come up with better names
  */
 export type CoastalContinentMapNames =
   'fishing-village' |
@@ -20,7 +20,6 @@ const fishingVillage: Map = {
     location: [0, 0],
     connectedNodes: ["fv-2"]
   },
-  // @todo: Differentiate between Map and MapState
   completedNodes: [],
   availableNodes: ["fv-2"],
   lockedNodes: ["fv-3", "fv-4", "fv-5", "fv-6", "fv-7", "fv-8", "fv-9", "fv-10"],

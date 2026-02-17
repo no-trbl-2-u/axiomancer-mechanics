@@ -14,10 +14,11 @@ class MapNotFoundError extends Error {
 
 /**
  * Returns a map based on the map name
- * @param mapName The name of the map to return
+ * @param mapName - The name of the map to return
  * @returns The map object
+ * @throws MapNotFoundError if map name is not recognized
  */
-function getCoastalMap(mapName: MapName): Map {
+export function getCoastalMap(mapName: MapName): Map {
   switch (mapName) {
     case 'fishing-village':
       return fishingVillage;
@@ -36,7 +37,6 @@ function getCoastalMap(mapName: MapName): Map {
 export function createStartingWorld(): WorldState {
   return {
     world: [],
-    // @todo: Create a getCoastalContinent function
     currentContinent: {
       name: 'coastal-continent',
       description: 'The coastal continent is a landmass bordered by the sea to the east and west. It is home to a variety of biomes, including forests, mountains, and plains.',

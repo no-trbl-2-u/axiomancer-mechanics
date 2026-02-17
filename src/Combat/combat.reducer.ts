@@ -25,7 +25,17 @@ import {
  * @returns A new CombatState object with initial values
  */
 export function initializeCombat(player: Character, enemy: Enemy): CombatState {
-    return "Implement me" as any;
+    return {
+        active: true,
+        phase: 'choosing_type',
+        round: 1,
+        friendshipCounter: 0,
+        player: { ...player },
+        enemy: { ...enemy },
+        playerChoice: {},
+        enemyChoice: {},
+        logEntry: [],
+    };
 }
 
 /**
@@ -34,7 +44,7 @@ export function initializeCombat(player: Character, enemy: Enemy): CombatState {
  * @returns A fresh combat state with the same player and enemy
  */
 export function resetCombat(state: CombatState): CombatState {
-    return "Implement me" as any;
+    return initializeCombat(state.player, state.enemy);
 }
 
 // ============================================================================
@@ -48,7 +58,10 @@ export function resetCombat(state: CombatState): CombatState {
  * @returns Updated combat state with new phase
  */
 export function updateCombatPhase(state: CombatState, phase: CombatPhase): CombatState {
-    return "Implement me" as any;
+    return {
+        ...state,
+        phase,
+    };
 }
 
 // ============================================================================
@@ -62,7 +75,13 @@ export function updateCombatPhase(state: CombatState, phase: CombatPhase): Comba
  * @returns Updated combat state with player's type choice
  */
 export function setPlayerAttackType(state: CombatState, type: ActionType): CombatState {
-    return "Implement me" as any;
+    return {
+        ...state,
+        playerChoice: {
+            ...state.playerChoice,
+            type,
+        },
+    };
 }
 
 /**
@@ -72,7 +91,13 @@ export function setPlayerAttackType(state: CombatState, type: ActionType): Comba
  * @returns Updated combat state with player's action choice
  */
 export function setPlayerAction(state: CombatState, action: Action): CombatState {
-    return "Implement me" as any;
+    return {
+        ...state,
+        playerChoice: {
+            ...state.playerChoice,
+            action,
+        },
+    };
 }
 
 // ============================================================================
@@ -82,10 +107,16 @@ export function setPlayerAction(state: CombatState, action: Action): CombatState
 /**
  * Resolves a complete combat round with both combatants' actions
  * @param state - The current combat state with both actions chosen
- * @returns Updated combat state with round results
+ * @returns Updated combat state with round results applied
  */
 export function resolveCombatRound(state: CombatState): CombatState {
-    return "Implement me" as any;
+    return {
+        ...state,
+        phase: 'resolving' as CombatPhase,
+        round: state.round + 1,
+        playerChoice: {},
+        enemyChoice: {},
+    };
 }
 
 // ============================================================================
@@ -99,7 +130,10 @@ export function resolveCombatRound(state: CombatState): CombatState {
  * @returns Updated combat state with new log entry
  */
 export function addBattleLogEntry(state: CombatState, entry: BattleLogEntry): CombatState {
-    return "Implement me" as any;
+    return {
+        ...state,
+        logEntry: [...state.logEntry, entry],
+    };
 }
 
 // ============================================================================
@@ -112,7 +146,16 @@ export function addBattleLogEntry(state: CombatState, entry: BattleLogEntry): Co
  * @returns Updated state with incremented friendship counter
  */
 export function incrementFriendship(state: CombatState): CombatState {
-    return "Implement me" as any;
+    const newCounter: number = state.friendshipCounter + 1;
+
+    if (newCounter >= 3) {
+        return endCombatWithFriendship({ ...state, friendshipCounter: newCounter });
+    }
+
+    return {
+        ...state,
+        friendshipCounter: newCounter,
+    };
 }
 
 /**
@@ -121,7 +164,12 @@ export function incrementFriendship(state: CombatState): CombatState {
  * @returns Updated state with combat ended via friendship
  */
 export function endCombatWithFriendship(state: CombatState): CombatState {
-    return "Implement me" as any;
+    return {
+        ...state,
+        active: false,
+        phase: 'ended',
+        friendshipCounter: 3,
+    };
 }
 
 // ============================================================================
@@ -134,7 +182,11 @@ export function endCombatWithFriendship(state: CombatState): CombatState {
  * @returns Updated state with combat ended
  */
 export function endCombatPlayerVictory(state: CombatState): CombatState {
-    return "Implement me" as any;
+    return {
+        ...state,
+        active: false,
+        phase: 'ended',
+    };
 }
 
 /**
@@ -143,6 +195,9 @@ export function endCombatPlayerVictory(state: CombatState): CombatState {
  * @returns Updated state with combat ended
  */
 export function endCombatPlayerDefeat(state: CombatState): CombatState {
-    return "Implement me" as any;
+    return {
+        ...state,
+        active: false,
+        phase: 'ended',
+    };
 }
-

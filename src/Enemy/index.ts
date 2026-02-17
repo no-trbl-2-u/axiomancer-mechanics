@@ -2,7 +2,7 @@
 // Enemy Module
 // ================================
 
-import { ActionType } from "Combat/types";
+import { ActionType } from "../Combat/types";
 import { Enemy } from "./types";
 
 /**
@@ -10,9 +10,9 @@ import { Enemy } from "./types";
  * @param enemy - The enemy to get the stat for 
  * @param base - Decision enemy made (body, mind, heart)
  * @param isDefending - Whether the enemy is defending
- * @returns 
+ * @returns The relevant stat value based on attack type and defending status
  */
-export const getEnemyRelatedStat = (enemy: Enemy, base: ActionType, isDefending: boolean) => {
+export const getEnemyRelatedStat = (enemy: Enemy, base: ActionType, isDefending: boolean): number => {
   if (!isDefending) {
     switch (base) {
       case 'body':

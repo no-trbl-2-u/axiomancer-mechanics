@@ -4,7 +4,7 @@
  * All functions here are pure and return new state objects
  */
 
-import { WorldState } from "./types";
+import { WorldState, Continent } from "./types";
 import { MapName, ContinentName } from "./map.library";
 
 // ============================================================================
@@ -18,7 +18,17 @@ import { MapName, ContinentName } from "./map.library";
  * @returns Updated world state with new current map
  */
 export function changeMap(state: WorldState, mapName: MapName): WorldState {
-    return "Implement me" as any;
+    if (!state.currentContinent.availableMaps.includes(mapName)) {
+        return state;
+    }
+
+    return {
+        ...state,
+        currentMap: {
+            ...state.currentMap,
+            name: mapName,
+        },
+    };
 }
 
 /**
@@ -28,7 +38,17 @@ export function changeMap(state: WorldState, mapName: MapName): WorldState {
  * @returns Updated world state with map marked as completed
  */
 export function completeMap(state: WorldState, mapName: MapName): WorldState {
-    return "Implement me" as any;
+    const updatedContinent: Continent = {
+        ...state.currentContinent,
+        completedMaps: state.currentContinent.completedMaps.includes(mapName)
+            ? state.currentContinent.completedMaps
+            : [...state.currentContinent.completedMaps, mapName],
+    };
+
+    return {
+        ...state,
+        currentContinent: updatedContinent,
+    };
 }
 
 /**
@@ -38,7 +58,20 @@ export function completeMap(state: WorldState, mapName: MapName): WorldState {
  * @returns Updated world state with map unlocked
  */
 export function unlockMap(state: WorldState, mapName: MapName): WorldState {
-    return "Implement me" as any;
+    const updatedContinent: Continent = {
+        ...state.currentContinent,
+        lockedMaps: state.currentContinent.lockedMaps.filter(
+            (name: MapName) => name !== mapName
+        ),
+        availableMaps: state.currentContinent.availableMaps.includes(mapName)
+            ? state.currentContinent.availableMaps
+            : [...state.currentContinent.availableMaps, mapName],
+    };
+
+    return {
+        ...state,
+        currentContinent: updatedContinent,
+    };
 }
 
 // ============================================================================
@@ -52,7 +85,18 @@ export function unlockMap(state: WorldState, mapName: MapName): WorldState {
  * @returns Updated world state with node marked as completed
  */
 export function completeNode(state: WorldState, nodeId: string): WorldState {
-    return "Implement me" as any;
+    return {
+        ...state,
+        currentMap: {
+            ...state.currentMap,
+            completedNodes: state.currentMap.completedNodes.includes(nodeId)
+                ? state.currentMap.completedNodes
+                : [...state.currentMap.completedNodes, nodeId],
+            availableNodes: state.currentMap.availableNodes.filter(
+                (id: string) => id !== nodeId
+            ),
+        },
+    };
 }
 
 /**
@@ -62,7 +106,18 @@ export function completeNode(state: WorldState, nodeId: string): WorldState {
  * @returns Updated world state with node unlocked
  */
 export function unlockNode(state: WorldState, nodeId: string): WorldState {
-    return "Implement me" as any;
+    return {
+        ...state,
+        currentMap: {
+            ...state.currentMap,
+            lockedNodes: state.currentMap.lockedNodes.filter(
+                (id: string) => id !== nodeId
+            ),
+            availableNodes: state.currentMap.availableNodes.includes(nodeId)
+                ? state.currentMap.availableNodes
+                : [...state.currentMap.availableNodes, nodeId],
+        },
+    };
 }
 
 /**
@@ -72,7 +127,23 @@ export function unlockNode(state: WorldState, nodeId: string): WorldState {
  * @returns Updated world state with new current node
  */
 export function moveToNode(state: WorldState, nodeId: string): WorldState {
-    return "Implement me" as any;
+    if (!state.currentMap.availableNodes.includes(nodeId)) {
+        return state;
+    }
+
+    const targetNode = {
+        id: nodeId,
+        location: [0, 0] as [number, number],
+        connectedNodes: [] as string[],
+    };
+
+    return {
+        ...state,
+        currentMap: {
+            ...state.currentMap,
+            startingNode: targetNode,
+        },
+    };
 }
 
 // ============================================================================
@@ -86,7 +157,18 @@ export function moveToNode(state: WorldState, nodeId: string): WorldState {
  * @returns Updated world state with new current continent
  */
 export function changeContinent(state: WorldState, continentName: ContinentName): WorldState {
-    return "Implement me" as any;
+    const targetContinent: Continent | undefined = state.world.find(
+        (c: Continent) => c.name === continentName
+    );
+
+    if (!targetContinent) {
+        return state;
+    }
+
+    return {
+        ...state,
+        currentContinent: targetContinent,
+    };
 }
 
 // ============================================================================
@@ -100,6 +182,15 @@ export function changeContinent(state: WorldState, continentName: ContinentName)
  * @returns Updated world state with event completed
  */
 export function completeUniqueEvent(state: WorldState, eventId: string): WorldState {
-    return "Implement me" as any;
+    return {
+        ...state,
+        currentMap: {
+            ...state.currentMap,
+            uniqueEvents: state.currentMap.uniqueEvents.map((event) =>
+                event.id === eventId
+                    ? { ...event, completed: true }
+                    : event
+            ),
+        },
+    };
 }
-
