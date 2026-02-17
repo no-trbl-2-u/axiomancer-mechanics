@@ -2,4 +2,18 @@
 // ITEM UTILITIES
 // ============================================================================
 
-// NOTE: Any functions related to items that do not involve updating any state
+// Re-export types and type guards for convenience
+export {
+    Item,
+    BaseItem,
+    Equipment,
+    Consumable,
+    Material,
+    QuestItem,
+    ItemCategory,
+    EquipmentSlot,
+    isEquipment,
+    isConsumable,
+    isMaterial,
+    isQuestItem,
+} from './types';
