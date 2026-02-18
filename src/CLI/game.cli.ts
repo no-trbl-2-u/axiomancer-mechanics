@@ -22,10 +22,10 @@ import { loadGameState, saveGameState } from '../Game/game.reducer';
 import { createStartingWorld } from '../World';
 import { EnemyLibrary, Disatree_01 } from '../Enemy/enemy.library';
 import { Enemy } from '../Enemy/types';
-import { ActionType, Action } from '../Combat/types';
+import { ActionType, Action, Advantage } from '../Combat/types';
 import { determineAdvantage, determineEnemyAction } from '../Combat';
 import { getEnemyRelatedStat } from '../Enemy';
-import { createDieRoll, deepClone, randomInt } from '../Utils';
+import { deepClone, randomInt } from '../Utils';
 import { BaseStats } from '../Character/types';
 import {
     TITLE_ART,
@@ -482,6 +482,47 @@ async function showInventory(session: GameSession): Promise<void> {
 }
 
 // ============================================================================
+// DICE ROLLING WITH FULL DETAIL (shared with combat-sim logic)
+// ============================================================================
+
+interface DiceResult {
+    rolls: number[];
+    selected: number;
+    modifier: number;
+    total: number;
+}
+
+function rollCombatDice(advantage: Advantage, modifier: number): DiceResult {
+    const rollCount = advantage === 'neutral' ? 1 : 2;
+    const rolls = Array.from({ length: rollCount }, () => randomInt(1, 20));
+
+    let selected: number;
+    if (advantage === 'advantage') {
+        selected = Math.max(...rolls);
+    } else if (advantage === 'disadvantage') {
+        selected = Math.min(...rolls);
+    } else {
+        selected = rolls[0];
+    }
+
+    return { rolls, selected, modifier, total: selected + modifier };
+}
+
+function formatDiceLog(result: DiceResult, advantage: Advantage, statLabel: string): string {
+    const { rolls, selected, modifier, total } = result;
+
+    if (rolls.length === 1) {
+        return `[d20: ${boldCyan(String(selected))}] + ${modifier} ${dim(statLabel)} = ${bold(String(total))}`;
+    }
+
+    const rollsStr = rolls
+        .map(r => (r === selected ? boldCyan(String(r)) : dim(String(r))))
+        .join(', ');
+    const pickLabel = advantage === 'advantage' ? green('take high') : red('take low');
+    return `[2d20: ${rollsStr} → ${pickLabel} ${boldCyan(String(selected))}] + ${modifier} ${dim(statLabel)} = ${bold(String(total))}`;
+}
+
+// ============================================================================
 // IN-GAME COMBAT
 // ============================================================================
 
@@ -542,77 +583,91 @@ async function runGameCombat(session: GameSession, enemy: Enemy): Promise<GameSe
         // Enemy decision
         const enemyAction = determineEnemyAction(currentEnemy.logic);
         const playerAdvantage = determineAdvantage(reactionType, enemyAction.type);
-        const enemyAdvantage = determineAdvantage(enemyAction.type, reactionType);
+        const enemyAdvantage: Advantage =
+            playerAdvantage === 'advantage' ? 'disadvantage' :
+            playerAdvantage === 'disadvantage' ? 'advantage' : 'neutral';
 
         console.log('');
         console.log(`  ${green('You')} chose ${formatType(reactionType)} ${bold(actionType)}`);
         await delay(500);
         console.log(`  ${red(currentEnemy.name)} chose ${formatType(enemyAction.type)} ${bold(enemyAction.action)}`);
         await delay(500);
-        console.log(`  Advantage: ${formatAdvantage(playerAdvantage)}`);
+        console.log('');
+        console.log(`  ${formatType(reactionType)} vs ${formatType(enemyAction.type)}: ${formatAdvantage(playerAdvantage)}`);
         await delay(500);
         console.log('');
 
-        // Resolve round (same logic as combat-sim)
+        // Resolve round
         if (actionType === 'attack' && enemyAction.action === 'attack') {
-            const playerDieRoll = createDieRoll(playerAdvantage);
             const playerMod = player.baseStats[reactionType as keyof BaseStats];
-            const playerTotal = playerDieRoll() + playerMod;
-
-            const enemyDieRoll = createDieRoll(enemyAdvantage);
             const enemyMod = getEnemyRelatedStat(currentEnemy, enemyAction.type, false);
-            const enemyTotal = enemyDieRoll() + enemyMod;
 
-            console.log(`  ${green('You')} roll: ${boldCyan(String(playerTotal))}`);
+            const playerRoll = rollCombatDice(playerAdvantage, playerMod);
+            const enemyRoll = rollCombatDice(enemyAdvantage, enemyMod);
+
+            console.log(`  ${green('You')} roll: ${formatDiceLog(playerRoll, playerAdvantage, reactionType)}`);
             await delay(400);
-            console.log(`  ${red(currentEnemy.name)} rolls: ${boldCyan(String(enemyTotal))}`);
+            console.log(`  ${red(currentEnemy.name)} rolls: ${formatDiceLog(enemyRoll, enemyAdvantage, enemyAction.type)}`);
             await delay(600);
+            console.log('');
 
-            if (playerTotal > enemyTotal) {
-                const dmgRoll = playerDieRoll() + playerMod;
+            if (playerRoll.total > enemyRoll.total) {
+                const dmgRoll = rollCombatDice(playerAdvantage, playerMod);
                 const eDef = getEnemyRelatedStat(currentEnemy, enemyAction.type, true);
-                const dmg = Math.max(1, dmgRoll - eDef);
+                const dmg = Math.max(1, dmgRoll.total - eDef);
                 currentEnemy.health = Math.max(0, currentEnemy.health - dmg);
-                console.log(`  ${boldGreen('You win!')} ${boldRed(String(dmg))} damage to ${currentEnemy.name}!`);
-            } else if (playerTotal < enemyTotal) {
-                const dmgRoll = enemyDieRoll() + enemyMod;
+                console.log(`  ${boldGreen('You win the clash!')}`);
+                console.log(`  Damage: ${formatDiceLog(dmgRoll, playerAdvantage, reactionType)}`);
+                console.log(`  ${dim(`${dmgRoll.total} - ${eDef} defense`)} = ${boldRed(String(dmg))} damage`);
+            } else if (playerRoll.total < enemyRoll.total) {
+                const dmgRoll = rollCombatDice(enemyAdvantage, enemyMod);
                 const pDef = player.baseStats[reactionType as keyof BaseStats];
-                const dmg = Math.max(1, dmgRoll - pDef);
+                const dmg = Math.max(1, dmgRoll.total - pDef);
                 player.health = Math.max(0, player.health - dmg);
-                console.log(`  ${boldRed(currentEnemy.name + ' wins!')} You take ${boldRed(String(dmg))} damage!`);
+                console.log(`  ${boldRed(currentEnemy.name + ' wins the clash!')}`);
+                console.log(`  Damage: ${formatDiceLog(dmgRoll, enemyAdvantage, enemyAction.type)}`);
+                console.log(`  ${dim(`${dmgRoll.total} - ${pDef} defense`)} = ${boldRed(String(dmg))} damage to you`);
             } else {
                 console.log(`  ${boldYellow('Clash is a tie!')}`);
             }
         } else if (actionType === 'attack' && enemyAction.action === 'defend') {
-            const playerDieRoll = createDieRoll(playerAdvantage);
             const playerMod = player.baseStats[reactionType as keyof BaseStats];
-            const dmgRoll = playerDieRoll() + playerMod;
+            const dmgRoll = rollCombatDice(playerAdvantage, playerMod);
             const eDef = Math.ceil(getEnemyRelatedStat(currentEnemy, enemyAction.type, true) * 1.5);
-            const dmg = Math.max(0, dmgRoll - eDef);
+            const dmg = Math.max(0, dmgRoll.total - eDef);
             currentEnemy.health = Math.max(0, currentEnemy.health - dmg);
+
+            console.log(`  ${green('You attack!')} ${formatDiceLog(dmgRoll, playerAdvantage, reactionType)}`);
+            console.log(`  ${red(currentEnemy.name)} defends ${dim(`(defense: ${eDef}, x1.5)`)}`);
             if (dmg > 0) {
-                console.log(`  ${green('You attack through their guard!')} ${boldRed(String(dmg))} damage!`);
+                console.log(`  ${dim(`${dmgRoll.total} - ${eDef} defense`)} = ${boldRed(String(dmg))} damage through their guard!`);
             } else {
                 console.log(`  ${yellow('Your attack is blocked!')}`);
             }
         } else if (actionType === 'defend' && enemyAction.action === 'attack') {
-            const enemyDieRoll = createDieRoll(enemyAdvantage);
             const enemyMod = getEnemyRelatedStat(currentEnemy, enemyAction.type, false);
-            const dmgRoll = enemyDieRoll() + enemyMod;
+            const dmgRoll = rollCombatDice(enemyAdvantage, enemyMod);
             const pDef = Math.ceil(player.baseStats[reactionType as keyof BaseStats] * 1.5);
-            const dmg = Math.max(0, dmgRoll - pDef);
+            const dmg = Math.max(0, dmgRoll.total - pDef);
             player.health = Math.max(0, player.health - dmg);
+
+            console.log(`  ${red(currentEnemy.name)} attacks! ${formatDiceLog(dmgRoll, enemyAdvantage, enemyAction.type)}`);
+            console.log(`  ${green('You brace')} ${dim(`(defense: ${pDef}, x1.5)`)}`);
             if (dmg > 0) {
-                console.log(`  ${red(currentEnemy.name + ' attacks!')} You take ${boldRed(String(dmg))} damage through your guard.`);
+                console.log(`  ${dim(`${dmgRoll.total} - ${pDef} defense`)} = ${boldRed(String(dmg))} damage to you`);
             } else {
                 console.log(`  ${boldGreen('You block completely!')}`);
             }
         } else {
-            // Both defend
             friendshipCounter++;
             console.log(narration('A moment of calm. Understanding grows between combatants.'));
             console.log(`  ${magenta('Friendship:')} ${magenta('♥'.repeat(friendshipCounter))} ${gray(`(${friendshipCounter}/3)`)}`);
         }
+
+        // Post-damage HP display
+        console.log('');
+        console.log(`  ${green(player.name)} HP: ${healthBar(player.health, player.maxHealth)}`);
+        console.log(`  ${red(currentEnemy.name)}  HP: ${healthBar(currentEnemy.health, currentEnemy.enemyStats.maxHealth)}`);
 
         await delay(800);
 
@@ -630,7 +685,6 @@ async function runGameCombat(session: GameSession, enemy: Enemy): Promise<GameSe
             console.log(GAME_OVER_ART);
             console.log(boldRed('  You have been defeated...'));
             console.log(dim('  Your journey ends here. But perhaps another path awaits.'));
-            // Revive with half health for gameplay continuity
             player.health = Math.ceil(player.maxHealth / 2);
             console.log(yellow(`  You awaken weakened. HP restored to ${player.health}.`));
             combatActive = false;
