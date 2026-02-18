@@ -61,7 +61,7 @@ export function average(...numbers: number[]): number {
 
 export const sum = (arr: number[]) => arr.reduce((a, b) => a + b, 0);
 export const max = (arr: number[]) => [...arr].sort((a, b) => b - a)[0];
-export const min = (arr: number[]) => [...arr].sort()[0];
+export const min = (arr: number[]) => [...arr].sort((a, b) => a - b)[0];
 
 /**
  * Determines the modifier to apply to a roll based on the advantage
