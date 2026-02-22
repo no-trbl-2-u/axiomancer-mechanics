@@ -10,8 +10,16 @@
       "stacking": "intensity",
       "payload": {
         "statModifiers": [
-          { "stat": "body", "value": 2, "isMultiplier": false },
-          { "stat": "physicalSkill", "value": 3, "isMultiplier": false }
+          {
+            "stat": "body",
+            "value": 2,
+            "isMultiplier": false
+          },
+          {
+            "stat": "physicalSkill",
+            "value": 3,
+            "isMultiplier": false
+          }
         ],
         "rollModifier": 2
       }
@@ -26,8 +34,16 @@
       "stacking": "intensity",
       "payload": {
         "statModifiers": [
-          { "stat": "mind", "value": 2, "isMultiplier": false },
-          { "stat": "mentalSkill", "value": 3, "isMultiplier": false }
+          {
+            "stat": "mind",
+            "value": 2,
+            "isMultiplier": false
+          },
+          {
+            "stat": "mentalSkill",
+            "value": 3,
+            "isMultiplier": false
+          }
         ],
         "rollModifier": 2
       }
@@ -42,8 +58,16 @@
       "stacking": "intensity",
       "payload": {
         "statModifiers": [
-          { "stat": "heart", "value": 2, "isMultiplier": false },
-          { "stat": "emotionalSkill", "value": 3, "isMultiplier": false }
+          {
+            "stat": "heart",
+            "value": 2,
+            "isMultiplier": false
+          },
+          {
+            "stat": "emotionalSkill",
+            "value": 3,
+            "isMultiplier": false
+          }
         ],
         "rollModifier": 2
       }
@@ -58,8 +82,16 @@
       "stacking": "duration",
       "payload": {
         "statModifiers": [
-          { "stat": "body", "value": 2, "isMultiplier": false },
-          { "stat": "physicalDefense", "value": 3, "isMultiplier": false }
+          {
+            "stat": "body",
+            "value": 2,
+            "isMultiplier": false
+          },
+          {
+            "stat": "physicalDefense",
+            "value": 3,
+            "isMultiplier": false
+          }
         ],
         "defenseModifier": 2
       }
@@ -74,8 +106,16 @@
       "stacking": "duration",
       "payload": {
         "statModifiers": [
-          { "stat": "mind", "value": 2, "isMultiplier": false },
-          { "stat": "mentalDefense", "value": 3, "isMultiplier": false }
+          {
+            "stat": "mind",
+            "value": 2,
+            "isMultiplier": false
+          },
+          {
+            "stat": "mentalDefense",
+            "value": 3,
+            "isMultiplier": false
+          }
         ],
         "defenseModifier": 2
       }
@@ -90,8 +130,16 @@
       "stacking": "duration",
       "payload": {
         "statModifiers": [
-          { "stat": "heart", "value": 2, "isMultiplier": false },
-          { "stat": "emotionalDefense", "value": 3, "isMultiplier": false }
+          {
+            "stat": "heart",
+            "value": 2,
+            "isMultiplier": false
+          },
+          {
+            "stat": "emotionalDefense",
+            "value": 3,
+            "isMultiplier": false
+          }
         ],
         "defenseModifier": 2
       }
@@ -107,12 +155,36 @@
       "payload": {
         "defenseModifier": 4,
         "statModifiers": [
-          { "stat": "body", "value": 1, "isMultiplier": false },
-          { "stat": "mind", "value": 1, "isMultiplier": false },
-          { "stat": "heart", "value": 1, "isMultiplier": false },
-          { "stat": "physicalDefense", "value": 2, "isMultiplier": false },
-          { "stat": "mentalDefense", "value": 2, "isMultiplier": false },
-          { "stat": "emotionalDefense", "value": 2, "isMultiplier": false }
+          {
+            "stat": "body",
+            "value": 1,
+            "isMultiplier": false
+          },
+          {
+            "stat": "mind",
+            "value": 1,
+            "isMultiplier": false
+          },
+          {
+            "stat": "heart",
+            "value": 1,
+            "isMultiplier": false
+          },
+          {
+            "stat": "physicalDefense",
+            "value": 2,
+            "isMultiplier": false
+          },
+          {
+            "stat": "mentalDefense",
+            "value": 2,
+            "isMultiplier": false
+          },
+          {
+            "stat": "emotionalDefense",
+            "value": 2,
+            "isMultiplier": false
+          }
         ]
       }
     },
@@ -127,9 +199,21 @@
       "payload": {
         "rollModifier": 3,
         "statModifiers": [
-          { "stat": "physicalSkill", "value": 2, "isMultiplier": false },
-          { "stat": "mentalSkill", "value": 2, "isMultiplier": false },
-          { "stat": "emotionalSkill", "value": 2, "isMultiplier": false }
+          {
+            "stat": "physicalSkill",
+            "value": 2,
+            "isMultiplier": false
+          },
+          {
+            "stat": "mentalSkill",
+            "value": 2,
+            "isMultiplier": false
+          },
+          {
+            "stat": "emotionalSkill",
+            "value": 2,
+            "isMultiplier": false
+          }
         ]
       }
     },
@@ -144,12 +228,28 @@
       "payload": {
         "defenseModifier": 3,
         "statModifiers": [
-          { "stat": "physicalDefense", "value": 2, "isMultiplier": false },
-          { "stat": "mentalDefense", "value": 2, "isMultiplier": false },
-          { "stat": "emotionalDefense", "value": 2, "isMultiplier": false }
+          {
+            "stat": "physicalDefense",
+            "value": 2,
+            "isMultiplier": false
+          },
+          {
+            "stat": "mentalDefense",
+            "value": 2,
+            "isMultiplier": false
+          },
+          {
+            "stat": "emotionalDefense",
+            "value": 2,
+            "isMultiplier": false
+          }
         ],
         "advantageModifier": {
-          "grantDisadvantage": ["body", "mind", "heart"]
+          "grantDisadvantage": [
+            "body",
+            "mind",
+            "heart"
+          ]
         }
       }
     },
@@ -164,7 +264,11 @@
       "payload": {
         "rollModifier": 2,
         "statModifiers": [
-          { "stat": "luck", "value": 2, "isMultiplier": false }
+          {
+            "stat": "luck",
+            "value": 2,
+            "isMultiplier": false
+          }
         ]
       }
     },
@@ -178,9 +282,21 @@
       "stacking": "none",
       "payload": {
         "statModifiers": [
-          { "stat": "body", "value": 1.5, "isMultiplier": true },
-          { "stat": "mind", "value": 1.5, "isMultiplier": true },
-          { "stat": "heart", "value": 1.5, "isMultiplier": true }
+          {
+            "stat": "body",
+            "value": 1.5,
+            "isMultiplier": true
+          },
+          {
+            "stat": "mind",
+            "value": 1.5,
+            "isMultiplier": true
+          },
+          {
+            "stat": "heart",
+            "value": 1.5,
+            "isMultiplier": true
+          }
         ]
       }
     },
@@ -195,7 +311,11 @@
       "payload": {
         "rollModifier": 4,
         "advantageModifier": {
-          "grantAdvantage": ["body", "mind", "heart"]
+          "grantAdvantage": [
+            "body",
+            "mind",
+            "heart"
+          ]
         }
       }
     },
@@ -223,7 +343,11 @@
       "stacking": "none",
       "payload": {
         "statModifiers": [
-          { "stat": "body", "value": 1.25, "isMultiplier": true }
+          {
+            "stat": "body",
+            "value": 1.25,
+            "isMultiplier": true
+          }
         ]
       }
     },
@@ -274,7 +398,11 @@
       "payload": {
         "defenseModifier": 2,
         "statModifiers": [
-          { "stat": "body", "value": 1, "isMultiplier": false }
+          {
+            "stat": "body",
+            "value": 1,
+            "isMultiplier": false
+          }
         ]
       }
     },
@@ -289,7 +417,11 @@
       "payload": {
         "defenseModifier": 6,
         "advantageModifier": {
-          "grantAdvantage": ["body", "mind", "heart"]
+          "grantAdvantage": [
+            "body",
+            "mind",
+            "heart"
+          ]
         }
       }
     },
@@ -303,13 +435,41 @@
       "stacking": "none",
       "payload": {
         "statModifiers": [
-          { "stat": "body", "value": 2, "isMultiplier": false },
-          { "stat": "mind", "value": 2, "isMultiplier": false },
-          { "stat": "heart", "value": 2, "isMultiplier": false },
-          { "stat": "physicalSkill", "value": 1, "isMultiplier": false },
-          { "stat": "mentalSkill", "value": 1, "isMultiplier": false },
-          { "stat": "emotionalSkill", "value": 1, "isMultiplier": false },
-          { "stat": "luck", "value": 1, "isMultiplier": false }
+          {
+            "stat": "body",
+            "value": 2,
+            "isMultiplier": false
+          },
+          {
+            "stat": "mind",
+            "value": 2,
+            "isMultiplier": false
+          },
+          {
+            "stat": "heart",
+            "value": 2,
+            "isMultiplier": false
+          },
+          {
+            "stat": "physicalSkill",
+            "value": 1,
+            "isMultiplier": false
+          },
+          {
+            "stat": "mentalSkill",
+            "value": 1,
+            "isMultiplier": false
+          },
+          {
+            "stat": "emotionalSkill",
+            "value": 1,
+            "isMultiplier": false
+          },
+          {
+            "stat": "luck",
+            "value": 1,
+            "isMultiplier": false
+          }
         ],
         "rollModifier": 1
       }
@@ -337,7 +497,9 @@
       "payload": {
         "rollModifier": 2,
         "advantageModifier": {
-          "grantAdvantage": ["body"]
+          "grantAdvantage": [
+            "body"
+          ]
         }
       }
     },
@@ -351,9 +513,21 @@
       "stacking": "duration",
       "payload": {
         "statModifiers": [
-          { "stat": "body", "value": 3, "isMultiplier": false },
-          { "stat": "physicalDefense", "value": 4, "isMultiplier": false },
-          { "stat": "physicalSave", "value": 3, "isMultiplier": false }
+          {
+            "stat": "body",
+            "value": 3,
+            "isMultiplier": false
+          },
+          {
+            "stat": "physicalDefense",
+            "value": 4,
+            "isMultiplier": false
+          },
+          {
+            "stat": "physicalSave",
+            "value": 3,
+            "isMultiplier": false
+          }
         ]
       }
     },
@@ -367,9 +541,21 @@
       "stacking": "duration",
       "payload": {
         "statModifiers": [
-          { "stat": "mind", "value": 3, "isMultiplier": false },
-          { "stat": "mentalDefense", "value": 4, "isMultiplier": false },
-          { "stat": "mentalSave", "value": 3, "isMultiplier": false }
+          {
+            "stat": "mind",
+            "value": 3,
+            "isMultiplier": false
+          },
+          {
+            "stat": "mentalDefense",
+            "value": 4,
+            "isMultiplier": false
+          },
+          {
+            "stat": "mentalSave",
+            "value": 3,
+            "isMultiplier": false
+          }
         ]
       }
     },
@@ -383,9 +569,21 @@
       "stacking": "duration",
       "payload": {
         "statModifiers": [
-          { "stat": "heart", "value": 3, "isMultiplier": false },
-          { "stat": "emotionalDefense", "value": 4, "isMultiplier": false },
-          { "stat": "emotionalSave", "value": 3, "isMultiplier": false }
+          {
+            "stat": "heart",
+            "value": 3,
+            "isMultiplier": false
+          },
+          {
+            "stat": "emotionalDefense",
+            "value": 4,
+            "isMultiplier": false
+          },
+          {
+            "stat": "emotionalSave",
+            "value": 3,
+            "isMultiplier": false
+          }
         ]
       }
     },
@@ -448,11 +646,21 @@
       "stacking": "none",
       "payload": {
         "advantageModifier": {
-          "grantAdvantage": ["body"]
+          "grantAdvantage": [
+            "body"
+          ]
         },
         "statModifiers": [
-          { "stat": "body", "value": 1, "isMultiplier": false },
-          { "stat": "physicalSkill", "value": 2, "isMultiplier": false }
+          {
+            "stat": "body",
+            "value": 1,
+            "isMultiplier": false
+          },
+          {
+            "stat": "physicalSkill",
+            "value": 2,
+            "isMultiplier": false
+          }
         ]
       }
     },
@@ -466,11 +674,21 @@
       "stacking": "none",
       "payload": {
         "advantageModifier": {
-          "grantAdvantage": ["mind"]
+          "grantAdvantage": [
+            "mind"
+          ]
         },
         "statModifiers": [
-          { "stat": "mind", "value": 1, "isMultiplier": false },
-          { "stat": "mentalSkill", "value": 2, "isMultiplier": false }
+          {
+            "stat": "mind",
+            "value": 1,
+            "isMultiplier": false
+          },
+          {
+            "stat": "mentalSkill",
+            "value": 2,
+            "isMultiplier": false
+          }
         ]
       }
     },
@@ -484,11 +702,21 @@
       "stacking": "none",
       "payload": {
         "advantageModifier": {
-          "grantAdvantage": ["heart"]
+          "grantAdvantage": [
+            "heart"
+          ]
         },
         "statModifiers": [
-          { "stat": "heart", "value": 1, "isMultiplier": false },
-          { "stat": "emotionalSkill", "value": 2, "isMultiplier": false }
+          {
+            "stat": "heart",
+            "value": 1,
+            "isMultiplier": false
+          },
+          {
+            "stat": "emotionalSkill",
+            "value": 2,
+            "isMultiplier": false
+          }
         ]
       }
     }
