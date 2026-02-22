@@ -13,6 +13,7 @@ import {
     CombatState,
     BattleLogEntry,
 } from './types';
+import { deepClone } from '../Utils';
 
 // ============================================================================
 // COMBAT STATE INITIALIZATION
@@ -25,7 +26,17 @@ import {
  * @returns A new CombatState object with initial values
  */
 export function initializeCombat(player: Character, enemy: Enemy): CombatState {
-    return "Implement me" as any;
+    return {
+        active: true,
+        phase: 'choosing_type',
+        round: 1,
+        friendshipCounter: 0,
+        player: deepClone(player),
+        enemy: deepClone(enemy),
+        playerChoice: {},
+        enemyChoice: {},
+        logEntry: [],
+    };
 }
 
 /**

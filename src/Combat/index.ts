@@ -41,7 +41,7 @@ export const determineEnemyAction = (enemyLogic: EnemyLogic) => {
  * @returns True if either combatant has 0 or less health
  */
 export function isCombatOngoing(state: CombatState): boolean {
-    return "Implement me" as any;
+    return state.active && state.player.health > 0 && state.enemy.health > 0 && state.friendshipCounter < 3;
 }
 
 /**
