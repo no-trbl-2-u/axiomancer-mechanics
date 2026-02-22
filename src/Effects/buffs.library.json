@@ -8,6 +8,7 @@
       "category": "stat",
       "duration": 3,
       "stacking": "intensity",
+      "rating": 4,
       "payload": {
         "statModifiers": [
           {
@@ -32,6 +33,7 @@
       "category": "stat",
       "duration": 3,
       "stacking": "intensity",
+      "rating": 4,
       "payload": {
         "statModifiers": [
           {
@@ -56,6 +58,7 @@
       "category": "stat",
       "duration": 3,
       "stacking": "intensity",
+      "rating": 4,
       "payload": {
         "statModifiers": [
           {
@@ -80,6 +83,7 @@
       "category": "defense",
       "duration": 4,
       "stacking": "duration",
+      "rating": 4,
       "payload": {
         "statModifiers": [
           {
@@ -104,6 +108,7 @@
       "category": "defense",
       "duration": 4,
       "stacking": "duration",
+      "rating": 4,
       "payload": {
         "statModifiers": [
           {
@@ -128,6 +133,7 @@
       "category": "defense",
       "duration": 4,
       "stacking": "duration",
+      "rating": 4,
       "payload": {
         "statModifiers": [
           {
@@ -152,6 +158,7 @@
       "category": "defense",
       "duration": 3,
       "stacking": "none",
+      "rating": 6,
       "payload": {
         "defenseModifier": 4,
         "statModifiers": [
@@ -196,6 +203,7 @@
       "category": "advantage",
       "duration": 3,
       "stacking": "intensity",
+      "rating": 5,
       "payload": {
         "rollModifier": 3,
         "statModifiers": [
@@ -225,6 +233,7 @@
       "category": "defense",
       "duration": 3,
       "stacking": "duration",
+      "rating": 6,
       "payload": {
         "defenseModifier": 3,
         "statModifiers": [
@@ -261,6 +270,7 @@
       "category": "advantage",
       "duration": 4,
       "stacking": "intensity",
+      "rating": 4,
       "payload": {
         "rollModifier": 2,
         "statModifiers": [
@@ -280,6 +290,7 @@
       "category": "damage",
       "duration": 3,
       "stacking": "none",
+      "rating": 7,
       "payload": {
         "statModifiers": [
           {
@@ -308,6 +319,7 @@
       "category": "advantage",
       "duration": 2,
       "stacking": "none",
+      "rating": 8,
       "payload": {
         "rollModifier": 4,
         "advantageModifier": {
@@ -327,6 +339,7 @@
       "category": "regeneration",
       "duration": 5,
       "stacking": "intensity",
+      "rating": 5,
       "payload": {
         "regeneration": {
           "healthPerRound": 3
@@ -341,6 +354,7 @@
       "category": "stat",
       "duration": 5,
       "stacking": "none",
+      "rating": 6,
       "payload": {
         "statModifiers": [
           {
@@ -359,6 +373,7 @@
       "category": "defense",
       "duration": 3,
       "stacking": "none",
+      "rating": 6,
       "payload": {
         "defenseModifier": 5
       }
@@ -371,6 +386,7 @@
       "category": "defense",
       "duration": 3,
       "stacking": "none",
+      "rating": 6,
       "payload": {
         "defenseModifier": 5
       }
@@ -383,6 +399,7 @@
       "category": "defense",
       "duration": 1,
       "stacking": "none",
+      "rating": 9,
       "payload": {
         "defenseModifier": 99
       }
@@ -395,6 +412,7 @@
       "category": "control",
       "duration": 3,
       "stacking": "none",
+      "rating": 3,
       "payload": {
         "defenseModifier": 2,
         "statModifiers": [
@@ -414,6 +432,7 @@
       "category": "advantage",
       "duration": 2,
       "stacking": "none",
+      "rating": 7,
       "payload": {
         "defenseModifier": 6,
         "advantageModifier": {
@@ -433,6 +452,7 @@
       "category": "stat",
       "duration": 3,
       "stacking": "none",
+      "rating": 7,
       "payload": {
         "statModifiers": [
           {
@@ -482,6 +502,7 @@
       "category": "defense",
       "duration": 2,
       "stacking": "none",
+      "rating": 5,
       "payload": {
         "defenseModifier": 2
       }
@@ -494,6 +515,7 @@
       "category": "advantage",
       "duration": 3,
       "stacking": "none",
+      "rating": 4,
       "payload": {
         "rollModifier": 2,
         "advantageModifier": {
@@ -511,6 +533,7 @@
       "category": "defense",
       "duration": 4,
       "stacking": "duration",
+      "rating": 6,
       "payload": {
         "statModifiers": [
           {
@@ -539,6 +562,7 @@
       "category": "defense",
       "duration": 4,
       "stacking": "duration",
+      "rating": 6,
       "payload": {
         "statModifiers": [
           {
@@ -567,6 +591,7 @@
       "category": "defense",
       "duration": 4,
       "stacking": "duration",
+      "rating": 6,
       "payload": {
         "statModifiers": [
           {
@@ -595,6 +620,7 @@
       "category": "stat",
       "duration": 0,
       "stacking": "none",
+      "rating": 5,
       "payload": {}
     },
     {
@@ -605,6 +631,7 @@
       "category": "advantage",
       "duration": 3,
       "stacking": "none",
+      "rating": 3,
       "payload": {
         "rollModifier": 1
       }
@@ -617,6 +644,7 @@
       "category": "advantage",
       "duration": 4,
       "stacking": "none",
+      "rating": 4,
       "payload": {
         "rollModifier": 3
       }
@@ -629,6 +657,7 @@
       "category": "regeneration",
       "duration": 4,
       "stacking": "intensity",
+      "rating": 4,
       "payload": {
         "regeneration": {
           "healthPerRound": 2
@@ -644,6 +673,7 @@
       "category": "advantage",
       "duration": 3,
       "stacking": "none",
+      "rating": 4,
       "payload": {
         "advantageModifier": {
           "grantAdvantage": [
@@ -672,6 +702,7 @@
       "category": "advantage",
       "duration": 3,
       "stacking": "none",
+      "rating": 4,
       "payload": {
         "advantageModifier": {
           "grantAdvantage": [
@@ -693,6 +724,63 @@
       }
     },
     {
+      "id": "buff_petitio_pulse",
+      "name": "Petitio Principii Pulse",
+      "description": "Your courage assumes itself justified. The argument is circular, the logic bankrupt—yet somehow the conviction holds just long enough to matter.",
+      "type": "buff",
+      "category": "stat",
+      "duration": 2,
+      "stacking": "none",
+      "rating": 1,
+      "payload": {
+        "statModifiers": [
+          {
+            "stat": "heart",
+            "value": 1,
+            "isMultiplier": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "buff_gettiters_flicker",
+      "name": "Gettier's Flicker",
+      "description": "You don't truly know where to strike—your belief is justified and true, but only by coincidence. The attack lands anyway. Epistemology shrugs.",
+      "type": "buff",
+      "category": "advantage",
+      "duration": 2,
+      "stacking": "none",
+      "rating": 1,
+      "payload": {
+        "statModifiers": [
+          {
+            "stat": "luck",
+            "value": 1,
+            "isMultiplier": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "buff_ad_hoc_patch",
+      "name": "Ad Hoc Patch",
+      "description": "A tiny gap in your technique is hastily filled with an explanation invented after the fact. It shouldn't work. It barely does.",
+      "type": "buff",
+      "category": "stat",
+      "duration": 2,
+      "stacking": "none",
+      "rating": 1,
+      "payload": {
+        "statModifiers": [
+          {
+            "stat": "physicalSkill",
+            "value": 1,
+            "isMultiplier": false
+          }
+        ]
+      }
+    },
+    {
       "id": "buff_advantage_heart",
       "name": "Hedonist's Loop",
       "description": "Pursuing happiness directly fails—so you pursue victory, and happiness follows. Your Heart surges with incidental joy made powerful.",
@@ -700,6 +788,7 @@
       "category": "advantage",
       "duration": 3,
       "stacking": "none",
+      "rating": 4,
       "payload": {
         "advantageModifier": {
           "grantAdvantage": [

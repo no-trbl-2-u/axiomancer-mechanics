@@ -8,6 +8,7 @@
       "category": "stat",
       "duration": 3,
       "stacking": "intensity",
+      "rating": 5,
       "payload": {
         "statModifiers": [
           { "stat": "body", "value": -2, "isMultiplier": false },
@@ -28,6 +29,7 @@
       "category": "damage",
       "duration": 4,
       "stacking": "intensity",
+      "rating": 4,
       "payload": {
         "damageOverTime": {
           "damagePerRound": 3,
@@ -43,6 +45,7 @@
       "category": "damage",
       "duration": 3,
       "stacking": "intensity",
+      "rating": 6,
       "payload": {
         "damageOverTime": {
           "damagePerRound": 5,
@@ -61,6 +64,7 @@
       "category": "damage",
       "duration": 4,
       "stacking": "intensity",
+      "rating": 3,
       "payload": {
         "damageOverTime": {
           "damagePerRound": 2,
@@ -76,6 +80,7 @@
       "category": "damage",
       "duration": 3,
       "stacking": "intensity",
+      "rating": 5,
       "payload": {
         "damageOverTime": {
           "damagePerRound": 4,
@@ -94,6 +99,7 @@
       "category": "damage",
       "duration": 3,
       "stacking": "duration",
+      "rating": 4,
       "payload": {
         "damageOverTime": {
           "damagePerRound": 2,
@@ -110,6 +116,7 @@
       "category": "damage",
       "duration": 2,
       "stacking": "intensity",
+      "rating": 4,
       "payload": {
         "damageOverTime": {
           "damagePerRound": 3,
@@ -126,6 +133,7 @@
       "category": "stat",
       "duration": 5,
       "stacking": "none",
+      "rating": 5,
       "payload": {
         "statModifiers": [
           { "stat": "body", "value": -1, "isMultiplier": false },
@@ -143,6 +151,7 @@
       "category": "damage",
       "duration": 4,
       "stacking": "duration",
+      "rating": 4,
       "payload": {
         "damageOverTime": {
           "damagePerRound": 2,
@@ -161,6 +170,7 @@
       "category": "stat",
       "duration": 4,
       "stacking": "intensity",
+      "rating": 4,
       "payload": {
         "statModifiers": [
           { "stat": "body", "value": -2, "isMultiplier": false }
@@ -176,6 +186,7 @@
       "category": "control",
       "duration": 1,
       "stacking": "duration",
+      "rating": 6,
       "payload": {
         "actionRestriction": {
           "skipTurn": true
@@ -190,6 +201,7 @@
       "category": "control",
       "duration": 2,
       "stacking": "none",
+      "rating": 7,
       "payload": {
         "actionRestriction": {
           "skipTurn": true
@@ -205,6 +217,7 @@
       "category": "control",
       "duration": 2,
       "stacking": "duration",
+      "rating": 5,
       "payload": {
         "rollModifier": -3,
         "statModifiers": [
@@ -222,6 +235,7 @@
       "category": "control",
       "duration": 2,
       "stacking": "none",
+      "rating": 8,
       "payload": {
         "actionRestriction": {
           "skipTurn": true
@@ -237,6 +251,7 @@
       "category": "control",
       "duration": 2,
       "stacking": "duration",
+      "rating": 5,
       "payload": {
         "rollModifier": -3,
         "statModifiers": [
@@ -254,6 +269,7 @@
       "category": "control",
       "duration": 2,
       "stacking": "none",
+      "rating": 6,
       "payload": {
         "actionRestriction": {
           "forcedActionType": "heart"
@@ -272,6 +288,7 @@
       "category": "control",
       "duration": 3,
       "stacking": "duration",
+      "rating": 7,
       "payload": {
         "rollModifier": -4,
         "advantageModifier": {
@@ -287,6 +304,7 @@
       "category": "control",
       "duration": 2,
       "stacking": "duration",
+      "rating": 7,
       "payload": {
         "rollModifier": -5,
         "advantageModifier": {
@@ -302,6 +320,7 @@
       "category": "control",
       "duration": 3,
       "stacking": "none",
+      "rating": 6,
       "payload": {
         "actionRestriction": {
           "blockedActionTypes": ["heart"]
@@ -320,6 +339,7 @@
       "category": "stat",
       "duration": 3,
       "stacking": "none",
+      "rating": 5,
       "payload": {
         "statModifiers": [
           { "stat": "body", "value": 3, "isMultiplier": false },
@@ -340,6 +360,7 @@
       "category": "stat",
       "duration": 4,
       "stacking": "intensity",
+      "rating": 3,
       "payload": {
         "statModifiers": [
           { "stat": "body", "value": -1, "isMultiplier": false },
@@ -358,6 +379,7 @@
       "category": "stat",
       "duration": 3,
       "stacking": "intensity",
+      "rating": 6,
       "payload": {
         "statModifiers": [
           { "stat": "body", "value": -2, "isMultiplier": false },
@@ -378,6 +400,7 @@
       "category": "control",
       "duration": 3,
       "stacking": "duration",
+      "rating": 4,
       "payload": {
         "rollModifier": -2,
         "statModifiers": [
@@ -396,6 +419,7 @@
       "category": "control",
       "duration": 2,
       "stacking": "duration",
+      "rating": 3,
       "payload": {
         "defenseModifier": -2,
         "rollModifier": -2
@@ -409,6 +433,7 @@
       "category": "control",
       "duration": 1,
       "stacking": "none",
+      "rating": 5,
       "payload": {
         "defenseModifier": -4,
         "rollModifier": -3
@@ -422,6 +447,7 @@
       "category": "defense",
       "duration": 3,
       "stacking": "duration",
+      "rating": 6,
       "payload": {
         "statModifiers": [
           { "stat": "body", "value": -3, "isMultiplier": false },
@@ -438,6 +464,7 @@
       "category": "defense",
       "duration": 3,
       "stacking": "duration",
+      "rating": 6,
       "payload": {
         "statModifiers": [
           { "stat": "mind", "value": -3, "isMultiplier": false },
@@ -454,6 +481,7 @@
       "category": "defense",
       "duration": 3,
       "stacking": "duration",
+      "rating": 6,
       "payload": {
         "statModifiers": [
           { "stat": "heart", "value": -3, "isMultiplier": false },
@@ -470,6 +498,7 @@
       "category": "advantage",
       "duration": 3,
       "stacking": "none",
+      "rating": 6,
       "payload": {
         "defenseModifier": -3,
         "advantageModifier": {
@@ -485,6 +514,7 @@
       "category": "stat",
       "duration": 3,
       "stacking": "intensity",
+      "rating": 5,
       "payload": {
         "statModifiers": [
           { "stat": "body", "value": -2, "isMultiplier": false },
@@ -501,6 +531,7 @@
       "category": "stat",
       "duration": 3,
       "stacking": "intensity",
+      "rating": 5,
       "payload": {
         "statModifiers": [
           { "stat": "mind", "value": -2, "isMultiplier": false },
@@ -517,6 +548,7 @@
       "category": "stat",
       "duration": 3,
       "stacking": "intensity",
+      "rating": 5,
       "payload": {
         "statModifiers": [
           { "stat": "heart", "value": -2, "isMultiplier": false },
@@ -533,6 +565,7 @@
       "category": "defense",
       "duration": 3,
       "stacking": "duration",
+      "rating": 5,
       "payload": {
         "defenseModifier": -3,
         "statModifiers": [
@@ -550,6 +583,7 @@
       "category": "advantage",
       "duration": 3,
       "stacking": "duration",
+      "rating": 5,
       "payload": {
         "rollModifier": -3,
         "statModifiers": [
@@ -567,6 +601,7 @@
       "category": "defense",
       "duration": 3,
       "stacking": "intensity",
+      "rating": 5,
       "payload": {
         "defenseModifier": -3,
         "statModifiers": [
@@ -583,6 +618,7 @@
       "category": "stat",
       "duration": 0,
       "stacking": "none",
+      "rating": 5,
       "payload": {}
     },
     {
@@ -593,6 +629,7 @@
       "category": "damage",
       "duration": 3,
       "stacking": "none",
+      "rating": 3,
       "payload": {
         "damageOverTime": {
           "damagePerRound": 2,
@@ -608,6 +645,7 @@
       "category": "damage",
       "duration": 4,
       "stacking": "none",
+      "rating": 6,
       "payload": {
         "damageOverTime": {
           "damagePerRound": 3,
@@ -626,6 +664,7 @@
       "category": "control",
       "duration": 3,
       "stacking": "none",
+      "rating": 4,
       "payload": {
         "statModifiers": [
           { "stat": "heart", "value": -2, "isMultiplier": false },
@@ -644,6 +683,7 @@
       "category": "control",
       "duration": 2,
       "stacking": "none",
+      "rating": 4,
       "payload": {
         "rollModifier": -2,
         "statModifiers": [
@@ -662,6 +702,7 @@
       "category": "stat",
       "duration": 2,
       "stacking": "duration",
+      "rating": 5,
       "payload": {
         "statModifiers": [
           { "stat": "mind", "value": -3, "isMultiplier": false },
@@ -672,6 +713,49 @@
       }
     },
     {
+      "id": "debuff_straw_man_echo",
+      "name": "Straw Man's Echo",
+      "description": "A weakened version of your intent was easily dismissed. You never argued for that—but the damage is done. Your confidence wavers, just slightly.",
+      "type": "debuff",
+      "category": "advantage",
+      "duration": 2,
+      "stacking": "none",
+      "rating": 1,
+      "payload": {
+        "rollModifier": -1
+      }
+    },
+    {
+      "id": "debuff_post_hoc_tremor",
+      "name": "Post Hoc Tremor",
+      "description": "After the stumble came the strike—correlation mistaken for causation. Your muscles remember the sequence and flinch preemptively, just a little.",
+      "type": "debuff",
+      "category": "stat",
+      "duration": 2,
+      "stacking": "none",
+      "rating": 1,
+      "payload": {
+        "statModifiers": [
+          { "stat": "body", "value": -1, "isMultiplier": false }
+        ]
+      }
+    },
+    {
+      "id": "debuff_affirming_consequent",
+      "name": "Affirming the Consequent",
+      "description": "If you were skilled, you'd succeed. You succeeded—therefore you were skilled. But the reasoning was flawed, and your next attempt knows it.",
+      "type": "debuff",
+      "category": "stat",
+      "duration": 2,
+      "stacking": "none",
+      "rating": 1,
+      "payload": {
+        "statModifiers": [
+          { "stat": "physicalSkill", "value": -1, "isMultiplier": false }
+        ]
+      }
+    },
+    {
       "id": "debuff_causal_emergence",
       "name": "Emergence Failure",
       "description": "Your consciousness should have causal power—but physics is causally closed. Your will is epiphenomenal, an illusion. Commands fail to reach your limbs.",
@@ -679,6 +763,7 @@
       "category": "control",
       "duration": 2,
       "stacking": "none",
+      "rating": 5,
       "payload": {
         "rollModifier": -2,
         "statModifiers": [
