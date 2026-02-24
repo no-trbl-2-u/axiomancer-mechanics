@@ -14,43 +14,117 @@ import { Advantage, CombatState } from './types';
 
 const delay = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
 
+/* ─── ANSI colour helpers ────────────────────────────────────────────────── */
+
+const C = {
+    reset:  '\x1b[0m',
+    bold:   '\x1b[1m',
+    dim:    '\x1b[2m',
+    red:    '\x1b[31m',
+    green:  '\x1b[32m',
+    yellow: '\x1b[33m',
+    blue:   '\x1b[34m',
+    cyan:   '\x1b[36m',
+    white:  '\x1b[37m',
+    brightRed:    '\x1b[91m',
+    brightGreen:  '\x1b[92m',
+    brightYellow: '\x1b[93m',
+    brightBlue:   '\x1b[94m',
+    brightCyan:   '\x1b[96m',
+    brightWhite:  '\x1b[97m',
+};
+
+/** Colour a type label: heart=red, body=green, mind=blue */
+function typeColor(type: string, text?: string): string {
+    const label = text ?? type.toUpperCase();
+    switch (type) {
+        case 'heart': return `${C.brightRed}${label}${C.reset}`;
+        case 'body':  return `${C.brightGreen}${label}${C.reset}`;
+        case 'mind':  return `${C.brightBlue}${label}${C.reset}`;
+        default:      return label;
+    }
+}
+
 /* ─── Formatting helpers ─────────────────────────────────────────────────── */
 
 const ADVANTAGE_LABEL: Record<Advantage, string> = {
-    advantage:    'ADVANTAGE   (+)',
-    neutral:      'NEUTRAL      (=)',
-    disadvantage: 'DISADVANTAGE (-)',
+    advantage:    `${C.brightGreen}ADVANTAGE   (+)${C.reset}`,
+    neutral:      `${C.yellow}NEUTRAL      (=)${C.reset}`,
+    disadvantage: `${C.brightRed}DISADVANTAGE (-)${C.reset}`,
 };
 
 /** Explains why the type matchup produced that advantage result */
 function advantageReason(attacker: string, defender: string, advantage: Advantage): string {
-    const wins: Record<string, string> = { heart: 'body', body: 'mind', mind: 'heart' };
-    if (advantage === 'neutral')      return `${attacker} = ${defender} (same type → neutral)`;
-    if (advantage === 'advantage')    return `${attacker} > ${defender} (${attacker} beats ${defender})`;
-    return `${attacker} < ${defender} (${defender} beats ${attacker})`;
+    if (advantage === 'neutral')   return `${attacker} = ${defender} (same type)`;
+    if (advantage === 'advantage') return `${attacker} > ${defender}`;
+    return `${attacker} < ${defender}`;
 }
 
 /** Formats a roll so the breakdown is always visible */
 function fmtRoll(label: string, rawRoll: number, modifier: number, advantage: Advantage): string {
     const diceDesc = advantage === 'neutral' ? '1d20' : `2d20 ${advantage}`;
-    return `  ${label.padEnd(22)} ${rawRoll} (${diceDesc}) + ${modifier} (stat) = ${rawRoll + modifier}`;
+    const total = rawRoll + modifier;
+    return `  ${label.padEnd(24)} ${C.bold}${total}${C.reset}  (${rawRoll} [${diceDesc}] + ${modifier} stat)`;
 }
 
 /** Formats a damage calculation step */
-function fmtDamage(label: string, damageRoll: number, defenseStat: number, defenseLabel: string, defending: boolean): string {
-    const defNote = defending ? ` × 1.5 defending = ${defenseStat}` : ` = ${defenseStat}`;
+function fmtDamage(
+    label: string,
+    damageRoll: number,
+    defenseStat: number,
+    defenseLabel: string,
+    defending: boolean,
+): string {
+    const defNote = defending ? ` × 1.5 = ${defenseStat}` : ``;
     const finalDmg = Math.max(0, damageRoll - defenseStat);
-    return `  ${label.padEnd(22)} ${damageRoll} (roll) − ${defenseStat} (${defenseLabel} defense${defNote}) = ${finalDmg} dmg`;
+    const dmgColor = finalDmg > 0 ? C.brightRed : C.dim;
+    return [
+        `  ${label.padEnd(24)} roll ${damageRoll}`,
+        `  ${''.padEnd(24)} defense (${defenseLabel}${defNote}): ${defenseStat}`,
+        `  ${''.padEnd(24)} ${dmgColor}${C.bold}damage: ${finalDmg}${C.reset}`,
+    ].join('\n');
+}
+
+/** Renders an ASCII HP bar */
+function hpBar(current: number, max: number, width = 20): string {
+    const clamped = Math.max(0, current);
+    const filled  = Math.round((clamped / max) * width);
+    const empty   = width - filled;
+    const pct     = clamped / max;
+    const color   = pct > 0.5 ? C.brightGreen : pct > 0.25 ? C.brightYellow : C.brightRed;
+    return `${color}${'█'.repeat(filled)}${C.dim}${'░'.repeat(empty)}${C.reset}`;
+}
+
+/* ─── Section headers ────────────────────────────────────────────────────── */
+
+const HR_MAJOR = `${C.dim}${'═'.repeat(50)}${C.reset}`;
+const HR_MINOR = `${C.dim}${'─'.repeat(50)}${C.reset}`;
+
+function sectionHeader(title: string): string {
+    return `\n${C.bold}${C.cyan}┌─ ${title} ${C.dim}${'─'.repeat(Math.max(0, 46 - title.length))}${C.reset}`;
 }
 
 /* ─── Status display ─────────────────────────────────────────────────────── */
 
 function printStatus(state: CombatState): void {
-    console.log(`\n========== Round ${state.round} ==========`);
-    console.log(`Player HP : ${state.player.health} / ${state.player.maxHealth}`);
-    console.log(`Enemy HP  : ${state.enemy.health} / ${state.enemy.enemyStats.maxHealth}`);
+    const playerPct  = Math.max(0, state.player.health) / state.player.maxHealth;
+    const enemyPct   = Math.max(0, state.enemy.health)  / state.enemy.enemyStats.maxHealth;
+    const playerHpColor = playerPct > 0.5 ? C.brightGreen : playerPct > 0.25 ? C.brightYellow : C.brightRed;
+    const enemyHpColor  = enemyPct  > 0.5 ? C.brightGreen : enemyPct  > 0.25 ? C.brightYellow : C.brightRed;
+
+    console.log(`\n${HR_MAJOR}`);
+    console.log(`  ${C.bold}Round ${state.round}${C.reset}`);
+    console.log(HR_MAJOR);
+
+    const playerHp = Math.max(0, state.player.health);
+    const enemyHp  = Math.max(0, state.enemy.health);
+
+    console.log(`  Player  ${hpBar(state.player.health, state.player.maxHealth)}  ${playerHpColor}${playerHp}${C.reset} / ${state.player.maxHealth}`);
+    console.log(`  Enemy   ${hpBar(state.enemy.health,  state.enemy.enemyStats.maxHealth)}  ${enemyHpColor}${enemyHp}${C.reset} / ${state.enemy.enemyStats.maxHealth}`);
+
     if (state.friendshipCounter > 0) {
-        console.log(`Friendship: ${state.friendshipCounter} / 3`);
+        const hearts = '♥'.repeat(state.friendshipCounter) + '♡'.repeat(3 - state.friendshipCounter);
+        console.log(`  ${C.brightRed}Friendship  ${hearts}${C.reset}  (${state.friendshipCounter} / 3)`);
     }
     console.log('');
 }
@@ -67,39 +141,44 @@ async function runCombatTurn(state: CombatState): Promise<CombatState> {
         {
             type: 'rawlist',
             name: 'reactionType',
-            message: 'Select which part of yourself you choose to respond with...',
+            message: 'Respond with...',
             choices: [
-                { name: 'Heart', value: 'heart' },
-                { name: 'Body', value: 'body' },
-                { name: 'Mind', value: 'mind' }
-            ]
+                { name: `${typeColor('heart', 'Heart')}  (emotional)`, value: 'heart' },
+                { name: `${typeColor('body',  'Body')}   (physical)`,  value: 'body'  },
+                { name: `${typeColor('mind',  'Mind')}   (mental)`,    value: 'mind'  },
+            ],
         },
         {
             type: 'rawlist',
             name: 'actionType',
-            message: 'Select the action you want to take...',
-            choices: ['attack', 'defend']
-        }
+            message: 'Action...',
+            choices: ['attack', 'defend'],
+        },
     ]);
 
     /* Work on local copies so state stays immutable */
     let player = { ...state.player };
-    let enemy = { ...state.enemy };
+    let enemy  = { ...state.enemy  };
     let friendshipCounter = state.friendshipCounter;
 
-    const enemyAction = determineEnemyAction(enemy.logic);
-    const playerAdvantage = determineAdvantage(answer.reactionType, enemyAction.type);
-    const enemyAdvantage = determineAdvantage(enemyAction.type, answer.reactionType);
+    const enemyAction      = determineEnemyAction(enemy.logic);
+    const playerAdvantage  = determineAdvantage(answer.reactionType, enemyAction.type);
+    const enemyAdvantage   = determineAdvantage(enemyAction.type, answer.reactionType);
 
-    console.log(`\nPlayer : ${answer.actionType.toUpperCase()} with ${answer.reactionType.toUpperCase()}`);
-    console.log(`Enemy  : ${enemyAction.action.toUpperCase()} with ${enemyAction.type.toUpperCase()}`);
+    /* ── Actions declared ───────────────────────────────────────────────── */
+    console.log(HR_MINOR);
+    console.log(`  You    ${C.bold}${answer.actionType.toUpperCase()}${C.reset} with ${typeColor(answer.reactionType)}`);
+    console.log(`  Enemy  ${C.bold}${enemyAction.action.toUpperCase()}${C.reset} with ${typeColor(enemyAction.type)}`);
 
-    /* ── Type matchup breakdown ─────────────────────────────────────────── */
-    console.log('\n[ Type Matchup ]');
-    console.log(`  Player (${answer.reactionType}) vs Enemy (${enemyAction.type})`);
-    console.log(`  Player advantage : ${ADVANTAGE_LABEL[playerAdvantage]}  — ${advantageReason(answer.reactionType, enemyAction.type, playerAdvantage)}`);
-    console.log(`  Enemy  advantage : ${ADVANTAGE_LABEL[enemyAdvantage]}  — ${advantageReason(enemyAction.type, answer.reactionType, enemyAdvantage)}`);
-    console.log(`  (advantage rolls 2d20 and keeps the HIGHER; disadvantage keeps the LOWER)`);
+    /* ── Type matchup ───────────────────────────────────────────────────── */
+    console.log(sectionHeader('Type Matchup'));
+
+    if (playerAdvantage === 'neutral') {
+        console.log(`  Same type (${typeColor(answer.reactionType)}) — ${ADVANTAGE_LABEL['neutral']} for both sides`);
+    } else {
+        console.log(`  You     ${ADVANTAGE_LABEL[playerAdvantage]}  — ${advantageReason(answer.reactionType, enemyAction.type, playerAdvantage)}`);
+        console.log(`  Enemy   ${ADVANTAGE_LABEL[enemyAdvantage]}  — ${advantageReason(enemyAction.type, answer.reactionType, enemyAdvantage)}`);
+    }
 
     await delay(1500);
 
@@ -107,59 +186,53 @@ async function runCombatTurn(state: CombatState): Promise<CombatState> {
      * PLAYER ATTACKS
      * ════════════════════════════════════════════════════════════════════════ */
     if (answer.actionType === 'attack') {
-        const playerDieRoll = createDieRoll(playerAdvantage);
+        const playerDieRoll      = createDieRoll(playerAdvantage);
         const playerRollModifier = player.baseStats[answer.reactionType as keyof BaseStats];
-        const playerRawRoll = playerDieRoll();
-        const playerRollTotal = playerRawRoll + playerRollModifier;
+        const playerRawRoll      = playerDieRoll();
+        const playerRollTotal    = playerRawRoll + playerRollModifier;
 
         /* ── Player vs Enemy: ATTACK vs ATTACK ──────────────────────────── */
         if (enemyAction.action === 'attack') {
-            const enemyDieRoll = createDieRoll(enemyAdvantage);
+            const enemyDieRoll      = createDieRoll(enemyAdvantage);
             const enemyRollModifier = getEnemyRelatedStat(enemy, enemyAction.type, false);
-            const enemyRawRoll = enemyDieRoll();
-            const enemyRollTotal = enemyRawRoll + enemyRollModifier;
+            const enemyRawRoll      = enemyDieRoll();
+            const enemyRollTotal    = enemyRawRoll + enemyRollModifier;
 
-            console.log('\n[ Attack Contest ]');
-            console.log(fmtRoll('Player attack roll:', playerRawRoll, playerRollModifier, playerAdvantage));
-            console.log(fmtRoll('Enemy attack roll:', enemyRawRoll, enemyRollModifier, enemyAdvantage));
+            console.log(sectionHeader('Attack Contest'));
+            console.log(fmtRoll('You attack:', playerRawRoll, playerRollModifier, playerAdvantage));
+            console.log(fmtRoll('Enemy attack:', enemyRawRoll, enemyRollModifier, enemyAdvantage));
             await delay(1500);
 
             if (playerRollTotal > enemyRollTotal) {
-                console.log(`\n  → Player wins! (${playerRollTotal} vs ${enemyRollTotal})`);
+                console.log(`\n  ${C.brightGreen}${C.bold}→ You win the contest!${C.reset} (${playerRollTotal} vs ${enemyRollTotal})`);
                 await delay(1500);
 
-                /* Damage roll */
                 const playersDamageRoll = playerDieRoll() + playerRollModifier;
-                const enemyDefenseStat = getEnemyRelatedStat(enemy, enemyAction.type, true);
-                const playerDamage = Math.max(0, playersDamageRoll - enemyDefenseStat);
+                const enemyDefenseStat  = getEnemyRelatedStat(enemy, enemyAction.type, true);
+                const playerDamage      = Math.max(0, playersDamageRoll - enemyDefenseStat);
 
-                console.log('\n[ Player Damage Calculation ]');
-                console.log(`  Damage roll   : 1d20 + ${playerRollModifier} (${answer.reactionType} stat) = ${playersDamageRoll}`);
-                console.log(`  Enemy defense : ${enemyAction.type} defense stat = ${enemyDefenseStat}`);
-                console.log(`  Final damage  : ${playersDamageRoll} − ${enemyDefenseStat} = ${playerDamage} (min 0)`);
-                console.log(`  Enemy HP      : ${enemy.health} → ${enemy.health - playerDamage}`);
+                console.log(sectionHeader('Damage'));
+                console.log(fmtDamage('You deal:', playersDamageRoll, enemyDefenseStat, `${enemyAction.type} defense`, false));
+                console.log(`\n  Enemy HP  ${Math.max(0, enemy.health)} → ${C.brightRed}${Math.max(0, enemy.health - playerDamage)}${C.reset}`);
 
                 enemy = { ...enemy, health: enemy.health - playerDamage };
 
             } else if (playerRollTotal < enemyRollTotal) {
-                console.log(`\n  → Enemy wins! (${enemyRollTotal} vs ${playerRollTotal})`);
+                console.log(`\n  ${C.brightRed}${C.bold}→ Enemy wins the contest!${C.reset} (${enemyRollTotal} vs ${playerRollTotal})`);
                 await delay(1500);
 
-                /* Damage roll */
                 const enemiesDamageRoll = enemyDieRoll() + enemyRollModifier;
                 const playerDefenseStat = player.baseStats[answer.reactionType as keyof BaseStats];
-                const enemyDamage = Math.max(0, enemiesDamageRoll - playerDefenseStat);
+                const enemyDamage       = Math.max(0, enemiesDamageRoll - playerDefenseStat);
 
-                console.log('\n[ Enemy Damage Calculation ]');
-                console.log(`  Damage roll    : 1d20 + ${enemyRollModifier} (${enemyAction.type} attack stat) = ${enemiesDamageRoll}`);
-                console.log(`  Player defense : ${answer.reactionType} base stat = ${playerDefenseStat}`);
-                console.log(`  Final damage   : ${enemiesDamageRoll} − ${playerDefenseStat} = ${enemyDamage} (min 0)`);
-                console.log(`  Player HP      : ${player.health} → ${player.health - enemyDamage}`);
+                console.log(sectionHeader('Damage'));
+                console.log(fmtDamage('Enemy deals:', enemiesDamageRoll, playerDefenseStat, `${answer.reactionType} base stat`, false));
+                console.log(`\n  Your HP   ${Math.max(0, player.health)} → ${C.brightRed}${Math.max(0, player.health - enemyDamage)}${C.reset}`);
 
                 player = { ...player, health: player.health - enemyDamage };
 
             } else {
-                console.log(`\n  → Tied! (${playerRollTotal} vs ${enemyRollTotal}) — your wits clash, both miss!`);
+                console.log(`\n  ${C.yellow}→ Tied! (${playerRollTotal} vs ${enemyRollTotal}) — wits clash, both miss.${C.reset}`);
             }
 
         /* ── Player ATTACKS, Enemy DEFENDS ──────────────────────────────── */
@@ -167,19 +240,15 @@ async function runCombatTurn(state: CombatState): Promise<CombatState> {
             const baseEnemyDefense = getEnemyRelatedStat(enemy, enemyAction.type, true);
             const enemyDefenseStat = baseEnemyDefense * 1.5;
             const playersDamageRoll = playerDieRoll() + playerRollModifier;
-            const playerDamage = Math.max(0, playersDamageRoll - enemyDefenseStat);
+            const playerDamage      = Math.max(0, playersDamageRoll - enemyDefenseStat);
 
-            console.log('\n[ Player Attack Roll ]');
-            console.log(fmtRoll('Player attack roll:', playerRawRoll, playerRollModifier, playerAdvantage));
-            console.log(`  (Attack roll used for damage directly since enemy is defending)`);
+            console.log(sectionHeader('Your Attack (Enemy Defending)'));
+            console.log(fmtRoll('You attack:', playerRawRoll, playerRollModifier, playerAdvantage));
             await delay(1500);
 
-            console.log('\n[ Player Damage vs Defending Enemy ]');
-            console.log(`  Damage roll       : 1d20 + ${playerRollModifier} (${answer.reactionType} stat) = ${playersDamageRoll}`);
-            console.log(`  Enemy base defense: ${enemyAction.type} defense stat = ${baseEnemyDefense}`);
-            console.log(`  Defending bonus   : ${baseEnemyDefense} × 1.5 = ${enemyDefenseStat}`);
-            console.log(`  Final damage      : ${playersDamageRoll} − ${enemyDefenseStat} = ${playerDamage} (min 0)`);
-            console.log(`  Enemy HP          : ${enemy.health} → ${enemy.health - playerDamage}`);
+            console.log(sectionHeader('Damage'));
+            console.log(fmtDamage('You deal:', playersDamageRoll, enemyDefenseStat, `${enemyAction.type} defense ×1.5`, true));
+            console.log(`\n  Enemy HP  ${Math.max(0, enemy.health)} → ${C.brightRed}${Math.max(0, enemy.health - playerDamage)}${C.reset}`);
 
             enemy = { ...enemy, health: enemy.health - playerDamage };
         }
@@ -191,26 +260,22 @@ async function runCombatTurn(state: CombatState): Promise<CombatState> {
 
         /* ── Player DEFENDS, Enemy ATTACKS ──────────────────────────────── */
         if (enemyAction.action === 'attack') {
-            const enemyDieRoll = createDieRoll(enemyAdvantage);
+            const enemyDieRoll      = createDieRoll(enemyAdvantage);
             const enemyRollModifier = getEnemyRelatedStat(enemy, enemyAction.type, false);
-            const enemyRawRoll = enemyDieRoll();
-            const enemyRollTotal = enemyRawRoll + enemyRollModifier;
+            const enemyRawRoll      = enemyDieRoll();
 
             const basePlayerDefense = player.baseStats[answer.reactionType as keyof BaseStats];
             const playerDefenseStat = basePlayerDefense * 1.5;
             const enemiesDamageRoll = enemyDieRoll() + enemyRollModifier;
-            const enemyDamage = Math.max(0, enemiesDamageRoll - playerDefenseStat);
+            const enemyDamage       = Math.max(0, enemiesDamageRoll - playerDefenseStat);
 
-            console.log('\n[ Enemy Attack Roll ]');
-            console.log(fmtRoll('Enemy attack roll:', enemyRawRoll, enemyRollModifier, enemyAdvantage));
+            console.log(sectionHeader('Enemy Attack (You Defending)'));
+            console.log(fmtRoll('Enemy attack:', enemyRawRoll, enemyRollModifier, enemyAdvantage));
             await delay(1500);
 
-            console.log('\n[ Enemy Damage vs Defending Player ]');
-            console.log(`  Damage roll        : 1d20 + ${enemyRollModifier} (${enemyAction.type} attack stat) = ${enemiesDamageRoll}`);
-            console.log(`  Player base defense: ${answer.reactionType} base stat = ${basePlayerDefense}`);
-            console.log(`  Defending bonus    : ${basePlayerDefense} × 1.5 = ${playerDefenseStat}`);
-            console.log(`  Final damage       : ${enemiesDamageRoll} − ${playerDefenseStat} = ${enemyDamage} (min 0)`);
-            console.log(`  Player HP          : ${player.health} → ${player.health - enemyDamage}`);
+            console.log(sectionHeader('Damage'));
+            console.log(fmtDamage('Enemy deals:', enemiesDamageRoll, playerDefenseStat, `${answer.reactionType} base stat ×1.5`, true));
+            console.log(`\n  Your HP   ${Math.max(0, player.health)} → ${C.brightRed}${Math.max(0, player.health - enemyDamage)}${C.reset}`);
 
             player = { ...player, health: player.health - enemyDamage };
 
@@ -218,10 +283,10 @@ async function runCombatTurn(state: CombatState): Promise<CombatState> {
         } else if (enemyAction.action === 'defend') {
             friendshipCounter++;
             await delay(1500);
-            console.log('\n[ Both Defending ]');
-            console.log(`  No attack is made. Both parties pause...`);
-            console.log(`  Friendship counter: ${friendshipCounter - 1} → ${friendshipCounter} / 3`);
-            console.log(`  (At 3, the enemy becomes your friend and combat ends)`);
+            console.log(sectionHeader('Both Defending'));
+            console.log(`  No attack is made. A moment of stillness passes...`);
+            const hearts = '♥'.repeat(friendshipCounter) + '♡'.repeat(3 - friendshipCounter);
+            console.log(`  ${C.brightRed}Friendship  ${hearts}${C.reset}  (${friendshipCounter} / 3)${friendshipCounter >= 3 ? `  ${C.brightYellow}← bond formed!${C.reset}` : ''}`);
         }
     }
 
@@ -239,12 +304,16 @@ async function runCombatTurn(state: CombatState): Promise<CombatState> {
 /* ─── Entry point ────────────────────────────────────────────────────────── */
 
 async function main() {
-    console.log('Simulating combat as mocked player vs. mocked enemy...\n');
-    console.log('[ Combat Rules ]');
-    console.log('  Heart > Body > Mind > Heart  (type advantage)');
-    console.log('  Advantage: roll 2d20, keep HIGHER | Disadvantage: roll 2d20, keep LOWER');
-    console.log('  Defending: your defense stat × 1.5');
-    console.log('  Damage = attack roll − defense stat (minimum 0)\n');
+    console.log(`\n${HR_MAJOR}`);
+    console.log(`  ${C.bold}${C.brightCyan}AXIOMANCER  —  Combat Simulator${C.reset}`);
+    console.log(`  ${C.dim}${Player.name} (Lv.${Player.level})  vs  ${Disatree_01.name} (Lv.${Disatree_01.level})${C.reset}`);
+    console.log(HR_MAJOR);
+
+    console.log(`\n${C.bold}Rules${C.reset}`);
+    console.log(`  ${typeColor('heart')} > ${typeColor('body')} > ${typeColor('mind')} > ${typeColor('heart')}  (type advantage cycle)`);
+    console.log(`  Advantage → roll 2d20 keep ${C.brightGreen}HIGHER${C.reset}  |  Disadvantage → roll 2d20 keep ${C.brightRed}LOWER${C.reset}`);
+    console.log(`  Defending → defense stat ×1.5`);
+    console.log(`  Damage = attack roll − defense stat  (min 0)\n`);
 
     let state = initializeCombat(Player, Disatree_01);
 
@@ -252,18 +321,24 @@ async function main() {
         state = await runCombatTurn(state);
     }
 
-    console.log('\n========== COMBAT ENDED ==========');
+    /* ── End screen ─────────────────────────────────────────────────────── */
+    console.log(`\n${HR_MAJOR}`);
+
     if (state.enemy.health <= 0) {
-        console.log('You defeated the enemy! Victory!');
+        console.log(`  ${C.brightGreen}${C.bold}VICTORY — you defeated the enemy!${C.reset}`);
     } else if (state.player.health <= 0) {
-        console.log('You were defeated... Game over.');
+        console.log(`  ${C.brightRed}${C.bold}DEFEAT — you were overcome.${C.reset}`);
     } else if (state.friendshipCounter >= 3) {
-        console.log('You and the enemy have become friends!');
+        console.log(`  ${C.brightYellow}${C.bold}BOND FORMED — your enemy becomes an ally.${C.reset}`);
     }
 
-    console.log(`\nFinal Player HP : ${state.player.health} / ${state.player.maxHealth}`);
-    console.log(`Final Enemy HP  : ${state.enemy.health} / ${state.enemy.enemyStats.maxHealth}`);
-    console.log(`Rounds fought   : ${state.round - 1}`);
+    console.log(HR_MAJOR);
+    console.log(`  ${C.bold}Final results${C.reset}`);
+    console.log(`  Your HP    ${hpBar(state.player.health, state.player.maxHealth)}  ${Math.max(0, state.player.health)} / ${state.player.maxHealth}`);
+    console.log(`  Enemy HP   ${hpBar(state.enemy.health,  state.enemy.enemyStats.maxHealth)}  ${Math.max(0, state.enemy.health)} / ${state.enemy.enemyStats.maxHealth}`);
+    console.log(`  Rounds     ${state.round - 1}`);
+    console.log(HR_MAJOR);
+    console.log('');
 }
 
 main();

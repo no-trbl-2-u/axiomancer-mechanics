@@ -10,7 +10,3 @@ export const Player: Character = createCharacter({
         mind: 2,
     },
 });
-
-
-/* Used to debug mocked character */
-console.log("Player:", JSON.stringify(Player, null, 2));
