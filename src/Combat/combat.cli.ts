@@ -10,7 +10,12 @@ import { determineEnemyAction, determineAdvantage, isCombatOngoing } from './ind
 import { createDieRoll } from '../Utils';
 import { getEnemyRelatedStat } from '../Enemy';
 import { initializeCombat } from './combat.reducer';
-import { Advantage, CombatState } from './types';
+import { Advantage, ActionType, CombatState } from './types';
+import {
+    DEFENSE_MULTIPLIERS,
+    PASSIVE_DEFENSE_MULTIPLIER,
+    FRIENDSHIP_COUNTER_MAX,
+} from '../Game/game-mechanics.constants';
 
 const delay = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
 
@@ -67,22 +72,43 @@ function fmtRoll(label: string, rawRoll: number, modifier: number, advantage: Ad
     return `  ${label.padEnd(24)} ${C.bold}${total}${C.reset}  (${rawRoll} [${diceDesc}] + ${modifier} stat)`;
 }
 
-/** Formats a damage calculation step */
+/**
+ * Maps an ActionType to the enemy's defense stat key name for display.
+ * body → physicalDefense | mind → mentalDefense | heart → emotionalDefense
+ */
+function enemyDefenseStatKey(type: ActionType): string {
+    switch (type) {
+        case 'body':  return 'physicalDefense';
+        case 'mind':  return 'mentalDefense';
+        case 'heart': return 'emotionalDefense';
+    }
+}
+
+/**
+ * Formats a damage calculation using the standard formula display:
+ *   "[actor] defends with [statKey]. ( [roll] - ( [base] x [mult] ) ) = [result] Damage"
+ *
+ * @param actor          - "Player" or "Enemy" — the entity absorbing the hit
+ * @param defenseStatKey - Name of the stat used for defense (e.g. "heart", "physicalDefense")
+ * @param damageRoll     - Total damage roll (die result + attack modifier)
+ * @param baseDefense    - Raw defense stat value before the multiplier is applied
+ * @param multiplier     - Defense multiplier (from DEFENSE_MULTIPLIERS or PASSIVE_DEFENSE_MULTIPLIER)
+ */
 function fmtDamage(
-    label: string,
+    actor: string,
+    defenseStatKey: string,
     damageRoll: number,
-    defenseStat: number,
-    defenseLabel: string,
-    defending: boolean,
+    baseDefense: number,
+    multiplier: number,
 ): string {
-    const defNote = defending ? ` × 1.5 = ${defenseStat}` : ``;
-    const finalDmg = Math.max(0, damageRoll - defenseStat);
+    const effectiveDefense = baseDefense * multiplier;
+    const finalDmg = Math.max(0, damageRoll - effectiveDefense);
     const dmgColor = finalDmg > 0 ? C.brightRed : C.dim;
-    return [
-        `  ${label.padEnd(24)} roll ${damageRoll}`,
-        `  ${''.padEnd(24)} defense (${defenseLabel}${defNote}): ${defenseStat}`,
-        `  ${''.padEnd(24)} ${dmgColor}${C.bold}damage: ${finalDmg}${C.reset}`,
-    ].join('\n');
+    return (
+        `  ${actor} defends with ${C.bold}${defenseStatKey}${C.reset}. ` +
+        `( ${damageRoll} - ( ${baseDefense} x ${multiplier} ) ) = ` +
+        `${dmgColor}${C.bold}${finalDmg}${C.reset} Damage`
+    );
 }
 
 /** Renders an ASCII HP bar */
@@ -123,8 +149,8 @@ function printStatus(state: CombatState): void {
     console.log(`  Enemy   ${hpBar(state.enemy.health,  state.enemy.enemyStats.maxHealth)}  ${enemyHpColor}${enemyHp}${C.reset} / ${state.enemy.enemyStats.maxHealth}`);
 
     if (state.friendshipCounter > 0) {
-        const hearts = '♥'.repeat(state.friendshipCounter) + '♡'.repeat(3 - state.friendshipCounter);
-        console.log(`  ${C.brightRed}Friendship  ${hearts}${C.reset}  (${state.friendshipCounter} / 3)`);
+        const hearts = '♥'.repeat(state.friendshipCounter) + '♡'.repeat(FRIENDSHIP_COUNTER_MAX - state.friendshipCounter);
+        console.log(`  ${C.brightRed}Friendship  ${hearts}${C.reset}  (${state.friendshipCounter} / ${FRIENDSHIP_COUNTER_MAX})`);
     }
     console.log('');
 }
@@ -208,11 +234,11 @@ async function runCombatTurn(state: CombatState): Promise<CombatState> {
                 await delay(1500);
 
                 const playersDamageRoll = playerDieRoll() + playerRollModifier;
-                const enemyDefenseStat  = getEnemyRelatedStat(enemy, enemyAction.type, true);
-                const playerDamage      = Math.max(0, playersDamageRoll - enemyDefenseStat);
+                const baseEnemyDefense  = getEnemyRelatedStat(enemy, enemyAction.type, true);
+                const playerDamage      = Math.max(0, playersDamageRoll - baseEnemyDefense * PASSIVE_DEFENSE_MULTIPLIER);
 
                 console.log(sectionHeader('Damage'));
-                console.log(fmtDamage('You deal:', playersDamageRoll, enemyDefenseStat, `${enemyAction.type} defense`, false));
+                console.log(fmtDamage('Enemy', enemyDefenseStatKey(enemyAction.type), playersDamageRoll, baseEnemyDefense, PASSIVE_DEFENSE_MULTIPLIER));
                 console.log(`\n  Enemy HP  ${Math.max(0, enemy.health)} → ${C.brightRed}${Math.max(0, enemy.health - playerDamage)}${C.reset}`);
 
                 enemy = { ...enemy, health: enemy.health - playerDamage };
@@ -221,12 +247,12 @@ async function runCombatTurn(state: CombatState): Promise<CombatState> {
                 console.log(`\n  ${C.brightRed}${C.bold}→ Enemy wins the contest!${C.reset} (${enemyRollTotal} vs ${playerRollTotal})`);
                 await delay(1500);
 
-                const enemiesDamageRoll = enemyDieRoll() + enemyRollModifier;
-                const playerDefenseStat = player.baseStats[answer.reactionType as keyof BaseStats];
-                const enemyDamage       = Math.max(0, enemiesDamageRoll - playerDefenseStat);
+                const enemiesDamageRoll  = enemyDieRoll() + enemyRollModifier;
+                const basePlayerDefense  = player.baseStats[answer.reactionType as keyof BaseStats];
+                const enemyDamage        = Math.max(0, enemiesDamageRoll - basePlayerDefense * PASSIVE_DEFENSE_MULTIPLIER);
 
                 console.log(sectionHeader('Damage'));
-                console.log(fmtDamage('Enemy deals:', enemiesDamageRoll, playerDefenseStat, `${answer.reactionType} base stat`, false));
+                console.log(fmtDamage('Player', answer.reactionType, enemiesDamageRoll, basePlayerDefense, PASSIVE_DEFENSE_MULTIPLIER));
                 console.log(`\n  Your HP   ${Math.max(0, player.health)} → ${C.brightRed}${Math.max(0, player.health - enemyDamage)}${C.reset}`);
 
                 player = { ...player, health: player.health - enemyDamage };
@@ -237,17 +263,18 @@ async function runCombatTurn(state: CombatState): Promise<CombatState> {
 
         /* ── Player ATTACKS, Enemy DEFENDS ──────────────────────────────── */
         } else if (enemyAction.action === 'defend') {
-            const baseEnemyDefense = getEnemyRelatedStat(enemy, enemyAction.type, true);
-            const enemyDefenseStat = baseEnemyDefense * 1.5;
-            const playersDamageRoll = playerDieRoll() + playerRollModifier;
-            const playerDamage      = Math.max(0, playersDamageRoll - enemyDefenseStat);
+            /* Enemy's advantage determines how well they defend */
+            const defenseMultiplier  = DEFENSE_MULTIPLIERS[enemyAdvantage];
+            const baseEnemyDefense   = getEnemyRelatedStat(enemy, enemyAction.type, true);
+            const playersDamageRoll  = playerDieRoll() + playerRollModifier;
+            const playerDamage       = Math.max(0, playersDamageRoll - baseEnemyDefense * defenseMultiplier);
 
             console.log(sectionHeader('Your Attack (Enemy Defending)'));
             console.log(fmtRoll('You attack:', playerRawRoll, playerRollModifier, playerAdvantage));
             await delay(1500);
 
             console.log(sectionHeader('Damage'));
-            console.log(fmtDamage('You deal:', playersDamageRoll, enemyDefenseStat, `${enemyAction.type} defense ×1.5`, true));
+            console.log(fmtDamage('Enemy', enemyDefenseStatKey(enemyAction.type), playersDamageRoll, baseEnemyDefense, defenseMultiplier));
             console.log(`\n  Enemy HP  ${Math.max(0, enemy.health)} → ${C.brightRed}${Math.max(0, enemy.health - playerDamage)}${C.reset}`);
 
             enemy = { ...enemy, health: enemy.health - playerDamage };
@@ -264,17 +291,18 @@ async function runCombatTurn(state: CombatState): Promise<CombatState> {
             const enemyRollModifier = getEnemyRelatedStat(enemy, enemyAction.type, false);
             const enemyRawRoll      = enemyDieRoll();
 
+            /* Player's advantage determines how well they defend */
+            const defenseMultiplier = DEFENSE_MULTIPLIERS[playerAdvantage];
             const basePlayerDefense = player.baseStats[answer.reactionType as keyof BaseStats];
-            const playerDefenseStat = basePlayerDefense * 1.5;
             const enemiesDamageRoll = enemyDieRoll() + enemyRollModifier;
-            const enemyDamage       = Math.max(0, enemiesDamageRoll - playerDefenseStat);
+            const enemyDamage       = Math.max(0, enemiesDamageRoll - basePlayerDefense * defenseMultiplier);
 
             console.log(sectionHeader('Enemy Attack (You Defending)'));
             console.log(fmtRoll('Enemy attack:', enemyRawRoll, enemyRollModifier, enemyAdvantage));
             await delay(1500);
 
             console.log(sectionHeader('Damage'));
-            console.log(fmtDamage('Enemy deals:', enemiesDamageRoll, playerDefenseStat, `${answer.reactionType} base stat ×1.5`, true));
+            console.log(fmtDamage('Player', answer.reactionType, enemiesDamageRoll, basePlayerDefense, defenseMultiplier));
             console.log(`\n  Your HP   ${Math.max(0, player.health)} → ${C.brightRed}${Math.max(0, player.health - enemyDamage)}${C.reset}`);
 
             player = { ...player, health: player.health - enemyDamage };
@@ -285,8 +313,8 @@ async function runCombatTurn(state: CombatState): Promise<CombatState> {
             await delay(1500);
             console.log(sectionHeader('Both Defending'));
             console.log(`  No attack is made. A moment of stillness passes...`);
-            const hearts = '♥'.repeat(friendshipCounter) + '♡'.repeat(3 - friendshipCounter);
-            console.log(`  ${C.brightRed}Friendship  ${hearts}${C.reset}  (${friendshipCounter} / 3)${friendshipCounter >= 3 ? `  ${C.brightYellow}← bond formed!${C.reset}` : ''}`);
+            const hearts = '♥'.repeat(friendshipCounter) + '♡'.repeat(FRIENDSHIP_COUNTER_MAX - friendshipCounter);
+            console.log(`  ${C.brightRed}Friendship  ${hearts}${C.reset}  (${friendshipCounter} / ${FRIENDSHIP_COUNTER_MAX})${friendshipCounter >= FRIENDSHIP_COUNTER_MAX ? `  ${C.brightYellow}← bond formed!${C.reset}` : ''}`);
         }
     }
 
@@ -312,8 +340,8 @@ async function main() {
     console.log(`\n${C.bold}Rules${C.reset}`);
     console.log(`  ${typeColor('heart')} > ${typeColor('body')} > ${typeColor('mind')} > ${typeColor('heart')}  (type advantage cycle)`);
     console.log(`  Advantage → roll 2d20 keep ${C.brightGreen}HIGHER${C.reset}  |  Disadvantage → roll 2d20 keep ${C.brightRed}LOWER${C.reset}`);
-    console.log(`  Defending → defense stat ×1.5`);
-    console.log(`  Damage = attack roll − defense stat  (min 0)\n`);
+    console.log(`  Defending multipliers  →  advantage: ${C.brightGreen}×${DEFENSE_MULTIPLIERS.advantage}${C.reset}  |  neutral: ${C.yellow}×${DEFENSE_MULTIPLIERS.neutral}${C.reset}  |  disadvantage: ${C.brightRed}×${DEFENSE_MULTIPLIERS.disadvantage}${C.reset}`);
+    console.log(`  Damage = roll − ( defense × multiplier )  (min 0)\n`);
 
     let state = initializeCombat(Player, Disatree_01);
 
@@ -328,7 +356,7 @@ async function main() {
         console.log(`  ${C.brightGreen}${C.bold}VICTORY — you defeated the enemy!${C.reset}`);
     } else if (state.player.health <= 0) {
         console.log(`  ${C.brightRed}${C.bold}DEFEAT — you were overcome.${C.reset}`);
-    } else if (state.friendshipCounter >= 3) {
+    } else if (state.friendshipCounter >= FRIENDSHIP_COUNTER_MAX) {
         console.log(`  ${C.brightYellow}${C.bold}BOND FORMED — your enemy becomes an ally.${C.reset}`);
     }
 

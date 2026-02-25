@@ -1,5 +1,6 @@
 import { BaseStats, DerivedStats, Character } from "./types";
 import { average } from "../Utils";
+import { STAT_MULTIPLIERS, RESOURCE_MULTIPLIERS, EXPERIENCE_PER_LEVEL } from "../Game/game-mechanics.constants";
 
 /* Used for creating a new character */
 interface CreateCharacterOptions {
@@ -7,20 +8,6 @@ interface CreateCharacterOptions {
     level: number;
     baseStats: BaseStats;
 }
-
-const STAT_MULTIPLIERS = {
-    SKILL: 1,
-    DEFENSE: 3,
-    SAVE: 2,
-    TEST: 4,
-} as const;
-
-const RESOURCE_MULTIPLIERS = {
-    HEALTH_PER_STAT: 10,
-    MANA_PER_STAT: 10,
-} as const;
-
-const EXPERIENCE_PER_LEVEL = 1000;
 
 /**
  * Derives the stats of a character based on their base stats

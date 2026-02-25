@@ -7,6 +7,7 @@
 import { randomLogic } from '../Enemy/enemy.logic';
 import { Character } from '../Character/types';
 import { Enemy, EnemyLogic } from '../Enemy/types';
+import { FRIENDSHIP_COUNTER_MAX } from '../Game/game-mechanics.constants';
 
 import {
     ActionType,
@@ -41,7 +42,7 @@ export const determineEnemyAction = (enemyLogic: EnemyLogic) => {
  * @returns True if either combatant has 0 or less health
  */
 export function isCombatOngoing(state: CombatState): boolean {
-    return state.active && state.player.health > 0 && state.enemy.health > 0 && state.friendshipCounter < 3;
+    return state.active && state.player.health > 0 && state.enemy.health > 0 && state.friendshipCounter < FRIENDSHIP_COUNTER_MAX;
 }
 
 /**
@@ -54,7 +55,7 @@ export function determineCombatEnd(state: CombatState): 'player' | 'ko' | 'frien
         return 'player';
     } else if (state.player.health <= 0) {
         return 'ko';
-    } else if (state.friendshipCounter === 3) {
+    } else if (state.friendshipCounter === FRIENDSHIP_COUNTER_MAX) {
         return 'friendship';
     } else {
         return 'ongoing';
