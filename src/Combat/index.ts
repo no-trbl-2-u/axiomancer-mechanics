@@ -9,17 +9,19 @@ import { Character } from '../Character/types';
 import { Enemy, EnemyLogic } from '../Enemy/types';
 import { getEnemyRelatedStat } from '../Enemy';
 import { isCharacter } from '../Utils/typeGuards';
-import { randomInt, createDieRoll } from '../Utils';
+import { createDieRoll } from '../Utils';
 import { FRIENDSHIP_COUNTER_MAX } from '../Game/game-mechanics.constants';
 
 import {
-    ActionType,
-    Action,
-    Advantage,
-    CombatAction,
-    BattleLogEntry,
-    CombatState,
+  ActionType,
+  Action,
+  Advantage,
+  CombatAction,
+  BattleLogEntry,
+  CombatState,
 } from './types';
+import { ActiveEffect } from 'Effects/types';
+import { getResistStatFromResistedBy } from 'Character';
 
 // ============================================================================
 // ENEMY ACTION
@@ -31,12 +33,12 @@ import {
  * @returns The enemy's action
  */
 export const determineEnemyAction = (enemyLogic: EnemyLogic): CombatAction => {
-    switch (enemyLogic) {
-        case 'random':
-            return randomLogic();
-        default:
-            return randomLogic();
-    }
+  switch (enemyLogic) {
+    case 'random':
+      return randomLogic();
+    default:
+      return randomLogic();
+  }
 };
 
 // ============================================================================
@@ -49,7 +51,7 @@ export const determineEnemyAction = (enemyLogic: EnemyLogic): CombatAction => {
  * @returns True if either combatant has 0 or less health
  */
 export function isCombatOngoing(state: CombatState): boolean {
-    return state.active && state.player.health > 0 && state.enemy.health > 0 && state.friendshipCounter < FRIENDSHIP_COUNTER_MAX;
+  return state.active && state.player.health > 0 && state.enemy.health > 0 && state.friendshipCounter < FRIENDSHIP_COUNTER_MAX;
 }
 
 /**
@@ -58,10 +60,10 @@ export function isCombatOngoing(state: CombatState): boolean {
  * @returns 'player' | 'ko' | 'friendship' | 'ongoing'
  */
 export function determineCombatEnd(state: CombatState): 'player' | 'ko' | 'friendship' | 'ongoing' {
-    if (state.enemy.health <= 0) return 'player';
-    if (state.player.health <= 0) return 'ko';
-    if (state.friendshipCounter >= FRIENDSHIP_COUNTER_MAX) return 'friendship';
-    return 'ongoing';
+  if (state.enemy.health <= 0) return 'player';
+  if (state.player.health <= 0) return 'ko';
+  if (state.friendshipCounter >= FRIENDSHIP_COUNTER_MAX) return 'friendship';
+  return 'ongoing';
 }
 
 // ============================================================================
@@ -73,11 +75,11 @@ export function determineCombatEnd(state: CombatState): 'player' | 'ko' | 'frien
  * Heart > Body > Mind > Heart (cyclic)
  */
 export function determineAdvantage(attackerType: ActionType, defenderType: ActionType): Advantage {
-    if (attackerType === defenderType) return 'neutral';
-    if (attackerType === 'heart' && defenderType === 'body') return 'advantage';
-    if (attackerType === 'body' && defenderType === 'mind') return 'advantage';
-    if (attackerType === 'mind' && defenderType === 'heart') return 'advantage';
-    return 'disadvantage';
+  if (attackerType === defenderType) return 'neutral';
+  if (attackerType === 'heart' && defenderType === 'body') return 'advantage';
+  if (attackerType === 'body' && defenderType === 'mind') return 'advantage';
+  if (attackerType === 'mind' && defenderType === 'heart') return 'advantage';
+  return 'disadvantage';
 }
 
 /**
@@ -86,18 +88,18 @@ export function determineAdvantage(attackerType: ActionType, defenderType: Actio
  * Roadmap note: "+2 / 0 / −2 or whatever the balance calls for"
  */
 export function getAdvantageModifier(advantage: Advantage): number {
-    switch (advantage) {
-        case 'advantage': return 2;
-        case 'disadvantage': return -2;
-        default: return 0;
-    }
+  switch (advantage) {
+    case 'advantage': return 2;
+    case 'disadvantage': return -2;
+    default: return 0;
+  }
 }
 
 /**
  * Returns true if the attacker has type advantage over the defender.
  */
 export function hasAdvantage(attackerType: ActionType, defenderType: ActionType): boolean {
-    return determineAdvantage(attackerType, defenderType) === 'advantage';
+  return determineAdvantage(attackerType, defenderType) === 'advantage';
 }
 
 // ============================================================================
@@ -106,12 +108,12 @@ export function hasAdvantage(attackerType: ActionType, defenderType: ActionType)
 
 /** Generates the enemy's attack type choice using AI logic. */
 export function generateEnemyAttackType(_state: CombatState, enemy: Enemy): ActionType {
-    return determineEnemyAction(enemy.logic).type;
+  return determineEnemyAction(enemy.logic).type;
 }
 
 /** Generates the enemy's action (attack/defend) using AI logic. */
 export function generateEnemyAction(_state: CombatState, enemy: Enemy): Action {
-    return determineEnemyAction(enemy.logic).action;
+  return determineEnemyAction(enemy.logic).action;
 }
 
 /**
@@ -120,7 +122,7 @@ export function generateEnemyAction(_state: CombatState, enemy: Enemy): Action {
  * @returns True if action has both type and action defined
  */
 export function isValidCombatAction(action: Partial<CombatAction>): action is CombatAction {
-    return action.type !== undefined && action.action !== undefined;
+  return action.type !== undefined && action.action !== undefined;
 }
 
 // ============================================================================
@@ -133,10 +135,10 @@ export function isValidCombatAction(action: Partial<CombatAction>): action is Co
  * Enemy     → attack stat (serves as the base for AI combatants)
  */
 export function getBaseStatForType(character: Character | Enemy, type: ActionType): number {
-    if (isCharacter(character)) {
-        return character.baseStats[type];
-    }
-    return getEnemyRelatedStat(character, type, false) ?? 0;
+  if (isCharacter(character)) {
+    return character.baseStats[type];
+  }
+  return getEnemyRelatedStat(character, type, false) ?? 0;
 }
 
 /**
@@ -148,14 +150,14 @@ export function getBaseStatForType(character: Character | Enemy, type: ActionTyp
  * Adjust STAT_MULTIPLIERS in Character/index.ts to change this.
  */
 export function getSkillStatForType(character: Character | Enemy, type: ActionType): number {
-    if (isCharacter(character)) {
-        switch (type) {
-            case 'body': return character.derivedStats.physicalSkill;
-            case 'mind': return character.derivedStats.mentalSkill;
-            case 'heart': return character.derivedStats.emotionalSkill;
-        }
+  if (isCharacter(character)) {
+    switch (type) {
+      case 'body': return character.derivedStats.physicalSkill;
+      case 'mind': return character.derivedStats.mentalSkill;
+      case 'heart': return character.derivedStats.emotionalSkill;
     }
-    return getEnemyRelatedStat(character as Enemy, type, false) ?? 0;
+  }
+  return getEnemyRelatedStat(character as Enemy, type, false) ?? 0;
 }
 
 /**
@@ -168,14 +170,14 @@ export function getSkillStatForType(character: Character | Enemy, type: ActionTy
  * tuning multipliers.
  */
 export function getDefenseStatForType(character: Character | Enemy, type: ActionType): number {
-    if (isCharacter(character)) {
-        switch (type) {
-            case 'body': return character.derivedStats.physicalDefense;
-            case 'mind': return character.derivedStats.mentalDefense;
-            case 'heart': return character.derivedStats.emotionalDefense;
-        }
+  if (isCharacter(character)) {
+    switch (type) {
+      case 'body': return character.derivedStats.physicalDefense;
+      case 'mind': return character.derivedStats.mentalDefense;
+      case 'heart': return character.derivedStats.emotionalDefense;
     }
-    return getEnemyRelatedStat(character as Enemy, type, true) ?? 0;
+  }
+  return getEnemyRelatedStat(character as Enemy, type, true) ?? 0;
 }
 
 /**
@@ -183,14 +185,14 @@ export function getDefenseStatForType(character: Character | Enemy, type: Action
  * Used when resisting effects (Phase 1 effects engine).
  */
 export function getSaveStatForType(character: Character | Enemy, type: ActionType): number {
-    if (isCharacter(character)) {
-        switch (type) {
-            case 'body': return character.derivedStats.physicalSave;
-            case 'mind': return character.derivedStats.mentalSave;
-            case 'heart': return character.derivedStats.emotionalSave;
-        }
+  if (isCharacter(character)) {
+    switch (type) {
+      case 'body': return character.derivedStats.physicalSave;
+      case 'mind': return character.derivedStats.mentalSave;
+      case 'heart': return character.derivedStats.emotionalSave;
     }
-    return getDefenseStatForType(character, type);
+  }
+  return getDefenseStatForType(character, type);
 }
 
 // ============================================================================
@@ -203,11 +205,11 @@ export function getSaveStatForType(character: Character | Enemy, type: ActionTyp
  * @param advantage - Whether the roll has advantage, neutral, or disadvantage
  */
 export function rollSkillCheck(
-    baseStat: number,
-    advantage: Advantage,
+  baseStat: number,
+  advantage: Advantage,
 ): { total: number; roll: number; modifier: number } {
-    const roll = createDieRoll(advantage)();
-    return { total: roll + baseStat, roll, modifier: baseStat };
+  const roll = createDieRoll(advantage)();
+  return { total: roll + baseStat, roll, modifier: baseStat };
 }
 
 // ============================================================================
@@ -216,12 +218,12 @@ export function rollSkillCheck(
 
 /** Returns true on a natural 20 (critical hit). */
 export function isCriticalHit(roll: number): boolean {
-    return roll === 20;
+  return roll === 20;
 }
 
 /** Returns true on a natural 1 (critical miss / fumble). */
 export function isCriticalMiss(roll: number): boolean {
-    return roll === 1;
+  return roll === 1;
 }
 
 // ============================================================================
@@ -230,7 +232,7 @@ export function isCriticalMiss(roll: number): boolean {
 
 /** Doubles damage for a critical hit. Adjust multiplier here for balance. */
 export function applyCriticalMultiplier(baseDamage: number): number {
-    return baseDamage * 2;
+  return baseDamage * 2;
 }
 
 /**
@@ -242,12 +244,12 @@ export function applyCriticalMultiplier(baseDamage: number): number {
  * @returns Final damage, minimum 0
  */
 export function calculateFinalDamage(
-    baseDamage: number,
-    damageReduction: number,
-    isCritical: boolean,
+  baseDamage: number,
+  damageReduction: number,
+  isCritical: boolean,
 ): number {
-    const damage = isCritical ? applyCriticalMultiplier(baseDamage) : baseDamage;
-    return Math.max(0, damage - damageReduction);
+  const damage = isCritical ? applyCriticalMultiplier(baseDamage) : baseDamage;
+  return Math.max(0, damage - damageReduction);
 }
 
 // ============================================================================
@@ -259,11 +261,11 @@ export function calculateFinalDamage(
  * TODO (Phase 2a): wire advantage modifier from active effects (Phase 1).
  */
 export function performAttackRoll(
-    attacker: Character | Enemy,
-    attackType: ActionType,
-    advantage: Advantage,
+  attacker: Character | Enemy,
+  attackType: ActionType,
+  advantage: Advantage,
 ): { total: number; roll: number; modifier: number; details: string } {
-    return 'Implement me' as any;
+  return 'Implement me' as any;
 }
 
 /**
@@ -271,16 +273,16 @@ export function performAttackRoll(
  * TODO (Phase 2a): wire defense modifier from active effects (Phase 1).
  */
 export function performDefenseRoll(
-    defender: Character | Enemy,
-    attackType: ActionType,
-    isDefending: boolean,
+  defender: Character | Enemy,
+  attackType: ActionType,
+  isDefending: boolean,
 ): { total: number; roll: number; modifier: number; details: string } {
-    return 'Implement me' as any;
+  return 'Implement me' as any;
 }
 
 /** Compares attack and defence rolls to determine whether the hit lands. */
 export function isAttackSuccessful(attackRoll: number, defenseRoll: number): boolean {
-    return attackRoll > defenseRoll;
+  return attackRoll > defenseRoll;
 }
 
 /**
@@ -288,11 +290,11 @@ export function isAttackSuccessful(attackRoll: number, defenseRoll: number): boo
  * TODO (Phase 2a): integrate stat-based damage formula once designed.
  */
 export function calculateBaseDamage(
-    attacker: Character | Enemy,
-    attackType: ActionType,
-    advantage: Advantage,
+  attacker: Character | Enemy,
+  attackType: ActionType,
+  advantage: Advantage,
 ): number {
-    return 'Implement me' as any;
+  return 'Implement me' as any;
 }
 
 /**
@@ -300,11 +302,11 @@ export function calculateBaseDamage(
  * TODO (Phase 2a): integrate active effect modifiers (Phase 1).
  */
 export function calculateDamageReduction(
-    defender: Character | Enemy,
-    attackType: ActionType,
-    isDefending: boolean,
+  defender: Character | Enemy,
+  attackType: ActionType,
+  isDefending: boolean,
 ): number {
-    return 'Implement me' as any;
+  return 'Implement me' as any;
 }
 
 /**
@@ -312,20 +314,86 @@ export function calculateDamageReduction(
  * TODO (Phase 2a): implement using performAttackRoll / performDefenseRoll.
  */
 export function calculateAttackDamage(
-    attacker: Character | Enemy,
-    defender: Character | Enemy,
-    attackType: ActionType,
-    advantage: Advantage,
-    isDefending: boolean,
+  attacker: Character | Enemy,
+  defender: Character | Enemy,
+  attackType: ActionType,
+  advantage: Advantage,
+  isDefending: boolean,
 ): {
-    damage: number;
-    attackRoll: number;
-    defenseRoll: number;
-    hit: boolean;
-    critical: boolean;
-    details: string;
+  damage: number;
+  attackRoll: number;
+  defenseRoll: number;
+  hit: boolean;
+  critical: boolean;
+  details: string;
 } {
-    return 'Implement me' as any;
+  return 'Implement me' as any;
+}
+
+// ===============================================
+// STATUS EFFECTS IN DURING COMBAT
+// ===============================================
+
+/**
+ * Determines if a status effect is applied to a target
+ * @param target - The target to check
+ * @param effectId - The ID of the effect to check
+ * @returns True if the effect is applied to the target
+ * @examplerld eve
+ * const isStunned = isEffectApplied(target, 'stunned')
+ * isStunned // Returns true if the target is stunned
+ */
+export function isEffectApplied(target: Character | Enemy, effectId: string, activeEffect: ActiveEffect): boolean {
+  const effectTeir = activeEffect.teir;
+
+  // Teir 1 is automatically applied
+  if (effectTeir === 'Teir 1') {
+    return true;
+  }
+
+  // Teir 2 the target must roll to apply the effect and the
+  // target uses a specific stat to resist the effect regardless of their
+  // choice of ActionType
+  else if (effectTeir === 'Teir 2') {
+    // TODO: Determine if the target can resist the effect
+    const targetResistanceStat = getResistStatFromResistedBy(target, activeEffect.resistedBy as ActionType);
+    const targetStatusDRRoll = activeEffect.resistDR ?? 10
+    // TODO: One day change the system so someone could have advantage against
+    const targetStatusRoll = createDieRoll('neutral')() + targetResistanceStat;
+
+    return targetStatusRoll < targetStatusDRRoll;
+  }
+
+  else if (effectTeir === 'Teir 3') {
+    // TODO: Implement a more difficult system than effect tier 2
+    return true;
+  }
+
+  return false;
+}
+
+/**
+   * Decrements the remainingDuration of a specific active effect by 1.
+   * Skips permanent effects (remainingDuration === -1).
+   * Does not remove the effect — call removeExpiredEffects() after ticking
+   * to clean up any effects that hit 0.
+   * @param target - The character or enemy whose effect is being ticked
+   * @param effectId - The ID of the ActiveEffect to tick (NOT the effect name)
+   * @returns A new target object with the updated effect duration
+   */
+export function updateEffectDuration(target: Character | Enemy, effectId: string): Character | Enemy {
+  const updatedEffects = target
+    .currentActiveEffects
+    .map((effect: ActiveEffect) => {
+      if (effect.effectId !== effectId) return effect;
+      if (effect.remainingDuration === -1) return effect; // permanent, never tick
+      return { ...effect, remainingDuration: effect.remainingDuration - 1 };
+    }) as ActiveEffect[];
+
+  return {
+    ...target,
+    currentActiveEffects: updatedEffects,
+  };
 }
 
 // ============================================================================
@@ -340,11 +408,11 @@ export function applyDamage(character: Character, damage: number): Character;
 /** Applies damage to an Enemy, clamping health to 0. */
 export function applyDamage(character: Enemy, damage: number): Enemy;
 export function applyDamage(character: Character | Enemy, damage: number): Character | Enemy {
-    const newHealth = Math.max(0, character.health - damage);
-    if (isCharacter(character)) {
-        return { ...character, health: newHealth };
-    }
-    return { ...(character as Enemy), health: newHealth };
+  const newHealth = Math.max(0, character.health - damage);
+  if (isCharacter(character)) {
+    return { ...character, health: newHealth };
+  }
+  return { ...(character as Enemy), health: newHealth };
 }
 
 /**
@@ -355,29 +423,29 @@ export function healCharacter(character: Character, amount: number): Character;
 /** Heals an Enemy, clamping health to enemyStats.maxHealth. */
 export function healCharacter(character: Enemy, amount: number): Enemy;
 export function healCharacter(character: Character | Enemy, amount: number): Character | Enemy {
-    if (isCharacter(character)) {
-        return { ...character, health: Math.min(character.maxHealth, character.health + amount) };
-    }
-    const enemy = character as Enemy;
-    return { ...enemy, health: Math.min(enemy.enemyStats.maxHealth, enemy.health + amount) };
+  if (isCharacter(character)) {
+    return { ...character, health: Math.min(character.maxHealth, character.health + amount) };
+  }
+  const enemy = character as Enemy;
+  return { ...enemy, health: Math.min(enemy.derivedStats.maxHealth, enemy.health + amount) };
 }
 
 /** Returns true if the combatant still has health remaining. */
 export function isAlive(character: Character | Enemy): boolean {
-    return character.health > 0;
+  return character.health > 0;
 }
 
 /** Returns true if the combatant has been defeated (health ≤ 0). */
 export function isDefeated(character: Character | Enemy): boolean {
-    return character.health <= 0;
+  return character.health <= 0;
 }
 
 /** Returns current health as a percentage of max health (0–100). */
 export function getHealthPercentage(character: Character | Enemy): number {
-    const maxHealth = isCharacter(character)
-        ? character.maxHealth
-        : character.enemyStats.maxHealth;
-    return (character.health / maxHealth) * 100;
+  const maxHealth = isCharacter(character)
+    ? character.maxHealth
+    : (character as Enemy).derivedStats.maxHealth;
+  return (character.health / maxHealth) * 100;
 }
 
 // ============================================================================
@@ -386,30 +454,30 @@ export function getHealthPercentage(character: Character | Enemy): number {
 
 /** TODO (Phase 2c): process the player's turn within resolveCombatRound. */
 export function processPlayerTurn(state: CombatState): {
-    damageToEnemy: number;
-    playerRoll: number;
-    playerRollDetails: string;
+  damageToEnemy: number;
+  playerRoll: number;
+  playerRollDetails: string;
 } {
-    return 'Implement me' as any;
+  return 'Implement me' as any;
 }
 
 /** TODO (Phase 2c): process the enemy's turn within resolveCombatRound. */
 export function processEnemyTurn(state: CombatState): {
-    damageToPlayer: number;
-    enemyRoll: number;
-    enemyRollDetails: string;
+  damageToPlayer: number;
+  enemyRoll: number;
+  enemyRollDetails: string;
 } {
-    return 'Implement me' as any;
+  return 'Implement me' as any;
 }
 
 /** TODO (Phase 2c): determine who acts first based on initiative. */
 export function determineTurnOrder(player: Character, enemy: Enemy): 'player' | 'enemy' {
-    return 'Implement me' as any;
+  return 'Implement me' as any;
 }
 
 /** TODO (Phase 2c): roll initiative for a combatant. */
 export function rollInitiative(character: Character | Enemy): number {
-    return 'Implement me' as any;
+  return 'Implement me' as any;
 }
 
 // ============================================================================
@@ -418,26 +486,26 @@ export function rollInitiative(character: Character | Enemy): number {
 
 /** TODO (Phase 2c): create a BattleLogEntry from a resolved round. */
 export function createBattleLogEntry(
-    state: CombatState,
-    roundResults: {
-        advantage: Advantage;
-        playerRoll: number;
-        playerRollDetails: string;
-        enemyRoll: number;
-        enemyRollDetails: string;
-        damageToPlayer: number;
-        damageToEnemy: number;
-    },
+  state: CombatState,
+  roundResults: {
+    advantage: Advantage;
+    playerRoll: number;
+    playerRollDetails: string;
+    enemyRoll: number;
+    enemyRollDetails: string;
+    damageToPlayer: number;
+    damageToEnemy: number;
+  },
 ): BattleLogEntry {
-    return 'Implement me' as any;
+  return 'Implement me' as any;
 }
 
 /** TODO (Phase 2c): format all battle log entries as readable strings. */
 export function formatAllBattleLogs(state: CombatState): string[] {
-    return 'Implement me' as any;
+  return 'Implement me' as any;
 }
 
 /** TODO (Phase 2c): generate the victory/defeat summary message. */
 export function generateCombatResultMessage(state: CombatState): string {
-    return 'Implement me' as any;
+  return 'Implement me' as any;
 }

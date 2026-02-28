@@ -24,7 +24,13 @@ import { Map } from '../World/types';
  * @property emotionalSkill - (Guess) Modifier for emotional/heart-type attacks
  * @property emotionalDefense - (Guess) Defense value against emotional/heart-type attacks
  */
-export interface EnemyStats {
+export interface EnemyBaseStats {
+    body: number;
+    mind: number;
+    heart: number;
+}
+
+export interface EnemyDerivedStats {
     /* Root Stats */
     maxHealth: number;
     maxMana: number;
@@ -43,6 +49,9 @@ export interface EnemyStats {
     emotionalAttack: number;
     emotionalSkill: number;
     emotionalDefense: number;
+
+    /* Shared stats */
+    luck: number;
 }
 
 /**
@@ -80,11 +89,13 @@ export interface Enemy {
     level: number;
     health: number;
     mana: number;
-    enemyStats: EnemyStats;
+    derivedStats: EnemyDerivedStats;
+    baseStats: EnemyBaseStats;
     mapLocation: Pick<Map, 'name'>;
     logic: EnemyLogic;
     skills?: Skill[];
     loot?: Item[];
+    currentActiveEffects: ActiveEffect[] | [];
     /* For Frontend Display */
     // image: Image; { alt: string, src: string }
 }

@@ -13,6 +13,8 @@
  */
 
 import { ActionType } from '@Combat/types';
+import { Character } from 'Character/types';
+import { Enemy } from 'Enemy/types';
 
 // ===============================================
 // EFFECT ENUMS & DISCRIMINATORS
@@ -50,11 +52,11 @@ export type EffectCategory = 'stat' | 'damage' | 'defense' | 'control' | 'regene
  * Can target either base stats (body/mind/heart) or specific derived stats
  */
 export type EffectStatTarget =
-    | ActionType  // Base stats: 'body' | 'mind' | 'heart'
-    | 'physicalSkill' | 'physicalDefense' | 'physicalSave' | 'physicalTest'
-    | 'mentalSkill' | 'mentalDefense' | 'mentalSave' | 'mentalTest'
-    | 'emotionalSkill' | 'emotionalDefense' | 'emotionalSave' | 'emotionalTest'
-    | 'luck';
+  | ActionType  // Base stats: 'body' | 'mind' | 'heart'
+  | 'physicalSkill' | 'physicalDefense' | 'physicalSave' | 'physicalTest'
+  | 'mentalSkill' | 'mentalDefense' | 'mentalSave' | 'mentalTest'
+  | 'emotionalSkill' | 'emotionalDefense' | 'emotionalSave' | 'emotionalTest'
+  | 'luck';
 
 // ===============================================
 // EFFECT MODIFIERS
@@ -69,9 +71,9 @@ export type EffectStatTarget =
  * @property isMultiplier - If true, value is a multiplier (e.g., 1.5 = +50%)
  */
 export interface StatModifier {
-    stat: EffectStatTarget;
-    value: number;
-    isMultiplier?: boolean;
+  stat: EffectStatTarget;
+  value: number;
+  isMultiplier?: boolean;
 }
 
 /**
@@ -80,8 +82,8 @@ export interface StatModifier {
  * @property damageType - What type of damage (for resistance calculations)
  */
 export interface DamageOverTime {
-    damagePerRound: number;
-    damageType: EffectStatTarget;
+  damagePerRound: number;
+  damageType: EffectStatTarget;
 }
 
 /**
@@ -90,8 +92,8 @@ export interface DamageOverTime {
  * @property manaPerRound - Mana restored each round
  */
 export interface RegenerationConfig {
-    healthPerRound?: number;
-    manaPerRound?: number;
+  healthPerRound?: number;
+  manaPerRound?: number;
 }
 
 /**
@@ -101,9 +103,9 @@ export interface RegenerationConfig {
  * @property skipTurn - If true, target skips their next action
  */
 export interface ActionRestriction {
-    forcedActionType?: ActionType;
-    blockedActionTypes?: ActionType[];
-    skipTurn?: boolean;
+  forcedActionType?: ActionType;
+  blockedActionTypes?: ActionType[];
+  skipTurn?: boolean;
 }
 
 /**
@@ -112,8 +114,8 @@ export interface ActionRestriction {
  * @property grantDisadvantage - Grants automatic disadvantage on specified types
  */
 export interface AdvantageModifier {
-    grantAdvantage?: ActionType[];
-    grantDisadvantage?: ActionType[];
+  grantAdvantage?: ActionType[];
+  grantDisadvantage?: ActionType[];
 }
 
 // ===============================================
@@ -132,13 +134,13 @@ export interface AdvantageModifier {
  * @property defenseModifier - Flat bonus/penalty to defense values
  */
 export interface EffectPayload {
-    statModifiers?: StatModifier[];
-    damageOverTime?: DamageOverTime;
-    regeneration?: RegenerationConfig;
-    actionRestriction?: ActionRestriction;
-    advantageModifier?: AdvantageModifier;
-    rollModifier?: number;
-    defenseModifier?: number;
+  statModifiers?: StatModifier[];
+  damageOverTime?: DamageOverTime;
+  regeneration?: RegenerationConfig;
+  actionRestriction?: ActionRestriction;
+  advantageModifier?: AdvantageModifier;
+  rollModifier?: number;
+  defenseModifier?: number;
 }
 
 // ===============================================
@@ -156,17 +158,54 @@ export interface EffectPayload {
  * @property stacking - How this effect behaves when applied multiple times
  * @property intensity - Current stack count for intensity-stacking effects
  * @property payload - The mechanical modifications this effect applies
+ * @property resistedBy - Which stat the TARGET uses to resist this effect.
+ *   Follows the RPS counter rule: body effects resisted by mind, heart effects
+ *   by body, mind effects by heart. If absent, effect auto-applies (Tier 1).
+ * @property resistDR - Base difficulty rating for the resistance roll (default 12).
+ *   The attacker's heart bonus and equipment bonuses are added on top of this.
  */
 export interface Effect {
-    id: string;
-    name: string;
-    description: string;
-    type: EffectType;
-    category: EffectCategory;
-    duration: number;
-    stacking: EffectStacking;
-    intensity?: number;
-    payload: EffectPayload;
+  id: string;
+  name: string;
+  description: string;
+  type: EffectType;
+  category: EffectCategory;
+  duration: number;
+  stacking: EffectStacking;
+  teir: 'Teir 1' | 'Teir 2' | 'Teir 3';
+  intensity?: number;
+  payload: EffectPayload;
+  resistedBy?: ActionType;
+  resistDR?: number;
+}
+
+// ===============================================
+// EFFECT APPLICATION ROLL
+// ===============================================
+
+/**
+ * Everything needed to determine whether a Tier 2 effect lands.
+ *
+ * The formula:
+ *   DR  = effect.resistDR (default 12) + attackerHeartBonus + equipmentBonus
+ *   Roll = d20 + target[resistedBy stat]
+ *   Effect applies if Roll < DR  (target FAILS their save)
+ *
+ * Heart is the "application" stat — high heart makes your effects harder to
+ * shake off, even though heart attacks aren't the strongest on their own.
+ * Equipment can push this DR even higher for specialized builds.
+ *
+ * @property effect - The Effect definition being applied
+ * @property attackerHeartBonus - Attacker's heart base stat (flat DR bonus)
+ * @property equipmentBonus - Optional bonus from equipped items or skills
+ * @property targetResistStatValue - The value of the target's counter-stat
+ *   (looked up externally: target.baseStats[effect.resistedBy])
+ */
+export interface EffectApplicationRoll {
+  effect: Effect;
+  attackerHeartBonus: number;
+  equipmentBonus?: number;
+  targetResistStatValue: number;
 }
 
 // ===============================================
@@ -181,13 +220,17 @@ export interface Effect {
  * @property currentIntensity - Current stack level for intensity-stacking effects
  * @property sourceId - ID of the character/enemy that applied this effect
  * @property appliedAtRound - Combat round when effect was applied
+ * @property teir - Determines the methodology for applying effects
  */
 export interface ActiveEffect {
-    effectId: string;
-    remainingDuration: number;
-    currentIntensity: number;
-    sourceId?: string;
-    appliedAtRound: number;
+  effectId: Effect['id'],
+  remainingDuration: Effect['duration'];
+  currentIntensity: Effect['intensity'];
+  sourceId?: Character['id'] | Enemy['id'];
+  appliedAtRound: CombatState['round'];
+  teir: Effect['teir'];
+  resistedBy?: ActionType;
+  resistDR?: number;
 }
 
 // ===============================================
@@ -198,15 +241,24 @@ export interface ActiveEffect {
  * Result of attempting to apply an effect
  * @property success - Whether the effect was successfully applied
  * @property activeEffect - The resulting active effect instance (if successful)
- * @property message - Description of what happened
+ * @property message - Description of what happened (for the battle log)
  * @property stackedWith - If merged with existing effect, the previous intensity/duration
+ * @property roll - The resistance roll details, if a roll was made (Tier 2 effects only)
  */
 export interface EffectApplicationResult {
-    success: boolean;
-    activeEffect?: ActiveEffect;
-    message: string;
-    stackedWith?: {
-        previousIntensity: number;
-        previousDuration: number;
-    };
+  success: boolean;
+  activeEffect?: ActiveEffect;
+  message: string;
+  stackedWith?: {
+    previousIntensity: number;
+    previousDuration: number;
+  };
+  roll?: {
+    rolled: number;       // d20 result
+    resistStat: number;   // target's resist stat value
+    total: number;        // rolled + resistStat
+    dr: number;           // final DR (base + heart + equipment)
+    wasCrit: boolean;     // natural 20 — effect cannot be resisted
+    wasFumble: boolean;   // natural 1 — effect backlashes onto attacker
+  };
 }
