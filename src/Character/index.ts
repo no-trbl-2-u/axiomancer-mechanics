@@ -1,6 +1,9 @@
 import { BaseStats, DerivedStats, Character } from "./types";
 import { average } from "../Utils";
 import { STAT_MULTIPLIERS, RESOURCE_MULTIPLIERS, EXPERIENCE_PER_LEVEL } from "../Game/game-mechanics.constants";
+import { ActiveEffect } from "Effects/types";
+import { Enemy } from "Enemy/types";
+import { ActionType } from "Combat/types";
 
 /* Used for creating a new character */
 interface CreateCharacterOptions {
@@ -91,5 +94,39 @@ export function createCharacter(options: CreateCharacterOptions): Character {
         baseStats,
         derivedStats: deriveStats(baseStats),
         inventory: [],
+        currentActiveEffects: [] as ActiveEffect[]
     }
+}
+
+// ===============================================
+// CHARACTER FUNCTIONS
+// ===============================================
+
+/**
+ * Gets the resistDR of a character
+ * @param character - The character to get the resistDR of
+ * @returns The resistDR of the character
+ */
+export function getTargetsResistStatValue(character: Character, effect: ActiveEffect): number {
+    return getResistStatFromResistedBy(character, effect.resistedBy as ActionType);
+}
+
+
+/**
+ * Gets the resist stat value of a target when resisting an effect
+ * @param target - The target to get the resist stat value of
+ * @param effect - The effect to get the resist stat value of
+ * @returns The resist stat value of the target
+ */
+export const getResistStatFromResistedBy = (target: Character | Enemy, resistedBy: ActionType): number => {
+    if (resistedBy === 'body') {
+        return target.derivedStats.physicalDefense;
+    } else if (resistedBy === 'mind') {
+        return target.derivedStats.mentalDefense;
+    } else if (resistedBy === 'heart') {
+        return target.derivedStats.emotionalDefense;
+    } else {
+        return target.derivedStats.luck as number;
+    }
+
 }

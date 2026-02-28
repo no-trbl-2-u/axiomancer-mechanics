@@ -17,8 +17,9 @@ import {
     applyDamage,
 } from './index';
 import { createDieRoll } from '../Utils';
-import { initializeCombat } from './combat.reducer';
 import { ActionType, Advantage, CombatState } from './types';
+import { createGameStore } from '../Game/store';
+import { nullAdapter } from '../Game/persistence/null.adapter';
 import {
     DEFENSE_MULTIPLIERS,
     PASSIVE_DEFENSE_MULTIPLIER,
@@ -53,8 +54,8 @@ async function promptPlayerChoice(): Promise<{
             message: 'Respond with...',
             choices: [
                 { name: `${typeColor('heart', 'Heart')}  (emotional)`, value: 'heart' },
-                { name: `${typeColor('body',  'Body')}   (physical)`,  value: 'body'  },
-                { name: `${typeColor('mind',  'Mind')}   (mental)`,    value: 'mind'  },
+                { name: `${typeColor('body', 'Body')}   (physical)`, value: 'body' },
+                { name: `${typeColor('mind', 'Mind')}   (mental)`, value: 'mind' },
             ],
         },
         {
@@ -93,14 +94,14 @@ async function resolveAttackVsAttack(
     enemyAdv: Advantage,
 ): Promise<{ player: Character; enemy: Enemy }> {
     const playerDieRoll = createDieRoll(playerAdv);
-    const enemyDieRoll  = createDieRoll(enemyAdv);
+    const enemyDieRoll = createDieRoll(enemyAdv);
 
-    const playerRaw   = playerDieRoll();
-    const playerMod   = getSkillStatForType(player, playerType);
+    const playerRaw = playerDieRoll();
+    const playerMod = getSkillStatForType(player, playerType);
     const playerTotal = playerRaw + playerMod;
 
-    const enemyRaw   = enemyDieRoll();
-    const enemyMod   = getSkillStatForType(enemy, enemyType);
+    const enemyRaw = enemyDieRoll();
+    const enemyMod = getSkillStatForType(enemy, enemyType);
     const enemyTotal = enemyRaw + enemyMod;
 
     printContestHeader(playerRaw, playerMod, playerAdv, enemyRaw, enemyMod, enemyAdv);
@@ -110,40 +111,40 @@ async function resolveAttackVsAttack(
 
     if (playerTotal > enemyTotal) {
         const baseDefense = getDefenseStatForType(enemy, enemyType);
-        const damageRoll  = playerDieRoll() + playerMod;
+        const damageRoll = playerDieRoll() + playerMod;
         const finalDamage = calculateFinalDamage(damageRoll, baseDefense * PASSIVE_DEFENSE_MULTIPLIER, false);
         printDamageCalc({
-            header:           'Player Damage',
-            defender:         'enemy',
-            attackStatName:   `${playerType} skill`,
-            attackStatValue:  playerMod,
+            header: 'Player Damage',
+            defender: 'enemy',
+            attackStatName: `${playerType} skill`,
+            attackStatValue: playerMod,
             damageRoll,
-            defenseStatName:  `${enemyType} defense`,
+            defenseStatName: `${enemyType} defense`,
             baseDefense,
             defenseMultiplier: PASSIVE_DEFENSE_MULTIPLIER,
             finalDamage,
-            hpBefore:         enemy.health,
-            hpAfter:          Math.max(0, enemy.health - finalDamage),
+            hpBefore: enemy.health,
+            hpAfter: Math.max(0, enemy.health - finalDamage),
         });
         return { player, enemy: applyDamage(enemy, finalDamage) };
     }
 
     if (enemyTotal > playerTotal) {
         const baseDefense = getBaseStatForType(player, playerType);
-        const damageRoll  = enemyDieRoll() + enemyMod;
+        const damageRoll = enemyDieRoll() + enemyMod;
         const finalDamage = calculateFinalDamage(damageRoll, baseDefense * PASSIVE_DEFENSE_MULTIPLIER, false);
         printDamageCalc({
-            header:           'Enemy Damage',
-            defender:         'player',
-            attackStatName:   `${enemyType} attack`,
-            attackStatValue:  enemyMod,
+            header: 'Enemy Damage',
+            defender: 'player',
+            attackStatName: `${enemyType} attack`,
+            attackStatValue: enemyMod,
             damageRoll,
-            defenseStatName:  `${playerType} base`,
+            defenseStatName: `${playerType} base`,
             baseDefense,
             defenseMultiplier: PASSIVE_DEFENSE_MULTIPLIER,
             finalDamage,
-            hpBefore:         player.health,
-            hpAfter:          Math.max(0, player.health - finalDamage),
+            hpBefore: player.health,
+            hpAfter: Math.max(0, player.health - finalDamage),
         });
         return { player: applyDamage(player, finalDamage), enemy };
     }
@@ -161,31 +162,31 @@ async function resolvePlayerAttackEnemyDefend(
     enemyAdv: Advantage,
 ): Promise<Enemy> {
     const playerDieRoll = createDieRoll(playerAdv);
-    const attackMod     = getSkillStatForType(player, playerType);
-    const playerRaw     = playerDieRoll();
+    const attackMod = getSkillStatForType(player, playerType);
+    const playerRaw = playerDieRoll();
 
     console.log('\n[ Player Attack Roll ]');
     printRollLine('Player attack roll:', playerRaw, attackMod, playerAdv);
     await delay(1500);
 
     // Enemy's type-advantage over the player sets how effectively they block
-    const baseDefense       = getDefenseStatForType(enemy, enemyType);
+    const baseDefense = getDefenseStatForType(enemy, enemyType);
     const defenseMultiplier = DEFENSE_MULTIPLIERS[enemyAdv];
-    const damageRoll        = playerDieRoll() + attackMod;
-    const finalDamage       = calculateFinalDamage(damageRoll, baseDefense * defenseMultiplier, false);
+    const damageRoll = playerDieRoll() + attackMod;
+    const finalDamage = calculateFinalDamage(damageRoll, baseDefense * defenseMultiplier, false);
 
     printDamageCalc({
-        header:           'Player Damage vs Defending Enemy',
-        defender:         'enemy',
-        attackStatName:   `${playerType} skill`,
-        attackStatValue:  attackMod,
+        header: 'Player Damage vs Defending Enemy',
+        defender: 'enemy',
+        attackStatName: `${playerType} skill`,
+        attackStatValue: attackMod,
         damageRoll,
-        defenseStatName:  `${enemyType} defense`,
+        defenseStatName: `${enemyType} defense`,
         baseDefense,
         defenseMultiplier,
         finalDamage,
-        hpBefore:         enemy.health,
-        hpAfter:          Math.max(0, enemy.health - finalDamage),
+        hpBefore: enemy.health,
+        hpAfter: Math.max(0, enemy.health - finalDamage),
     });
 
     return applyDamage(enemy, finalDamage);
@@ -200,31 +201,31 @@ async function resolvePlayerDefendEnemyAttack(
     enemyAdv: Advantage,
 ): Promise<Character> {
     const enemyDieRoll = createDieRoll(enemyAdv);
-    const attackMod    = getSkillStatForType(enemy, enemyType);
-    const enemyRaw     = enemyDieRoll();
+    const attackMod = getSkillStatForType(enemy, enemyType);
+    const enemyRaw = enemyDieRoll();
 
     console.log('\n[ Enemy Attack Roll ]');
     printRollLine('Enemy attack roll:', enemyRaw, attackMod, enemyAdv);
     await delay(1500);
 
     // Player's type-advantage over the enemy sets how effectively they block
-    const baseDefense       = getBaseStatForType(player, playerType);
+    const baseDefense = getBaseStatForType(player, playerType);
     const defenseMultiplier = DEFENSE_MULTIPLIERS[playerAdv];
-    const damageRoll        = enemyDieRoll() + attackMod;
-    const finalDamage       = calculateFinalDamage(damageRoll, baseDefense * defenseMultiplier, false);
+    const damageRoll = enemyDieRoll() + attackMod;
+    const finalDamage = calculateFinalDamage(damageRoll, baseDefense * defenseMultiplier, false);
 
     printDamageCalc({
-        header:           'Enemy Damage vs Defending Player',
-        defender:         'player',
-        attackStatName:   `${enemyType} attack`,
-        attackStatValue:  attackMod,
+        header: 'Enemy Damage vs Defending Player',
+        defender: 'player',
+        attackStatName: `${enemyType} attack`,
+        attackStatValue: attackMod,
         damageRoll,
-        defenseStatName:  `${playerType} base`,
+        defenseStatName: `${playerType} base`,
         baseDefense,
         defenseMultiplier,
         finalDamage,
-        hpBefore:         player.health,
-        hpAfter:          Math.max(0, player.health - finalDamage),
+        hpBefore: player.health,
+        hpAfter: Math.max(0, player.health - finalDamage),
     });
 
     return applyDamage(player, finalDamage);
@@ -236,16 +237,16 @@ async function runCombatTurn(state: CombatState): Promise<CombatState> {
     printStatus(state);
 
     const { reactionType, actionType } = await promptPlayerChoice();
-    const enemyAction     = determineEnemyAction(state.enemy.logic);
+    const enemyAction = determineEnemyAction(state.enemy.logic);
     const playerAdvantage = determineAdvantage(reactionType, enemyAction.type);
-    const enemyAdvantage  = determineAdvantage(enemyAction.type, reactionType);
+    const enemyAdvantage = determineAdvantage(enemyAction.type, reactionType);
 
     printRoundActions(actionType, reactionType, enemyAction.action, enemyAction.type);
     printTypeMatchup(reactionType, enemyAction.type, playerAdvantage, enemyAdvantage);
     await delay(1500);
 
-    let player          = state.player;
-    let enemy           = state.enemy;
+    let player = state.player;
+    let enemy = state.enemy;
     let friendshipCounter = state.friendshipCounter;
 
     if (actionType === 'attack' && enemyAction.action === 'attack') {
@@ -274,16 +275,26 @@ async function runCombatTurn(state: CombatState): Promise<CombatState> {
 // ─── Entry Point ──────────────────────────────────────────────────────────────
 
 async function main(): Promise<void> {
+    // nullAdapter = in-memory only, nothing persisted (combat sim is a test tool).
+    // Passing the mock Player as an override so the store starts with known stats.
+    const store = createGameStore(nullAdapter, { player: Player });
+
     printCombatIntro(Player.name, Player.level, Disatree_01.name, Disatree_01.level);
     printCombatRules();
 
-    let state = initializeCombat(Player, Disatree_01);
+    store.getState().startCombat(Disatree_01);
 
-    while (isCombatOngoing(state)) {
-        state = await runCombatTurn(state);
+    while (true) {
+        const combat = store.getState().combatState;
+        if (!combat || !isCombatOngoing(combat)) break;
+
+        const next = await runCombatTurn(combat);
+        store.getState().applyCombatTurn(next);
     }
 
-    printCombatEnd(state);
+    const finalCombat = store.getState().combatState!;
+    store.getState().endCombat();   // merges player's final HP back to root state
+    printCombatEnd(finalCombat);
 }
 
 main();

@@ -8,7 +8,9 @@
       "category": "stat",
       "duration": 3,
       "stacking": "intensity",
-      "rating": 4,
+      "teir": "Teir 2",
+      "resistedBy": "mind",
+      "resistDR": 13,
       "payload": {
         "statModifiers": [
           {
@@ -33,7 +35,9 @@
       "category": "stat",
       "duration": 3,
       "stacking": "intensity",
-      "rating": 4,
+      "teir": "Teir 2",
+      "resistedBy": "heart",
+      "resistDR": 13,
       "payload": {
         "statModifiers": [
           {
@@ -58,7 +62,9 @@
       "category": "stat",
       "duration": 3,
       "stacking": "intensity",
-      "rating": 4,
+      "teir": "Teir 2",
+      "resistedBy": "body",
+      "resistDR": 13,
       "payload": {
         "statModifiers": [
           {
@@ -83,7 +89,9 @@
       "category": "defense",
       "duration": 4,
       "stacking": "duration",
-      "rating": 4,
+      "teir": "Teir 2",
+      "resistedBy": "mind",
+      "resistDR": 12,
       "payload": {
         "statModifiers": [
           {
@@ -108,7 +116,9 @@
       "category": "defense",
       "duration": 4,
       "stacking": "duration",
-      "rating": 4,
+      "teir": "Teir 2",
+      "resistedBy": "heart",
+      "resistDR": 12,
       "payload": {
         "statModifiers": [
           {
@@ -133,7 +143,9 @@
       "category": "defense",
       "duration": 4,
       "stacking": "duration",
-      "rating": 4,
+      "teir": "Teir 2",
+      "resistedBy": "body",
+      "resistDR": 12,
       "payload": {
         "statModifiers": [
           {
@@ -158,7 +170,9 @@
       "category": "defense",
       "duration": 3,
       "stacking": "none",
-      "rating": 6,
+      "teir": "Teir 2",
+      "resistedBy": "heart",
+      "resistDR": 14,
       "payload": {
         "defenseModifier": 4,
         "statModifiers": [
@@ -203,7 +217,9 @@
       "category": "advantage",
       "duration": 3,
       "stacking": "intensity",
-      "rating": 5,
+      "teir": "Teir 2",
+      "resistedBy": "heart",
+      "resistDR": 13,
       "payload": {
         "rollModifier": 3,
         "statModifiers": [
@@ -233,7 +249,9 @@
       "category": "defense",
       "duration": 3,
       "stacking": "duration",
-      "rating": 6,
+      "teir": "Teir 2",
+      "resistedBy": "mind",
+      "resistDR": 13,
       "payload": {
         "defenseModifier": 3,
         "statModifiers": [
@@ -270,7 +288,9 @@
       "category": "advantage",
       "duration": 4,
       "stacking": "intensity",
-      "rating": 4,
+      "teir": "Teir 2",
+      "resistedBy": "heart",
+      "resistDR": 12,
       "payload": {
         "rollModifier": 2,
         "statModifiers": [
@@ -290,7 +310,9 @@
       "category": "damage",
       "duration": 3,
       "stacking": "none",
-      "rating": 7,
+      "teir": "Teir 2",
+      "resistedBy": "mind",
+      "resistDR": 14,
       "payload": {
         "statModifiers": [
           {
@@ -319,7 +341,9 @@
       "category": "advantage",
       "duration": 2,
       "stacking": "none",
-      "rating": 8,
+      "teir": "Teir 3",
+      "resistedBy": "mind",
+      "resistDR": 17,
       "payload": {
         "rollModifier": 4,
         "advantageModifier": {
@@ -339,7 +363,9 @@
       "category": "regeneration",
       "duration": 5,
       "stacking": "intensity",
-      "rating": 5,
+      "teir": "Teir 2",
+      "resistedBy": "mind",
+      "resistDR": 12,
       "payload": {
         "regeneration": {
           "healthPerRound": 3
@@ -354,7 +380,9 @@
       "category": "stat",
       "duration": 5,
       "stacking": "none",
-      "rating": 6,
+      "teir": "Teir 2",
+      "resistedBy": "mind",
+      "resistDR": 13,
       "payload": {
         "statModifiers": [
           {
@@ -373,7 +401,9 @@
       "category": "defense",
       "duration": 3,
       "stacking": "none",
-      "rating": 6,
+      "teir": "Teir 2",
+      "resistedBy": "heart",
+      "resistDR": 13,
       "payload": {
         "defenseModifier": 5
       }
@@ -386,7 +416,9 @@
       "category": "defense",
       "duration": 3,
       "stacking": "none",
-      "rating": 6,
+      "teir": "Teir 2",
+      "resistedBy": "heart",
+      "resistDR": 13,
       "payload": {
         "defenseModifier": 5
       }
@@ -399,7 +431,9 @@
       "category": "defense",
       "duration": 1,
       "stacking": "none",
-      "rating": 9,
+      "teir": "Teir 3",
+      "resistedBy": "heart",
+      "resistDR": 18,
       "payload": {
         "defenseModifier": 99
       }
@@ -412,7 +446,9 @@
       "category": "control",
       "duration": 3,
       "stacking": "none",
-      "rating": 3,
+      "teir": "Teir 2",
+      "resistedBy": "body",
+      "resistDR": 12,
       "payload": {
         "defenseModifier": 2,
         "statModifiers": [
@@ -432,7 +468,9 @@
       "category": "advantage",
       "duration": 2,
       "stacking": "none",
-      "rating": 7,
+      "teir": "Teir 2",
+      "resistedBy": "mind",
+      "resistDR": 14,
       "payload": {
         "defenseModifier": 6,
         "advantageModifier": {
@@ -452,7 +490,9 @@
       "category": "stat",
       "duration": 3,
       "stacking": "none",
-      "rating": 7,
+      "teir": "Teir 2",
+      "resistedBy": "heart",
+      "resistDR": 14,
       "payload": {
         "statModifiers": [
           {
@@ -502,7 +542,9 @@
       "category": "defense",
       "duration": 2,
       "stacking": "none",
-      "rating": 5,
+      "teir": "Teir 2",
+      "resistedBy": "heart",
+      "resistDR": 13,
       "payload": {
         "defenseModifier": 2
       }
@@ -515,7 +557,9 @@
       "category": "advantage",
       "duration": 3,
       "stacking": "none",
-      "rating": 4,
+      "teir": "Teir 2",
+      "resistedBy": "mind",
+      "resistDR": 13,
       "payload": {
         "rollModifier": 2,
         "advantageModifier": {
@@ -533,7 +577,9 @@
       "category": "defense",
       "duration": 4,
       "stacking": "duration",
-      "rating": 6,
+      "teir": "Teir 2",
+      "resistedBy": "mind",
+      "resistDR": 13,
       "payload": {
         "statModifiers": [
           {
@@ -562,7 +608,9 @@
       "category": "defense",
       "duration": 4,
       "stacking": "duration",
-      "rating": 6,
+      "teir": "Teir 2",
+      "resistedBy": "heart",
+      "resistDR": 13,
       "payload": {
         "statModifiers": [
           {
@@ -591,7 +639,9 @@
       "category": "defense",
       "duration": 4,
       "stacking": "duration",
-      "rating": 6,
+      "teir": "Teir 2",
+      "resistedBy": "body",
+      "resistDR": 13,
       "payload": {
         "statModifiers": [
           {
@@ -620,7 +670,9 @@
       "category": "stat",
       "duration": 0,
       "stacking": "none",
-      "rating": 5,
+      "teir": "Teir 2",
+      "resistedBy": "heart",
+      "resistDR": 12,
       "payload": {}
     },
     {
@@ -631,7 +683,9 @@
       "category": "advantage",
       "duration": 3,
       "stacking": "none",
-      "rating": 3,
+      "teir": "Teir 2",
+      "resistedBy": "heart",
+      "resistDR": 12,
       "payload": {
         "rollModifier": 1
       }
@@ -644,7 +698,9 @@
       "category": "advantage",
       "duration": 4,
       "stacking": "none",
-      "rating": 4,
+      "teir": "Teir 2",
+      "resistedBy": "heart",
+      "resistDR": 13,
       "payload": {
         "rollModifier": 3
       }
@@ -657,7 +713,9 @@
       "category": "regeneration",
       "duration": 4,
       "stacking": "intensity",
-      "rating": 4,
+      "teir": "Teir 2",
+      "resistedBy": "mind",
+      "resistDR": 12,
       "payload": {
         "regeneration": {
           "healthPerRound": 2
@@ -673,7 +731,9 @@
       "category": "advantage",
       "duration": 3,
       "stacking": "none",
-      "rating": 4,
+      "teir": "Teir 2",
+      "resistedBy": "mind",
+      "resistDR": 13,
       "payload": {
         "advantageModifier": {
           "grantAdvantage": [
@@ -702,7 +762,9 @@
       "category": "advantage",
       "duration": 3,
       "stacking": "none",
-      "rating": 4,
+      "teir": "Teir 2",
+      "resistedBy": "heart",
+      "resistDR": 13,
       "payload": {
         "advantageModifier": {
           "grantAdvantage": [
@@ -731,7 +793,9 @@
       "category": "stat",
       "duration": 2,
       "stacking": "none",
-      "rating": 1,
+      "teir": "Teir 1",
+      "resistedBy": "body",
+      "resistDR": 10,
       "payload": {
         "statModifiers": [
           {
@@ -750,7 +814,9 @@
       "category": "advantage",
       "duration": 2,
       "stacking": "none",
-      "rating": 1,
+      "teir": "Teir 1",
+      "resistedBy": "heart",
+      "resistDR": 10,
       "payload": {
         "statModifiers": [
           {
@@ -769,7 +835,9 @@
       "category": "stat",
       "duration": 2,
       "stacking": "none",
-      "rating": 1,
+      "teir": "Teir 1",
+      "resistedBy": "mind",
+      "resistDR": 10,
       "payload": {
         "statModifiers": [
           {
@@ -788,7 +856,9 @@
       "category": "advantage",
       "duration": 3,
       "stacking": "none",
-      "rating": 4,
+      "teir": "Teir 2",
+      "resistedBy": "body",
+      "resistDR": 13,
       "payload": {
         "advantageModifier": {
           "grantAdvantage": [

@@ -25,7 +25,8 @@ export const Disatree_01: Enemy = {
   },
   enemyTier: 'normal',
   description: 'A tree who disagrees with you',
-  logic: 'random'
+  logic: 'random',
+  currentActiveEffects: [],
 }
 
 export const EnemyLibrary = {

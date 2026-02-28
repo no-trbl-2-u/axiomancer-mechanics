@@ -48,6 +48,7 @@
     "@types/inquirer": "^9.0.9",
     "commander": "^14.0.2",
     "eslint-plugin-typescript": "^0.14.0",
-    "inquirer": "^13.0.1"
+    "inquirer": "^13.0.1",
+    "zustand": "^5.0.11"
   }
 }

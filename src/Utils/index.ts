@@ -2,7 +2,9 @@
  * Utility functions used across the application
  */
 
+import { Character } from "Character/types";
 import { Advantage } from "Combat/types";
+import { Enemy } from "Enemy/types";
 
 /**
  * Clamps a number between min and max values
@@ -78,6 +80,10 @@ export const determineRollAdvantageModifier = (advantage: Advantage): (arr: numb
       return sum;
   }
 }
+
+// ===============================================
+// DIE ROLLING
+// ===============================================
 
 /**
  * Creates a die roll function
