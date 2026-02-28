@@ -39,14 +39,14 @@ export function initializeCombat(player: Character, enemy: Enemy): CombatState {
     };
 }
 
-/**
- * Resets the combat state to its initial values
- * @param state - The current combat state to reset
- * @returns A fresh combat state with the same player and enemy
- */
-export function resetCombat(state: CombatState): CombatState {
-    return "Implement me" as any;
-}
+// /**
+//  * Resets the combat state to its initial values
+//  * @param state - The current combat state to reset
+//  * @returns A fresh combat state with the same player and enemy
+//  */
+// export function resetCombat(state: CombatState): CombatState {
+//     return "Implement me" as any;
+// }
 
 // ============================================================================
 // COMBAT PHASE MANAGEMENT
@@ -59,7 +59,10 @@ export function resetCombat(state: CombatState): CombatState {
  * @returns Updated combat state with new phase
  */
 export function updateCombatPhase(state: CombatState, phase: CombatPhase): CombatState {
-    return "Implement me" as any;
+    return {
+        ...state,
+        phase: phase
+    }
 }
 
 // ============================================================================
@@ -69,21 +72,35 @@ export function updateCombatPhase(state: CombatState, phase: CombatPhase): Comba
 /**
  * Sets the player's chosen attack type for the current round
  * @param state - The current combat state
- * @param type - The attack type chosen by the player
- * @returns Updated combat state with player's type choice
+ * @param actionType - The action type chosen by the player
+ * @returns Updated combat state with player's action type choice
+ * @Example setPlayerActionType(state, 'heart')
  */
-export function setPlayerAttackType(state: CombatState, type: ActionType): CombatState {
-    return "Implement me" as any;
+export function setPlayerActionType(state: CombatState, actionType: ActionType): CombatState {
+    return {
+        ...state,
+        playerChoice: {
+            ...state.playerChoice,
+            type: actionType
+        },
+    };
 }
 
 /**
- * Sets the player's chosen action (attack/defend) for the current round
+ * Sets the player's chosen attack type for the current round
  * @param state - The current combat state
- * @param action - The action chosen by the player
- * @returns Updated combat state with player's action choice
+ * @param type - The attack type chosen by the player
+ * @returns Updated combat state with player's type choice
+ * @Example setPlayerAction(state, 'attack')
  */
 export function setPlayerAction(state: CombatState, action: Action): CombatState {
-    return "Implement me" as any;
+    return {
+        ...state,
+        playerChoice: {
+            ...state.playerChoice,
+            action: action
+        },
+    };
 }
 
 // ============================================================================
