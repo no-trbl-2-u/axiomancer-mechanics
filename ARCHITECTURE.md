@@ -119,4 +119,3 @@ flowchart TD
 | **Effects** | Buff/debuff system; status effect types and application results |
 | **NPCs** | Dialogue maps for non-player characters |
 | **Utils** | Pure utility functions — dice creation, math helpers, deep clone, type guards |
-```

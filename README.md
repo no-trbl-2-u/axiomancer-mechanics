@@ -1,3 +1,14 @@
-# Mechanics Library for Axiomancer
+# Axiomancer — Mechanics Engine
 
-Axiomancer is a turn-based strategy RPG where players control a character who embarks on a journey to discover their true identity and the secrets behind the veil. After the king loses their advisor and opens the gates of the city to find their successor, the player must navigate the challenges of the labyrinth to reach the heart of the city and become the new advisor. 
+Turn-based RPG engine with Heart/Body/Mind combat. Status effects, skills, and enemies are themed around logical fallacies and philosophical paradoxes.
+
+This repository is the game engine only — not the final game. It will be consumed as a library by a React Native mobile app.
+
+---
+
+- `ARCHITECTURE.md` — module dependency map
+- `GAME-ROADMAP.md` — phased development plan with progress tracking
+- `The-Big-Picture.md` — current effects system status and implementation notes
+- `BRAINDUMP.md` — unorganized design ideas
+- `docs/` — per-system references
+- `docs/references/` — source material (fallacies, paradoxes, pantheon, story)
