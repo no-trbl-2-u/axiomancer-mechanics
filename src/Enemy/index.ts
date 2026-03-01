@@ -16,20 +16,20 @@ export const getEnemyRelatedStat = (enemy: Enemy, base: ActionType, isDefending:
   if (!isDefending) {
     switch (base) {
       case 'body':
-        return enemy.enemyStats.physicalAttack;
+        return enemy.derivedStats.physicalAttack;
       case 'mind':
-        return enemy.enemyStats.mentalAttack;
+        return enemy.derivedStats.mentalAttack;
       case 'heart':
-        return enemy.enemyStats.emotionalAttack;
+        return enemy.derivedStats.emotionalAttack;
     }
   } else {
     switch (base) {
       case 'body':
-        return enemy.enemyStats.physicalDefense;
+        return enemy.derivedStats.physicalDefense;
       case 'mind':
-        return enemy.enemyStats.mentalDefense;
+        return enemy.derivedStats.mentalDefense;
       case 'heart':
-        return enemy.enemyStats.emotionalDefense;
+        return enemy.derivedStats.emotionalDefense;
     }
   }
 }

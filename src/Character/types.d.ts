@@ -61,36 +61,36 @@ export interface BaseStats {
 }
 
 /**
- * Derived stats calculated from base stats
- * Used in combat and skill checks. Each stat type has four derived values.
- * @property physicalSkill - (Guess) Modifier for physical skill checks and body-type attack rolls
- * @property physicalDefense - (Guess) Defense value against physical/body-type attacks
- * @property physicalSave - (Guess) Saving throw modifier for resisting physical effects
- * @property physicalTest - (Guess) Modifier for physical ability tests and challenges
- * @property mentalSkill - (Guess) Modifier for mental skill checks and mind-type attack rolls
- * @property mentalDefense - (Guess) Defense value against mental/mind-type attacks
- * @property mentalSave - (Guess) Saving throw modifier for resisting mental effects
- * @property mentalTest - (Guess) Modifier for mental ability tests and challenges
- * @property emotionalSkill - (Guess) Modifier for emotional skill checks and heart-type attack rolls
- * @property emotionalDefense - (Guess) Defense value against emotional/heart-type attacks
- * @property emotionalSave - (Guess) Saving throw modifier for resisting emotional effects
- * @property emotionalTest - (Guess) Modifier for emotional ability tests and challenges
- * @property luck - Average of all three base stats (affects critical hits and random events)
+ * Derived stats calculated from base stats.
+ * Each stat type (body/mind/heart) produces five derived values.
+ *
+ * ATTACK vs SKILL distinction:
+ * @property physicalAttack   - Body-type combat roll modifier. Used in attack rolls.
+ * @property physicalSkill    - How well the character uses body-based skills.
+ *                              Feeds the philosophy bar and skill-usage system.
+ * @property physicalDefense  - Defense value against body-type attacks
+ * @property physicalSave     - Saving throw for resisting body-type effects
+ * @property physicalTest     - General body ability tests (lifting, endurance, etc.)
+ * (same pattern for mental* and emotional*)
+ * @property luck - Average of all three base stats (crits, random events)
  */
 export interface DerivedStats {
     // Body-derived
+    physicalAttack: number;
     physicalSkill: number;
     physicalDefense: number;
     physicalSave: number;
     physicalTest: number;
 
     // Mind-derived
+    mentalAttack: number;
     mentalSkill: number;
     mentalDefense: number;
     mentalSave: number;
     mentalTest: number;
 
     // Heart-derived
+    emotionalAttack: number;
     emotionalSkill: number;
     emotionalDefense: number;
     emotionalSave: number;

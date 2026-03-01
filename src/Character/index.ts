@@ -18,24 +18,26 @@ interface CreateCharacterOptions {
  * @returns The derived stats of the character
  */
 const deriveStats = ({ body, heart, mind }: BaseStats): DerivedStats => ({
-    // TODO: Determine the calculations for these stats
     /* Body-derived stats */
-    physicalSkill: body * STAT_MULTIPLIERS.SKILL,
+    physicalAttack:  body * STAT_MULTIPLIERS.ATTACK,
+    physicalSkill:   body * STAT_MULTIPLIERS.SKILL,
     physicalDefense: body * STAT_MULTIPLIERS.DEFENSE,
-    physicalSave: body * STAT_MULTIPLIERS.SAVE,
-    physicalTest: body * STAT_MULTIPLIERS.TEST,
+    physicalSave:    body * STAT_MULTIPLIERS.SAVE,
+    physicalTest:    body * STAT_MULTIPLIERS.TEST,
 
     /* Mind-derived stats */
-    mentalSkill: mind * STAT_MULTIPLIERS.SKILL,
+    mentalAttack:  mind * STAT_MULTIPLIERS.ATTACK,
+    mentalSkill:   mind * STAT_MULTIPLIERS.SKILL,
     mentalDefense: mind * STAT_MULTIPLIERS.DEFENSE,
-    mentalSave: mind * STAT_MULTIPLIERS.SAVE,
-    mentalTest: mind * STAT_MULTIPLIERS.TEST,
+    mentalSave:    mind * STAT_MULTIPLIERS.SAVE,
+    mentalTest:    mind * STAT_MULTIPLIERS.TEST,
 
     /* Heart-derived stats */
-    emotionalSkill: heart * STAT_MULTIPLIERS.SKILL,
+    emotionalAttack:  heart * STAT_MULTIPLIERS.ATTACK,
+    emotionalSkill:   heart * STAT_MULTIPLIERS.SKILL,
     emotionalDefense: heart * STAT_MULTIPLIERS.DEFENSE,
-    emotionalSave: heart * STAT_MULTIPLIERS.SAVE,
-    emotionalTest: heart * STAT_MULTIPLIERS.TEST,
+    emotionalSave:    heart * STAT_MULTIPLIERS.SAVE,
+    emotionalTest:    heart * STAT_MULTIPLIERS.TEST,
 
     /* Shared stats */
     luck: average(body, heart, mind),

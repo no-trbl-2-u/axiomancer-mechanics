@@ -11,6 +11,7 @@
 import { Item } from 'Items';
 import { Skill } from '../Skills/types';
 import { Map } from '../World/types';
+import { ActionType } from '../Combat/types';
 
 /**
  * EnemyStats represents the combat statistics for enemy characters
@@ -66,17 +67,28 @@ export interface EnemyDerivedStats {
 export type EnemyLogic = 'random' | 'aggressive' | 'defensive' | 'balanced';
 
 /**
+ * Per-enemy Tier 1 effect map.
+ * Overrides the default TIER1_EFFECT_MAP for any action the enemy performs.
+ * If an action key is absent, the default map is used as a fallback.
+ * Eventually each unique enemy will have thematic effects (debate, rhetoric,
+ * philosophy) instead of the generic player stances.
+ */
+export type EnemyTier1EffectMap = Partial<Record<ActionType, Partial<Record<'attack' | 'defend', string>>>>;
+
+/**
  * Enemy represents an adversary that can be encountered in combat
  * @property id - Unique identifier for this enemy instance
  * @property name - Display name of the enemy
  * @property level - Enemy level (affects difficulty and rewards)
  * @property health - Current health points
  * @property mana - Current mana points
- * @property enemyStats - Combat statistics for this enemy
+ * @property derivedStats - Combat statistics for this enemy
+ * @property baseStats - Raw base stats (body/mind/heart) — used for resist rolls
  * @property mapLocation - Reference to the map where this enemy can be encountered
- * @property enemyTier - Optional difficulty tier: 'normal' (standard enemy), 'elite' (stronger), or 'boss' (major encounter)
+ * @property enemyTier - Optional difficulty tier: 'normal' (standard), 'elite', or 'boss'
  * @property description - Flavor text or lore description of the enemy
  * @property logic - The enemy's decision-making process
+ * @property tier1Effects - Optional: overrides for automatic Tier 1 stance effects
  * @property skills - Optional: list of skills the enemy can use
  * @property loot - Optional: list of items the enemy can drop
  * @todo: **FRONTEND ONLY**: image - Optional: visual representation of the enemy
@@ -93,6 +105,7 @@ export interface Enemy {
     baseStats: EnemyBaseStats;
     mapLocation: Pick<Map, 'name'>;
     logic: EnemyLogic;
+    tier1Effects?: EnemyTier1EffectMap;
     skills?: Skill[];
     loot?: Item[];
     currentActiveEffects: ActiveEffect[] | [];

@@ -1,6 +1,61 @@
 {
   "buffs": [
     {
+      "id": "tier1_body_attack",
+      "name": "Ad Baculum",
+      "description": "Your argument doesn't need words when your presence speaks volumes. You don't debate — you loom. Each exchange sharpens the edge of your conviction into something that leaves marks.",
+      "type": "buff",
+      "category": "stat",
+      "duration": 2,
+      "stacking": "intensity",
+      "teir": "Teir 1",
+      "payload": {
+        "statModifiers": [
+          { "stat": "physicalAttack", "value": 1, "isMultiplier": false }
+        ],
+        "rollModifier": 1
+      }
+    },
+    {
+      "id": "tier1_body_defend",
+      "name": "Briar Stance",
+      "description": "You root yourself like a thorn bush — still, patient, dangerous. Striking you is a choice they'll regret. Every blow lands, but something sharp comes back.",
+      "type": "buff",
+      "category": "defense",
+      "duration": 3,
+      "stacking": "intensity",
+      "teir": "Teir 1",
+      "payload": {
+        "reflectDamage": 1
+      }
+    },
+    {
+      "id": "tier1_heart_defend",
+      "name": "Vital Empathy",
+      "description": "You stop fighting for a moment and simply exist. The stillness heals. The compassion you pour outward turns inward just enough — a quiet restoration, round by round.",
+      "type": "buff",
+      "category": "regeneration",
+      "duration": 3,
+      "stacking": "intensity",
+      "teir": "Teir 1",
+      "payload": {
+        "regeneration": { "healthPerRound": 1 }
+      }
+    },
+    {
+      "id": "tier1_heart_attack",
+      "name": "Fleeting Kindness",
+      "description": "Your strike carries no malice — just a gentle redirection. It doesn't hit as hard, but it reaches somewhere deeper. Something in the other combatant softens. Something in you holds on a little longer.",
+      "type": "buff",
+      "category": "stat",
+      "duration": 2,
+      "stacking": "intensity",
+      "teir": "Teir 1",
+      "payload": {
+        "rollModifier": -5
+      }
+    },
+    {
       "id": "buff_body_attack_up",
       "name": "Achilles' Momentum",
       "description": "Like Achilles chasing the tortoise, each strike brings you inexorably closer to overwhelming force. Your Body attacks gain devastating power.",

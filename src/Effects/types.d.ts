@@ -52,11 +52,11 @@ export type EffectCategory = 'stat' | 'damage' | 'defense' | 'control' | 'regene
  * Can target either base stats (body/mind/heart) or specific derived stats
  */
 export type EffectStatTarget =
-  | ActionType  // Base stats: 'body' | 'mind' | 'heart'
-  | 'physicalSkill' | 'physicalDefense' | 'physicalSave' | 'physicalTest'
-  | 'mentalSkill' | 'mentalDefense' | 'mentalSave' | 'mentalTest'
-  | 'emotionalSkill' | 'emotionalDefense' | 'emotionalSave' | 'emotionalTest'
-  | 'luck';
+    | ActionType  // Base stats: 'body' | 'mind' | 'heart'
+    | 'physicalAttack'  | 'physicalSkill' | 'physicalDefense' | 'physicalSave' | 'physicalTest'
+    | 'mentalAttack'    | 'mentalSkill'   | 'mentalDefense'   | 'mentalSave'   | 'mentalTest'
+    | 'emotionalAttack' | 'emotionalSkill'| 'emotionalDefense'| 'emotionalSave'| 'emotionalTest'
+    | 'luck';
 
 // ===============================================
 // EFFECT MODIFIERS
@@ -132,6 +132,8 @@ export interface AdvantageModifier {
  * @property advantageModifier - Changes to combat advantage
  * @property rollModifier - Flat bonus/penalty to dice rolls
  * @property defenseModifier - Flat bonus/penalty to defense values
+ * @property reflectDamage - Damage per intensity dealt back to the attacker
+ *   when the bearer of this effect is successfully hit (thorns mechanic).
  */
 export interface EffectPayload {
   statModifiers?: StatModifier[];
@@ -141,6 +143,7 @@ export interface EffectPayload {
   advantageModifier?: AdvantageModifier;
   rollModifier?: number;
   defenseModifier?: number;
+  reflectDamage?: number;
 }
 
 // ===============================================
@@ -253,12 +256,18 @@ export interface EffectApplicationResult {
     previousIntensity: number;
     previousDuration: number;
   };
+  /**
+   * Set to true when a debuff resistance roll crits (natural 20).
+   * The effect bounced back — apply activeEffect to the ATTACKER instead.
+   * success will be false (it didn't land on the intended target).
+   */
+  rebounded?: boolean;
   roll?: {
-    rolled: number;       // d20 result
-    resistStat: number;   // target's resist stat value
+    rolled: number;       // raw d20 result
+    resistStat: number;   // target's resist stat value added to the roll
     total: number;        // rolled + resistStat
-    dr: number;           // final DR (base + heart + equipment)
-    wasCrit: boolean;     // natural 20 — effect cannot be resisted
-    wasFumble: boolean;   // natural 1 — effect backlashes onto attacker
+    dr: number;           // final DR (base + heart + equipment bonuses)
+    wasCrit: boolean;     // natural 20: rebound (debuff) or double intensity (buff)
+    wasFumble: boolean;   // natural 1: double duration lands (debuff) or fumble (buff)
   };
 }

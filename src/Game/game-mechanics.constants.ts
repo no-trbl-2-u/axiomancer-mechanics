@@ -11,7 +11,8 @@
 // derived combat stats for that attribute category.
 
 export const STAT_MULTIPLIERS = {
-    SKILL:   1,
+    ATTACK:  1,   // physicalAttack / mentalAttack / emotionalAttack — combat rolls
+    SKILL:   1,   // physicalSkill / mentalSkill / emotionalSkill — skill usage, philosophy bar
     DEFENSE: 3,
     SAVE:    2,
     TEST:    4,
@@ -58,6 +59,15 @@ export const DEFENSE_MULTIPLIERS: Record<'advantage' | 'neutral' | 'disadvantage
 // Applied when a combatant did NOT choose the 'defend' action (i.e. they are
 // taking damage after losing an attack contest with no active defense bonus).
 export const PASSIVE_DEFENSE_MULTIPLIER = 1;
+
+// ============================================================================
+// EFFECTS — STACKING CAPS
+// ============================================================================
+// Hard ceiling on how high any single effect's intensity or remaining duration
+// can grow, regardless of stacking mode or repeated applications.
+
+export const MAX_EFFECT_INTENSITY = 10;
+export const MAX_EFFECT_DURATION  = 10;
 
 // ============================================================================
 // COMBAT — FRIENDSHIP MECHANIC

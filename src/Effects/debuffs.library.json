@@ -1,6 +1,17 @@
 {
   "debuffs": [
     {
+      "id": "tier1_mind_mark",
+      "name": "Exposed Reasoning",
+      "description": "Every move, every tell — catalogued. The pattern is clear now. There's a gap in their argument, and you know exactly where it is. When the strike comes, it's not luck. It's inevitability.",
+      "type": "debuff",
+      "category": "stat",
+      "duration": 1,
+      "stacking": "intensity",
+      "teir": "Teir 1",
+      "payload": {}
+    },
+    {
       "id": "debuff_all_stats_down",
       "name": "Heap's Collapse",
       "description": "One grain of weakness means nothing. But grain by grain, imperceptibly, you've ceased to be a heap of power at all.",

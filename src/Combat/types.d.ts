@@ -44,6 +44,14 @@ export type Action = 'attack' | 'defend' | 'skill' | 'item' | 'flee' | 'back';
 export type Advantage = 'advantage' | 'neutral' | 'disadvantage';
 
 /**
+ * How a critical hit (natural 20) resolves on an attack roll.
+ * - 'double': Raw damage is doubled before subtracting the enemy's defense.
+ * - 'pierce': Defense is ignored entirely — base damage lands unmitigated.
+ * The system auto-selects whichever option deals more final damage.
+ */
+export type CritStyle = 'double' | 'pierce';
+
+/**
  * Player's combat decision for a single round
  * Combines attack type and action to form a complete combat choice.
  * @property type - The attack type (heart/body/mind) chosen for this round

@@ -10,7 +10,8 @@ import { Enemy, EnemyLogic } from '../Enemy/types';
 import { getEnemyRelatedStat } from '../Enemy';
 import { isCharacter } from '../Utils/typeGuards';
 import { createDieRoll } from '../Utils';
-import { FRIENDSHIP_COUNTER_MAX } from '../Game/game-mechanics.constants';
+import { FRIENDSHIP_COUNTER_MAX, MAX_EFFECT_DURATION } from '../Game/game-mechanics.constants';
+import { lookupEffect } from '../Effects/effects.library';
 
 import {
   ActionType,
@@ -20,8 +21,9 @@ import {
   BattleLogEntry,
   CombatState,
 } from './types';
-import { ActiveEffect } from 'Effects/types';
+import { ActiveEffect, EffectApplicationResult, EffectType } from 'Effects/types';
 import { getResistStatFromResistedBy } from 'Character';
+import { CritStyle } from './types';
 
 // ============================================================================
 // ENEMY ACTION
@@ -142,19 +144,19 @@ export function getBaseStatForType(character: Character | Enemy, type: ActionTyp
 }
 
 /**
- * Returns the attack/skill stat for a given action type.
- * Character → derivedStats (physicalSkill / mentalSkill / emotionalSkill)
- * Enemy     → enemyStats attack values
+ * Returns the ATTACK stat for a given action type — used in combat rolls.
+ * Character → derivedStats.physicalAttack / mentalAttack / emotionalAttack
+ * Enemy     → derivedStats attack values (physicalAttack / mentalAttack / emotionalAttack)
  *
- * Note: with STAT_MULTIPLIERS.SKILL = 1, Character skill == baseStats right now.
- * Adjust STAT_MULTIPLIERS in Character/index.ts to change this.
+ * Note: physicalSkill / mentalSkill / emotionalSkill are SEPARATE — those feed
+ * the philosophy bar and skill-usage system, not combat rolls.
  */
-export function getSkillStatForType(character: Character | Enemy, type: ActionType): number {
+export function getAttackStatForType(character: Character | Enemy, type: ActionType): number {
   if (isCharacter(character)) {
     switch (type) {
-      case 'body': return character.derivedStats.physicalSkill;
-      case 'mind': return character.derivedStats.mentalSkill;
-      case 'heart': return character.derivedStats.emotionalSkill;
+      case 'body':  return character.derivedStats.physicalAttack;
+      case 'mind':  return character.derivedStats.mentalAttack;
+      case 'heart': return character.derivedStats.emotionalAttack;
     }
   }
   return getEnemyRelatedStat(character as Enemy, type, false) ?? 0;
@@ -247,9 +249,10 @@ export function calculateFinalDamage(
   baseDamage: number,
   damageReduction: number,
   isCritical: boolean,
+  damageBonus = 0,
 ): number {
   const damage = isCritical ? applyCriticalMultiplier(baseDamage) : baseDamage;
-  return Math.max(0, damage - damageReduction);
+  return Math.max(0, damage + damageBonus - damageReduction);
 }
 
 // ============================================================================
@@ -331,45 +334,166 @@ export function calculateAttackDamage(
 }
 
 // ===============================================
-// STATUS EFFECTS IN DURING COMBAT
+// STATUS EFFECTS DURING COMBAT
 // ===============================================
 
 /**
- * Determines if a status effect is applied to a target
- * @param target - The target to check
- * @param effectId - The ID of the effect to check
- * @returns True if the effect is applied to the target
- * @examplerld eve
- * const isStunned = isEffectApplied(target, 'stunned')
- * isStunned // Returns true if the target is stunned
+ * Resolves whether an effect successfully applies to a target.
+ * Returns a full EffectApplicationResult so the combat log has everything it needs.
+ *
+ * TIER 1 — Auto-applies, no roll.
+ *   Passive stance effects. Always succeeds.
+ *
+ * TIER 2 BUFF — Caster rolls d20 to apply to themselves.
+ *   Natural 1:  Fumble — concentration shattered, buff fails.
+ *   Natural 20: Crit   — buff applies at double INTENSITY (more powerful, same duration).
+ *   Anything else: auto-succeeds.
+ *
+ * TIER 2 DEBUFF — Target rolls to RESIST.
+ *   DR = effect.resistDR + attackerHeartBonus + equipmentBonus
+ *   Natural 20: Crit resist — effect rebounds onto attacker at double INTENSITY.
+ *   Natural 1:  Fumble resist — overwhelmed, effect lands at double DURATION.
+ *   roll + resistStat < DR: Effect lands normally.
+ *   roll + resistStat ≥ DR: Resisted.
+ *
+ * TIER 3 — Inescapable. Only a natural 20 on the resist roll repels it.
+ *
+ * @param target              - The combatant the effect is being applied TO
+ * @param activeEffect        - The effect instance being applied
+ * @param effectType          - 'buff' or 'debuff'
+ * @param attackerHeartBonus  - Attacker's heart base stat (raises the DR)
+ * @param equipmentBonus      - Optional bonus from gear or skill modifiers
  */
-export function isEffectApplied(target: Character | Enemy, effectId: string, activeEffect: ActiveEffect): boolean {
-  const effectTeir = activeEffect.teir;
+export function isEffectApplied(
+  target: Character | Enemy,
+  activeEffect: ActiveEffect,
+  effectType: EffectType,
+  attackerHeartBonus: number = 0,
+  equipmentBonus: number = 0,
+): EffectApplicationResult {
+  const tier = activeEffect.teir;
 
-  // Teir 1 is automatically applied
-  if (effectTeir === 'Teir 1') {
-    return true;
+  // ── Tier 1: always applies, no roll ────────────────────────────────────────
+  if (tier === 'Teir 1') {
+    return {
+      success: true,
+      activeEffect,
+      message: `Effect applied automatically.`,
+    };
   }
 
-  // Teir 2 the target must roll to apply the effect and the
-  // target uses a specific stat to resist the effect regardless of their
-  // choice of ActionType
-  else if (effectTeir === 'Teir 2') {
-    // TODO: Determine if the target can resist the effect
-    const targetResistanceStat = getResistStatFromResistedBy(target, activeEffect.resistedBy as ActionType);
-    const targetStatusDRRoll = activeEffect.resistDR ?? 10
-    // TODO: One day change the system so someone could have advantage against
-    const targetStatusRoll = createDieRoll('neutral')() + targetResistanceStat;
+  // ── Tier 2 BUFF: caster rolls — only a fumble stops it ─────────────────────
+  if (tier === 'Teir 2' && effectType === 'buff') {
+    const roll = createDieRoll('neutral')();
 
-    return targetStatusRoll < targetStatusDRRoll;
+    if (roll === 1) {
+      return {
+        success: false,
+        message: `Fumble! Concentration shattered — the buff fizzles out.`,
+        roll: { rolled: roll, resistStat: 0, total: roll, dr: 0, wasCrit: false, wasFumble: true },
+      };
+    }
+
+    if (roll === 20) {
+      // Crit: double INTENSITY (buff is more powerful, not longer)
+      const critEffect: ActiveEffect = {
+        ...activeEffect,
+        currentIntensity: Math.min((activeEffect.currentIntensity ?? 1) * 2, 6),
+      };
+      return {
+        success: true,
+        activeEffect: critEffect,
+        message: `Critical focus! The buff surges at double intensity.`,
+        roll: { rolled: roll, resistStat: 0, total: roll, dr: 0, wasCrit: true, wasFumble: false },
+      };
+    }
+
+    return {
+      success: true,
+      activeEffect,
+      message: `Buff applied.`,
+      roll: { rolled: roll, resistStat: 0, total: roll, dr: 0, wasCrit: false, wasFumble: false },
+    };
   }
 
-  else if (effectTeir === 'Teir 3') {
-    // TODO: Implement a more difficult system than effect tier 2
-    return true;
+  // ── Tier 2 DEBUFF: target rolls to resist ──────────────────────────────────
+  if (tier === 'Teir 2' && effectType === 'debuff') {
+    const resistStat = activeEffect.resistedBy
+      ? getResistStatFromResistedBy(target, activeEffect.resistedBy)
+      : 0;
+    const dr = (activeEffect.resistDR ?? 12) + attackerHeartBonus + equipmentBonus;
+    const roll = createDieRoll('neutral')();
+    const total = roll + resistStat;
+
+    // Natural 20: rebound — effect bounces onto attacker at double INTENSITY
+    if (roll === 20) {
+      const reboundEffect: ActiveEffect = {
+        ...activeEffect,
+        currentIntensity: Math.min((activeEffect.currentIntensity ?? 1) * 2, 6),
+      };
+      return {
+        success: false,
+        activeEffect: reboundEffect,
+        rebounded: true,
+        message: `Absolute resistance! The effect rebounds onto the attacker at double intensity.`,
+        roll: { rolled: roll, resistStat, total, dr, wasCrit: true, wasFumble: false },
+      };
+    }
+
+    // Natural 1: overwhelmed — effect lands at double DURATION (it digs in)
+    if (roll === 1) {
+      const overwhelmedEffect: ActiveEffect = {
+        ...activeEffect,
+        remainingDuration: (activeEffect.remainingDuration) * 2,
+      };
+      return {
+        success: true,
+        activeEffect: overwhelmedEffect,
+        message: `Overwhelmed! The target's resistance crumbled — effect digs in at double duration.`,
+        roll: { rolled: roll, resistStat, total, dr, wasCrit: false, wasFumble: true },
+      };
+    }
+
+    const resisted = total >= dr;
+    return {
+      success: !resisted,
+      activeEffect: resisted ? undefined : activeEffect,
+      message: resisted
+        ? `Resisted. (${roll} + ${resistStat} = ${total} vs DR ${dr})`
+        : `Effect lands. (${roll} + ${resistStat} = ${total} vs DR ${dr})`,
+      roll: { rolled: roll, resistStat, total, dr, wasCrit: false, wasFumble: false },
+    };
   }
 
-  return false;
+  // ── Tier 3: only a natural 20 repels it ────────────────────────────────────
+  if (tier === 'Teir 3') {
+    const resistStat = activeEffect.resistedBy
+      ? getResistStatFromResistedBy(target, activeEffect.resistedBy)
+      : 0;
+    const dr = (activeEffect.resistDR ?? 18) + attackerHeartBonus + equipmentBonus;
+    const roll = createDieRoll('neutral')();
+    const total = roll + resistStat;
+
+    if (roll === 20) {
+      return {
+        success: false,
+        message: `Miracle! An absolute will repelled the Tier 3 effect.`,
+        roll: { rolled: roll, resistStat, total, dr, wasCrit: true, wasFumble: false },
+      };
+    }
+
+    return {
+      success: true,
+      activeEffect,
+      message: `Inescapable. The Tier 3 effect takes hold. (${roll} + ${resistStat} = ${total} vs DR ${dr})`,
+      roll: { rolled: roll, resistStat, total, dr, wasCrit: false, wasFumble: false },
+    };
+  }
+
+  return {
+    success: false,
+    message: `Unknown effect tier — effect not applied.`,
+  };
 }
 
 /**
@@ -394,6 +518,145 @@ export function updateEffectDuration(target: Character | Enemy, effectId: string
     ...target,
     currentActiveEffects: updatedEffects,
   };
+}
+
+/**
+ * Decrements every non-permanent effect on a combatant by one round.
+ * Expired effects (duration hits 0) are removed from the list and returned
+ * separately so the caller can announce what faded.
+ *
+ * Call this at the END of each round, after all damage and effects are resolved.
+ */
+export function tickAllEffects(target: Character | Enemy): {
+    target: Character | Enemy;
+    expired: ActiveEffect[];
+} {
+    const expired: ActiveEffect[] = [];
+    const remaining = (target.currentActiveEffects as ActiveEffect[]).reduce<ActiveEffect[]>(
+        (acc, effect) => {
+            if (effect.remainingDuration === -1) {
+                acc.push(effect); // permanent — never ticks
+                return acc;
+            }
+            const ticked = { ...effect, remainingDuration: effect.remainingDuration - 1 };
+            if (ticked.remainingDuration <= 0) {
+                expired.push(ticked); // just expired — don't keep it
+            } else {
+                acc.push(ticked);
+            }
+            return acc;
+        },
+        [],
+    );
+
+    return {
+        target: { ...target, currentActiveEffects: remaining },
+        expired,
+    };
+}
+
+// ============================================================================
+// EFFECT-BASED COMBAT HELPERS
+// ============================================================================
+
+/** The ID of the Mind studying debuff — used by Mind/Attack for damage bonus. */
+export const MIND_MARK_ID = 'tier1_mind_mark';
+
+/**
+ * Returns the current intensity of the Mind studying mark on a combatant (0 if absent).
+ * Mind/Attack adds this value to its raw damage roll.
+ */
+export function getStudyMarkIntensity(target: Character | Enemy): number {
+    const mark = (target.currentActiveEffects as ActiveEffect[])
+        .find(e => e.effectId === MIND_MARK_ID);
+    return mark?.currentIntensity ?? 0;
+}
+
+/**
+ * Returns the total reflect damage that should be dealt back when a combatant
+ * bearing a thorns effect is successfully hit.
+ * Formula: reflectDamage-per-intensity × currentIntensity, summed across all thorns effects.
+ */
+export function getThornsReflect(bearer: Character | Enemy): number {
+    return (bearer.currentActiveEffects as ActiveEffect[]).reduce((total, ae) => {
+        const def = lookupEffect(ae.effectId);
+        const perIntensity = def?.payload.reflectDamage ?? 0;
+        return total + perIntensity * (ae.currentIntensity ?? 1);
+    }, 0);
+}
+
+/**
+ * Removes a random buff from a combatant.
+ * Returns the updated combatant and the removed effect, if any.
+ * Heart/Attack uses this to strip one buff from the enemy.
+ */
+export function removeRandomBuff(target: Character | Enemy): {
+    target: Character | Enemy;
+    removed: ActiveEffect | null;
+} {
+    const buffs = (target.currentActiveEffects as ActiveEffect[])
+        .filter(ae => lookupEffect(ae.effectId)?.type === 'buff');
+
+    if (buffs.length === 0) return { target, removed: null };
+
+    const idx     = Math.floor(Math.random() * buffs.length);
+    const removed = buffs[idx];
+    const updated = (target.currentActiveEffects as ActiveEffect[])
+        .filter(ae => ae !== removed);
+
+    return { target: { ...target, currentActiveEffects: updated }, removed };
+}
+
+/**
+ * Adds duration to a random buff on a combatant, capped at MAX_EFFECT_DURATION.
+ * Heart/Attack uses this to extend one of the player's active buffs.
+ */
+export function extendRandomBuffDuration(
+    target: Character | Enemy,
+    amount: number,
+): {
+    target: Character | Enemy;
+    extended: ActiveEffect | null;
+} {
+    const buffs = (target.currentActiveEffects as ActiveEffect[])
+        .filter(ae => lookupEffect(ae.effectId)?.type === 'buff');
+
+    if (buffs.length === 0) return { target, extended: null };
+
+    const idx      = Math.floor(Math.random() * buffs.length);
+    const original = buffs[idx];
+    const extended: ActiveEffect = {
+        ...original,
+        remainingDuration: Math.min(original.remainingDuration + amount, MAX_EFFECT_DURATION),
+    };
+    const updatedEffects = (target.currentActiveEffects as ActiveEffect[])
+        .map(ae => ae === original ? extended : ae);
+
+    return { target: { ...target, currentActiveEffects: updatedEffects }, extended };
+}
+
+/**
+ * Applies per-round regeneration from any active regen effects on a combatant.
+ * Returns the healed combatant and total HP restored.
+ * Call this at the start of each round before the player makes their choice.
+ */
+export function applyRegen(target: Character | Enemy): {
+    target: Character | Enemy;
+    healed: number;
+} {
+    let healed = 0;
+    let updated = target;
+
+    for (const ae of target.currentActiveEffects as ActiveEffect[]) {
+        const def = lookupEffect(ae.effectId);
+        const perRound = def?.payload.regeneration?.healthPerRound ?? 0;
+        if (perRound <= 0) continue;
+        const amount = perRound * (ae.currentIntensity ?? 1);
+        healed += amount;
+        updated = healCharacter(updated as any, amount) as typeof updated;
+    }
+
+    return { target: updated, healed };
 }
 
 // ============================================================================
