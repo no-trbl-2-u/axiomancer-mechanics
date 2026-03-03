@@ -12,48 +12,7 @@ import { Item } from 'Items';
 import { Skill } from '../Skills/types';
 import { Map } from '../World/types';
 import { ActionType } from '../Combat/types';
-
-/**
- * EnemyStats represents the combat statistics for enemy characters
- * Simplified compared to player stats - enemies don't have base stats, only derived combat stats.
- * @property maxHealth - Maximum health points for the enemy
- * @property maxMana - Maximum mana points for the enemy (used for special abilities)
- * @property physicalSkill - (Guess) Modifier for physical/body-type attacks
- * @property physicalDefense - (Guess) Defense value against physical/body-type attacks
- * @property mentalSkill - (Guess) Modifier for mental/mind-type attacks
- * @property mentalDefense - (Guess) Defense value against mental/mind-type attacks
- * @property emotionalSkill - (Guess) Modifier for emotional/heart-type attacks
- * @property emotionalDefense - (Guess) Defense value against emotional/heart-type attacks
- */
-export interface EnemyBaseStats {
-    body: number;
-    mind: number;
-    heart: number;
-}
-
-export interface EnemyDerivedStats {
-    /* Root Stats */
-    maxHealth: number;
-    maxMana: number;
-
-    /* Body-themed stats */
-    physicalAttack: number;
-    physicalSkill: number;
-    physicalDefense: number;
-
-    /* Mind-themed stats */
-    mentalAttack: number;
-    mentalSkill: number;
-    mentalDefense: number;
-
-    /* Heart-themed stats */
-    emotionalAttack: number;
-    emotionalSkill: number;
-    emotionalDefense: number;
-
-    /* Shared stats */
-    luck: number;
-}
+import { BaseStats, DerivedStats } from '../Character/types';
 
 /**
  * Enemy logic type representing the enemy's decision-making process
@@ -81,9 +40,11 @@ export type EnemyTier1EffectMap = Partial<Record<ActionType, Partial<Record<'att
  * @property name - Display name of the enemy
  * @property level - Enemy level (affects difficulty and rewards)
  * @property health - Current health points
+ * @property maxHealth - Maximum health points (calculated from level and base stats)
  * @property mana - Current mana points
- * @property derivedStats - Combat statistics for this enemy
+ * @property maxMana - Maximum mana points (calculated from level and base stats)
  * @property baseStats - Raw base stats (body/mind/heart) — used for resist rolls
+ * @property derivedStats - Combat statistics, same shape as Character.derivedStats
  * @property mapLocation - Reference to the map where this enemy can be encountered
  * @property enemyTier - Optional difficulty tier: 'normal' (standard), 'elite', or 'boss'
  * @property description - Flavor text or lore description of the enemy
@@ -100,9 +61,11 @@ export interface Enemy {
     enemyTier?: 'simple' | 'normal' | 'elite' | 'boss' | 'unique';
     level: number;
     health: number;
+    maxHealth: number;
     mana: number;
-    derivedStats: EnemyDerivedStats;
-    baseStats: EnemyBaseStats;
+    maxMana: number;
+    baseStats: BaseStats;
+    derivedStats: DerivedStats;
     mapLocation: Pick<Map, 'name'>;
     logic: EnemyLogic;
     tier1Effects?: EnemyTier1EffectMap;

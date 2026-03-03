@@ -27,7 +27,8 @@ import { ActiveEffect } from '../Effects/types';
  * @property mana - Current mana points (used for skills and abilities)
  * @property maxMana - Maximum mana points (calculated from level and base stats)
  * @property baseStats - Core attributes that define the character's capabilities
- * @property derivedStats - Calculated stats used in combat and skill checks
+ * @property derivedStats - Calculated combat stats shared with enemies
+ * @property nonCombatStats - Player-only stats used outside of combat (saves, ability tests)
  */
 export interface Character {
     name: string;
@@ -40,6 +41,7 @@ export interface Character {
     maxMana: number;
     baseStats: BaseStats;
     derivedStats: DerivedStats;
+    nonCombatStats: NonCombatStats;
     inventory: Item[];
     currentActiveEffects: ActiveEffect[] | [];
     // TODO: Implement Equipment types
@@ -51,7 +53,7 @@ export interface Character {
  * Base stats representing the three core attributes
  * These are the fundamental stats that all other stats derive from.
  * @property heart - Emotion, willpower, and charisma (affects emotional skills, mana, and heart-type combat)
- * @property body - Physical strength and constitution (affects physical skills, health, and body-type combat)
+ * @property body - Physical strength and consjtitution (affects physical skills, health, and body-type combat)
  * @property mind - Intelligence, reflexes, and perception (affects mental skills and mind-type combat)
  */
 export interface BaseStats {
@@ -61,16 +63,13 @@ export interface BaseStats {
 }
 
 /**
- * Derived stats calculated from base stats.
- * Each stat type (body/mind/heart) produces five derived values.
+ * Derived combat stats shared between Characters and Enemies.
+ * Each stat type (body/mind/heart) produces three combat values.
  *
  * ATTACK vs SKILL distinction:
  * @property physicalAttack   - Body-type combat roll modifier. Used in attack rolls.
- * @property physicalSkill    - How well the character uses body-based skills.
- *                              Feeds the philosophy bar and skill-usage system.
- * @property physicalDefense  - Defense value against body-type attacks
- * @property physicalSave     - Saving throw for resisting body-type effects
- * @property physicalTest     - General body ability tests (lifting, endurance, etc.)
+ * @property physicalSkill    - How well the entity uses body-based skills in combat.
+ * @property physicalDefense  - Defense value against body-type attacks.
  * (same pattern for mental* and emotional*)
  * @property luck - Average of all three base stats (crits, random events)
  */
@@ -79,23 +78,34 @@ export interface DerivedStats {
     physicalAttack: number;
     physicalSkill: number;
     physicalDefense: number;
-    physicalSave: number;
-    physicalTest: number;
 
     // Mind-derived
     mentalAttack: number;
     mentalSkill: number;
     mentalDefense: number;
-    mentalSave: number;
-    mentalTest: number;
 
     // Heart-derived
     emotionalAttack: number;
     emotionalSkill: number;
     emotionalDefense: number;
-    emotionalSave: number;
-    emotionalTest: number;
 
     // Shared
     luck: number;
+}
+
+/**
+ * Non-combat stats derived from base stats. Character-only — enemies do not have these.
+ * Used for out-of-combat skill checks, saving throws, and ability tests.
+ *
+ * @property physicalSave  - Saving throw for resisting body-type effects
+ * @property physicalTest  - General body ability tests (lifting, endurance, etc.)
+ * (same pattern for mental* and emotional*)
+ */
+export interface NonCombatStats {
+    physicalSave: number;
+    physicalTest: number;
+    mentalSave: number;
+    mentalTest: number;
+    emotionalSave: number;
+    emotionalTest: number;
 }

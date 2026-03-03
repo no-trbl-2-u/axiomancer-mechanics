@@ -1,118 +1,58 @@
-import { BaseStats, DerivedStats, Character } from "./types";
-import { average } from "../Utils";
-import { STAT_MULTIPLIERS, RESOURCE_MULTIPLIERS, EXPERIENCE_PER_LEVEL } from "../Game/game-mechanics.constants";
+import { Character, BaseStats } from "./types";
 import { ActiveEffect } from "Effects/types";
+import { Item } from "Items/types";
 import { Enemy } from "Enemy/types";
 import { ActionType } from "Combat/types";
+import { deriveStats, deriveNonCombatStats, calculateMaxHealth, calculateMaxMana } from "Utils";
+import { EXPERIENCE_PER_LEVEL } from "Game/game-mechanics.constants";
 
-/* Used for creating a new character */
+// ===============================================
+// CHARACTER FACTORY
+// ===============================================
+
 interface CreateCharacterOptions {
     name: string;
     level: number;
     baseStats: BaseStats;
+    inventory?: Item[];
+    currentActiveEffects?: ActiveEffect[];
 }
 
 /**
- * Derives the stats of a character based on their base stats
- * @param baseStats - The base stats of the character
- * @returns The derived stats of the character
+ * Creates a new Character from base inputs, deriving all stats automatically.
+ * @param options - Name, level, base stats, and optional starting inventory/effects
+ * @returns A fully initialised Character
  */
-const deriveStats = ({ body, heart, mind }: BaseStats): DerivedStats => ({
-    /* Body-derived stats */
-    physicalAttack:  body * STAT_MULTIPLIERS.ATTACK,
-    physicalSkill:   body * STAT_MULTIPLIERS.SKILL,
-    physicalDefense: body * STAT_MULTIPLIERS.DEFENSE,
-    physicalSave:    body * STAT_MULTIPLIERS.SAVE,
-    physicalTest:    body * STAT_MULTIPLIERS.TEST,
-
-    /* Mind-derived stats */
-    mentalAttack:  mind * STAT_MULTIPLIERS.ATTACK,
-    mentalSkill:   mind * STAT_MULTIPLIERS.SKILL,
-    mentalDefense: mind * STAT_MULTIPLIERS.DEFENSE,
-    mentalSave:    mind * STAT_MULTIPLIERS.SAVE,
-    mentalTest:    mind * STAT_MULTIPLIERS.TEST,
-
-    /* Heart-derived stats */
-    emotionalAttack:  heart * STAT_MULTIPLIERS.ATTACK,
-    emotionalSkill:   heart * STAT_MULTIPLIERS.SKILL,
-    emotionalDefense: heart * STAT_MULTIPLIERS.DEFENSE,
-    emotionalSave:    heart * STAT_MULTIPLIERS.SAVE,
-    emotionalTest:    heart * STAT_MULTIPLIERS.TEST,
-
-    /* Shared stats */
-    luck: average(body, heart, mind),
-})
-
-/**
- * Determines the maximum health of a character based on their level and health stats
- * @param level - The level of the character
- * @param healthStats - The stats that determine your max health
- * Equation to determine max health: level x (Average of body and heart x 10)
- * @returns The maximum health of the character
- */
-function calculateMaxHealth(level: number, healthStats: Pick<BaseStats, 'body' | 'heart'>): number {
-    const averageHealthStats = (healthStats.body + healthStats.heart) / 2;
-    return level * averageHealthStats * RESOURCE_MULTIPLIERS.HEALTH_PER_STAT;
-}
-
-/**
- * Determines the maximum mana of a character based on their level and mana stats
- * @param level - The level of the character
- * @param manaStats - The stats that determine your max mana
- * Equation to determine max mana: level x (Average of mind and heart x 10)
- * @returns The maximum mana of the character
- */
-function calculateMaxMana(level: number, manaStats: Pick<BaseStats, 'mind' | 'heart'>): number {
-    const averageManaStats = (manaStats.mind + manaStats.heart) / 2;
-    return level * averageManaStats * RESOURCE_MULTIPLIERS.MANA_PER_STAT;
-}
-
-/**
- * Creates a new character based on level, name, and given base stats
- * @param options - The options for creating a new character
- * @returns The new character
- */ // Note: "given stats" are not the same as "starting stats"
 export function createCharacter(options: CreateCharacterOptions): Character {
-    const { name, level, baseStats } = options;
+    const { name, level, baseStats, inventory = [], currentActiveEffects = [] } = options;
 
     const maxHealth = calculateMaxHealth(level, baseStats);
-    const health = maxHealth;
-
     const maxMana = calculateMaxMana(level, baseStats);
-    const mana = maxMana;
-
-    const experience = (level - 1) * EXPERIENCE_PER_LEVEL;
-    const experienceToNextLevel = level * EXPERIENCE_PER_LEVEL;
 
     return {
         name,
         level,
-        experience,
-        experienceToNextLevel,
-        health,
+        experience: (level - 1) * EXPERIENCE_PER_LEVEL,
+        experienceToNextLevel: level * EXPERIENCE_PER_LEVEL,
+        health: maxHealth,
         maxHealth,
-        mana,
+        mana: maxMana,
         maxMana,
         baseStats,
         derivedStats: deriveStats(baseStats),
-        inventory: [],
-        currentActiveEffects: [] as ActiveEffect[]
-    }
+        nonCombatStats: deriveNonCombatStats(baseStats),
+        inventory,
+        currentActiveEffects,
+    };
 }
 
 // ===============================================
-// CHARACTER FUNCTIONS
+// COMBAT HELPERS
 // ===============================================
 
-/**
- * Gets the resistDR of a character
- * @param character - The character to get the resistDR of
- * @returns The resistDR of the character
- */
 export function getTargetsResistStatValue(character: Character, effect: ActiveEffect): number {
     return getResistStatFromResistedBy(character, effect.resistedBy as ActionType);
 }
-
 
 /**
  * Gets the resist stat value of a target when resisting an effect

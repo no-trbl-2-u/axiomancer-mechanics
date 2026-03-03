@@ -13,7 +13,7 @@ import { GameState } from '../Game/types';
  * @returns True if entity is a Character
  */
 export function isCharacter(entity: Character | Enemy): entity is Character {
-    return 'baseStats' in entity;
+    return 'nonCombatStats' in entity;
 }
 
 /**
@@ -22,7 +22,7 @@ export function isCharacter(entity: Character | Enemy): entity is Character {
  * @returns True if entity is an Enemy
  */
 export function isEnemy(entity: Character | Enemy): entity is Enemy {
-    return 'enemyStats' in entity;
+    return 'logic' in entity;
 }
 
 /**

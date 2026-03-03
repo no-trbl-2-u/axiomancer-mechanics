@@ -189,9 +189,9 @@ export function getDefenseStatForType(character: Character | Enemy, type: Action
 export function getSaveStatForType(character: Character | Enemy, type: ActionType): number {
   if (isCharacter(character)) {
     switch (type) {
-      case 'body': return character.derivedStats.physicalSave;
-      case 'mind': return character.derivedStats.mentalSave;
-      case 'heart': return character.derivedStats.emotionalSave;
+      case 'body': return character.nonCombatStats.physicalSave;
+      case 'mind': return character.nonCombatStats.mentalSave;
+      case 'heart': return character.nonCombatStats.emotionalSave;
     }
   }
   return getDefenseStatForType(character, type);
@@ -690,7 +690,7 @@ export function healCharacter(character: Character | Enemy, amount: number): Cha
     return { ...character, health: Math.min(character.maxHealth, character.health + amount) };
   }
   const enemy = character as Enemy;
-  return { ...enemy, health: Math.min(enemy.derivedStats.maxHealth, enemy.health + amount) };
+  return { ...enemy, health: Math.min(enemy.maxHealth, enemy.health + amount) };
 }
 
 /** Returns true if the combatant still has health remaining. */
@@ -707,7 +707,7 @@ export function isDefeated(character: Character | Enemy): boolean {
 export function getHealthPercentage(character: Character | Enemy): number {
   const maxHealth = isCharacter(character)
     ? character.maxHealth
-    : (character as Enemy).derivedStats.maxHealth;
+    : (character as Enemy).maxHealth;
   return (character.health / maxHealth) * 100;
 }
 

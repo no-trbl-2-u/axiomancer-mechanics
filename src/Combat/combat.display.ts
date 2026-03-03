@@ -261,7 +261,7 @@ export function printCombatRules(): void {
 
 export function printStatus(state: CombatState): void {
     const playerPct = Math.max(0, state.player.health) / state.player.maxHealth;
-    const enemyPct  = Math.max(0, state.enemy.health)  / state.enemy.derivedStats.maxHealth;
+    const enemyPct  = Math.max(0, state.enemy.health)  / state.enemy.maxHealth;
     const playerHpColor = playerPct > 0.5 ? C.brightGreen : playerPct > 0.25 ? C.brightYellow : C.brightRed;
     const enemyHpColor  = enemyPct  > 0.5 ? C.brightGreen : enemyPct  > 0.25 ? C.brightYellow : C.brightRed;
 
@@ -273,7 +273,7 @@ export function printStatus(state: CombatState): void {
     console.log(HR_MAJOR);
     console.log(`  Player  ${hpBar(state.player.health, state.player.maxHealth)}  ${playerHpColor}${playerHp}${C.reset} / ${state.player.maxHealth}`);
     printActiveEffects('', state.player.currentActiveEffects as ActiveEffect[]);
-    console.log(`  Enemy   ${hpBar(state.enemy.health, state.enemy.derivedStats.maxHealth)}  ${enemyHpColor}${enemyHp}${C.reset} / ${state.enemy.derivedStats.maxHealth}`);
+    console.log(`  Enemy   ${hpBar(state.enemy.health, state.enemy.maxHealth)}  ${enemyHpColor}${enemyHp}${C.reset} / ${state.enemy.maxHealth}`);
     printActiveEffects('', state.enemy.currentActiveEffects as ActiveEffect[]);
 
     if (state.friendshipCounter > 0) {
@@ -413,7 +413,7 @@ export function printCombatEnd(state: CombatState): void {
     console.log(HR_MAJOR);
     console.log(`  ${C.bold}Final results${C.reset}`);
     console.log(`  Your HP    ${hpBar(state.player.health, state.player.maxHealth)}  ${Math.max(0, state.player.health)} / ${state.player.maxHealth}`);
-    console.log(`  Enemy HP   ${hpBar(state.enemy.health,  state.enemy.derivedStats.maxHealth)}  ${Math.max(0, state.enemy.health)} / ${state.enemy.derivedStats.maxHealth}`);
+    console.log(`  Enemy HP   ${hpBar(state.enemy.health,  state.enemy.maxHealth)}  ${Math.max(0, state.enemy.health)} / ${state.enemy.maxHealth}`);
     console.log(`  Rounds     ${state.round - 1}`);
     console.log(HR_MAJOR);
     console.log('');

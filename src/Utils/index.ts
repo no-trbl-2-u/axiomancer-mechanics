@@ -2,9 +2,9 @@
  * Utility functions used across the application
  */
 
-import { Character } from "Character/types";
 import { Advantage } from "Combat/types";
-import { Enemy } from "Enemy/types";
+import { STAT_MULTIPLIERS, RESOURCE_MULTIPLIERS } from "../Game/game-mechanics.constants";
+import { BaseStats, DerivedStats, NonCombatStats } from "Character/types";
 
 /**
  * Clamps a number between min and max values
@@ -163,4 +163,70 @@ export function formatPercent(value: number, decimals: number = 0): string {
  */
 export function inRange(value: number, min: number, max: number): boolean {
   return value >= min && value <= max;
+}
+
+// ===============================================
+// ENTITY STAT CALCULATIONS
+// ===============================================
+
+/**
+* Derives the combat stats of an entity based on their base stats.
+* Shared between Characters and Enemies.
+* @param baseStats - The base stats of the entity
+* @returns The derived combat stats
+*/
+export const deriveStats = ({ body, heart, mind }: BaseStats): DerivedStats => ({
+  physicalAttack: body * STAT_MULTIPLIERS.ATTACK,
+  physicalSkill: body * STAT_MULTIPLIERS.SKILL,
+  physicalDefense: body * STAT_MULTIPLIERS.DEFENSE,
+
+  mentalAttack: mind * STAT_MULTIPLIERS.ATTACK,
+  mentalSkill: mind * STAT_MULTIPLIERS.SKILL,
+  mentalDefense: mind * STAT_MULTIPLIERS.DEFENSE,
+
+  emotionalAttack: heart * STAT_MULTIPLIERS.ATTACK,
+  emotionalSkill: heart * STAT_MULTIPLIERS.SKILL,
+  emotionalDefense: heart * STAT_MULTIPLIERS.DEFENSE,
+
+  luck: average(body, heart, mind),
+})
+
+/**
+* Derives the non-combat stats of a Character from their base stats.
+* Enemies do not have these — they are only relevant outside of combat
+* (saving throws, ability tests).
+* @param baseStats - The base stats of the character
+* @returns The non-combat stats
+*/
+export const deriveNonCombatStats = ({ body, heart, mind }: BaseStats): NonCombatStats => ({
+  physicalSave: body * STAT_MULTIPLIERS.SAVE,
+  physicalTest: body * STAT_MULTIPLIERS.TEST,
+  mentalSave: mind * STAT_MULTIPLIERS.SAVE,
+  mentalTest: mind * STAT_MULTIPLIERS.TEST,
+  emotionalSave: heart * STAT_MULTIPLIERS.SAVE,
+  emotionalTest: heart * STAT_MULTIPLIERS.TEST,
+})
+
+/**
+* Calculates the maximum health of an entity based on level and base stats.
+* Equation: level × average(body, heart) × HEALTH_PER_STAT
+* @param level - The level of the entity
+* @param healthStats - The stats that contribute to max health (body and heart)
+* @returns The maximum health value
+*/
+export function calculateMaxHealth(level: number, healthStats: Pick<BaseStats, 'body' | 'heart'>): number {
+  const averageHealthStats = (healthStats.body + healthStats.heart) / 2;
+  return level * averageHealthStats * RESOURCE_MULTIPLIERS.HEALTH_PER_STAT;
+}
+
+/**
+* Calculates the maximum mana of an entity based on level and base stats.
+* Equation: level × average(mind, heart) × MANA_PER_STAT
+* @param level - The level of the entity
+* @param manaStats - The stats that contribute to max mana (mind and heart)
+* @returns The maximum mana value
+*/
+export function calculateMaxMana(level: number, manaStats: Pick<BaseStats, 'mind' | 'heart'>): number {
+  const averageManaStats = (manaStats.mind + manaStats.heart) / 2;
+  return level * averageManaStats * RESOURCE_MULTIPLIERS.MANA_PER_STAT;
 }
