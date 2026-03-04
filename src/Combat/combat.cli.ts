@@ -133,7 +133,11 @@ async function resolveAttackVsAttack(
     if (playerTotal > enemyTotal) {
         const baseDefense   = getDefenseStatForType(enemy, enemyType);
         const studyBonus    = playerType === 'mind' ? getStudyMarkIntensity(enemy) : 0;
-        const damageRoll    = playerDieRoll() + pMod;
+        const damageRaw     = playerDieRoll();
+        const damageRoll    = damageRaw + pMod;
+        console.log('\n[ Player Damage Roll ]');
+        printRollLine('Player damage roll:', damageRaw, pBaseStat, playerAdv, pRollMod || undefined);
+        await delay(800);
         const finalDamage   = calculateFinalDamage(damageRoll, baseDefense * PASSIVE_DEFENSE_MULTIPLIER, false, studyBonus);
 
         printDamageCalc({
@@ -173,7 +177,11 @@ async function resolveAttackVsAttack(
     if (enemyTotal > playerTotal) {
         const baseDefense = getBaseStatForType(player, playerType);
         const studyBonus  = enemyType === 'mind' ? getStudyMarkIntensity(player) : 0;
-        const damageRoll  = enemyDieRoll() + eMod;
+        const damageRaw   = enemyDieRoll();
+        const damageRoll  = damageRaw + eMod;
+        console.log('\n[ Enemy Damage Roll ]');
+        printRollLine('Enemy damage roll:', damageRaw, eBaseStat, enemyAdv, eRollMod || undefined);
+        await delay(800);
         const finalDamage = calculateFinalDamage(damageRoll, baseDefense * PASSIVE_DEFENSE_MULTIPLIER, false, studyBonus);
 
         printDamageCalc({
@@ -231,7 +239,11 @@ async function resolvePlayerAttackEnemyDefend(
     const baseDefense      = getDefenseStatForType(enemy, enemyType);
     const defenseMultiplier = DEFENSE_MULTIPLIERS[enemyAdv];
     const studyBonus       = playerType === 'mind' ? getStudyMarkIntensity(enemy) : 0;
-    const damageRoll       = playerDieRoll() + attackMod;
+    const damageRaw        = playerDieRoll();
+    const damageRoll       = damageRaw + attackMod;
+    console.log('\n[ Player Damage Roll ]');
+    printRollLine('Player damage roll:', damageRaw, pBaseStat, playerAdv, pRollMod || undefined);
+    await delay(800);
     const finalDamage      = calculateFinalDamage(damageRoll, baseDefense * defenseMultiplier, false, studyBonus);
 
     printDamageCalc({
@@ -289,7 +301,11 @@ async function resolvePlayerDefendEnemyAttack(
     const baseDefense       = getBaseStatForType(player, playerType);
     const defenseMultiplier = DEFENSE_MULTIPLIERS[playerAdv];
     const studyBonus        = enemyType === 'mind' ? getStudyMarkIntensity(player) : 0;
-    const damageRoll        = enemyDieRoll() + attackMod;
+    const damageRaw         = enemyDieRoll();
+    const damageRoll        = damageRaw + attackMod;
+    console.log('\n[ Enemy Damage Roll ]');
+    printRollLine('Enemy damage roll:', damageRaw, eBaseStat, enemyAdv, eRollMod || undefined);
+    await delay(800);
     const finalDamage       = calculateFinalDamage(damageRoll, baseDefense * defenseMultiplier, false, studyBonus);
 
     printDamageCalc({

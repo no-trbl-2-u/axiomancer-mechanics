@@ -335,9 +335,10 @@ function signedTerm(value: number, label: string): string {
 // ─── Roll Display ─────────────────────────────────────────────────────────────
 
 export function printRollLine(label: string, rawRoll: number, modifier: number, advantage: Advantage, rollMod?: number): void {
-    const diceDesc   = advantage === 'neutral' ? '1d20' : `2d20 ${advantage}`;
-    const total      = rawRoll + modifier + (rollMod ?? 0);
-    const rollModStr = rollMod ? `  ${signedTerm(rollMod, 'roll')}` : '';
+    const diceDesc     = advantage === 'neutral' ? '1d20' : `2d20 ${advantage}`;
+    const total        = rawRoll + modifier + (rollMod ?? 0);
+    const rollModColor = rollMod && rollMod < 0 ? C.brightRed : C.brightGreen;
+    const rollModStr   = rollMod ? `  ${rollModColor}${signedTerm(rollMod, 'roll')}${C.reset}` : '';
     console.log(`  ${label.padEnd(24)} ${C.bold}${total}${C.reset}  (${rawRoll} [${diceDesc}]  ${signedTerm(modifier, 'stat')}${rollModStr})`);
 }
 
