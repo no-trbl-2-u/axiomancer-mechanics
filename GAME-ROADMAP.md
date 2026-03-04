@@ -19,7 +19,7 @@ Each phase builds on the one before it. `[x]` = done; `[ ]` = pending.
 - [x] Tier 1 effect map (`TIER1_EFFECT_MAP`) and `applyTier1CombatEffect` / `applyTier1CombatEffectWithResult`
 - [x] `clearTier1EffectsForType` — removes stale Tier 1 self-buffs on action-type switch
 - [x] `getTargetsResistStatValue` — looks up target's resist stat for Tier 2/3 rolls
-- [ ] `removeEffect(activeEffects, effectId)` — filter by ID (cleanses, dispels)
+- [ ] `removeEffect(activeEffects, effectId)` — filter by ID (cleanses, dispels, changing actionType)
 - [ ] `getActiveEffectModifiers(activeEffects)` — aggregate stat mods, roll mods, defense mods, advantage grants into one object
 - [ ] `canAct(activeEffects)` — read `skipTurn`, `blockedActionTypes`, `forcedActionType`; return combined restrictions
 - [ ] `processDamageOverTime(activeEffects)` — sum DoT, return total damage + messages
