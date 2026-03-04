@@ -17,8 +17,7 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
-/testing-logs/
-/automation/COMBAT_LOGS.txt
+/automation/testing-logs/*.txt
 
 # Environment
 .env

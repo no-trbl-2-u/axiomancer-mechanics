@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Automates `npm run combat` in the Axiomancer-mechanics project.
-Picks a random option for each prompt and logs all output to COMBAT_LOGS.txt.
+Picks a random option for each prompt and logs all output to a timestamped file.
 
 Usage:
     python3 run_combat.py <runs> [reaction] [action]
@@ -24,6 +24,7 @@ By alternating which pattern we wait for, inquirer's mid-input re-renders
 """
 
 import io
+import os
 import random
 import re
 import sys
@@ -33,7 +34,6 @@ from pathlib import Path
 import pexpect
 
 COMBAT_DIR = "/home/pn143/Workspace/axiomancer-mechanics"
-LOG_FILE = Path(__file__).parent / "COMBAT_LOGS.txt"
 
 """ First Choice Constants """
 HEART = 1
@@ -88,12 +88,14 @@ def run_one_combat(run_index: int, total: int, q1_choice: int | None, q2_choice:
 
     print(f"  [{run_index}/{total}] Starting at {timestamp} …", flush=True)
 
+    env = {**os.environ, "COMBAT_NO_DELAY": "1"}
     child = pexpect.spawn(
         "npm run combat",
         cwd=COMBAT_DIR,
         encoding="utf-8",
         timeout=60,
         dimensions=(120, 50),
+        env=env,
     )
     child.logfile_read = raw_log
 
@@ -175,13 +177,20 @@ def main() -> None:
     reaction_label = Q1_NAMES[q1_choice] if q1_choice is not None else "Random"
     action_label   = Q2_NAMES[q2_choice] if q2_choice is not None else "Random"
 
-    session_start = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    print(f"Running {total} combat session(s) — Reaction: {reaction_label}, Action: {action_label}. Log → {LOG_FILE}")
+    """ Saves to /automation/combat-logs/{log-file} """
+    session_start = datetime.now()
+    log_file = (
+        Path(__file__).parent / "testing-logs"
+        # Path(__file__).parent
+        / f"{reaction_label}_{action_label}_{session_start.strftime('%Y-%m-%d_%H-%M')}.txt"
+    )
 
-    with open(LOG_FILE, "w", encoding="utf-8") as fh:
+    print(f"Running {total} combat session(s) — Reaction: {reaction_label}, Action: {action_label}. Log → {log_file}")
+
+    with open(log_file, "w", encoding="utf-8") as fh:
         fh.write(f"{'#' * 54}\n")
         fh.write(f"  COMBAT SESSION LOG\n")
-        fh.write(f"  Started  : {session_start}\n")
+        fh.write(f"  Started  : {session_start.strftime('%Y-%m-%d %H:%M:%S')}\n")
         fh.write(f"  Runs     : {total}\n")
         fh.write(f"  Reaction : {reaction_label}\n")
         fh.write(f"  Action   : {action_label}\n")
@@ -194,7 +203,7 @@ def main() -> None:
 
     session_end = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     print(f"\nAll {total} run(s) complete. Finished at {session_end}")
-    print(f"Log saved to: {LOG_FILE}")
+    print(f"Log saved to: {log_file}")
 
 
 if __name__ == "__main__":

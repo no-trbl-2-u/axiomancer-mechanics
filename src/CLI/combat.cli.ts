@@ -54,7 +54,12 @@ import {
     printHeartAttackSpecials,
 } from './combat.display';
 
-const delay = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
+const skipDelays = process.env.COMBAT_NO_DELAY === '1';
+
+async function delay(ms: number): Promise<void> {
+    if (skipDelays) return;
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 // ─── Player Input ─────────────────────────────────────────────────────────────
 
