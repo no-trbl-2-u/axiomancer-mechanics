@@ -109,6 +109,10 @@ function formatEffectModifiers(effect: Effect): string {
     if (roll !== undefined && roll !== 0) {
         parts.push(`${roll >= 0 ? '+' : ''}${roll} roll`);
     }
+    const rollPerInt = effect.payload.rollModifierPerIntensity;
+    if (rollPerInt !== undefined && rollPerInt !== 0) {
+        parts.push(`${rollPerInt >= 0 ? '+' : ''}${rollPerInt} roll/intensity`);
+    }
     const def = effect.payload.defenseModifier;
     if (def !== undefined && def !== 0) {
         parts.push(`${def >= 0 ? '+' : ''}${def} def`);
@@ -322,10 +326,11 @@ export function printTypeMatchup(
 
 // ─── Roll Display ─────────────────────────────────────────────────────────────
 
-export function printRollLine(label: string, rawRoll: number, modifier: number, advantage: Advantage): void {
-    const diceDesc = advantage === 'neutral' ? '1d20' : `2d20 ${advantage}`;
-    const total    = rawRoll + modifier;
-    console.log(`  ${label.padEnd(24)} ${C.bold}${total}${C.reset}  (${rawRoll} [${diceDesc}] + ${modifier} stat)`);
+export function printRollLine(label: string, rawRoll: number, modifier: number, advantage: Advantage, rollMod?: number): void {
+    const diceDesc   = advantage === 'neutral' ? '1d20' : `2d20 ${advantage}`;
+    const total      = rawRoll + modifier + (rollMod ?? 0);
+    const rollModStr = rollMod ? ` + ${rollMod} roll` : '';
+    console.log(`  ${label.padEnd(24)} ${C.bold}${total}${C.reset}  (${rawRoll} [${diceDesc}] + ${modifier} stat${rollModStr})`);
 }
 
 // ─── Attack Contest ───────────────────────────────────────────────────────────
@@ -333,10 +338,12 @@ export function printRollLine(label: string, rawRoll: number, modifier: number, 
 export function printContestHeader(
     playerRaw: number, playerMod: number, playerAdv: Advantage,
     enemyRaw: number,  enemyMod: number,  enemyAdv: Advantage,
+    playerRollMod?: number,
+    enemyRollMod?: number,
 ): void {
     console.log(sectionHeader('Attack Contest'));
-    printRollLine('You attack:',   playerRaw, playerMod, playerAdv);
-    printRollLine('Enemy attacks:', enemyRaw,  enemyMod,  enemyAdv);
+    printRollLine('You attack:',    playerRaw, playerMod, playerAdv, playerRollMod);
+    printRollLine('Enemy attacks:', enemyRaw,  enemyMod,  enemyAdv,  enemyRollMod);
 }
 
 export function printContestOutcome(playerTotal: number, enemyTotal: number): void {

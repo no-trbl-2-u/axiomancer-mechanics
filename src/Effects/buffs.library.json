@@ -13,7 +13,7 @@
         "statModifiers": [
           { "stat": "physicalAttack", "value": 1, "isMultiplier": false }
         ],
-        "rollModifier": 1
+        "rollModifierPerIntensity": 1
       }
     },
     {

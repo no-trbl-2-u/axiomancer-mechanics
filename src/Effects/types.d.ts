@@ -130,7 +130,8 @@ export interface AdvantageModifier {
  * @property regeneration - Health/mana restoration each round
  * @property actionRestriction - Limits on what actions can be taken
  * @property advantageModifier - Changes to combat advantage
- * @property rollModifier - Flat bonus/penalty to dice rolls
+ * @property rollModifier - Flat bonus/penalty to dice rolls (does NOT scale with intensity)
+ * @property rollModifierPerIntensity - Roll bonus/penalty multiplied by current intensity
  * @property defenseModifier - Flat bonus/penalty to defense values
  * @property reflectDamage - Damage per intensity dealt back to the attacker
  *   when the bearer of this effect is successfully hit (thorns mechanic).
@@ -142,6 +143,7 @@ export interface EffectPayload {
   actionRestriction?: ActionRestriction;
   advantageModifier?: AdvantageModifier;
   rollModifier?: number;
+  rollModifierPerIntensity?: number;
   defenseModifier?: number;
   reflectDamage?: number;
 }

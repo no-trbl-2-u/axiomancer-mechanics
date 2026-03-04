@@ -252,7 +252,7 @@ export function calculateFinalDamage(
   damageBonus = 0,
 ): number {
   const damage = isCritical ? applyCriticalMultiplier(baseDamage) : baseDamage;
-  return Math.max(0, damage + damageBonus - damageReduction);
+  return Math.ceil(Math.max(0, damage + damageBonus - damageReduction));
 }
 
 // ============================================================================
@@ -570,6 +570,20 @@ export function getStudyMarkIntensity(target: Character | Enemy): number {
     const mark = (target.currentActiveEffects as ActiveEffect[])
         .find(e => e.effectId === MIND_MARK_ID);
     return mark?.currentIntensity ?? 0;
+}
+
+/**
+ * Returns the total flat roll modifier from all active effects on a combatant.
+ * Sums both flat `rollModifier` values (not scaled) and `rollModifierPerIntensity`
+ * values (multiplied by current intensity), then adds them together.
+ */
+export function getActiveRollModifier(target: Character | Enemy): number {
+    return (target.currentActiveEffects as ActiveEffect[]).reduce((total, ae) => {
+        const def = lookupEffect(ae.effectId);
+        const flat         = def?.payload.rollModifier ?? 0;
+        const perIntensity = (def?.payload.rollModifierPerIntensity ?? 0) * (ae.currentIntensity ?? 1);
+        return total + flat + perIntensity;
+    }, 0);
 }
 
 /**

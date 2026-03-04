@@ -13,6 +13,7 @@ import {
     getAttackStatForType,
     getBaseStatForType,
     getDefenseStatForType,
+    getActiveRollModifier,
     calculateFinalDamage,
     applyDamage,
     tickAllEffects,
@@ -95,12 +96,6 @@ async function promptPlayerChoice(): Promise<{
 //   Heart/attack  → –5 to the attack roll modifier; on hit: strip enemy buff, extend player buff
 //   Thorns        → after ANY hit on a combatant with Briar Stance, reflect intensity dmg back
 
-/** Returns the attack modifier for a player action, including Heart/Attack –5 penalty. */
-function playerAttackMod(player: Character, type: ActionType, action: 'attack' | 'defend'): number {
-    const base = getAttackStatForType(player, type);
-    return type === 'heart' && action === 'attack' ? base - 5 : base;
-}
-
 async function resolveAttackVsAttack(
     player: Character,
     enemy: Enemy,
@@ -113,15 +108,24 @@ async function resolveAttackVsAttack(
     const playerDieRoll = createDieRoll(playerAdv);
     const enemyDieRoll  = createDieRoll(enemyAdv);
 
-    const pMod      = playerAttackMod(player, playerType, playerAction);
+    const pRollMod  = getActiveRollModifier(player);
+    const pBaseStat = getAttackStatForType(player, playerType);
+    const pMod      = pBaseStat + pRollMod;
     const playerRaw = playerDieRoll();
     const playerTotal = playerRaw + pMod;
 
-    const eMod     = getAttackStatForType(enemy, enemyType);
-    const enemyRaw = enemyDieRoll();
+    const eRollMod  = getActiveRollModifier(enemy);
+    const eBaseStat = getAttackStatForType(enemy, enemyType);
+    const eMod      = eBaseStat + eRollMod;
+    const enemyRaw  = enemyDieRoll();
     const enemyTotal = enemyRaw + eMod;
 
-    printContestHeader(playerRaw, pMod, playerAdv, enemyRaw, eMod, enemyAdv);
+    printContestHeader(
+        playerRaw, pBaseStat, playerAdv,
+        enemyRaw,  eBaseStat, enemyAdv,
+        pRollMod || undefined,
+        eRollMod || undefined,
+    );
     await delay(1500);
     printContestOutcome(playerTotal, enemyTotal);
     await delay(1500);
@@ -212,12 +216,14 @@ async function resolvePlayerAttackEnemyDefend(
     enemyAdv: Advantage,
     playerAction: 'attack' | 'defend',
 ): Promise<{ player: Character; enemy: Enemy }> {
-    const playerDieRoll   = createDieRoll(playerAdv);
-    const attackMod       = playerAttackMod(player, playerType, playerAction);
-    const playerRaw       = playerDieRoll();
+    const playerDieRoll = createDieRoll(playerAdv);
+    const pRollMod      = getActiveRollModifier(player);
+    const pBaseStat     = getAttackStatForType(player, playerType);
+    const attackMod     = pBaseStat + pRollMod;
+    const playerRaw     = playerDieRoll();
 
     console.log('\n[ Player Attack Roll ]');
-    printRollLine('Player attack roll:', playerRaw, attackMod, playerAdv);
+    printRollLine('Player attack roll:', playerRaw, pBaseStat, playerAdv, pRollMod || undefined);
     await delay(1500);
 
     const baseDefense      = getDefenseStatForType(enemy, enemyType);
@@ -268,11 +274,13 @@ async function resolvePlayerDefendEnemyAttack(
     enemyAdv: Advantage,
 ): Promise<{ player: Character; enemy: Enemy }> {
     const enemyDieRoll = createDieRoll(enemyAdv);
-    const attackMod    = getAttackStatForType(enemy, enemyType);
+    const eRollMod     = getActiveRollModifier(enemy);
+    const eBaseStat    = getAttackStatForType(enemy, enemyType);
+    const attackMod    = eBaseStat + eRollMod;
     const enemyRaw     = enemyDieRoll();
 
     console.log('\n[ Enemy Attack Roll ]');
-    printRollLine('Enemy attack roll:', enemyRaw, attackMod, enemyAdv);
+    printRollLine('Enemy attack roll:', enemyRaw, eBaseStat, enemyAdv, eRollMod || undefined);
     await delay(1500);
 
     const baseDefense       = getBaseStatForType(player, playerType);
