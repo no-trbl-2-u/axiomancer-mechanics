@@ -11,7 +11,7 @@
 import { Item } from 'Items';
 import { Skill } from '../Skills/types';
 import { Map } from '../World/types';
-import { ActionType } from '../Combat/types';
+import { Stance } from '../Combat/types';
 import { BaseStats, DerivedStats } from '../Character/types';
 
 /**
@@ -32,7 +32,7 @@ export type EnemyLogic = 'random' | 'aggressive' | 'defensive' | 'balanced';
  * Eventually each unique enemy will have thematic effects (debate, rhetoric,
  * philosophy) instead of the generic player stances.
  */
-export type EnemyTier1EffectMap = Partial<Record<ActionType, Partial<Record<'attack' | 'defend', string>>>>;
+export type EnemyTier1EffectMap = Partial<Record<Stance, Partial<Record<'attack' | 'defend', string>>>>;
 
 /**
  * Enemy represents an adversary that can be encountered in combat

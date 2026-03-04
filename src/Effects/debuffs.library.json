@@ -387,7 +387,7 @@
       "resistDR": 14,
       "payload": {
         "actionRestriction": {
-          "forcedActionType": "heart"
+          "forcedStance": "heart"
         },
         "statModifiers": [
           {
@@ -459,7 +459,7 @@
       "resistDR": 13,
       "payload": {
         "actionRestriction": {
-          "blockedActionTypes": [
+          "blockedStances": [
             "heart"
           ]
         },

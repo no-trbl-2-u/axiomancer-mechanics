@@ -13,7 +13,7 @@ Effects are temporary modifiers applied to combatants during battle. Each effect
 ## Resistance System
 
 Each effect carries:
-- `resistedBy: ActionType` — which stat (`heart`, `body`, `mind`) the target uses to resist
+- `resistedBy: Stance` — which stat (`heart`, `body`, `mind`) the target uses to resist
 - `resistDR: number` — base difficulty of the resist roll
 
 **RPS Rule:** Body effects are resisted by Mind. Mind effects by Heart. Heart effects by Body.
@@ -80,8 +80,8 @@ Roll  = d20 + target.derivedStats[resistedBy defense]
     "reflectDamage": 2,          // damage per intensity reflected back to attacker on any hit (thorns)
     "actionRestriction": {
       "skipTurn": false,
-      "blockedActionTypes": [],
-      "forcedActionType": null
+      "blockedStances": [],
+      "forcedStance": null
     },
     "advantageModifier": {
       "grantAdvantage": [],
@@ -123,7 +123,7 @@ Switching action types removes the previous type's self-buff immediately.
   currentIntensity: number;   // stack level for intensity-stacking effects
   appliedAtRound: number;     // combat round it was applied
   teir: 'Teir 1' | 'Teir 2' | 'Teir 3';
-  resistedBy?: ActionType;    // copied from Effect for quick lookup
+  resistedBy?: Stance;    // copied from Effect for quick lookup
   resistDR?: number;          // copied from Effect for quick lookup
   sourceId?: string;          // who applied it (optional, for attribution)
 }

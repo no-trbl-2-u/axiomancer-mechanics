@@ -16,13 +16,13 @@ import { Enemy } from '@Enemy/types';
 
 
 /**
- * Combat type representing the three approaches to conflict
+ * The three combat stances a combatant can adopt each round.
  * Follows rock-paper-scissors mechanics: Heart > Body > Mind > Heart (cyclic advantage)
  * - 'heart': Emotional options (strong against body)
  * - 'body': Physical options (strong against mind)
  * - 'mind': Mental options (strong against heart)
  */
-export type ActionType = 'heart' | 'body' | 'mind';
+export type Stance = 'heart' | 'body' | 'mind';
 
 /**
  * Combat action type determining the tactical approach
@@ -53,13 +53,13 @@ export type CritStyle = 'double' | 'pierce';
 
 /**
  * Player's combat decision for a single round
- * Combines attack type and action to form a complete combat choice.
- * @property type - The attack type (heart/body/mind) chosen for this round
+ * Combines stance and action to form a complete combat choice.
+ * @property type - The stance (heart/body/mind) chosen for this round
  * @property action - The action (attack/defend) chosen for this round
  * @property skill - The skill chosen for this round
  */
 export interface CombatAction {
-    type: ActionType;
+    type: Stance;
     action: Action;
     skill?: string | 'back'; // TODO: Create type for skill, then create an ENUM of skills
 }

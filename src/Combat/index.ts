@@ -14,7 +14,7 @@ import { FRIENDSHIP_COUNTER_MAX, MAX_EFFECT_DURATION } from '../Game/game-mechan
 import { lookupEffect } from '../Effects/effects.library';
 
 import {
-  ActionType,
+  Stance,
   Action,
   Advantage,
   CombatAction,
@@ -76,7 +76,7 @@ export function determineCombatEnd(state: CombatState): 'player' | 'ko' | 'frien
  * Determines the advantage relationship between two attack types.
  * Heart > Body > Mind > Heart (cyclic)
  */
-export function determineAdvantage(attackerType: ActionType, defenderType: ActionType): Advantage {
+export function determineAdvantage(attackerType: Stance, defenderType: Stance): Advantage {
   if (attackerType === defenderType) return 'neutral';
   if (attackerType === 'heart' && defenderType === 'body') return 'advantage';
   if (attackerType === 'body' && defenderType === 'mind') return 'advantage';
@@ -100,7 +100,7 @@ export function getAdvantageModifier(advantage: Advantage): number {
 /**
  * Returns true if the attacker has type advantage over the defender.
  */
-export function hasAdvantage(attackerType: ActionType, defenderType: ActionType): boolean {
+export function hasAdvantage(attackerType: Stance, defenderType: Stance): boolean {
   return determineAdvantage(attackerType, defenderType) === 'advantage';
 }
 
@@ -109,7 +109,7 @@ export function hasAdvantage(attackerType: ActionType, defenderType: ActionType)
 // ============================================================================
 
 /** Generates the enemy's attack type choice using AI logic. */
-export function generateEnemyAttackType(_state: CombatState, enemy: Enemy): ActionType {
+export function generateEnemyAttackType(_state: CombatState, enemy: Enemy): Stance {
   return determineEnemyAction(enemy.logic).type;
 }
 
@@ -136,7 +136,7 @@ export function isValidCombatAction(action: Partial<CombatAction>): action is Co
  * Character → baseStats.heart / .body / .mind
  * Enemy     → attack stat (serves as the base for AI combatants)
  */
-export function getBaseStatForType(character: Character | Enemy, type: ActionType): number {
+export function getBaseStatForType(character: Character | Enemy, type: Stance): number {
   if (isCharacter(character)) {
     return character.baseStats[type];
   }
@@ -151,7 +151,7 @@ export function getBaseStatForType(character: Character | Enemy, type: ActionTyp
  * Note: physicalSkill / mentalSkill / emotionalSkill are SEPARATE — those feed
  * the philosophy bar and skill-usage system, not combat rolls.
  */
-export function getAttackStatForType(character: Character | Enemy, type: ActionType): number {
+export function getAttackStatForType(character: Character | Enemy, type: Stance): number {
   if (isCharacter(character)) {
     switch (type) {
       case 'body':  return character.derivedStats.physicalAttack;
@@ -171,7 +171,7 @@ export function getAttackStatForType(character: Character | Enemy, type: ActionT
  * Use getBaseStatForType for the player if you want the old 1× behavior while
  * tuning multipliers.
  */
-export function getDefenseStatForType(character: Character | Enemy, type: ActionType): number {
+export function getDefenseStatForType(character: Character | Enemy, type: Stance): number {
   if (isCharacter(character)) {
     switch (type) {
       case 'body': return character.derivedStats.physicalDefense;
@@ -186,7 +186,7 @@ export function getDefenseStatForType(character: Character | Enemy, type: Action
  * Returns the saving throw stat for a given action type.
  * Used when resisting effects (Phase 1 effects engine).
  */
-export function getSaveStatForType(character: Character | Enemy, type: ActionType): number {
+export function getSaveStatForType(character: Character | Enemy, type: Stance): number {
   if (isCharacter(character)) {
     switch (type) {
       case 'body': return character.nonCombatStats.physicalSave;
@@ -265,7 +265,7 @@ export function calculateFinalDamage(
  */
 export function performAttackRoll(
   attacker: Character | Enemy,
-  attackType: ActionType,
+  attackType: Stance,
   advantage: Advantage,
 ): { total: number; roll: number; modifier: number; details: string } {
   return 'Implement me' as any;
@@ -277,7 +277,7 @@ export function performAttackRoll(
  */
 export function performDefenseRoll(
   defender: Character | Enemy,
-  attackType: ActionType,
+  attackType: Stance,
   isDefending: boolean,
 ): { total: number; roll: number; modifier: number; details: string } {
   return 'Implement me' as any;
@@ -294,7 +294,7 @@ export function isAttackSuccessful(attackRoll: number, defenseRoll: number): boo
  */
 export function calculateBaseDamage(
   attacker: Character | Enemy,
-  attackType: ActionType,
+  attackType: Stance,
   advantage: Advantage,
 ): number {
   return 'Implement me' as any;
@@ -306,7 +306,7 @@ export function calculateBaseDamage(
  */
 export function calculateDamageReduction(
   defender: Character | Enemy,
-  attackType: ActionType,
+  attackType: Stance,
   isDefending: boolean,
 ): number {
   return 'Implement me' as any;
@@ -319,7 +319,7 @@ export function calculateDamageReduction(
 export function calculateAttackDamage(
   attacker: Character | Enemy,
   defender: Character | Enemy,
-  attackType: ActionType,
+  attackType: Stance,
   advantage: Advantage,
   isDefending: boolean,
 ): {

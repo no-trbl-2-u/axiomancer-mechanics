@@ -24,7 +24,7 @@ import {
     applyRegen,
 } from '../Combat/index';
 import { createDieRoll } from '../Utils';
-import { ActionType, Advantage, CombatState } from '../Combat/types';
+import { Stance, Advantage, CombatState } from '../Combat/types';
 import { createGameStore } from '../Game/store';
 import { nullAdapter } from '../Game/persistence/null.adapter';
 import {
@@ -59,8 +59,8 @@ const delay = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, m
 // ─── Player Input ─────────────────────────────────────────────────────────────
 
 async function promptPlayerChoice(): Promise<{
-    reactionType: ActionType;
-    actionType: 'attack' | 'defend';
+    reactionType: Stance;
+    action: 'attack' | 'defend';
 }> {
     return inquirer.prompt([
         {
@@ -75,7 +75,7 @@ async function promptPlayerChoice(): Promise<{
         },
         {
             type: 'rawlist',
-            name: 'actionType',
+            name: 'action',
             message: 'Action...',
             choices: ['attack', 'defend'],
         },
@@ -99,8 +99,8 @@ async function promptPlayerChoice(): Promise<{
 async function resolveAttackVsAttack(
     player: Character,
     enemy: Enemy,
-    playerType: ActionType,
-    enemyType: ActionType,
+    playerType: Stance,
+    enemyType: Stance,
     playerAdv: Advantage,
     enemyAdv: Advantage,
     playerAction: 'attack' | 'defend',
@@ -220,8 +220,8 @@ async function resolveAttackVsAttack(
 async function resolvePlayerAttackEnemyDefend(
     player: Character,
     enemy: Enemy,
-    playerType: ActionType,
-    enemyType: ActionType,
+    playerType: Stance,
+    enemyType: Stance,
     playerAdv: Advantage,
     enemyAdv: Advantage,
     playerAction: 'attack' | 'defend',
@@ -283,8 +283,8 @@ async function resolvePlayerAttackEnemyDefend(
 async function resolvePlayerDefendEnemyAttack(
     player: Character,
     enemy: Enemy,
-    playerType: ActionType,
-    enemyType: ActionType,
+    playerType: Stance,
+    enemyType: Stance,
     playerAdv: Advantage,
     enemyAdv: Advantage,
 ): Promise<{ player: Character; enemy: Enemy }> {
@@ -355,12 +355,12 @@ async function runCombatTurn(state: CombatState): Promise<CombatState> {
 
     printStatus({ ...state, player, enemy });
 
-    const { reactionType, actionType } = await promptPlayerChoice();
+    const { reactionType, action } = await promptPlayerChoice();
     const enemyAction   = determineEnemyAction(state.enemy.logic);
     const playerAdvantage = determineAdvantage(reactionType, enemyAction.type);
     const enemyAdvantage  = determineAdvantage(enemyAction.type, reactionType);
 
-    printRoundActions(actionType, reactionType, enemyAction.action, enemyAction.type);
+    printRoundActions(action, reactionType, enemyAction.action, enemyAction.type);
     printTypeMatchup(reactionType, enemyAction.type, playerAdvantage, enemyAdvantage);
     await delay(1500);
 
@@ -380,7 +380,7 @@ async function runCombatTurn(state: CombatState): Promise<CombatState> {
     const playerTier1 = applyTier1CombatEffectWithResult(
         player.currentActiveEffects,
         enemy.currentActiveEffects,
-        { type: reactionType, action: actionType },
+        { type: reactionType, action },
         state.round,
     );
     player = { ...player, currentActiveEffects: playerTier1.actorEffects };
@@ -408,15 +408,15 @@ async function runCombatTurn(state: CombatState): Promise<CombatState> {
     await delay(1000);
 
     // ── Resolve combat ───────────────────────────────────────────────────────
-    if (actionType === 'attack' && enemyAction.action === 'attack') {
+    if (action === 'attack' && enemyAction.action === 'attack') {
         ({ player, enemy } = await resolveAttackVsAttack(
-            player, enemy, reactionType, enemyAction.type, playerAdvantage, enemyAdvantage, actionType,
+            player, enemy, reactionType, enemyAction.type, playerAdvantage, enemyAdvantage, action,
         ));
-    } else if (actionType === 'attack' && enemyAction.action === 'defend') {
+    } else if (action === 'attack' && enemyAction.action === 'defend') {
         ({ player, enemy } = await resolvePlayerAttackEnemyDefend(
-            player, enemy, reactionType, enemyAction.type, playerAdvantage, enemyAdvantage, actionType,
+            player, enemy, reactionType, enemyAction.type, playerAdvantage, enemyAdvantage, action,
         ));
-    } else if (actionType === 'defend' && enemyAction.action === 'attack') {
+    } else if (action === 'defend' && enemyAction.action === 'attack') {
         ({ player, enemy } = await resolvePlayerDefendEnemyAttack(
             player, enemy, reactionType, enemyAction.type, playerAdvantage, enemyAdvantage,
         ));

@@ -38,8 +38,8 @@ Heart > Body > Mind > Heart (cyclic)
 
 ## Damage Calculation (Basic Attack)
 ```
-base_damage = dice_roll (with or without advantage) + ActionType stat
-damage_reduction = ActionType stat + (defending ? bonus : 0)
+base_damage = dice_roll (with or without advantage) + Stance stat
+damage_reduction = Stance stat + (defending ? bonus : 0)
 final_damage = max(0, base_damage - damage_reduction) + (effect_bonuses + equipment_bonuses)
 ```
 

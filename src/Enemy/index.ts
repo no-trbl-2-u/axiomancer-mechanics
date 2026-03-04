@@ -2,7 +2,7 @@
 // Enemy Module
 // ================================
 
-import { ActionType } from "Combat/types";
+import { Stance } from "Combat/types";
 import { Item } from "Items/types";
 import { Skill } from "Skills/types";
 import { Map } from "World/types";
@@ -76,7 +76,7 @@ export function createEnemy(options: CreateEnemyOptions): Enemy {
  * @param isDefending - Whether the enemy is defending
  * @returns 
  */
-export const getEnemyRelatedStat = (enemy: Enemy, base: ActionType, isDefending: boolean) => {
+export const getEnemyRelatedStat = (enemy: Enemy, base: Stance, isDefending: boolean) => {
   if (!isDefending) {
     switch (base) {
       case 'body':

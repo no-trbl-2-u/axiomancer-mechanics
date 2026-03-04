@@ -1,0 +1,1221 @@
+######################################################
+  COMBAT SESSION LOG
+  Started  : 2026-03-03 22:45:27
+  Runs     : 5
+  Reaction : Body
+  Action   : Defend
+######################################################
+
+======================================================
+  Run 1/5  —  2026-03-03 22:45:27
+======================================================
+
+
+> axiomancer-mechanics@1.0.0 combat
+> ts-node src/Combat/combat.cli.ts
+
+
+══════════════════════════════════════════════════
+  AXIOMANCER  —  Combat Simulator
+  Player (Lv.1)  vs  Disatree (Lv.1)
+══════════════════════════════════════════════════
+
+Rules
+  HEART > BODY > MIND > HEART  (type advantage cycle)
+  Advantage → roll 2d20 keep HIGHER  |  Disadvantage → roll 2d20 keep LOWER
+  Defending multipliers  →  advantage: ×3  |  neutral: ×2  |  disadvantage: ×1.5
+  Damage = roll − ( defense × multiplier )  (min 0)
+
+
+══════════════════════════════════════════════════
+  Round 1
+══════════════════════════════════════════════════
+  Player  ████████████████████  35 / 35
+  Enemy   ████████████████████  10 / 10
+
+? Respond with...
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)? Respond with... 2
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)✔ Respond with... Body   (physical)
+? Action...
+  1) attack
+  2) defend? Action... 2
+  1) attack
+  2) defend✔ Action... defend
+──────────────────────────────────────────────────
+  You    DEFEND with BODY
+  Enemy  ATTACK with MIND
+
+┌─ Type Matchup ──────────────────────────────────
+  You     ADVANTAGE   (+)  — body > mind
+  Enemy   DISADVANTAGE (-)  — mind < body
+
+┌─ Stance Effects ────────────────────────────────
+  ⚡ You:    Briar Stance  → You  — Briar Stance applied.  [1 reflect/intensity]
+
+[ Enemy Attack Roll ]
+  Enemy attack roll:       12  (11 [2d20 disadvantage] + 1 stat)
+
+┌─ Enemy Damage vs Defending Player ──────────────
+  You defends with body base. ( 4 − ( 3 × 3 ) ) = 0 Damage
+  HP  35 → 35
+  ⟲ Thorns: Disatree takes 1 reflect damage.  HP  10 → 9
+
+══════════════════════════════════════════════════
+  Round 2
+══════════════════════════════════════════════════
+  Player  ████████████████████  35 / 35
+            [Briar Stance 2r]
+  Enemy   ██████████████████░░  9 / 10
+
+? Respond with...
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)? Respond with... 2
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)✔ Respond with... Body   (physical)
+? Action...
+  1) attack
+  2) defend? Action... 2
+  1) attack
+  2) defend✔ Action... defend
+──────────────────────────────────────────────────
+  You    DEFEND with BODY
+  Enemy  ATTACK with MIND
+
+┌─ Type Matchup ──────────────────────────────────
+  You     ADVANTAGE   (+)  — body > mind
+  Enemy   DISADVANTAGE (-)  — mind < body
+
+┌─ Stance Effects ────────────────────────────────
+  ⚡ You:    Briar Stance  → You  — Briar Stance intensified to 2.  [1 reflect/intensity]
+
+[ Enemy Attack Roll ]
+  Enemy attack roll:       11  (10 [2d20 disadvantage] + 1 stat)
+
+┌─ Enemy Damage vs Defending Player ──────────────
+  You defends with body base. ( 16 − ( 3 × 3 ) ) = 7 Damage
+  HP  35 → 28
+  ⟲ Thorns: Disatree takes 2 reflect damage.  HP  9 → 7
+
+══════════════════════════════════════════════════
+  Round 3
+══════════════════════════════════════════════════
+  Player  ████████████████░░░░  28 / 35
+            [Briar Stance ×2 2r]
+  Enemy   ██████████████░░░░░░  7 / 10
+
+? Respond with...
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)? Respond with... 2
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)✔ Respond with... Body   (physical)
+? Action...
+  1) attack
+  2) defend? Action... 2
+  1) attack
+  2) defend✔ Action... defend
+──────────────────────────────────────────────────
+  You    DEFEND with BODY
+  Enemy  DEFEND with HEART
+
+┌─ Type Matchup ──────────────────────────────────
+  You     DISADVANTAGE (-)  — body < heart
+  Enemy   ADVANTAGE   (+)  — heart > body
+
+┌─ Stance Effects ────────────────────────────────
+  ⚡ You:    Briar Stance  → You  — Briar Stance intensified to 3.  [1 reflect/intensity]
+  ⚡ Disatree:  Vital Empathy  → Disatree  — Vital Empathy applied.  [+1 HP/round/intensity]
+
+┌─ Both Defending ────────────────────────────────
+  No attack is made. A moment of stillness passes...
+  Friendship  ♥♡♡  (0 → 1 / 3)
+  ❤ Disatree: regenerated 1 HP.
+
+══════════════════════════════════════════════════
+  Round 4
+══════════════════════════════════════════════════
+  Player  ████████████████░░░░  28 / 35
+            [Briar Stance ×3 2r]
+  Enemy   ████████████████░░░░  8 / 10
+            [Vital Empathy 2r]
+  Friendship  ♥♡♡  (1 / 3)
+
+? Respond with...
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)? Respond with... 2
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)✔ Respond with... Body   (physical)
+? Action...
+  1) attack
+  2) defend? Action... 2
+  1) attack
+  2) defend✔ Action... defend
+──────────────────────────────────────────────────
+  You    DEFEND with BODY
+  Enemy  DEFEND with HEART
+
+┌─ Type Matchup ──────────────────────────────────
+  You     DISADVANTAGE (-)  — body < heart
+  Enemy   ADVANTAGE   (+)  — heart > body
+
+┌─ Stance Effects ────────────────────────────────
+  ⚡ You:    Briar Stance  → You  — Briar Stance intensified to 4.  [1 reflect/intensity]
+  ⚡ Disatree:  Vital Empathy  → Disatree  — Vital Empathy intensified to 2.  [+1 HP/round/intensity]
+
+┌─ Both Defending ────────────────────────────────
+  No attack is made. A moment of stillness passes...
+  Friendship  ♥♥♡  (1 → 2 / 3)
+  ❤ Disatree: regenerated 2 HP.
+
+══════════════════════════════════════════════════
+  Round 5
+══════════════════════════════════════════════════
+  Player  ████████████████░░░░  28 / 35
+            [Briar Stance ×4 2r]
+  Enemy   ████████████████████  10 / 10
+            [Vital Empathy ×2 2r]
+  Friendship  ♥♥♡  (2 / 3)
+
+? Respond with...
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)? Respond with... 2
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)✔ Respond with... Body   (physical)
+? Action...
+  1) attack
+  2) defend? Action... 2
+  1) attack
+  2) defend✔ Action... defend
+──────────────────────────────────────────────────
+  You    DEFEND with BODY
+  Enemy  ATTACK with HEART
+
+┌─ Type Matchup ──────────────────────────────────
+  You     DISADVANTAGE (-)  — body < heart
+  Enemy   ADVANTAGE   (+)  — heart > body
+
+┌─ Stance Effects ────────────────────────────────
+  ⚡ You:    Briar Stance  → You  — Briar Stance intensified to 5.  [1 reflect/intensity]
+  ⚡ Disatree:  Fleeting Kindness  → Disatree  — Fleeting Kindness applied.  [-5 roll]
+
+[ Enemy Attack Roll ]
+  Enemy attack roll:       12  (11 [2d20 advantage] + 1 stat)
+
+┌─ Enemy Damage vs Defending Player ──────────────
+  You defends with body base. ( 17 − ( 3 × 1.5 ) ) = 12.5 Damage
+  HP  28 → 15.5
+  ⟲ Thorns: Disatree takes 5 reflect damage.  HP  10 → 5
+  ❤ Disatree: regenerated 2 HP.
+
+══════════════════════════════════════════════════
+  Round 6
+══════════════════════════════════════════════════
+  Player  █████████░░░░░░░░░░░  15.5 / 35
+            [Briar Stance ×5 2r]
+  Enemy   ██████████████░░░░░░  7 / 10
+            [Vital Empathy ×2 1r]  [Fleeting Kindness 1r]
+  Friendship  ♥♥♡  (2 / 3)
+
+? Respond with...
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)? Respond with... 2
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)✔ Respond with... Body   (physical)
+? Action...
+  1) attack
+  2) defend? Action... 2
+  1) attack
+  2) defend✔ Action... defend
+──────────────────────────────────────────────────
+  You    DEFEND with BODY
+  Enemy  ATTACK with MIND
+
+┌─ Type Matchup ──────────────────────────────────
+  You     ADVANTAGE   (+)  — body > mind
+  Enemy   DISADVANTAGE (-)  — mind < body
+  ✕ Disatree: Vital Empathy disperses (stance changed).
+  ✕ Disatree: Fleeting Kindness disperses (stance changed).
+
+┌─ Stance Effects ────────────────────────────────
+  ⚡ You:    Briar Stance  → You  — Briar Stance intensified to 6.  [1 reflect/intensity]
+
+[ Enemy Attack Roll ]
+  Enemy attack roll:       14  (13 [2d20 disadvantage] + 1 stat)
+
+┌─ Enemy Damage vs Defending Player ──────────────
+  You defends with body base. ( 19 − ( 3 × 3 ) ) = 10 Damage
+  HP  15.5 → 5.5
+  ⟲ Thorns: Disatree takes 6 reflect damage.  HP  7 → 1
+
+══════════════════════════════════════════════════
+  Round 7
+══════════════════════════════════════════════════
+  Player  ███░░░░░░░░░░░░░░░░░  5.5 / 35
+            [Briar Stance ×6 2r]
+  Enemy   ██░░░░░░░░░░░░░░░░░░  1 / 10
+  Friendship  ♥♥♡  (2 / 3)
+
+? Respond with...
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)? Respond with... 2
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)✔ Respond with... Body   (physical)
+? Action...
+  1) attack
+  2) defend? Action... 2
+  1) attack
+  2) defend✔ Action... defend
+──────────────────────────────────────────────────
+  You    DEFEND with BODY
+  Enemy  ATTACK with BODY
+
+┌─ Type Matchup ──────────────────────────────────
+  Same type (BODY) — NEUTRAL      (=) for both sides
+
+┌─ Stance Effects ────────────────────────────────
+  ⚡ You:    Briar Stance  → You  — Briar Stance intensified to 7.  [1 reflect/intensity]
+  ⚡ Disatree:  Ad Baculum  → Disatree  — Ad Baculum applied.  [+1 physicalAttack, +1 roll]
+
+[ Enemy Attack Roll ]
+  Enemy attack roll:       9  (8 [1d20] + 1 stat)
+
+┌─ Enemy Damage vs Defending Player ──────────────
+  You defends with body base. ( 21 − ( 3 × 2 ) ) = 15 Damage
+  HP  5.5 → 0
+  ⟲ Thorns: Disatree takes 7 reflect damage.  HP  1 → 0
+
+══════════════════════════════════════════════════
+  VICTORY — you defeated the enemy!
+══════════════════════════════════════════════════
+  Final results
+  Your HP    ░░░░░░░░░░░░░░░░░░░░  0 / 35
+  Enemy HP   ░░░░░░░░░░░░░░░░░░░░  0 / 10
+  Rounds     7
+══════════════════════════════════════════════════
+
+⠙
+======================================================
+  End of run 1  (exit code: 0)
+======================================================
+
+======================================================
+  Run 2/5  —  2026-03-03 22:46:11
+======================================================
+
+
+> axiomancer-mechanics@1.0.0 combat
+> ts-node src/Combat/combat.cli.ts
+
+
+══════════════════════════════════════════════════
+  AXIOMANCER  —  Combat Simulator
+  Player (Lv.1)  vs  Disatree (Lv.1)
+══════════════════════════════════════════════════
+
+Rules
+  HEART > BODY > MIND > HEART  (type advantage cycle)
+  Advantage → roll 2d20 keep HIGHER  |  Disadvantage → roll 2d20 keep LOWER
+  Defending multipliers  →  advantage: ×3  |  neutral: ×2  |  disadvantage: ×1.5
+  Damage = roll − ( defense × multiplier )  (min 0)
+
+
+══════════════════════════════════════════════════
+  Round 1
+══════════════════════════════════════════════════
+  Player  ████████████████████  35 / 35
+  Enemy   ████████████████████  10 / 10
+
+? Respond with...
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)? Respond with... 2
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)✔ Respond with... Body   (physical)
+? Action...
+  1) attack
+  2) defend? Action... 2
+  1) attack
+  2) defend✔ Action... defend
+──────────────────────────────────────────────────
+  You    DEFEND with BODY
+  Enemy  ATTACK with MIND
+
+┌─ Type Matchup ──────────────────────────────────
+  You     ADVANTAGE   (+)  — body > mind
+  Enemy   DISADVANTAGE (-)  — mind < body
+
+┌─ Stance Effects ────────────────────────────────
+  ⚡ You:    Briar Stance  → You  — Briar Stance applied.  [1 reflect/intensity]
+
+[ Enemy Attack Roll ]
+  Enemy attack roll:       8  (7 [2d20 disadvantage] + 1 stat)
+
+┌─ Enemy Damage vs Defending Player ──────────────
+  You defends with body base. ( 13 − ( 3 × 3 ) ) = 4 Damage
+  HP  35 → 31
+  ⟲ Thorns: Disatree takes 1 reflect damage.  HP  10 → 9
+
+══════════════════════════════════════════════════
+  Round 2
+══════════════════════════════════════════════════
+  Player  ██████████████████░░  31 / 35
+            [Briar Stance 2r]
+  Enemy   ██████████████████░░  9 / 10
+
+? Respond with...
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)? Respond with... 2
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)✔ Respond with... Body   (physical)
+? Action...
+  1) attack
+  2) defend? Action... 2
+  1) attack
+  2) defend✔ Action... defend
+──────────────────────────────────────────────────
+  You    DEFEND with BODY
+  Enemy  ATTACK with MIND
+
+┌─ Type Matchup ──────────────────────────────────
+  You     ADVANTAGE   (+)  — body > mind
+  Enemy   DISADVANTAGE (-)  — mind < body
+
+┌─ Stance Effects ────────────────────────────────
+  ⚡ You:    Briar Stance  → You  — Briar Stance intensified to 2.  [1 reflect/intensity]
+
+[ Enemy Attack Roll ]
+  Enemy attack roll:       18  (17 [2d20 disadvantage] + 1 stat)
+
+┌─ Enemy Damage vs Defending Player ──────────────
+  You defends with body base. ( 15 − ( 3 × 3 ) ) = 6 Damage
+  HP  31 → 25
+  ⟲ Thorns: Disatree takes 2 reflect damage.  HP  9 → 7
+
+══════════════════════════════════════════════════
+  Round 3
+══════════════════════════════════════════════════
+  Player  ██████████████░░░░░░  25 / 35
+            [Briar Stance ×2 2r]
+  Enemy   ██████████████░░░░░░  7 / 10
+
+? Respond with...
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)? Respond with... 2
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)✔ Respond with... Body   (physical)
+? Action...
+  1) attack
+  2) defend? Action... 2
+  1) attack
+  2) defend✔ Action... defend
+──────────────────────────────────────────────────
+  You    DEFEND with BODY
+  Enemy  ATTACK with BODY
+
+┌─ Type Matchup ──────────────────────────────────
+  Same type (BODY) — NEUTRAL      (=) for both sides
+
+┌─ Stance Effects ────────────────────────────────
+  ⚡ You:    Briar Stance  → You  — Briar Stance intensified to 3.  [1 reflect/intensity]
+  ⚡ Disatree:  Ad Baculum  → Disatree  — Ad Baculum applied.  [+1 physicalAttack, +1 roll]
+
+[ Enemy Attack Roll ]
+  Enemy attack roll:       8  (7 [1d20] + 1 stat)
+
+┌─ Enemy Damage vs Defending Player ──────────────
+  You defends with body base. ( 8 − ( 3 × 2 ) ) = 2 Damage
+  HP  25 → 23
+  ⟲ Thorns: Disatree takes 3 reflect damage.  HP  7 → 4
+
+══════════════════════════════════════════════════
+  Round 4
+══════════════════════════════════════════════════
+  Player  █████████████░░░░░░░  23 / 35
+            [Briar Stance ×3 2r]
+  Enemy   ████████░░░░░░░░░░░░  4 / 10
+            [Ad Baculum 1r]
+
+? Respond with...
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)? Respond with... 2
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)✔ Respond with... Body   (physical)
+? Action...
+  1) attack
+  2) defend? Action... 2
+  1) attack
+  2) defend✔ Action... defend
+──────────────────────────────────────────────────
+  You    DEFEND with BODY
+  Enemy  ATTACK with BODY
+
+┌─ Type Matchup ──────────────────────────────────
+  Same type (BODY) — NEUTRAL      (=) for both sides
+
+┌─ Stance Effects ────────────────────────────────
+  ⚡ You:    Briar Stance  → You  — Briar Stance intensified to 4.  [1 reflect/intensity]
+  ⚡ Disatree:  Ad Baculum  → Disatree  — Ad Baculum intensified to 2.  [+1 physicalAttack, +1 roll]
+
+[ Enemy Attack Roll ]
+  Enemy attack roll:       18  (17 [1d20] + 1 stat)
+
+┌─ Enemy Damage vs Defending Player ──────────────
+  You defends with body base. ( 19 − ( 3 × 2 ) ) = 13 Damage
+  HP  23 → 10
+  ⟲ Thorns: Disatree takes 4 reflect damage.  HP  4 → 0
+
+══════════════════════════════════════════════════
+  VICTORY — you defeated the enemy!
+══════════════════════════════════════════════════
+  Final results
+  Your HP    ██████░░░░░░░░░░░░░░  10 / 35
+  Enemy HP   ░░░░░░░░░░░░░░░░░░░░  0 / 10
+  Rounds     4
+══════════════════════════════════════════════════
+
+⠙
+======================================================
+  End of run 2  (exit code: 0)
+======================================================
+
+======================================================
+  Run 3/5  —  2026-03-03 22:46:37
+======================================================
+
+
+> axiomancer-mechanics@1.0.0 combat
+> ts-node src/Combat/combat.cli.ts
+
+
+══════════════════════════════════════════════════
+  AXIOMANCER  —  Combat Simulator
+  Player (Lv.1)  vs  Disatree (Lv.1)
+══════════════════════════════════════════════════
+
+Rules
+  HEART > BODY > MIND > HEART  (type advantage cycle)
+  Advantage → roll 2d20 keep HIGHER  |  Disadvantage → roll 2d20 keep LOWER
+  Defending multipliers  →  advantage: ×3  |  neutral: ×2  |  disadvantage: ×1.5
+  Damage = roll − ( defense × multiplier )  (min 0)
+
+
+══════════════════════════════════════════════════
+  Round 1
+══════════════════════════════════════════════════
+  Player  ████████████████████  35 / 35
+  Enemy   ████████████████████  10 / 10
+
+? Respond with...
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)? Respond with... 2
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)✔ Respond with... Body   (physical)
+? Action...
+  1) attack
+  2) defend? Action... 2
+  1) attack
+  2) defend✔ Action... defend
+──────────────────────────────────────────────────
+  You    DEFEND with BODY
+  Enemy  ATTACK with BODY
+
+┌─ Type Matchup ──────────────────────────────────
+  Same type (BODY) — NEUTRAL      (=) for both sides
+
+┌─ Stance Effects ────────────────────────────────
+  ⚡ You:    Briar Stance  → You  — Briar Stance applied.  [1 reflect/intensity]
+  ⚡ Disatree:  Ad Baculum  → Disatree  — Ad Baculum applied.  [+1 physicalAttack, +1 roll]
+
+[ Enemy Attack Roll ]
+  Enemy attack roll:       19  (18 [1d20] + 1 stat)
+
+┌─ Enemy Damage vs Defending Player ──────────────
+  You defends with body base. ( 7 − ( 3 × 2 ) ) = 1 Damage
+  HP  35 → 34
+  ⟲ Thorns: Disatree takes 1 reflect damage.  HP  10 → 9
+
+══════════════════════════════════════════════════
+  Round 2
+══════════════════════════════════════════════════
+  Player  ███████████████████░  34 / 35
+            [Briar Stance 2r]
+  Enemy   ██████████████████░░  9 / 10
+            [Ad Baculum 1r]
+
+? Respond with...
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)? Respond with... 2
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)✔ Respond with... Body   (physical)
+? Action...
+  1) attack
+  2) defend? Action... 2
+  1) attack
+  2) defend✔ Action... defend
+──────────────────────────────────────────────────
+  You    DEFEND with BODY
+  Enemy  DEFEND with MIND
+
+┌─ Type Matchup ──────────────────────────────────
+  You     ADVANTAGE   (+)  — body > mind
+  Enemy   DISADVANTAGE (-)  — mind < body
+  ✕ Disatree: Ad Baculum disperses (stance changed).
+
+┌─ Stance Effects ────────────────────────────────
+  ⚡ You:    Briar Stance  → You  — Briar Stance intensified to 2.  [1 reflect/intensity]
+
+┌─ Both Defending ────────────────────────────────
+  No attack is made. A moment of stillness passes...
+  Friendship  ♥♡♡  (0 → 1 / 3)
+
+══════════════════════════════════════════════════
+  Round 3
+══════════════════════════════════════════════════
+  Player  ███████████████████░  34 / 35
+            [Briar Stance ×2 2r]
+  Enemy   ██████████████████░░  9 / 10
+  Friendship  ♥♡♡  (1 / 3)
+
+? Respond with...
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)? Respond with... 2
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)✔ Respond with... Body   (physical)
+? Action...
+  1) attack
+  2) defend? Action... 2
+  1) attack
+  2) defend✔ Action... defend
+──────────────────────────────────────────────────
+  You    DEFEND with BODY
+  Enemy  ATTACK with HEART
+
+┌─ Type Matchup ──────────────────────────────────
+  You     DISADVANTAGE (-)  — body < heart
+  Enemy   ADVANTAGE   (+)  — heart > body
+
+┌─ Stance Effects ────────────────────────────────
+  ⚡ You:    Briar Stance  → You  — Briar Stance intensified to 3.  [1 reflect/intensity]
+  ⚡ Disatree:  Fleeting Kindness  → Disatree  — Fleeting Kindness applied.  [-5 roll]
+
+[ Enemy Attack Roll ]
+  Enemy attack roll:       13  (12 [2d20 advantage] + 1 stat)
+
+┌─ Enemy Damage vs Defending Player ──────────────
+  You defends with body base. ( 19 − ( 3 × 1.5 ) ) = 14.5 Damage
+  HP  34 → 19.5
+  ⟲ Thorns: Disatree takes 3 reflect damage.  HP  9 → 6
+
+══════════════════════════════════════════════════
+  Round 4
+══════════════════════════════════════════════════
+  Player  ███████████░░░░░░░░░  19.5 / 35
+            [Briar Stance ×3 2r]
+  Enemy   ████████████░░░░░░░░  6 / 10
+            [Fleeting Kindness 1r]
+  Friendship  ♥♡♡  (1 / 3)
+
+? Respond with...
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)? Respond with... 2
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)✔ Respond with... Body   (physical)
+? Action...
+  1) attack
+  2) defend? Action... 2
+  1) attack
+  2) defend✔ Action... defend
+──────────────────────────────────────────────────
+  You    DEFEND with BODY
+  Enemy  ATTACK with MIND
+
+┌─ Type Matchup ──────────────────────────────────
+  You     ADVANTAGE   (+)  — body > mind
+  Enemy   DISADVANTAGE (-)  — mind < body
+  ✕ Disatree: Fleeting Kindness disperses (stance changed).
+
+┌─ Stance Effects ────────────────────────────────
+  ⚡ You:    Briar Stance  → You  — Briar Stance intensified to 4.  [1 reflect/intensity]
+
+[ Enemy Attack Roll ]
+  Enemy attack roll:       17  (16 [2d20 disadvantage] + 1 stat)
+
+┌─ Enemy Damage vs Defending Player ──────────────
+  You defends with body base. ( 16 − ( 3 × 3 ) ) = 7 Damage
+  HP  19.5 → 12.5
+  ⟲ Thorns: Disatree takes 4 reflect damage.  HP  6 → 2
+
+══════════════════════════════════════════════════
+  Round 5
+══════════════════════════════════════════════════
+  Player  ███████░░░░░░░░░░░░░  12.5 / 35
+            [Briar Stance ×4 2r]
+  Enemy   ████░░░░░░░░░░░░░░░░  2 / 10
+  Friendship  ♥♡♡  (1 / 3)
+
+? Respond with...
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)? Respond with... 2
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)✔ Respond with... Body   (physical)
+? Action...
+  1) attack
+  2) defend? Action... 2
+  1) attack
+  2) defend✔ Action... defend
+──────────────────────────────────────────────────
+  You    DEFEND with BODY
+  Enemy  ATTACK with BODY
+
+┌─ Type Matchup ──────────────────────────────────
+  Same type (BODY) — NEUTRAL      (=) for both sides
+
+┌─ Stance Effects ────────────────────────────────
+  ⚡ You:    Briar Stance  → You  — Briar Stance intensified to 5.  [1 reflect/intensity]
+  ⚡ Disatree:  Ad Baculum  → Disatree  — Ad Baculum applied.  [+1 physicalAttack, +1 roll]
+
+[ Enemy Attack Roll ]
+  Enemy attack roll:       15  (14 [1d20] + 1 stat)
+
+┌─ Enemy Damage vs Defending Player ──────────────
+  You defends with body base. ( 10 − ( 3 × 2 ) ) = 4 Damage
+  HP  12.5 → 8.5
+  ⟲ Thorns: Disatree takes 5 reflect damage.  HP  2 → 0
+
+══════════════════════════════════════════════════
+  VICTORY — you defeated the enemy!
+══════════════════════════════════════════════════
+  Final results
+  Your HP    █████░░░░░░░░░░░░░░░  8.5 / 35
+  Enemy HP   ░░░░░░░░░░░░░░░░░░░░  0 / 10
+  Rounds     5
+══════════════════════════════════════════════════
+
+⠙
+======================================================
+  End of run 3  (exit code: 0)
+======================================================
+
+======================================================
+  Run 4/5  —  2026-03-03 22:47:10
+======================================================
+
+
+> axiomancer-mechanics@1.0.0 combat
+> ts-node src/Combat/combat.cli.ts
+
+
+══════════════════════════════════════════════════
+  AXIOMANCER  —  Combat Simulator
+  Player (Lv.1)  vs  Disatree (Lv.1)
+══════════════════════════════════════════════════
+
+Rules
+  HEART > BODY > MIND > HEART  (type advantage cycle)
+  Advantage → roll 2d20 keep HIGHER  |  Disadvantage → roll 2d20 keep LOWER
+  Defending multipliers  →  advantage: ×3  |  neutral: ×2  |  disadvantage: ×1.5
+  Damage = roll − ( defense × multiplier )  (min 0)
+
+
+══════════════════════════════════════════════════
+  Round 1
+══════════════════════════════════════════════════
+  Player  ████████████████████  35 / 35
+  Enemy   ████████████████████  10 / 10
+
+? Respond with...
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)? Respond with... 2
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)✔ Respond with... Body   (physical)
+? Action...
+  1) attack
+  2) defend? Action... 2
+  1) attack
+  2) defend✔ Action... defend
+──────────────────────────────────────────────────
+  You    DEFEND with BODY
+  Enemy  ATTACK with BODY
+
+┌─ Type Matchup ──────────────────────────────────
+  Same type (BODY) — NEUTRAL      (=) for both sides
+
+┌─ Stance Effects ────────────────────────────────
+  ⚡ You:    Briar Stance  → You  — Briar Stance applied.  [1 reflect/intensity]
+  ⚡ Disatree:  Ad Baculum  → Disatree  — Ad Baculum applied.  [+1 physicalAttack, +1 roll]
+
+[ Enemy Attack Roll ]
+  Enemy attack roll:       10  (9 [1d20] + 1 stat)
+
+┌─ Enemy Damage vs Defending Player ──────────────
+  You defends with body base. ( 15 − ( 3 × 2 ) ) = 9 Damage
+  HP  35 → 26
+  ⟲ Thorns: Disatree takes 1 reflect damage.  HP  10 → 9
+
+══════════════════════════════════════════════════
+  Round 2
+══════════════════════════════════════════════════
+  Player  ███████████████░░░░░  26 / 35
+            [Briar Stance 2r]
+  Enemy   ██████████████████░░  9 / 10
+            [Ad Baculum 1r]
+
+? Respond with...
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)? Respond with... 2
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)✔ Respond with... Body   (physical)
+? Action...
+  1) attack
+  2) defend? Action... 2
+  1) attack
+  2) defend✔ Action... defend
+──────────────────────────────────────────────────
+  You    DEFEND with BODY
+  Enemy  DEFEND with HEART
+
+┌─ Type Matchup ──────────────────────────────────
+  You     DISADVANTAGE (-)  — body < heart
+  Enemy   ADVANTAGE   (+)  — heart > body
+  ✕ Disatree: Ad Baculum disperses (stance changed).
+
+┌─ Stance Effects ────────────────────────────────
+  ⚡ You:    Briar Stance  → You  — Briar Stance intensified to 2.  [1 reflect/intensity]
+  ⚡ Disatree:  Vital Empathy  → Disatree  — Vital Empathy applied.  [+1 HP/round/intensity]
+
+┌─ Both Defending ────────────────────────────────
+  No attack is made. A moment of stillness passes...
+  Friendship  ♥♡♡  (0 → 1 / 3)
+  ❤ Disatree: regenerated 1 HP.
+
+══════════════════════════════════════════════════
+  Round 3
+══════════════════════════════════════════════════
+  Player  ███████████████░░░░░  26 / 35
+            [Briar Stance ×2 2r]
+  Enemy   ████████████████████  10 / 10
+            [Vital Empathy 2r]
+  Friendship  ♥♡♡  (1 / 3)
+
+? Respond with...
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)? Respond with... 2
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)✔ Respond with... Body   (physical)
+? Action...
+  1) attack
+  2) defend? Action... 2
+  1) attack
+  2) defend✔ Action... defend
+──────────────────────────────────────────────────
+  You    DEFEND with BODY
+  Enemy  DEFEND with HEART
+
+┌─ Type Matchup ──────────────────────────────────
+  You     DISADVANTAGE (-)  — body < heart
+  Enemy   ADVANTAGE   (+)  — heart > body
+
+┌─ Stance Effects ────────────────────────────────
+  ⚡ You:    Briar Stance  → You  — Briar Stance intensified to 3.  [1 reflect/intensity]
+  ⚡ Disatree:  Vital Empathy  → Disatree  — Vital Empathy intensified to 2.  [+1 HP/round/intensity]
+
+┌─ Both Defending ────────────────────────────────
+  No attack is made. A moment of stillness passes...
+  Friendship  ♥♥♡  (1 → 2 / 3)
+  ❤ Disatree: regenerated 2 HP.
+
+══════════════════════════════════════════════════
+  Round 4
+══════════════════════════════════════════════════
+  Player  ███████████████░░░░░  26 / 35
+            [Briar Stance ×3 2r]
+  Enemy   ████████████████████  10 / 10
+            [Vital Empathy ×2 2r]
+  Friendship  ♥♥♡  (2 / 3)
+
+? Respond with...
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)? Respond with... 2
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)✔ Respond with... Body   (physical)
+? Action...
+  1) attack
+  2) defend? Action... 2
+  1) attack
+  2) defend✔ Action... defend
+──────────────────────────────────────────────────
+  You    DEFEND with BODY
+  Enemy  ATTACK with MIND
+
+┌─ Type Matchup ──────────────────────────────────
+  You     ADVANTAGE   (+)  — body > mind
+  Enemy   DISADVANTAGE (-)  — mind < body
+  ✕ Disatree: Vital Empathy disperses (stance changed).
+
+┌─ Stance Effects ────────────────────────────────
+  ⚡ You:    Briar Stance  → You  — Briar Stance intensified to 4.  [1 reflect/intensity]
+
+[ Enemy Attack Roll ]
+  Enemy attack roll:       12  (11 [2d20 disadvantage] + 1 stat)
+
+┌─ Enemy Damage vs Defending Player ──────────────
+  You defends with body base. ( 13 − ( 3 × 3 ) ) = 4 Damage
+  HP  26 → 22
+  ⟲ Thorns: Disatree takes 4 reflect damage.  HP  10 → 6
+
+══════════════════════════════════════════════════
+  Round 5
+══════════════════════════════════════════════════
+  Player  █████████████░░░░░░░  22 / 35
+            [Briar Stance ×4 2r]
+  Enemy   ████████████░░░░░░░░  6 / 10
+  Friendship  ♥♥♡  (2 / 3)
+
+? Respond with...
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)? Respond with... 2
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)✔ Respond with... Body   (physical)
+? Action...
+  1) attack
+  2) defend? Action... 2
+  1) attack
+  2) defend✔ Action... defend
+──────────────────────────────────────────────────
+  You    DEFEND with BODY
+  Enemy  ATTACK with HEART
+
+┌─ Type Matchup ──────────────────────────────────
+  You     DISADVANTAGE (-)  — body < heart
+  Enemy   ADVANTAGE   (+)  — heart > body
+
+┌─ Stance Effects ────────────────────────────────
+  ⚡ You:    Briar Stance  → You  — Briar Stance intensified to 5.  [1 reflect/intensity]
+  ⚡ Disatree:  Fleeting Kindness  → Disatree  — Fleeting Kindness applied.  [-5 roll]
+
+[ Enemy Attack Roll ]
+  Enemy attack roll:       11  (10 [2d20 advantage] + 1 stat)
+
+┌─ Enemy Damage vs Defending Player ──────────────
+  You defends with body base. ( 20 − ( 3 × 1.5 ) ) = 15.5 Damage
+  HP  22 → 6.5
+  ⟲ Thorns: Disatree takes 5 reflect damage.  HP  6 → 1
+
+══════════════════════════════════════════════════
+  Round 6
+══════════════════════════════════════════════════
+  Player  ████░░░░░░░░░░░░░░░░  6.5 / 35
+            [Briar Stance ×5 2r]
+  Enemy   ██░░░░░░░░░░░░░░░░░░  1 / 10
+            [Fleeting Kindness 1r]
+  Friendship  ♥♥♡  (2 / 3)
+
+? Respond with...
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)? Respond with... 2
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)✔ Respond with... Body   (physical)
+? Action...
+  1) attack
+  2) defend? Action... 2
+  1) attack
+  2) defend✔ Action... defend
+──────────────────────────────────────────────────
+  You    DEFEND with BODY
+  Enemy  DEFEND with HEART
+
+┌─ Type Matchup ──────────────────────────────────
+  You     DISADVANTAGE (-)  — body < heart
+  Enemy   ADVANTAGE   (+)  — heart > body
+
+┌─ Stance Effects ────────────────────────────────
+  ⚡ You:    Briar Stance  → You  — Briar Stance intensified to 6.  [1 reflect/intensity]
+  ⚡ Disatree:  Vital Empathy  → Disatree  — Vital Empathy applied.  [+1 HP/round/intensity]
+
+┌─ Both Defending ────────────────────────────────
+  No attack is made. A moment of stillness passes...
+  Friendship  ♥♥♥  (2 → 3 / 3)  ← bond formed!
+  ⤓ Disatree: Fleeting Kindness fades.
+
+══════════════════════════════════════════════════
+  BOND FORMED — your enemy becomes an ally.
+══════════════════════════════════════════════════
+  Final results
+  Your HP    ████░░░░░░░░░░░░░░░░  6.5 / 35
+  Enemy HP   ██░░░░░░░░░░░░░░░░░░  1 / 10
+  Rounds     6
+══════════════════════════════════════════════════
+
+⠙
+======================================================
+  End of run 4  (exit code: 0)
+======================================================
+
+======================================================
+  Run 5/5  —  2026-03-03 22:47:48
+======================================================
+
+
+> axiomancer-mechanics@1.0.0 combat
+> ts-node src/Combat/combat.cli.ts
+
+
+══════════════════════════════════════════════════
+  AXIOMANCER  —  Combat Simulator
+  Player (Lv.1)  vs  Disatree (Lv.1)
+══════════════════════════════════════════════════
+
+Rules
+  HEART > BODY > MIND > HEART  (type advantage cycle)
+  Advantage → roll 2d20 keep HIGHER  |  Disadvantage → roll 2d20 keep LOWER
+  Defending multipliers  →  advantage: ×3  |  neutral: ×2  |  disadvantage: ×1.5
+  Damage = roll − ( defense × multiplier )  (min 0)
+
+
+══════════════════════════════════════════════════
+  Round 1
+══════════════════════════════════════════════════
+  Player  ████████████████████  35 / 35
+  Enemy   ████████████████████  10 / 10
+
+? Respond with...
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)? Respond with... 2
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)✔ Respond with... Body   (physical)
+? Action...
+  1) attack
+  2) defend? Action... 2
+  1) attack
+  2) defend✔ Action... defend
+──────────────────────────────────────────────────
+  You    DEFEND with BODY
+  Enemy  DEFEND with HEART
+
+┌─ Type Matchup ──────────────────────────────────
+  You     DISADVANTAGE (-)  — body < heart
+  Enemy   ADVANTAGE   (+)  — heart > body
+
+┌─ Stance Effects ────────────────────────────────
+  ⚡ You:    Briar Stance  → You  — Briar Stance applied.  [1 reflect/intensity]
+  ⚡ Disatree:  Vital Empathy  → Disatree  — Vital Empathy applied.  [+1 HP/round/intensity]
+
+┌─ Both Defending ────────────────────────────────
+  No attack is made. A moment of stillness passes...
+  Friendship  ♥♡♡  (0 → 1 / 3)
+  ❤ Disatree: regenerated 1 HP.
+
+══════════════════════════════════════════════════
+  Round 2
+══════════════════════════════════════════════════
+  Player  ████████████████████  35 / 35
+            [Briar Stance 2r]
+  Enemy   ████████████████████  10 / 10
+            [Vital Empathy 2r]
+  Friendship  ♥♡♡  (1 / 3)
+
+? Respond with...
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)? Respond with... 2
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)✔ Respond with... Body   (physical)
+? Action...
+  1) attack
+  2) defend? Action... 2
+  1) attack
+  2) defend✔ Action... defend
+──────────────────────────────────────────────────
+  You    DEFEND with BODY
+  Enemy  ATTACK with BODY
+
+┌─ Type Matchup ──────────────────────────────────
+  Same type (BODY) — NEUTRAL      (=) for both sides
+  ✕ Disatree: Vital Empathy disperses (stance changed).
+
+┌─ Stance Effects ────────────────────────────────
+  ⚡ You:    Briar Stance  → You  — Briar Stance intensified to 2.  [1 reflect/intensity]
+  ⚡ Disatree:  Ad Baculum  → Disatree  — Ad Baculum applied.  [+1 physicalAttack, +1 roll]
+
+[ Enemy Attack Roll ]
+  Enemy attack roll:       7  (6 [1d20] + 1 stat)
+
+┌─ Enemy Damage vs Defending Player ──────────────
+  You defends with body base. ( 15 − ( 3 × 2 ) ) = 9 Damage
+  HP  35 → 26
+  ⟲ Thorns: Disatree takes 2 reflect damage.  HP  10 → 8
+
+══════════════════════════════════════════════════
+  Round 3
+══════════════════════════════════════════════════
+  Player  ███████████████░░░░░  26 / 35
+            [Briar Stance ×2 2r]
+  Enemy   ████████████████░░░░  8 / 10
+            [Ad Baculum 1r]
+  Friendship  ♥♡♡  (1 / 3)
+
+? Respond with...
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)? Respond with... 2
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)✔ Respond with... Body   (physical)
+? Action...
+  1) attack
+  2) defend? Action... 2
+  1) attack
+  2) defend✔ Action... defend
+──────────────────────────────────────────────────
+  You    DEFEND with BODY
+  Enemy  ATTACK with BODY
+
+┌─ Type Matchup ──────────────────────────────────
+  Same type (BODY) — NEUTRAL      (=) for both sides
+
+┌─ Stance Effects ────────────────────────────────
+  ⚡ You:    Briar Stance  → You  — Briar Stance intensified to 3.  [1 reflect/intensity]
+  ⚡ Disatree:  Ad Baculum  → Disatree  — Ad Baculum intensified to 2.  [+1 physicalAttack, +1 roll]
+
+[ Enemy Attack Roll ]
+  Enemy attack roll:       15  (14 [1d20] + 1 stat)
+
+┌─ Enemy Damage vs Defending Player ──────────────
+  You defends with body base. ( 19 − ( 3 × 2 ) ) = 13 Damage
+  HP  26 → 13
+  ⟲ Thorns: Disatree takes 3 reflect damage.  HP  8 → 5
+
+══════════════════════════════════════════════════
+  Round 4
+══════════════════════════════════════════════════
+  Player  ███████░░░░░░░░░░░░░  13 / 35
+            [Briar Stance ×3 2r]
+  Enemy   ██████████░░░░░░░░░░  5 / 10
+            [Ad Baculum ×2 1r]
+  Friendship  ♥♡♡  (1 / 3)
+
+? Respond with...
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)? Respond with... 2
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)✔ Respond with... Body   (physical)
+? Action...
+  1) attack
+  2) defend? Action... 2
+  1) attack
+  2) defend✔ Action... defend
+──────────────────────────────────────────────────
+  You    DEFEND with BODY
+  Enemy  DEFEND with MIND
+
+┌─ Type Matchup ──────────────────────────────────
+  You     ADVANTAGE   (+)  — body > mind
+  Enemy   DISADVANTAGE (-)  — mind < body
+  ✕ Disatree: Ad Baculum disperses (stance changed).
+
+┌─ Stance Effects ────────────────────────────────
+  ⚡ You:    Briar Stance  → You  — Briar Stance intensified to 4.  [1 reflect/intensity]
+
+┌─ Both Defending ────────────────────────────────
+  No attack is made. A moment of stillness passes...
+  Friendship  ♥♥♡  (1 → 2 / 3)
+
+══════════════════════════════════════════════════
+  Round 5
+══════════════════════════════════════════════════
+  Player  ███████░░░░░░░░░░░░░  13 / 35
+            [Briar Stance ×4 2r]
+  Enemy   ██████████░░░░░░░░░░  5 / 10
+  Friendship  ♥♥♡  (2 / 3)
+
+? Respond with...
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)? Respond with... 2
+  1) Heart  (emotional)
+  2) Body   (physical)
+  3) Mind   (mental)✔ Respond with... Body   (physical)
+? Action...
+  1) attack
+  2) defend? Action... 2
+  1) attack
+  2) defend✔ Action... defend
+──────────────────────────────────────────────────
+  You    DEFEND with BODY
+  Enemy  DEFEND with HEART
+
+┌─ Type Matchup ──────────────────────────────────
+  You     DISADVANTAGE (-)  — body < heart
+  Enemy   ADVANTAGE   (+)  — heart > body
+
+┌─ Stance Effects ────────────────────────────────
+  ⚡ You:    Briar Stance  → You  — Briar Stance intensified to 5.  [1 reflect/intensity]
+  ⚡ Disatree:  Vital Empathy  → Disatree  — Vital Empathy applied.  [+1 HP/round/intensity]
+
+┌─ Both Defending ────────────────────────────────
+  No attack is made. A moment of stillness passes...
+  Friendship  ♥♥♥  (2 → 3 / 3)  ← bond formed!
+
+══════════════════════════════════════════════════
+  BOND FORMED — your enemy becomes an ally.
+══════════════════════════════════════════════════
+  Final results
+  Your HP    ███████░░░░░░░░░░░░░  13 / 35
+  Enemy HP   ██████████░░░░░░░░░░  5 / 10
+  Rounds     5
+══════════════════════════════════════════════════
+
+⠙
+======================================================
+  End of run 5  (exit code: 0)
+======================================================
+

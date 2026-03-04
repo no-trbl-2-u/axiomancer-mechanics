@@ -12,7 +12,7 @@ Temporary bonuses that enhance capabilities:
 - Damage bonuses (e.g. +1 to damage rolls)
 - Defense boosts (e.g. +4 to mentalDefense)
 - Regeneration effects (e.g. heal 2hp per round)
-- Decide Enemy's next ActionType
+- Decide Enemy's next Stance
 - Automatic Advantage
 - Other misc. effects
 
@@ -25,7 +25,7 @@ Temporary penalties that hinder:
 - Damage over time (ie. poison, burn, soul-drain, etc.)
 - Defense reduction
 - Movement/action restrictions
-- Limited ActionType decisions
+- Limited Stance decisions
 
 #### Debuff examples
 - **Stunned**: Skip next action
@@ -34,7 +34,7 @@ Temporary penalties that hinder:
 - **Cripple**: Disadvantage on Body actions and skills
 - **Mental Block**: Disadvantage on Mind actions and skills
 - **Poisoned**: Take damage each round
-- **Charmed**: Always pick Heart ActionType
+- **Charmed**: Always pick Heart Stance
 
 ## Implementation Guidelines
 

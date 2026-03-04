@@ -2,7 +2,7 @@ import { Character, BaseStats } from "./types";
 import { ActiveEffect } from "Effects/types";
 import { Item } from "Items/types";
 import { Enemy } from "Enemy/types";
-import { ActionType } from "Combat/types";
+import { Stance } from "Combat/types";
 import { deriveStats, deriveNonCombatStats, calculateMaxHealth, calculateMaxMana } from "Utils";
 import { EXPERIENCE_PER_LEVEL } from "Game/game-mechanics.constants";
 
@@ -51,7 +51,7 @@ export function createCharacter(options: CreateCharacterOptions): Character {
 // ===============================================
 
 export function getTargetsResistStatValue(character: Character, effect: ActiveEffect): number {
-    return getResistStatFromResistedBy(character, effect.resistedBy as ActionType);
+    return getResistStatFromResistedBy(character, effect.resistedBy as Stance);
 }
 
 /**
@@ -60,7 +60,7 @@ export function getTargetsResistStatValue(character: Character, effect: ActiveEf
  * @param effect - The effect to get the resist stat value of
  * @returns The resist stat value of the target
  */
-export const getResistStatFromResistedBy = (target: Character | Enemy, resistedBy: ActionType): number => {
+export const getResistStatFromResistedBy = (target: Character | Enemy, resistedBy: Stance): number => {
     if (resistedBy === 'body') {
         return target.derivedStats.physicalDefense;
     } else if (resistedBy === 'mind') {

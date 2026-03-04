@@ -1,6 +1,6 @@
 import { Character } from 'Character/types';
 import { Enemy, EnemyTier1EffectMap } from 'Enemy/types';
-import { ActionType, CombatAction } from 'Combat/types';
+import { Stance, CombatAction } from 'Combat/types';
 import { ActiveEffect, Effect, EffectApplicationResult } from './types';
 import { lookupEffect } from './effects.library';
 import { MAX_EFFECT_INTENSITY, MAX_EFFECT_DURATION } from '../Game/game-mechanics.constants';
@@ -52,7 +52,7 @@ interface Tier1MapEntry {
  * Heart  attack  → Fleeting Kindness   (self — -5 roll, strips enemy buff, extends player buff)
  * Heart  defend  → Vital Empathy       (self buff — regen)
  */
-const TIER1_EFFECT_MAP: Partial<Record<ActionType, Record<'attack' | 'defend', Tier1MapEntry>>> = {
+const TIER1_EFFECT_MAP: Partial<Record<Stance, Record<'attack' | 'defend', Tier1MapEntry>>> = {
     body:  {
         attack: { effectId: 'tier1_body_attack', target: 'self' },
         defend: { effectId: 'tier1_body_defend', target: 'self' },
@@ -207,7 +207,7 @@ export function applyEffect(
  * and applyOptions from the global map are preserved).
  */
 function resolveTier1Entry(
-    type: ActionType,
+    type: Stance,
     action: 'attack' | 'defend',
     customEffectMap?: EnemyTier1EffectMap,
 ): Tier1MapEntry | undefined {
@@ -285,11 +285,11 @@ export function applyTier1CombatEffect(
 }
 
 // ===============================================
-// ACTION TYPE SWITCHING — BUFF CLEARING
+// STANCE SWITCHING — BUFF CLEARING
 // ===============================================
 
 /**
- * Removes all Tier 1 self-buffs that belong to a DIFFERENT actionType than the one
+ * Removes all Tier 1 self-buffs that belong to a DIFFERENT stance than the one
  * the player just chose. Called before applying the new round's Tier 1 effect so
  * switching from heart → mind removes heart buffs (regen, etc.) immediately.
  *
@@ -297,12 +297,12 @@ export function applyTier1CombatEffect(
  * own array, so they are unaffected by this call.
  *
  * @param activeEffects - The actor's current effect array
- * @param currentType   - The actionType chosen this round
+ * @param currentType   - The stance chosen this round
  * @returns The filtered array and a list of what was removed (for UI announcements)
  */
 export function clearTier1EffectsForType(
     activeEffects: ActiveEffect[],
-    currentType: ActionType,
+    currentType: Stance,
 ): { activeEffects: ActiveEffect[]; cleared: ActiveEffect[] } {
     const cleared: ActiveEffect[] = [];
     const remaining = activeEffects.filter(ae => {
@@ -329,7 +329,7 @@ export function getTargetsResistStatValue(
     target: Character | Enemy,
     activeEffect: ActiveEffect,
 ): number {
-    const resistStat = activeEffect.resistedBy as ActionType | undefined;
+    const resistStat = activeEffect.resistedBy as Stance | undefined;
     if (!resistStat) return 0;
     return target.baseStats[resistStat] ?? 0;
 }

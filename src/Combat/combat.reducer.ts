@@ -7,7 +7,7 @@
 import { Character } from '../Character/types';
 import { Enemy } from '../Enemy/types';
 import {
-    ActionType,
+    Stance,
     Action,
     CombatPhase,
     CombatState,
@@ -70,18 +70,18 @@ export function updateCombatPhase(state: CombatState, phase: CombatPhase): Comba
 // ============================================================================
 
 /**
- * Sets the player's chosen attack type for the current round
+ * Sets the player's chosen stance for the current round
  * @param state - The current combat state
- * @param actionType - The action type chosen by the player
- * @returns Updated combat state with player's action type choice
- * @Example setPlayerActionType(state, 'heart')
+ * @param stance - The stance chosen by the player
+ * @returns Updated combat state with player's stance choice
+ * @Example setPlayerStance(state, 'heart')
  */
-export function setPlayerActionType(state: CombatState, actionType: ActionType): CombatState {
+export function setPlayerStance(state: CombatState, stance: Stance): CombatState {
     return {
         ...state,
         playerChoice: {
             ...state.playerChoice,
-            type: actionType
+            type: stance
         },
     };
 }

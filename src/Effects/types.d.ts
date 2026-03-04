@@ -12,7 +12,7 @@
  * to match the game's philosophical theme.
  */
 
-import { ActionType } from '@Combat/types';
+import { Stance } from '@Combat/types';
 import { Character } from 'Character/types';
 import { Enemy } from 'Enemy/types';
 
@@ -52,7 +52,7 @@ export type EffectCategory = 'stat' | 'damage' | 'defense' | 'control' | 'regene
  * Can target either base stats (body/mind/heart) or specific derived stats
  */
 export type EffectStatTarget =
-    | ActionType  // Base stats: 'body' | 'mind' | 'heart'
+    | Stance  // Base stats: 'body' | 'mind' | 'heart'
     | 'physicalAttack'  | 'physicalSkill' | 'physicalDefense' | 'physicalSave' | 'physicalTest'
     | 'mentalAttack'    | 'mentalSkill'   | 'mentalDefense'   | 'mentalSave'   | 'mentalTest'
     | 'emotionalAttack' | 'emotionalSkill'| 'emotionalDefense'| 'emotionalSave'| 'emotionalTest'
@@ -98,13 +98,13 @@ export interface RegenerationConfig {
 
 /**
  * Action restriction configuration
- * @property forcedActionType - If set, target must use this action type
- * @property blockedActionTypes - Action types the target cannot use
+ * @property forcedStance - If set, target must use this stance
+ * @property blockedStances - Stances the target cannot use
  * @property skipTurn - If true, target skips their next action
  */
 export interface ActionRestriction {
-  forcedActionType?: ActionType;
-  blockedActionTypes?: ActionType[];
+  forcedStance?: Stance;
+  blockedStances?: Stance[];
   skipTurn?: boolean;
 }
 
@@ -114,8 +114,8 @@ export interface ActionRestriction {
  * @property grantDisadvantage - Grants automatic disadvantage on specified types
  */
 export interface AdvantageModifier {
-  grantAdvantage?: ActionType[];
-  grantDisadvantage?: ActionType[];
+  grantAdvantage?: Stance[];
+  grantDisadvantage?: Stance[];
 }
 
 // ===============================================
@@ -180,7 +180,7 @@ export interface Effect {
   teir: 'Teir 1' | 'Teir 2' | 'Teir 3';
   intensity?: number;
   payload: EffectPayload;
-  resistedBy?: ActionType;
+  resistedBy?: Stance;
   resistDR?: number;
 }
 
@@ -234,7 +234,7 @@ export interface ActiveEffect {
   sourceId?: Character['id'] | Enemy['id'];
   appliedAtRound: CombatState['round'];
   teir: Effect['teir'];
-  resistedBy?: ActionType;
+  resistedBy?: Stance;
   resistDR?: number;
 }
 

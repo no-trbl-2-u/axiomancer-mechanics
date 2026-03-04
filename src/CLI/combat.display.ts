@@ -5,7 +5,7 @@
  * Each function receives plain data and prints it; nothing is calculated here.
  */
 
-import { ActionType, Advantage, CombatState } from '../Combat/types';
+import { Stance, Advantage, CombatState } from '../Combat/types';
 import {
     DEFENSE_MULTIPLIERS,
     FRIENDSHIP_COUNTER_MAX,
@@ -173,10 +173,10 @@ function printEffectDetail(ae: ActiveEffect): void {
     if (restrict) {
         if (restrict.skipTurn)
             lines.push(`control skip turn`);
-        if (restrict.forcedActionType)
-            lines.push(`control forced → ${restrict.forcedActionType}`);
-        if (restrict.blockedActionTypes?.length)
-            lines.push(`control blocked [${restrict.blockedActionTypes.join(', ')}]`);
+        if (restrict.forcedStance)
+            lines.push(`control forced → ${restrict.forcedStance}`);
+        if (restrict.blockedStances?.length)
+            lines.push(`control blocked [${restrict.blockedStances.join(', ')}]`);
     }
 
     // Advantage modifiers
@@ -277,7 +277,7 @@ export function printStanceSection(
 /**
  * Announces a stance switch and every buff that dispersed because of it.
  */
-export function printBuffsCleared(who: 'player' | 'enemy', label: string, cleared: ActiveEffect[], newType: ActionType): void {
+export function printBuffsCleared(who: 'player' | 'enemy', label: string, cleared: ActiveEffect[], newType: Stance): void {
     if (cleared.length === 0) return;
     const owner = who === 'player' ? `${C.cyan}You${C.reset}` : `${C.cyan}${label}${C.reset}`;
     console.log(`  ${C.dim}↺${C.reset} ${owner} switched stance → ${typeColor(newType)}`);
@@ -405,9 +405,9 @@ export function printStatus(state: CombatState): void {
 
 export function printRoundActions(
     playerAction: string,
-    playerType: ActionType,
+    playerType: Stance,
     enemyAction: string,
-    enemyType: ActionType,
+    enemyType: Stance,
 ): void {
     console.log(HR_MINOR);
     console.log(`  You    ${C.bold}${playerAction.toUpperCase()}${C.reset} with ${typeColor(playerType)}`);
@@ -423,8 +423,8 @@ function advantageReason(attacker: string, defender: string, advantage: Advantag
 }
 
 export function printTypeMatchup(
-    playerType: ActionType,
-    enemyType: ActionType,
+    playerType: Stance,
+    enemyType: Stance,
     playerAdvantage: Advantage,
     enemyAdvantage: Advantage,
 ): void {

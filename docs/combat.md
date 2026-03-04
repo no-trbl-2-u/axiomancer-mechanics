@@ -2,7 +2,7 @@
 
 ## Type System
 
-Each round both combatants choose an `ActionType`: `heart`, `body`, or `mind`.
+Each round both combatants choose an `Stance`: `heart`, `body`, or `mind`.
 Advantage is determined by rock-paper-scissors:
 
 ```
@@ -57,7 +57,7 @@ Round Start
 └── printStatus()
 
 Player Chooses
-├── promptPlayerChoice() — ActionType + attack/defend
+├── promptPlayerChoice() — Stance + attack/defend
 └── determineEnemyAction()
 
 Pre-Combat
@@ -151,6 +151,6 @@ Each resolved round appends a `BattleLogEntry`:
 
 - Full attack/defense roll formula with effect modifier hook-ins (`performAttackRoll`, `performDefenseRoll`)
 - `calculateBaseDamage` / `calculateDamageReduction` / `calculateAttackDamage` implementations
-- Tier 2/3 effect proc matrix (`ActionType × action` → trigger chances)
+- Tier 2/3 effect proc matrix (`Stance × action` → trigger chances)
 - `resolveCombatRound` reducer replacing inline CLI scenario logic
 - `canAct` / `getActiveEffectModifiers` wired into turn resolution

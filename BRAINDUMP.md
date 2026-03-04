@@ -9,11 +9,11 @@
   - Having someone murder the child: the only path to the happy ending is to forgive the murderer.
 
 ## Combat — Tier 2 Synergy
-- Tier 1 effects reward repeating the same ActionType. Tier 2 should reward switching.
+- Tier 1 effects reward repeating the same Stance. Tier 2 should reward switching.
 - Add skills that get bonuses based on the **duration or intensity** of an effect already on the field.
 
 **Example A — Duration cross-type:**
-Enemy has 5 rounds of poison. Player uses a different ActionType skill that doubles poison duration.
+Enemy has 5 rounds of poison. Player uses a different Stance skill that doubles poison duration.
 If the post-doubled duration is ≥ 5, deal bonus damage equal to the new duration.
 
 **Example B — Buff type-swap:**

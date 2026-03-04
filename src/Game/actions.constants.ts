@@ -7,4 +7,4 @@ export const COMBAT_ACTION = {
     BACK: "back",
 } as const;
 
-export type CombatActionType = typeof COMBAT_ACTION[keyof typeof COMBAT_ACTION];
+export type CombatAction = typeof COMBAT_ACTION[keyof typeof COMBAT_ACTION];

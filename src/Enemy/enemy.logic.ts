@@ -2,7 +2,7 @@
 // ENEMY LOGIC
 // ============================================================================
 
-import { Action, ActionType, CombatAction } from "Combat/types";
+import { Action, Stance, CombatAction } from "Combat/types";
 import { EnemyLogic } from "./types";
 
 /**
@@ -10,11 +10,11 @@ import { EnemyLogic } from "./types";
  * @returns A random combat action
  */
 export function randomLogic(): CombatAction {
-    const actionType = ['attack', 'defend'][Math.floor(Math.random() * 2)];
-    const reactionType = ['heart', 'body', 'mind'][Math.floor(Math.random() * 3)];
+    const action = ['attack', 'defend'][Math.floor(Math.random() * 2)];
+    const stance = ['heart', 'body', 'mind'][Math.floor(Math.random() * 3)];
 
     return {
-        type: reactionType as ActionType,
-        action: actionType as Action,
+        type: stance as Stance,
+        action: action as Action,
     };
 };
