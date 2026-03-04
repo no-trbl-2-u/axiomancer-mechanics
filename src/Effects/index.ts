@@ -307,6 +307,9 @@ export function clearTier1EffectsForType(
     const cleared: ActiveEffect[] = [];
     const remaining = activeEffects.filter(ae => {
         if (!ae.effectId.startsWith('tier1_')) return true;
+        // Debuffs are applied by the opponent and expire naturally.
+        // Only the actor's own self-applied stance buffs should be cleared on type change.
+        if (lookupEffect(ae.effectId)?.type === 'debuff') return true;
         if (ae.effectId.includes(`_${currentType}_`)) return true;
         cleared.push(ae);
         return false;
