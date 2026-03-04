@@ -324,13 +324,21 @@ export function printTypeMatchup(
     }
 }
 
+// ─── Signed Number Formatting ─────────────────────────────────────────────────
+
+/** Formats a signed term as "op abs(value) label", e.g. "+ 3 stat" or "− 5 roll". */
+function signedTerm(value: number, label: string): string {
+    const op = value >= 0 ? '+' : '−';
+    return `${op} ${Math.abs(value)} ${label}`;
+}
+
 // ─── Roll Display ─────────────────────────────────────────────────────────────
 
 export function printRollLine(label: string, rawRoll: number, modifier: number, advantage: Advantage, rollMod?: number): void {
     const diceDesc   = advantage === 'neutral' ? '1d20' : `2d20 ${advantage}`;
     const total      = rawRoll + modifier + (rollMod ?? 0);
-    const rollModStr = rollMod ? ` + ${rollMod} roll` : '';
-    console.log(`  ${label.padEnd(24)} ${C.bold}${total}${C.reset}  (${rawRoll} [${diceDesc}] + ${modifier} stat${rollModStr})`);
+    const rollModStr = rollMod ? `  ${signedTerm(rollMod, 'roll')}` : '';
+    console.log(`  ${label.padEnd(24)} ${C.bold}${total}${C.reset}  (${rawRoll} [${diceDesc}]  ${signedTerm(modifier, 'stat')}${rollModStr})`);
 }
 
 // ─── Attack Contest ───────────────────────────────────────────────────────────
@@ -364,6 +372,8 @@ export function printContestOutcome(playerTotal: number, enemyTotal: number): vo
  * @property baseDefense       - Raw defense stat BEFORE the multiplier is applied.
  * @property defenseMultiplier - How hard the defender is defending (PASSIVE=1, NEUTRAL=2×, ADV=3×).
  *                               printDamageCalc multiplies it for the display line automatically.
+ * @property damageBonus       - Extra flat damage added on top of the roll (e.g. Exposed Reasoning mark).
+ *                               Shown as a separate "+ n" term in the formula when non-zero.
  * @property finalDamage       - Already-clamped value (≥ 0) written into the HP line.
  */
 export interface DamageCalcParams {
@@ -372,6 +382,7 @@ export interface DamageCalcParams {
     attackStatName: string;
     attackStatValue: number;
     damageRoll: number;
+    damageBonus?: number;
     defenseStatName: string;
     baseDefense: number;
     defenseMultiplier: number;
@@ -381,14 +392,16 @@ export interface DamageCalcParams {
 }
 
 export function printDamageCalc(p: DamageCalcParams): void {
-    const effectiveDefense = p.baseDefense * p.defenseMultiplier;
-    const defenderLabel    = p.defender === 'player' ? 'You' : 'Enemy';
-    const dmgColor         = p.finalDamage > 0 ? C.brightRed : C.dim;
+    const defenderLabel  = p.defender === 'player' ? 'You' : 'Enemy';
+    const dmgColor       = p.finalDamage > 0 ? C.brightRed : C.dim;
+    const bonusStr       = p.damageBonus
+        ? ` ${C.brightYellow}${signedTerm(p.damageBonus, 'mark')}${C.reset}`
+        : '';
 
     console.log(sectionHeader(p.header));
     console.log(
         `  ${defenderLabel} defends with ${C.bold}${p.defenseStatName}${C.reset}. ` +
-        `( ${p.damageRoll} − ( ${p.baseDefense} × ${p.defenseMultiplier} ) ) = ` +
+        `( ${p.damageRoll}${bonusStr} − ( ${p.baseDefense} × ${p.defenseMultiplier} ) ) = ` +
         `${dmgColor}${C.bold}${p.finalDamage}${C.reset} Damage`,
     );
     console.log(`  HP  ${p.hpBefore} → ${C.brightRed}${p.hpAfter}${C.reset}`);
