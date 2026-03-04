@@ -9,6 +9,7 @@
     "dev": "echo Please use check 'package.json' or README.md for available commands...\n ",
     "build": "tsc && tsc-alias",
     "combat": "ts-node src/CLI/combat.cli.ts",
+    "combat:auto": "python3 automation/combat-test.py",
     "character": "ts-node src/CLI/character.cli.ts",
     "clean": "rm -rf dist",
     "prepublishOnly": "npm run clean && npm run build",
