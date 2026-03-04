@@ -22,9 +22,9 @@ import {
     removeRandomBuff,
     extendRandomBuffDuration,
     applyRegen,
-} from './index';
+} from '../Combat/index';
 import { createDieRoll } from '../Utils';
-import { ActionType, Advantage, CombatState } from './types';
+import { ActionType, Advantage, CombatState } from '../Combat/types';
 import { createGameStore } from '../Game/store';
 import { nullAdapter } from '../Game/persistence/null.adapter';
 import {
@@ -369,11 +369,11 @@ async function runCombatTurn(state: CombatState): Promise<CombatState> {
     // ── Clear stale Tier 1 buffs on action type switch ───────────────────────
     const playerClear = clearTier1EffectsForType(player.currentActiveEffects, reactionType);
     player = { ...player, currentActiveEffects: playerClear.activeEffects };
-    printBuffsCleared('player', player.name, playerClear.cleared);
+    printBuffsCleared('player', player.name, playerClear.cleared, reactionType);
 
     const enemyClear = clearTier1EffectsForType(enemy.currentActiveEffects, enemyAction.type);
     enemy = { ...enemy, currentActiveEffects: enemyClear.activeEffects };
-    printBuffsCleared('enemy', enemy.name, enemyClear.cleared);
+    printBuffsCleared('enemy', enemy.name, enemyClear.cleared, enemyAction.type);
 
     // ── Apply Tier 1 stance effects ──────────────────────────────────────────
     // Player's action may mark the enemy (Mind); enemy's action may mark the player.

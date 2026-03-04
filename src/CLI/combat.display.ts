@@ -5,7 +5,7 @@
  * Each function receives plain data and prints it; nothing is calculated here.
  */
 
-import { ActionType, Advantage, CombatState } from './types';
+import { ActionType, Advantage, CombatState } from '../Combat/types';
 import {
     DEFENSE_MULTIPLIERS,
     FRIENDSHIP_COUNTER_MAX,
@@ -275,14 +275,15 @@ export function printStanceSection(
 }
 
 /**
- * Announces buffs that were cleared because the combatant switched action types.
+ * Announces a stance switch and every buff that dispersed because of it.
  */
-export function printBuffsCleared(who: 'player' | 'enemy', label: string, cleared: ActiveEffect[]): void {
+export function printBuffsCleared(who: 'player' | 'enemy', label: string, cleared: ActiveEffect[], newType: ActionType): void {
     if (cleared.length === 0) return;
     const owner = who === 'player' ? `${C.cyan}You${C.reset}` : `${C.cyan}${label}${C.reset}`;
+    console.log(`  ${C.dim}↺${C.reset} ${owner} switched stance → ${typeColor(newType)}`);
     for (const ae of cleared) {
         const name = lookupEffect(ae.effectId)?.name ?? ae.effectId;
-        console.log(`  ${C.dim}✕ ${owner}: ${name} disperses (stance changed).${C.reset}`);
+        console.log(`    ${C.dim}✕ ${name} disperses.${C.reset}`);
     }
 }
 
