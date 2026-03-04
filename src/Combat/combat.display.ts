@@ -93,6 +93,119 @@ export function printActiveEffects(label: string, effects: ActiveEffect[]): void
     console.log(`  ${C.dim}${label.padEnd(8)}${C.reset}  ${tags}`);
 }
 
+/**
+ * Prints a full mechanical breakdown for one ActiveEffect.
+ *
+ * Every payload field is expanded:
+ *   - statModifiers   → flat value (engine does not scale these with intensity yet)
+ *   - rollModifier    → flat bonus / penalty to attack rolls
+ *   - rollModifierPerIntensity → per-stack roll modifier, shown as total and formula
+ *   - defenseModifier → flat bonus / penalty to defense
+ *   - reflectDamage   → thorns damage per hit, scaled by intensity
+ *   - regeneration    → HP restored per round, scaled by intensity
+ *   - damageOverTime  → DoT per round, scaled by intensity
+ *   - actionRestriction, advantageModifier → control/advantage flags
+ */
+function printEffectDetail(ae: ActiveEffect): void {
+    const def       = lookupEffect(ae.effectId);
+    const name      = def?.name ?? '???';
+    const typeLabel = def?.type ?? 'unknown';
+    const intensity = ae.currentIntensity ?? 1;
+    const dur       = ae.remainingDuration === -1 ? '∞' : `${ae.remainingDuration}r`;
+    const typeClr   = typeLabel === 'buff' ? C.brightGreen : C.brightRed;
+    const appRound  = ae.appliedAtRound !== undefined ? `  applied r${ae.appliedAtRound}` : '';
+    const srcNote   = ae.sourceId ? `  src: ${ae.sourceId}` : '';
+
+    console.log(
+        `    ${typeClr}[${typeLabel}]${C.reset}  ${C.bold}${name.padEnd(22)}${C.reset}` +
+        `  ${C.dim}id: ${ae.effectId}${C.reset}` +
+        `  ×${intensity}  ${dur}` +
+        `${C.dim}${appRound}${srcNote}${C.reset}`,
+    );
+
+    if (!def) return;
+
+    const lines: string[] = [];
+
+    // Stat modifiers — flat (engine not yet scaling these with intensity)
+    for (const m of def.payload.statModifiers ?? []) {
+        const sign = m.value >= 0 ? '+' : '';
+        lines.push(`stat    ${sign}${m.value} ${m.stat}`);
+    }
+
+    // Roll modifiers
+    const flat   = def.payload.rollModifier ?? 0;
+    const perInt = def.payload.rollModifierPerIntensity ?? 0;
+    if (flat !== 0 || perInt !== 0) {
+        const parts: string[] = [];
+        if (flat   !== 0) parts.push(`${flat >= 0 ? '+' : ''}${flat} flat`);
+        if (perInt !== 0) parts.push(`${perInt >= 0 ? '+' : ''}${perInt * intensity} (${perInt >= 0 ? '+' : ''}${perInt}/intensity × ${intensity})`);
+        const total = flat + perInt * intensity;
+        lines.push(`roll    ${parts.join('  ')}  = ${total >= 0 ? '+' : ''}${total} total`);
+    }
+
+    // Defense modifier
+    const defMod = def.payload.defenseModifier;
+    if (defMod !== undefined && defMod !== 0) {
+        lines.push(`defense ${defMod >= 0 ? '+' : ''}${defMod}`);
+    }
+
+    // Reflect (scales with intensity)
+    const reflect = def.payload.reflectDamage;
+    if (reflect !== undefined && reflect !== 0) {
+        lines.push(`reflect ${reflect * intensity} per hit  (${reflect} × intensity ${intensity})`);
+    }
+
+    // Regen (scales with intensity)
+    const regen = def.payload.regeneration?.healthPerRound;
+    if (regen !== undefined && regen !== 0) {
+        lines.push(`regen   +${regen * intensity} HP/round  (${regen} × intensity ${intensity})`);
+    }
+
+    // Damage over time (scales with intensity)
+    const dot = def.payload.damageOverTime;
+    if (dot !== undefined) {
+        lines.push(`DoT     ${dot.damagePerRound * intensity} ${dot.damageType}/round  (${dot.damagePerRound} × intensity ${intensity})`);
+    }
+
+    // Action restrictions
+    const restrict = def.payload.actionRestriction;
+    if (restrict) {
+        if (restrict.skipTurn)
+            lines.push(`control skip turn`);
+        if (restrict.forcedActionType)
+            lines.push(`control forced → ${restrict.forcedActionType}`);
+        if (restrict.blockedActionTypes?.length)
+            lines.push(`control blocked [${restrict.blockedActionTypes.join(', ')}]`);
+    }
+
+    // Advantage modifiers
+    const advMod = def.payload.advantageModifier;
+    if (advMod) {
+        if (advMod.grantAdvantage?.length)
+            lines.push(`adv     +adv on [${advMod.grantAdvantage.join(', ')}]`);
+        if (advMod.grantDisadvantage?.length)
+            lines.push(`adv     −adv on [${advMod.grantDisadvantage.join(', ')}]`);
+    }
+
+    for (const line of lines) {
+        console.log(`         ${C.dim}${line}${C.reset}`);
+    }
+}
+
+/**
+ * Prints a full mechanical state block for every active effect on a combatant.
+ * Used in the round header so logs contain the complete effect picture each round.
+ */
+export function printEffectStateBlock(label: string, effects: ActiveEffect[]): void {
+    const live = effects.filter(e => e.remainingDuration !== 0);
+    if (live.length === 0) return;
+    console.log(`  ${C.dim}${label}${C.reset}`);
+    for (const ae of live) {
+        printEffectDetail(ae);
+    }
+}
+
 // ─── Stance / Effect Event Display ───────────────────────────────────────────
 
 /**
@@ -276,9 +389,9 @@ export function printStatus(state: CombatState): void {
     console.log(`  ${C.bold}Round ${state.round}${C.reset}`);
     console.log(HR_MAJOR);
     console.log(`  Player  ${hpBar(state.player.health, state.player.maxHealth)}  ${playerHpColor}${playerHp}${C.reset} / ${state.player.maxHealth}`);
-    printActiveEffects('', state.player.currentActiveEffects as ActiveEffect[]);
+    printEffectStateBlock('Active Effects — Player:', state.player.currentActiveEffects as ActiveEffect[]);
     console.log(`  Enemy   ${hpBar(state.enemy.health, state.enemy.maxHealth)}  ${enemyHpColor}${enemyHp}${C.reset} / ${state.enemy.maxHealth}`);
-    printActiveEffects('', state.enemy.currentActiveEffects as ActiveEffect[]);
+    printEffectStateBlock('Active Effects — Enemy:', state.enemy.currentActiveEffects as ActiveEffect[]);
 
     if (state.friendshipCounter > 0) {
         const hearts = '♥'.repeat(state.friendshipCounter) + '♡'.repeat(FRIENDSHIP_COUNTER_MAX - state.friendshipCounter);
