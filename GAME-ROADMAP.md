@@ -13,17 +13,19 @@ Each phase builds on the one before it. `[x]` = done; `[ ]` = pending.
 - [x] Create `debuffs.library.json` with `teir`, `resistedBy`, `resistDR`
 - [x] `effects.library.ts` — unified registry, `lookupEffect`, `getEffectById`, `getEffectByName`, `getEffectType`, `getEffectTeir`
 - [x] `applyEffect(activeEffects, effect, round, options?)` — `none` / `intensity` / `duration` stacking, capped at constants
+- [x] `EffectPayload.rollModifierPerIntensity` — per-intensity roll modifier scaling (complements flat `rollModifier` which never scales)
 - [x] `tickAllEffects(target)` — decrements all non-permanent durations; expired effects returned separately; permanent (−1) never ticks (`Combat/index.ts`)
 - [x] `updateEffectDuration(target, effectId)` — tick a single effect by ID
 - [x] `applyRegen(target)` — sums `payload.regeneration.healthPerRound × intensity` across all active effects; called at round start
 - [x] Tier 1 effect map (`TIER1_EFFECT_MAP`) and `applyTier1CombatEffect` / `applyTier1CombatEffectWithResult`
-- [x] `clearTier1EffectsForType` — removes stale Tier 1 self-buffs on action-type switch
+- [x] `clearTier1EffectsForType` — removes stale Tier 1 self-buffs on action-type switch; debuffs applied by the opponent are exempt and expire naturally
 - [x] `getTargetsResistStatValue` — looks up target's resist stat for Tier 2/3 rolls
 - [ ] `removeEffect(activeEffects, effectId)` — filter by ID (cleanses, dispels, changing actionType)
 - [ ] `getActiveEffectModifiers(activeEffects)` — aggregate stat mods, roll mods, defense mods, advantage grants into one object
 - [ ] `canAct(activeEffects)` — read `skipTurn`, `blockedActionTypes`, `forcedActionType`; return combined restrictions
 - [ ] `processDamageOverTime(activeEffects)` — sum DoT, return total damage + messages
 - [ ] `processRoundStartEffects(state)` — orchestrate: DoT → regen → tick → expire; return updated `CombatState` (regen and ticking are wired individually in the CLI; this unifies them into one reducer call)
+- [ ] `processWorldEffectTick(player): { player: Character; events: string[] }` — DoT / regen / expiry outside combat; called on each map node transition (enables poison, curses, persistent regen while exploring)
 - [ ] Unit tests for all functions above
 
 ---
@@ -60,6 +62,7 @@ Each phase builds on the one before it. `[x]` = done; `[ ]` = pending.
 - [x] `getThornsReflect(bearer): number` — sums `reflectDamage × intensity` across all thorns effects; reflected after any hit
 - [x] `removeRandomBuff(target)` — strips one random buff; used by Heart/Attack on hit
 - [x] `extendRandomBuffDuration(target, amount)` — extends one random buff's duration; used by Heart/Attack on hit
+- [x] `getActiveRollModifier(target): number` — sums flat `rollModifier` and `rollModifierPerIntensity × intensity` across all active effects
 - [ ] `performAttackRoll(attacker, attackType, advantage)` — stub
 - [ ] `performDefenseRoll(defender, attackType, isDefending)` — stub
 - [ ] `calculateBaseDamage(attacker, attackType, advantage)` — stub
@@ -112,6 +115,9 @@ Each phase builds on the one before it. `[x]` = done; `[ ]` = pending.
 - [x] Thorns reflect after any hit (`getThornsReflect`)
 - [x] Heart/Attack specials on hit: strip enemy buff, extend player buff (`removeRandomBuff`, `extendRandomBuffDuration`)
 - [x] Mind/Attack study mark bonus applied to damage roll (`getStudyMarkIntensity`)
+- [x] Signed-term formatting for roll lines — `+ N stat` / `− N stat` / `+ N roll` with colour-coding (red for negative roll modifiers, green for positive)
+- [x] Damage roll logged separately from attack roll, with its own header and delay
+- [x] Damage bonus (`+N mark`) shown inline in the damage formula
 - [ ] Replace inline scenario logic with `resolveCombatRound` reducer (Phase 2c)
 - [ ] Show active buffs/debuffs each round
 - [ ] Add Tier 2/3 effect proc messages
@@ -237,6 +243,8 @@ Each phase builds on the one before it. `[x]` = done; `[ ]` = pending.
 ### 7b–7f — Content & Systems
 
 - [ ] Map content, quest system, NPC/dialogue, shop, rest & recovery (see roadmap sections)
+- [ ] Persistent hazard effects tick on map node transitions — call `processWorldEffectTick` each step so poison, curses, and persistent regen apply while exploring
+- [ ] Active hazard effects shown on the exploration HUD — effectId, remaining duration, DoT amount per step
 
 ---
 
@@ -284,7 +292,15 @@ Each phase builds on the one before it. `[x]` = done; `[ ]` = pending.
 
 - [ ] Audit effect tiers, playtest combat, verify XP curve, tune enemy AI
 
-### 10c — Documentation
+### 10c — Automated Combat Tester
+
+- [x] Python CLI runner — spawns `npm run combat` n times with fixed or random player inputs, streams full output to `testing-logs/`
+- [ ] RNG seed parameter — pass a seed so any specific run can be replayed deterministically
+- [ ] Full active-effect state dump each round — effectId, intensity, remainingDuration, sourceId
+- [ ] Scripted action sequences — pre-defined input files for regression-testing specific interactions (e.g. Mind × 3 → verify Exposed Reasoning stacks to 3)
+- [ ] Assertion layer — flag runs where damage math, effect scaling, or HP deviates from expected spec
+
+### 10d — Documentation
 
 - [x] `docs/effects.md`
 - [x] `docs/combat.md`
