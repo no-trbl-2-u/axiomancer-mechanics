@@ -15,15 +15,14 @@ const fishingVillage: Map = {
   name: 'fishing-village',
   continent: 'coastal-continent',
   description: 'Your home town is filled with familiar faces, salty air as you hear the waves crash in the distance, and old shacks connected to the docks.',
-  startingNode: {
-    id: "fv-1",
-    location: [0, 0],
-    connectedNodes: ["fv-2"]
-  },
-  // @todo: Differentiate between Map and MapState
-  completedNodes: [],
-  availableNodes: ["fv-2"],
-  lockedNodes: ["fv-3", "fv-4", "fv-5", "fv-6", "fv-7", "fv-8", "fv-9", "fv-10"],
+  startNodeId: 'fv-1',
+  exitNodeId: 'fv-10',
+  nodes: [
+    { id: 'fv-1',  type: 'start',   location: [0, 0],   connectedNodes: ['fv-2'] },
+    { id: 'fv-2',  type: 'npc',     location: [1, 0],   connectedNodes: ['fv-3', 'fv-4'] },
+    // TODO: define remaining nodes
+    { id: 'fv-10', type: 'exit',    location: [5, 0],   connectedNodes: [] },
+  ],
   npcs: [],
   enemies: [],
   availableEvents: [],
@@ -38,14 +37,15 @@ const northernForest: Map = {
   name: 'northern-forest',
   continent: 'coastal-continent',
   description: 'TODO',
-  startingNode: {
-    id: "nf-1",
-    location: [0, 0],
-    connectedNodes: ["nf-2", "nf-3"]
-  },
-  completedNodes: [],
-  availableNodes: ["nf-2", "nf-3"],
-  lockedNodes: ["nf-4", "nf-5", "nf-6", "nf-7", "nf-8", "nf-9", "nf-10"],
+  startNodeId: 'nf-1',
+  exitNodeId: 'nf-10',
+  nodes: [
+    { id: 'nf-1',  type: 'start',     location: [0, 0],   connectedNodes: ['nf-2', 'nf-3'] },
+    { id: 'nf-2',  type: 'encounter', location: [1, -1],  connectedNodes: [] },
+    { id: 'nf-3',  type: 'encounter', location: [1, 1],   connectedNodes: [] },
+    // TODO: define remaining nodes
+    { id: 'nf-10', type: 'exit',      location: [5, 0],   connectedNodes: [] },
+  ],
   npcs: [],
   enemies: [],
   availableEvents: [],

@@ -44,6 +44,13 @@ export function createStartingWorld(): WorldState {
       lockedMaps: ['northern-forest'],
       completedMaps: []
     },
-    currentMap: getCoastalMap('fishing-village')
+    currentMap: getCoastalMap('fishing-village'),
+    currentMapState: {
+      mapName: 'fishing-village',
+      completedNodes: [],
+      availableNodes: [fishingVillage.nodes[1]?.id ?? ''],
+      lockedNodes: fishingVillage.nodes.slice(2).map(n => n.id),
+      currentNodeId: fishingVillage.startNodeId,
+    }
   }
 }

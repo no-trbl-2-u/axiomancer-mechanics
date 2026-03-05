@@ -22,7 +22,11 @@ export interface Quest {
 }
 
 /**
- * MapEvents represents the types of events that can occur on a map
+ * MapEvents represents the types of events that can occur on a map node.
+ * Every node has exactly one type, which determines what is triggered when
+ * the player arrives.
+ * - 'start': The entry point of the map (exactly one per map)
+ * - 'exit': The exit point of the map (exactly one per map)
  * - 'encounter': Combat encounter with an enemy
  * - 'boss-encounter': Encounter with a boss enemy
  * - 'event': Story or scripted event
@@ -34,7 +38,18 @@ export interface Quest {
  * - 'other': Miscellaneous event type
  * @todo: Create an EventLibrary (or EventManager) to enumerate and handle these events
  */
-export type MapEvents = 'encounter' | 'boss-encounter' | 'event' | 'treasure' | 'gather' | 'quest' | 'shop' | 'npc' | 'other';
+export type MapEvents =
+    | 'start'
+    | 'exit'
+    | 'encounter'
+    | 'boss-encounter'
+    | 'event'
+    | 'treasure'
+    | 'gather'
+    | 'quest'
+    | 'shop'
+    | 'npc'
+    | 'other';
 
 /**
  * Reward types that can be obtained from events or combat
@@ -87,47 +102,75 @@ interface UniqueEvent {
 type NodeId = string;
 
 /**
- * MapNode represents a location on a map that can be traversed by the player
- * @property id - The unique identifier for this node
- * @property location - The coordinates of this node on the map
- * @property connectedNodes - The nodes that are connected to this node
+ * MapNode represents a location on a map that can be traversed by the player.
+ * @property id             - Unique identifier for this node (e.g. "fv-1")
+ * @property type           - What is triggered when the player arrives at this node
+ * @property location       - [x, y] coordinates used by the frontend renderer
+ * @property connectedNodes - IDs of nodes reachable from this one (directed graph)
+ * @property eventId        - Optional reference to a specific event/encounter in the library.
+ *                            If absent, a random eligible event for this node's type is used.
  */
-interface MapNode {
+export interface MapNode {
     id: NodeId;
-    location: [number, number]
+    type: MapEvents;
+    location: [number, number];
     connectedNodes: NodeId[];
+    eventId?: string;
 }
 
 /**
- * Map is a collection of map nodes that are traversable by the player
- * Represents a game area or level with encounters, events, and NPCs.
- * @property name - The name of the map/area
- * @property continent - The continent the map is located on
- * @property description - A brief description of the map's theme or setting
- * @property numberOfNodes - The number of nodes/locations on this map
- * @property enemies - A list of enemies that can be encountered on the map
- * @property events - Optional: list of events that can occur on the map (TODO: make mandatory)
- * @property npcs - Optional: list of NPCs that can be interacted with on the map (TODO: make mandatory)
- * @property images - Optional: visual assets for the map (mapImage for exploration, combatImage for battles)
+ * Map is the static definition of a traversable area — its nodes, layout,
+ * possible events, and visual assets. Contains no runtime state.
+ *
+ * Runtime progress (which nodes are completed/available/locked) lives in
+ * MapState so this definition is always reusable across play-throughs.
+ *
+ * @property name            - The name of the map/area
+ * @property continent       - The continent the map is located on
+ * @property description     - A brief description of the map's theme or setting
+ * @property nodes           - All MapNode objects in this map (the full node graph)
+ * @property startNodeId     - ID of the entry node (type === 'start')
+ * @property exitNodeId      - ID of the exit node (type === 'exit')
+ * @property availableEvents - Pool of events that can fire on eligible nodes
+ * @property uniqueEvents    - One-time events tied to specific node locations
+ * @property enemies         - Enemies that can appear in encounter nodes on this map
+ * @property npcs            - NPCs that can be interacted with on this map
+ * @property images          - Optional visual assets (exploration view + combat backdrop)
  * @todo Create a collection of maps
- * @todo Implement "Node"
  */
 export interface Map {
     name: MapName;
     continent: ContinentName;
     description: string;
-    startingNode: MapNode;
+    nodes: MapNode[];
+    startNodeId: NodeId;
+    exitNodeId: NodeId;
+    availableEvents: MapEvent[];
+    uniqueEvents: UniqueEvent[];
+    enemies?: Enemy[];
+    npcs?: NPC[];
+    images?: {
+        mapImage: Image;
+        combatImage: Image;
+    };
+}
+
+/**
+ * MapState tracks a player's runtime progress through a Map.
+ * Separated from the static Map definition so maps are reusable across runs.
+ *
+ * @property mapName         - Which map this state belongs to
+ * @property completedNodes  - Nodes the player has already visited and resolved
+ * @property availableNodes  - Nodes currently reachable from the player's position
+ * @property lockedNodes     - Nodes not yet reachable
+ * @property currentNodeId   - The node the player is currently standing on
+ */
+export interface MapState {
+    mapName: MapName;
     completedNodes: NodeId[];
     availableNodes: NodeId[];
     lockedNodes: NodeId[];
-    npcs?: NPC[];
-    enemies?: Enemy[];
-    availableEvents: MapEvent[];
-    uniqueEvents: UniqueEvent[];
-    images?: {
-        mapImage: Image,
-        combatImage: Image
-    }
+    currentNodeId: NodeId;
 }
 
 
@@ -152,12 +195,14 @@ export interface Continent {
 /**
  * World is the aggregation of all world states to maintain
  * a single source of truth for all parts of the world.
- * @property world - Array of all continents available in the game world
+ * @property world            - Array of all continents available in the game world
  * @property currentContinent - The current continent the player is on
- * @property currentMap - The current map the player is on
+ * @property currentMap       - The static definition of the map the player is on
+ * @property currentMapState  - The player's runtime progress through the current map
  */
 export type WorldState = {
     world: Continent[];
     currentContinent: Continent;
     currentMap: Map;
+    currentMapState: MapState;
 }
