@@ -6,6 +6,33 @@
 import { Skill, SkillCategory, SkillsStatType } from './types';
 import { Character } from '../Character/types';
 
+// Re-export skill library and utility functions
+export {
+    // Skill collections
+    skillLibrary,
+    allFallacySkills,
+    allParadoxSkills,
+    bodyFallacySkills,
+    mindFallacySkills,
+    heartFallacySkills,
+    bodyParadoxSkills,
+    mindParadoxSkills,
+    heartParadoxSkills,
+    probabilityParadoxSkills,
+    gameTheoryParadoxSkills,
+    quantumParadoxSkills,
+    infinityParadoxSkills,
+    semanticParadoxSkills,
+    utilitySkills,
+    // Utility functions
+    getSkillsByCategory,
+    getSkillsByAspect,
+    getSkillsByLevel,
+    getSkillById,
+    getLearnableSkills,
+    getSkillStats
+} from './skill.library';
+
 // ============================================================================
 // SKILL CREATION
 // ============================================================================
