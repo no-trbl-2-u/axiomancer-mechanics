@@ -1,6 +1,6 @@
 import { Character, BaseStats } from "./types";
 import { ActiveEffect } from "Effects/types";
-import { Item } from "Items/types";
+import { Item, EquippedItems } from "Items/types";
 import { Enemy } from "Enemy/types";
 import { Stance } from "Combat/types";
 import { deriveStats, deriveNonCombatStats, calculateMaxHealth, calculateMaxMana } from "Utils";
@@ -15,6 +15,7 @@ interface CreateCharacterOptions {
     level: number;
     baseStats: BaseStats;
     inventory?: Item[];
+    equippedItems?: EquippedItems;
     currentActiveEffects?: ActiveEffect[];
 }
 
@@ -24,7 +25,7 @@ interface CreateCharacterOptions {
  * @returns A fully initialised Character
  */
 export function createCharacter(options: CreateCharacterOptions): Character {
-    const { name, level, baseStats, inventory = [], currentActiveEffects = [] } = options;
+    const { name, level, baseStats, inventory = [], equippedItems = {}, currentActiveEffects = [] } = options;
 
     const maxHealth = calculateMaxHealth(level, baseStats);
     const maxMana = calculateMaxMana(level, baseStats);
@@ -42,6 +43,7 @@ export function createCharacter(options: CreateCharacterOptions): Character {
         derivedStats: deriveStats(baseStats),
         nonCombatStats: deriveNonCombatStats(baseStats),
         inventory,
+        equippedItems,
         currentActiveEffects,
     };
 }

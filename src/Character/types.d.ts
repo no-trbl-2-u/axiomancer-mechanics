@@ -1,4 +1,4 @@
-import { Item } from '../Items/types';
+import { Item, EquippedItems } from '../Items/types';
 import { ActiveEffect } from '../Effects/types';
 /**
  * Character module type definitions
@@ -43,8 +43,8 @@ export interface Character {
     derivedStats: DerivedStats;
     nonCombatStats: NonCombatStats;
     inventory: Item[];
+    equippedItems: EquippedItems;
     currentActiveEffects: ActiveEffect[] | [];
-    // TODO: Implement Equipment types
     // TODO: Implement Skills types
     // availableStatPoints: number;
 }
