@@ -99,7 +99,7 @@ interface UniqueEvent {
  * Node Id is in the form of "mapAcronym-number"
  * @example "fv-1"
  */
-type NodeId = string;
+export type NodeId = string;
 
 /**
  * MapNode represents a location on a map that can be traversed by the player.
@@ -112,7 +112,7 @@ type NodeId = string;
  */
 export interface MapNode {
     id: NodeId;
-    type: MapEvents;
+    type?: MapEvents; // if absent, type is randomly assigned per run via initializeMapState()
     location: [number, number];
     connectedNodes: NodeId[];
     eventId?: string;
@@ -163,10 +163,13 @@ export interface Map {
  * @property completedNodes  - Nodes the player has already visited and resolved
  * @property availableNodes  - Nodes currently reachable from the player's position
  * @property lockedNodes     - Nodes not yet reachable
+ * @property nodeTypes       - Types randomly assigned to all nodes at run start; overrides
+ *                            any absent type in the static MapNode definition
  * @property currentNodeId   - The node the player is currently standing on
  */
 export interface MapState {
     mapName: MapName;
+    nodeTypes: Record<NodeId, MapEvents>;
     completedNodes: NodeId[];
     availableNodes: NodeId[];
     lockedNodes: NodeId[];

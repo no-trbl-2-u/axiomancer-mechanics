@@ -35,6 +35,6 @@ export type MapName =
  */
 export type NorthernContinentMapNames =
     'caverns' |
-    'northern-city' |
+    'northern-forest' |
     'connecting-river' |
-    'town-across-river';
+    'town-across-river'

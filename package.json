@@ -11,6 +11,7 @@
     "combat": "ts-node src/CLI/combat.cli.ts",
     "combat:auto": "python3 automation/combat-test.py",
     "character": "ts-node src/CLI/character.cli.ts",
+    "map": "ts-node src/CLI/map.cli.ts",
     "clean": "rm -rf dist",
     "prepublishOnly": "npm run clean && npm run build",
     "test": "echo \"Error: no test specified\" && exit 1",
