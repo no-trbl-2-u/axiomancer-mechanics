@@ -36,7 +36,7 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Collect PR diff (TypeScript files only)
+      - name: Collect PR diff (TypeScript and JSON files)
         run: |
           git diff origin/${{ github.base_ref }}...HEAD -- '*.ts' '*.json' > pr.diff
           echo "Diff size: $(wc -c < pr.diff) bytes"
@@ -48,5 +48,6 @@ jobs:
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_BODY: ${{ github.event.pull_request.body }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
+          COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
           REPO: ${{ github.repository }}
         run: node .github/scripts/pr-review.mjs
