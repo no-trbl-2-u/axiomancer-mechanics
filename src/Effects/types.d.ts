@@ -242,6 +242,48 @@ export interface ActiveEffect {
 // EFFECT APPLICATION RESULT
 // ===============================================
 
+// ===============================================
+// AGGREGATED EFFECT MODIFIERS
+// ===============================================
+
+/**
+ * All stat additive deltas and multiplicative factors aggregated from active effects.
+ * Keyed by EffectStatTarget so callers can look up any specific stat quickly.
+ */
+export type AggregatedStatDeltas = Partial<Record<EffectStatTarget, number>>;
+export type AggregatedStatMultipliers = Partial<Record<EffectStatTarget, number>>;
+
+/**
+ * All mechanical modifications produced by the full set of active effects on a combatant.
+ *
+ * @property statDeltas       - Additive per-stat bonuses/penalties (base stats cascaded to derived)
+ * @property statMultipliers  - Multiplicative per-stat factors (≥1 for buffs, <1 for debuffs)
+ * @property rollModifier     - Total flat + intensity-scaled roll bonus/penalty
+ * @property defenseModifier  - Flat bonus/penalty added to final defense AFTER stance multiplier
+ * @property attackAdvantage  - Stance types on which THIS combatant's attacks gain advantage
+ * @property attackDisadvantage - Stance types on which THIS combatant's attacks suffer disadvantage
+ * @property evasionDisadvantage - Stance types on which OPPONENTS' attacks against this bearer suffer disadvantage
+ * @property skipTurn         - True if any effect forces the combatant to skip their action
+ * @property blockedStances   - Stances the combatant cannot choose this turn
+ * @property forcedStance     - If set, the combatant must use this stance (first wins)
+ */
+export interface AggregatedModifiers {
+  statDeltas: AggregatedStatDeltas;
+  statMultipliers: AggregatedStatMultipliers;
+  rollModifier: number;
+  defenseModifier: number;
+  attackAdvantage: Stance[];
+  attackDisadvantage: Stance[];
+  evasionDisadvantage: Stance[];
+  skipTurn: boolean;
+  blockedStances: Stance[];
+  forcedStance: Stance | null;
+}
+
+// ===============================================
+// EFFECT APPLICATION RESULT
+// ===============================================
+
 /**
  * Result of attempting to apply an effect
  * @property success - Whether the effect was successfully applied

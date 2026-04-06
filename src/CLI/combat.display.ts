@@ -534,6 +534,70 @@ export function printBothDefending(before: number, after: number): void {
     );
 }
 
+// ─── Status Effect Events ─────────────────────────────────────────────────────
+
+/** Prints damage dealt by poison, bleed, burn, and other DoT effects. */
+export function printDotDamage(
+    who: 'player' | 'enemy',
+    combatantName: string,
+    messages: string[],
+    totalDamage: number,
+): void {
+    if (messages.length === 0) return;
+    const label = who === 'player' ? combatantName : combatantName;
+    console.log(sectionHeader(`${label} — Status Damage`));
+    for (const msg of messages) {
+        console.log(`  ${C.brightRed}${msg}${C.reset}`);
+    }
+    console.log(`  ${C.brightRed}${C.bold}${totalDamage} total status damage${C.reset}`);
+}
+
+/** Prints that a combatant's turn is skipped due to stun/sleep/petrify. */
+export function printSkipTurn(
+    who: 'player' | 'enemy',
+    combatantName: string,
+    effectName: string,
+): void {
+    const label = who === 'player' ? 'You are' : `${combatantName} is`;
+    console.log(`\n  ${C.brightRed}${C.bold}${label} ${effectName} — turn skipped!${C.reset}`);
+}
+
+/** Prints that a combatant's stance is forced by charm or a similar effect. */
+export function printForcedStance(
+    who: 'player' | 'enemy',
+    combatantName: string,
+    stance: string,
+    effectName: string,
+): void {
+    const label = who === 'player' ? 'You are' : `${combatantName} is`;
+    console.log(`\n  ${C.brightRed}${label} ${effectName} — forced into ${typeColor(stance)} stance!${C.reset}`);
+}
+
+/** Prints that a stance is blocked for a combatant (silence, root, etc.). */
+export function printBlockedStance(
+    who: 'player' | 'enemy',
+    combatantName: string,
+    stances: string[],
+    effectName: string,
+): void {
+    const label  = who === 'player' ? 'You are' : `${combatantName} is`;
+    const labels = stances.map(s => typeColor(s)).join(', ');
+    console.log(`\n  ${C.yellow}${label} ${effectName} — ${labels} stance(s) blocked!${C.reset}`);
+}
+
+/** Prints that an advantage result was overridden by an active effect. */
+export function printAdvantageOverride(
+    who: 'player' | 'enemy',
+    effectName: string,
+    newAdv: Advantage,
+): void {
+    const label = who === 'player' ? 'Player' : 'Enemy';
+    const advStr = newAdv === 'advantage'    ? `${C.brightGreen}ADVANTAGE${C.reset}`
+                 : newAdv === 'disadvantage' ? `${C.brightRed}DISADVANTAGE${C.reset}`
+                 : `${C.yellow}NEUTRAL${C.reset}`;
+    console.log(`  ${C.dim}[${label}] ${effectName} overrides advantage → ${advStr}${C.reset}`);
+}
+
 export function printCombatEnd(state: CombatState): void {
     console.log(`\n${HR_MAJOR}`);
 

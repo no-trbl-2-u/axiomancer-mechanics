@@ -13,7 +13,6 @@ import {
     getAttackStatForType,
     getBaseStatForType,
     getDefenseStatForType,
-    getActiveRollModifier,
     calculateFinalDamage,
     applyDamage,
     tickAllEffects,
@@ -31,7 +30,15 @@ import {
     DEFENSE_MULTIPLIERS,
     PASSIVE_DEFENSE_MULTIPLIER,
 } from '../Game/game-mechanics.constants';
-import { applyTier1CombatEffectWithResult, clearTier1EffectsForType } from '../Effects';
+import {
+    applyTier1CombatEffectWithResult,
+    canAct,
+    clearTier1EffectsForType,
+    getActiveEffectModifiers,
+    processDamageOverTime,
+} from '../Effects';
+import { ActiveEffect } from '../Effects/types';
+import { EffectStatTarget } from '../Effects/types';
 import { lookupEffect } from '../Effects/effects.library';
 import {
     typeColor,
@@ -52,6 +59,11 @@ import {
     printRegenHeal,
     printThornsReflect,
     printHeartAttackSpecials,
+    printDotDamage,
+    printSkipTurn,
+    printForcedStance,
+    printBlockedStance,
+    printAdvantageOverride,
 } from './combat.display';
 
 const skipDelays = process.env.COMBAT_NO_DELAY === '1';
@@ -61,26 +73,88 @@ async function delay(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+// ─── Local helpers ────────────────────────────────────────────────────────────
+
+/**
+ * Returns the effective attack modifier (base stat + effect stat delta + roll modifier).
+ * Replaces bare getActiveRollModifier() calls so stat-buffing effects (e.g. Achilles' Momentum)
+ * are correctly included in damage rolls.
+ */
+function getEffectiveAttackMod(target: Character | Enemy, type: Stance): {
+    statTotal: number;
+    rollMod: number;
+    mod: number;
+} {
+    const mods  = getActiveEffectModifiers(target.currentActiveEffects as ActiveEffect[]);
+    const base  = getAttackStatForType(target, type);
+    const key   = (type === 'body' ? 'physicalAttack' : type === 'mind' ? 'mentalAttack' : 'emotionalAttack') as EffectStatTarget;
+    const delta = mods.statDeltas[key] ?? 0;
+    const statTotal = base + delta;
+    return { statTotal, rollMod: mods.rollModifier, mod: statTotal + mods.rollModifier };
+}
+
+/**
+ * Returns the effective damage reduction for a defender, incorporating stat deltas and
+ * the flat defense modifier from active effects.
+ *
+ * Formula: (baseDefense + statDelta) × stanceMultiplier + flatDefenseModifier
+ */
+function getEffectiveDefenseReduction(
+    target: Character | Enemy,
+    attackType: Stance,
+    multiplier: number,
+): number {
+    const mods = getActiveEffectModifiers(target.currentActiveEffects as ActiveEffect[]);
+    const base = getDefenseStatForType(target, attackType);
+    const key  = (attackType === 'body' ? 'physicalDefense' : attackType === 'mind' ? 'mentalDefense' : 'emotionalDefense') as EffectStatTarget;
+    const delta = mods.statDeltas[key] ?? 0;
+    return (base + delta) * multiplier + mods.defenseModifier;
+}
+
 // ─── Player Input ─────────────────────────────────────────────────────────────
 
-async function promptPlayerChoice(): Promise<{
+async function promptPlayerChoice(restrictions: {
+    blockedStances: Stance[];
+    forcedStance: Stance | null;
+} = { blockedStances: [], forcedStance: null }): Promise<{
     reactionType: Stance;
     action: 'attack' | 'defend';
 }> {
+    const allChoices = [
+        { name: `${typeColor('heart', 'Heart')}  (emotional)`, value: 'heart' as Stance },
+        { name: `${typeColor('body', 'Body')}   (physical)`,   value: 'body'  as Stance },
+        { name: `${typeColor('mind', 'Mind')}   (mental)`,     value: 'mind'  as Stance },
+    ];
+
+    // Apply forced stance or filter out blocked stances
+    const stanceChoices = restrictions.forcedStance
+        ? allChoices.filter(c => c.value === restrictions.forcedStance)
+        : allChoices.filter(c => !restrictions.blockedStances.includes(c.value));
+
+    // Guard: if all stances somehow blocked, fall back to full list
+    const safeChoices = stanceChoices.length > 0 ? stanceChoices : allChoices;
+
+    if (safeChoices.length === 1) {
+        // Only one stance available — prompt only for action
+        const { action } = await inquirer.prompt([{
+            type: 'rawlist',
+            name:    'action',
+            message: `Action (${safeChoices[0].name})...`,
+            choices: ['attack', 'defend'],
+        }]);
+        return { reactionType: safeChoices[0].value, action };
+    }
+
     return inquirer.prompt([
         {
-            type: 'rawlist',
-            name: 'reactionType',
+            type:    'rawlist',
+            name:    'reactionType',
             message: 'Respond with...',
-            choices: [
-                { name: `${typeColor('heart', 'Heart')}  (emotional)`, value: 'heart' },
-                { name: `${typeColor('body', 'Body')}   (physical)`, value: 'body' },
-                { name: `${typeColor('mind', 'Mind')}   (mental)`, value: 'mind' },
-            ],
+            choices: safeChoices,
         },
         {
-            type: 'rawlist',
-            name: 'action',
+            type:    'rawlist',
+            name:    'action',
             message: 'Action...',
             choices: ['attack', 'defend'],
         },
@@ -113,16 +187,12 @@ async function resolveAttackVsAttack(
     const playerDieRoll = createDieRoll(playerAdv);
     const enemyDieRoll  = createDieRoll(enemyAdv);
 
-    const pRollMod  = getActiveRollModifier(player);
-    const pBaseStat = getAttackStatForType(player, playerType);
-    const pMod      = pBaseStat + pRollMod;
-    const playerRaw = playerDieRoll();
+    const { statTotal: pBaseStat, rollMod: pRollMod, mod: pMod } = getEffectiveAttackMod(player, playerType);
+    const playerRaw   = playerDieRoll();
     const playerTotal = playerRaw + pMod;
 
-    const eRollMod  = getActiveRollModifier(enemy);
-    const eBaseStat = getAttackStatForType(enemy, enemyType);
-    const eMod      = eBaseStat + eRollMod;
-    const enemyRaw  = enemyDieRoll();
+    const { statTotal: eBaseStat, rollMod: eRollMod, mod: eMod } = getEffectiveAttackMod(enemy, enemyType);
+    const enemyRaw   = enemyDieRoll();
     const enemyTotal = enemyRaw + eMod;
 
     printContestHeader(
@@ -136,14 +206,15 @@ async function resolveAttackVsAttack(
     await delay(1500);
 
     if (playerTotal > enemyTotal) {
-        const baseDefense   = getDefenseStatForType(enemy, enemyType);
         const studyBonus    = playerType === 'mind' ? getStudyMarkIntensity(enemy) : 0;
         const damageRaw     = playerDieRoll();
         const damageRoll    = damageRaw + pMod;
         console.log('\n[ Player Damage Roll ]');
         printRollLine('Player damage roll:', damageRaw, pBaseStat, playerAdv, pRollMod || undefined);
         await delay(800);
-        const finalDamage   = calculateFinalDamage(damageRoll, baseDefense * PASSIVE_DEFENSE_MULTIPLIER, false, studyBonus);
+        const baseDefense  = getDefenseStatForType(enemy, enemyType);
+        const damageReduce = getEffectiveDefenseReduction(enemy, enemyType, PASSIVE_DEFENSE_MULTIPLIER);
+        const finalDamage  = calculateFinalDamage(damageRoll, damageReduce, false, studyBonus);
 
         printDamageCalc({
             header: 'Player Damage',
@@ -180,14 +251,15 @@ async function resolveAttackVsAttack(
     }
 
     if (enemyTotal > playerTotal) {
-        const baseDefense = getBaseStatForType(player, playerType);
         const studyBonus  = enemyType === 'mind' ? getStudyMarkIntensity(player) : 0;
         const damageRaw   = enemyDieRoll();
         const damageRoll  = damageRaw + eMod;
         console.log('\n[ Enemy Damage Roll ]');
         printRollLine('Enemy damage roll:', damageRaw, eBaseStat, enemyAdv, eRollMod || undefined);
         await delay(800);
-        const finalDamage = calculateFinalDamage(damageRoll, baseDefense * PASSIVE_DEFENSE_MULTIPLIER, false, studyBonus);
+        const baseDefense  = getDefenseStatForType(player, playerType);
+        const damageReduce = getEffectiveDefenseReduction(player, playerType, PASSIVE_DEFENSE_MULTIPLIER);
+        const finalDamage  = calculateFinalDamage(damageRoll, damageReduce, false, studyBonus);
 
         printDamageCalc({
             header: 'Enemy Damage',
@@ -232,24 +304,23 @@ async function resolvePlayerAttackEnemyDefend(
     playerAction: 'attack' | 'defend',
 ): Promise<{ player: Character; enemy: Enemy }> {
     const playerDieRoll = createDieRoll(playerAdv);
-    const pRollMod      = getActiveRollModifier(player);
-    const pBaseStat     = getAttackStatForType(player, playerType);
-    const attackMod     = pBaseStat + pRollMod;
-    const playerRaw     = playerDieRoll();
+    const { statTotal: pBaseStat, rollMod: pRollMod, mod: attackMod } = getEffectiveAttackMod(player, playerType);
+    const playerRaw = playerDieRoll();
 
     console.log('\n[ Player Attack Roll ]');
     printRollLine('Player attack roll:', playerRaw, pBaseStat, playerAdv, pRollMod || undefined);
     await delay(1500);
 
-    const baseDefense      = getDefenseStatForType(enemy, enemyType);
+    const baseDefense       = getDefenseStatForType(enemy, enemyType);
     const defenseMultiplier = DEFENSE_MULTIPLIERS[enemyAdv];
-    const studyBonus       = playerType === 'mind' ? getStudyMarkIntensity(enemy) : 0;
-    const damageRaw        = playerDieRoll();
-    const damageRoll       = damageRaw + attackMod;
+    const studyBonus        = playerType === 'mind' ? getStudyMarkIntensity(enemy) : 0;
+    const damageRaw         = playerDieRoll();
+    const damageRoll        = damageRaw + attackMod;
     console.log('\n[ Player Damage Roll ]');
     printRollLine('Player damage roll:', damageRaw, pBaseStat, playerAdv, pRollMod || undefined);
     await delay(800);
-    const finalDamage      = calculateFinalDamage(damageRoll, baseDefense * defenseMultiplier, false, studyBonus);
+    const damageReduce = getEffectiveDefenseReduction(enemy, enemyType, defenseMultiplier);
+    const finalDamage  = calculateFinalDamage(damageRoll, damageReduce, false, studyBonus);
 
     printDamageCalc({
         header: 'Player Damage vs Defending Enemy',
@@ -294,16 +365,14 @@ async function resolvePlayerDefendEnemyAttack(
     enemyAdv: Advantage,
 ): Promise<{ player: Character; enemy: Enemy }> {
     const enemyDieRoll = createDieRoll(enemyAdv);
-    const eRollMod     = getActiveRollModifier(enemy);
-    const eBaseStat    = getAttackStatForType(enemy, enemyType);
-    const attackMod    = eBaseStat + eRollMod;
-    const enemyRaw     = enemyDieRoll();
+    const { statTotal: eBaseStat, rollMod: eRollMod, mod: attackMod } = getEffectiveAttackMod(enemy, enemyType);
+    const enemyRaw = enemyDieRoll();
 
     console.log('\n[ Enemy Attack Roll ]');
     printRollLine('Enemy attack roll:', enemyRaw, eBaseStat, enemyAdv, eRollMod || undefined);
     await delay(1500);
 
-    const baseDefense       = getBaseStatForType(player, playerType);
+    const baseDefense       = getDefenseStatForType(player, playerType);
     const defenseMultiplier = DEFENSE_MULTIPLIERS[playerAdv];
     const studyBonus        = enemyType === 'mind' ? getStudyMarkIntensity(player) : 0;
     const damageRaw         = enemyDieRoll();
@@ -311,7 +380,8 @@ async function resolvePlayerDefendEnemyAttack(
     console.log('\n[ Enemy Damage Roll ]');
     printRollLine('Enemy damage roll:', damageRaw, eBaseStat, enemyAdv, eRollMod || undefined);
     await delay(800);
-    const finalDamage       = calculateFinalDamage(damageRoll, baseDefense * defenseMultiplier, false, studyBonus);
+    const damageReduce = getEffectiveDefenseReduction(player, playerType, defenseMultiplier);
+    const finalDamage  = calculateFinalDamage(damageRoll, damageReduce, false, studyBonus);
 
     printDamageCalc({
         header: 'Enemy Damage vs Defending Player',
@@ -346,10 +416,25 @@ async function resolvePlayerDefendEnemyAttack(
 // ─── Main Turn Loop ───────────────────────────────────────────────────────────
 
 async function runCombatTurn(state: CombatState): Promise<CombatState> {
-    // ── Regen phase (start of round, before player choice) ──────────────────
+    // ── DoT + Regen phase (start of round, before player choice) ────────────
     let player = state.player;
     let enemy  = state.enemy;
 
+    // Damage over time
+    const playerDot = processDamageOverTime(player.currentActiveEffects as ActiveEffect[]);
+    if (playerDot.totalDamage > 0) {
+        player = applyDamage(player, playerDot.totalDamage) as Character;
+        printDotDamage('player', player.name, playerDot.messages, playerDot.totalDamage);
+        await delay(600);
+    }
+    const enemyDot = processDamageOverTime(enemy.currentActiveEffects as ActiveEffect[]);
+    if (enemyDot.totalDamage > 0) {
+        enemy = applyDamage(enemy, enemyDot.totalDamage) as Enemy;
+        printDotDamage('enemy', enemy.name, enemyDot.messages, enemyDot.totalDamage);
+        await delay(600);
+    }
+
+    // Regeneration
     const playerRegen = applyRegen(player);
     player = playerRegen.target as Character;
     printRegenHeal('player', player.name, playerRegen.healed);
@@ -360,10 +445,91 @@ async function runCombatTurn(state: CombatState): Promise<CombatState> {
 
     printStatus({ ...state, player, enemy });
 
-    const { reactionType, action } = await promptPlayerChoice();
-    const enemyAction   = determineEnemyAction(state.enemy.logic);
-    const playerAdvantage = determineAdvantage(reactionType, enemyAction.type);
-    const enemyAdvantage  = determineAdvantage(enemyAction.type, reactionType);
+    // ── Resolve action restrictions ──────────────────────────────────────────
+    const playerRestrictions = canAct(player.currentActiveEffects as ActiveEffect[]);
+    const enemyRestrictions  = canAct(enemy.currentActiveEffects as ActiveEffect[]);
+
+    // ── Player choice (with restriction enforcement) ─────────────────────────
+    let reactionType: Stance;
+    let action: 'attack' | 'defend';
+
+    if (playerRestrictions.skipTurn) {
+        const skipEffect = (player.currentActiveEffects as ActiveEffect[])
+            .find(ae => lookupEffect(ae.effectId)?.payload.actionRestriction?.skipTurn);
+        const skipName = skipEffect ? (lookupEffect(skipEffect.effectId)?.name ?? 'stun') : 'stun';
+        printSkipTurn('player', player.name, skipName);
+        reactionType = playerRestrictions.forcedStance ?? 'body';
+        action = 'defend';
+    } else {
+        if (playerRestrictions.forcedStance) {
+            const forcedEffect = (player.currentActiveEffects as ActiveEffect[])
+                .find(ae => lookupEffect(ae.effectId)?.payload.actionRestriction?.forcedStance);
+            const name = forcedEffect ? (lookupEffect(forcedEffect.effectId)?.name ?? 'charm') : 'charm';
+            printForcedStance('player', player.name, playerRestrictions.forcedStance, name);
+        } else if (playerRestrictions.blockedStances.length > 0) {
+            const blockedEffect = (player.currentActiveEffects as ActiveEffect[])
+                .find(ae => (lookupEffect(ae.effectId)?.payload.actionRestriction?.blockedStances?.length ?? 0) > 0);
+            const name = blockedEffect ? (lookupEffect(blockedEffect.effectId)?.name ?? 'silence') : 'silence';
+            printBlockedStance('player', player.name, playerRestrictions.blockedStances, name);
+        }
+        const choice = await promptPlayerChoice(playerRestrictions);
+        reactionType = choice.reactionType;
+        action       = choice.action;
+    }
+
+    // ── Enemy choice (with restriction enforcement) ──────────────────────────
+    let enemyAction = determineEnemyAction(state.enemy.logic);
+
+    if (enemyRestrictions.skipTurn) {
+        const skipEffect = (enemy.currentActiveEffects as ActiveEffect[])
+            .find(ae => lookupEffect(ae.effectId)?.payload.actionRestriction?.skipTurn);
+        const skipName = skipEffect ? (lookupEffect(skipEffect.effectId)?.name ?? 'stun') : 'stun';
+        printSkipTurn('enemy', enemy.name, skipName);
+        enemyAction = { type: enemyRestrictions.forcedStance ?? enemyAction.type, action: 'defend' };
+    } else {
+        if (enemyRestrictions.forcedStance) {
+            const forcedEffect = (enemy.currentActiveEffects as ActiveEffect[])
+                .find(ae => lookupEffect(ae.effectId)?.payload.actionRestriction?.forcedStance);
+            const name = forcedEffect ? (lookupEffect(forcedEffect.effectId)?.name ?? 'charm') : 'charm';
+            printForcedStance('enemy', enemy.name, enemyRestrictions.forcedStance, name);
+            enemyAction = { ...enemyAction, type: enemyRestrictions.forcedStance };
+        } else if (enemyRestrictions.blockedStances.includes(enemyAction.type)) {
+            const allStances: Stance[] = ['body', 'mind', 'heart'];
+            const allowed = allStances.filter(s => !enemyRestrictions.blockedStances.includes(s));
+            if (allowed.length > 0) {
+                enemyAction = { ...enemyAction, type: allowed[Math.floor(Math.random() * allowed.length)] };
+            }
+        }
+    }
+
+    // ── Advantage (RPS base + active-effect overrides) ───────────────────────
+    let playerAdvantage = determineAdvantage(reactionType, enemyAction.type);
+    let enemyAdvantage  = determineAdvantage(enemyAction.type, reactionType);
+
+    const playerMods = getActiveEffectModifiers(player.currentActiveEffects as ActiveEffect[]);
+    const enemyMods  = getActiveEffectModifiers(enemy.currentActiveEffects as ActiveEffect[]);
+
+    // Player attacking: check player's own attack boosts/penalties and enemy evasion
+    if (playerMods.attackAdvantage.includes(enemyAction.type)) {
+        playerAdvantage = 'advantage';
+        printAdvantageOverride('player', 'Haste/buff', 'advantage');
+    } else if (playerMods.attackDisadvantage.includes(reactionType) ||
+               enemyMods.evasionDisadvantage.includes(reactionType)) {
+        playerAdvantage = 'disadvantage';
+        const src = playerMods.attackDisadvantage.includes(reactionType) ? 'Status debuff' : 'Enemy evasion';
+        printAdvantageOverride('player', src, 'disadvantage');
+    }
+
+    // Enemy attacking: check enemy's own attack boosts/penalties and player evasion
+    if (enemyMods.attackAdvantage.includes(reactionType)) {
+        enemyAdvantage = 'advantage';
+        printAdvantageOverride('enemy', 'Haste/buff', 'advantage');
+    } else if (enemyMods.attackDisadvantage.includes(enemyAction.type) ||
+               playerMods.evasionDisadvantage.includes(enemyAction.type)) {
+        enemyAdvantage = 'disadvantage';
+        const src = enemyMods.attackDisadvantage.includes(enemyAction.type) ? 'Status debuff' : 'Player evasion';
+        printAdvantageOverride('enemy', src, 'disadvantage');
+    }
 
     printRoundActions(action, reactionType, enemyAction.action, enemyAction.type);
     printTypeMatchup(reactionType, enemyAction.type, playerAdvantage, enemyAdvantage);

@@ -1,9 +1,9 @@
 import { Character } from 'Character/types';
 import { Enemy, EnemyTier1EffectMap } from 'Enemy/types';
-import { Stance, CombatAction } from 'Combat/types';
-import { ActiveEffect, Effect, EffectApplicationResult } from './types';
+import { Stance, CombatAction, CombatState } from 'Combat/types';
+import { ActiveEffect, AggregatedModifiers, AggregatedStatDeltas, Effect, EffectApplicationResult, EffectStatTarget } from './types';
 import { lookupEffect } from './effects.library';
-import { MAX_EFFECT_INTENSITY, MAX_EFFECT_DURATION } from '../Game/game-mechanics.constants';
+import { MAX_EFFECT_INTENSITY, MAX_EFFECT_DURATION, STAT_MULTIPLIERS } from '../Game/game-mechanics.constants';
 
 // ===============================================
 // STACKING OPTIONS
@@ -332,4 +332,328 @@ export function getTargetsResistStatValue(
     const resistStat = activeEffect.resistedBy as Stance | undefined;
     if (!resistStat) return 0;
     return target.baseStats[resistStat] ?? 0;
+}
+
+// ===============================================
+// EFFECT REMOVAL
+// ===============================================
+
+/**
+ * Removes a specific effect by ID from an active-effects array.
+ * Pure function — does not mutate anything.
+ * Used for dispels, cleanses, and Phase 2b skill interactions.
+ *
+ * @param activeEffects - Current array of active effects
+ * @param effectId      - The effectId to remove
+ * @returns A new array without the named effect
+ */
+export function removeEffect(activeEffects: ActiveEffect[], effectId: string): ActiveEffect[] {
+    return activeEffects.filter(ae => ae.effectId !== effectId);
+}
+
+// ===============================================
+// AGGREGATE ALL ACTIVE-EFFECT MODIFIERS
+// ===============================================
+
+/**
+ * Expands a base-stat change into its cascaded derived-stat deltas.
+ * A `+2 body` change adds +2×ATTACK to physicalAttack, +2×SKILL to physicalSkill, etc.
+ * Derived-stat targets are returned as-is.
+ */
+function cascadeBaseStat(stat: EffectStatTarget, delta: number): AggregatedStatDeltas {
+    switch (stat) {
+        case 'body':
+            return {
+                physicalAttack:  delta * STAT_MULTIPLIERS.ATTACK,
+                physicalSkill:   delta * STAT_MULTIPLIERS.SKILL,
+                physicalDefense: delta * STAT_MULTIPLIERS.DEFENSE,
+            };
+        case 'mind':
+            return {
+                mentalAttack:  delta * STAT_MULTIPLIERS.ATTACK,
+                mentalSkill:   delta * STAT_MULTIPLIERS.SKILL,
+                mentalDefense: delta * STAT_MULTIPLIERS.DEFENSE,
+            };
+        case 'heart':
+            return {
+                emotionalAttack:  delta * STAT_MULTIPLIERS.ATTACK,
+                emotionalSkill:   delta * STAT_MULTIPLIERS.SKILL,
+                emotionalDefense: delta * STAT_MULTIPLIERS.DEFENSE,
+            };
+        default:
+            return { [stat]: delta } as AggregatedStatDeltas;
+    }
+}
+
+/**
+ * Aggregates every payload field across all active effects into one flat object.
+ * Pure function — call once per combatant per round to avoid repeated scanning.
+ *
+ * Advantage/disadvantage semantics:
+ *   - `grantAdvantage` on any effect type → bearer's own attacks gain advantage on those types.
+ *   - `grantDisadvantage` on a BUFF  → evasion: opponents attacking the bearer get disadvantage.
+ *   - `grantDisadvantage` on a DEBUFF → bearer's own attacks suffer disadvantage on those types.
+ *
+ * Stat multipliers stack multiplicatively (raised to currentIntensity so a 1.5× at intensity 2
+ * becomes 1.5² = 2.25×); additive deltas scale linearly with intensity.
+ */
+export function getActiveEffectModifiers(activeEffects: ActiveEffect[]): AggregatedModifiers {
+    const result: AggregatedModifiers = {
+        statDeltas:          {},
+        statMultipliers:     {},
+        rollModifier:        0,
+        defenseModifier:     0,
+        attackAdvantage:     [],
+        attackDisadvantage:  [],
+        evasionDisadvantage: [],
+        skipTurn:            false,
+        blockedStances:      [],
+        forcedStance:        null,
+    };
+
+    for (const ae of activeEffects) {
+        const def = lookupEffect(ae.effectId);
+        if (!def) continue;
+        const intensity = ae.currentIntensity ?? 1;
+        const { payload } = def;
+
+        // ── Stat modifiers ───────────────────────────────────────────────────
+        for (const mod of payload.statModifiers ?? []) {
+            if (mod.isMultiplier) {
+                // Multiplicative: apply exponent equal to intensity so stacking amplifies correctly
+                const factor = Math.pow(mod.value, intensity);
+                result.statMultipliers[mod.stat] = (result.statMultipliers[mod.stat] ?? 1) * factor;
+            } else {
+                // Additive: cascade base-stat changes to derived stats and accumulate
+                const cascaded = cascadeBaseStat(mod.stat, mod.value * intensity);
+                for (const [key, val] of Object.entries(cascaded) as [EffectStatTarget, number][]) {
+                    result.statDeltas[key] = (result.statDeltas[key] ?? 0) + val;
+                }
+            }
+        }
+
+        // ── Roll modifier ────────────────────────────────────────────────────
+        result.rollModifier +=
+            (payload.rollModifier            ?? 0) +
+            (payload.rollModifierPerIntensity ?? 0) * intensity;
+
+        // ── Defense modifier (flat, post-multiplier) ─────────────────────────
+        result.defenseModifier += payload.defenseModifier ?? 0;
+
+        // ── Advantage modifiers ──────────────────────────────────────────────
+        const adv = payload.advantageModifier;
+        if (adv) {
+            if (adv.grantAdvantage) {
+                result.attackAdvantage.push(...adv.grantAdvantage);
+            }
+            if (adv.grantDisadvantage) {
+                if (def.type === 'buff') {
+                    // Evasion buff: opponents attacking the bearer suffer disadvantage
+                    result.evasionDisadvantage.push(...adv.grantDisadvantage);
+                } else {
+                    // Debuff: bearer's own attacks suffer disadvantage
+                    result.attackDisadvantage.push(...adv.grantDisadvantage);
+                }
+            }
+        }
+
+        // ── Action restrictions ───────────────────────────────────────────────
+        const ar = payload.actionRestriction;
+        if (ar) {
+            if (ar.skipTurn)  result.skipTurn = true;
+            if (ar.blockedStances) result.blockedStances.push(...ar.blockedStances);
+            if (ar.forcedStance && !result.forcedStance) result.forcedStance = ar.forcedStance;
+        }
+    }
+
+    return result;
+}
+
+// ===============================================
+// ACTION RESTRICTION CHECK
+// ===============================================
+
+/**
+ * Returns only the action-restriction fields from the aggregated modifiers.
+ * Use this to check whether a combatant can act normally this turn.
+ *
+ * @param activeEffects - The combatant's current active effects
+ * @returns skipTurn, blockedStances, forcedStance
+ */
+export function canAct(activeEffects: ActiveEffect[]): {
+    skipTurn: boolean;
+    blockedStances: Stance[];
+    forcedStance: Stance | null;
+} {
+    const mods = getActiveEffectModifiers(activeEffects);
+    return {
+        skipTurn:       mods.skipTurn,
+        blockedStances: mods.blockedStances,
+        forcedStance:   mods.forcedStance,
+    };
+}
+
+// ===============================================
+// DAMAGE OVER TIME
+// ===============================================
+
+/**
+ * Sums all DoT damage from active effects without mutating state.
+ * Returns total damage and a per-effect message array for the battle log.
+ *
+ * @param activeEffects - The combatant's current active effects
+ */
+export function processDamageOverTime(
+    activeEffects: ActiveEffect[],
+): { totalDamage: number; messages: string[] } {
+    let totalDamage = 0;
+    const messages: string[] = [];
+
+    for (const ae of activeEffects) {
+        const def = lookupEffect(ae.effectId);
+        const dot = def?.payload.damageOverTime;
+        if (!dot || dot.damagePerRound <= 0) continue;
+        const intensity = ae.currentIntensity ?? 1;
+        const damage    = dot.damagePerRound * intensity;
+        totalDamage    += damage;
+        messages.push(`${def!.name} deals ${damage} damage (${dot.damageType}).`);
+    }
+
+    return { totalDamage, messages };
+}
+
+// ===============================================
+// ROUND-START EFFECT ORCHESTRATION
+// ===============================================
+
+/**
+ * Orchestrates all start-of-round effect processing for both combatants:
+ *   1. DoT damage applied to player and enemy
+ *   2. Regeneration applied to player and enemy
+ *
+ * Tick/expiry is NOT performed here — call tickAllEffects at round end as before.
+ *
+ * @param state - Current combat state
+ * @returns Updated CombatState and an array of event strings for the battle log
+ */
+export function processRoundStartEffects(state: CombatState): {
+    state: CombatState;
+    events: string[];
+} {
+    const events: string[] = [];
+    let { player, enemy } = state;
+
+    // ── Player DoT ───────────────────────────────────────────────────────────
+    const playerDot = processDamageOverTime(player.currentActiveEffects as ActiveEffect[]);
+    if (playerDot.totalDamage > 0) {
+        const newHp = Math.max(0, player.health - playerDot.totalDamage);
+        player      = { ...player, health: newHp };
+        events.push(...playerDot.messages.map(m => `[Player] ${m}`));
+    }
+
+    // ── Enemy DoT ────────────────────────────────────────────────────────────
+    const enemyDot = processDamageOverTime(enemy.currentActiveEffects as ActiveEffect[]);
+    if (enemyDot.totalDamage > 0) {
+        const newHp = Math.max(0, enemy.health - enemyDot.totalDamage);
+        enemy       = { ...enemy, health: newHp };
+        events.push(...enemyDot.messages.map(m => `[Enemy] ${m}`));
+    }
+
+    // ── Player Regen ─────────────────────────────────────────────────────────
+    let playerHealed = 0;
+    for (const ae of player.currentActiveEffects as ActiveEffect[]) {
+        const def      = lookupEffect(ae.effectId);
+        const perRound = def?.payload.regeneration?.healthPerRound ?? 0;
+        if (perRound === 0) continue;
+        const amount = perRound * (ae.currentIntensity ?? 1);
+        playerHealed += amount;
+    }
+    if (playerHealed !== 0) {
+        const newHp = Math.min(player.maxHealth, Math.max(0, player.health + playerHealed));
+        player = { ...player, health: newHp };
+        if (playerHealed > 0) events.push(`[Player] Regenerated ${playerHealed} HP.`);
+    }
+
+    // ── Enemy Regen ──────────────────────────────────────────────────────────
+    let enemyHealed = 0;
+    for (const ae of enemy.currentActiveEffects as ActiveEffect[]) {
+        const def      = lookupEffect(ae.effectId);
+        const perRound = def?.payload.regeneration?.healthPerRound ?? 0;
+        if (perRound === 0) continue;
+        const amount = perRound * (ae.currentIntensity ?? 1);
+        enemyHealed += amount;
+    }
+    if (enemyHealed !== 0) {
+        const newHp = Math.min(enemy.maxHealth, Math.max(0, enemy.health + enemyHealed));
+        enemy = { ...enemy, health: newHp };
+        if (enemyHealed > 0) events.push(`[Enemy] Regenerated ${enemyHealed} HP.`);
+    }
+
+    return { state: { ...state, player, enemy }, events };
+}
+
+// ===============================================
+// WORLD EFFECT TICK (EXPLORATION)
+// ===============================================
+
+/**
+ * Applies DoT, regeneration, and ticks effect durations for a player outside combat.
+ * Call this on each map-node transition so status effects persist during exploration.
+ *
+ * @param player - The current player character
+ * @returns Updated player and an event-message array for the exploration HUD
+ */
+export function processWorldEffectTick(player: Character): {
+    player: Character;
+    events: string[];
+} {
+    const events: string[] = [];
+    let updated = player;
+
+    // ── DoT ──────────────────────────────────────────────────────────────────
+    const dot = processDamageOverTime(updated.currentActiveEffects as ActiveEffect[]);
+    if (dot.totalDamage > 0) {
+        const newHp = Math.max(0, updated.health - dot.totalDamage);
+        updated     = { ...updated, health: newHp };
+        events.push(...dot.messages);
+    }
+
+    // ── Regen ─────────────────────────────────────────────────────────────────
+    let healed = 0;
+    for (const ae of updated.currentActiveEffects as ActiveEffect[]) {
+        const def      = lookupEffect(ae.effectId);
+        const perRound = def?.payload.regeneration?.healthPerRound ?? 0;
+        if (perRound === 0) continue;
+        const amount = perRound * (ae.currentIntensity ?? 1);
+        healed      += amount;
+    }
+    if (healed !== 0) {
+        const newHp = Math.min(updated.maxHealth, Math.max(0, updated.health + healed));
+        updated     = { ...updated, health: newHp };
+        if (healed > 0) events.push(`Regenerated ${healed} HP.`);
+    }
+
+    // ── Tick durations + collect expired ─────────────────────────────────────
+    const remaining: ActiveEffect[] = [];
+    const expired:   ActiveEffect[] = [];
+    for (const ae of updated.currentActiveEffects as ActiveEffect[]) {
+        if (ae.remainingDuration === -1) {
+            remaining.push(ae); // permanent, never ticks
+            continue;
+        }
+        const ticked = { ...ae, remainingDuration: ae.remainingDuration - 1 };
+        if (ticked.remainingDuration <= 0) {
+            expired.push(ticked);
+        } else {
+            remaining.push(ticked);
+        }
+    }
+    updated = { ...updated, currentActiveEffects: remaining };
+
+    for (const ae of expired) {
+        const def = lookupEffect(ae.effectId);
+        if (def) events.push(`${def.name} has faded.`);
+    }
+
+    return { player: updated, events };
 }
