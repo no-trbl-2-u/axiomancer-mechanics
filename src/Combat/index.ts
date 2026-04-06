@@ -21,8 +21,10 @@ import {
   BattleLogEntry,
   CombatState,
 } from './types';
-import { ActiveEffect, EffectApplicationResult, EffectType } from 'Effects/types';
+import { ActiveEffect, EffectApplicationResult, EffectStatTarget, EffectType } from 'Effects/types';
+import { getActiveEffectModifiers } from '../Effects';
 import { getResistStatFromResistedBy } from 'Character';
+import { PASSIVE_DEFENSE_MULTIPLIER, DEFENSE_MULTIPLIERS } from '../Game/game-mechanics.constants';
 import { CritStyle } from './types';
 
 // ============================================================================
@@ -260,27 +262,75 @@ export function calculateFinalDamage(
 // ============================================================================
 
 /**
- * Performs an attack roll for a character.
- * TODO (Phase 2a): wire advantage modifier from active effects (Phase 1).
+ * Performs an attack roll, incorporating all active-effect modifiers.
+ *
+ * Formula:
+ *   effectiveStat = (baseStat + statDeltaForAttackType) × statMultiplier
+ *   total         = d20(advantage) + effectiveStat + rollModifier
  */
 export function performAttackRoll(
   attacker: Character | Enemy,
   attackType: Stance,
   advantage: Advantage,
 ): { total: number; roll: number; modifier: number; details: string } {
-  return 'Implement me' as any;
+  const mods = getActiveEffectModifiers(attacker.currentActiveEffects as ActiveEffect[]);
+
+  const baseStat = getAttackStatForType(attacker, attackType);
+  const atkKey: EffectStatTarget = attackType === 'body'  ? 'physicalAttack'
+                                 : attackType === 'mind'  ? 'mentalAttack'
+                                 : 'emotionalAttack';
+
+  const statDelta       = mods.statDeltas[atkKey]      ?? 0;
+  const baseMultiplier  = mods.statMultipliers[attackType] ?? 1;
+  const derivedMultiplier = mods.statMultipliers[atkKey]  ?? 1;
+  const effectiveStat   = Math.round((baseStat + statDelta) * baseMultiplier * derivedMultiplier);
+
+  const rollMod  = mods.rollModifier;
+  const roll     = createDieRoll(advantage)();
+  const total    = roll + effectiveStat + rollMod;
+  const modifier = effectiveStat + rollMod;
+
+  const details = `d20(${roll}) + ${attackType} atk(${effectiveStat}) + effects(${rollMod}) = ${total}`;
+  return { total, roll, modifier, details };
 }
 
 /**
- * Performs a defense roll for a character.
- * TODO (Phase 2a): wire defense modifier from active effects (Phase 1).
+ * Returns the effective defense value for a defender, incorporating all active-effect modifiers.
+ *
+ * Formula (static — no die roll):
+ *   effectiveStat    = (baseStat + statDeltaForDefenseType) × statMultiplier
+ *   total            = effectiveStat × defenseMultiplier + flatDefenseModifier
+ *
+ * @param isDefending      - Whether the defender chose the 'defend' action
+ * @param defenderAdvantage - The defender's advantage over the attacker's type (for multiplier)
  */
 export function performDefenseRoll(
   defender: Character | Enemy,
   attackType: Stance,
   isDefending: boolean,
+  defenderAdvantage: Advantage = 'neutral',
 ): { total: number; roll: number; modifier: number; details: string } {
-  return 'Implement me' as any;
+  const mods = getActiveEffectModifiers(defender.currentActiveEffects as ActiveEffect[]);
+
+  const baseStat = getDefenseStatForType(defender, attackType);
+  const defKey: EffectStatTarget = attackType === 'body'  ? 'physicalDefense'
+                                 : attackType === 'mind'  ? 'mentalDefense'
+                                 : 'emotionalDefense';
+
+  const statDelta        = mods.statDeltas[defKey]        ?? 0;
+  const baseMultiplier   = mods.statMultipliers[attackType] ?? 1;
+  const derivedMultiplier = mods.statMultipliers[defKey]   ?? 1;
+  const effectiveStat    = Math.round((baseStat + statDelta) * baseMultiplier * derivedMultiplier);
+
+  const stanceMultiplier = isDefending
+    ? DEFENSE_MULTIPLIERS[defenderAdvantage]
+    : PASSIVE_DEFENSE_MULTIPLIER;
+
+  const total    = effectiveStat * stanceMultiplier + mods.defenseModifier;
+  const modifier = total;
+
+  const details = `${attackType} def(${effectiveStat}) × ${stanceMultiplier} + flat(${mods.defenseModifier}) = ${total}`;
+  return { total, roll: 0, modifier, details };
 }
 
 /** Compares attack and defence rolls to determine whether the hit lands. */
@@ -289,39 +339,79 @@ export function isAttackSuccessful(attackRoll: number, defenseRoll: number): boo
 }
 
 /**
- * Calculates base damage for an attack.
- * TODO (Phase 2a): integrate stat-based damage formula once designed.
+ * Calculates the effective base damage for an attacker, including active-effect stat bonuses.
+ * This is the damage roll modifier (attack stat + effects) used before subtracting defense.
+ *
+ * @param damageBonus - Optional flat bonus (e.g., study mark intensity for Mind/Attack)
  */
 export function calculateBaseDamage(
   attacker: Character | Enemy,
   attackType: Stance,
   advantage: Advantage,
+  damageBonus = 0,
 ): number {
-  return 'Implement me' as any;
+  const mods = getActiveEffectModifiers(attacker.currentActiveEffects as ActiveEffect[]);
+  const baseStat = getAttackStatForType(attacker, attackType);
+  const atkKey: EffectStatTarget = attackType === 'body'  ? 'physicalAttack'
+                                 : attackType === 'mind'  ? 'mentalAttack'
+                                 : 'emotionalAttack';
+  const statDelta        = mods.statDeltas[atkKey]        ?? 0;
+  const baseMultiplier   = mods.statMultipliers[attackType] ?? 1;
+  const derivedMultiplier = mods.statMultipliers[atkKey]   ?? 1;
+  const effectiveStat    = Math.round((baseStat + statDelta) * baseMultiplier * derivedMultiplier);
+  return effectiveStat + mods.rollModifier + damageBonus;
 }
 
 /**
- * Calculates the damage reduction from defence.
- * TODO (Phase 2a): integrate active effect modifiers (Phase 1).
+ * Calculates the damage reduction (defense value) for a defender, including active-effect modifiers.
+ *
+ * Formula:
+ *   effectiveStat    = (baseDefense + statDelta) × statMultiplier
+ *   total reduction  = effectiveStat × stanceMultiplier + flatDefenseModifier
+ *
+ * @param isDefending       - Whether the defender chose the 'defend' action
+ * @param defenderAdvantage - Defender's advantage over the attacker's type
  */
 export function calculateDamageReduction(
   defender: Character | Enemy,
   attackType: Stance,
   isDefending: boolean,
+  defenderAdvantage: Advantage = 'neutral',
 ): number {
-  return 'Implement me' as any;
+  const mods = getActiveEffectModifiers(defender.currentActiveEffects as ActiveEffect[]);
+  const baseStat = getDefenseStatForType(defender, attackType);
+  const defKey: EffectStatTarget = attackType === 'body'  ? 'physicalDefense'
+                                 : attackType === 'mind'  ? 'mentalDefense'
+                                 : 'emotionalDefense';
+  const statDelta        = mods.statDeltas[defKey]        ?? 0;
+  const baseMultiplier   = mods.statMultipliers[attackType] ?? 1;
+  const derivedMultiplier = mods.statMultipliers[defKey]   ?? 1;
+  const effectiveStat    = Math.round((baseStat + statDelta) * baseMultiplier * derivedMultiplier);
+
+  const stanceMultiplier = isDefending
+    ? DEFENSE_MULTIPLIERS[defenderAdvantage]
+    : PASSIVE_DEFENSE_MULTIPLIER;
+
+  return effectiveStat * stanceMultiplier + mods.defenseModifier;
 }
 
 /**
- * Full attack sequence: rolls, hit check, damage, breakdown string.
- * TODO (Phase 2a): implement using performAttackRoll / performDefenseRoll.
+ * Full attack sequence: rolls, hit determination, damage calculation, and breakdown string.
+ * Uses performAttackRoll and calculateDamageReduction to incorporate all active effects.
+ *
+ * @param attackerAdvantage - Attacker's type-advantage over the defender
+ * @param isDefending       - Whether the defender chose the 'defend' action
+ * @param defenderAdvantage - Defender's type-advantage (for defense multiplier)
+ * @param damageBonus       - Optional flat damage bonus (e.g., study mark)
  */
 export function calculateAttackDamage(
   attacker: Character | Enemy,
   defender: Character | Enemy,
   attackType: Stance,
-  advantage: Advantage,
+  attackerAdvantage: Advantage,
   isDefending: boolean,
+  defenderAdvantage: Advantage = 'neutral',
+  damageBonus = 0,
 ): {
   damage: number;
   attackRoll: number;
@@ -330,7 +420,15 @@ export function calculateAttackDamage(
   critical: boolean;
   details: string;
 } {
-  return 'Implement me' as any;
+  const { total: attackRoll, roll: rawRoll } = performAttackRoll(attacker, attackType, attackerAdvantage);
+  const critical     = isCriticalHit(rawRoll);
+  const damageRed    = calculateDamageReduction(defender, attackType, isDefending, defenderAdvantage);
+  const baseDmg      = calculateBaseDamage(attacker, attackType, attackerAdvantage, damageBonus);
+  const damage       = calculateFinalDamage(baseDmg, damageRed, critical);
+  const hit          = damage > 0;
+
+  const details = `atk(${attackRoll}) vs def(${damageRed}) → dmg(${baseDmg}) - red(${damageRed}) = ${damage}${critical ? ' CRIT' : ''}`;
+  return { damage, attackRoll, defenseRoll: damageRed, hit, critical, details };
 }
 
 // ===============================================
