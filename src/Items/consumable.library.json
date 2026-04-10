@@ -2,9 +2,242 @@
     "consumables": [
         {
             "id": "csl-01",
-            "name": "Healing Potion",
-            "description": "A potion that heals 10 HP.",
+            "name": "Minor Salve of Mending",
+            "description": "A crude poultice brewed from cave moss and boiled tallow. It stings going on, but knits torn flesh with surprising speed.",
+            "category": "consumable",
             "effect": "heal",
+            "potency": 10,
+            "duration": 0,
+            "quantity": 1
+        },
+        {
+            "id": "csl-02",
+            "name": "Alchemist's Restoring Draught",
+            "description": "A thick amber liquid that smells of burnt copper and fennel. The alchemist who brewed it swore it could mend a cracked ribcage.",
+            "category": "consumable",
+            "effect": "heal-large",
+            "potency": 25,
+            "duration": 0,
+            "quantity": 1
+        },
+        {
+            "id": "csl-03",
+            "name": "Paradox of Recovery",
+            "description": "A vial of liquid that heals all wounds — yet to be fully healed, you must first believe you were never injured. The logic is unsound; the medicine is not.",
+            "category": "consumable",
+            "effect": "heal-full",
+            "potency": 9999,
+            "duration": 0,
+            "quantity": 1
+        },
+        {
+            "id": "csl-04",
+            "name": "Drops of Lucidity",
+            "description": "Three cerulean drops distilled from rainwater collected during a lunar paradox. Restores clarity to a fatigued mind.",
+            "category": "consumable",
+            "effect": "restore-mana",
+            "potency": 10,
+            "duration": 0,
+            "quantity": 1
+        },
+        {
+            "id": "csl-05",
+            "name": "Philosopher's Ink",
+            "description": "An iridescent tincture said to be distilled from the margins of unfinished treatises. Floods the mind with borrowed inspiration.",
+            "category": "consumable",
+            "effect": "restore-mana-large",
+            "potency": 25,
+            "duration": 0,
+            "quantity": 1
+        },
+        {
+            "id": "csl-06",
+            "name": "Omniscience in a Bottle",
+            "description": "Supposedly contains the complete knowledge of a now-extinct school of thought. Drinking it feels like remembering everything you never learned.",
+            "category": "consumable",
+            "effect": "restore-mana-full",
+            "potency": 9999,
+            "duration": 0,
+            "quantity": 1
+        },
+        {
+            "id": "csl-07",
+            "name": "Panacea of Wholeness",
+            "description": "A swirling dual-layered elixir — gold on top, silver beneath. Restores both body and spirit in a single swallow.",
+            "category": "consumable",
+            "effect": "restore-all",
+            "potency": 15,
+            "duration": 0,
+            "quantity": 1
+        },
+        {
+            "id": "csl-08",
+            "name": "Tincture of Iron Will",
+            "description": "A bitter draught brewed from ground lodestone and ox marrow. Your muscles remember strength they never had.",
+            "category": "consumable",
+            "effect": "buff-body",
+            "potency": 2,
+            "duration": 3,
+            "quantity": 1
+        },
+        {
+            "id": "csl-09",
+            "name": "Synaptic Spark Elixir",
+            "description": "Distilled lightning in a glass vial. The jolt rewires your neural pathways into something faster and sharper — temporarily.",
+            "category": "consumable",
+            "effect": "buff-mind",
+            "potency": 2,
+            "duration": 3,
+            "quantity": 1
+        },
+        {
+            "id": "csl-10",
+            "name": "Tears of Empathy",
+            "description": "Collected from a saint who wept for the suffering of strangers. Drinking them fills you with unshakeable compassion and emotional fortitude.",
+            "category": "consumable",
+            "effect": "buff-heart",
+            "potency": 2,
+            "duration": 3,
+            "quantity": 1
+        },
+        {
+            "id": "csl-11",
+            "name": "Sorites Tonic",
+            "description": "One sip is nothing. Two sips are still nothing. After twenty sips — you are undeniably stronger. The heap has been assembled.",
+            "category": "consumable",
+            "effect": "buff-all-stats",
+            "potency": 1,
+            "duration": 4,
+            "quantity": 1
+        },
+        {
+            "id": "csl-12",
+            "name": "Tortoise Shell Extract",
+            "description": "Oil rendered from the shell of an ancient tortoise who outlived every predator through sheer stubbornness. Thickens the skin and dulls incoming pain.",
+            "category": "consumable",
+            "effect": "buff-defense",
+            "potency": 3,
+            "duration": 3,
+            "quantity": 1
+        },
+        {
+            "id": "csl-13",
+            "name": "Achilles' Fury Philtre",
+            "description": "A crimson stimulant that burns going down. Named for the hero who chose a short, glorious life — it makes every strike count while it lasts.",
+            "category": "consumable",
+            "effect": "buff-attack",
+            "potency": 3,
+            "duration": 3,
+            "quantity": 1
+        },
+        {
+            "id": "csl-14",
+            "name": "Barber's Cleansing Tonic",
+            "description": "Shaves away conditions that don't remove themselves. The logical impossibility resolves into relief — all negative effects fade.",
+            "category": "consumable",
+            "effect": "cure-debuff",
+            "potency": 0,
+            "duration": 0,
+            "quantity": 1
+        },
+        {
+            "id": "csl-15",
+            "name": "Sophist's Firebomb",
+            "description": "A clay pot filled with volatile rhetoric-fuel. Shatters on impact, engulfing the target in flames born from heated argument.",
+            "category": "consumable",
+            "effect": "damage-fire",
+            "potency": 12,
+            "duration": 0,
+            "quantity": 1
+        },
+        {
+            "id": "csl-16",
+            "name": "Dialectic Grenade",
+            "description": "A hollow iron sphere packed with compressed contradictions. When it detonates, thesis meets antithesis — and the target meets the floor.",
+            "category": "consumable",
+            "effect": "damage-bomb",
+            "potency": 15,
+            "duration": 0,
+            "quantity": 1
+        },
+        {
+            "id": "csl-17",
+            "name": "Vial of Curry's Venom",
+            "description": "If this poison harms you, then it spreads. The conditional is vacuously true. The conclusion is inevitably, recursively toxic.",
+            "category": "consumable",
+            "effect": "damage-poison",
+            "potency": 4,
+            "duration": 3,
+            "quantity": 1
+        },
+        {
+            "id": "csl-18",
+            "name": "Lazarus Philtre",
+            "description": "Brewed from the last breath of a philosopher who proved death was merely a category error. Revives the fallen with modest vigour.",
+            "category": "consumable",
+            "effect": "revive",
+            "potency": 15,
+            "duration": 0,
+            "quantity": 1
+        },
+        {
+            "id": "csl-19",
+            "name": "Bottled Zeno's Paradox",
+            "description": "A shimmering potion that slows incoming damage — each blow must travel half the remaining distance, then half again, approaching zero.",
+            "category": "consumable",
+            "effect": "buff-defense",
+            "potency": 5,
+            "duration": 2,
+            "quantity": 1
+        },
+        {
+            "id": "csl-20",
+            "name": "Essence of Bootstrap",
+            "description": "A self-referential elixir — drinking it gives you the strength to have brewed it in the first place. The causal loop tastes like anise.",
+            "category": "consumable",
+            "effect": "buff-all-stats",
+            "potency": 2,
+            "duration": 3,
+            "quantity": 1
+        },
+        {
+            "id": "csl-21",
+            "name": "Twilight Restorative",
+            "description": "Neither fully a health potion nor a mana draught — it exists in the grey area between categories. Restores a moderate amount of both.",
+            "category": "consumable",
+            "effect": "restore-all",
+            "potency": 25,
+            "duration": 0,
+            "quantity": 1
+        },
+        {
+            "id": "csl-22",
+            "name": "Fermi's Smoke Bomb",
+            "description": "Where did you go? The paradox of your existence — you should be detectable, yet no evidence of you can be found. Grants a brief defensive surge.",
+            "category": "consumable",
+            "effect": "buff-defense",
+            "potency": 6,
+            "duration": 1,
+            "quantity": 1
+        },
+        {
+            "id": "csl-23",
+            "name": "Observer's Collapse Pill",
+            "description": "A tiny black capsule. Swallowing it collapses probability around your attacks — for a brief window, the deadliest outcomes are the only outcomes.",
+            "category": "consumable",
+            "effect": "buff-attack",
+            "potency": 4,
+            "duration": 2,
+            "quantity": 1
+        },
+        {
+            "id": "csl-24",
+            "name": "Heap of Healing Grain",
+            "description": "One grain heals nothing. A thousand grains still seem like nothing. Yet somehow this pouch of medicinal grain restores a modest amount of health.",
+            "category": "consumable",
+            "effect": "heal",
+            "potency": 8,
+            "duration": 0,
             "quantity": 1
         }
     ]

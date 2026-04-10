@@ -1,0 +1,196 @@
+{
+    "equipment": [
+        {
+            "id": "eqp-w-01",
+            "name": "Blade of Ad Hominem",
+            "description": "A chipped shortsword that strikes at the person, not the argument. Its edge finds weakness in character rather than armour.",
+            "category": "equipment",
+            "slot": "weapon",
+            "statModifiers": { "physicalAttack": 2, "emotionalAttack": 1 }
+        },
+        {
+            "id": "eqp-w-02",
+            "name": "Staff of Infinite Regress",
+            "description": "A gnarled oak staff carved with turtles standing on turtles. Each impact echoes backward through an endless chain of justification.",
+            "category": "equipment",
+            "slot": "weapon",
+            "statModifiers": { "mentalAttack": 3, "mentalSkill": 1 }
+        },
+        {
+            "id": "eqp-w-03",
+            "name": "Hammer of Brute Force",
+            "description": "A crude iron maul that makes no pretense of elegance. When argument fails, volume and mass rarely do.",
+            "category": "equipment",
+            "slot": "weapon",
+            "statModifiers": { "physicalAttack": 4 }
+        },
+        {
+            "id": "eqp-w-04",
+            "name": "Quill of the Dialectician",
+            "description": "A silver-nibbed pen that writes counterarguments in the air. Each stroke of thesis summons antithesis — synthesis is left to the wounded.",
+            "category": "equipment",
+            "slot": "weapon",
+            "statModifiers": { "emotionalAttack": 2, "mentalAttack": 2 }
+        },
+        {
+            "id": "eqp-w-05",
+            "name": "Dagger of Occam",
+            "description": "The simplest explanation is usually correct. The simplest weapon is usually sharp. This one is both.",
+            "category": "equipment",
+            "slot": "weapon",
+            "statModifiers": { "physicalAttack": 2, "physicalSkill": 2 }
+        },
+        {
+            "id": "eqp-h-01",
+            "name": "Helm of Confirmation Bias",
+            "description": "A visored helm that filters out contradictory evidence. You see only what supports your worldview — and fight accordingly.",
+            "category": "equipment",
+            "slot": "head",
+            "statModifiers": { "emotionalDefense": 2, "mentalDefense": -1 }
+        },
+        {
+            "id": "eqp-h-02",
+            "name": "Crown of the Philosopher King",
+            "description": "A simple circlet of bronze laurels worn by those who rule through reason. Sharpens perception at the cost of raw conviction.",
+            "category": "equipment",
+            "slot": "head",
+            "statModifiers": { "mentalAttack": 1, "mentalDefense": 2, "mentalSkill": 1 }
+        },
+        {
+            "id": "eqp-h-03",
+            "name": "Hood of Fermi's Absence",
+            "description": "A dark hood that makes you paradoxically undetectable. You should be visible — yet observers report nothing.",
+            "category": "equipment",
+            "slot": "head",
+            "statModifiers": { "physicalDefense": 1, "mentalDefense": 1, "emotionalDefense": 1 }
+        },
+        {
+            "id": "eqp-b-01",
+            "name": "Breastplate of Theseus",
+            "description": "Every dent has been hammered out, every plate replaced. Is it the same armour? The question is academic — it still stops swords.",
+            "category": "equipment",
+            "slot": "body",
+            "statModifiers": { "physicalDefense": 4, "emotionalDefense": 1 }
+        },
+        {
+            "id": "eqp-b-02",
+            "name": "Robes of the Sophist",
+            "description": "Flowing silk garments that shimmer with rhetorical authority. They protect not through thickness but through the sheer weight of persuasion.",
+            "category": "equipment",
+            "slot": "body",
+            "statModifiers": { "emotionalDefense": 3, "emotionalAttack": 1, "emotionalSkill": 1 }
+        },
+        {
+            "id": "eqp-b-03",
+            "name": "Chainmail of Logical Necessity",
+            "description": "Each link is forged from a valid syllogism. The armour holds because its structure is logically necessary — it cannot not protect.",
+            "category": "equipment",
+            "slot": "body",
+            "statModifiers": { "physicalDefense": 3, "mentalDefense": 2 }
+        },
+        {
+            "id": "eqp-g-01",
+            "name": "Gauntlets of the Straw Man",
+            "description": "Iron-plated gloves stuffed with straw. They strike a weaker version of the target's defenses, making every blow land a little easier.",
+            "category": "equipment",
+            "slot": "hands",
+            "statModifiers": { "physicalAttack": 1, "physicalSkill": 2 }
+        },
+        {
+            "id": "eqp-g-02",
+            "name": "Gloves of Slippery Slope",
+            "description": "Silk-lined gloves that make every grab lead inevitably to the next. Once you start, the cascade of consequence is unstoppable.",
+            "category": "equipment",
+            "slot": "hands",
+            "statModifiers": { "physicalSkill": 1, "mentalSkill": 1, "emotionalSkill": 1 }
+        },
+        {
+            "id": "eqp-f-01",
+            "name": "Boots of Achilles' Speed",
+            "description": "Winged sandals that let you close any distance — though like Achilles and the tortoise, you may never quite catch your quarry.",
+            "category": "equipment",
+            "slot": "feet",
+            "statModifiers": { "physicalSkill": 2, "physicalDefense": 1 }
+        },
+        {
+            "id": "eqp-f-02",
+            "name": "Greaves of the Unmoved Mover",
+            "description": "Heavy iron greaves that root you in place with divine certainty. You move others; nothing moves you.",
+            "category": "equipment",
+            "slot": "feet",
+            "statModifiers": { "physicalDefense": 3, "physicalSkill": -1 }
+        },
+        {
+            "id": "eqp-a-01",
+            "name": "Ring of Circular Reasoning",
+            "description": "This ring is powerful because it is magical. It is magical because it is powerful. The logic is flawed; the enchantment holds.",
+            "category": "equipment",
+            "slot": "accessory",
+            "statModifiers": { "emotionalAttack": 1, "emotionalDefense": 1, "luck": 1 }
+        },
+        {
+            "id": "eqp-a-02",
+            "name": "Amulet of the False Dilemma",
+            "description": "A black-and-white gemstone pendant. It presents only two options to your enemies: lose quickly, or lose slowly.",
+            "category": "equipment",
+            "slot": "accessory",
+            "statModifiers": { "mentalAttack": 1, "emotionalAttack": 1, "mentalSkill": 1 }
+        },
+        {
+            "id": "eqp-a-03",
+            "name": "Pendant of Survivorship Bias",
+            "description": "Every previous owner of this amulet survived their battles — or so the records claim. Those who didn't left no records.",
+            "category": "equipment",
+            "slot": "accessory",
+            "statModifiers": { "luck": 3 }
+        },
+        {
+            "id": "eqp-a-04",
+            "name": "Brooch of the Gambler's Fallacy",
+            "description": "After a streak of misfortune, good luck is surely due. The brooch's magic turns this fallacy into prophecy — sometimes.",
+            "category": "equipment",
+            "slot": "accessory",
+            "statModifiers": { "luck": 2, "emotionalDefense": 1 }
+        },
+        {
+            "id": "eqp-w-06",
+            "name": "Mace of Appeal to Authority",
+            "description": "A heavy ceremonial mace stamped with the seals of a hundred institutions. Its authority is borrowed, but the concussions are original.",
+            "category": "equipment",
+            "slot": "weapon",
+            "statModifiers": { "physicalAttack": 3, "emotionalAttack": 1 }
+        },
+        {
+            "id": "eqp-b-04",
+            "name": "Jerkin of the Red Herring",
+            "description": "A leather vest dyed distracting scarlet. Enemies fixate on it, losing track of your actual vulnerable spots.",
+            "category": "equipment",
+            "slot": "body",
+            "statModifiers": { "physicalDefense": 2, "emotionalDefense": 2 }
+        },
+        {
+            "id": "eqp-h-04",
+            "name": "Mask of the Tu Quoque",
+            "description": "A mirrored half-mask that reflects accusations back at the accuser. 'You do it too' has never been so literal.",
+            "category": "equipment",
+            "slot": "head",
+            "statModifiers": { "emotionalDefense": 3, "emotionalSkill": 1 }
+        },
+        {
+            "id": "eqp-a-05",
+            "name": "Sash of the Sunk Cost",
+            "description": "A tattered battle-sash from a war that should have ended long ago. You've invested too much to stop now — and the sash agrees.",
+            "category": "equipment",
+            "slot": "accessory",
+            "statModifiers": { "physicalAttack": 1, "physicalDefense": 1, "mentalDefense": 1 }
+        },
+        {
+            "id": "eqp-g-03",
+            "name": "Vambraces of No True Scotsman",
+            "description": "Arm guards that redefine 'hit' after each strike lands. No true blow could have breached them — therefore it didn't.",
+            "category": "equipment",
+            "slot": "hands",
+            "statModifiers": { "physicalDefense": 2, "mentalDefense": 1 }
+        }
+    ]
+}

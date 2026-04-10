@@ -29,7 +29,12 @@ import { createStore, StoreApi } from 'zustand/vanilla';
 import { Character } from '../Character/types';
 import { Enemy } from '../Enemy/types';
 import { CombatState } from '../Combat/types';
-import { Item, Consumable, isConsumable } from '../Items/types';
+import { Item, EquipmentSlot, EquippedItems, isConsumable, isStackable } from '../Items/types';
+import {
+    equipItem as reducerEquipItem,
+    unequipItem as reducerUnequipItem,
+    useConsumable as reducerUseConsumable,
+} from '../Items/item.reducer';
 import { GameState } from './types';
 import { initializeCombat } from '../Combat/combat.reducer';
 import { createNewGameState, GAME_STATE_VERSION } from './game.reducer';
@@ -74,8 +79,8 @@ export type GameActions = {
     removeItemFromInventory: (itemId: string) => void;
 
     /**
-     * Uses a consumable item, reducing its quantity (or removing it if
-     * the last one). Effect application is TODO until the effects engine lands.
+     * Uses a consumable item, applying its effect to the player and
+     * reducing its quantity (or removing it if the last one).
      */
     useConsumable: (itemId: string) => void;
 
@@ -84,6 +89,18 @@ export type GameActions = {
      * Typically called when the player picks up more of an item they already carry.
      */
     stackItem: (itemId: string, amount: number) => void;
+
+    /**
+     * Equips an item from inventory into its slot, applying stat modifiers.
+     * If the slot is occupied, the previous item is unequipped first.
+     */
+    equipItem: (itemId: string) => void;
+
+    /**
+     * Unequips the item in the given slot, removing its stat modifiers.
+     * The item stays in inventory.
+     */
+    unequipItem: (slot: EquipmentSlot) => void;
 
     // ── Persistence ──────────────────────────────────────────────────────────
 
@@ -156,34 +173,15 @@ export function createGameStore(
         },
 
         useConsumable(itemId: string): void {
-            const { player } = get();
-            const item = player.inventory.find(i => i.id === itemId);
+            const current = get();
+            const item = current.player.inventory.find(i => i.id === itemId);
             if (!item || !isConsumable(item)) return;
 
-            // TODO: Apply consumable effect via the effects engine (Phase 1).
-
-            const consumable = item as Consumable;
-            if (consumable.quantity <= 1) {
-                // Last one — remove entirely
-                set(state => ({
-                    player: {
-                        ...state.player,
-                        inventory: state.player.inventory.filter(i => i.id !== itemId),
-                    },
-                }));
-            } else {
-                // Decrement quantity
-                set(state => ({
-                    player: {
-                        ...state.player,
-                        inventory: state.player.inventory.map(i =>
-                            i.id === itemId && isConsumable(i)
-                                ? { ...i, quantity: i.quantity - 1 }
-                                : i
-                        ),
-                    },
-                }));
-            }
+            const { player } = reducerUseConsumable(
+                { version: current.version, player: current.player, world: current.world, combatState: current.combatState },
+                itemId,
+            );
+            set({ player });
         },
 
         stackItem(itemId: string, amount: number): void {
@@ -191,12 +189,30 @@ export function createGameStore(
                 player: {
                     ...state.player,
                     inventory: state.player.inventory.map(i =>
-                        i.id === itemId && (i.category === 'consumable' || i.category === 'material')
-                            ? { ...i, quantity: (i as Consumable).quantity + amount }
+                        i.id === itemId && isStackable(i)
+                            ? { ...i, quantity: i.quantity + amount }
                             : i
                     ),
                 },
             }));
+        },
+
+        equipItem(itemId: string): void {
+            const current = get();
+            const { player } = reducerEquipItem(
+                { version: current.version, player: current.player, world: current.world, combatState: current.combatState },
+                itemId,
+            );
+            set({ player });
+        },
+
+        unequipItem(slot: EquipmentSlot): void {
+            const current = get();
+            const { player } = reducerUnequipItem(
+                { version: current.version, player: current.player, world: current.world, combatState: current.combatState },
+                slot,
+            );
+            set({ player });
         },
 
         // ── Persistence ──────────────────────────────────────────────────────
@@ -214,8 +230,9 @@ export function createGameStore(
 
 export type { StoreApi };
 
-export const selectPlayer      = (s: GameStore): Character          => s.player;
-export const selectCombatState = (s: GameStore): CombatState | null => s.combatState;
-export const selectIsInCombat  = (s: GameStore): boolean            => s.combatState !== null;
-export const selectInventory   = (s: GameStore): Item[]             => s.player.inventory;
-export const selectVersion     = (s: GameStore): number             => s.version;
+export const selectPlayer        = (s: GameStore): Character          => s.player;
+export const selectCombatState   = (s: GameStore): CombatState | null => s.combatState;
+export const selectIsInCombat    = (s: GameStore): boolean            => s.combatState !== null;
+export const selectInventory     = (s: GameStore): Item[]             => s.player.inventory;
+export const selectEquippedItems = (s: GameStore): EquippedItems      => s.player.equippedItems;
+export const selectVersion       = (s: GameStore): number             => s.version;

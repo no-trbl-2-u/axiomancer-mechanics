@@ -6,20 +6,20 @@ Manages the game's item system including equipment, consumables, crafting materi
 ## Item Categories
 
 ### Equipment
-IMPORTANT: Equipment should modify derived stats when worn.
+Equipment modifies derived stats when worn. Uses the `statModifiers: Partial<DerivedStats>` field.
 Gear that can be equipped to slots:
 - **Weapon**: Equipped in hand slot, modifies attack
 - **Armor**: Body protection, reduces damage taken
 - **Head/Body/Hands/Feet**: Armor piece slots
 - **Accessory**: Rings, amulets, belts - passive bonuses
 
-
 ### Consumables
-Single-use items with immediate effects:
-- **Healing Potions**: Restore HP
-- **Mana Potions**: Restore MP
-- **Buff Potions**: Temporary stat boosts
-- **Throwing Items**: Combat consumables (bombs, poisons)
+Single-use items with immediate effects via `ConsumableEffect` discriminator:
+- **Healing Potions**: Restore HP (heal, heal-large, heal-full)
+- **Mana Potions**: Restore MP (restore-mana, restore-mana-large, restore-mana-full)
+- **Buff Potions**: Temporary stat boosts (buff-body, buff-mind, buff-heart, buff-all-stats, buff-defense, buff-attack)
+- **Throwing Items**: Combat consumables (damage-bomb, damage-poison, damage-fire)
+- **Utility**: cure-debuff, revive, restore-all
 
 Track quantity - consuming items decrement count.
 
@@ -39,47 +39,45 @@ Story-critical items:
 Use discriminated unions and type guards:
 ```typescript
 if (isEquipment(item)) {
-    // TypeScript knows item is Equipment
     equip(item.slot, item);
+}
+if (isStackable(item)) {
+    stack(item.id, item.quantity);
 }
 ```
 
 ## Implementation Guidelines
 
 ### Item Definition (Library Files)
-Store item templates in JSON or TS files:
-```json
-{
-    "id": "health-potion-small",
-    "name": "Small Health Potion",
-    "description": "A crimson vial that restores 10 HP",
-    "category": "consumable",
-    "effect": "heal-10",
-    "quantity": 1
-}
-```
+Item templates are stored in JSON files and loaded via `item.library.ts`:
+- `consumable.library.json` — All consumable definitions
+- `equipment.library.json` — All equipment definitions
+- `item.library.ts` — Registry loader with O(1) lookups
 
 ### Inventory Operations (Reducers)
-State-modifying operations go in `item.reducer.ts`:
-- `addItemToInventory(state, item)` → GameState
-- `removeItemFromInventory(state, itemId)` → GameState
-- `useConsumable(state, itemId)` → GameState
-- `equipItem(state, itemId, slot)` → GameState
+State-modifying operations in `item.reducer.ts`:
+- `addItemToInventory(state, item)` → GameState (auto-stacks if stackable)
+- `removeItemFromInventory(state, itemId)` → GameState (auto-unequips if equipped)
+- `useConsumable(state, itemId)` → GameState (applies effect + decrements quantity)
+- `stackItem(state, itemId, amount)` → GameState
+- `equipItem(state, itemId)` → GameState (applies stat modifiers)
+- `unequipItem(state, slot)` → GameState (removes stat modifiers)
+- `mergeStackableItem(state, item)` → GameState
 
-## Item Rarity (Future Enhancement)
-Consider D&D-style rarity tiers:
-- Common (white)
-- Uncommon (green)
-- Rare (blue)
-- Very Rare (purple)
-- Legendary (orange)
+### Utility Functions (index.ts)
+Non-state-modifying helpers:
+- `getEquipmentStatBonuses(equippedItems)` → Partial<DerivedStats>
+- `findInventoryItem(state, itemId)` → Item | undefined
+- `getInventoryByCategory(state, category)` → Item[]
 
 ## File Organization
-- `index.ts` - Item utility functions
-- `item.reducer.ts` - Inventory state operations
-- `consumable.library.json` - Consumable definitions
-- `equipment.library.json` - Equipment definitions
-- `types.d.ts` - Item type hierarchy
+- `index.ts` — Public exports (types, type guards, library lookups, reducer functions)
+- `types.ts` — Item type hierarchy (BaseItem, Equipment, Consumable, Material, QuestItem, EquippedItems)
+- `item.reducer.ts` — Inventory state operations (pure functions returning GameState)
+- `item.library.ts` — Registry loader and lookup functions
+- `consumable.library.json` — Consumable definitions
+- `equipment.library.json` — Equipment definitions
+- `.cursorrules` — This file
 
 ## Loot Tables
 A simple system to determine enemy drops:
@@ -87,4 +85,3 @@ A simple system to determine enemy drops:
 - When an enemy is defined, list all possible drops in `loot`
 - When enemy dies in combat, provide player with n-rolls on the `loot` list
 - Player will roll after combat to get drops
-
