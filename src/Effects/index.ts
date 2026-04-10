@@ -1,9 +1,10 @@
 import { Character } from 'Character/types';
 import { Enemy, EnemyTier1EffectMap } from 'Enemy/types';
-import { Stance, CombatAction } from 'Combat/types';
+import { Stance, CombatAction, CombatState } from 'Combat/types';
 import { ActiveEffect, Effect, EffectApplicationResult } from './types';
 import { lookupEffect } from './effects.library';
 import { MAX_EFFECT_INTENSITY, MAX_EFFECT_DURATION } from '../Game/game-mechanics.constants';
+import { applyDamage, applyRegen, tickAllEffects } from '../Combat';
 
 // ===============================================
 // STACKING OPTIONS
@@ -332,4 +333,108 @@ export function getTargetsResistStatValue(
     const resistStat = activeEffect.resistedBy as Stance | undefined;
     if (!resistStat) return 0;
     return target.baseStats[resistStat] ?? 0;
+}
+
+// ===============================================
+// DAMAGE OVER TIME
+// ===============================================
+
+/**
+ * Sums all DoT effects across a combatant's active effects and returns the
+ * total damage to apply plus a per-source message for the battle log.
+ * Does NOT mutate anything — the caller is responsible for calling applyDamage.
+ *
+ * @param activeEffects - The combatant's current active effects
+ * @returns totalDamage (sum of all DoT sources) and messages (one per source)
+ */
+export function processDamageOverTime(activeEffects: ActiveEffect[]): {
+    totalDamage: number;
+    messages: string[];
+} {
+    let totalDamage = 0;
+    const messages: string[] = [];
+
+    for (const ae of activeEffects) {
+        const effect = lookupEffect(ae.effectId);
+        const dot = effect?.payload.damageOverTime;
+        if (!dot || dot.damagePerRound <= 0) continue;
+
+        const intensity = ae.currentIntensity ?? 1;
+        const damage = dot.damagePerRound * intensity;
+        totalDamage += damage;
+        messages.push(
+            `${effect!.name} deals ${damage} damage (${dot.damagePerRound} × intensity ${intensity})`,
+        );
+    }
+
+    return { totalDamage, messages };
+}
+
+// ===============================================
+// ROUND START EFFECT ORCHESTRATOR
+// ===============================================
+
+/**
+ * Processes all round-start effects for both combatants in a single call.
+ * Order of operations: 1) DoT → 2) Regen → 3) Tick all effects → 4) Expire
+ *
+ * This replaces the inline applyRegen / tickAllEffects calls that previously
+ * lived in combat.cli.ts and serves as the canonical entry point for
+ * resolveCombatRound (AX-34).
+ *
+ * Note: if a combatant reaches 0 HP from DoT, combat does NOT end here —
+ * that check is the responsibility of the caller (resolveCombatRound).
+ *
+ * @param state - The current CombatState (never mutated)
+ * @returns Updated CombatState plus expired effects for both combatants
+ */
+export function processRoundStartEffects(state: CombatState): {
+    state: CombatState;
+    playerExpired: ActiveEffect[];
+    enemyExpired: ActiveEffect[];
+    playerDoTDamage: number;
+    playerDoTMessages: string[];
+    enemyDoTDamage: number;
+    enemyDoTMessages: string[];
+    playerRegenHealed: number;
+    enemyRegenHealed: number;
+} {
+    // ── 1. Damage Over Time ─────────────────────────────────────────────────
+    const { totalDamage: playerDoTDamage, messages: playerDoTMessages } =
+        processDamageOverTime(state.player.currentActiveEffects);
+    const { totalDamage: enemyDoTDamage, messages: enemyDoTMessages } =
+        processDamageOverTime(state.enemy.currentActiveEffects);
+
+    let player = playerDoTDamage > 0 ? applyDamage(state.player, playerDoTDamage) : state.player;
+    let enemy  = enemyDoTDamage  > 0 ? applyDamage(state.enemy,  enemyDoTDamage)  : state.enemy;
+
+    // ── 2. Regeneration ─────────────────────────────────────────────────────
+    const playerRegenResult = applyRegen(player);
+    player = playerRegenResult.target as Character;
+    const playerRegenHealed = playerRegenResult.healed;
+
+    const enemyRegenResult = applyRegen(enemy);
+    enemy = enemyRegenResult.target as Enemy;
+    const enemyRegenHealed = enemyRegenResult.healed;
+
+    // ── 3 & 4. Tick all effects and collect expired ─────────────────────────
+    const playerTickResult = tickAllEffects(player);
+    player = playerTickResult.target as Character;
+    const playerExpired = playerTickResult.expired;
+
+    const enemyTickResult = tickAllEffects(enemy);
+    enemy = enemyTickResult.target as Enemy;
+    const enemyExpired = enemyTickResult.expired;
+
+    return {
+        state: { ...state, player, enemy },
+        playerExpired,
+        enemyExpired,
+        playerDoTDamage,
+        playerDoTMessages,
+        enemyDoTDamage,
+        enemyDoTMessages,
+        playerRegenHealed,
+        enemyRegenHealed,
+    };
 }
