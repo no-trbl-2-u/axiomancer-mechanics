@@ -63,6 +63,7 @@ Each phase builds on the one before it. `[x]` = done; `[ ]` = pending.
 - [x] `removeRandomBuff(target)` — strips one random buff; used by Heart/Attack on hit
 - [x] `extendRandomBuffDuration(target, amount)` — extends one random buff's duration; used by Heart/Attack on hit
 - [x] `getActiveRollModifier(target): number` — sums flat `rollModifier` and `rollModifierPerIntensity × intensity` across all active effects
+- [x] `isAttackSuccessful(attackRoll, defenseRoll): boolean` — compares attack vs defence rolls
 - [ ] `performAttackRoll(attacker, attackType, advantage)` — stub
 - [ ] `performDefenseRoll(defender, attackType, isDefending)` — stub
 - [ ] `calculateBaseDamage(attacker, attackType, advantage)` — stub
@@ -88,22 +89,22 @@ Each phase builds on the one before it. `[x]` = done; `[ ]` = pending.
 
 - [x] `initializeCombat(player, enemy): CombatState`
 - [ ] `resetCombat(): CombatState`
-- [ ] `updateCombatPhase(state, phase): CombatState`
-- [ ] `setPlayerAttackType(state, type): CombatState`
-- [ ] `setPlayerAction(state, action): CombatState`
+- [x] `updateCombatPhase(state, phase): CombatState`
+- [x] `setPlayerStance(state, stance): CombatState` (was `setPlayerAttackType`)
+- [x] `setPlayerAction(state, action): CombatState`
 - [ ] `resolveCombatRound(state): CombatState` — full round via the reducer (attack/defense rolls, effect procs, DoT/regen tick, log entry)
-- [ ] `addBattleLogEntry(state, entry): CombatState`
-- [ ] `incrementFriendship(state): CombatState`
-- [ ] `endCombatPlayerVictory(state): CombatState`
-- [ ] `endCombatPlayerDefeat(state): CombatState`
-- [ ] `endCombatWithFriendship(state): CombatState`
-- [ ] `processPlayerTurn(state)` — stub
-- [ ] `processEnemyTurn(state)` — stub
-- [ ] `determineTurnOrder(player, enemy)` — stub
-- [ ] `rollInitiative(character)` — stub
-- [ ] `createBattleLogEntry(state, roundResults)` — stub
-- [ ] `formatAllBattleLogs(state)` — stub
-- [ ] `generateCombatResultMessage(state)` — stub
+- [ ] `addBattleLogEntry(state, entry): CombatState` — stub
+- [ ] `incrementFriendship(state): CombatState` — stub
+- [ ] `endCombatPlayerVictory(state): CombatState` — stub
+- [ ] `endCombatPlayerDefeat(state): CombatState` — stub
+- [ ] `endCombatWithFriendship(state): CombatState` — stub
+- [ ] `processPlayerTurn(state)` — stub (lives in `Combat/index.ts`)
+- [ ] `processEnemyTurn(state)` — stub (lives in `Combat/index.ts`)
+- [ ] `determineTurnOrder(player, enemy)` — stub (lives in `Combat/index.ts`)
+- [ ] `rollInitiative(character)` — stub (lives in `Combat/index.ts`)
+- [ ] `createBattleLogEntry(state, roundResults)` — stub (lives in `Combat/index.ts`)
+- [ ] `formatAllBattleLogs(state)` — stub (lives in `Combat/index.ts`)
+- [ ] `generateCombatResultMessage(state)` — stub (lives in `Combat/index.ts`)
 - [ ] Unit tests for `resolveCombatRound`
 
 ### 2d — Combat CLI (`combat.cli.ts`)
@@ -237,7 +238,14 @@ Each phase builds on the one before it. `[x]` = done; `[ ]` = pending.
 ### 7a — World Reducer
 
 - [x] `createStartingWorld(): WorldState`
-- [ ] `changeMap`, `completeMap`, `unlockMap`, `completeNode`, `unlockNode`, `moveToNode`, `changeContinent`, `completeUniqueEvent`
+- [x] `changeMap(state, mapName): WorldState`
+- [x] `completeMap(state, mapName): WorldState`
+- [x] `unlockMap(state, mapName): WorldState`
+- [x] `completeNode(state, nodeId): WorldState`
+- [x] `unlockNode(state, nodeId): WorldState`
+- [x] `moveToNode(state, nodeId): WorldState`
+- [x] `changeContinent(state, continentName): WorldState`
+- [x] `completeUniqueEvent(state, eventId): WorldState`
 - [ ] Unit tests
 
 ### 7b–7f — Content & Systems
@@ -256,9 +264,10 @@ Each phase builds on the one before it. `[x]` = done; `[ ]` = pending.
 - [x] `store.save()` — persist via `PersistenceAdapter`
 - [x] `adapter.load()` — load from adapter
 - [x] `store.startCombat(enemy)` — snapshot player into `CombatState`
+- [x] `store.applyCombatTurn(updatedCombat)` — applies one resolved combat turn back into the store
 - [x] `store.endCombat()` — merge combat player back, clear `combatState`
+- [x] `actions.constants.ts` — `COMBAT_ACTION` constants (attack, defend, skill, item, flee, back)
 - [ ] `gameReducer(state, action): GameState`
-- [ ] `actions.constants.ts`
 - [ ] `processNode(state, node): GameState`
 
 ### 8b — Main Game CLI
@@ -306,5 +315,9 @@ Each phase builds on the one before it. `[x]` = done; `[ ]` = pending.
 - [x] `docs/combat.md`
 - [x] `docs/character.md`
 - [ ] Complete `docs/combat.md` — full advantage matrix with effect proc matrix (Phase 2b)
-- [ ] `docs/skills.md`, `docs/items.md`, `docs/world.md`
+- [ ] `docs/skills.md` — file exists, content pending
+- [ ] `docs/equipment.md` — file exists, content pending
+- [ ] `docs/enemy.md` — file exists, content pending
+- [ ] `docs/npcs.md` — file exists, content pending
+- [ ] `docs/world.md`
 - [ ] Update `ARCHITECTURE.md` if modules change
