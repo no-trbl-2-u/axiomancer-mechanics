@@ -1,8 +1,12 @@
 # Combat
 
+## Overview
+
+Turn-based combat with rock-paper-scissors mechanics. All combat functions are pure and live in `Combat/index.ts` (mechanics) and `Combat/combat.reducer.ts` (state management).
+
 ## Type System
 
-Each round both combatants choose an `Stance`: `heart`, `body`, or `mind`.
+Each round both combatants choose a `Stance`: `heart`, `body`, or `mind`.
 Advantage is determined by rock-paper-scissors:
 
 ```
@@ -17,7 +21,7 @@ Heart > Body > Mind > Heart
 | Same type | **Neutral** |
 | Reverse of above | **Disadvantage** |
 
-Advantage modifier (flat roll bonus/penalty):
+Advantage modifier (flat roll bonus/penalty from `getAdvantageModifier()`):
 - Advantage: +2
 - Neutral: 0
 - Disadvantage: −2
@@ -81,15 +85,15 @@ Round End
 ## Tier 1 Auto-Effects
 
 Every `attack` or `defend` action automatically applies a Tier 1 effect — no resist roll.
-Switching action types removes the previous type's self-buff immediately.
+Switching action types removes the previous type's self-buff immediately via `clearTier1EffectsForType()`.
 
 | Action | Effect | Applied To |
 |--------|--------|------------|
-| Body + Attack | `tier1_body_attack` — physical attack stance | self |
+| Body + Attack | `tier1_body_attack` — Ad Baculum (physical attack stance) | self |
 | Body + Defend | `tier1_body_defend` — Briar Stance (thorns reflect) | self |
-| Mind + Attack | `tier1_mind_mark` (+1 intensity / +1 duration) | opponent |
-| Mind + Defend | `tier1_mind_mark` (+3 intensity / +3 duration) | opponent |
-| Heart + Attack | `tier1_heart_attack` — emotional pressure | self |
+| Mind + Attack | `tier1_mind_mark` — Exposed Reasoning (+1 intensity / +1 duration) | opponent |
+| Mind + Defend | `tier1_mind_mark` — Exposed Reasoning (+3 intensity / +3 duration) | opponent |
+| Heart + Attack | `tier1_heart_attack` — Fleeting Kindness (emotional pressure) | self |
 | Heart + Defend | `tier1_heart_defend` — Vital Empathy (regen) | self |
 
 ## Effect-Based Combat Specials (Active)
@@ -134,7 +138,7 @@ Reaching `FRIENDSHIP_COUNTER_MAX` (3) ends combat with the `friendship` outcome.
 
 ## Battle Log
 
-Each resolved round appends a `BattleLogEntry`:
+Each resolved round can append a `BattleLogEntry` via `addBattleLogEntry()`:
 
 ```typescript
 {
@@ -147,10 +151,54 @@ Each resolved round appends a `BattleLogEntry`:
 }
 ```
 
+## Combat Reducer API
+
+| Function | Description |
+|----------|-------------|
+| `initializeCombat(player, enemy)` | Creates fresh CombatState with deep-cloned combatants |
+| `updateCombatPhase(state, phase)` | Transitions to a new combat phase |
+| `setPlayerStance(state, stance)` | Sets the player's stance choice |
+| `setPlayerAction(state, action)` | Sets the player's action choice |
+| `addBattleLogEntry(state, entry)` | Appends a battle log entry |
+| `incrementFriendship(state)` | Increments the friendship counter |
+| `endCombatPlayerVictory(state)` | Ends combat with player win |
+| `endCombatPlayerDefeat(state)` | Ends combat with player loss |
+| `endCombatWithFriendship(state)` | Ends combat with friendship outcome |
+| `resolveCombatRound(state)` | **TODO (Phase 2c):** Full round resolution via reducer |
+
+## Combat Mechanics API
+
+| Function | Description |
+|----------|-------------|
+| `determineAdvantage(attacker, defender)` | Returns advantage relationship |
+| `getAdvantageModifier(advantage)` | Returns +2 / 0 / −2 |
+| `hasAdvantage(attacker, defender)` | Boolean shorthand |
+| `determineEnemyAction(logic)` | AI-driven enemy action selection |
+| `isCombatOngoing(state)` | True if combat should continue |
+| `determineCombatEnd(state)` | Returns outcome or 'ongoing' |
+| `getBaseStatForType(entity, stance)` | Raw base stat for a stance |
+| `getAttackStatForType(entity, stance)` | Attack derived stat for a stance |
+| `getDefenseStatForType(entity, stance)` | Defense derived stat for a stance |
+| `getSaveStatForType(entity, stance)` | Save stat for a stance (enemies fall back to defense) |
+| `rollSkillCheck(baseStat, advantage)` | d20 + modifier with advantage/disadvantage |
+| `calculateFinalDamage(base, reduction, crit, bonus)` | Damage after reductions |
+| `applyDamage(entity, damage)` | Reduces HP (clamps to 0) |
+| `healCharacter(entity, amount)` | Restores HP (clamps to max) |
+| `isEffectApplied(target, effect, type, heart, equip)` | Full tier-based resist logic |
+| `tickAllEffects(target)` | Decrements all effect durations |
+| `getStudyMarkIntensity(target)` | Mind mark bonus for damage |
+| `getThornsReflect(bearer)` | Thorns reflect damage total |
+| `removeRandomBuff(target)` | Strips one random buff |
+| `extendRandomBuffDuration(target, amount)` | Extends one random buff |
+| `applyRegen(target)` | Sums and applies all regen effects |
+
 ## Pending (Phase 2)
 
-- Full attack/defense roll formula with effect modifier hook-ins (`performAttackRoll`, `performDefenseRoll`)
-- `calculateBaseDamage` / `calculateDamageReduction` / `calculateAttackDamage` implementations
+- `performAttackRoll` / `performDefenseRoll` — full roll formulas with effect modifiers
+- `calculateBaseDamage` / `calculateDamageReduction` / `calculateAttackDamage` — stat-based damage
+- `processPlayerTurn` / `processEnemyTurn` — turn processing for the reducer
+- `determineTurnOrder` / `rollInitiative` — initiative system
+- `createBattleLogEntry` / `formatAllBattleLogs` / `generateCombatResultMessage` — log utilities
+- `resolveCombatRound` — full round resolution replacing inline CLI logic
 - Tier 2/3 effect proc matrix (`Stance × action` → trigger chances)
-- `resolveCombatRound` reducer replacing inline CLI scenario logic
 - `canAct` / `getActiveEffectModifiers` wired into turn resolution

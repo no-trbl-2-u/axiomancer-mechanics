@@ -10,6 +10,14 @@ import { EXPERIENCE_PER_LEVEL } from "Game/game-mechanics.constants";
 // CHARACTER FACTORY
 // ===============================================
 
+/**
+ * Options for creating a new Character
+ * @property name - Character's display name
+ * @property level - Starting level (affects stat scaling)
+ * @property baseStats - Core body/mind/heart stats
+ * @property inventory - Optional starting items
+ * @property currentActiveEffects - Optional starting status effects
+ */
 interface CreateCharacterOptions {
     name: string;
     level: number;
@@ -18,6 +26,11 @@ interface CreateCharacterOptions {
     currentActiveEffects?: ActiveEffect[];
 }
 
+/**
+ * Creates a new Character from base inputs, deriving all stats automatically.
+ * @param options - Name, level, base stats, and optional starting inventory/effects
+ * @returns A fully initialised Character
+ */
 export function createCharacter(options: CreateCharacterOptions): Character {
     const { name, level, baseStats, inventory = [], currentActiveEffects = [] } = options;
 
@@ -45,7 +58,13 @@ export function createCharacter(options: CreateCharacterOptions): Character {
 // STAT LOOKUP
 // ===============================================
 
-/** Returns the defense stat value for a target when resisting an effect by the given stance. */
+/**
+ * Gets the resist stat value of a target when resisting an effect.
+ * Maps each stance to the corresponding defense derived stat.
+ * @param target - The character or enemy to look up
+ * @param resistedBy - Which stance the effect is resisted by
+ * @returns The derived defense stat value
+ */
 export const getResistStatFromResistedBy = (target: Character | Enemy, resistedBy: Stance): number => {
     switch (resistedBy) {
         case 'body':  return target.derivedStats.physicalDefense;
