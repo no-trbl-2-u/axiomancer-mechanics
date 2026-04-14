@@ -1,8 +1,8 @@
 import { Character, BaseStats } from "./types";
 import { ActiveEffect } from "Effects/types";
 import { Item } from "Items/types";
-import { Enemy } from "Enemy/types";
 import { Stance } from "Combat/types";
+import { Enemy } from "Enemy/types";
 import { deriveStats, deriveNonCombatStats, calculateMaxHealth, calculateMaxMana } from "Utils";
 import { EXPERIENCE_PER_LEVEL } from "Game/game-mechanics.constants";
 
@@ -18,11 +18,6 @@ interface CreateCharacterOptions {
     currentActiveEffects?: ActiveEffect[];
 }
 
-/**
- * Creates a new Character from base inputs, deriving all stats automatically.
- * @param options - Name, level, base stats, and optional starting inventory/effects
- * @returns A fully initialised Character
- */
 export function createCharacter(options: CreateCharacterOptions): Character {
     const { name, level, baseStats, inventory = [], currentActiveEffects = [] } = options;
 
@@ -47,28 +42,15 @@ export function createCharacter(options: CreateCharacterOptions): Character {
 }
 
 // ===============================================
-// COMBAT HELPERS
+// STAT LOOKUP
 // ===============================================
 
-export function getTargetsResistStatValue(character: Character, effect: ActiveEffect): number {
-    return getResistStatFromResistedBy(character, effect.resistedBy as Stance);
-}
-
-/**
- * Gets the resist stat value of a target when resisting an effect
- * @param target - The target to get the resist stat value of
- * @param effect - The effect to get the resist stat value of
- * @returns The resist stat value of the target
- */
+/** Returns the defense stat value for a target when resisting an effect by the given stance. */
 export const getResistStatFromResistedBy = (target: Character | Enemy, resistedBy: Stance): number => {
-    if (resistedBy === 'body') {
-        return target.derivedStats.physicalDefense;
-    } else if (resistedBy === 'mind') {
-        return target.derivedStats.mentalDefense;
-    } else if (resistedBy === 'heart') {
-        return target.derivedStats.emotionalDefense;
-    } else {
-        return target.derivedStats.luck as number;
+    switch (resistedBy) {
+        case 'body':  return target.derivedStats.physicalDefense;
+        case 'mind':  return target.derivedStats.mentalDefense;
+        case 'heart': return target.derivedStats.emotionalDefense;
+        default:      return target.derivedStats.luck;
     }
-
 }
