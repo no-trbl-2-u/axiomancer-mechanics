@@ -1,6 +1,8 @@
 # Effects
 
-Effects are temporary modifiers applied to combatants during battle. Each effect has a `teir` that determines its strength and how resistance is handled.
+## Overview
+
+Effects are temporary modifiers applied to combatants during battle. Each effect has a `teir` that determines its strength and how resistance is handled. All effect logic lives in `Effects/index.ts`, with data in `buffs.library.json` and `debuffs.library.json`.
 
 ## Teir Scale
 
@@ -45,7 +47,7 @@ Roll  = d20 + target.derivedStats[resistedBy defense]
 |------|---------|
 | **Teir 1** | Petitio Principii Pulse, Gettier's Flicker, Ad Hoc Patch — minor single-stat boosts or negligible roll bonuses |
 | **Teir 2** | Attack Up, Defense Up, Regeneration, Accuracy Up, Reflect, Cleanse, Advantage (type-specific), Counter, Life Steal |
-| **Teir 3** | All Stats Up, All Defense Up, Haste, Invincibility, Stealth, Critical Damage Up, Barrier |
+| **Teir 3** | Haste, Invincibility, Stealth — powerful short-duration effects |
 
 ## Debuffs
 
@@ -53,7 +55,7 @@ Roll  = d20 + target.derivedStats[resistedBy defense]
 |------|---------|
 | **Teir 1** | Straw Man's Echo, Post Hoc Tremor, Affirming the Consequent — minor stat penalties or negligible roll penalties |
 | **Teir 2** | Bleed, Poison, Frostbite, Shock, Wound, Slow, Disease, Burn, Fear, Knockdown, Attack Down, Defense Down, Accuracy Down, Evasion Down |
-| **Teir 3** | Stun, Charm, Silence, Sleep, Confusion, Blind, Petrify, Strong Poison, HP Decay, Vulnerability |
+| **Teir 3** | Petrify — powerful control effects |
 
 ---
 
@@ -74,6 +76,7 @@ Roll  = d20 + target.derivedStats[resistedBy defense]
   "payload": {
     "statModifiers": [{ "stat": "body", "value": 2, "isMultiplier": false }],
     "rollModifier": 2,           // flat bonus/penalty added to every dice roll
+    "rollModifierPerIntensity": 1, // per-stack roll modifier (multiplied by currentIntensity)
     "defenseModifier": 1,        // flat bonus/penalty added to defense values
     "damageOverTime": { "damagePerRound": 3, "damageType": "body" },
     "regeneration": { "healthPerRound": 2, "manaPerRound": 0 },
@@ -103,18 +106,18 @@ Roll  = d20 + target.derivedStats[resistedBy defense]
 
 Every basic `attack` or `defend` action automatically applies a Tier 1 stance effect.
 No resist roll is made — these always land.
-Switching action types removes the previous type's self-buff immediately.
+Switching action types removes the previous type's self-buff immediately via `clearTier1EffectsForType()`.
 
 | Action | Effect | Target |
 |--------|--------|--------|
-| Body + Attack | `tier1_body_attack` — physical attack stance | self |
+| Body + Attack | `tier1_body_attack` — Ad Baculum (`+physicalAttack`, `+rollModifierPerIntensity`) | self |
 | Body + Defend | `tier1_body_defend` — Briar Stance (`reflectDamage` per intensity on hit) | self |
-| Mind + Attack | `tier1_mind_mark` (+1 intensity / +1 duration) — studying mark | opponent |
+| Mind + Attack | `tier1_mind_mark` (+1 intensity / +1 duration) — Exposed Reasoning | opponent |
 | Mind + Defend | `tier1_mind_mark` (+3 intensity / +3 duration) | opponent |
-| Heart + Attack | `tier1_heart_attack` — emotional pressure | self |
+| Heart + Attack | `tier1_heart_attack` — Fleeting Kindness (`rollModifier: -5`, strip/extend buffs on hit) | self |
 | Heart + Defend | `tier1_heart_defend` — Vital Empathy (`regeneration.healthPerRound`) | self |
 
-## `ActiveEffect` Fields
+## ActiveEffect Fields
 
 ```typescript
 {
@@ -123,8 +126,30 @@ Switching action types removes the previous type's self-buff immediately.
   currentIntensity: number;   // stack level for intensity-stacking effects
   appliedAtRound: number;     // combat round it was applied
   teir: 'Teir 1' | 'Teir 2' | 'Teir 3';
-  resistedBy?: Stance;    // copied from Effect for quick lookup
+  resistedBy?: Stance;        // copied from Effect for quick lookup
   resistDR?: number;          // copied from Effect for quick lookup
   sourceId?: string;          // who applied it (optional, for attribution)
 }
 ```
+
+## Effect Engine API
+
+| Function | Description |
+|----------|-------------|
+| `lookupEffect(effectId)` | O(1) lookup by effect ID from the registry |
+| `getEffectByName(name)` | Find effect by display name (slower) |
+| `getEffectsByType(type)` | Get all effects of a given type (buff/debuff) |
+| `applyEffect(effects, effect, round, options?)` | Core stacking engine — applies an effect respecting stacking modes |
+| `applyTier1CombatEffectWithResult(actor, opponent, action, round, customMap?)` | Applies Tier 1 stance effect with full result info |
+| `applyTier1CombatEffect(actor, opponent, action, round, customMap?)` | Simplified wrapper — returns only updated effect arrays |
+| `clearTier1EffectsForType(effects, currentType)` | Removes stale Tier 1 self-buffs on stance switch |
+| `getTargetsResistStatValue(target, activeEffect)` | Returns target's base stat for resist rolls |
+
+## Pending
+
+- `removeEffect(activeEffects, effectId)` — filter by ID for cleanses/dispels
+- `getActiveEffectModifiers(activeEffects)` — aggregate all stat/roll/defense/advantage mods
+- `canAct(activeEffects)` — read skipTurn, blockedStances, forcedStance
+- `processDamageOverTime(activeEffects)` — sum DoT damage per round
+- `processRoundStartEffects(state)` — orchestrate DoT → regen → tick → expire
+- `processWorldEffectTick(player)` — DoT/regen/expiry outside combat (per map node transition)

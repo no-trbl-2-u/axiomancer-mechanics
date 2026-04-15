@@ -4,17 +4,15 @@
 
 /**
  * Effects module type definitions
- * 
+ *
  * This module contains types for buffs, debuffs, and conditions that modify
  * character/enemy stats or behavior. Inspired by D&D conditions and TTRPG status effects.
- * 
+ *
  * Effect categories will eventually be renamed based on fallacies and paradoxes
  * to match the game's philosophical theme.
  */
 
-import { Stance } from '@Combat/types';
-import { Character } from 'Character/types';
-import { Enemy } from 'Enemy/types';
+import { Stance } from '../Combat/types';
 
 // ===============================================
 // EFFECT ENUMS & DISCRIMINATORS
@@ -43,16 +41,15 @@ export type EffectStacking = 'none' | 'intensity' | 'duration';
  * - 'control': Restricts actions or forces behavior
  * - 'regeneration': Restores health or mana over time
  * - 'advantage': Grants or removes combat advantage
- * @todo: Add more categories
  */
 export type EffectCategory = 'stat' | 'damage' | 'defense' | 'control' | 'regeneration' | 'advantage';
 
 /**
- * Which stat type the effect targets or scales with
- * Can target either base stats (body/mind/heart) or specific derived stats
+ * Which stat type the effect targets or scales with.
+ * Can target either base stats (body/mind/heart) or specific derived stats.
  */
 export type EffectStatTarget =
-    | Stance  // Base stats: 'body' | 'mind' | 'heart'
+    | Stance
     | 'physicalAttack'  | 'physicalSkill' | 'physicalDefense' | 'physicalSave' | 'physicalTest'
     | 'mentalAttack'    | 'mentalSkill'   | 'mentalDefense'   | 'mentalSave'   | 'mentalTest'
     | 'emotionalAttack' | 'emotionalSkill'| 'emotionalDefense'| 'emotionalSave'| 'emotionalTest'
@@ -65,8 +62,6 @@ export type EffectStatTarget =
 /**
  * Stat modification applied by an effect
  * @property stat - Which stat to modify (base or derived)
- *   - Base stats (body/mind/heart): Affect both base value and all derived stats
- *   - Derived stats: Affect only that specific derived stat
  * @property value - Amount to add (positive) or subtract (negative)
  * @property isMultiplier - If true, value is a multiplier (e.g., 1.5 = +50%)
  */
@@ -123,7 +118,7 @@ export interface AdvantageModifier {
 // ===============================================
 
 /**
- * Effect payload containing the mechanical modifications
+ * Effect payload containing the mechanical modifications.
  * Effects can have multiple modifier types active simultaneously.
  * @property statModifiers - Array of stat changes to apply
  * @property damageOverTime - Damage dealt each round
@@ -134,7 +129,7 @@ export interface AdvantageModifier {
  * @property rollModifierPerIntensity - Roll bonus/penalty multiplied by current intensity
  * @property defenseModifier - Flat bonus/penalty to defense values
  * @property reflectDamage - Damage per intensity dealt back to the attacker
- *   when the bearer of this effect is successfully hit (thorns mechanic).
+ *   when the bearer of this effect is successfully hit (thorns mechanic)
  */
 export interface EffectPayload {
   statModifiers?: StatModifier[];
@@ -157,11 +152,12 @@ export interface EffectPayload {
  * @property id - Unique identifier for this effect
  * @property name - Display name of the effect
  * @property description - Flavor text or lore description of the effect
- * @property type - Whether this is a buff, debuff, or condition
+ * @property type - Whether this is a buff or debuff
  * @property category - Thematic grouping for the effect
  * @property duration - Duration in rounds remaining (-1 for permanent, 0 for instant)
  * @property stacking - How this effect behaves when applied multiple times
- * @property intensity - Current stack count for intensity-stacking effects
+ * @property teir - Determines the methodology for applying/resisting effects
+ * @property intensity - Initial stack count for intensity-stacking effects
  * @property payload - The mechanical modifications this effect applies
  * @property resistedBy - Which stat the TARGET uses to resist this effect.
  *   Follows the RPS counter rule: body effects resisted by mind, heart effects
@@ -185,40 +181,11 @@ export interface Effect {
 }
 
 // ===============================================
-// EFFECT APPLICATION ROLL
-// ===============================================
-
-/**
- * Everything needed to determine whether a Tier 2 effect lands.
- *
- * The formula:
- *   DR  = effect.resistDR (default 12) + attackerHeartBonus + equipmentBonus
- *   Roll = d20 + target[resistedBy stat]
- *   Effect applies if Roll < DR  (target FAILS their save)
- *
- * Heart is the "application" stat — high heart makes your effects harder to
- * shake off, even though heart attacks aren't the strongest on their own.
- * Equipment can push this DR even higher for specialized builds.
- *
- * @property effect - The Effect definition being applied
- * @property attackerHeartBonus - Attacker's heart base stat (flat DR bonus)
- * @property equipmentBonus - Optional bonus from equipped items or skills
- * @property targetResistStatValue - The value of the target's counter-stat
- *   (looked up externally: target.baseStats[effect.resistedBy])
- */
-export interface EffectApplicationRoll {
-  effect: Effect;
-  attackerHeartBonus: number;
-  equipmentBonus?: number;
-  targetResistStatValue: number;
-}
-
-// ===============================================
 // ACTIVE EFFECT INSTANCE
 // ===============================================
 
 /**
- * An active instance of an effect applied to a target
+ * An active instance of an effect applied to a target.
  * Tracks runtime state like remaining duration and current intensity.
  * @property effectId - Reference to the base Effect definition
  * @property remainingDuration - Rounds left before effect expires (-1 for permanent)
@@ -226,13 +193,15 @@ export interface EffectApplicationRoll {
  * @property sourceId - ID of the character/enemy that applied this effect
  * @property appliedAtRound - Combat round when effect was applied
  * @property teir - Determines the methodology for applying effects
+ * @property resistedBy - Which stat resists this (copied from Effect for quick lookup)
+ * @property resistDR - Base resist difficulty (copied from Effect for quick lookup)
  */
 export interface ActiveEffect {
-  effectId: Effect['id'],
-  remainingDuration: Effect['duration'];
-  currentIntensity: Effect['intensity'];
-  sourceId?: Character['id'] | Enemy['id'];
-  appliedAtRound: CombatState['round'];
+  effectId: string;
+  remainingDuration: number;
+  currentIntensity: number;
+  sourceId?: string;
+  appliedAtRound: number;
   teir: Effect['teir'];
   resistedBy?: Stance;
   resistDR?: number;
@@ -248,7 +217,8 @@ export interface ActiveEffect {
  * @property activeEffect - The resulting active effect instance (if successful)
  * @property message - Description of what happened (for the battle log)
  * @property stackedWith - If merged with existing effect, the previous intensity/duration
- * @property roll - The resistance roll details, if a roll was made (Tier 2 effects only)
+ * @property rebounded - True when debuff resistance crits (nat 20) — apply activeEffect to ATTACKER instead
+ * @property roll - The resistance roll details, if a roll was made (Tier 2/3 effects only)
  */
 export interface EffectApplicationResult {
   success: boolean;
@@ -258,18 +228,19 @@ export interface EffectApplicationResult {
     previousIntensity: number;
     previousDuration: number;
   };
-  /**
-   * Set to true when a debuff resistance roll crits (natural 20).
-   * The effect bounced back — apply activeEffect to the ATTACKER instead.
-   * success will be false (it didn't land on the intended target).
-   */
   rebounded?: boolean;
   roll?: {
-    rolled: number;       // raw d20 result
-    resistStat: number;   // target's resist stat value added to the roll
-    total: number;        // rolled + resistStat
-    dr: number;           // final DR (base + heart + equipment bonuses)
-    wasCrit: boolean;     // natural 20: rebound (debuff) or double intensity (buff)
-    wasFumble: boolean;   // natural 1: double duration lands (debuff) or fumble (buff)
+    /** Raw d20 result */
+    rolled: number;
+    /** Target's resist stat value added to the roll */
+    resistStat: number;
+    /** rolled + resistStat */
+    total: number;
+    /** Final DR (base + heart + equipment bonuses) */
+    dr: number;
+    /** Natural 20: rebound (debuff) or double intensity (buff) */
+    wasCrit: boolean;
+    /** Natural 1: double duration lands (debuff) or fumble (buff) */
+    wasFumble: boolean;
   };
 }

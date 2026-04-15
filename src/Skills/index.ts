@@ -1,17 +1,20 @@
 /**
  * Skills System Module
- * Handles skill management and usage in combat
+ * Handles skill creation, validation, and damage calculation.
  */
 
 import { Skill, SkillCategory, SkillsStatType } from './types';
 import { Character } from '../Character/types';
+
+export type { Skill, SkillCategory, SkillsStatType, SkillLearningRequirement } from './types';
 
 // ============================================================================
 // SKILL CREATION
 // ============================================================================
 
 /**
- * Creates a new skill with specified properties
+ * Creates a new skill with specified properties.
+ * TODO (Phase 3c): implement full skill creation with combat effects.
  * @param id - Unique identifier for the skill
  * @param name - Display name of the skill
  * @param description - Flavor text description
@@ -38,7 +41,8 @@ export function createSkill(
 // ============================================================================
 
 /**
- * Checks if a character can use a skill (has enough mana)
+ * Checks if a character can use a skill (has enough mana).
+ * TODO (Phase 3c): add level requirements and cooldown checks.
  * @param character - The character attempting to use the skill
  * @param skill - The skill to use
  * @returns True if character has sufficient mana
@@ -48,7 +52,8 @@ export function canUseSkill(character: Character, skill: Skill): boolean {
 }
 
 /**
- * Calculates the damage a skill would deal
+ * Calculates the damage a skill would deal.
+ * TODO (Phase 3c): integrate basePower, scalingStat, and advantage interactions.
  * @param skill - The skill being used
  * @param character - The character using the skill
  * @returns Calculated damage value

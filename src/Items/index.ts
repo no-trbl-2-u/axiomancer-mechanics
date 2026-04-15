@@ -1,5 +1,6 @@
-// ============================================================================
-// ITEM UTILITIES
-// ============================================================================
-
-// NOTE: Any functions related to items that do not involve updating any state
+export {
+    type Item, type ItemCategory, type Equipment, type Consumable, type Material, type QuestItem,
+    type EquipmentSlot, type BaseItem,
+    isEquipment, isConsumable, isMaterial, isQuestItem,
+} from './types';
+export { addItemToInventory, removeItemFromInventory, useConsumable, stackItem } from './item.reducer';

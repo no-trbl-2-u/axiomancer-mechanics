@@ -6,9 +6,8 @@ This repository is the game engine only — not the final game. It will be consu
 
 ---
 
-- `ARCHITECTURE.md` — module dependency map
 - `GAME-ROADMAP.md` — phased development plan with progress tracking
-- `The-Big-Picture.md` — current effects system status and implementation notes
 - `BRAINDUMP.md` — unorganized design ideas
-- `docs/` — per-system references
+- `AUDIT.md` — code audit and quality assessment
+- `docs/` — per-system references (combat, effects, character)
 - `docs/references/` — source material (fallacies, paradoxes, pantheon, story)

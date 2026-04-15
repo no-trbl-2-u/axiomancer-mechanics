@@ -5,7 +5,7 @@
  */
 
 import { GameState } from "../Game/types";
-import { Item, Consumable, isConsumable } from "./types";
+import { Item, Consumable, Material, isConsumable } from "./types";
 
 // ============================================================================
 // INVENTORY MANAGEMENT (GameState level)
@@ -89,8 +89,11 @@ export function stackItem(state: GameState, itemId: string, amount: number): Gam
         player: {
             ...state.player,
             inventory: state.player.inventory.map(item => {
-                if (item.id === itemId && (item.category === 'consumable' || item.category === 'material')) {
-                    return { ...item, quantity: (item as any).quantity + amount };
+                if (item.id === itemId && isConsumable(item)) {
+                    return { ...item, quantity: item.quantity + amount };
+                }
+                if (item.id === itemId && item.category === 'material') {
+                    return { ...item, quantity: (item as Material).quantity + amount };
                 }
                 return item;
             }),

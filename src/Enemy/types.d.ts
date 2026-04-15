@@ -8,11 +8,12 @@
  * - Loot tables and rewards
  */
 
-import { Item } from 'Items';
 import { Skill } from '../Skills/types';
 import { Map } from '../World/types';
 import { Stance } from '../Combat/types';
 import { BaseStats, DerivedStats } from '../Character/types';
+import { ActiveEffect } from '../Effects/types';
+import { Item } from '../Items/types';
 
 /**
  * Enemy logic type representing the enemy's decision-making process
@@ -20,8 +21,6 @@ import { BaseStats, DerivedStats } from '../Character/types';
  * - 'aggressive': The enemy will choose an action that is likely to deal damage
  * - 'defensive': The enemy will choose an action that is likely to reduce damage
  * - 'balanced': The enemy will choose an action that is likely to deal damage and reduce damage
- * @todo: Add logic types keeping "Game Theory" in mind
- * @todo: Add and adjust logic types when skills are implemented
  */
 export type EnemyLogic = 'random' | 'aggressive' | 'defensive' | 'balanced';
 
@@ -38,6 +37,8 @@ export type EnemyTier1EffectMap = Partial<Record<Stance, Partial<Record<'attack'
  * Enemy represents an adversary that can be encountered in combat
  * @property id - Unique identifier for this enemy instance
  * @property name - Display name of the enemy
+ * @property description - Flavor text or lore description of the enemy
+ * @property enemyTier - Optional difficulty tier: 'simple', 'normal', 'elite', 'boss', or 'unique'
  * @property level - Enemy level (affects difficulty and rewards)
  * @property health - Current health points
  * @property maxHealth - Maximum health points (calculated from level and base stats)
@@ -46,14 +47,12 @@ export type EnemyTier1EffectMap = Partial<Record<Stance, Partial<Record<'attack'
  * @property baseStats - Raw base stats (body/mind/heart) — used for resist rolls
  * @property derivedStats - Combat statistics, same shape as Character.derivedStats
  * @property mapLocation - Reference to the map where this enemy can be encountered
- * @property enemyTier - Optional difficulty tier: 'normal' (standard), 'elite', or 'boss'
- * @property description - Flavor text or lore description of the enemy
  * @property logic - The enemy's decision-making process
  * @property tier1Effects - Optional: overrides for automatic Tier 1 stance effects
  * @property skills - Optional: list of skills the enemy can use
  * @property loot - Optional: list of items the enemy can drop
- * @todo: **FRONTEND ONLY**: image - Optional: visual representation of the enemy
-*/
+ * @property currentActiveEffects - Status effects currently active on this enemy
+ */
 export interface Enemy {
     id: string;
     name: string;
@@ -71,7 +70,5 @@ export interface Enemy {
     tier1Effects?: EnemyTier1EffectMap;
     skills?: Skill[];
     loot?: Item[];
-    currentActiveEffects: ActiveEffect[] | [];
-    /* For Frontend Display */
-    // image: Image; { alt: string, src: string }
+    currentActiveEffects: ActiveEffect[];
 }

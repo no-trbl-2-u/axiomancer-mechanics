@@ -1,6 +1,6 @@
 /**
  * Combat module type definitions
- * 
+ *
  * This module contains types for the combat mechanics, including:
  * - Combat state and flow
  * - Turn order and initiative
@@ -10,10 +10,8 @@
  * - Combat results and outcomes
  */
 
-
-import { Character } from '@Character/types';
-import { Enemy } from '@Enemy/types';
-
+import { Character } from '../Character/types';
+import { Enemy } from '../Enemy/types';
 
 /**
  * The three combat stances a combatant can adopt each round.
@@ -52,16 +50,16 @@ export type Advantage = 'advantage' | 'neutral' | 'disadvantage';
 export type CritStyle = 'double' | 'pierce';
 
 /**
- * Player's combat decision for a single round
+ * Player's combat decision for a single round.
  * Combines stance and action to form a complete combat choice.
  * @property type - The stance (heart/body/mind) chosen for this round
- * @property action - The action (attack/defend) chosen for this round
- * @property skill - The skill chosen for this round
+ * @property action - The action (attack/defend/skill/item/flee) chosen for this round
+ * @property skill - The skill chosen for this round (when action is 'skill')
  */
 export interface CombatAction {
     type: Stance;
     action: Action;
-    skill?: string | 'back'; // TODO: Create type for skill, then create an ENUM of skills
+    skill?: string | 'back';
 }
 
 /**
@@ -74,9 +72,8 @@ export interface CombatAction {
  */
 export type CombatPhase = 'choosing_type' | 'choosing_action' | 'choosing_skill' | 'resolving' | 'ended';
 
-
 /**
- * The log to describe the result of a round of combat
+ * The log entry describing the result of a round of combat
  * @property round - The round the result occurred in
  * @property playerAction - The player's attack type and action
  * @property enemyAction - The enemy's attack type and action

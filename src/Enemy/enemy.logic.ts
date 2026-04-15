@@ -1,20 +1,21 @@
-// ============================================================================
-// ENEMY LOGIC
-// ============================================================================
+/**
+ * Enemy AI Logic
+ * Each function implements a different enemy decision-making strategy.
+ */
 
-import { Action, Stance, CombatAction } from "Combat/types";
-import { EnemyLogic } from "./types";
+import { Stance, Action, CombatAction } from "Combat/types";
+
+const STANCES: Stance[] = ['heart', 'body', 'mind'];
+const ACTIONS: Action[] = ['attack', 'defend'];
 
 /**
- * Generates a random combat action for the enemy using a random logic
+ * Generates a random combat action for the enemy.
+ * Picks a random stance and a random action (attack or defend).
  * @returns A random combat action
  */
 export function randomLogic(): CombatAction {
-    const action = ['attack', 'defend'][Math.floor(Math.random() * 2)];
-    const stance = ['heart', 'body', 'mind'][Math.floor(Math.random() * 3)];
-
     return {
-        type: stance as Stance,
-        action: action as Action,
+        type: STANCES[Math.floor(Math.random() * STANCES.length)],
+        action: ACTIONS[Math.floor(Math.random() * ACTIONS.length)],
     };
-};
+}

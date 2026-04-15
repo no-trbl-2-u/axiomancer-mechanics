@@ -1,6 +1,7 @@
-// ================================
-// Enemy Module
-// ================================
+/**
+ * Enemy Module
+ * Factory and stat lookup utilities for enemy entities.
+ */
 
 import { Stance } from "Combat/types";
 import { Item } from "Items/types";
@@ -15,6 +16,21 @@ import { Enemy, EnemyLogic, EnemyTier1EffectMap } from "./types";
 // ENEMY FACTORY
 // ===============================================
 
+/**
+ * Options for creating a new Enemy
+ * @property id - Unique identifier for this enemy
+ * @property name - Display name
+ * @property description - Flavor text or lore description
+ * @property level - Enemy level (affects stat scaling)
+ * @property baseStats - Core body/mind/heart stats
+ * @property mapLocation - Which map this enemy appears on
+ * @property logic - AI behavior pattern
+ * @property enemyTier - Optional difficulty classification
+ * @property tier1Effects - Optional Tier 1 effect overrides
+ * @property skills - Optional skill list
+ * @property loot - Optional loot table
+ * @property currentActiveEffects - Optional starting status effects
+ */
 interface CreateEnemyOptions {
     id: string;
     name: string;
@@ -45,55 +61,39 @@ export function createEnemy(options: CreateEnemyOptions): Enemy {
     const maxMana = calculateMaxMana(level, baseStats);
 
     return {
-        id,
-        name,
-        description,
-        level,
-        health: maxHealth,
-        maxHealth,
-        mana: maxMana,
-        maxMana,
+        id, name, description, level,
+        health: maxHealth, maxHealth,
+        mana: maxMana, maxMana,
         baseStats,
         derivedStats: deriveStats(baseStats),
-        mapLocation,
-        logic,
-        enemyTier,
-        tier1Effects,
-        skills,
-        loot,
+        mapLocation, logic,
+        enemyTier, tier1Effects, skills, loot,
         currentActiveEffects,
     };
 }
 
 // ===============================================
-// COMBAT HELPERS
+// STAT LOOKUP
 // ===============================================
 
 /**
- * Gets the enemy's related stat for the given base and action type
- * @param enemy - The enemy to get the stat for 
- * @param base - Decision enemy made (body, mind, heart)
- * @param isDefending - Whether the enemy is defending
- * @returns 
+ * Gets the enemy's attack or defense stat for the given stance
+ * @param enemy - The enemy to get the stat for
+ * @param base - The stance (body, mind, heart)
+ * @param isDefending - Whether to return the defense stat (true) or attack stat (false)
+ * @returns The relevant derived stat value
  */
-export const getEnemyRelatedStat = (enemy: Enemy, base: Stance, isDefending: boolean) => {
-  if (!isDefending) {
-    switch (base) {
-      case 'body':
-        return enemy.derivedStats.physicalAttack;
-      case 'mind':
-        return enemy.derivedStats.mentalAttack;
-      case 'heart':
-        return enemy.derivedStats.emotionalAttack;
+export const getEnemyRelatedStat = (enemy: Enemy, base: Stance, isDefending: boolean): number => {
+    if (!isDefending) {
+        switch (base) {
+            case 'body':  return enemy.derivedStats.physicalAttack;
+            case 'mind':  return enemy.derivedStats.mentalAttack;
+            case 'heart': return enemy.derivedStats.emotionalAttack;
+        }
     }
-  } else {
     switch (base) {
-      case 'body':
-        return enemy.derivedStats.physicalDefense;
-      case 'mind':
-        return enemy.derivedStats.mentalDefense;
-      case 'heart':
-        return enemy.derivedStats.emotionalDefense;
+        case 'body':  return enemy.derivedStats.physicalDefense;
+        case 'mind':  return enemy.derivedStats.mentalDefense;
+        case 'heart': return enemy.derivedStats.emotionalDefense;
     }
-  }
 }

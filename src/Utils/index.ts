@@ -6,16 +6,17 @@ import { Advantage } from "Combat/types";
 import { STAT_MULTIPLIERS, RESOURCE_MULTIPLIERS } from "../Game/game-mechanics.constants";
 import { BaseStats, DerivedStats, NonCombatStats } from "Character/types";
 
+// ===============================================
+// MATH
+// ===============================================
+
 /**
  * Clamps a number between min and max values
  * @param value - The value to clamp
  * @param min - Minimum value
  * @param max - Maximum value
  * @returns The clamped value
- * @example
- * clamp(15, 0, 10) // Returns 10
- * clamp(-5, 0, 10) // Returns 0
- * clamp(5, 0, 10)  // Returns 5
+ * @example clamp(15, 0, 10) // 10
  */
 export function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
@@ -26,8 +27,7 @@ export function clamp(value: number, min: number, max: number): number {
  * @param min - Minimum value (inclusive)
  * @param max - Maximum value (inclusive)
  * @returns Random integer in the range [min, max]
- * @example
- * randomInt(1, 6) // Returns a number between 1 and 6 (like a die roll)
+ * @example randomInt(1, 6) // a number between 1 and 6 (like a die roll)
  */
 export function randomInt(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -37,12 +37,7 @@ export function randomInt(min: number, max: number): number {
  * Deep clones an object using JSON serialization
  * @param obj - The object to clone
  * @returns A deep copy of the object
- * @remarks Warning: Does not preserve functions, symbols, undefined values, or circular references
- * @example
- * const original = { name: "Hero", stats: { hp: 100 } };
- * const copy = deepClone(original);
- * copy.stats.hp = 50;
- * console.log(original.stats.hp); // Still 100
+ * @remarks Does not preserve functions, symbols, undefined values, or circular references
  */
 export function deepClone<T>(obj: T): T {
   return JSON.parse(JSON.stringify(obj));
@@ -52,86 +47,40 @@ export function deepClone<T>(obj: T): T {
  * Calculates the average of an array of numbers
  * @param numbers - Numbers to average
  * @returns The average value, or 0 if no numbers provided
- * @example
- * average(1, 2, 3, 4, 5) // Returns 3
- * average(10, 20)        // Returns 15
  */
 export function average(...numbers: number[]): number {
   if (numbers.length === 0) return 0;
   return numbers.reduce((sum, n) => sum + n, 0) / numbers.length;
 }
 
+/** Sums all numbers in an array */
 export const sum = (arr: number[]) => arr.reduce((a, b) => a + b, 0);
-export const max = (arr: number[]) => [...arr].sort((a, b) => b - a)[0];
-export const min = (arr: number[]) => [...arr].sort()[0];
+
+/** Returns the largest number in an array */
+export const max = (arr: number[]) => Math.max(...arr);
+
+/** Returns the smallest number in an array */
+export const min = (arr: number[]) => Math.min(...arr);
 
 /**
- * Determines the modifier to apply to a roll based on the advantage
- * @param advantage - The advantage to apply to the roll
- * @returns A function that returns the modifier to apply to the roll
+ * Checks if a value is within a range (inclusive)
+ * @param value - The value to check
+ * @param min - Minimum value (inclusive)
+ * @param max - Maximum value (inclusive)
+ * @returns True if value is within range
  */
-export const determineRollAdvantageModifier = (advantage: Advantage): (arr: number[]) => number => {
-  switch (advantage) {
-    case 'advantage':
-      return max;
-    case 'disadvantage':
-      return min;
-    default:
-      return sum;
-  }
+export function inRange(value: number, min: number, max: number): boolean {
+  return value >= min && value <= max;
 }
 
 // ===============================================
-// DIE ROLLING
+// STRING
 // ===============================================
-
-/**
- * Creates a die roll function
- * @param sides - Number of sides on the die
- * @param timesRolled - Number of times to roll the die
- * @param func - Function to apply to the resulting array (default: sum)
- * @returns A function that returns the result of the die roll
- * @example
- * const d20 = createDie(20, 1)
- * const twoD20 = createDie(20, 2)
- * const advAtk = createDie(20, 2, max)
- * const disadvAtk = createDie(20, 2, min)
- * d20() // Returns a number between 1 and 20
- * twoD20() // Returns a number between 2 and 40
- * advAtk() // Returns the highest number between 2 and 40
- * disadvAtk() // Returns the lowest number between 2 and 40
- */
-export function createDie(sides: number, timesRolled: number, func?: (arr: number[]) => number) {
-  return () => {
-    if (!func) return sum(Array.from({ length: timesRolled }, () => randomInt(1, sides)))
-    return func(Array.from({ length: timesRolled }, () => randomInt(1, sides)))
-  }
-}
-
-/**
- * 
- * @param advantage - The advantage to create a die roll for
- * @returns A function that returns the result of the die roll
- * @example
- * const advAtk =  createDieRoll('advantage')
- * advAtk() // Returns the highest number between 2d20
- * 
- * const disAdvAtk =  createDieRoll('disadvantage')
- * disAdvAtk() // Returns the lowest number between 2d20
- */
-export function createDieRoll(advantage: Advantage) {
-  const rollCount = advantage === 'neutral' ? 1 : 2
-  const rollAdvantageModifier = determineRollAdvantageModifier(advantage);
-  return createDie(20, rollCount, rollAdvantageModifier);
-}
 
 /**
  * Capitalizes the first letter of a string
  * @param str - The string to capitalize
  * @returns The string with the first letter capitalized
- * @example
- * capitalize("hello") // Returns "Hello"
- * capitalize("WORLD") // Returns "WORLD"
  */
 export function capitalize(str: string): string {
   if (str.length === 0) return str;
@@ -143,26 +92,56 @@ export function capitalize(str: string): string {
  * @param value - The value to format (0-100)
  * @param decimals - Number of decimal places (default: 0)
  * @returns Formatted percentage string
- * @example
- * formatPercent(75)      // Returns "75%"
- * formatPercent(33.333, 1) // Returns "33.3%"
  */
 export function formatPercent(value: number, decimals: number = 0): string {
   return `${value.toFixed(decimals)}%`;
 }
 
+// ===============================================
+// DIE ROLLING
+// ===============================================
+
 /**
- * Checks if a value is within a range (inclusive)
- * @param value - The value to check
- * @param min - Minimum value (inclusive)
- * @param max - Maximum value (inclusive)
- * @returns True if value is within range
- * @example
- * inRange(5, 1, 10)  // Returns true
- * inRange(15, 1, 10) // Returns false
+ * Determines the modifier to apply to a roll based on the advantage
+ * @param advantage - The advantage to apply to the roll
+ * @returns A function that selects the appropriate value from a roll array
  */
-export function inRange(value: number, min: number, max: number): boolean {
-  return value >= min && value <= max;
+export const determineRollAdvantageModifier = (advantage: Advantage): (arr: number[]) => number => {
+  switch (advantage) {
+    case 'advantage':    return max;
+    case 'disadvantage': return min;
+    default:             return sum;
+  }
+}
+
+/**
+ * Creates a die roll function
+ * @param sides - Number of sides on the die
+ * @param timesRolled - Number of times to roll the die
+ * @param func - Function to apply to the resulting array (default: sum)
+ * @returns A function that returns the result of the die roll
+ * @example
+ * const d20 = createDie(20, 1)
+ * const advAtk = createDie(20, 2, max)   // roll 2d20, keep highest
+ * const disadvAtk = createDie(20, 2, min) // roll 2d20, keep lowest
+ */
+export function createDie(sides: number, timesRolled: number, func?: (arr: number[]) => number) {
+  return () => {
+    const rolls = Array.from({ length: timesRolled }, () => randomInt(1, sides));
+    return (func ?? sum)(rolls);
+  }
+}
+
+/**
+ * Creates a d20 roll respecting advantage/disadvantage.
+ * Advantage: roll 2d20 keep highest. Disadvantage: roll 2d20 keep lowest.
+ * Neutral: roll 1d20.
+ * @param advantage - The advantage to create a die roll for
+ * @returns A function that returns the result of the die roll
+ */
+export function createDieRoll(advantage: Advantage) {
+  const rollCount = advantage === 'neutral' ? 1 : 2;
+  return createDie(20, rollCount, determineRollAdvantageModifier(advantage));
 }
 
 // ===============================================
@@ -170,63 +149,60 @@ export function inRange(value: number, min: number, max: number): boolean {
 // ===============================================
 
 /**
-* Derives the combat stats of an entity based on their base stats.
-* Shared between Characters and Enemies.
-* @param baseStats - The base stats of the entity
-* @returns The derived combat stats
-*/
+ * Derives the combat stats of an entity based on their base stats.
+ * Shared between Characters and Enemies.
+ * @param baseStats - The base stats of the entity
+ * @returns The derived combat stats
+ */
 export const deriveStats = ({ body, heart, mind }: BaseStats): DerivedStats => ({
-  physicalAttack: body * STAT_MULTIPLIERS.ATTACK,
-  physicalSkill: body * STAT_MULTIPLIERS.SKILL,
-  physicalDefense: body * STAT_MULTIPLIERS.DEFENSE,
-
-  mentalAttack: mind * STAT_MULTIPLIERS.ATTACK,
-  mentalSkill: mind * STAT_MULTIPLIERS.SKILL,
-  mentalDefense: mind * STAT_MULTIPLIERS.DEFENSE,
-
-  emotionalAttack: heart * STAT_MULTIPLIERS.ATTACK,
-  emotionalSkill: heart * STAT_MULTIPLIERS.SKILL,
-  emotionalDefense: heart * STAT_MULTIPLIERS.DEFENSE,
-
+  physicalAttack:    body  * STAT_MULTIPLIERS.ATTACK,
+  physicalSkill:     body  * STAT_MULTIPLIERS.SKILL,
+  physicalDefense:   body  * STAT_MULTIPLIERS.DEFENSE,
+  mentalAttack:      mind  * STAT_MULTIPLIERS.ATTACK,
+  mentalSkill:       mind  * STAT_MULTIPLIERS.SKILL,
+  mentalDefense:     mind  * STAT_MULTIPLIERS.DEFENSE,
+  emotionalAttack:   heart * STAT_MULTIPLIERS.ATTACK,
+  emotionalSkill:    heart * STAT_MULTIPLIERS.SKILL,
+  emotionalDefense:  heart * STAT_MULTIPLIERS.DEFENSE,
   luck: average(body, heart, mind),
-})
+});
 
 /**
-* Derives the non-combat stats of a Character from their base stats.
-* Enemies do not have these — they are only relevant outside of combat
-* (saving throws, ability tests).
-* @param baseStats - The base stats of the character
-* @returns The non-combat stats
-*/
+ * Derives the non-combat stats of a Character from their base stats.
+ * Enemies do not have these — they are only relevant outside of combat
+ * (saving throws, ability tests).
+ * @param baseStats - The base stats of the character
+ * @returns The non-combat stats
+ */
 export const deriveNonCombatStats = ({ body, heart, mind }: BaseStats): NonCombatStats => ({
-  physicalSave: body * STAT_MULTIPLIERS.SAVE,
-  physicalTest: body * STAT_MULTIPLIERS.TEST,
-  mentalSave: mind * STAT_MULTIPLIERS.SAVE,
-  mentalTest: mind * STAT_MULTIPLIERS.TEST,
-  emotionalSave: heart * STAT_MULTIPLIERS.SAVE,
-  emotionalTest: heart * STAT_MULTIPLIERS.TEST,
-})
+  physicalSave:   body  * STAT_MULTIPLIERS.SAVE,
+  physicalTest:   body  * STAT_MULTIPLIERS.TEST,
+  mentalSave:     mind  * STAT_MULTIPLIERS.SAVE,
+  mentalTest:     mind  * STAT_MULTIPLIERS.TEST,
+  emotionalSave:  heart * STAT_MULTIPLIERS.SAVE,
+  emotionalTest:  heart * STAT_MULTIPLIERS.TEST,
+});
 
 /**
-* Calculates the maximum health of an entity based on level and base stats.
-* Equation: level × average(body, heart) × HEALTH_PER_STAT
-* @param level - The level of the entity
-* @param healthStats - The stats that contribute to max health (body and heart)
-* @returns The maximum health value
-*/
+ * Calculates the maximum health of an entity based on level and base stats.
+ * Equation: level × average(body, heart) × HEALTH_PER_STAT
+ * @param level - The level of the entity
+ * @param healthStats - The stats that contribute to max health (body and heart)
+ * @returns The maximum health value
+ */
 export function calculateMaxHealth(level: number, healthStats: Pick<BaseStats, 'body' | 'heart'>): number {
-  const averageHealthStats = (healthStats.body + healthStats.heart) / 2;
-  return level * averageHealthStats * RESOURCE_MULTIPLIERS.HEALTH_PER_STAT;
+  const avg = (healthStats.body + healthStats.heart) / 2;
+  return level * avg * RESOURCE_MULTIPLIERS.HEALTH_PER_STAT;
 }
 
 /**
-* Calculates the maximum mana of an entity based on level and base stats.
-* Equation: level × average(mind, heart) × MANA_PER_STAT
-* @param level - The level of the entity
-* @param manaStats - The stats that contribute to max mana (mind and heart)
-* @returns The maximum mana value
-*/
+ * Calculates the maximum mana of an entity based on level and base stats.
+ * Equation: level × average(mind, heart) × MANA_PER_STAT
+ * @param level - The level of the entity
+ * @param manaStats - The stats that contribute to max mana (mind and heart)
+ * @returns The maximum mana value
+ */
 export function calculateMaxMana(level: number, manaStats: Pick<BaseStats, 'mind' | 'heart'>): number {
-  const averageManaStats = (manaStats.mind + manaStats.heart) / 2;
-  return level * averageManaStats * RESOURCE_MULTIPLIERS.MANA_PER_STAT;
+  const avg = (manaStats.mind + manaStats.heart) / 2;
+  return level * avg * RESOURCE_MULTIPLIERS.MANA_PER_STAT;
 }

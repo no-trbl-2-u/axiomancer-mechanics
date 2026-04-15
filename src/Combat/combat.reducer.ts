@@ -1,18 +1,12 @@
 /**
  * Combat Reducer
- * Functions that create or modify CombatState objects
- * All functions here are pure and return new state objects
+ * Functions that create or modify CombatState objects.
+ * All functions here are pure and return new state objects.
  */
 
 import { Character } from '../Character/types';
 import { Enemy } from '../Enemy/types';
-import {
-    Stance,
-    Action,
-    CombatPhase,
-    CombatState,
-    BattleLogEntry,
-} from './types';
+import { Stance, Action, CombatPhase, CombatState, BattleLogEntry } from './types';
 import { deepClone } from '../Utils';
 
 // ============================================================================
@@ -39,15 +33,6 @@ export function initializeCombat(player: Character, enemy: Enemy): CombatState {
     };
 }
 
-// /**
-//  * Resets the combat state to its initial values
-//  * @param state - The current combat state to reset
-//  * @returns A fresh combat state with the same player and enemy
-//  */
-// export function resetCombat(state: CombatState): CombatState {
-//     return "Implement me" as any;
-// }
-
 // ============================================================================
 // COMBAT PHASE MANAGEMENT
 // ============================================================================
@@ -59,10 +44,7 @@ export function initializeCombat(player: Character, enemy: Enemy): CombatState {
  * @returns Updated combat state with new phase
  */
 export function updateCombatPhase(state: CombatState, phase: CombatPhase): CombatState {
-    return {
-        ...state,
-        phase: phase
-    }
+    return { ...state, phase };
 }
 
 // ============================================================================
@@ -72,35 +54,21 @@ export function updateCombatPhase(state: CombatState, phase: CombatPhase): Comba
 /**
  * Sets the player's chosen stance for the current round
  * @param state - The current combat state
- * @param stance - The stance chosen by the player
+ * @param stance - The stance chosen by the player (heart/body/mind)
  * @returns Updated combat state with player's stance choice
- * @Example setPlayerStance(state, 'heart')
  */
 export function setPlayerStance(state: CombatState, stance: Stance): CombatState {
-    return {
-        ...state,
-        playerChoice: {
-            ...state.playerChoice,
-            type: stance
-        },
-    };
+    return { ...state, playerChoice: { ...state.playerChoice, type: stance } };
 }
 
 /**
- * Sets the player's chosen attack type for the current round
+ * Sets the player's chosen action for the current round
  * @param state - The current combat state
- * @param type - The attack type chosen by the player
- * @returns Updated combat state with player's type choice
- * @Example setPlayerAction(state, 'attack')
+ * @param action - The action chosen by the player (attack/defend/skill/item/flee)
+ * @returns Updated combat state with player's action choice
  */
 export function setPlayerAction(state: CombatState, action: Action): CombatState {
-    return {
-        ...state,
-        playerChoice: {
-            ...state.playerChoice,
-            action: action
-        },
-    };
+    return { ...state, playerChoice: { ...state.playerChoice, action } };
 }
 
 // ============================================================================
@@ -108,7 +76,9 @@ export function setPlayerAction(state: CombatState, action: Action): CombatState
 // ============================================================================
 
 /**
- * Resolves a complete combat round with both combatants' actions
+ * Resolves a complete combat round with both combatants' actions.
+ * TODO (Phase 2c): implement full round resolution via the reducer
+ * (attack/defense rolls, effect procs, DoT/regen tick, log entry).
  * @param state - The current combat state with both actions chosen
  * @returns Updated combat state with round results
  */
@@ -124,10 +94,10 @@ export function resolveCombatRound(state: CombatState): CombatState {
  * Adds a new log entry to combat state for the current round of combat
  * @param state - The current combat state
  * @param entry - The log entry to add
- * @returns Updated combat state with new log entry
+ * @returns Updated combat state with new log entry appended
  */
 export function addBattleLogEntry(state: CombatState, entry: BattleLogEntry): CombatState {
-    return "Implement me" as any;
+    return { ...state, logEntry: [...state.logEntry, entry] };
 }
 
 // ============================================================================
@@ -135,21 +105,23 @@ export function addBattleLogEntry(state: CombatState, entry: BattleLogEntry): Co
 // ============================================================================
 
 /**
- * Increments the friendship counter. If counter reaches 3, ends combat with friendship
+ * Increments the friendship counter by 1.
+ * Called when both combatants choose 'defend' on the same turn.
  * @param state - The current combat state
  * @returns Updated state with incremented friendship counter
  */
 export function incrementFriendship(state: CombatState): CombatState {
-    return "Implement me" as any;
+    return { ...state, friendshipCounter: state.friendshipCounter + 1 };
 }
 
 /**
- * Ends combat with a friendship victory
+ * Ends combat with a friendship victory.
+ * TODO (Phase 2c): add friendship-specific rewards/outcomes.
  * @param state - The current combat state
  * @returns Updated state with combat ended via friendship
  */
 export function endCombatWithFriendship(state: CombatState): CombatState {
-    return "Implement me" as any;
+    return { ...state, active: false, phase: 'ended' };
 }
 
 // ============================================================================
@@ -159,18 +131,17 @@ export function endCombatWithFriendship(state: CombatState): CombatState {
 /**
  * Ends combat with player victory
  * @param state - The current combat state
- * @returns Updated state with combat ended
+ * @returns Updated state with combat ended (player won)
  */
 export function endCombatPlayerVictory(state: CombatState): CombatState {
-    return "Implement me" as any;
+    return { ...state, active: false, phase: 'ended' };
 }
 
 /**
  * Ends combat with player defeat
  * @param state - The current combat state
- * @returns Updated state with combat ended
+ * @returns Updated state with combat ended (player lost)
  */
 export function endCombatPlayerDefeat(state: CombatState): CombatState {
-    return "Implement me" as any;
+    return { ...state, active: false, phase: 'ended' };
 }
-
