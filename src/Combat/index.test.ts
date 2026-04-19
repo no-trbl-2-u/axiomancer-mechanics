@@ -36,10 +36,20 @@ describe('hasAdvantage', () => {
 });
 
 describe('calculateFinalDamage', () => {
-  it('subtracts defense', () => expect(calculateFinalDamage(10, 3, false)).toBe(7));
-  it('minimum 0', () => expect(calculateFinalDamage(2, 10, false)).toBe(0));
-  it('doubles on crit', () => expect(calculateFinalDamage(10, 3, true)).toBe(17));
-  it('adds damage bonus', () => expect(calculateFinalDamage(10, 3, false, 2)).toBe(9));
+  // baseDefense=3, defenseMultiplier=1 → effectiveDefense=3; 10−3=7
+  it('subtracts defense (passive multiplier ×1)', () => expect(calculateFinalDamage(10, 3, 1, false)).toBe(7));
+  // baseDefense=10, defenseMultiplier=1 → effectiveDefense=10; max(0, 2−10)=0
+  it('minimum 0', () => expect(calculateFinalDamage(2, 10, 1, false)).toBe(0));
+  // crit: 10×2=20; 20−3=17
+  it('doubles on crit', () => expect(calculateFinalDamage(10, 3, 1, true)).toBe(17));
+  // damage bonus: 10+2=12; 12−3=9
+  it('adds damage bonus', () => expect(calculateFinalDamage(10, 3, 1, false, 2)).toBe(9));
+  // defense multiplier: baseDefense=3, multiplier=2 → effectiveDefense=6; 10−6=4
+  it('applies defense multiplier', () => expect(calculateFinalDamage(10, 3, 2, false)).toBe(4));
+  // effect defense modifier: baseDefense=3, multiplier=1, effectModifier=−2 → effectiveDefense=max(0,1)=1; 10−1=9
+  it('applies effectDefenseModifier', () => expect(calculateFinalDamage(10, 3, 1, false, 0, -2)).toBe(9));
+  // effectiveDefense floor: baseDefense=3, multiplier=1, effectModifier=−10 → effectiveDefense=max(0,−7)=0; 10−0=10
+  it('clamps effectiveDefense to 0', () => expect(calculateFinalDamage(10, 3, 1, false, 0, -10)).toBe(10));
 });
 
 describe('applyDamage', () => {

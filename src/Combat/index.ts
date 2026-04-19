@@ -9,7 +9,7 @@ import { Character } from '../Character/types';
 import { Enemy, EnemyLogic } from '../Enemy/types';
 import { getEnemyRelatedStat } from '../Enemy';
 import { isCharacter } from '../Utils/typeGuards';
-import { createDieRoll } from '../Utils';
+import { createDieRoll, createDieRollWithAdvantage } from '../Utils';
 import { FRIENDSHIP_COUNTER_MAX, MAX_EFFECT_DURATION } from '../Game/game-mechanics.constants';
 import { lookupEffect } from '../Effects/effects.library';
 import { getResistStatFromResistedBy } from 'Character';
@@ -232,7 +232,7 @@ export function rollSkillCheck(
   baseStat: number,
   advantage: Advantage,
 ): { total: number; roll: number; modifier: number } {
-  const roll = createDieRoll(advantage)();
+  const roll = createDieRollWithAdvantage(advantage)();
   return { total: roll + baseStat, roll, modifier: baseStat };
 }
 
@@ -260,22 +260,46 @@ export function applyCriticalMultiplier(baseDamage: number): number {
 }
 
 /**
- * Calculates final damage after reductions, applying the critical multiplier
- * before subtracting defence.
- * @param baseDamage - Raw damage before reductions
- * @param damageReduction - Defence value to subtract (already includes the defence multiplier)
- * @param isCritical - Whether this hit is a critical
- * @param damageBonus - Optional flat bonus (e.g. from Exposed Reasoning mark)
+ * Calculates final damage after applying all defence modifiers.
+ *
+ * Defence reduction pipeline:
+ *   1. `baseDefense` is the raw stat for the defender's matching type.
+ *   2. `defenseMultiplier` scales that stat based on whether the defender is
+ *      actively defending and which type-advantage they have:
+ *        - Defending with advantage    → DEFENSE_MULTIPLIERS['advantage']    (×3)
+ *        - Defending with neutral      → DEFENSE_MULTIPLIERS['neutral']      (×2)
+ *        - Defending with disadvantage → DEFENSE_MULTIPLIERS['disadvantage'] (×1.5)
+ *        - Not defending (passive)     → PASSIVE_DEFENSE_MULTIPLIER          (×1)
+ *   3. `effectDefenseModifier` is a flat bonus/penalty to defence from active
+ *      effects (e.g. a vulnerability debuff lowering effective defense).
+ *   4. `isCritical` doubles the incoming damage before defence is applied.
+ *   5. `damageBonus` is a flat bonus added to the post-critical damage
+ *      (e.g. the Exposed Reasoning mark intensity).
+ *
+ * Formula:
+ *   effectiveDamage = (isCritical ? baseDamage × 2 : baseDamage) + damageBonus
+ *   effectiveDefense = max(0, baseDefense × defenseMultiplier + effectDefenseModifier)
+ *   finalDamage = max(0, ceil(effectiveDamage − effectiveDefense))
+ *
+ * @param baseDamage - Raw damage before any modifier
+ * @param baseDefense - Defender's raw defense stat for the matched type
+ * @param defenseMultiplier - Multiplier applied to base defense (from DEFENSE_MULTIPLIERS or PASSIVE_DEFENSE_MULTIPLIER)
+ * @param isCritical - Whether this hit is a critical (doubles damage)
+ * @param damageBonus - Optional flat damage bonus added after the crit multiplier
+ * @param effectDefenseModifier - Optional flat modifier to effective defense from active effects
  * @returns Final damage, minimum 0
  */
 export function calculateFinalDamage(
   baseDamage: number,
-  damageReduction: number,
+  baseDefense: number,
+  defenseMultiplier: number,
   isCritical: boolean,
   damageBonus = 0,
+  effectDefenseModifier = 0,
 ): number {
-  const damage = isCritical ? applyCriticalMultiplier(baseDamage) : baseDamage;
-  return Math.ceil(Math.max(0, damage + damageBonus - damageReduction));
+  const effectiveDamage  = (isCritical ? applyCriticalMultiplier(baseDamage) : baseDamage) + damageBonus;
+  const effectiveDefense = Math.max(0, baseDefense * defenseMultiplier + effectDefenseModifier);
+  return Math.ceil(Math.max(0, effectiveDamage - effectiveDefense));
 }
 
 // ============================================================================

@@ -144,6 +144,23 @@ export function createDieRoll(advantage: Advantage) {
   return createDie(20, rollCount, determineRollAdvantageModifier(advantage));
 }
 
+/**
+ * Creates a d20 roller whose result is shaped by a type-matchup advantage value.
+ * Identical to `createDieRoll` but named to make the intent explicit at
+ * call-sites where the `Advantage` value comes from a combat type-matchup
+ * (`determineAdvantage`) rather than an arbitrary source.
+ *
+ * Advantage:    roll 2d20, keep highest.
+ * Disadvantage: roll 2d20, keep lowest.
+ * Neutral:      roll 1d20.
+ *
+ * @param advantage - The advantage level derived from the type matchup
+ * @returns A zero-argument function that, when called, returns the die result
+ */
+export function createDieRollWithAdvantage(advantage: Advantage): () => number {
+  return createDieRoll(advantage);
+}
+
 // ===============================================
 // ENTITY STAT CALCULATIONS
 // ===============================================

@@ -23,7 +23,7 @@ import {
     extendRandomBuffDuration,
     applyRegen,
 } from '../Combat/index';
-import { createDieRoll } from '../Utils';
+import { createDieRollWithAdvantage } from '../Utils';
 import { Stance, Advantage, CombatState } from '../Combat/types';
 import { createGameStore } from '../Game/store';
 import { nullAdapter } from '../Game/persistence/null.adapter';
@@ -110,8 +110,8 @@ async function resolveAttackVsAttack(
     enemyAdv: Advantage,
     playerAction: 'attack' | 'defend',
 ): Promise<{ player: Character; enemy: Enemy }> {
-    const playerDieRoll = createDieRoll(playerAdv);
-    const enemyDieRoll  = createDieRoll(enemyAdv);
+    const playerDieRoll = createDieRollWithAdvantage(playerAdv);
+    const enemyDieRoll  = createDieRollWithAdvantage(enemyAdv);
 
     const pRollMod  = getActiveRollModifier(player);
     const pBaseStat = getAttackStatForType(player, playerType);
@@ -143,7 +143,7 @@ async function resolveAttackVsAttack(
         console.log('\n[ Player Damage Roll ]');
         printRollLine('Player damage roll:', damageRaw, pBaseStat, playerAdv, pRollMod || undefined);
         await delay(800);
-        const finalDamage   = calculateFinalDamage(damageRoll, baseDefense * PASSIVE_DEFENSE_MULTIPLIER, false, studyBonus);
+        const finalDamage   = calculateFinalDamage(damageRoll, baseDefense, PASSIVE_DEFENSE_MULTIPLIER, false, studyBonus);
 
         printDamageCalc({
             header: 'Player Damage',
@@ -187,7 +187,7 @@ async function resolveAttackVsAttack(
         console.log('\n[ Enemy Damage Roll ]');
         printRollLine('Enemy damage roll:', damageRaw, eBaseStat, enemyAdv, eRollMod || undefined);
         await delay(800);
-        const finalDamage = calculateFinalDamage(damageRoll, baseDefense * PASSIVE_DEFENSE_MULTIPLIER, false, studyBonus);
+        const finalDamage = calculateFinalDamage(damageRoll, baseDefense, PASSIVE_DEFENSE_MULTIPLIER, false, studyBonus);
 
         printDamageCalc({
             header: 'Enemy Damage',
@@ -231,7 +231,7 @@ async function resolvePlayerAttackEnemyDefend(
     enemyAdv: Advantage,
     playerAction: 'attack' | 'defend',
 ): Promise<{ player: Character; enemy: Enemy }> {
-    const playerDieRoll = createDieRoll(playerAdv);
+    const playerDieRoll = createDieRollWithAdvantage(playerAdv);
     const pRollMod      = getActiveRollModifier(player);
     const pBaseStat     = getAttackStatForType(player, playerType);
     const attackMod     = pBaseStat + pRollMod;
@@ -249,7 +249,7 @@ async function resolvePlayerAttackEnemyDefend(
     console.log('\n[ Player Damage Roll ]');
     printRollLine('Player damage roll:', damageRaw, pBaseStat, playerAdv, pRollMod || undefined);
     await delay(800);
-    const finalDamage      = calculateFinalDamage(damageRoll, baseDefense * defenseMultiplier, false, studyBonus);
+    const finalDamage      = calculateFinalDamage(damageRoll, baseDefense, defenseMultiplier, false, studyBonus);
 
     printDamageCalc({
         header: 'Player Damage vs Defending Enemy',
@@ -293,7 +293,7 @@ async function resolvePlayerDefendEnemyAttack(
     playerAdv: Advantage,
     enemyAdv: Advantage,
 ): Promise<{ player: Character; enemy: Enemy }> {
-    const enemyDieRoll = createDieRoll(enemyAdv);
+    const enemyDieRoll = createDieRollWithAdvantage(enemyAdv);
     const eRollMod     = getActiveRollModifier(enemy);
     const eBaseStat    = getAttackStatForType(enemy, enemyType);
     const attackMod    = eBaseStat + eRollMod;
@@ -311,7 +311,7 @@ async function resolvePlayerDefendEnemyAttack(
     console.log('\n[ Enemy Damage Roll ]');
     printRollLine('Enemy damage roll:', damageRaw, eBaseStat, enemyAdv, eRollMod || undefined);
     await delay(800);
-    const finalDamage       = calculateFinalDamage(damageRoll, baseDefense * defenseMultiplier, false, studyBonus);
+    const finalDamage       = calculateFinalDamage(damageRoll, baseDefense, defenseMultiplier, false, studyBonus);
 
     printDamageCalc({
         header: 'Enemy Damage vs Defending Player',
