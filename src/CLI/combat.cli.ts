@@ -16,12 +16,10 @@ import {
     getActiveRollModifier,
     calculateFinalDamage,
     applyDamage,
-    tickAllEffects,
     getThornsReflect,
     getStudyMarkIntensity,
     removeRandomBuff,
     extendRandomBuffDuration,
-    applyRegen,
 } from '../Combat/index';
 import { createDieRoll } from '../Utils';
 import { Stance, Advantage, CombatState } from '../Combat/types';
@@ -31,7 +29,7 @@ import {
     DEFENSE_MULTIPLIERS,
     PASSIVE_DEFENSE_MULTIPLIER,
 } from '../Game/game-mechanics.constants';
-import { applyTier1CombatEffectWithResult, clearTier1EffectsForType } from '../Effects';
+import { applyTier1CombatEffectWithResult, clearTier1EffectsForType, processRoundStartEffects } from '../Effects';
 import { lookupEffect } from '../Effects/effects.library';
 import {
     typeColor,
@@ -346,17 +344,24 @@ async function resolvePlayerDefendEnemyAttack(
 // ─── Main Turn Loop ───────────────────────────────────────────────────────────
 
 async function runCombatTurn(state: CombatState): Promise<CombatState> {
-    // ── Regen phase (start of round, before player choice) ──────────────────
-    let player = state.player;
-    let enemy  = state.enemy;
+    // ── Round-start effects (DoT → Regen → Tick → Expire) ───────────────────
+    const {
+        state: roundStartState,
+        playerExpired,
+        enemyExpired,
+        playerRegenHealed,
+        enemyRegenHealed,
+    } = processRoundStartEffects(state);
+    let player = roundStartState.player;
+    let enemy  = roundStartState.enemy;
 
-    const playerRegen = applyRegen(player);
-    player = playerRegen.target as Character;
-    printRegenHeal('player', player.name, playerRegen.healed);
+    if (playerRegenHealed > 0) printRegenHeal('player', player.name, playerRegenHealed);
+    if (enemyRegenHealed  > 0) printRegenHeal('enemy',  enemy.name,  enemyRegenHealed);
 
-    const enemyRegen = applyRegen(enemy);
-    enemy = enemyRegen.target as Enemy;
-    printRegenHeal('enemy', enemy.name, enemyRegen.healed);
+    if (playerExpired.length > 0 || enemyExpired.length > 0) {
+        printEffectExpiry('player', player.name, playerExpired);
+        printEffectExpiry('enemy',  enemy.name,  enemyExpired);
+    }
 
     printStatus({ ...state, player, enemy });
 
@@ -432,21 +437,8 @@ async function runCombatTurn(state: CombatState): Promise<CombatState> {
         printBothDefending(friendshipCounter - 1, friendshipCounter);
     }
 
-    // ── Tick effect durations ────────────────────────────────────────────────
-    const playerTick = tickAllEffects(player);
-    player = playerTick.target as Character;
-
-    const enemyTick = tickAllEffects(enemy);
-    enemy = enemyTick.target as Enemy;
-
-    if (playerTick.expired.length > 0 || enemyTick.expired.length > 0) {
-        await delay(500);
-        printEffectExpiry('player', player.name, playerTick.expired);
-        printEffectExpiry('enemy', enemy.name, enemyTick.expired);
-    }
-
     await delay(1500);
-    return { ...state, player, enemy, friendshipCounter, round: state.round + 1 };
+    return { ...roundStartState, player, enemy, friendshipCounter, round: state.round + 1 };
 }
 
 // ─── Entry Point ──────────────────────────────────────────────────────────────
