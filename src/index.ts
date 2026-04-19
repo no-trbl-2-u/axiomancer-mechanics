@@ -95,7 +95,7 @@ export type { MapName, ContinentName } from './World/map.library';
 export {
     clamp, randomInt, deepClone, average, sum, max, min, inRange,
     capitalize, formatPercent,
-    createDie, createDieRoll, determineRollAdvantageModifier,
+    createDie, createDieRoll, createDieRollWithAdvantage, determineRollAdvantageModifier,
     deriveStats, deriveNonCombatStats, calculateMaxHealth, calculateMaxMana,
 } from './Utils';
 export { isCharacter, isEnemy, isCombatActive } from './Utils/typeGuards';
