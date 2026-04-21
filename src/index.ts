@@ -44,6 +44,7 @@ export type {
 export {
     applyEffect, applyTier1CombatEffect, applyTier1CombatEffectWithResult,
     clearTier1EffectsForType, getTargetsResistStatValue,
+    processDamageOverTime, processRoundStartEffects,
 } from './Effects';
 export type { ApplyEffectOptions } from './Effects';
 export { lookupEffect, getEffectByName, getEffectsByType, effectsLibrary } from './Effects/effects.library';
