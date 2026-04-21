@@ -1,6 +1,7 @@
 import { Character } from 'Character/types';
 import { Enemy, EnemyTier1EffectMap } from 'Enemy/types';
-import { Stance, CombatAction } from 'Combat/types';
+import { Stance, CombatAction, CombatState } from 'Combat/types';
+import { applyDamage, applyRegen, tickAllEffects } from 'Combat/index';
 import { ActiveEffect, Effect, EffectApplicationResult } from './types';
 import { lookupEffect } from './effects.library';
 import { MAX_EFFECT_INTENSITY, MAX_EFFECT_DURATION } from '../Game/game-mechanics.constants';
@@ -332,4 +333,85 @@ export function getTargetsResistStatValue(
     const resistStat = activeEffect.resistedBy as Stance | undefined;
     if (!resistStat) return 0;
     return target.baseStats[resistStat] ?? 0;
+}
+
+// ===============================================
+// DAMAGE OVER TIME
+// ===============================================
+
+/**
+ * Sums all DoT effects from a set of active effects and returns the total damage
+ * plus a message per DoT source for the battle log.
+ *
+ * Does NOT mutate or damage any target — the caller is responsible for calling
+ * applyDamage with the returned totalDamage.
+ *
+ * @param activeEffects - The active effects on the combatant being evaluated
+ * @returns Total damage from all DoT sources and per-source log messages
+ */
+export function processDamageOverTime(activeEffects: ActiveEffect[]): {
+    totalDamage: number;
+    messages: string[];
+} {
+    let totalDamage = 0;
+    const messages: string[] = [];
+
+    for (const ae of activeEffects) {
+        const effect = lookupEffect(ae.effectId);
+        const dot = effect?.payload.damageOverTime;
+        if (!dot) continue;
+
+        const intensity = ae.currentIntensity ?? 1;
+        const damage = dot.damagePerRound * intensity;
+        totalDamage += damage;
+        messages.push(
+            `${effect.name} deals ${damage} damage (${dot.damagePerRound} × intensity ${intensity})`,
+        );
+    }
+
+    return { totalDamage, messages };
+}
+
+// ===============================================
+// ROUND START ORCHESTRATOR
+// ===============================================
+
+/**
+ * Orchestrates all round-start effect processing for both combatants in order:
+ *   1. DoT damage applied to player and enemy
+ *   2. Regen applied to player and enemy
+ *   3. All effects ticked (duration decremented) for player and enemy
+ *   4. Expired effects collected
+ *
+ * Does NOT check for combat end — that is the responsibility of resolveCombatRound.
+ * Pure reducer: does not mutate the input state.
+ *
+ * @param state - The current combat state
+ * @returns Updated CombatState with all round-start effects applied
+ */
+export function processRoundStartEffects(state: CombatState): CombatState {
+    // Step 1: DoT damage
+    const { totalDamage: playerDoT } = processDamageOverTime(state.player.currentActiveEffects);
+    const { totalDamage: enemyDoT  } = processDamageOverTime(state.enemy.currentActiveEffects);
+
+    let player = playerDoT > 0
+        ? (applyDamage(state.player, playerDoT) as Character)
+        : state.player;
+    let enemy = enemyDoT > 0
+        ? (applyDamage(state.enemy, enemyDoT) as Enemy)
+        : state.enemy;
+
+    // Step 2: Regen
+    ({ target: player } = applyRegen(player) as { target: Character; healed: number });
+    ({ target: enemy  } = applyRegen(enemy)  as { target: Enemy;     healed: number });
+
+    // Step 3 & 4: Tick effects, collect expired
+    const { target: tickedPlayer } = tickAllEffects(player);
+    const { target: tickedEnemy  } = tickAllEffects(enemy);
+
+    return {
+        ...state,
+        player: tickedPlayer as Character,
+        enemy:  tickedEnemy  as Enemy,
+    };
 }
