@@ -6,7 +6,9 @@
 
 import { Character } from '../Character/types';
 import { Enemy } from '../Enemy/types';
-import { Stance, Action, CombatPhase, CombatState, BattleLogEntry, CombatAction } from './types';
+import {
+    Stance, Action, CombatPhase, CombatState, BattleLogEntry, CombatAction,
+} from './types';
 import { deepClone } from '../Utils';
 import {
     determineAdvantage,
@@ -18,12 +20,15 @@ import {
     applyCombatEffects,
     isValidCombatAction,
     getThornsReflect,
+    CombatEffectApplicationResult,
 } from './index';
 import {
     applyTier1CombatEffectWithResult,
     clearTier1EffectsForType,
     processRoundStartEffects,
+    RoundStartEvents,
 } from '../Effects';
+import { Effect, ActiveEffect } from '../Effects/types';
 
 // ============================================================================
 // COMBAT STATE INITIALIZATION
@@ -122,39 +127,76 @@ export function resetCombat(state: CombatState): CombatState {
 }
 
 /**
- * Resolves a complete combat round with both combatants' choices already
- * set on the state.
+ * Per-side Tier 1 stance event surfaced for the battle log.
+ * @property effect - The Effect definition that fired (null when nothing fired)
+ * @property message - Human-readable apply-result message
+ * @property appliedTo - Whether the effect landed on the actor or the opponent
+ */
+export interface Tier1StanceEvent {
+    effect: Effect;
+    message: string;
+    appliedTo: 'self' | 'opponent';
+}
+
+/**
+ * Full event log returned by `resolveCombatRoundWithEvents`. Used by the
+ * CLI to render rich per-round output without re-implementing the
+ * resolution pipeline.
+ */
+export interface ResolveCombatRoundEvents {
+    /** Round-start regen / DoT / tick deltas for both combatants. */
+    roundStart: RoundStartEvents;
+    /** Tier 1 self-buffs cleared on stance change. */
+    cleared: { player: ActiveEffect[]; enemy: ActiveEffect[] };
+    /** Tier 1 stance effects fired this round (one per side, when applicable). */
+    tier1: { player: Tier1StanceEvent | null; enemy: Tier1StanceEvent | null };
+    /** Final damage dealt to each combatant after all reductions. */
+    damage: { toPlayer: number; toEnemy: number };
+    /** Reflected (thorns) damage by side. */
+    thorns: { toPlayer: number; toEnemy: number };
+    /** Tier 2/3 procs that fired and were applied this round. */
+    procs: { byPlayer: CombatEffectApplicationResult[]; byEnemy: CombatEffectApplicationResult[] };
+    /** True when both combatants chose 'defend' (friendship turn). */
+    bothDefend: boolean;
+    /** The newly-appended battle log entry. */
+    logEntry: BattleLogEntry;
+}
+
+/**
+ * Resolves a complete combat round and ALSO returns a structured event log
+ * suitable for rendering rich CLI output. The reducer-only
+ * `resolveCombatRound` is a thin wrapper that drops the events.
  *
  * Pipeline (mirrors `docs/combat.md`):
  *   1. Round-start: regen → DoT → tick (`processRoundStartEffects`)
  *   2. Clear stale Tier 1 self-buffs on stance change
  *   3. Apply Tier 1 stance effects (mind mark, ad baculum, etc.)
  *   4. Resolve combat:
- *        - both attack → contested rolls; loser takes mitigated damage,
- *          winner may apply Heart-attack specials and Mind mark bonus
+ *        - both attack → contested rolls; loser takes mitigated damage
  *        - one attacks, one defends → attacker resolved against defender
  *        - both defend → friendship counter ++
  *   5. Apply Tier 2/3 procs from `rollForCombatEffects`
  *   6. Build `BattleLogEntry`, append, advance round, clear choices
  *
- * Pure — accepts and returns a `CombatState` without mutation. Calls
- * into `processPlayerTurn` / `processEnemyTurn` for damage math, then
- * applies that damage and creates the log entry.
+ * Pure — accepts and returns a `CombatState` without mutation.
  *
  * @param state - The current combat state with both `playerChoice` and
  *   `enemyChoice` fully populated
- * @returns The updated combat state with damage applied, effects ticked,
- *   procs applied, and the round advanced
+ * @returns Updated state plus an `events` object with everything that
+ *   happened this round
  */
-export function resolveCombatRound(state: CombatState): CombatState {
+export function resolveCombatRoundWithEvents(state: CombatState): {
+    state: CombatState;
+    events: ResolveCombatRoundEvents | null;
+} {
     if (!isValidCombatAction(state.playerChoice) || !isValidCombatAction(state.enemyChoice)) {
-        return state;
+        return { state, events: null };
     }
 
     let working = state;
 
     // 1) Round-start effects
-    const { state: afterTick } = processRoundStartEffects(working);
+    const { state: afterTick, events: roundStart } = processRoundStartEffects(working);
     working = afterTick;
 
     const playerChoice = working.playerChoice as CombatAction;
@@ -201,6 +243,8 @@ export function resolveCombatRound(state: CombatState): CombatState {
 
     let damageToEnemy = 0;
     let damageToPlayer = 0;
+    let thornsToPlayer = 0;
+    let thornsToEnemy = 0;
     let playerRoll = 0;
     let enemyRoll = 0;
     let playerRollDetails = '';
@@ -221,7 +265,6 @@ export function resolveCombatRound(state: CombatState): CombatState {
         playerRollDetails = playerTurn.playerRollDetails;
         enemyRollDetails = enemyTurn.enemyRollDetails;
 
-        // Apply damage
         if (damageToEnemy > 0) {
             working = { ...working, enemy: applyDamage(working.enemy, damageToEnemy) };
         }
@@ -229,31 +272,36 @@ export function resolveCombatRound(state: CombatState): CombatState {
             working = { ...working, player: applyDamage(working.player, damageToPlayer) };
         }
 
-        // Thorns: reflect when a hit lands on the bearer
         if (damageToPlayer > 0) {
             const thorns = getThornsReflect(working.player);
             if (thorns > 0) {
+                thornsToEnemy = thorns;
                 working = { ...working, enemy: applyDamage(working.enemy, thorns) };
             }
         }
         if (damageToEnemy > 0) {
             const thorns = getThornsReflect(working.enemy);
             if (thorns > 0) {
+                thornsToPlayer = thorns;
                 working = { ...working, player: applyDamage(working.player, thorns) };
             }
         }
     }
 
-    // 5) Tier 2/3 procs (only when an attack landed; or always for self-buff defends)
+    // 5) Tier 2/3 procs
+    let byPlayerProcs: CombatEffectApplicationResult[] = [];
+    let byEnemyProcs: CombatEffectApplicationResult[] = [];
     if (playerChoice.action === 'attack' || playerChoice.action === 'defend') {
         const procs = rollForCombatEffects(working.player, playerChoice, playerRoll || 10);
         const result = applyCombatEffects(working, 'player', procs);
         working = result.state;
+        byPlayerProcs = result.applied;
     }
     if (enemyChoice.action === 'attack' || enemyChoice.action === 'defend') {
         const procs = rollForCombatEffects(working.enemy, enemyChoice, enemyRoll || 10);
         const result = applyCombatEffects(working, 'enemy', procs);
         working = result.state;
+        byEnemyProcs = result.applied;
     }
 
     // 6) Build log entry, append, advance round, clear choices
@@ -267,7 +315,7 @@ export function resolveCombatRound(state: CombatState): CombatState {
         damageToEnemy,
     });
 
-    return {
+    const finalState: CombatState = {
         ...working,
         friendshipCounter,
         logEntry: [...working.logEntry, entry],
@@ -275,6 +323,36 @@ export function resolveCombatRound(state: CombatState): CombatState {
         playerChoice: {},
         enemyChoice: {},
     };
+
+    const events: ResolveCombatRoundEvents = {
+        roundStart,
+        cleared: { player: playerCleared.cleared, enemy: enemyCleared.cleared },
+        tier1: {
+            player: t1Player.effect && t1Player.message && t1Player.appliedTo
+                ? { effect: t1Player.effect, message: t1Player.message, appliedTo: t1Player.appliedTo }
+                : null,
+            enemy: t1Enemy.effect && t1Enemy.message && t1Enemy.appliedTo
+                ? { effect: t1Enemy.effect, message: t1Enemy.message, appliedTo: t1Enemy.appliedTo }
+                : null,
+        },
+        damage: { toPlayer: damageToPlayer, toEnemy: damageToEnemy },
+        thorns: { toPlayer: thornsToPlayer, toEnemy: thornsToEnemy },
+        procs: { byPlayer: byPlayerProcs, byEnemy: byEnemyProcs },
+        bothDefend,
+        logEntry: entry,
+    };
+
+    return { state: finalState, events };
+}
+
+/**
+ * Resolves a complete combat round and returns the updated state. Thin
+ * wrapper around `resolveCombatRoundWithEvents` that drops the events
+ * payload — preferred entry point for headless callers (game reducer,
+ * automated combat tester) that don't need per-event display data.
+ */
+export function resolveCombatRound(state: CombatState): CombatState {
+    return resolveCombatRoundWithEvents(state).state;
 }
 
 // ============================================================================

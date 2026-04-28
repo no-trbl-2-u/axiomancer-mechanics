@@ -39,8 +39,9 @@ export {
     setPlayerStance, setPlayerAction,
     addBattleLogEntry, incrementFriendship,
     endCombatPlayerVictory, endCombatPlayerDefeat, endCombatWithFriendship,
-    resetCombat, resolveCombatRound,
+    resetCombat, resolveCombatRound, resolveCombatRoundWithEvents,
 } from './Combat/combat.reducer';
+export type { ResolveCombatRoundEvents, Tier1StanceEvent } from './Combat/combat.reducer';
 
 // Combat — types
 export type {

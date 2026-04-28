@@ -119,11 +119,11 @@ Each phase builds on the one before it. `[x]` = done; `[ ]` = pending.
 - [x] Signed-term formatting for roll lines — `+ N stat` / `− N stat` / `+ N roll` with colour-coding (red for negative roll modifiers, green for positive)
 - [x] Damage roll logged separately from attack roll, with its own header and delay
 - [x] Damage bonus (`+N mark`) shown inline in the damage formula
-- [ ] Replace inline scenario logic with `resolveCombatRound` reducer (Phase 2c)
-- [ ] Show active buffs/debuffs each round
-- [ ] Add Tier 2/3 effect proc messages
-- [ ] Add skill selection (Phase 3)
-- [ ] Add item usage (Phase 4)
+- [x] Replace inline scenario logic with `resolveCombatRound` reducer (Phase 2c)
+- [x] Show active buffs/debuffs each round
+- [x] Add Tier 2/3 effect proc messages
+- [x] Add skill selection (Phase 3 placeholder — falls back to defend until skills land)
+- [x] Add item usage (Phase 4 placeholder — falls back to defend until items land)
 
 ---
 
