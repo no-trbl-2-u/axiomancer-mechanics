@@ -12,6 +12,18 @@ import { BaseStats } from "Character/types";
 import { deriveStats, calculateMaxHealth, calculateMaxMana } from "Utils";
 import { Enemy, EnemyLogic, EnemyTier1EffectMap } from "./types";
 
+export {
+    randomLogic, aggressiveLogic, defensiveLogic, balancedLogic,
+    strategicLogic, bossLogic, dispatchEnemyLogic,
+} from './enemy.logic';
+export {
+    enemyLibrary, lookupEnemy, getEnemiesByMap, getEnemiesByTier, EnemyLibrary,
+} from './enemy.library';
+export {
+    generateEncounter, listEncountersForMap, listAllEncounters,
+} from './encounter.library';
+export type { Encounter } from './encounter.library';
+
 // ===============================================
 // ENEMY FACTORY
 // ===============================================
