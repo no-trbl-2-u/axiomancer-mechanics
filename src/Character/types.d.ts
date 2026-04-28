@@ -2,43 +2,11 @@ import { Item } from '../Items/types';
 import { ActiveEffect } from '../Effects/types';
 
 /**
- * Character represents a player character with stats, resources, and progression
- * @property name - The character's display name
- * @property level - Current character level (affects stat scaling and abilities)
- * @property experience - Current experience points accumulated
- * @property experienceToNextLevel - Experience threshold for the next level
- * @property health - Current health points (0 = defeated)
- * @property maxHealth - Maximum health points (calculated from level and base stats)
- * @property mana - Current mana points (used for skills and abilities)
- * @property maxMana - Maximum mana points (calculated from level and base stats)
- * @property baseStats - Core attributes that define the character's capabilities
- * @property derivedStats - Calculated combat stats shared with enemies
- * @property nonCombatStats - Player-only stats used outside of combat (saves, ability tests)
- * @property inventory - Items currently held by the character
- * @property currentActiveEffects - Status effects currently active on this character
- */
-export interface Character {
-    name: string;
-    level: number;
-    experience: number;
-    experienceToNextLevel: number;
-    health: number;
-    maxHealth: number;
-    mana: number;
-    maxMana: number;
-    baseStats: BaseStats;
-    derivedStats: DerivedStats;
-    nonCombatStats: NonCombatStats;
-    inventory: Item[];
-    currentActiveEffects: ActiveEffect[];
-}
-
-/**
- * Base stats representing the three core attributes.
- * These are the fundamental stats that all other stats derive from.
- * @property heart - Emotion, willpower, and charisma (affects emotional skills, mana, and heart-type combat)
- * @property body - Physical strength and constitution (affects physical skills, health, and body-type combat)
- * @property mind - Intelligence, reflexes, and perception (affects mental skills and mind-type combat)
+ * The three core attributes from which all other character/enemy stats derive.
+ *
+ * @property heart - Emotion, willpower, charisma. Strong against `body`.
+ * @property body  - Physical strength and constitution. Strong against `mind`.
+ * @property mind  - Intelligence, reflexes, perception. Strong against `heart`.
  */
 export interface BaseStats {
     heart: number;
@@ -47,24 +15,11 @@ export interface BaseStats {
 }
 
 /**
- * Derived combat stats shared between Characters and Enemies.
- * Each stat type (body/mind/heart) produces three combat values.
+ * Combat stats derived from BaseStats. Each stance contributes three values:
+ * `*Attack` (used in attack rolls), `*Skill` (used by skills/philosophy),
+ * and `*Defense` (used as damage reduction).
  *
- * ATTACK vs SKILL distinction:
- * - Attack stats are used in combat rolls (e.g. physicalAttack for body-type attacks)
- * - Skill stats govern skill usage and the philosophy bar
- * - Defense stats reduce incoming damage of that type
- *
- * @property physicalAttack - Body-type combat roll modifier
- * @property physicalSkill - Body-based skill usage modifier
- * @property physicalDefense - Defense value against body-type attacks
- * @property mentalAttack - Mind-type combat roll modifier
- * @property mentalSkill - Mind-based skill usage modifier
- * @property mentalDefense - Defense value against mind-type attacks
- * @property emotionalAttack - Heart-type combat roll modifier
- * @property emotionalSkill - Heart-based skill usage modifier
- * @property emotionalDefense - Defense value against heart-type attacks
- * @property luck - Average of all three base stats (crits, random events)
+ * `luck` is the average of the three base stats and gates random outcomes.
  */
 export interface DerivedStats {
     physicalAttack: number;
@@ -80,14 +35,8 @@ export interface DerivedStats {
 }
 
 /**
- * Non-combat stats derived from base stats. Character-only — enemies do not have these.
- * Used for out-of-combat skill checks, saving throws, and ability tests.
- * @property physicalSave - Saving throw for resisting body-type effects
- * @property physicalTest - General body ability tests (lifting, endurance, etc.)
- * @property mentalSave - Saving throw for resisting mind-type effects
- * @property mentalTest - General mind ability tests (puzzles, perception, etc.)
- * @property emotionalSave - Saving throw for resisting heart-type effects
- * @property emotionalTest - General heart ability tests (persuasion, charm, etc.)
+ * Out-of-combat stats — saving throws and ability tests. Player-only.
+ * Saves resist effects of that stance; tests are general ability checks.
  */
 export interface NonCombatStats {
     physicalSave: number;
@@ -96,4 +45,32 @@ export interface NonCombatStats {
     mentalTest: number;
     emotionalSave: number;
     emotionalTest: number;
+}
+
+/**
+ * The player character.
+ *
+ * @property level                  - Determines stat scaling and abilities.
+ * @property experience             - Total XP earned.
+ * @property experienceToNextLevel  - XP threshold for the next level-up.
+ * @property baseStats              - Heart/Body/Mind core attributes.
+ * @property derivedStats           - Combat stats derived from baseStats.
+ * @property nonCombatStats         - Saves and ability tests.
+ * @property inventory              - Items the character is carrying.
+ * @property effects                - Active status effects on the character.
+ */
+export interface Character {
+    name: string;
+    level: number;
+    experience: number;
+    experienceToNextLevel: number;
+    health: number;
+    maxHealth: number;
+    mana: number;
+    maxMana: number;
+    baseStats: BaseStats;
+    derivedStats: DerivedStats;
+    nonCombatStats: NonCombatStats;
+    inventory: Item[];
+    effects: ActiveEffect[];
 }

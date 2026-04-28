@@ -1,63 +1,48 @@
-/**
- * Enemy module type definitions
- *
- * This module contains types for enemy characters, including:
- * - Enemy base interface
- * - Enemy AI and behavior patterns
- * - Enemy classifications and types
- * - Loot tables and rewards
- */
-
 import { Skill } from '../Skills/types';
-import { Map } from '../World/types';
+import { MapName } from '../World/map.library';
 import { Stance } from '../Combat/types';
 import { BaseStats, DerivedStats } from '../Character/types';
 import { ActiveEffect } from '../Effects/types';
 import { Item } from '../Items/types';
 
 /**
- * Enemy logic type representing the enemy's decision-making process
- * - 'random': The enemy will choose an action randomly
- * - 'aggressive': The enemy will choose an action that is likely to deal damage
- * - 'defensive': The enemy will choose an action that is likely to reduce damage
- * - 'balanced': The enemy will choose an action that is likely to deal damage and reduce damage
+ * Decision-making strategy used by an enemy each round.
+ * - `random`     — picks any stance and action uniformly.
+ * - `aggressive` — favours attacking.
+ * - `defensive`  — favours defending.
+ * - `balanced`   — mixes attack and defence based on state.
  */
 export type EnemyLogic = 'random' | 'aggressive' | 'defensive' | 'balanced';
 
 /**
- * Per-enemy Tier 1 effect map.
- * Overrides the default TIER1_EFFECT_MAP for any action the enemy performs.
- * If an action key is absent, the default map is used as a fallback.
- * Eventually each unique enemy will have thematic effects (debate, rhetoric,
- * philosophy) instead of the generic player stances.
+ * Difficulty classification used by the world to seed encounters.
  */
-export type EnemyTier1EffectMap = Partial<Record<Stance, Partial<Record<'attack' | 'defend', string>>>>;
+export type EnemyDifficulty = 'simple' | 'normal' | 'elite' | 'boss' | 'unique';
 
 /**
- * Enemy represents an adversary that can be encountered in combat
- * @property id - Unique identifier for this enemy instance
- * @property name - Display name of the enemy
- * @property description - Flavor text or lore description of the enemy
- * @property enemyTier - Optional difficulty tier: 'simple', 'normal', 'elite', 'boss', or 'unique'
- * @property level - Enemy level (affects difficulty and rewards)
- * @property health - Current health points
- * @property maxHealth - Maximum health points (calculated from level and base stats)
- * @property mana - Current mana points
- * @property maxMana - Maximum mana points (calculated from level and base stats)
- * @property baseStats - Raw base stats (body/mind/heart) — used for resist rolls
- * @property derivedStats - Combat statistics, same shape as Character.derivedStats
- * @property mapLocation - Reference to the map where this enemy can be encountered
- * @property logic - The enemy's decision-making process
- * @property tier1Effects - Optional: overrides for automatic Tier 1 stance effects
- * @property skills - Optional: list of skills the enemy can use
- * @property loot - Optional: list of items the enemy can drop
- * @property currentActiveEffects - Status effects currently active on this enemy
+ * Per-enemy override for the default Tier 1 stance-effect map. Only the
+ * effect ID is overridden; the action's target (self/opponent) and stacking
+ * options are preserved from the global map.
+ */
+export type Tier1EffectOverrides =
+    Partial<Record<Stance, Partial<Record<'attack' | 'defend', string>>>>;
+
+/**
+ * An adversary that can be encountered in combat.
+ *
+ * @property id           - Unique identifier (used for save/load and tracking).
+ * @property mapName      - The map this enemy belongs to.
+ * @property logic        - AI strategy.
+ * @property difficulty   - Optional encounter classification.
+ * @property tier1Overrides - Optional Tier 1 effect ID overrides per stance.
+ * @property skills       - Optional skill list the enemy can use.
+ * @property loot         - Optional drops.
+ * @property effects      - Active status effects on the enemy.
  */
 export interface Enemy {
     id: string;
     name: string;
     description: string;
-    enemyTier?: 'simple' | 'normal' | 'elite' | 'boss' | 'unique';
     level: number;
     health: number;
     maxHealth: number;
@@ -65,10 +50,11 @@ export interface Enemy {
     maxMana: number;
     baseStats: BaseStats;
     derivedStats: DerivedStats;
-    mapLocation: Pick<Map, 'name'>;
+    mapName: MapName;
     logic: EnemyLogic;
-    tier1Effects?: EnemyTier1EffectMap;
+    difficulty?: EnemyDifficulty;
+    tier1Overrides?: Tier1EffectOverrides;
     skills?: Skill[];
     loot?: Item[];
-    currentActiveEffects: ActiveEffect[];
+    effects: ActiveEffect[];
 }

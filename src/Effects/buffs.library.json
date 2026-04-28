@@ -8,13 +8,17 @@
       "category": "stat",
       "duration": 2,
       "stacking": "intensity",
-      "teir": "Teir 1",
       "payload": {
         "statModifiers": [
-          { "stat": "physicalAttack", "value": 1, "isMultiplier": false }
+          {
+            "stat": "physicalAttack",
+            "value": 1,
+            "isMultiplier": false
+          }
         ],
         "rollModifierPerIntensity": 1
-      }
+      },
+      "tier": 1
     },
     {
       "id": "tier1_body_defend",
@@ -24,10 +28,10 @@
       "category": "defense",
       "duration": 3,
       "stacking": "intensity",
-      "teir": "Teir 1",
       "payload": {
         "reflectDamage": 1
-      }
+      },
+      "tier": 1
     },
     {
       "id": "tier1_heart_defend",
@@ -37,10 +41,12 @@
       "category": "regeneration",
       "duration": 3,
       "stacking": "intensity",
-      "teir": "Teir 1",
       "payload": {
-        "regeneration": { "healthPerRound": 1 }
-      }
+        "regeneration": {
+          "healthPerRound": 1
+        }
+      },
+      "tier": 1
     },
     {
       "id": "tier1_heart_attack",
@@ -50,10 +56,10 @@
       "category": "stat",
       "duration": 2,
       "stacking": "intensity",
-      "teir": "Teir 1",
       "payload": {
         "rollModifier": -5
-      }
+      },
+      "tier": 1
     },
     {
       "id": "buff_body_attack_up",
@@ -63,7 +69,6 @@
       "category": "stat",
       "duration": 3,
       "stacking": "intensity",
-      "teir": "Teir 2",
       "resistedBy": "mind",
       "resistDR": 13,
       "payload": {
@@ -80,7 +85,8 @@
           }
         ],
         "rollModifier": 2
-      }
+      },
+      "tier": 2
     },
     {
       "id": "buff_mind_attack_up",
@@ -90,7 +96,6 @@
       "category": "stat",
       "duration": 3,
       "stacking": "intensity",
-      "teir": "Teir 2",
       "resistedBy": "heart",
       "resistDR": 13,
       "payload": {
@@ -107,7 +112,8 @@
           }
         ],
         "rollModifier": 2
-      }
+      },
+      "tier": 2
     },
     {
       "id": "buff_heart_attack_up",
@@ -117,7 +123,6 @@
       "category": "stat",
       "duration": 3,
       "stacking": "intensity",
-      "teir": "Teir 2",
       "resistedBy": "body",
       "resistDR": 13,
       "payload": {
@@ -134,7 +139,8 @@
           }
         ],
         "rollModifier": 2
-      }
+      },
+      "tier": 2
     },
     {
       "id": "buff_body_defense_up",
@@ -144,7 +150,6 @@
       "category": "defense",
       "duration": 4,
       "stacking": "duration",
-      "teir": "Teir 2",
       "resistedBy": "mind",
       "resistDR": 12,
       "payload": {
@@ -161,7 +166,8 @@
           }
         ],
         "defenseModifier": 2
-      }
+      },
+      "tier": 2
     },
     {
       "id": "buff_mind_defense_up",
@@ -171,7 +177,6 @@
       "category": "defense",
       "duration": 4,
       "stacking": "duration",
-      "teir": "Teir 2",
       "resistedBy": "heart",
       "resistDR": 12,
       "payload": {
@@ -188,7 +193,8 @@
           }
         ],
         "defenseModifier": 2
-      }
+      },
+      "tier": 2
     },
     {
       "id": "buff_heart_defense_up",
@@ -198,7 +204,6 @@
       "category": "defense",
       "duration": 4,
       "stacking": "duration",
-      "teir": "Teir 2",
       "resistedBy": "body",
       "resistDR": 12,
       "payload": {
@@ -215,7 +220,8 @@
           }
         ],
         "defenseModifier": 2
-      }
+      },
+      "tier": 2
     },
     {
       "id": "buff_defend_up",
@@ -225,7 +231,6 @@
       "category": "defense",
       "duration": 3,
       "stacking": "none",
-      "teir": "Teir 2",
       "resistedBy": "heart",
       "resistDR": 14,
       "payload": {
@@ -262,7 +267,8 @@
             "isMultiplier": false
           }
         ]
-      }
+      },
+      "tier": 2
     },
     {
       "id": "buff_accuracy_up",
@@ -272,7 +278,6 @@
       "category": "advantage",
       "duration": 3,
       "stacking": "intensity",
-      "teir": "Teir 2",
       "resistedBy": "heart",
       "resistDR": 13,
       "payload": {
@@ -294,7 +299,8 @@
             "isMultiplier": false
           }
         ]
-      }
+      },
+      "tier": 2
     },
     {
       "id": "buff_evasion_up",
@@ -304,7 +310,6 @@
       "category": "defense",
       "duration": 3,
       "stacking": "duration",
-      "teir": "Teir 2",
       "resistedBy": "mind",
       "resistDR": 13,
       "payload": {
@@ -333,7 +338,8 @@
             "heart"
           ]
         }
-      }
+      },
+      "tier": 2
     },
     {
       "id": "buff_critical_rate_up",
@@ -343,7 +349,6 @@
       "category": "advantage",
       "duration": 4,
       "stacking": "intensity",
-      "teir": "Teir 2",
       "resistedBy": "heart",
       "resistDR": 12,
       "payload": {
@@ -355,7 +360,8 @@
             "isMultiplier": false
           }
         ]
-      }
+      },
+      "tier": 2
     },
     {
       "id": "buff_critical_damage_up",
@@ -365,7 +371,6 @@
       "category": "damage",
       "duration": 3,
       "stacking": "none",
-      "teir": "Teir 2",
       "resistedBy": "mind",
       "resistDR": 14,
       "payload": {
@@ -386,7 +391,8 @@
             "isMultiplier": true
           }
         ]
-      }
+      },
+      "tier": 2
     },
     {
       "id": "buff_haste",
@@ -396,7 +402,6 @@
       "category": "advantage",
       "duration": 2,
       "stacking": "none",
-      "teir": "Teir 3",
       "resistedBy": "mind",
       "resistDR": 17,
       "payload": {
@@ -408,7 +413,8 @@
             "heart"
           ]
         }
-      }
+      },
+      "tier": 3
     },
     {
       "id": "buff_regeneration",
@@ -418,14 +424,14 @@
       "category": "regeneration",
       "duration": 5,
       "stacking": "intensity",
-      "teir": "Teir 2",
       "resistedBy": "mind",
       "resistDR": 12,
       "payload": {
         "regeneration": {
           "healthPerRound": 3
         }
-      }
+      },
+      "tier": 2
     },
     {
       "id": "buff_max_hp_up",
@@ -435,7 +441,6 @@
       "category": "stat",
       "duration": 5,
       "stacking": "none",
-      "teir": "Teir 2",
       "resistedBy": "mind",
       "resistDR": 13,
       "payload": {
@@ -446,7 +451,8 @@
             "isMultiplier": true
           }
         ]
-      }
+      },
+      "tier": 2
     },
     {
       "id": "buff_barrier",
@@ -456,12 +462,12 @@
       "category": "defense",
       "duration": 3,
       "stacking": "none",
-      "teir": "Teir 2",
       "resistedBy": "heart",
       "resistDR": 13,
       "payload": {
         "defenseModifier": 5
-      }
+      },
+      "tier": 2
     },
     {
       "id": "buff_damage_reduction",
@@ -471,12 +477,12 @@
       "category": "defense",
       "duration": 3,
       "stacking": "none",
-      "teir": "Teir 2",
       "resistedBy": "heart",
       "resistDR": 13,
       "payload": {
         "defenseModifier": 5
-      }
+      },
+      "tier": 2
     },
     {
       "id": "buff_invincibility",
@@ -486,12 +492,12 @@
       "category": "defense",
       "duration": 1,
       "stacking": "none",
-      "teir": "Teir 3",
       "resistedBy": "heart",
       "resistDR": 18,
       "payload": {
         "defenseModifier": 99
-      }
+      },
+      "tier": 3
     },
     {
       "id": "buff_taunt",
@@ -501,7 +507,6 @@
       "category": "control",
       "duration": 3,
       "stacking": "none",
-      "teir": "Teir 2",
       "resistedBy": "body",
       "resistDR": 12,
       "payload": {
@@ -513,7 +518,8 @@
             "isMultiplier": false
           }
         ]
-      }
+      },
+      "tier": 2
     },
     {
       "id": "buff_stealth",
@@ -523,7 +529,6 @@
       "category": "advantage",
       "duration": 2,
       "stacking": "none",
-      "teir": "Teir 2",
       "resistedBy": "mind",
       "resistDR": 14,
       "payload": {
@@ -535,7 +540,8 @@
             "heart"
           ]
         }
-      }
+      },
+      "tier": 2
     },
     {
       "id": "buff_all_stats_up",
@@ -545,7 +551,6 @@
       "category": "stat",
       "duration": 3,
       "stacking": "none",
-      "teir": "Teir 2",
       "resistedBy": "heart",
       "resistDR": 14,
       "payload": {
@@ -587,7 +592,8 @@
           }
         ],
         "rollModifier": 1
-      }
+      },
+      "tier": 2
     },
     {
       "id": "buff_reflect",
@@ -597,12 +603,12 @@
       "category": "defense",
       "duration": 2,
       "stacking": "none",
-      "teir": "Teir 2",
       "resistedBy": "heart",
       "resistDR": 13,
       "payload": {
         "defenseModifier": 2
-      }
+      },
+      "tier": 2
     },
     {
       "id": "buff_counter",
@@ -612,7 +618,6 @@
       "category": "advantage",
       "duration": 3,
       "stacking": "none",
-      "teir": "Teir 2",
       "resistedBy": "mind",
       "resistDR": 13,
       "payload": {
@@ -622,7 +627,8 @@
             "body"
           ]
         }
-      }
+      },
+      "tier": 2
     },
     {
       "id": "buff_resistance_body",
@@ -632,7 +638,6 @@
       "category": "defense",
       "duration": 4,
       "stacking": "duration",
-      "teir": "Teir 2",
       "resistedBy": "mind",
       "resistDR": 13,
       "payload": {
@@ -653,7 +658,8 @@
             "isMultiplier": false
           }
         ]
-      }
+      },
+      "tier": 2
     },
     {
       "id": "buff_resistance_mind",
@@ -663,7 +669,6 @@
       "category": "defense",
       "duration": 4,
       "stacking": "duration",
-      "teir": "Teir 2",
       "resistedBy": "heart",
       "resistDR": 13,
       "payload": {
@@ -684,7 +689,8 @@
             "isMultiplier": false
           }
         ]
-      }
+      },
+      "tier": 2
     },
     {
       "id": "buff_resistance_heart",
@@ -694,7 +700,6 @@
       "category": "defense",
       "duration": 4,
       "stacking": "duration",
-      "teir": "Teir 2",
       "resistedBy": "body",
       "resistDR": 13,
       "payload": {
@@ -715,7 +720,8 @@
             "isMultiplier": false
           }
         ]
-      }
+      },
+      "tier": 2
     },
     {
       "id": "buff_cleanse",
@@ -725,10 +731,10 @@
       "category": "stat",
       "duration": 0,
       "stacking": "none",
-      "teir": "Teir 2",
       "resistedBy": "heart",
       "resistDR": 12,
-      "payload": {}
+      "payload": {},
+      "tier": 2
     },
     {
       "id": "buff_buff_duration_up",
@@ -738,12 +744,12 @@
       "category": "advantage",
       "duration": 3,
       "stacking": "none",
-      "teir": "Teir 2",
       "resistedBy": "heart",
       "resistDR": 12,
       "payload": {
         "rollModifier": 1
-      }
+      },
+      "tier": 2
     },
     {
       "id": "buff_status_chance_up",
@@ -753,12 +759,12 @@
       "category": "advantage",
       "duration": 4,
       "stacking": "none",
-      "teir": "Teir 2",
       "resistedBy": "heart",
       "resistDR": 13,
       "payload": {
         "rollModifier": 3
-      }
+      },
+      "tier": 2
     },
     {
       "id": "buff_life_steal",
@@ -768,7 +774,6 @@
       "category": "regeneration",
       "duration": 4,
       "stacking": "intensity",
-      "teir": "Teir 2",
       "resistedBy": "mind",
       "resistDR": 12,
       "payload": {
@@ -776,7 +781,8 @@
           "healthPerRound": 2
         },
         "rollModifier": 1
-      }
+      },
+      "tier": 2
     },
     {
       "id": "buff_advantage_body",
@@ -786,7 +792,6 @@
       "category": "advantage",
       "duration": 3,
       "stacking": "none",
-      "teir": "Teir 2",
       "resistedBy": "mind",
       "resistDR": 13,
       "payload": {
@@ -807,7 +812,8 @@
             "isMultiplier": false
           }
         ]
-      }
+      },
+      "tier": 2
     },
     {
       "id": "buff_advantage_mind",
@@ -817,7 +823,6 @@
       "category": "advantage",
       "duration": 3,
       "stacking": "none",
-      "teir": "Teir 2",
       "resistedBy": "heart",
       "resistDR": 13,
       "payload": {
@@ -838,7 +843,8 @@
             "isMultiplier": false
           }
         ]
-      }
+      },
+      "tier": 2
     },
     {
       "id": "buff_petitio_pulse",
@@ -848,7 +854,6 @@
       "category": "stat",
       "duration": 2,
       "stacking": "none",
-      "teir": "Teir 1",
       "resistedBy": "body",
       "resistDR": 10,
       "payload": {
@@ -859,7 +864,8 @@
             "isMultiplier": false
           }
         ]
-      }
+      },
+      "tier": 1
     },
     {
       "id": "buff_gettiters_flicker",
@@ -869,7 +875,6 @@
       "category": "advantage",
       "duration": 2,
       "stacking": "none",
-      "teir": "Teir 1",
       "resistedBy": "heart",
       "resistDR": 10,
       "payload": {
@@ -880,7 +885,8 @@
             "isMultiplier": false
           }
         ]
-      }
+      },
+      "tier": 1
     },
     {
       "id": "buff_ad_hoc_patch",
@@ -890,7 +896,6 @@
       "category": "stat",
       "duration": 2,
       "stacking": "none",
-      "teir": "Teir 1",
       "resistedBy": "mind",
       "resistDR": 10,
       "payload": {
@@ -901,7 +906,8 @@
             "isMultiplier": false
           }
         ]
-      }
+      },
+      "tier": 1
     },
     {
       "id": "buff_advantage_heart",
@@ -911,7 +917,6 @@
       "category": "advantage",
       "duration": 3,
       "stacking": "none",
-      "teir": "Teir 2",
       "resistedBy": "body",
       "resistDR": 13,
       "payload": {
@@ -932,7 +937,8 @@
             "isMultiplier": false
           }
         ]
-      }
+      },
+      "tier": 2
     }
   ]
 }
