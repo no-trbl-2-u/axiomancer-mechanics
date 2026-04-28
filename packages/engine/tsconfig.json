@@ -5,9 +5,7 @@
     "lib": ["ES2020"],
     /* Modules */
     "module": "commonjs",
-    "rootDir": "./src",
-    "baseUrl": "./src",
-    "paths": {},
+    "rootDir": ".",
     "moduleResolution": "node",
     "resolveJsonModule": true,
     /* Emit */
@@ -29,15 +27,13 @@
     "skipLibCheck": true,
     "noImplicitAny": true
   },
-  "ts-node": {
-    "require": ["tsconfig-paths/register"]
-  },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "fixtures/**/*"
   ],
   "exclude": [
     "node_modules",
     "dist",
-    "src/**/*.test.ts"
+    "tests/**/*"
   ]
 }
