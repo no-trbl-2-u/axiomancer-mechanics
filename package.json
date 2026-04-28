@@ -17,6 +17,7 @@
     "combat": "npm run build --workspace packages/engine && npm run combat --workspace packages/cli",
     "character": "npm run build --workspace packages/engine && npm run character --workspace packages/cli",
     "combat:auto": "python3 packages/automation/combat-test.py",
+    "examples": "npm run build && node examples/node-cjs/index.cjs && node examples/node-esm/index.mjs",
     "clean": "npm run clean --workspaces --if-present"
   },
   "devDependencies": {
