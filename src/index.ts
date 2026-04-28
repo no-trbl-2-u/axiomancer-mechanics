@@ -3,7 +3,12 @@
 // Consumers (React Native app, etc.) import from this barrel.
 
 // Character
-export { createCharacter, getResistStatFromResistedBy } from './Character';
+export {
+    createCharacter, getResistStatFromResistedBy,
+    calculateExperienceToNextLevel, grantExperience, levelUp,
+    allocateStatPoint, getAvailableSkills, learnSkill,
+    equipSkill, unequipSkill, MAX_EQUIPPED_SKILLS,
+} from './Character';
 export type { Character, BaseStats, DerivedStats, NonCombatStats } from './Character/types';
 
 // Enemy
