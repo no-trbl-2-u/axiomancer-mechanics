@@ -47,3 +47,34 @@ describe('stackItem', () => {
     expect((s2.player.inventory[0] as Consumable).quantity).toBe(8);
   });
 });
+
+describe('useConsumable — heal/restoreMana/effectId', () => {
+  it('heals the player when heal is set', () => {
+    const heal: Consumable = { ...potion, id: 'h2', heal: 5 };
+    const damaged = state();
+    damaged.player.health = 1;
+    const s = addItemToInventory(damaged, heal);
+    const after = useConsumable(s, 'h2');
+    expect(after.player.health).toBe(6);
+  });
+
+  it('restores mana when restoreMana is set', () => {
+    const mana: Consumable = { ...potion, id: 'm2', restoreMana: 10 };
+    const drained = state();
+    drained.player.mana = 0;
+    const s = addItemToInventory(drained, mana);
+    const after = useConsumable(s, 'm2');
+    expect(after.player.mana).toBe(10);
+  });
+
+  it('applies an effect when effectId is set', () => {
+    const buffPot: Consumable = {
+      ...potion, id: 'b1',
+      effectId: 'buff_body_attack_up',
+      duration: 3, power: 1,
+    };
+    const s = addItemToInventory(state(), buffPot);
+    const after = useConsumable(s, 'b1');
+    expect(after.player.currentActiveEffects.some(e => e.effectId === 'buff_body_attack_up')).toBe(true);
+  });
+});

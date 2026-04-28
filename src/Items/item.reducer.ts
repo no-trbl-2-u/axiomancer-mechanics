@@ -6,6 +6,9 @@
 
 import { GameState } from "../Game/types";
 import { Item, Consumable, Material, isConsumable } from "./types";
+import { healCharacter } from "../Combat";
+import { applyEffect } from "../Effects";
+import { lookupEffect } from "../Effects/effects.library";
 
 // ============================================================================
 // INVENTORY MANAGEMENT (GameState level)
@@ -44,7 +47,19 @@ export function removeItemFromInventory(state: GameState, itemId: string): GameS
 }
 
 /**
- * Uses a consumable item, applying its effect and reducing quantity
+ * Uses a consumable item, applying its effect and reducing quantity.
+ *
+ * Effects applied (when the relevant fields are set):
+ *   - `heal` numeric  → healCharacter(player, heal)
+ *   - `restoreMana`   → adds to player.mana, clamped to maxMana
+ *   - `effectId`      → applyEffect via the effects engine, with optional
+ *                       `power` (intensity) and `duration`. The same
+ *                       effect runs through stacking rules (none /
+ *                       intensity / duration) per the library entry.
+ *
+ * Pure — input state is never mutated. Quantity decrements; a stack at
+ * 0 is removed from the inventory.
+ *
  * @param state - The current game state
  * @param itemId - The ID of the consumable to use
  * @returns The new game state after using the consumable
@@ -56,21 +71,43 @@ export function useConsumable(state: GameState, itemId: string): GameState {
         return state;
     }
 
-    // TODO: Apply consumable effect based on item.effect
+    let player = state.player;
 
-    // Reduce quantity or remove if last one
+    if (typeof item.heal === 'number' && item.heal > 0) {
+        player = healCharacter(player, item.heal);
+    }
+    if (typeof item.restoreMana === 'number' && item.restoreMana > 0) {
+        player = { ...player, mana: Math.min(player.maxMana, player.mana + item.restoreMana) };
+    }
+    if (item.effectId) {
+        const effectDef = lookupEffect(item.effectId);
+        if (effectDef) {
+            const round = state.combatState?.round ?? 0;
+            const overrides = item.duration !== undefined
+                ? { intensityDelta: item.power ?? 1, durationMode: 'reset' as const }
+                : { intensityDelta: item.power ?? 1 };
+            const adjustedEffect = item.duration !== undefined
+                ? { ...effectDef, duration: item.duration }
+                : effectDef;
+            const { activeEffects } = applyEffect(player.currentActiveEffects, adjustedEffect, round, overrides);
+            player = { ...player, currentActiveEffects: activeEffects };
+        }
+    }
+
+    const stateWithPlayer: GameState = { ...state, player };
+
     if (item.quantity <= 1) {
-        return removeItemFromInventory(state, itemId);
+        return removeItemFromInventory(stateWithPlayer, itemId);
     }
 
     return {
-        ...state,
+        ...stateWithPlayer,
         player: {
-            ...state.player,
-            inventory: state.player.inventory.map(i =>
+            ...stateWithPlayer.player,
+            inventory: stateWithPlayer.player.inventory.map(i =>
                 i.id === itemId && isConsumable(i)
                     ? { ...i, quantity: i.quantity - 1 }
-                    : i
+                    : i,
             ),
         },
     };

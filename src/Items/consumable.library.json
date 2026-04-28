@@ -1,10 +1,123 @@
 {
     "consumables": [
         {
-            "id": "csl-01",
+            "id": "csl-heal-01",
             "name": "Healing Potion",
-            "description": "A potion that heals 10 HP.",
+            "description": "A basic potion that restores 10 HP.",
+            "category": "consumable",
             "effect": "heal",
+            "heal": 10,
+            "quantity": 1
+        },
+        {
+            "id": "csl-heal-02",
+            "name": "Greater Healing Potion",
+            "description": "A potent draught restoring 25 HP.",
+            "category": "consumable",
+            "effect": "heal",
+            "heal": 25,
+            "quantity": 1
+        },
+        {
+            "id": "csl-heal-03",
+            "name": "Elixir of Life",
+            "description": "An ancient remedy fully restoring HP.",
+            "category": "consumable",
+            "effect": "heal",
+            "heal": 9999,
+            "quantity": 1
+        },
+        {
+            "id": "csl-mana-01",
+            "name": "Mana Draught",
+            "description": "Restores 10 MP.",
+            "category": "consumable",
+            "effect": "mana",
+            "restoreMana": 10,
+            "quantity": 1
+        },
+        {
+            "id": "csl-mana-02",
+            "name": "Greater Mana Draught",
+            "description": "Restores 25 MP.",
+            "category": "consumable",
+            "effect": "mana",
+            "restoreMana": 25,
+            "quantity": 1
+        },
+        {
+            "id": "csl-mana-03",
+            "name": "Aether Distillate",
+            "description": "Fully restores MP.",
+            "category": "consumable",
+            "effect": "mana",
+            "restoreMana": 9999,
+            "quantity": 1
+        },
+        {
+            "id": "csl-buff-body",
+            "name": "Phalanx Tonic",
+            "description": "A bracing draught — body soars for several rounds.",
+            "category": "consumable",
+            "effect": "buff",
+            "effectId": "buff_body_attack_up",
+            "duration": 4,
+            "power": 1,
+            "quantity": 1
+        },
+        {
+            "id": "csl-buff-mind",
+            "name": "Lucid Tincture",
+            "description": "Mind sharpens to a razor edge for several rounds.",
+            "category": "consumable",
+            "effect": "buff",
+            "effectId": "buff_mind_attack_up",
+            "duration": 4,
+            "power": 1,
+            "quantity": 1
+        },
+        {
+            "id": "csl-buff-heart",
+            "name": "Bootstrap Brew",
+            "description": "Conviction in liquid form — heart amplifies.",
+            "category": "consumable",
+            "effect": "buff",
+            "effectId": "buff_heart_attack_up",
+            "duration": 4,
+            "power": 1,
+            "quantity": 1
+        },
+        {
+            "id": "csl-poison",
+            "name": "Curry's Vial",
+            "description": "Throw to inflict recursive poison on a single target.",
+            "category": "consumable",
+            "effect": "offensive",
+            "effectId": "debuff_poison",
+            "duration": 3,
+            "power": 1,
+            "quantity": 1
+        },
+        {
+            "id": "csl-burn",
+            "name": "Witchfire Phial",
+            "description": "Bursts into flame — applies burn to the target.",
+            "category": "consumable",
+            "effect": "offensive",
+            "effectId": "debuff_burn",
+            "duration": 3,
+            "power": 1,
+            "quantity": 1
+        },
+        {
+            "id": "csl-stun",
+            "name": "Buridan's Hourglass",
+            "description": "Time itself stalls — target skips a turn.",
+            "category": "consumable",
+            "effect": "offensive",
+            "effectId": "debuff_stun",
+            "duration": 1,
+            "power": 1,
             "quantity": 1
         }
     ]

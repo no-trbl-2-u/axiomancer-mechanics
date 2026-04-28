@@ -54,8 +54,15 @@ export type {
 } from './Effects/types';
 
 // Items
-export { addItemToInventory, removeItemFromInventory, useConsumable, stackItem } from './Items';
-export type { Item, Equipment, Consumable, Material, QuestItem, ItemCategory, EquipmentSlot } from './Items/types';
+export {
+    addItemToInventory, removeItemFromInventory, useConsumable, stackItem,
+    equipmentLibrary, lookupEquipment, getAllEquipment, getEquipmentBySlot,
+    equipItem, unequipItem, getEquipmentModifiers,
+} from './Items';
+export type {
+    Item, Equipment, Consumable, Material, QuestItem, ItemCategory, EquipmentSlot, ItemTeir,
+    EquipmentLoadout, CharacterWithEquipment, AggregatedEquipmentModifiers,
+} from './Items';
 export { isEquipment, isConsumable, isMaterial, isQuestItem } from './Items/types';
 
 // Skills — types only (no implementation yet)

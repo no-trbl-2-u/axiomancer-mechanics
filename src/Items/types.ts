@@ -3,8 +3,14 @@
  * Discriminated union of all item types with type guards.
  */
 
+import type { StatModifier } from '../Effects/types';
+import type { CombatEffectTrigger } from '../Combat/types';
+
 /** Item categories */
 export type ItemCategory = 'equipment' | 'consumable' | 'material' | 'quest-item';
+
+/** Tier classification mirroring effects/skills. */
+export type ItemTeir = 'Teir 1' | 'Teir 2' | 'Teir 3';
 
 /**
  * Base properties shared by all items
@@ -24,25 +30,49 @@ export interface BaseItem {
 export type EquipmentSlot = 'weapon' | 'armor' | 'accessory' | 'head' | 'body' | 'hands' | 'feet';
 
 /**
- * Equipment item that can be equipped by the player
+ * Equipment item that can be equipped by the player.
+ *
  * @property category - Always 'equipment'
  * @property slot - The equipment slot this item occupies
+ * @property statModifiers - Static stat changes applied while equipped
+ * @property passiveEffects - Effect IDs applied on equip and removed on
+ *   unequip (e.g. permanent regen rings, reflect cloaks)
+ * @property onHitEffects - Triggers fired when the wearer lands an attack
+ * @property onDefendEffects - Triggers fired when the wearer is hit
+ *   while defending
+ * @property teir - Tier classification driving rarity / scaling
  */
 export interface Equipment extends BaseItem {
     category: 'equipment';
     slot: EquipmentSlot;
+    statModifiers?: StatModifier[];
+    passiveEffects?: string[];
+    onHitEffects?: CombatEffectTrigger[];
+    onDefendEffects?: CombatEffectTrigger[];
+    teir?: ItemTeir;
 }
 
 /**
- * Consumable item that can be used once (quantity decrements)
+ * Consumable item that can be used once (quantity decrements).
+ *
  * @property category - Always 'consumable'
- * @property effect - Effect identifier applied on use
+ * @property effect - Human-readable effect description (legacy field)
  * @property quantity - Number of this item in the stack
+ * @property effectId - Effect ID from the buffs/debuffs library applied on use
+ * @property heal - Optional flat HP restored on use
+ * @property restoreMana - Optional flat MP restored on use
+ * @property duration - Optional override for the applied effect's duration
+ * @property power - Optional override for intensity (defaults to 1)
  */
 export interface Consumable extends BaseItem {
     category: 'consumable';
     effect: string;
     quantity: number;
+    effectId?: string;
+    heal?: number;
+    restoreMana?: number;
+    duration?: number;
+    power?: number;
 }
 
 /**
