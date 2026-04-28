@@ -162,33 +162,33 @@ Each phase builds on the one before it. `[x]` = done; `[ ]` = pending.
 ### 4a — Equipment Type Refinement
 
 - [x] Base `Equipment`, `Consumable`, `Material`, `QuestItem` types
-- [ ] `statModifiers: StatModifier[]` on `Equipment`
-- [ ] `passiveEffects: string[]` on `Equipment`
-- [ ] `onHitEffects: CombatEffectTrigger[]` on `Equipment`
-- [ ] `onDefendEffects: CombatEffectTrigger[]` on `Equipment`
-- [ ] `teir` field on `Equipment`
-- [ ] `effectId: string` on `Consumable`
-- [ ] `duration` and `power` overrides on `Consumable`
+- [x] `statModifiers: StatModifier[]` on `Equipment`
+- [x] `passiveEffects: string[]` on `Equipment`
+- [x] `onHitEffects: CombatEffectTrigger[]` on `Equipment`
+- [x] `onDefendEffects: CombatEffectTrigger[]` on `Equipment`
+- [x] `teir` field on `Equipment`
+- [x] `effectId: string` on `Consumable`
+- [x] `duration` and `power` overrides on `Consumable`
 
 ### 4b — Equipment Library
 
-- [ ] At least 18 items: 6 weapons, 6 armor, 6 accessories (2 per stat alignment each)
+- [x] At least 18 items: 6 weapons, 6 armor, 6 accessories (2 per stat alignment each)
 
 ### 4c — Consumable Library
 
 - [x] Initial `consumable.library.json` (Healing Potion)
-- [ ] Expand to at least 12: healing (3), mana (3), buff potions (3), offensive (3)
+- [x] Expand to at least 12: healing (3), mana (3), buff potions (3), offensive (3)
 
 ### 4d — Equipment & Item Engine
 
 - [x] `store.addItemToInventory(item)`
 - [x] `store.removeItemFromInventory(itemId)`
 - [x] `store.stackItem(itemId, amount)`
-- [x] `store.useConsumable(itemId)` — quantity management (effect application pending Phase 1 `removeEffect`)
-- [ ] `equipItem(character, item): Character`
-- [ ] `unequipItem(character, slot): Character`
-- [ ] `getEquipmentModifiers(character): AggregatedModifiers`
-- [ ] Unit tests
+- [x] `store.useConsumable(itemId)` — applies heal / restoreMana / effectId via the effects engine
+- [x] `equipItem(character, item): Character & { equipment }`
+- [x] `unequipItem(character, slot): Character & { equipment }`
+- [x] `getEquipmentModifiers(character): AggregatedEquipmentModifiers`
+- [x] Unit tests
 
 ---
 
