@@ -17,6 +17,9 @@ import { EXPERIENCE_PER_LEVEL } from "Game/game-mechanics.constants";
  * @property baseStats - Core body/mind/heart stats
  * @property inventory - Optional starting items
  * @property currentActiveEffects - Optional starting status effects
+ * @property availableStatPoints - Starting unspent stat points (default 0)
+ * @property knownSkills - Skill IDs the character starts knowing
+ * @property equippedSkills - Skill IDs equipped for combat use
  */
 interface CreateCharacterOptions {
     name: string;
@@ -24,6 +27,9 @@ interface CreateCharacterOptions {
     baseStats: BaseStats;
     inventory?: Item[];
     currentActiveEffects?: ActiveEffect[];
+    availableStatPoints?: number;
+    knownSkills?: string[];
+    equippedSkills?: string[];
 }
 
 /**
@@ -32,7 +38,13 @@ interface CreateCharacterOptions {
  * @returns A fully initialised Character
  */
 export function createCharacter(options: CreateCharacterOptions): Character {
-    const { name, level, baseStats, inventory = [], currentActiveEffects = [] } = options;
+    const {
+        name, level, baseStats,
+        inventory = [], currentActiveEffects = [],
+        availableStatPoints = 0,
+        knownSkills = [],
+        equippedSkills = [],
+    } = options;
 
     const maxHealth = calculateMaxHealth(level, baseStats);
     const maxMana = calculateMaxMana(level, baseStats);
@@ -51,12 +63,31 @@ export function createCharacter(options: CreateCharacterOptions): Character {
         nonCombatStats: deriveNonCombatStats(baseStats),
         inventory,
         currentActiveEffects,
+        availableStatPoints,
+        knownSkills,
+        equippedSkills,
     };
 }
 
 // ===============================================
 // STAT LOOKUP
 // ===============================================
+
+// ===============================================
+// PROGRESSION RE-EXPORTS
+// ===============================================
+
+export {
+    calculateExperienceToNextLevel,
+    grantExperience,
+    levelUp,
+    allocateStatPoint,
+    getAvailableSkills,
+    learnSkill,
+    equipSkill,
+    unequipSkill,
+    MAX_EQUIPPED_SKILLS,
+} from './progression';
 
 /**
  * Gets the resist stat value of a target when resisting an effect.

@@ -16,6 +16,9 @@ import { ActiveEffect } from '../Effects/types';
  * @property nonCombatStats - Player-only stats used outside of combat (saves, ability tests)
  * @property inventory - Items currently held by the character
  * @property currentActiveEffects - Status effects currently active on this character
+ * @property availableStatPoints - Unspent stat points awarded by levelling up (Phase 5)
+ * @property knownSkills - Skill IDs the character has learned (Phase 5b)
+ * @property equippedSkills - Skill IDs currently equipped for combat use (Phase 5b)
  */
 export interface Character {
     name: string;
@@ -31,6 +34,9 @@ export interface Character {
     nonCombatStats: NonCombatStats;
     inventory: Item[];
     currentActiveEffects: ActiveEffect[];
+    availableStatPoints?: number;
+    knownSkills?: string[];
+    equippedSkills?: string[];
 }
 
 /**

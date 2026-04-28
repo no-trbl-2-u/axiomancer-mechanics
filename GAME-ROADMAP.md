@@ -196,22 +196,22 @@ Each phase builds on the one before it. `[x]` = done; `[ ]` = pending.
 
 ### 5a — Level Up
 
-- [ ] `calculateExperienceToNextLevel(level): number`
-- [ ] `grantExperience(character, amount): Character`
-- [ ] `levelUp(character): Character`
-- [ ] `statPoints` field on `Character`
-- [ ] `allocateStatPoint(character, stat): Character`
+- [x] `calculateExperienceToNextLevel(level): number`
+- [x] `grantExperience(character, amount): Character`
+- [x] `levelUp(character): Character`
+- [x] `availableStatPoints` field on `Character`
+- [x] `allocateStatPoint(character, stat): Character`
 
 ### 5b — Skill Learning
 
-- [ ] `getAvailableSkills(character): Skill[]`
-- [ ] `learnSkill(character, skillId): Character`
-- [ ] `knownSkills: string[]` and `equippedSkills: string[]` on `Character`
-- [ ] `equipSkill` / `unequipSkill`
+- [x] `getAvailableSkills(character, skillLibrary): Skill[]`
+- [x] `learnSkill(character, skill): Character`
+- [x] `knownSkills: string[]` and `equippedSkills: string[]` on `Character`
+- [x] `equipSkill` / `unequipSkill`
 
 ### 5c — Character CLI
 
-- [ ] Level-up flow, stat allocation, skill learning, equipment management
+- [x] Level-up flow, stat allocation, skill learning, equipped-skill management (equipment management is in Phase 4 — wiring it into this CLI is left for a follow-up)
 
 ---
 
