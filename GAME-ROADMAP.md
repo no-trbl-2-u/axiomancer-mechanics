@@ -64,11 +64,11 @@ Each phase builds on the one before it. `[x]` = done; `[ ]` = pending.
 - [x] `extendRandomBuffDuration(target, amount)` — extends one random buff's duration; used by Heart/Attack on hit
 - [x] `getActiveRollModifier(target): number` — sums flat `rollModifier` and `rollModifierPerIntensity × intensity` across all active effects
 - [x] `isAttackSuccessful(attackRoll, defenseRoll): boolean` — compares attack vs defence rolls
-- [ ] `performAttackRoll(attacker, attackType, advantage)` — stub
-- [ ] `performDefenseRoll(defender, attackType, isDefending)` — stub
-- [ ] `calculateBaseDamage(attacker, attackType, advantage)` — stub
-- [ ] `calculateDamageReduction(defender, attackType, isDefending)` — stub
-- [ ] `calculateAttackDamage(attacker, defender, attackType, advantage, isDefending)` — stub (full roll sequence)
+- [x] `performAttackRoll(attacker, attackType, advantage)` — d20 + attack stat + active roll modifier, advantage-aware
+- [x] `performDefenseRoll(defender, attackType, isDefending)` — defense stat + active defense modifier, no die
+- [x] `calculateBaseDamage(attacker, attackType, advantage)` — d20 + attack stat for damage roll
+- [x] `calculateDamageReduction(defender, attackType, isDefending)` — applies passive (×1) or neutral defending (×2) multiplier
+- [x] `calculateAttackDamage(attacker, defender, attackType, advantage, isDefending)` — full roll sequence including miss / crit / mark bonus
 
 ### 2b — Status Effects in Combat Actions
 
