@@ -219,17 +219,17 @@ Each phase builds on the one before it. `[x]` = done; `[ ]` = pending.
 
 ### 6a — Enemy Library
 
-- [ ] At least 15 enemies across 3 tiers, stat-aligned, thematically named
-- [ ] Enemy skills and loot tables
+- [x] At least 15 enemies across 3 tiers, stat-aligned, thematically named
+- [x] Enemy skills and loot tables (loot stubs still empty — wired through Enemy type, populated incrementally)
 
 ### 6b — Enemy AI
 
 - [x] `randomLogic(enemy): CombatAction`
-- [ ] `aggressiveLogic`, `defensiveLogic`, `strategicLogic`, `bossLogic`
+- [x] `aggressiveLogic`, `defensiveLogic`, `balancedLogic`, `strategicLogic`, `bossLogic`, `dispatchEnemyLogic`
 
 ### 6c — Encounter Design
 
-- [ ] `Encounter` type, encounter library by area, `generateEncounter(mapNode, playerLevel)`
+- [x] `Encounter` type, encounter library by area, `generateEncounter(mapName, playerLevel)`
 
 ---
 

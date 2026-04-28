@@ -17,12 +17,33 @@ import { Item } from '../Items/types';
 
 /**
  * Enemy logic type representing the enemy's decision-making process
- * - 'random': The enemy will choose an action randomly
- * - 'aggressive': The enemy will choose an action that is likely to deal damage
- * - 'defensive': The enemy will choose an action that is likely to reduce damage
- * - 'balanced': The enemy will choose an action that is likely to deal damage and reduce damage
+ * - 'random'     : Picks stance and action uniformly
+ * - 'aggressive' : Always attacks; favours its highest base stat
+ * - 'defensive'  : Defends at high HP %, attacks at low HP %
+ * - 'balanced'   : Mixes attack/defend ~50/50 based on simple heuristics
+ * - 'strategic'  : Picks the stance with type advantage over the player's last move
+ * - 'boss'       : Strategic + threshold-driven gear changes (attacks more aggressively below 50% HP)
  */
-export type EnemyLogic = 'random' | 'aggressive' | 'defensive' | 'balanced';
+export type EnemyLogic =
+    | 'random'
+    | 'aggressive'
+    | 'defensive'
+    | 'balanced'
+    | 'strategic'
+    | 'boss';
+
+/**
+ * Aux state passed to AI logic functions so they can branch on context
+ * (player's last stance, enemy HP %, friendship counter, etc.).
+ *
+ * All fields are optional because the simpler AIs (`random`, `aggressive`,
+ * `defensive`) do not need them. Strategic / boss AIs use them.
+ */
+export interface EnemyLogicContext {
+    enemyHpPercent?: number;
+    playerLastStance?: Stance;
+    round?: number;
+}
 
 /**
  * Per-enemy Tier 1 effect map.

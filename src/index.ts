@@ -7,8 +7,15 @@ export { createCharacter, getResistStatFromResistedBy } from './Character';
 export type { Character, BaseStats, DerivedStats, NonCombatStats } from './Character/types';
 
 // Enemy
-export { createEnemy, getEnemyRelatedStat } from './Enemy';
-export type { Enemy, EnemyLogic, EnemyTier1EffectMap } from './Enemy/types';
+export {
+    createEnemy, getEnemyRelatedStat,
+    randomLogic, aggressiveLogic, defensiveLogic, balancedLogic,
+    strategicLogic, bossLogic, dispatchEnemyLogic,
+    enemyLibrary, lookupEnemy, getEnemiesByMap, getEnemiesByTier, EnemyLibrary,
+    generateEncounter, listEncountersForMap, listAllEncounters,
+} from './Enemy';
+export type { Enemy, EnemyLogic, EnemyLogicContext, EnemyTier1EffectMap } from './Enemy/types';
+export type { Encounter } from './Enemy';
 
 // Combat — mechanics
 export {
