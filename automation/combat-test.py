@@ -33,7 +33,7 @@ from pathlib import Path
 
 import pexpect
 
-COMBAT_DIR = "/home/pn143/Workspace/axiomancer-mechanics"
+COMBAT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 """ First Choice Constants """
 HEART = 1
