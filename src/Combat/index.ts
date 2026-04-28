@@ -21,8 +21,11 @@ import {
   CombatAction,
   BattleLogEntry,
   CombatState,
+  CombatEffectTrigger,
 } from './types';
 import { ActiveEffect, EffectApplicationResult, EffectType } from 'Effects/types';
+import { applyEffect } from '../Effects';
+import { getCombatEffectTriggers } from './combat-effects.library';
 
 // ============================================================================
 // ENEMY ACTION
@@ -861,4 +864,146 @@ export function formatAllBattleLogs(state: CombatState): string[] {
  */
 export function generateCombatResultMessage(state: CombatState): string {
   return 'Implement me' as any;
+}
+
+// ============================================================================
+// COMBAT EFFECT TRIGGERS (Phase 2b)
+// ============================================================================
+
+/**
+ * Result of a single combat-effect trigger evaluation. Multiple results are
+ * returned per round — one for every trigger from the actor's
+ * `Stance × Action` lookup, even those that did not fire (so the battle
+ * log can show the player which procs they missed).
+ *
+ * @property trigger - The full trigger definition from `combat-effects.library.ts`
+ * @property fired - True when this trigger should apply its effect this round
+ * @property reason - Why the trigger fired (or didn't): `'crit'`, `'fumble'`, `'roll'`, `'miss'`
+ * @property targetSwap - True on fumble triggers — caller should apply the effect to the actor
+ */
+export interface CombatEffectRollResult {
+    trigger: CombatEffectTrigger;
+    fired: boolean;
+    reason: 'crit' | 'fumble' | 'roll' | 'miss';
+    targetSwap: boolean;
+}
+
+/**
+ * Rolls every Tier 2/3 combat-effect trigger for an actor's chosen action,
+ * honouring critical hits and fumbles.
+ *
+ * Rules (matching `GAME-ROADMAP.md` Phase 2b):
+ *   - Natural 20 attack roll: every `critGuaranteed` trigger fires; the
+ *     first such trigger in the list is treated as the "strongest proc."
+ *   - Natural 1 attack roll: triggers with `fumbleSelfTarget` may still
+ *     fire but apply to the *actor* (target swap → self-debuff).
+ *   - Otherwise: each trigger fires when `Math.random() < trigger.chance`.
+ *
+ * Returns one result per trigger so the caller can both announce procs
+ * and announce near-misses if desired.
+ *
+ * @param attacker - The combatant performing the action
+ * @param action - The combat action chosen this round (must be attack or defend)
+ * @param attackRoll - The natural d20 roll the attacker just made (1–20)
+ * @returns Per-trigger results
+ */
+export function rollForCombatEffects(
+  attacker: Character | Enemy,
+  action: CombatAction,
+  attackRoll: number,
+): CombatEffectRollResult[] {
+  const triggers = getCombatEffectTriggers(action.type, action.action);
+  if (triggers.length === 0) return [];
+
+  const isCrit = attackRoll === 20;
+  const isFumble = attackRoll === 1;
+
+  return triggers.map(trigger => {
+    if (isCrit && trigger.critGuaranteed) {
+      return { trigger, fired: true, reason: 'crit', targetSwap: false };
+    }
+    if (isFumble) {
+      if (trigger.fumbleSelfTarget) {
+        const fired = Math.random() < trigger.chance;
+        return { trigger, fired, reason: fired ? 'fumble' : 'miss', targetSwap: fired };
+      }
+      return { trigger, fired: false, reason: 'miss', targetSwap: false };
+    }
+    const fired = Math.random() < trigger.chance;
+    return { trigger, fired, reason: fired ? 'roll' : 'miss', targetSwap: false };
+  });
+}
+
+/**
+ * Outcome of applying a single combat-effect roll to a CombatState.
+ * Mirrors `EffectApplicationResult` from the Effects engine but adds the
+ * trigger metadata so the battle log can identify each proc.
+ *
+ * @property trigger - The trigger that fired
+ * @property appliedTo - Which combatant received the effect ('player' | 'enemy')
+ * @property message - Battle-log line describing the proc
+ */
+export interface CombatEffectApplicationResult {
+    trigger: CombatEffectTrigger;
+    appliedTo: 'player' | 'enemy';
+    message: string;
+}
+
+/**
+ * Applies the FIRED triggers from `rollForCombatEffects` onto a CombatState.
+ * Misses are filtered out automatically.
+ *
+ * Resolution order:
+ *   1. Determine receiver (`actor` or `opponent`, after honouring
+ *      `targetSwap` from a fumble).
+ *   2. Look up the effect definition from the library.
+ *   3. Pass it through the effects engine's `applyEffect` to handle
+ *      stacking, intensity, and duration.
+ *
+ * Pure function — returns a new `CombatState` and a per-application log of
+ * what landed; the input state is left untouched.
+ *
+ * @param state - Current combat state
+ * @param actor - Which combatant performed the action ('player' | 'enemy')
+ * @param results - Rolled triggers from `rollForCombatEffects`
+ * @returns Updated state and a per-fired-trigger application result list
+ */
+export function applyCombatEffects(
+  state: CombatState,
+  actor: 'player' | 'enemy',
+  results: CombatEffectRollResult[],
+): { state: CombatState; applied: CombatEffectApplicationResult[] } {
+  const applied: CombatEffectApplicationResult[] = [];
+  let next = state;
+
+  for (const r of results) {
+    if (!r.fired) continue;
+    const def = lookupEffect(r.trigger.effectId);
+    if (!def) continue;
+
+    const wantsActor = r.trigger.target === 'self' || r.targetSwap;
+    const receiverKey: 'player' | 'enemy' = wantsActor
+      ? actor
+      : (actor === 'player' ? 'enemy' : 'player');
+    const receiver = next[receiverKey];
+
+    const { activeEffects, result } = applyEffect(
+      receiver.currentActiveEffects,
+      def,
+      next.round,
+    );
+
+    next = {
+      ...next,
+      [receiverKey]: { ...receiver, currentActiveEffects: activeEffects },
+    } as CombatState;
+
+    applied.push({
+      trigger: r.trigger,
+      appliedTo: receiverKey,
+      message: `${def.name}: ${result.message}`,
+    });
+  }
+
+  return { state: next, applied };
 }
