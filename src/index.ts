@@ -18,6 +18,8 @@ export {
     getBaseStatForType, getAttackStatForType, getDefenseStatForType, getSaveStatForType,
     rollSkillCheck, isCriticalHit, isCriticalMiss,
     applyCriticalMultiplier, calculateFinalDamage, isAttackSuccessful,
+    performAttackRoll, performDefenseRoll,
+    calculateBaseDamage, calculateDamageReduction, calculateAttackDamage,
     isEffectApplied,
     updateEffectDuration, tickAllEffects,
     getStudyMarkIntensity, getActiveRollModifier, getThornsReflect,
