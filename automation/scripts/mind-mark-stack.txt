@@ -1,0 +1,5 @@
+# Regression — Mind/Attack three rounds in a row should stack
+# Exposed Reasoning to intensity 3.
+mind,attack
+mind,attack
+mind,attack

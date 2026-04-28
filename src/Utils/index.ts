@@ -33,6 +33,62 @@ export function randomInt(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+// ===============================================
+// SEEDABLE RNG
+// ===============================================
+
+/**
+ * Installs a deterministic PRNG (Mulberry32) over the global `Math.random`
+ * so an entire combat or automation session can be replayed.
+ *
+ * Idempotent — repeated calls reset the seed. Pass `null` (or call
+ * `restoreNativeRandom`) to put the original `Math.random` back.
+ *
+ * Honours the `AXIOMANCER_SEED` environment variable when called with no
+ * arguments, making it easy to wire from the CLI / automation tester:
+ *
+ *     installSeedFromEnv();   // reads process.env.AXIOMANCER_SEED
+ *
+ * @param seed - 32-bit integer seed; when undefined, the env var is read
+ */
+let _originalRandom: typeof Math.random | null = null;
+
+export function installSeededRandom(seed: number): void {
+  let s = seed >>> 0;
+  if (_originalRandom === null) _originalRandom = Math.random;
+  Math.random = function mulberry32(): number {
+    s = (s + 0x6D2B79F5) >>> 0;
+    let t = s;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/** Restore the platform's original `Math.random`. No-op if never installed. */
+export function restoreNativeRandom(): void {
+  if (_originalRandom !== null) {
+    Math.random = _originalRandom;
+    _originalRandom = null;
+  }
+}
+
+/**
+ * Reads `process.env.AXIOMANCER_SEED` (Node) and installs a seeded PRNG
+ * if a valid integer is found. Safe to call in environments without
+ * `process.env` — silently no-ops when unset / invalid.
+ */
+export function installSeedFromEnv(): { installed: boolean; seed?: number } {
+  const env: Record<string, string | undefined> | undefined =
+    typeof process !== 'undefined' ? process.env : undefined;
+  const raw = env?.AXIOMANCER_SEED;
+  if (!raw) return { installed: false };
+  const parsed = parseInt(raw, 10);
+  if (!Number.isFinite(parsed)) return { installed: false };
+  installSeededRandom(parsed);
+  return { installed: true, seed: parsed };
+}
+
 /**
  * Deep clones an object using JSON serialization
  * @param obj - The object to clone

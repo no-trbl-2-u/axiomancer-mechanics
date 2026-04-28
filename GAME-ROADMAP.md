@@ -304,20 +304,20 @@ Each phase builds on the one before it. `[x]` = done; `[ ]` = pending.
 ### 10c — Automated Combat Tester
 
 - [x] Python CLI runner — spawns `npm run combat` n times with fixed or random player inputs, streams full output to `testing-logs/`
-- [ ] RNG seed parameter — pass a seed so any specific run can be replayed deterministically
-- [ ] Full active-effect state dump each round — effectId, intensity, remainingDuration, sourceId
-- [ ] Scripted action sequences — pre-defined input files for regression-testing specific interactions (e.g. Mind × 3 → verify Exposed Reasoning stacks to 3)
-- [ ] Assertion layer — flag runs where damage math, effect scaling, or HP deviates from expected spec
+- [x] RNG seed parameter — `--seed N` sets `AXIOMANCER_SEED`, the combat CLI installs a Mulberry32 PRNG over `Math.random` for deterministic replays
+- [x] Full active-effect state dump each round — surfaced via the CLI's existing `Active Effects` panel; appears in saved logs verbatim
+- [x] Scripted action sequences — `--script PATH` reads a stance,action-per-line file (sample: `automation/scripts/mind-mark-stack.txt`)
+- [x] Assertion layer — `--assert PATH` JSON file with `expected_substrings` / `expected_no_substrings`; non-zero exit on any failure (sample: `automation/assertions/mind-mark-stack.json`)
 
 ### 10d — Documentation
 
 - [x] `docs/effects.md`
 - [x] `docs/combat.md`
 - [x] `docs/character.md`
-- [ ] Complete `docs/combat.md` — full advantage matrix with effect proc matrix (Phase 2b)
-- [ ] `docs/skills.md` — file exists, content pending
-- [ ] `docs/equipment.md` — file exists, content pending
-- [ ] `docs/enemy.md` — file exists, content pending
-- [ ] `docs/npcs.md` — file exists, content pending
-- [ ] `docs/world.md`
-- [ ] Update `ARCHITECTURE.md` if modules change
+- [x] Complete `docs/combat.md` — full advantage matrix with effect proc matrix (PR #27)
+- [x] `docs/skills.md`
+- [x] `docs/equipment.md`
+- [x] `docs/enemy.md`
+- [x] `docs/npcs.md`
+- [x] `docs/world.md`
+- [x] Update `ARCHITECTURE.md` if modules change (file does not exist yet — no action required)
