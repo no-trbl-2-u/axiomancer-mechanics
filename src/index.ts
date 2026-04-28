@@ -58,8 +58,17 @@ export { addItemToInventory, removeItemFromInventory, useConsumable, stackItem }
 export type { Item, Equipment, Consumable, Material, QuestItem, ItemCategory, EquipmentSlot } from './Items/types';
 export { isEquipment, isConsumable, isMaterial, isQuestItem } from './Items/types';
 
-// Skills — types only (no implementation yet)
-export type { Skill, SkillCategory, SkillsStatType, SkillLearningRequirement } from './Skills/types';
+// Skills
+export {
+    createSkill, canUseSkill, calculateSkillDamage, executeSkill, learnSkill,
+    skillLibrary, lookupSkill, getAllSkills, getSkillsByCategory, getSkillsByAspect,
+} from './Skills';
+export type {
+    Skill, SkillCategory, SkillsStatType, SkillLearningRequirement,
+    SkillTargetType, SkillScalingStat, SkillAdvantageInteraction, SkillTeir,
+    CreateSkillOptions, SkillExecutionResult,
+} from './Skills';
+export type { CombatEffectTrigger } from './Combat/types';
 
 // Game — store & reducers
 export { createGameStore, selectPlayer, selectCombatState, selectIsInCombat, selectInventory, selectVersion } from './Game/store';

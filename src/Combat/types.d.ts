@@ -73,6 +73,29 @@ export interface CombatAction {
 export type CombatPhase = 'choosing_type' | 'choosing_action' | 'choosing_skill' | 'resolving' | 'ended';
 
 /**
+ * Trigger entry mapping a `Stance × Action` (or skill) to a chance of
+ * applying a Tier 2 or Tier 3 effect when the action lands.
+ *
+ * Skills declare these on `Skill.combatEffects` so they can resolve through
+ * the same proc pipeline as on-hit triggers.
+ *
+ * @property effectId - ID of the effect from the effects library
+ * @property chance - Probability in [0, 1] that the trigger fires
+ * @property target - Where the effect lands: 'self' or 'opponent'
+ * @property critGuaranteed - When true, a natural-20 attack roll forces
+ *   the trigger regardless of `chance`
+ * @property fumbleSelfTarget - When true, a natural-1 attack roll fires
+ *   the trigger but applies it to the actor instead of the opponent
+ */
+export interface CombatEffectTrigger {
+    effectId: string;
+    chance: number;
+    target: 'self' | 'opponent';
+    critGuaranteed?: boolean;
+    fumbleSelfTarget?: boolean;
+}
+
+/**
  * The log entry describing the result of a round of combat
  * @property round - The round the result occurred in
  * @property playerAction - The player's attack type and action
