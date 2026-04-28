@@ -18,6 +18,8 @@ export {
     getBaseStatForType, getAttackStatForType, getDefenseStatForType, getSaveStatForType,
     rollSkillCheck, isCriticalHit, isCriticalMiss,
     applyCriticalMultiplier, calculateFinalDamage, isAttackSuccessful,
+    performAttackRoll, performDefenseRoll,
+    calculateBaseDamage, calculateDamageReduction, calculateAttackDamage,
     isEffectApplied,
     updateEffectDuration, tickAllEffects,
     getStudyMarkIntensity, getActiveRollModifier, getThornsReflect,
@@ -48,8 +50,18 @@ export type { CombatEffectRollResult, CombatEffectApplicationResult } from './Co
 export {
     applyEffect, applyTier1CombatEffect, applyTier1CombatEffectWithResult,
     clearTier1EffectsForType, getTargetsResistStatValue,
+    removeEffect, getActiveEffectModifiers, canAct,
+    processDamageOverTime, processRoundStartEffects, processWorldEffectTick,
 } from './Effects';
-export type { ApplyEffectOptions } from './Effects';
+export type {
+    ApplyEffectOptions,
+    AggregatedEffectModifiers,
+    ActionRestrictions,
+    DamageOverTimeContribution,
+    CombatantRoundEvents,
+    RoundStartEvents,
+    WorldEffectTickResult,
+} from './Effects';
 export { lookupEffect, getEffectByName, getEffectsByType, effectsLibrary } from './Effects/effects.library';
 export type {
     Effect, EffectType, EffectStacking, EffectCategory, EffectPayload,

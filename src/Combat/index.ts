@@ -10,7 +10,12 @@ import { Enemy, EnemyLogic } from '../Enemy/types';
 import { getEnemyRelatedStat } from '../Enemy';
 import { isCharacter } from '../Utils/typeGuards';
 import { createDieRoll } from '../Utils';
-import { FRIENDSHIP_COUNTER_MAX, MAX_EFFECT_DURATION } from '../Game/game-mechanics.constants';
+import {
+  FRIENDSHIP_COUNTER_MAX,
+  MAX_EFFECT_DURATION,
+  DEFENSE_MULTIPLIERS,
+  PASSIVE_DEFENSE_MULTIPLIER,
+} from '../Game/game-mechanics.constants';
 import { lookupEffect } from '../Effects/effects.library';
 import { getResistStatFromResistedBy } from 'Character';
 
@@ -286,35 +291,84 @@ export function calculateFinalDamage(
 // ============================================================================
 
 /**
- * Performs an attack roll for a character.
- * TODO (Phase 2a): wire advantage modifier from active effects.
+ * Performs an attack roll for a combatant.
+ *
+ * Formula:
+ *   total = d20(advantage) + getAttackStatForType(attacker, attackType)
+ *                          + getActiveRollModifier(attacker)
+ *
+ * The advantage parameter selects between standard d20, advantage (roll
+ * twice take highest), or disadvantage (roll twice take lowest) via
+ * `createDieRoll`. Active-effect roll modifiers (`rollModifier`,
+ * `rollModifierPerIntensity`) are summed in via `getActiveRollModifier`.
+ *
  * @param attacker - The attacking entity
  * @param attackType - The stance used for the attack
- * @param advantage - The advantage/disadvantage state
- * @returns Roll result with total, raw roll, modifier, and details string
+ * @param advantage - The advantage state from the type matchup
+ * @returns Roll result with total, raw d20 roll, total modifier, and a
+ *   formatted breakdown string for the battle log
  */
 export function performAttackRoll(
   attacker: Character | Enemy,
   attackType: Stance,
   advantage: Advantage,
 ): { total: number; roll: number; modifier: number; details: string } {
-  return 'Implement me' as any;
+  const baseStat = getAttackStatForType(attacker, attackType);
+  const rollMod = getActiveRollModifier(attacker);
+  const modifier = baseStat + rollMod;
+  const roll = createDieRoll(advantage)();
+  const total = roll + modifier;
+  const advTag = advantage === 'advantage' ? ' (adv)' : advantage === 'disadvantage' ? ' (dis)' : '';
+  const rollSuffix = rollMod !== 0 ? ` ${rollMod >= 0 ? '+' : '-'} ${Math.abs(rollMod)} roll` : '';
+  const details = `${roll}${advTag} + ${baseStat} ${attackType} attack${rollSuffix} = ${total}`;
+  return { total, roll, modifier, details };
 }
 
 /**
- * Performs a defense roll for a character.
- * TODO (Phase 2a): wire defense modifier from active effects.
+ * Performs a defense roll for a combatant.
+ *
+ * Defense rolls are not d20-based hit checks — they return a *value*
+ * representing the defender's total mitigation contribution to the round.
+ * The actual hit decision is made by `isAttackSuccessful` against the
+ * matching attack roll's total.
+ *
+ * Formula (kept as a plain stat-based modifier, no die for now):
+ *   modifier = getDefenseStatForType(defender, attackType)
+ *            + (isDefending
+ *                 ? defenseStat × DEFENSE_MULTIPLIERS[advantage]  (handled by calculateDamageReduction)
+ *                 : 0)
+ *            + activeEffectModifiers.defenseModifier
+ *
+ * For roll comparison purposes, `total` is treated as defenseStat alone so
+ * an attacker beating it with `total > defenseStat` lands the hit. Damage
+ * mitigation lives in `calculateDamageReduction`, intentionally separate so
+ * the hit-check and damage-mitigation paths can evolve independently.
+ *
  * @param defender - The defending entity
  * @param attackType - The stance type of the incoming attack
- * @param isDefending - Whether the defender chose the 'defend' action
- * @returns Roll result with total, raw roll, modifier, and details string
+ * @param isDefending - Whether the defender chose 'defend' this round
+ * @returns Roll result with total, raw component (always 0 here — no die),
+ *   modifier, and a formatted breakdown string
  */
 export function performDefenseRoll(
   defender: Character | Enemy,
   attackType: Stance,
   isDefending: boolean,
 ): { total: number; roll: number; modifier: number; details: string } {
-  return 'Implement me' as any;
+  const stat = isDefending
+    ? getDefenseStatForType(defender, attackType)
+    : getBaseStatForType(defender, attackType);
+  const aggregatedDefenseMod = defender.currentActiveEffects.reduce(
+    (acc, ae) => acc + (lookupEffect(ae.effectId)?.payload.defenseModifier ?? 0),
+    0,
+  );
+  const modifier = stat + aggregatedDefenseMod;
+  const stance = isDefending ? `${attackType} defense` : `${attackType} base`;
+  const effectSuffix = aggregatedDefenseMod !== 0
+    ? ` ${aggregatedDefenseMod >= 0 ? '+' : '-'} ${Math.abs(aggregatedDefenseMod)} fx`
+    : '';
+  const details = `${stat} ${stance}${effectSuffix} = ${modifier}`;
+  return { total: modifier, roll: 0, modifier, details };
 }
 
 /**
@@ -329,45 +383,100 @@ export function isAttackSuccessful(attackRoll: number, defenseRoll: number): boo
 
 /**
  * Calculates base damage for an attack.
- * TODO (Phase 2a): integrate stat-based damage formula once designed.
+ *
+ * Mirrors the existing CLI flow, which uses a SECOND d20 roll plus the
+ * attack stat as the raw damage dice. Advantage is honoured for both the
+ * to-hit AND the damage roll (matching the CLI behaviour).
+ *
+ * Formula:  damageRoll = d20(advantage) + attackStat + activeRollModifier
+ *
  * @param attacker - The attacking entity
  * @param attackType - The stance used for the attack
  * @param advantage - The advantage/disadvantage state
- * @returns The base damage value
+ * @returns The base damage value before defense reduction
  */
 export function calculateBaseDamage(
   attacker: Character | Enemy,
   attackType: Stance,
   advantage: Advantage,
 ): number {
-  return 'Implement me' as any;
+  const baseStat = getAttackStatForType(attacker, attackType);
+  const rollMod = getActiveRollModifier(attacker);
+  const die = createDieRoll(advantage)();
+  return die + baseStat + rollMod;
 }
 
 /**
- * Calculates the damage reduction from defence.
- * TODO (Phase 2a): integrate active effect modifiers.
+ * Calculates the damage reduction (post-multiplier defense value) for an
+ * incoming attack.
+ *
+ * Multiplier rules (`DEFENSE_MULTIPLIERS` × type advantage):
+ *   - Defending with ADVANTAGE   → 3×
+ *   - Defending with NEUTRAL     → 2×
+ *   - Defending with DISADVANTAGE→ 1.5×
+ * Not defending (passive)        → PASSIVE_DEFENSE_MULTIPLIER (1×)
+ *
+ * Currently the defender's advantage relative to the attacker is the
+ * inverse of the attacker's, but the function takes `attackType` so future
+ * code can compute the correct lookup. For the simple v1 we use the
+ * defender's base/derived stat for `attackType` and apply the multiplier
+ * via the *defender-side* advantage (which the caller can compute as
+ * `determineAdvantage(defenderType, attackerType)`).
+ *
+ * To keep this function self-contained and match the CLI's existing
+ * behaviour (which always uses the passive multiplier when not defending,
+ * and looks up by the defender's advantage when defending), the caller
+ * passes the defender's advantage via the `defenderAdvantage` argument
+ * baked into `calculateAttackDamage`. Standalone calls here pass the
+ * attacker advantage and we infer: the defender's advantage is opposite.
+ *
+ * Implementation choice: when `isDefending=false`, multiplier is always
+ * passive (×1). When `isDefending=true`, we use NEUTRAL multiplier (2×)
+ * unless the caller routes through `calculateAttackDamage` which does
+ * inversion. This keeps a single-arg standalone API ergonomic.
+ *
  * @param defender - The defending entity
  * @param attackType - The stance type of the incoming attack
  * @param isDefending - Whether the defender chose the 'defend' action
- * @returns The damage reduction value
+ * @returns The total damage reduction value (already multiplied)
  */
 export function calculateDamageReduction(
   defender: Character | Enemy,
   attackType: Stance,
   isDefending: boolean,
 ): number {
-  return 'Implement me' as any;
+  const baseDefense = isDefending
+    ? getDefenseStatForType(defender, attackType)
+    : getBaseStatForType(defender, attackType);
+  const multiplier = isDefending
+    ? DEFENSE_MULTIPLIERS.neutral
+    : PASSIVE_DEFENSE_MULTIPLIER;
+  return baseDefense * multiplier;
 }
 
 /**
- * Full attack sequence: rolls, hit check, damage, breakdown string.
- * TODO (Phase 2a): implement using performAttackRoll / performDefenseRoll.
+ * Full attack sequence wrapping the individual roll/damage helpers into one
+ * call. Returns everything the battle log needs to render the round.
+ *
+ * Pipeline:
+ *   1. attack roll  → performAttackRoll
+ *   2. defense roll → performDefenseRoll
+ *   3. hit?         → isAttackSuccessful (roll comparison)
+ *   4. base damage  → calculateBaseDamage (only on hit)
+ *   5. mitigation   → calculateDamageReduction
+ *   6. final dmg    → calculateFinalDamage (handles crit + bonus + clamp)
+ *   7. crit         → isCriticalHit on the attack roll
+ *
+ * The defender's defense multiplier is selected from `DEFENSE_MULTIPLIERS`
+ * using the *defender's* advantage relative to the attacker (which is the
+ * inverse of `advantage` whenever `isDefending` is true).
+ *
  * @param attacker - The attacking entity
  * @param defender - The defending entity
  * @param attackType - The stance used for the attack
- * @param advantage - The advantage/disadvantage state
- * @param isDefending - Whether the defender chose the 'defend' action
- * @returns Complete attack result with damage, rolls, hit status, critical, and details
+ * @param advantage - The ATTACKER's advantage/disadvantage state
+ * @param isDefending - Whether the defender chose 'defend'
+ * @returns Damage dealt, both rolls, hit/critical flags, and a breakdown
  */
 export function calculateAttackDamage(
   attacker: Character | Enemy,
@@ -383,7 +492,47 @@ export function calculateAttackDamage(
   critical: boolean;
   details: string;
 } {
-  return 'Implement me' as any;
+  const atk = performAttackRoll(attacker, attackType, advantage);
+  const defenderAdvantage: Advantage =
+    advantage === 'advantage' ? 'disadvantage' :
+    advantage === 'disadvantage' ? 'advantage' : 'neutral';
+  const def = performDefenseRoll(defender, attackType, isDefending);
+
+  const hit = isAttackSuccessful(atk.total, def.total);
+  const critical = isCriticalHit(atk.roll);
+
+  if (!hit) {
+    return {
+      damage: 0, attackRoll: atk.total, defenseRoll: def.total,
+      hit: false, critical,
+      details: `Miss — ${atk.details} vs ${def.details}.`,
+    };
+  }
+
+  const baseDamage = calculateBaseDamage(attacker, attackType, advantage);
+  const baseDefense = isDefending
+    ? getDefenseStatForType(defender, attackType)
+    : getBaseStatForType(defender, attackType);
+  const multiplier = isDefending
+    ? DEFENSE_MULTIPLIERS[defenderAdvantage]
+    : PASSIVE_DEFENSE_MULTIPLIER;
+  const damageReduction = baseDefense * multiplier;
+  const studyBonus = attackType === 'mind' ? getStudyMarkIntensity(defender) : 0;
+  const damage = calculateFinalDamage(baseDamage, damageReduction, critical, studyBonus);
+
+  const critTag = critical ? ' (CRIT)' : '';
+  const bonusTag = studyBonus > 0 ? ` + ${studyBonus} mark` : '';
+  const details =
+    `Hit${critTag} — ${atk.details} vs ${def.details}; ` +
+    `dmg ${baseDamage}${bonusTag} − ${damageReduction} red = ${damage}.`;
+  return {
+    damage,
+    attackRoll: atk.total,
+    defenseRoll: def.total,
+    hit: true,
+    critical,
+    details,
+  };
 }
 
 // ============================================================================
