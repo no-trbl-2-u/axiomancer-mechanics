@@ -1,18 +1,16 @@
 /**
  * Game Store
  *
- * Single Zustand vanilla store for the entire game state.
- * Framework-agnostic — works in Node.js CLI today, React Native tomorrow.
+ * A framework-agnostic Zustand vanilla store. Works in Node.js today and
+ * in React Native via the `useStore` hook.
  *
  * ── Architectural rule ───────────────────────────────────────────────────────
- * Any function that modifies the ROOT GameState must be a store action here.
- * Functions that operate on sub-state (CombatState, Character, WorldState, etc.)
- * remain pure functions in their own modules — they're called from within these
- * actions, or from the game loop, and their results flow back through the store.
+ * Functions that modify the ROOT GameState live here as store actions.
+ * Pure functions that operate on sub-state (CombatState, Character, WorldState)
+ * stay in their own modules and are composed inside these actions.
  *
- * ── Usage (Node.js / CLI) ────────────────────────────────────────────────────
- *   import { createGameStore } from './Game/store';
- *   import { createNodeAdapter } from './Game/persistence/node.adapter';
+ * ── Usage (Node.js) ──────────────────────────────────────────────────────────
+ *   import { createGameStore, createNodeAdapter } from 'axiomancer-mechanics';
  *
  *   const store = createGameStore(createNodeAdapter());
  *   store.getState().startCombat(someEnemy);
@@ -29,81 +27,43 @@ import { createStore, StoreApi } from 'zustand/vanilla';
 import { Character } from '../Character/types';
 import { Enemy } from '../Enemy/types';
 import { CombatState } from '../Combat/types';
-import { Item, Consumable, isConsumable } from '../Items/types';
-import { GameState } from './types';
 import { initializeCombat } from '../Combat/combat.reducer';
-import { createNewGameState, GAME_STATE_VERSION } from './game.reducer';
+import { Item } from '../Items/types';
+import { addItem, removeItem, useConsumable as useConsumableItem, stackItem as stackInventoryItem } from '../Items/item.reducer';
+import { GameState } from './types';
+import { createNewGameState } from './game.reducer';
 import { PersistenceAdapter } from './persistence/types';
 
-// ─── Store Shape ──────────────────────────────────────────────────────────────
-
 /**
- * GameActions — every operation that mutates the root GameState.
- * Grouped by domain to make it easy to find the right action.
+ * Every operation that mutates the root GameState. Grouped by domain.
  */
-export type GameActions = {
-
+export interface GameActions {
     // ── Combat ───────────────────────────────────────────────────────────────
-
-    /**
-     * Begins a combat encounter.
-     * Snapshots the current player into a fresh CombatState so combat
-     * mutations never bleed back into the top-level player until the fight ends.
-     */
+    /** Begins a combat encounter against `enemy`, snapshotting the player. */
     startCombat: (enemy: Enemy) => void;
-
-    /**
-     * Applies the result of one resolved combat turn.
-     * Call after each runCombatTurn() in the game loop.
-     */
-    applyCombatTurn: (updatedCombat: CombatState) => void;
-
-    /**
-     * Ends the current combat encounter.
-     * The player's final state from combat is written back to root,
-     * and combatState is cleared.
-     */
+    /** Replaces the in-progress combat snapshot. */
+    updateCombat: (combat: CombatState) => void;
+    /** Promotes the combat snapshot's player back to root and clears combat. */
     endCombat: () => void;
 
     // ── Inventory ────────────────────────────────────────────────────────────
-
-    /** Adds an item to the player's inventory. */
-    addItemToInventory: (item: Item) => void;
-
-    /** Removes an item from the player's inventory by ID. */
-    removeItemFromInventory: (itemId: string) => void;
-
-    /**
-     * Uses a consumable item, reducing its quantity (or removing it if
-     * the last one). Effect application is TODO until the effects engine lands.
-     */
+    addItem: (item: Item) => void;
+    removeItem: (itemId: string) => void;
     useConsumable: (itemId: string) => void;
-
-    /**
-     * Increases the quantity of a stackable item (consumable or material).
-     * Typically called when the player picks up more of an item they already carry.
-     */
     stackItem: (itemId: string, amount: number) => void;
 
     // ── Persistence ──────────────────────────────────────────────────────────
-
-    /** Persist the current state snapshot via the injected adapter. */
     save: () => void;
-};
+}
 
-/** Full store type — state + actions in one object (standard Zustand pattern). */
+/** Full store type — state + actions. */
 export type GameStore = GameState & GameActions;
 
-// ─── Factory ──────────────────────────────────────────────────────────────────
-
 /**
- * createGameStore
+ * Constructs a Zustand vanilla store backed by `adapter`.
  *
- * Constructs a Zustand vanilla store backed by the provided persistence adapter.
- *
- * @param adapter   - Where to load from / save to (Node.js fs, AsyncStorage, etc.)
- * @param overrides - Optional partial state to merge on top of the loaded / default state.
- *                    Useful in tests and CLIs to inject a specific player or world.
+ * @param adapter   - Persistence backend (Node fs, AsyncStorage, null for tests).
+ * @param overrides - Optional partial state to merge over the loaded/default state.
  */
 export function createGameStore(
     adapter: PersistenceAdapter,
@@ -114,108 +74,57 @@ export function createGameStore(
     const initial: GameState = { ...base, ...overrides };
 
     return createStore<GameStore>()((set, get) => ({
-        // ── Initial state ────────────────────────────────────────────────────
         ...initial,
 
         // ── Combat ───────────────────────────────────────────────────────────
-
-        startCombat(enemy: Enemy): void {
-            const { player } = get();
-            set({ combatState: initializeCombat(player, enemy) });
+        startCombat(enemy) {
+            set({ combat: initializeCombat(get().player, enemy) });
         },
 
-        applyCombatTurn(updatedCombat: CombatState): void {
-            set({ combatState: updatedCombat });
+        updateCombat(combat) {
+            set({ combat });
         },
 
-        endCombat(): void {
-            const { combatState } = get();
-            if (!combatState) return;
-            // Promote the player's final state from combat back to root.
-            set({ player: combatState.player, combatState: null });
+        endCombat() {
+            const { combat } = get();
+            if (!combat) return;
+            set({ player: combat.player, combat: null });
         },
 
         // ── Inventory ────────────────────────────────────────────────────────
-
-        addItemToInventory(item: Item): void {
-            set(state => ({
-                player: {
-                    ...state.player,
-                    inventory: [...state.player.inventory, item],
-                },
-            }));
+        addItem(item) {
+            set(state => ({ player: { ...state.player, inventory: addItem(state.player.inventory, item) } }));
         },
 
-        removeItemFromInventory(itemId: string): void {
-            set(state => ({
-                player: {
-                    ...state.player,
-                    inventory: state.player.inventory.filter(i => i.id !== itemId),
-                },
-            }));
+        removeItem(itemId) {
+            set(state => ({ player: { ...state.player, inventory: removeItem(state.player.inventory, itemId) } }));
         },
 
-        useConsumable(itemId: string): void {
-            const { player } = get();
-            const item = player.inventory.find(i => i.id === itemId);
-            if (!item || !isConsumable(item)) return;
-
-            // TODO: Apply consumable effect via the effects engine (Phase 1).
-
-            const consumable = item as Consumable;
-            if (consumable.quantity <= 1) {
-                // Last one — remove entirely
-                set(state => ({
-                    player: {
-                        ...state.player,
-                        inventory: state.player.inventory.filter(i => i.id !== itemId),
-                    },
-                }));
-            } else {
-                // Decrement quantity
-                set(state => ({
-                    player: {
-                        ...state.player,
-                        inventory: state.player.inventory.map(i =>
-                            i.id === itemId && isConsumable(i)
-                                ? { ...i, quantity: i.quantity - 1 }
-                                : i
-                        ),
-                    },
-                }));
-            }
+        useConsumable(itemId) {
+            set(state => ({ player: { ...state.player, inventory: useConsumableItem(state.player.inventory, itemId) } }));
         },
 
-        stackItem(itemId: string, amount: number): void {
-            set(state => ({
-                player: {
-                    ...state.player,
-                    inventory: state.player.inventory.map(i =>
-                        i.id === itemId && (i.category === 'consumable' || i.category === 'material')
-                            ? { ...i, quantity: (i as Consumable).quantity + amount }
-                            : i
-                    ),
-                },
-            }));
+        stackItem(itemId, amount) {
+            set(state => ({ player: { ...state.player, inventory: stackInventoryItem(state.player.inventory, itemId, amount) } }));
         },
 
         // ── Persistence ──────────────────────────────────────────────────────
-
-        save(): void {
-            const { version, player, world, combatState } = get();
-            adapter.save({ version, player, world, combatState });
+        save() {
+            const { version, player, world, combat } = get();
+            adapter.save({ version, player, world, combat });
         },
     }));
 }
 
 // ─── Selectors ────────────────────────────────────────────────────────────────
-// Convenience selectors for React Native's useStore hook.
-// e.g.  const player = useStore(store, selectPlayer);
 
 export type { StoreApi };
 
 export const selectPlayer      = (s: GameStore): Character          => s.player;
-export const selectCombatState = (s: GameStore): CombatState | null => s.combatState;
-export const selectIsInCombat  = (s: GameStore): boolean            => s.combatState !== null;
+export const selectCombat      = (s: GameStore): CombatState | null => s.combat;
+export const selectIsInCombat  = (s: GameStore): boolean            => s.combat !== null;
 export const selectInventory   = (s: GameStore): Item[]             => s.player.inventory;
 export const selectVersion     = (s: GameStore): number             => s.version;
+
+// Backwards-compat alias.
+export const selectCombatState = selectCombat;
