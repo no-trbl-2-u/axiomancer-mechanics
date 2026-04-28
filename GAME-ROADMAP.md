@@ -14,7 +14,7 @@ Each phase builds on the one before it. `[x]` = done; `[ ]` = pending.
 - [x] `effects.library.ts` — unified registry, `lookupEffect`, `getEffectById`, `getEffectByName`, `getEffectType`, `getEffectTeir`
 - [x] `applyEffect(activeEffects, effect, round, options?)` — `none` / `intensity` / `duration` stacking, capped at constants
 - [x] `EffectPayload.rollModifierPerIntensity` — per-intensity roll modifier scaling (complements flat `rollModifier` which never scales)
-- [x] `tickAllEffects(target)` — decrements all non-permanent durations; expired effects returned separately; permanent (−1) never ticks (`Combat/index.ts`)
+- [x] `tickAllEffects(target)` — decrements all non-permanent durations; expired effects returned separately; permanent (−1) never ticks (`combat/index.ts`)
 - [x] `updateEffectDuration(target, effectId)` — tick a single effect by ID
 - [x] `applyRegen(target)` — sums `payload.regeneration.healthPerRound × intensity` across all active effects; called at round start
 - [x] Tier 1 effect map (`TIER1_EFFECT_MAP`) and `applyTier1CombatEffect` / `applyTier1CombatEffectWithResult`
@@ -32,7 +32,7 @@ Each phase builds on the one before it. `[x]` = done; `[ ]` = pending.
 
 ## Phase 2 — Core Combat System
 
-### 2a — Combat Math (`Combat/index.ts`)
+### 2a — Combat Math (`combat/index.ts`)
 
 - [x] `determineAdvantage(attackerType, defenderType): Advantage`
 - [x] `getAdvantageModifier(advantage): number` — +2 / 0 / −2
@@ -98,16 +98,16 @@ Each phase builds on the one before it. `[x]` = done; `[ ]` = pending.
 - [ ] `endCombatPlayerVictory(state): CombatState` — stub
 - [ ] `endCombatPlayerDefeat(state): CombatState` — stub
 - [ ] `endCombatWithFriendship(state): CombatState` — stub
-- [ ] `processPlayerTurn(state)` — stub (lives in `Combat/index.ts`)
-- [ ] `processEnemyTurn(state)` — stub (lives in `Combat/index.ts`)
-- [ ] `determineTurnOrder(player, enemy)` — stub (lives in `Combat/index.ts`)
-- [ ] `rollInitiative(character)` — stub (lives in `Combat/index.ts`)
-- [ ] `createBattleLogEntry(state, roundResults)` — stub (lives in `Combat/index.ts`)
-- [ ] `formatAllBattleLogs(state)` — stub (lives in `Combat/index.ts`)
-- [ ] `generateCombatResultMessage(state)` — stub (lives in `Combat/index.ts`)
+- [ ] `processPlayerTurn(state)` — stub (lives in `combat/index.ts`)
+- [ ] `processEnemyTurn(state)` — stub (lives in `combat/index.ts`)
+- [ ] `determineTurnOrder(player, enemy)` — stub (lives in `combat/index.ts`)
+- [ ] `rollInitiative(character)` — stub (lives in `combat/index.ts`)
+- [ ] `createBattleLogEntry(state, roundResults)` — stub (lives in `combat/index.ts`)
+- [ ] `formatAllBattleLogs(state)` — stub (lives in `combat/index.ts`)
+- [ ] `generateCombatResultMessage(state)` — stub (lives in `combat/index.ts`)
 - [ ] Unit tests for `resolveCombatRound`
 
-### 2d — Combat CLI (`combat.cli.ts`)
+### 2d — Combat CLI (`packages/cli/src/combat.cli.ts`)
 
 - [x] Regen applied at round start (`applyRegen`)
 - [x] Stale Tier 1 buffs cleared on type switch (`clearTier1EffectsForType`)

@@ -94,7 +94,7 @@ The mark expires naturally via `tickAllEffects` on the opponent.
 Called in `combat.cli.ts` during Mind/Attack resolution:
 
 ```typescript
-// src/Combat/index.ts
+// packages/engine/src/combat/index.ts
 export function getStudyMarkIntensity(target: Character | Enemy): number {
     const mark = target.currentActiveEffects.find(e => e.effectId === MIND_MARK_ID);
     return mark?.currentIntensity ?? 0;
@@ -188,8 +188,8 @@ Run: npm run combat
 
 ```
 Automated:
-  import { applyEffect } from 'src/Effects/index.ts';
-  import { lookupEffect } from 'src/Effects/effects.library.ts';
+  import { applyEffect } from 'packages/engine/src/effects/index.ts';
+  import { lookupEffect } from 'packages/engine/src/effects/effects.library.ts';
 
   const effect = lookupEffect('tier1_mind_mark')!;
   const opts1 = { intensityDelta: 1, durationMode: 'additive', durationDelta: 1 };
@@ -211,7 +211,7 @@ Automated:
 
 ```
 Automated:
-  import { tickAllEffects } from 'src/Combat/index.ts';
+  import { tickAllEffects } from 'packages/engine/src/combat/index.ts';
 
   const target = { ...mockEnemy, currentActiveEffects: [{
     effectId: 'tier1_mind_mark', remainingDuration: 1, currentIntensity: 3, ...
@@ -233,13 +233,13 @@ the mark survives the player switching stances.
 ### 7. Unit tests to write
 
 ```typescript
-// src/Combat/index.test.ts
+// packages/engine/src/combat/index.test.ts
 describe('getStudyMarkIntensity', () => {
   it('returns 0 when no mark is present', () => { ... });
   it('returns currentIntensity of tier1_mind_mark', () => { ... });
 });
 
-// src/Effects/index.test.ts
+// packages/engine/src/effects/index.test.ts
 describe('Exposed Reasoning (tier1_mind_mark)', () => {
   it('target is opponent, not self', () => { ... }); // verify via applyTier1CombatEffectWithResult
   it('Mind/Attack applies +1/+1 delta', () => { ... });

@@ -39,7 +39,7 @@ max).
 
 Restores `3 × currentIntensity` HP at the start of each round.
 
-**LIVE:** `applyRegen` in `src/Combat/index.ts` sums this across all active effects
+**LIVE:** `applyRegen` in `packages/engine/src/combat/index.ts` sums this across all active effects
 with positive `healthPerRound` values. Scaling formula:
 
 ```

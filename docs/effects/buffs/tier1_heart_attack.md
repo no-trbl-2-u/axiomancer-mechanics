@@ -56,7 +56,7 @@ repeated actions.
 Applies a flat **-5 penalty** to every attack/damage roll made by the bearer. This
 intentional self-handicap is the "cost" of the Heart stance's buff manipulation utility.
 
-**Where consumed:** `getActiveRollModifier(target)` in `src/Combat/index.ts`:
+**Where consumed:** `getActiveRollModifier(target)` in `packages/engine/src/combat/index.ts`:
 
 ```typescript
 const flat = def?.payload.rollModifier ?? 0;   // -5
@@ -81,7 +81,7 @@ successfully):
 Called from `combat.cli.ts` after a successful Heart/Attack hit on the enemy.
 
 ```typescript
-// src/Combat/index.ts
+// packages/engine/src/combat/index.ts
 export function removeRandomBuff(target) {
     const buffs = target.currentActiveEffects.filter(
         ae => lookupEffect(ae.effectId)?.type === 'buff'
@@ -101,7 +101,7 @@ If the enemy has no buffs, the call returns `{ removed: null }` gracefully.
 Called from `combat.cli.ts` after a successful Heart/Attack hit.
 
 ```typescript
-// src/Combat/index.ts
+// packages/engine/src/combat/index.ts
 export function extendRandomBuffDuration(target, amount) {
     const buffs = target.currentActiveEffects.filter(
         ae => lookupEffect(ae.effectId)?.type === 'buff'
@@ -217,7 +217,7 @@ Run: npm run combat
 ### 5. Unit tests to write
 
 ```typescript
-// src/Combat/index.test.ts
+// packages/engine/src/combat/index.test.ts
 describe('removeRandomBuff', () => {
   it('removes a random buff from target', () => { ... });
   it('returns { removed: null } when no buffs present', () => { ... });
@@ -230,7 +230,7 @@ describe('extendRandomBuffDuration', () => {
   it('returns { extended: null } when no buffs present', () => { ... });
 });
 
-// src/Effects/index.test.ts
+// packages/engine/src/effects/index.test.ts
 describe('Fleeting Kindness (tier1_heart_attack)', () => {
   it('rollModifier -5 is included in getActiveRollModifier', () => { ... });
   it('intensity stacks without increasing rollModifier penalty', () => { ... });

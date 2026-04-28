@@ -29,12 +29,12 @@ documents in [`docs/effects/`](./effects/).
 Effects are temporary modifiers applied to combatants during battle. Every effect is stored
 as an `ActiveEffect` instance on `character.currentActiveEffects` or
 `enemy.currentActiveEffects`. Effect data is loaded at runtime from
-`src/Effects/buffs.library.json` and `src/Effects/debuffs.library.json` and keyed into an
-in-memory `Map` by `effect.id` via `src/Effects/effects.library.ts`.
+`packages/engine/src/effects/buffs.library.json` and `packages/engine/src/effects/debuffs.library.json` and keyed into an
+in-memory `Map` by `effect.id` via `packages/engine/src/effects/effects.library.ts`.
 
-All effect application logic lives in `src/Effects/index.ts`. All combat-time helpers
+All effect application logic lives in `packages/engine/src/effects/index.ts`. All combat-time helpers
 (resist resolution, tick, regen, roll modifiers, thorns, mark, Heart specials) live in
-`src/Combat/index.ts`. The interactive CLI wires these together in `src/CLI/combat.cli.ts`.
+`packages/engine/src/combat/index.ts`. The interactive CLI wires these together in `packages/cli/src/combat.cli.ts`.
 
 ---
 
@@ -117,7 +117,7 @@ Every effect's mechanical modifications live in its `payload` object.
     ],
 
     // Flat bonus/penalty added to EVERY attack/damage dice roll.
-    // LIVE: summed by getActiveRollModifier() in src/Combat/index.ts.
+    // LIVE: summed by getActiveRollModifier() in packages/engine/src/combat/index.ts.
     "rollModifier": 2,
 
     // Per-stack roll bonus/penalty. Total = rollModifierPerIntensity × currentIntensity.
@@ -136,7 +136,7 @@ Every effect's mechanical modifications live in its `payload` object.
     },
 
     // Per-round healing applied at the START of each round.
-    // LIVE: consumed by applyRegen() in src/Combat/index.ts.
+    // LIVE: consumed by applyRegen() in packages/engine/src/combat/index.ts.
     // Negative values (disease, hp_decay) are defined in data but applyRegen() skips
     // values ≤ 0 — the drain mechanic is pending Phase 2 implementation.
     "regeneration": {
@@ -145,7 +145,7 @@ Every effect's mechanical modifications live in its `payload` object.
     },
 
     // Damage per intensity reflected to attacker when bearer is hit.
-    // LIVE: consumed by getThornsReflect() in src/Combat/index.ts.
+    // LIVE: consumed by getThornsReflect() in packages/engine/src/combat/index.ts.
     "reflectDamage": 1,
 
     // Action restrictions. NOT yet enforced — display only until Phase 2.
@@ -168,10 +168,10 @@ Every effect's mechanical modifications live in its `payload` object.
 
 | Field                     | Status       | Where consumed                              |
 |---------------------------|--------------|---------------------------------------------|
-| `rollModifier`            | **LIVE**     | `getActiveRollModifier()` — `src/Combat/index.ts` |
+| `rollModifier`            | **LIVE**     | `getActiveRollModifier()` — `packages/engine/src/combat/index.ts` |
 | `rollModifierPerIntensity` | **LIVE**    | `getActiveRollModifier()` — scaled by `currentIntensity` |
-| `reflectDamage`           | **LIVE**     | `getThornsReflect()` — `src/Combat/index.ts` |
-| `regeneration.healthPerRound` | **LIVE** | `applyRegen()` — `src/Combat/index.ts` (positive values only) |
+| `reflectDamage`           | **LIVE**     | `getThornsReflect()` — `packages/engine/src/combat/index.ts` |
+| `regeneration.healthPerRound` | **LIVE** | `applyRegen()` — `packages/engine/src/combat/index.ts` (positive values only) |
 | `statModifiers`           | **PENDING**  | Defined in data; not auto-applied to `derivedStats` yet |
 | `defenseModifier`         | **PENDING**  | Defined in data; not applied in damage path yet |
 | `damageOverTime`          | **PENDING**  | Defined in data; no DoT loop in combat engine yet |
@@ -216,7 +216,7 @@ specific function in which it happens.
 
 ### `rollModifier` and `rollModifierPerIntensity`
 
-**Function:** `getActiveRollModifier(target)` — `src/Combat/index.ts`
+**Function:** `getActiveRollModifier(target)` — `packages/engine/src/combat/index.ts`
 
 ```
 total = Σ (def.payload.rollModifier + def.payload.rollModifierPerIntensity × ae.currentIntensity)
@@ -228,7 +228,7 @@ Both fields are summed across **all** active effects simultaneously.
 
 ### `reflectDamage`
 
-**Function:** `getThornsReflect(bearer)` — `src/Combat/index.ts`
+**Function:** `getThornsReflect(bearer)` — `packages/engine/src/combat/index.ts`
 
 ```
 total = Σ (def.payload.reflectDamage × ae.currentIntensity)
@@ -241,7 +241,7 @@ more thorns.
 
 ### `regeneration.healthPerRound`
 
-**Function:** `applyRegen(target)` — `src/Combat/index.ts`
+**Function:** `applyRegen(target)` — `packages/engine/src/combat/index.ts`
 
 ```
 healed = Σ (def.payload.regeneration.healthPerRound × ae.currentIntensity)
@@ -256,7 +256,7 @@ will be enabled in Phase 2.
 
 ### `tier1_mind_mark` intensity (Exposed Reasoning)
 
-**Function:** `getStudyMarkIntensity(target)` — `src/Combat/index.ts`
+**Function:** `getStudyMarkIntensity(target)` — `packages/engine/src/combat/index.ts`
 
 ```
 intensity = target.currentActiveEffects
@@ -270,7 +270,7 @@ added as a flat damage bonus to the attack roll.
 ### Buff stripping and extension (Heart/Attack special)
 
 **Functions:** `removeRandomBuff(target)` and `extendRandomBuffDuration(target, amount)`
-— `src/Combat/index.ts`
+— `packages/engine/src/combat/index.ts`
 
 - `removeRandomBuff`: picks a random `buff`-typed active effect from the **enemy** and
   removes it entirely.
@@ -281,7 +281,7 @@ Both are called in `combat.cli.ts` when the player's Heart/Attack hits.
 
 ### Duration ticking
 
-**Function:** `tickAllEffects(target)` — `src/Combat/index.ts`
+**Function:** `tickAllEffects(target)` — `packages/engine/src/combat/index.ts`
 
 Called at the **end of each round** for both player and enemy. Each non-permanent effect
 has `remainingDuration` decremented by 1. Effects reaching `0` are removed and returned
@@ -290,7 +290,7 @@ as `expired[]` so the CLI can display expiry messages.
 ### Tier 1 application
 
 **Functions:** `applyTier1CombatEffectWithResult` / `applyTier1CombatEffect`
-— `src/Effects/index.ts`
+— `packages/engine/src/effects/index.ts`
 
 Called once per combatant per round, right after clearing stale Tier 1 buffs. The Tier 1
 map (`TIER1_EFFECT_MAP`) keys on `(stance, action)` and returns an `effectId`, `target`
@@ -300,7 +300,7 @@ opponent; all other stances target self.
 ### Stance-switch buff clearing
 
 **Function:** `clearTier1EffectsForType(activeEffects, currentType)`
-— `src/Effects/index.ts`
+— `packages/engine/src/effects/index.ts`
 
 Removes any active Tier 1 buff whose effect ID contains a **different** stance prefix
 than the current action. Debuffs applied to the actor by an opponent are never cleared
@@ -309,10 +309,10 @@ here. Called once per combatant per round, before Tier 1 application.
 ### Resist resolution (Tier 2 / Tier 3)
 
 **Function:** `isEffectApplied(target, activeEffect, effectType, attackerHeartBonus, equipmentBonus)`
-— `src/Combat/index.ts`
+— `packages/engine/src/combat/index.ts`
 
 Uses `getResistStatFromResistedBy(target, activeEffect.resistedBy)` (from
-`src/Character/index.ts`) to read the target's **derived defence stat** for the
+`packages/engine/src/character/index.ts`) to read the target's **derived defence stat** for the
 appropriate stance, then applies the Tier 2/3 resolution rules described above.
 
 ---
@@ -459,23 +459,23 @@ Full per-effect documentation: [`docs/effects/debuffs/`](./effects/debuffs/)
 
 | Function | File | Description |
 |----------|------|-------------|
-| `lookupEffect(effectId)` | `src/Effects/effects.library.ts` | O(1) lookup by effect ID from the registry |
-| `getEffectByName(name)` | `src/Effects/effects.library.ts` | Find effect by display name (slower linear scan) |
-| `getEffectsByType(type)` | `src/Effects/effects.library.ts` | Get all buffs or all debuffs |
-| `applyEffect(effects, effect, round, options?)` | `src/Effects/index.ts` | Core stacking engine — applies an effect respecting all stacking modes |
-| `applyTier1CombatEffectWithResult(actorEffects, opponentEffects, action, round, customMap?)` | `src/Effects/index.ts` | Applies Tier 1 stance effect; returns updated arrays + UI feedback |
-| `applyTier1CombatEffect(...)` | `src/Effects/index.ts` | Simplified wrapper — returns only updated effect arrays |
-| `clearTier1EffectsForType(effects, currentType)` | `src/Effects/index.ts` | Removes stale Tier 1 self-buffs on stance switch |
-| `getTargetsResistStatValue(target, activeEffect)` | `src/Effects/index.ts` | Returns target's **base** stat for resist roll (note: `isEffectApplied` uses derived stats) |
-| `isEffectApplied(target, activeEffect, effectType, heartBonus, equipBonus)` | `src/Combat/index.ts` | Full Tier 2/3 resist resolution with roll details |
-| `tickAllEffects(target)` | `src/Combat/index.ts` | End-of-round duration decrement; returns expired list |
-| `updateEffectDuration(target, effectId)` | `src/Combat/index.ts` | Tick one specific effect by ID |
-| `getActiveRollModifier(target)` | `src/Combat/index.ts` | Sum of all `rollModifier` + `rollModifierPerIntensity × intensity` across active effects |
-| `getStudyMarkIntensity(target)` | `src/Combat/index.ts` | Intensity of `tier1_mind_mark` (Mind attack damage bonus) |
-| `getThornsReflect(bearer)` | `src/Combat/index.ts` | Total reflect damage from all thorns effects |
-| `removeRandomBuff(target)` | `src/Combat/index.ts` | Strips one random buff (Heart/Attack special) |
-| `extendRandomBuffDuration(target, amount)` | `src/Combat/index.ts` | Extends one random buff's duration (Heart/Attack special) |
-| `applyRegen(target)` | `src/Combat/index.ts` | Applies per-round health regeneration from all regen effects |
+| `lookupEffect(effectId)` | `packages/engine/src/effects/effects.library.ts` | O(1) lookup by effect ID from the registry |
+| `getEffectByName(name)` | `packages/engine/src/effects/effects.library.ts` | Find effect by display name (slower linear scan) |
+| `getEffectsByType(type)` | `packages/engine/src/effects/effects.library.ts` | Get all buffs or all debuffs |
+| `applyEffect(effects, effect, round, options?)` | `packages/engine/src/effects/index.ts` | Core stacking engine — applies an effect respecting all stacking modes |
+| `applyTier1CombatEffectWithResult(actorEffects, opponentEffects, action, round, customMap?)` | `packages/engine/src/effects/index.ts` | Applies Tier 1 stance effect; returns updated arrays + UI feedback |
+| `applyTier1CombatEffect(...)` | `packages/engine/src/effects/index.ts` | Simplified wrapper — returns only updated effect arrays |
+| `clearTier1EffectsForType(effects, currentType)` | `packages/engine/src/effects/index.ts` | Removes stale Tier 1 self-buffs on stance switch |
+| `getTargetsResistStatValue(target, activeEffect)` | `packages/engine/src/effects/index.ts` | Returns target's **base** stat for resist roll (note: `isEffectApplied` uses derived stats) |
+| `isEffectApplied(target, activeEffect, effectType, heartBonus, equipBonus)` | `packages/engine/src/combat/index.ts` | Full Tier 2/3 resist resolution with roll details |
+| `tickAllEffects(target)` | `packages/engine/src/combat/index.ts` | End-of-round duration decrement; returns expired list |
+| `updateEffectDuration(target, effectId)` | `packages/engine/src/combat/index.ts` | Tick one specific effect by ID |
+| `getActiveRollModifier(target)` | `packages/engine/src/combat/index.ts` | Sum of all `rollModifier` + `rollModifierPerIntensity × intensity` across active effects |
+| `getStudyMarkIntensity(target)` | `packages/engine/src/combat/index.ts` | Intensity of `tier1_mind_mark` (Mind attack damage bonus) |
+| `getThornsReflect(bearer)` | `packages/engine/src/combat/index.ts` | Total reflect damage from all thorns effects |
+| `removeRandomBuff(target)` | `packages/engine/src/combat/index.ts` | Strips one random buff (Heart/Attack special) |
+| `extendRandomBuffDuration(target, amount)` | `packages/engine/src/combat/index.ts` | Extends one random buff's duration (Heart/Attack special) |
+| `applyRegen(target)` | `packages/engine/src/combat/index.ts` | Applies per-round health regeneration from all regen effects |
 
 ---
 

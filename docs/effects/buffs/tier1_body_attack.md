@@ -65,7 +65,7 @@ Adds `+1` to `physicalAttack`. This is a **flat** additive bonus to the derived 
 `physicalAttack`.
 
 > **Implementation status — PENDING (Phase 2):** `statModifiers` are defined in the data
-> and visible in combat display (`src/CLI/combat.display.ts`), but are not yet
+> and visible in combat display (`packages/cli/src/combat.display.ts`), but are not yet
 > automatically applied to `derivedStats` during combat. The engine does not currently
 > modify the character's computed stats at runtime.
 
@@ -74,7 +74,7 @@ Adds `+1` to `physicalAttack`. This is a **flat** additive bonus to the derived 
 Adds `1 × currentIntensity` to every roll made by the bearer. This field **is live**
 in the combat engine.
 
-**Where consumed:** `getActiveRollModifier(target)` in `src/Combat/index.ts`:
+**Where consumed:** `getActiveRollModifier(target)` in `packages/engine/src/combat/index.ts`:
 
 ```typescript
 const perIntensity = (def?.payload.rollModifierPerIntensity ?? 0) * (ae.currentIntensity ?? 1);
@@ -89,7 +89,7 @@ This total is added to attack and damage rolls in `combat.cli.ts`.
 
 ### How it is applied
 
-Called every round via `applyTier1CombatEffectWithResult` in `src/Effects/index.ts`.
+Called every round via `applyTier1CombatEffectWithResult` in `packages/engine/src/effects/index.ts`.
 The `TIER1_EFFECT_MAP` maps `{ body, attack }` to:
 
 ```typescript
@@ -157,9 +157,9 @@ Observation method (manual):
   - Intensity reaches 3; every roll should include +3 on top of base stats.
 
 Automated unit test approach:
-  import { getActiveRollModifier } from 'src/Combat/index.ts';
-  import { applyEffect } from 'src/Effects/index.ts';
-  import { lookupEffect } from 'src/Effects/effects.library.ts';
+  import { getActiveRollModifier } from 'packages/engine/src/combat/index.ts';
+  import { applyEffect } from 'packages/engine/src/effects/index.ts';
+  import { lookupEffect } from 'packages/engine/src/effects/effects.library.ts';
 
   const effect = lookupEffect('tier1_body_attack')!;
   // Simulate 3 applications (intensity = 3)
@@ -197,7 +197,7 @@ Run: npm run combat
 ### 5. Unit tests to write
 
 ```typescript
-// src/Effects/index.test.ts (add to existing suite)
+// packages/engine/src/effects/index.test.ts (add to existing suite)
 describe('Ad Baculum (tier1_body_attack)', () => {
   it('applies automatically on Body/Attack', () => { ... });
   it('increments intensity on reapplication', () => { ... });

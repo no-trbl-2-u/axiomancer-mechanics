@@ -52,7 +52,7 @@ More consecutive Body/Defend rounds → higher intensity → more thorns damage 
 The core mechanic of this effect. For each point of `reflectDamage`, the attacker takes
 `reflectDamage × currentIntensity` damage every time they successfully hit the bearer.
 
-**Where consumed:** `getThornsReflect(bearer)` in `src/Combat/index.ts`:
+**Where consumed:** `getThornsReflect(bearer)` in `packages/engine/src/combat/index.ts`:
 
 ```typescript
 return bearer.currentActiveEffects.reduce((total, ae) => {
@@ -171,7 +171,7 @@ Run: npm run combat
 ### 5. Unit tests to write
 
 ```typescript
-// src/Combat/index.test.ts (add to existing getThornsReflect suite)
+// packages/engine/src/combat/index.test.ts (add to existing getThornsReflect suite)
 describe('Briar Stance thorns (tier1_body_defend)', () => {
   it('getThornsReflect returns 0 with no thorns effect', () => { ... });
   it('getThornsReflect returns intensity × reflectDamage', () => { ... });
