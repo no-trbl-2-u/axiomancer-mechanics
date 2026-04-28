@@ -12,7 +12,7 @@ import { isCharacter } from '../utils/typeGuards';
 import { createDieRoll } from '../utils';
 import { FRIENDSHIP_COUNTER_MAX, MAX_EFFECT_DURATION } from '../game/game-mechanics.constants';
 import { lookupEffect } from '../effects/effects.library';
-import { getResistStatFromResistedBy } from '../character';
+import { getResistStatFromResistedBy } from '../effects/resistance';
 
 import {
   Stance,
@@ -862,3 +862,18 @@ export function formatAllBattleLogs(state: CombatState): string[] {
 export function generateCombatResultMessage(state: CombatState): string {
   return 'Implement me' as any;
 }
+
+// ============================================================================
+// TYPE & REDUCER RE-EXPORTS
+// ============================================================================
+
+export type {
+  Stance, Action, Advantage, CritStyle, CombatAction, CombatPhase,
+  BattleLogEntry, CombatState,
+} from './types';
+export {
+  initializeCombat, updateCombatPhase,
+  setPlayerStance, setPlayerAction,
+  addBattleLogEntry, incrementFriendship,
+  endCombatPlayerVictory, endCombatPlayerDefeat, endCombatWithFriendship,
+} from './combat.reducer';

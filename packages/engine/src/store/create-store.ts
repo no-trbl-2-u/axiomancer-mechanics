@@ -11,8 +11,8 @@
  * actions, or from the game loop, and their results flow back through the store.
  *
  * ── Usage (Node.js / CLI) ────────────────────────────────────────────────────
- *   import { createGameStore } from './game/store';
- *   import { createNodeAdapter } from './game/persistence/node.adapter';
+ *   import { createGameStore } from 'axiomancer-mechanics/store';
+ *   import { createNodeAdapter } from 'axiomancer-mechanics/persistence/node';
  *
  *   const store = createGameStore(createNodeAdapter());
  *   store.getState().startCombat(someEnemy);
@@ -30,10 +30,10 @@ import { Character } from '../character/types';
 import { Enemy } from '../enemy/types';
 import { CombatState } from '../combat/types';
 import { Item, Consumable, isConsumable } from '../items/types';
-import { GameState } from './types';
+import { GameState } from '../game/types';
 import { initializeCombat } from '../combat/combat.reducer';
-import { createNewGameState, GAME_STATE_VERSION } from './game.reducer';
-import { PersistenceAdapter } from './persistence/types';
+import { createNewGameState, GAME_STATE_VERSION } from '../game/game.reducer';
+import { PersistenceAdapter } from '../persistence/types';
 
 // ─── Store Shape ──────────────────────────────────────────────────────────────
 

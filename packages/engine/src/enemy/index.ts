@@ -97,3 +97,10 @@ export const getEnemyRelatedStat = (enemy: Enemy, base: Stance, isDefending: boo
         case 'heart': return enemy.derivedStats.emotionalDefense;
     }
 }
+
+// ===============================================
+// TYPE & LIBRARY RE-EXPORTS
+// ===============================================
+
+export type { Enemy, EnemyLogic, EnemyTier1EffectMap } from './types';
+export { Disatree_01, EnemyLibrary } from './enemy.library';

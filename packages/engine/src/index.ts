@@ -3,7 +3,7 @@
 // Consumers (React Native app, etc.) import from this barrel.
 
 // Character
-export { createCharacter, getResistStatFromResistedBy } from './character';
+export { createCharacter } from './character';
 export type { Character, BaseStats, DerivedStats, NonCombatStats } from './character/types';
 export { Player as PlayerMock } from '../fixtures/characters';
 
@@ -48,6 +48,7 @@ export {
     clearTier1EffectsForType, getTargetsResistStatValue,
 } from './effects';
 export type { ApplyEffectOptions } from './effects';
+export { getResistStatFromResistedBy } from './effects/resistance';
 export { lookupEffect, getEffectByName, getEffectsByType, effectsLibrary } from './effects/effects.library';
 export type {
     Effect, EffectType, EffectStacking, EffectCategory, EffectPayload,
@@ -64,8 +65,11 @@ export { isEquipment, isConsumable, isMaterial, isQuestItem } from './items/type
 export type { Skill, SkillCategory, SkillsStatType, SkillLearningRequirement } from './skills/types';
 
 // Game — store & reducers
-export { createGameStore, selectPlayer, selectCombatState, selectIsInCombat, selectInventory, selectVersion } from './game/store';
-export type { GameStore, GameActions } from './game/store';
+export {
+    createGameStore,
+    selectPlayer, selectCombatState, selectIsInCombat, selectInventory, selectVersion,
+} from './store';
+export type { GameStore, GameActions } from './store';
 export { createNewGameState, GAME_STATE_VERSION } from './game/game.reducer';
 export type { GameState } from './game/types';
 export { COMBAT_ACTION } from './game/actions.constants';
@@ -78,10 +82,17 @@ export {
     MAX_EFFECT_INTENSITY, MAX_EFFECT_DURATION, FRIENDSHIP_COUNTER_MAX,
 } from './game/game-mechanics.constants';
 
-// Game — persistence
-export type { PersistenceAdapter } from './game/persistence/types';
-export { nullAdapter } from './game/persistence/null.adapter';
-export { createNodeAdapter } from './game/persistence/node.adapter';
+// Persistence — platform-neutral surface only.
+// Platform-specific adapters live on their own subpaths:
+//   axiomancer-mechanics/persistence/node            (Node fs)
+//   axiomancer-mechanics/persistence/async-storage   (React Native)
+//   axiomancer-mechanics/persistence/web-storage     (browser)
+export type { PersistenceAdapter } from './persistence/types';
+export { nullAdapter } from './persistence/null';
+export { createMemoryAdapter } from './persistence/memory';
+
+/** @deprecated Import from `axiomancer-mechanics/persistence/node`. */
+export { createNodeAdapter } from './persistence/node';
 
 // World
 export { createStartingWorld } from './world';

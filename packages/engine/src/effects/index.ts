@@ -333,3 +333,15 @@ export function getTargetsResistStatValue(
     if (!resistStat) return 0;
     return target.baseStats[resistStat] ?? 0;
 }
+
+// ===============================================
+// TYPE & RESISTANCE RE-EXPORTS
+// ===============================================
+
+export type {
+    Effect, EffectType, EffectStacking, EffectCategory, EffectPayload,
+    ActiveEffect, EffectApplicationResult,
+    StatModifier, DamageOverTime, RegenerationConfig, ActionRestriction, AdvantageModifier,
+} from './types';
+export { lookupEffect, getEffectByName, getEffectsByType, effectsLibrary } from './effects.library';
+export { getResistStatFromResistedBy } from './resistance';

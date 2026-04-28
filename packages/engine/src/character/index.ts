@@ -1,8 +1,6 @@
 import { Character, BaseStats } from "./types";
 import { ActiveEffect } from "../effects/types";
 import { Item } from "../items/types";
-import { Stance } from "../combat/types";
-import { Enemy } from "../enemy/types";
 import { deriveStats, deriveNonCombatStats, calculateMaxHealth, calculateMaxMana } from "../utils";
 import { EXPERIENCE_PER_LEVEL } from "../game/game-mechanics.constants";
 
@@ -55,21 +53,13 @@ export function createCharacter(options: CreateCharacterOptions): Character {
 }
 
 // ===============================================
-// STAT LOOKUP
+// RE-EXPORT (for backwards compatibility — canonical home is effects/resistance.ts)
 // ===============================================
 
-/**
- * Gets the resist stat value of a target when resisting an effect.
- * Maps each stance to the corresponding defense derived stat.
- * @param target - The character or enemy to look up
- * @param resistedBy - Which stance the effect is resisted by
- * @returns The derived defense stat value
- */
-export const getResistStatFromResistedBy = (target: Character | Enemy, resistedBy: Stance): number => {
-    switch (resistedBy) {
-        case 'body':  return target.derivedStats.physicalDefense;
-        case 'mind':  return target.derivedStats.mentalDefense;
-        case 'heart': return target.derivedStats.emotionalDefense;
-        default:      return target.derivedStats.luck;
-    }
-}
+export { getResistStatFromResistedBy } from '../effects/resistance';
+
+// ===============================================
+// TYPE RE-EXPORTS — character subpath consumers can pull types from here
+// ===============================================
+
+export type { Character, BaseStats, DerivedStats, NonCombatStats } from './types';
