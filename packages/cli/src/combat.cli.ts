@@ -2,11 +2,11 @@
 
 import inquirer from 'inquirer';
 
-import { Disatree_01 } from '../Enemy/enemy.library';
-import { Player } from '../Character/characters.mock';
-import { Character } from '../Character/types';
-import { Enemy } from '../Enemy/types';
 import {
+    Disatree_01,
+    PlayerMock as Player,
+    Character,
+    Enemy,
     determineEnemyAction,
     determineAdvantage,
     isCombatOngoing,
@@ -22,17 +22,18 @@ import {
     removeRandomBuff,
     extendRandomBuffDuration,
     applyRegen,
-} from '../Combat/index';
-import { createDieRoll } from '../Utils';
-import { Stance, Advantage, CombatState } from '../Combat/types';
-import { createGameStore } from '../Game/store';
-import { nullAdapter } from '../Game/persistence/null.adapter';
-import {
+    createDieRoll,
+    Stance,
+    Advantage,
+    CombatState,
+    createGameStore,
+    nullAdapter,
     DEFENSE_MULTIPLIERS,
     PASSIVE_DEFENSE_MULTIPLIER,
-} from '../Game/game-mechanics.constants';
-import { applyTier1CombatEffectWithResult, clearTier1EffectsForType } from '../Effects';
-import { lookupEffect } from '../Effects/effects.library';
+    applyTier1CombatEffectWithResult,
+    clearTier1EffectsForType,
+    lookupEffect,
+} from 'axiomancer-mechanics';
 import {
     typeColor,
     printCombatIntro,

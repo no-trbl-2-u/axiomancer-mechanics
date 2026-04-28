@@ -5,13 +5,16 @@
  * Each function receives plain data and prints it; nothing is calculated here.
  */
 
-import { Stance, Advantage, CombatState } from '../Combat/types';
 import {
+    Stance,
+    Advantage,
+    CombatState,
     DEFENSE_MULTIPLIERS,
     FRIENDSHIP_COUNTER_MAX,
-} from '../Game/game-mechanics.constants';
-import { ActiveEffect, Effect } from '../Effects/types';
-import { lookupEffect } from '../Effects/effects.library';
+    ActiveEffect,
+    Effect,
+    lookupEffect,
+} from 'axiomancer-mechanics';
 
 // ─── ANSI Colour Helpers ──────────────────────────────────────────────────────
 

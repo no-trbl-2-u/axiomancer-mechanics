@@ -1,0 +1,42 @@
+{
+  "name": "axiomancer-mechanics",
+  "version": "1.0.0",
+  "description": "Turn-based RPG game engine with Heart/Body/Mind combat. Embeddable in any UI (React Native, web, Node).",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "commonjs",
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc && tsc-alias",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run clean && npm run build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint \"src/**/*.ts\"",
+    "lint:fix": "eslint \"src/**/*.ts\" --fix",
+    "type-check": "tsc --noEmit",
+    "check": "npm run lint && npm run type-check"
+  },
+  "keywords": [
+    "rpg",
+    "combat",
+    "mechanics",
+    "turn-based",
+    "ttrpg",
+    "game-engine"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "zustand": "^5.0.11"
+  },
+  "devDependencies": {
+    "tsc-alias": "^1.8.16",
+    "tsconfig-paths": "^4.2.0",
+    "vitest": "^4.1.4"
+  }
+}

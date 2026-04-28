@@ -1,57 +1,35 @@
 {
-  "name": "axiomancer-mechanics",
-  "version": "1.0.0",
-  "description": "Turn-based RPG combat mechanics with philosophical themes",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "name": "axiomancer-mechanics-workspace",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Workspace root for the axiomancer-mechanics game engine and its CLIs.",
+  "workspaces": [
+    "packages/engine",
+    "packages/cli"
+  ],
   "scripts": {
-    "start": "echo Please use check 'package.json' or README.md for available commands...\n ",
-    "dev": "echo Please use check 'package.json' or README.md for available commands...\n ",
-    "build": "tsc && tsc-alias",
-    "combat": "ts-node src/CLI/combat.cli.ts",
-    "combat:auto": "python3 automation/combat-test.py",
-    "character": "ts-node src/CLI/character.cli.ts",
-    "clean": "rm -rf dist",
-    "prepublishOnly": "npm run clean && npm run build",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "lint": "eslint \"**/*.ts\"",
-    "lint:fix": "eslint \"**/*.ts\" --fix",
-    "type-check": "tsc --noEmit",
-    "check": "npm run lint && npm run type-check"
+    "build": "npm run build --workspace packages/engine",
+    "type-check": "npm run type-check --workspaces --if-present",
+    "test": "npm run test --workspace packages/engine",
+    "test:watch": "npm run test:watch --workspace packages/engine",
+    "lint": "npm run lint --workspaces --if-present",
+    "check": "npm run check --workspaces --if-present",
+    "combat": "npm run build --workspace packages/engine && npm run combat --workspace packages/cli",
+    "character": "npm run build --workspace packages/engine && npm run character --workspace packages/cli",
+    "combat:auto": "python3 packages/automation/combat-test.py",
+    "clean": "npm run clean --workspaces --if-present"
   },
-  "keywords": [
-    "rpg",
-    "combat",
-    "mechanics",
-    "turn-based"
-  ],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "files": [
-    "dist"
-  ],
   "devDependencies": {
     "@eslint/js": "^9.39.1",
-    "@types/commander": "^2.12.0",
     "@types/node": "^22.10.2",
     "@typescript-eslint/eslint-plugin": "^8.48.1",
     "eslint": "^9.39.1",
     "globals": "^16.5.0",
     "jiti": "^2.6.1",
-    "ts-node": "^10.9.2",
-    "tsc-alias": "^1.8.16",
-    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.7.2",
-    "typescript-eslint": "^8.48.1",
-    "vitest": "^4.1.4"
+    "typescript-eslint": "^8.48.1"
   },
-  "dependencies": {
-    "@types/inquirer": "^9.0.9",
-    "commander": "^14.0.2",
-    "eslint-plugin-typescript": "^0.14.0",
-    "inquirer": "^13.0.1",
-    "zustand": "^5.0.11"
+  "engines": {
+    "node": ">=18"
   }
 }

@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 
 import inquirer from 'inquirer';
-import { Character } from '../Character/types';
-import { createCharacter } from '../Character/index';
+import { Character, createCharacter } from 'axiomancer-mechanics';
 
 async function main() {
     console.log('Simulating character creation...');

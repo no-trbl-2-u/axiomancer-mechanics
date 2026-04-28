@@ -5,10 +5,12 @@
 // Character
 export { createCharacter, getResistStatFromResistedBy } from './Character';
 export type { Character, BaseStats, DerivedStats, NonCombatStats } from './Character/types';
+export { Player as PlayerMock } from './Character/characters.mock';
 
 // Enemy
 export { createEnemy, getEnemyRelatedStat } from './Enemy';
 export type { Enemy, EnemyLogic, EnemyTier1EffectMap } from './Enemy/types';
+export { Disatree_01, EnemyLibrary } from './Enemy/enemy.library';
 
 // Combat — mechanics
 export {
