@@ -921,52 +921,98 @@ export function getHealthPercentage(character: Character | Enemy): number {
 // ============================================================================
 
 /**
- * Process the player's turn within resolveCombatRound.
- * TODO (Phase 2c): implement full player turn processing.
- * @param state - The current combat state
- * @returns Damage dealt, roll value, and roll breakdown
+ * Process the player's turn within `resolveCombatRound`.
+ *
+ * Routes through `calculateAttackDamage` when the player chose 'attack',
+ * passing the matchup advantage and whether the enemy is defending. The
+ * turn does NOT mutate state — the reducer is responsible for applying
+ * the resulting damage so player and enemy turns are deterministic and
+ * order-independent.
+ *
+ * If the player chose 'defend' (or any non-attack action), zero damage is
+ * returned with a status detail string.
+ *
+ * @param state - The current combat state with player + enemy choices set
+ * @returns Damage dealt to enemy, the player's d20 attack roll, and a
+ *   formatted breakdown for the battle log
  */
 export function processPlayerTurn(state: CombatState): {
   damageToEnemy: number;
   playerRoll: number;
   playerRollDetails: string;
 } {
-  return 'Implement me' as any;
+  const choice = state.playerChoice;
+  if (!isValidCombatAction(choice)) {
+    return { damageToEnemy: 0, playerRoll: 0, playerRollDetails: 'No action chosen.' };
+  }
+  const enemyChoice = state.enemyChoice;
+  const enemyDefending = enemyChoice.action === 'defend';
+  if (choice.action !== 'attack') {
+    return { damageToEnemy: 0, playerRoll: 0, playerRollDetails: `${choice.action}.` };
+  }
+  const playerAdvantage = determineAdvantage(choice.type, enemyChoice.type ?? choice.type);
+  const result = calculateAttackDamage(state.player, state.enemy, choice.type, playerAdvantage, enemyDefending);
+  return {
+    damageToEnemy: result.damage,
+    playerRoll: result.attackRoll,
+    playerRollDetails: result.details,
+  };
 }
 
 /**
- * Process the enemy's turn within resolveCombatRound.
- * TODO (Phase 2c): implement full enemy turn processing.
- * @param state - The current combat state
- * @returns Damage dealt, roll value, and roll breakdown
+ * Process the enemy's turn within `resolveCombatRound`.
+ *
+ * Mirrors `processPlayerTurn` from the enemy's perspective. Pure — does
+ * not apply damage.
+ *
+ * @param state - The current combat state with both choices set
+ * @returns Damage dealt to player, enemy roll value, and breakdown string
  */
 export function processEnemyTurn(state: CombatState): {
   damageToPlayer: number;
   enemyRoll: number;
   enemyRollDetails: string;
 } {
-  return 'Implement me' as any;
+  const choice = state.enemyChoice;
+  if (!isValidCombatAction(choice)) {
+    return { damageToPlayer: 0, enemyRoll: 0, enemyRollDetails: 'No action chosen.' };
+  }
+  const playerChoice = state.playerChoice;
+  const playerDefending = playerChoice.action === 'defend';
+  if (choice.action !== 'attack') {
+    return { damageToPlayer: 0, enemyRoll: 0, enemyRollDetails: `${choice.action}.` };
+  }
+  const enemyAdvantage = determineAdvantage(choice.type, playerChoice.type ?? choice.type);
+  const result = calculateAttackDamage(state.enemy, state.player, choice.type, enemyAdvantage, playerDefending);
+  return {
+    damageToPlayer: result.damage,
+    enemyRoll: result.attackRoll,
+    enemyRollDetails: result.details,
+  };
 }
 
 /**
- * Determine who acts first based on initiative.
- * TODO (Phase 2c): implement initiative system.
- * @param player - The player character
- * @param enemy - The enemy
- * @returns Which combatant goes first
- */
-export function determineTurnOrder(player: Character, enemy: Enemy): 'player' | 'enemy' {
-  return 'Implement me' as any;
-}
-
-/**
- * Roll initiative for a combatant.
- * TODO (Phase 2c): implement initiative roll.
- * @param character - The combatant to roll for
- * @returns The initiative value
+ * Rolls a d20 + luck modifier initiative for a combatant.
+ *
+ * Luck (`derivedStats.luck` or `0` for legacy enemies) acts as the flat
+ * modifier; ties are broken by the caller (`determineTurnOrder` defaults
+ * the player to first on ties).
  */
 export function rollInitiative(character: Character | Enemy): number {
-  return 'Implement me' as any;
+  const luck = (character as Character).derivedStats?.luck ?? 0;
+  return createDieRoll('neutral')() + luck;
+}
+
+/**
+ * Determines which combatant acts first this round.
+ *
+ * Both combatants roll initiative; the higher total acts first. On ties,
+ * the player wins (player-friendly default for the CLI flow).
+ */
+export function determineTurnOrder(player: Character, enemy: Enemy): 'player' | 'enemy' {
+  const p = rollInitiative(player);
+  const e = rollInitiative(enemy);
+  return p >= e ? 'player' : 'enemy';
 }
 
 // ============================================================================
@@ -974,11 +1020,18 @@ export function rollInitiative(character: Character | Enemy): number {
 // ============================================================================
 
 /**
- * Create a BattleLogEntry from a resolved round.
- * TODO (Phase 2c): implement battle log creation.
- * @param state - The current combat state
+ * Builds a `BattleLogEntry` from the resolved round results.
+ *
+ * The HP-after fields are computed off the *current* state (which the
+ * reducer updates before calling this function), so callers must apply
+ * damage prior to creating the log entry.
+ *
+ * The `result` summary string condenses the round into a single line:
+ * "Round N — playerStance/playerAction (advantage) vs enemyStance/enemyAction. Damage P→E:X E→P:Y."
+ *
+ * @param state - The combat state AFTER damage has been applied
  * @param roundResults - The results of the round's combat resolution
- * @returns A complete battle log entry
+ * @returns A complete BattleLogEntry
  */
 export function createBattleLogEntry(
   state: CombatState,
@@ -992,27 +1045,58 @@ export function createBattleLogEntry(
     damageToEnemy: number;
   },
 ): BattleLogEntry {
-  return 'Implement me' as any;
+  const playerAction = state.playerChoice as CombatAction;
+  const enemyAction = state.enemyChoice as CombatAction;
+  const result =
+    `Round ${state.round} — ${playerAction.type}/${playerAction.action} ` +
+    `(${roundResults.advantage}) vs ${enemyAction.type}/${enemyAction.action}. ` +
+    `Damage P→E:${roundResults.damageToEnemy} E→P:${roundResults.damageToPlayer}.`;
+  return {
+    round: state.round,
+    playerAction,
+    enemyAction,
+    advantage: roundResults.advantage,
+    playerRoll: roundResults.playerRoll,
+    playerRollDetails: roundResults.playerRollDetails,
+    enemyRoll: roundResults.enemyRoll,
+    enemyRollDetails: roundResults.enemyRollDetails,
+    damageToPlayer: roundResults.damageToPlayer,
+    damageToEnemy: roundResults.damageToEnemy,
+    playerHPAfter: state.player.health,
+    enemyHPAfter: state.enemy.health,
+    result,
+  };
 }
 
 /**
- * Format all battle log entries as readable strings.
- * TODO (Phase 2c): implement log formatting.
- * @param state - The combat state containing the log
- * @returns Array of formatted log strings
+ * Returns a printable, one-line-per-round summary of the entire battle log.
+ * Useful for end-of-combat recap or debug output.
  */
 export function formatAllBattleLogs(state: CombatState): string[] {
-  return 'Implement me' as any;
+  return state.logEntry.map(e => e.result);
 }
 
 /**
- * Generate the victory/defeat summary message.
- * TODO (Phase 2c): implement result message generation.
- * @param state - The final combat state
- * @returns A summary message string
+ * Builds the end-of-combat summary message based on the final state.
+ *
+ * The message reflects the outcome from `determineCombatEnd`:
+ *   - `'player'`     — "Victory! Defeated <enemy>."
+ *   - `'ko'`         — "Defeat. <player> was knocked out by <enemy>."
+ *   - `'friendship'` — "Friendship reached. <player> and <enemy> walk away."
+ *   - `'ongoing'`    — "Combat is still ongoing."
  */
 export function generateCombatResultMessage(state: CombatState): string {
-  return 'Implement me' as any;
+  switch (determineCombatEnd(state)) {
+    case 'player':
+      return `Victory! Defeated ${state.enemy.name}.`;
+    case 'ko':
+      return `Defeat. ${state.player.name} was knocked out by ${state.enemy.name}.`;
+    case 'friendship':
+      return `Friendship reached. ${state.player.name} and ${state.enemy.name} walk away.`;
+    case 'ongoing':
+    default:
+      return 'Combat is still ongoing.';
+  }
 }
 
 // ============================================================================

@@ -88,24 +88,24 @@ Each phase builds on the one before it. `[x]` = done; `[ ]` = pending.
 ### 2c — Combat Reducer (`combat.reducer.ts`)
 
 - [x] `initializeCombat(player, enemy): CombatState`
-- [ ] `resetCombat(): CombatState`
+- [x] `resetCombat(state): CombatState`
 - [x] `updateCombatPhase(state, phase): CombatState`
 - [x] `setPlayerStance(state, stance): CombatState` (was `setPlayerAttackType`)
 - [x] `setPlayerAction(state, action): CombatState`
-- [ ] `resolveCombatRound(state): CombatState` — full round via the reducer (attack/defense rolls, effect procs, DoT/regen tick, log entry)
-- [ ] `addBattleLogEntry(state, entry): CombatState` — stub
-- [ ] `incrementFriendship(state): CombatState` — stub
-- [ ] `endCombatPlayerVictory(state): CombatState` — stub
-- [ ] `endCombatPlayerDefeat(state): CombatState` — stub
-- [ ] `endCombatWithFriendship(state): CombatState` — stub
-- [ ] `processPlayerTurn(state)` — stub (lives in `Combat/index.ts`)
-- [ ] `processEnemyTurn(state)` — stub (lives in `Combat/index.ts`)
-- [ ] `determineTurnOrder(player, enemy)` — stub (lives in `Combat/index.ts`)
-- [ ] `rollInitiative(character)` — stub (lives in `Combat/index.ts`)
-- [ ] `createBattleLogEntry(state, roundResults)` — stub (lives in `Combat/index.ts`)
-- [ ] `formatAllBattleLogs(state)` — stub (lives in `Combat/index.ts`)
-- [ ] `generateCombatResultMessage(state)` — stub (lives in `Combat/index.ts`)
-- [ ] Unit tests for `resolveCombatRound`
+- [x] `resolveCombatRound(state): CombatState` — full round via the reducer (attack/defense rolls, effect procs, DoT/regen tick, log entry)
+- [x] `addBattleLogEntry(state, entry): CombatState`
+- [x] `incrementFriendship(state): CombatState`
+- [x] `endCombatPlayerVictory(state): CombatState`
+- [x] `endCombatPlayerDefeat(state): CombatState`
+- [x] `endCombatWithFriendship(state): CombatState`
+- [x] `processPlayerTurn(state)` (lives in `Combat/index.ts`)
+- [x] `processEnemyTurn(state)` (lives in `Combat/index.ts`)
+- [x] `determineTurnOrder(player, enemy)` (lives in `Combat/index.ts`)
+- [x] `rollInitiative(character)` (lives in `Combat/index.ts`)
+- [x] `createBattleLogEntry(state, roundResults)` (lives in `Combat/index.ts`)
+- [x] `formatAllBattleLogs(state)` (lives in `Combat/index.ts`)
+- [x] `generateCombatResultMessage(state)` (lives in `Combat/index.ts`)
+- [x] Unit tests for `resolveCombatRound`
 
 ### 2d — Combat CLI (`combat.cli.ts`)
 

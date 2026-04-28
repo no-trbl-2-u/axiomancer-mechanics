@@ -27,6 +27,9 @@ export {
     applyDamage, healCharacter, isAlive, isDefeated, getHealthPercentage,
     MIND_MARK_ID,
     rollForCombatEffects, applyCombatEffects,
+    processPlayerTurn, processEnemyTurn,
+    determineTurnOrder, rollInitiative,
+    createBattleLogEntry, formatAllBattleLogs, generateCombatResultMessage,
 } from './Combat';
 export { COMBAT_EFFECTS, getCombatEffectTriggers } from './Combat/combat-effects.library';
 
@@ -36,6 +39,7 @@ export {
     setPlayerStance, setPlayerAction,
     addBattleLogEntry, incrementFriendship,
     endCombatPlayerVictory, endCombatPlayerDefeat, endCombatWithFriendship,
+    resetCombat, resolveCombatRound,
 } from './Combat/combat.reducer';
 
 // Combat — types
