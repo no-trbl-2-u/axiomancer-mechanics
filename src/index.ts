@@ -24,7 +24,9 @@ export {
     removeRandomBuff, extendRandomBuffDuration, applyRegen,
     applyDamage, healCharacter, isAlive, isDefeated, getHealthPercentage,
     MIND_MARK_ID,
+    rollForCombatEffects, applyCombatEffects,
 } from './Combat';
+export { COMBAT_EFFECTS, getCombatEffectTriggers } from './Combat/combat-effects.library';
 
 // Combat — reducer
 export {
@@ -37,8 +39,10 @@ export {
 // Combat — types
 export type {
     Stance, Action, Advantage, CritStyle, CombatAction, CombatPhase,
-    BattleLogEntry, CombatState,
+    BattleLogEntry, CombatState, CombatEffectTrigger,
 } from './Combat/types';
+export type { CombatEffectAction } from './Combat/combat-effects.library';
+export type { CombatEffectRollResult, CombatEffectApplicationResult } from './Combat';
 
 // Effects
 export {

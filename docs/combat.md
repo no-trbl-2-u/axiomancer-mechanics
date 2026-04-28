@@ -108,6 +108,36 @@ These are live in `combat.cli.ts`:
 | **Heart/Attack — extend buff** | On hit | `extendRandomBuffDuration(player, 1)` → one random player buff gets +1 duration |
 | **Heart/Attack — roll penalty** | Roll phase | −5 to the player's attack modifier |
 
+## Tier 2/3 Combat Effect Procs
+
+Every successful `attack` or `defend` action rolls against the
+`Stance × Action` proc matrix in `src/Combat/combat-effects.library.ts`.
+`rollForCombatEffects` decides which triggers fire; `applyCombatEffects`
+applies them via the standard `applyEffect` engine. The matrix follows
+the design in `GAME-ROADMAP.md`:
+
+| Stance + Action | Trigger (chance) | Target | Crit / Fumble |
+|---|---|---|---|
+| Body + Attack | `debuff_wound` (10%) | opponent | ★ guaranteed on crit; self-target on fumble |
+|              | `debuff_bleed` (20%) | opponent | — |
+|              | `debuff_knockdown` (10%) | opponent | — |
+| Body + Defend | `buff_body_defense_up` (20%) | self | ★ guaranteed on crit |
+|               | `buff_damage_reduction` (15%) | self | — |
+| Mind + Attack | `debuff_silence` (10%) | opponent | ★ guaranteed on crit; self-target on fumble |
+|               | `debuff_daze` (20%) | opponent | — |
+|               | `debuff_confusion` (10%) | opponent | — |
+| Mind + Defend | `buff_mind_defense_up` (20%) | self | ★ guaranteed on crit |
+|               | `buff_evasion_up` (15%) | self | — |
+|               | `buff_accuracy_up` (10%) | self | — |
+| Heart + Attack| `debuff_charm` (10%) | opponent | ★ guaranteed on crit; self-target on fumble |
+|               | `debuff_fear` (20%) | opponent | — |
+| Heart + Defend| `buff_heart_defense_up` (20%) | self | ★ guaranteed on crit |
+|               | `buff_regeneration` (15%) | self | — |
+
+**Crit rule (natural 20 attack roll):** every trigger flagged `critGuaranteed` fires automatically. The first such trigger is the **strongest proc** and is the entry players target their builds around.
+
+**Fumble rule (natural 1 attack roll):** triggers flagged `fumbleSelfTarget` may still fire (subject to their normal chance), but the effect is applied to the *attacker* instead of the opponent — a self-debuff. Triggers without that flag are skipped on fumble.
+
 ## Effect Resistance Rules (`isEffectApplied`)
 
 | Tier | Rule |
@@ -200,5 +230,4 @@ Each resolved round can append a `BattleLogEntry` via `addBattleLogEntry()`:
 - `determineTurnOrder` / `rollInitiative` — initiative system
 - `createBattleLogEntry` / `formatAllBattleLogs` / `generateCombatResultMessage` — log utilities
 - `resolveCombatRound` — full round resolution replacing inline CLI logic
-- Tier 2/3 effect proc matrix (`Stance × action` → trigger chances)
 - `canAct` / `getActiveEffectModifiers` wired into turn resolution

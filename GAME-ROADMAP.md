@@ -72,18 +72,18 @@ Each phase builds on the one before it. `[x]` = done; `[ ]` = pending.
 
 ### 2b — Status Effects in Combat Actions
 
-- [ ] Define `CombatEffectTrigger` type
-- [ ] `combat-effects.library.ts` — map `Stance × action` pairs to Tier 2/3 trigger chances:
+- [x] Define `CombatEffectTrigger` type
+- [x] `combat-effects.library.ts` — map `Stance × action` pairs to Tier 2/3 trigger chances:
   - Heart + Attack: emotional debuff (fear, charm)
   - Heart + Defend: emotional buff (regen, resilience)
   - Body + Attack: physical debuff (bleed, wound, knockdown)
   - Body + Defend: physical buff (damage reduction, counter)
   - Mind + Attack: mental debuff (daze, silence, confusion)
   - Mind + Defend: mental buff (evasion, accuracy boost)
-- [ ] `rollForCombatEffects(attacker, action, advantage): Effect[]`
-- [ ] `applyCombatEffects(combat, effects): CombatState`
-- [ ] Crit → guarantees strongest proc; fumble → may apply debuff to self
-- [ ] Document full matrix in `docs/combat.md`
+- [x] `rollForCombatEffects(attacker, action, attackRoll): CombatEffectRollResult[]`
+- [x] `applyCombatEffects(state, actor, results): { state, applied }`
+- [x] Crit → guarantees strongest proc; fumble → may apply debuff to self
+- [x] Document full matrix in `docs/combat.md`
 
 ### 2c — Combat Reducer (`combat.reducer.ts`)
 

@@ -73,6 +73,32 @@ export interface CombatAction {
 export type CombatPhase = 'choosing_type' | 'choosing_action' | 'choosing_skill' | 'resolving' | 'ended';
 
 /**
+ * Trigger entry mapping a `Stance × Action` pair to a chance of applying
+ * a Tier 2 or Tier 3 effect when the action lands.
+ *
+ * Used by `combat-effects.library.ts` to power the "physical attacks may
+ * cause bleed" / "mental defends may grant evasion" matrix described in
+ * `docs/combat.md`.
+ *
+ * @property effectId - ID of the effect from the effects library to apply
+ * @property chance - Probability in [0, 1] that the trigger fires on a normal hit/defend
+ * @property target - Where the effect lands when it fires:
+ *   - 'self' — the actor (defender on defend, attacker on offensive triggers)
+ *   - 'opponent' — the other combatant
+ * @property critGuaranteed - When true, a natural-20 attack roll forces the trigger to fire
+ *   regardless of `chance`. Used for "crit guarantees strongest proc."
+ * @property fumbleSelfTarget - When true, a natural-1 attack roll fires the trigger but applies
+ *   it to the actor instead of the opponent (self-debuff on fumble).
+ */
+export interface CombatEffectTrigger {
+    effectId: string;
+    chance: number;
+    target: 'self' | 'opponent';
+    critGuaranteed?: boolean;
+    fumbleSelfTarget?: boolean;
+}
+
+/**
  * The log entry describing the result of a round of combat
  * @property round - The round the result occurred in
  * @property playerAction - The player's attack type and action
