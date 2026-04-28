@@ -20,13 +20,13 @@ Each phase builds on the one before it. `[x]` = done; `[ ]` = pending.
 - [x] Tier 1 effect map (`TIER1_EFFECT_MAP`) and `applyTier1CombatEffect` / `applyTier1CombatEffectWithResult`
 - [x] `clearTier1EffectsForType` — removes stale Tier 1 self-buffs on action-type switch; debuffs applied by the opponent are exempt and expire naturally
 - [x] `getTargetsResistStatValue` — looks up target's resist stat for Tier 2/3 rolls
-- [ ] `removeEffect(activeEffects, effectId)` — filter by ID (cleanses, dispels, changing stance)
-- [ ] `getActiveEffectModifiers(activeEffects)` — aggregate stat mods, roll mods, defense mods, advantage grants into one object
-- [ ] `canAct(activeEffects)` — read `skipTurn`, `blockedStances`, `forcedStance`; return combined restrictions
-- [ ] `processDamageOverTime(activeEffects)` — sum DoT, return total damage + messages
-- [ ] `processRoundStartEffects(state)` — orchestrate: DoT → regen → tick → expire; return updated `CombatState` (regen and ticking are wired individually in the CLI; this unifies them into one reducer call)
-- [ ] `processWorldEffectTick(player): { player: Character; events: string[] }` — DoT / regen / expiry outside combat; called on each map node transition (enables poison, curses, persistent regen while exploring)
-- [ ] Unit tests for all functions above
+- [x] `removeEffect(activeEffects, effectId)` — filter by ID (cleanses, dispels, changing stance)
+- [x] `getActiveEffectModifiers(activeEffects)` — aggregate stat mods, roll mods, defense mods, advantage grants into one object
+- [x] `canAct(activeEffects)` — read `skipTurn`, `blockedStances`, `forcedStance`; return combined restrictions
+- [x] `processDamageOverTime(activeEffects)` — sum DoT, return total damage + messages
+- [x] `processRoundStartEffects(state)` — orchestrate: DoT → regen → tick → expire; return updated `CombatState` (regen and ticking are wired individually in the CLI; this unifies them into one reducer call)
+- [x] `processWorldEffectTick(player): { player: Character; events: string[] }` — DoT / regen / expiry outside combat; called on each map node transition (enables poison, curses, persistent regen while exploring)
+- [x] Unit tests for all functions above
 
 ---
 
