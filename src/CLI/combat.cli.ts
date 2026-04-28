@@ -1,6 +1,12 @@
 #!/usr/bin/env node
 
 import inquirer from 'inquirer';
+import { installSeedFromEnv } from '../Utils';
+
+const _seed = installSeedFromEnv();
+if (_seed.installed) {
+    console.log(`[Axiomancer] Seeded RNG with ${_seed.seed}`);
+}
 
 import { Disatree_01 } from '../Enemy/enemy.library';
 import { Player } from '../Character/characters.mock';

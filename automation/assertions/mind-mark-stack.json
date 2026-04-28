@@ -1,0 +1,8 @@
+{
+    "expected_substrings": [
+        "Exposed Reasoning"
+    ],
+    "expected_no_substrings": [
+        "[ERROR:"
+    ]
+}
