@@ -10,7 +10,12 @@ import { Enemy, EnemyLogic } from '../Enemy/types';
 import { getEnemyRelatedStat } from '../Enemy';
 import { isCharacter } from '../Utils/typeGuards';
 import { createDieRoll } from '../Utils';
-import { FRIENDSHIP_COUNTER_MAX, MAX_EFFECT_DURATION } from '../Game/game-mechanics.constants';
+import {
+  FRIENDSHIP_COUNTER_MAX,
+  MAX_EFFECT_DURATION,
+  DEFENSE_MULTIPLIERS,
+  PASSIVE_DEFENSE_MULTIPLIER,
+} from '../Game/game-mechanics.constants';
 import { lookupEffect } from '../Effects/effects.library';
 import { getResistStatFromResistedBy } from 'Character';
 
@@ -21,8 +26,11 @@ import {
   CombatAction,
   BattleLogEntry,
   CombatState,
+  CombatEffectTrigger,
 } from './types';
 import { ActiveEffect, EffectApplicationResult, EffectType } from 'Effects/types';
+import { applyEffect } from '../Effects';
+import { getCombatEffectTriggers } from './combat-effects.library';
 
 // ============================================================================
 // ENEMY ACTION
@@ -283,35 +291,84 @@ export function calculateFinalDamage(
 // ============================================================================
 
 /**
- * Performs an attack roll for a character.
- * TODO (Phase 2a): wire advantage modifier from active effects.
+ * Performs an attack roll for a combatant.
+ *
+ * Formula:
+ *   total = d20(advantage) + getAttackStatForType(attacker, attackType)
+ *                          + getActiveRollModifier(attacker)
+ *
+ * The advantage parameter selects between standard d20, advantage (roll
+ * twice take highest), or disadvantage (roll twice take lowest) via
+ * `createDieRoll`. Active-effect roll modifiers (`rollModifier`,
+ * `rollModifierPerIntensity`) are summed in via `getActiveRollModifier`.
+ *
  * @param attacker - The attacking entity
  * @param attackType - The stance used for the attack
- * @param advantage - The advantage/disadvantage state
- * @returns Roll result with total, raw roll, modifier, and details string
+ * @param advantage - The advantage state from the type matchup
+ * @returns Roll result with total, raw d20 roll, total modifier, and a
+ *   formatted breakdown string for the battle log
  */
 export function performAttackRoll(
   attacker: Character | Enemy,
   attackType: Stance,
   advantage: Advantage,
 ): { total: number; roll: number; modifier: number; details: string } {
-  return 'Implement me' as any;
+  const baseStat = getAttackStatForType(attacker, attackType);
+  const rollMod = getActiveRollModifier(attacker);
+  const modifier = baseStat + rollMod;
+  const roll = createDieRoll(advantage)();
+  const total = roll + modifier;
+  const advTag = advantage === 'advantage' ? ' (adv)' : advantage === 'disadvantage' ? ' (dis)' : '';
+  const rollSuffix = rollMod !== 0 ? ` ${rollMod >= 0 ? '+' : '-'} ${Math.abs(rollMod)} roll` : '';
+  const details = `${roll}${advTag} + ${baseStat} ${attackType} attack${rollSuffix} = ${total}`;
+  return { total, roll, modifier, details };
 }
 
 /**
- * Performs a defense roll for a character.
- * TODO (Phase 2a): wire defense modifier from active effects.
+ * Performs a defense roll for a combatant.
+ *
+ * Defense rolls are not d20-based hit checks — they return a *value*
+ * representing the defender's total mitigation contribution to the round.
+ * The actual hit decision is made by `isAttackSuccessful` against the
+ * matching attack roll's total.
+ *
+ * Formula (kept as a plain stat-based modifier, no die for now):
+ *   modifier = getDefenseStatForType(defender, attackType)
+ *            + (isDefending
+ *                 ? defenseStat × DEFENSE_MULTIPLIERS[advantage]  (handled by calculateDamageReduction)
+ *                 : 0)
+ *            + activeEffectModifiers.defenseModifier
+ *
+ * For roll comparison purposes, `total` is treated as defenseStat alone so
+ * an attacker beating it with `total > defenseStat` lands the hit. Damage
+ * mitigation lives in `calculateDamageReduction`, intentionally separate so
+ * the hit-check and damage-mitigation paths can evolve independently.
+ *
  * @param defender - The defending entity
  * @param attackType - The stance type of the incoming attack
- * @param isDefending - Whether the defender chose the 'defend' action
- * @returns Roll result with total, raw roll, modifier, and details string
+ * @param isDefending - Whether the defender chose 'defend' this round
+ * @returns Roll result with total, raw component (always 0 here — no die),
+ *   modifier, and a formatted breakdown string
  */
 export function performDefenseRoll(
   defender: Character | Enemy,
   attackType: Stance,
   isDefending: boolean,
 ): { total: number; roll: number; modifier: number; details: string } {
-  return 'Implement me' as any;
+  const stat = isDefending
+    ? getDefenseStatForType(defender, attackType)
+    : getBaseStatForType(defender, attackType);
+  const aggregatedDefenseMod = defender.currentActiveEffects.reduce(
+    (acc, ae) => acc + (lookupEffect(ae.effectId)?.payload.defenseModifier ?? 0),
+    0,
+  );
+  const modifier = stat + aggregatedDefenseMod;
+  const stance = isDefending ? `${attackType} defense` : `${attackType} base`;
+  const effectSuffix = aggregatedDefenseMod !== 0
+    ? ` ${aggregatedDefenseMod >= 0 ? '+' : '-'} ${Math.abs(aggregatedDefenseMod)} fx`
+    : '';
+  const details = `${stat} ${stance}${effectSuffix} = ${modifier}`;
+  return { total: modifier, roll: 0, modifier, details };
 }
 
 /**
@@ -326,45 +383,100 @@ export function isAttackSuccessful(attackRoll: number, defenseRoll: number): boo
 
 /**
  * Calculates base damage for an attack.
- * TODO (Phase 2a): integrate stat-based damage formula once designed.
+ *
+ * Mirrors the existing CLI flow, which uses a SECOND d20 roll plus the
+ * attack stat as the raw damage dice. Advantage is honoured for both the
+ * to-hit AND the damage roll (matching the CLI behaviour).
+ *
+ * Formula:  damageRoll = d20(advantage) + attackStat + activeRollModifier
+ *
  * @param attacker - The attacking entity
  * @param attackType - The stance used for the attack
  * @param advantage - The advantage/disadvantage state
- * @returns The base damage value
+ * @returns The base damage value before defense reduction
  */
 export function calculateBaseDamage(
   attacker: Character | Enemy,
   attackType: Stance,
   advantage: Advantage,
 ): number {
-  return 'Implement me' as any;
+  const baseStat = getAttackStatForType(attacker, attackType);
+  const rollMod = getActiveRollModifier(attacker);
+  const die = createDieRoll(advantage)();
+  return die + baseStat + rollMod;
 }
 
 /**
- * Calculates the damage reduction from defence.
- * TODO (Phase 2a): integrate active effect modifiers.
+ * Calculates the damage reduction (post-multiplier defense value) for an
+ * incoming attack.
+ *
+ * Multiplier rules (`DEFENSE_MULTIPLIERS` × type advantage):
+ *   - Defending with ADVANTAGE   → 3×
+ *   - Defending with NEUTRAL     → 2×
+ *   - Defending with DISADVANTAGE→ 1.5×
+ * Not defending (passive)        → PASSIVE_DEFENSE_MULTIPLIER (1×)
+ *
+ * Currently the defender's advantage relative to the attacker is the
+ * inverse of the attacker's, but the function takes `attackType` so future
+ * code can compute the correct lookup. For the simple v1 we use the
+ * defender's base/derived stat for `attackType` and apply the multiplier
+ * via the *defender-side* advantage (which the caller can compute as
+ * `determineAdvantage(defenderType, attackerType)`).
+ *
+ * To keep this function self-contained and match the CLI's existing
+ * behaviour (which always uses the passive multiplier when not defending,
+ * and looks up by the defender's advantage when defending), the caller
+ * passes the defender's advantage via the `defenderAdvantage` argument
+ * baked into `calculateAttackDamage`. Standalone calls here pass the
+ * attacker advantage and we infer: the defender's advantage is opposite.
+ *
+ * Implementation choice: when `isDefending=false`, multiplier is always
+ * passive (×1). When `isDefending=true`, we use NEUTRAL multiplier (2×)
+ * unless the caller routes through `calculateAttackDamage` which does
+ * inversion. This keeps a single-arg standalone API ergonomic.
+ *
  * @param defender - The defending entity
  * @param attackType - The stance type of the incoming attack
  * @param isDefending - Whether the defender chose the 'defend' action
- * @returns The damage reduction value
+ * @returns The total damage reduction value (already multiplied)
  */
 export function calculateDamageReduction(
   defender: Character | Enemy,
   attackType: Stance,
   isDefending: boolean,
 ): number {
-  return 'Implement me' as any;
+  const baseDefense = isDefending
+    ? getDefenseStatForType(defender, attackType)
+    : getBaseStatForType(defender, attackType);
+  const multiplier = isDefending
+    ? DEFENSE_MULTIPLIERS.neutral
+    : PASSIVE_DEFENSE_MULTIPLIER;
+  return baseDefense * multiplier;
 }
 
 /**
- * Full attack sequence: rolls, hit check, damage, breakdown string.
- * TODO (Phase 2a): implement using performAttackRoll / performDefenseRoll.
+ * Full attack sequence wrapping the individual roll/damage helpers into one
+ * call. Returns everything the battle log needs to render the round.
+ *
+ * Pipeline:
+ *   1. attack roll  → performAttackRoll
+ *   2. defense roll → performDefenseRoll
+ *   3. hit?         → isAttackSuccessful (roll comparison)
+ *   4. base damage  → calculateBaseDamage (only on hit)
+ *   5. mitigation   → calculateDamageReduction
+ *   6. final dmg    → calculateFinalDamage (handles crit + bonus + clamp)
+ *   7. crit         → isCriticalHit on the attack roll
+ *
+ * The defender's defense multiplier is selected from `DEFENSE_MULTIPLIERS`
+ * using the *defender's* advantage relative to the attacker (which is the
+ * inverse of `advantage` whenever `isDefending` is true).
+ *
  * @param attacker - The attacking entity
  * @param defender - The defending entity
  * @param attackType - The stance used for the attack
- * @param advantage - The advantage/disadvantage state
- * @param isDefending - Whether the defender chose the 'defend' action
- * @returns Complete attack result with damage, rolls, hit status, critical, and details
+ * @param advantage - The ATTACKER's advantage/disadvantage state
+ * @param isDefending - Whether the defender chose 'defend'
+ * @returns Damage dealt, both rolls, hit/critical flags, and a breakdown
  */
 export function calculateAttackDamage(
   attacker: Character | Enemy,
@@ -380,7 +492,47 @@ export function calculateAttackDamage(
   critical: boolean;
   details: string;
 } {
-  return 'Implement me' as any;
+  const atk = performAttackRoll(attacker, attackType, advantage);
+  const defenderAdvantage: Advantage =
+    advantage === 'advantage' ? 'disadvantage' :
+    advantage === 'disadvantage' ? 'advantage' : 'neutral';
+  const def = performDefenseRoll(defender, attackType, isDefending);
+
+  const hit = isAttackSuccessful(atk.total, def.total);
+  const critical = isCriticalHit(atk.roll);
+
+  if (!hit) {
+    return {
+      damage: 0, attackRoll: atk.total, defenseRoll: def.total,
+      hit: false, critical,
+      details: `Miss — ${atk.details} vs ${def.details}.`,
+    };
+  }
+
+  const baseDamage = calculateBaseDamage(attacker, attackType, advantage);
+  const baseDefense = isDefending
+    ? getDefenseStatForType(defender, attackType)
+    : getBaseStatForType(defender, attackType);
+  const multiplier = isDefending
+    ? DEFENSE_MULTIPLIERS[defenderAdvantage]
+    : PASSIVE_DEFENSE_MULTIPLIER;
+  const damageReduction = baseDefense * multiplier;
+  const studyBonus = attackType === 'mind' ? getStudyMarkIntensity(defender) : 0;
+  const damage = calculateFinalDamage(baseDamage, damageReduction, critical, studyBonus);
+
+  const critTag = critical ? ' (CRIT)' : '';
+  const bonusTag = studyBonus > 0 ? ` + ${studyBonus} mark` : '';
+  const details =
+    `Hit${critTag} — ${atk.details} vs ${def.details}; ` +
+    `dmg ${baseDamage}${bonusTag} − ${damageReduction} red = ${damage}.`;
+  return {
+    damage,
+    attackRoll: atk.total,
+    defenseRoll: def.total,
+    hit: true,
+    critical,
+    details,
+  };
 }
 
 // ============================================================================
@@ -769,52 +921,98 @@ export function getHealthPercentage(character: Character | Enemy): number {
 // ============================================================================
 
 /**
- * Process the player's turn within resolveCombatRound.
- * TODO (Phase 2c): implement full player turn processing.
- * @param state - The current combat state
- * @returns Damage dealt, roll value, and roll breakdown
+ * Process the player's turn within `resolveCombatRound`.
+ *
+ * Routes through `calculateAttackDamage` when the player chose 'attack',
+ * passing the matchup advantage and whether the enemy is defending. The
+ * turn does NOT mutate state — the reducer is responsible for applying
+ * the resulting damage so player and enemy turns are deterministic and
+ * order-independent.
+ *
+ * If the player chose 'defend' (or any non-attack action), zero damage is
+ * returned with a status detail string.
+ *
+ * @param state - The current combat state with player + enemy choices set
+ * @returns Damage dealt to enemy, the player's d20 attack roll, and a
+ *   formatted breakdown for the battle log
  */
 export function processPlayerTurn(state: CombatState): {
   damageToEnemy: number;
   playerRoll: number;
   playerRollDetails: string;
 } {
-  return 'Implement me' as any;
+  const choice = state.playerChoice;
+  if (!isValidCombatAction(choice)) {
+    return { damageToEnemy: 0, playerRoll: 0, playerRollDetails: 'No action chosen.' };
+  }
+  const enemyChoice = state.enemyChoice;
+  const enemyDefending = enemyChoice.action === 'defend';
+  if (choice.action !== 'attack') {
+    return { damageToEnemy: 0, playerRoll: 0, playerRollDetails: `${choice.action}.` };
+  }
+  const playerAdvantage = determineAdvantage(choice.type, enemyChoice.type ?? choice.type);
+  const result = calculateAttackDamage(state.player, state.enemy, choice.type, playerAdvantage, enemyDefending);
+  return {
+    damageToEnemy: result.damage,
+    playerRoll: result.attackRoll,
+    playerRollDetails: result.details,
+  };
 }
 
 /**
- * Process the enemy's turn within resolveCombatRound.
- * TODO (Phase 2c): implement full enemy turn processing.
- * @param state - The current combat state
- * @returns Damage dealt, roll value, and roll breakdown
+ * Process the enemy's turn within `resolveCombatRound`.
+ *
+ * Mirrors `processPlayerTurn` from the enemy's perspective. Pure — does
+ * not apply damage.
+ *
+ * @param state - The current combat state with both choices set
+ * @returns Damage dealt to player, enemy roll value, and breakdown string
  */
 export function processEnemyTurn(state: CombatState): {
   damageToPlayer: number;
   enemyRoll: number;
   enemyRollDetails: string;
 } {
-  return 'Implement me' as any;
+  const choice = state.enemyChoice;
+  if (!isValidCombatAction(choice)) {
+    return { damageToPlayer: 0, enemyRoll: 0, enemyRollDetails: 'No action chosen.' };
+  }
+  const playerChoice = state.playerChoice;
+  const playerDefending = playerChoice.action === 'defend';
+  if (choice.action !== 'attack') {
+    return { damageToPlayer: 0, enemyRoll: 0, enemyRollDetails: `${choice.action}.` };
+  }
+  const enemyAdvantage = determineAdvantage(choice.type, playerChoice.type ?? choice.type);
+  const result = calculateAttackDamage(state.enemy, state.player, choice.type, enemyAdvantage, playerDefending);
+  return {
+    damageToPlayer: result.damage,
+    enemyRoll: result.attackRoll,
+    enemyRollDetails: result.details,
+  };
 }
 
 /**
- * Determine who acts first based on initiative.
- * TODO (Phase 2c): implement initiative system.
- * @param player - The player character
- * @param enemy - The enemy
- * @returns Which combatant goes first
- */
-export function determineTurnOrder(player: Character, enemy: Enemy): 'player' | 'enemy' {
-  return 'Implement me' as any;
-}
-
-/**
- * Roll initiative for a combatant.
- * TODO (Phase 2c): implement initiative roll.
- * @param character - The combatant to roll for
- * @returns The initiative value
+ * Rolls a d20 + luck modifier initiative for a combatant.
+ *
+ * Luck (`derivedStats.luck` or `0` for legacy enemies) acts as the flat
+ * modifier; ties are broken by the caller (`determineTurnOrder` defaults
+ * the player to first on ties).
  */
 export function rollInitiative(character: Character | Enemy): number {
-  return 'Implement me' as any;
+  const luck = (character as Character).derivedStats?.luck ?? 0;
+  return createDieRoll('neutral')() + luck;
+}
+
+/**
+ * Determines which combatant acts first this round.
+ *
+ * Both combatants roll initiative; the higher total acts first. On ties,
+ * the player wins (player-friendly default for the CLI flow).
+ */
+export function determineTurnOrder(player: Character, enemy: Enemy): 'player' | 'enemy' {
+  const p = rollInitiative(player);
+  const e = rollInitiative(enemy);
+  return p >= e ? 'player' : 'enemy';
 }
 
 // ============================================================================
@@ -822,11 +1020,18 @@ export function rollInitiative(character: Character | Enemy): number {
 // ============================================================================
 
 /**
- * Create a BattleLogEntry from a resolved round.
- * TODO (Phase 2c): implement battle log creation.
- * @param state - The current combat state
+ * Builds a `BattleLogEntry` from the resolved round results.
+ *
+ * The HP-after fields are computed off the *current* state (which the
+ * reducer updates before calling this function), so callers must apply
+ * damage prior to creating the log entry.
+ *
+ * The `result` summary string condenses the round into a single line:
+ * "Round N — playerStance/playerAction (advantage) vs enemyStance/enemyAction. Damage P→E:X E→P:Y."
+ *
+ * @param state - The combat state AFTER damage has been applied
  * @param roundResults - The results of the round's combat resolution
- * @returns A complete battle log entry
+ * @returns A complete BattleLogEntry
  */
 export function createBattleLogEntry(
   state: CombatState,
@@ -840,25 +1045,198 @@ export function createBattleLogEntry(
     damageToEnemy: number;
   },
 ): BattleLogEntry {
-  return 'Implement me' as any;
+  const playerAction = state.playerChoice as CombatAction;
+  const enemyAction = state.enemyChoice as CombatAction;
+  const result =
+    `Round ${state.round} — ${playerAction.type}/${playerAction.action} ` +
+    `(${roundResults.advantage}) vs ${enemyAction.type}/${enemyAction.action}. ` +
+    `Damage P→E:${roundResults.damageToEnemy} E→P:${roundResults.damageToPlayer}.`;
+  return {
+    round: state.round,
+    playerAction,
+    enemyAction,
+    advantage: roundResults.advantage,
+    playerRoll: roundResults.playerRoll,
+    playerRollDetails: roundResults.playerRollDetails,
+    enemyRoll: roundResults.enemyRoll,
+    enemyRollDetails: roundResults.enemyRollDetails,
+    damageToPlayer: roundResults.damageToPlayer,
+    damageToEnemy: roundResults.damageToEnemy,
+    playerHPAfter: state.player.health,
+    enemyHPAfter: state.enemy.health,
+    result,
+  };
 }
 
 /**
- * Format all battle log entries as readable strings.
- * TODO (Phase 2c): implement log formatting.
- * @param state - The combat state containing the log
- * @returns Array of formatted log strings
+ * Returns a printable, one-line-per-round summary of the entire battle log.
+ * Useful for end-of-combat recap or debug output.
  */
 export function formatAllBattleLogs(state: CombatState): string[] {
-  return 'Implement me' as any;
+  return state.logEntry.map(e => e.result);
 }
 
 /**
- * Generate the victory/defeat summary message.
- * TODO (Phase 2c): implement result message generation.
- * @param state - The final combat state
- * @returns A summary message string
+ * Builds the end-of-combat summary message based on the final state.
+ *
+ * The message reflects the outcome from `determineCombatEnd`:
+ *   - `'player'`     — "Victory! Defeated <enemy>."
+ *   - `'ko'`         — "Defeat. <player> was knocked out by <enemy>."
+ *   - `'friendship'` — "Friendship reached. <player> and <enemy> walk away."
+ *   - `'ongoing'`    — "Combat is still ongoing."
  */
 export function generateCombatResultMessage(state: CombatState): string {
-  return 'Implement me' as any;
+  switch (determineCombatEnd(state)) {
+    case 'player':
+      return `Victory! Defeated ${state.enemy.name}.`;
+    case 'ko':
+      return `Defeat. ${state.player.name} was knocked out by ${state.enemy.name}.`;
+    case 'friendship':
+      return `Friendship reached. ${state.player.name} and ${state.enemy.name} walk away.`;
+    case 'ongoing':
+    default:
+      return 'Combat is still ongoing.';
+  }
+}
+
+// ============================================================================
+// COMBAT EFFECT TRIGGERS (Phase 2b)
+// ============================================================================
+
+/**
+ * Result of a single combat-effect trigger evaluation. Multiple results are
+ * returned per round — one for every trigger from the actor's
+ * `Stance × Action` lookup, even those that did not fire (so the battle
+ * log can show the player which procs they missed).
+ *
+ * @property trigger - The full trigger definition from `combat-effects.library.ts`
+ * @property fired - True when this trigger should apply its effect this round
+ * @property reason - Why the trigger fired (or didn't): `'crit'`, `'fumble'`, `'roll'`, `'miss'`
+ * @property targetSwap - True on fumble triggers — caller should apply the effect to the actor
+ */
+export interface CombatEffectRollResult {
+    trigger: CombatEffectTrigger;
+    fired: boolean;
+    reason: 'crit' | 'fumble' | 'roll' | 'miss';
+    targetSwap: boolean;
+}
+
+/**
+ * Rolls every Tier 2/3 combat-effect trigger for an actor's chosen action,
+ * honouring critical hits and fumbles.
+ *
+ * Rules (matching `GAME-ROADMAP.md` Phase 2b):
+ *   - Natural 20 attack roll: every `critGuaranteed` trigger fires; the
+ *     first such trigger in the list is treated as the "strongest proc."
+ *   - Natural 1 attack roll: triggers with `fumbleSelfTarget` may still
+ *     fire but apply to the *actor* (target swap → self-debuff).
+ *   - Otherwise: each trigger fires when `Math.random() < trigger.chance`.
+ *
+ * Returns one result per trigger so the caller can both announce procs
+ * and announce near-misses if desired.
+ *
+ * @param attacker - The combatant performing the action
+ * @param action - The combat action chosen this round (must be attack or defend)
+ * @param attackRoll - The natural d20 roll the attacker just made (1–20)
+ * @returns Per-trigger results
+ */
+export function rollForCombatEffects(
+  attacker: Character | Enemy,
+  action: CombatAction,
+  attackRoll: number,
+): CombatEffectRollResult[] {
+  const triggers = getCombatEffectTriggers(action.type, action.action);
+  if (triggers.length === 0) return [];
+
+  const isCrit = attackRoll === 20;
+  const isFumble = attackRoll === 1;
+
+  return triggers.map(trigger => {
+    if (isCrit && trigger.critGuaranteed) {
+      return { trigger, fired: true, reason: 'crit', targetSwap: false };
+    }
+    if (isFumble) {
+      if (trigger.fumbleSelfTarget) {
+        const fired = Math.random() < trigger.chance;
+        return { trigger, fired, reason: fired ? 'fumble' : 'miss', targetSwap: fired };
+      }
+      return { trigger, fired: false, reason: 'miss', targetSwap: false };
+    }
+    const fired = Math.random() < trigger.chance;
+    return { trigger, fired, reason: fired ? 'roll' : 'miss', targetSwap: false };
+  });
+}
+
+/**
+ * Outcome of applying a single combat-effect roll to a CombatState.
+ * Mirrors `EffectApplicationResult` from the Effects engine but adds the
+ * trigger metadata so the battle log can identify each proc.
+ *
+ * @property trigger - The trigger that fired
+ * @property appliedTo - Which combatant received the effect ('player' | 'enemy')
+ * @property message - Battle-log line describing the proc
+ */
+export interface CombatEffectApplicationResult {
+    trigger: CombatEffectTrigger;
+    appliedTo: 'player' | 'enemy';
+    message: string;
+}
+
+/**
+ * Applies the FIRED triggers from `rollForCombatEffects` onto a CombatState.
+ * Misses are filtered out automatically.
+ *
+ * Resolution order:
+ *   1. Determine receiver (`actor` or `opponent`, after honouring
+ *      `targetSwap` from a fumble).
+ *   2. Look up the effect definition from the library.
+ *   3. Pass it through the effects engine's `applyEffect` to handle
+ *      stacking, intensity, and duration.
+ *
+ * Pure function — returns a new `CombatState` and a per-application log of
+ * what landed; the input state is left untouched.
+ *
+ * @param state - Current combat state
+ * @param actor - Which combatant performed the action ('player' | 'enemy')
+ * @param results - Rolled triggers from `rollForCombatEffects`
+ * @returns Updated state and a per-fired-trigger application result list
+ */
+export function applyCombatEffects(
+  state: CombatState,
+  actor: 'player' | 'enemy',
+  results: CombatEffectRollResult[],
+): { state: CombatState; applied: CombatEffectApplicationResult[] } {
+  const applied: CombatEffectApplicationResult[] = [];
+  let next = state;
+
+  for (const r of results) {
+    if (!r.fired) continue;
+    const def = lookupEffect(r.trigger.effectId);
+    if (!def) continue;
+
+    const wantsActor = r.trigger.target === 'self' || r.targetSwap;
+    const receiverKey: 'player' | 'enemy' = wantsActor
+      ? actor
+      : (actor === 'player' ? 'enemy' : 'player');
+    const receiver = next[receiverKey];
+
+    const { activeEffects, result } = applyEffect(
+      receiver.currentActiveEffects,
+      def,
+      next.round,
+    );
+
+    next = {
+      ...next,
+      [receiverKey]: { ...receiver, currentActiveEffects: activeEffects },
+    } as CombatState;
+
+    applied.push({
+      trigger: r.trigger,
+      appliedTo: receiverKey,
+      message: `${def.name}: ${result.message}`,
+    });
+  }
+
+  return { state: next, applied };
 }

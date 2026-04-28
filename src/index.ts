@@ -18,13 +18,20 @@ export {
     getBaseStatForType, getAttackStatForType, getDefenseStatForType, getSaveStatForType,
     rollSkillCheck, isCriticalHit, isCriticalMiss,
     applyCriticalMultiplier, calculateFinalDamage, isAttackSuccessful,
+    performAttackRoll, performDefenseRoll,
+    calculateBaseDamage, calculateDamageReduction, calculateAttackDamage,
     isEffectApplied,
     updateEffectDuration, tickAllEffects,
     getStudyMarkIntensity, getActiveRollModifier, getThornsReflect,
     removeRandomBuff, extendRandomBuffDuration, applyRegen,
     applyDamage, healCharacter, isAlive, isDefeated, getHealthPercentage,
     MIND_MARK_ID,
+    rollForCombatEffects, applyCombatEffects,
+    processPlayerTurn, processEnemyTurn,
+    determineTurnOrder, rollInitiative,
+    createBattleLogEntry, formatAllBattleLogs, generateCombatResultMessage,
 } from './Combat';
+export { COMBAT_EFFECTS, getCombatEffectTriggers } from './Combat/combat-effects.library';
 
 // Combat — reducer
 export {
@@ -32,20 +39,34 @@ export {
     setPlayerStance, setPlayerAction,
     addBattleLogEntry, incrementFriendship,
     endCombatPlayerVictory, endCombatPlayerDefeat, endCombatWithFriendship,
+    resetCombat, resolveCombatRound, resolveCombatRoundWithEvents,
 } from './Combat/combat.reducer';
+export type { ResolveCombatRoundEvents, Tier1StanceEvent } from './Combat/combat.reducer';
 
 // Combat — types
 export type {
     Stance, Action, Advantage, CritStyle, CombatAction, CombatPhase,
-    BattleLogEntry, CombatState,
+    BattleLogEntry, CombatState, CombatEffectTrigger,
 } from './Combat/types';
+export type { CombatEffectAction } from './Combat/combat-effects.library';
+export type { CombatEffectRollResult, CombatEffectApplicationResult } from './Combat';
 
 // Effects
 export {
     applyEffect, applyTier1CombatEffect, applyTier1CombatEffectWithResult,
     clearTier1EffectsForType, getTargetsResistStatValue,
+    removeEffect, getActiveEffectModifiers, canAct,
+    processDamageOverTime, processRoundStartEffects, processWorldEffectTick,
 } from './Effects';
-export type { ApplyEffectOptions } from './Effects';
+export type {
+    ApplyEffectOptions,
+    AggregatedEffectModifiers,
+    ActionRestrictions,
+    DamageOverTimeContribution,
+    CombatantRoundEvents,
+    RoundStartEvents,
+    WorldEffectTickResult,
+} from './Effects';
 export { lookupEffect, getEffectByName, getEffectsByType, effectsLibrary } from './Effects/effects.library';
 export type {
     Effect, EffectType, EffectStacking, EffectCategory, EffectPayload,

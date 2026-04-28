@@ -20,13 +20,13 @@ Each phase builds on the one before it. `[x]` = done; `[ ]` = pending.
 - [x] Tier 1 effect map (`TIER1_EFFECT_MAP`) and `applyTier1CombatEffect` / `applyTier1CombatEffectWithResult`
 - [x] `clearTier1EffectsForType` — removes stale Tier 1 self-buffs on action-type switch; debuffs applied by the opponent are exempt and expire naturally
 - [x] `getTargetsResistStatValue` — looks up target's resist stat for Tier 2/3 rolls
-- [ ] `removeEffect(activeEffects, effectId)` — filter by ID (cleanses, dispels, changing stance)
-- [ ] `getActiveEffectModifiers(activeEffects)` — aggregate stat mods, roll mods, defense mods, advantage grants into one object
-- [ ] `canAct(activeEffects)` — read `skipTurn`, `blockedStances`, `forcedStance`; return combined restrictions
-- [ ] `processDamageOverTime(activeEffects)` — sum DoT, return total damage + messages
-- [ ] `processRoundStartEffects(state)` — orchestrate: DoT → regen → tick → expire; return updated `CombatState` (regen and ticking are wired individually in the CLI; this unifies them into one reducer call)
-- [ ] `processWorldEffectTick(player): { player: Character; events: string[] }` — DoT / regen / expiry outside combat; called on each map node transition (enables poison, curses, persistent regen while exploring)
-- [ ] Unit tests for all functions above
+- [x] `removeEffect(activeEffects, effectId)` — filter by ID (cleanses, dispels, changing stance)
+- [x] `getActiveEffectModifiers(activeEffects)` — aggregate stat mods, roll mods, defense mods, advantage grants into one object
+- [x] `canAct(activeEffects)` — read `skipTurn`, `blockedStances`, `forcedStance`; return combined restrictions
+- [x] `processDamageOverTime(activeEffects)` — sum DoT, return total damage + messages
+- [x] `processRoundStartEffects(state)` — orchestrate: DoT → regen → tick → expire; return updated `CombatState` (regen and ticking are wired individually in the CLI; this unifies them into one reducer call)
+- [x] `processWorldEffectTick(player): { player: Character; events: string[] }` — DoT / regen / expiry outside combat; called on each map node transition (enables poison, curses, persistent regen while exploring)
+- [x] Unit tests for all functions above
 
 ---
 
@@ -64,48 +64,48 @@ Each phase builds on the one before it. `[x]` = done; `[ ]` = pending.
 - [x] `extendRandomBuffDuration(target, amount)` — extends one random buff's duration; used by Heart/Attack on hit
 - [x] `getActiveRollModifier(target): number` — sums flat `rollModifier` and `rollModifierPerIntensity × intensity` across all active effects
 - [x] `isAttackSuccessful(attackRoll, defenseRoll): boolean` — compares attack vs defence rolls
-- [ ] `performAttackRoll(attacker, attackType, advantage)` — stub
-- [ ] `performDefenseRoll(defender, attackType, isDefending)` — stub
-- [ ] `calculateBaseDamage(attacker, attackType, advantage)` — stub
-- [ ] `calculateDamageReduction(defender, attackType, isDefending)` — stub
-- [ ] `calculateAttackDamage(attacker, defender, attackType, advantage, isDefending)` — stub (full roll sequence)
+- [x] `performAttackRoll(attacker, attackType, advantage)` — d20 + attack stat + active roll modifier, advantage-aware
+- [x] `performDefenseRoll(defender, attackType, isDefending)` — defense stat + active defense modifier, no die
+- [x] `calculateBaseDamage(attacker, attackType, advantage)` — d20 + attack stat for damage roll
+- [x] `calculateDamageReduction(defender, attackType, isDefending)` — applies passive (×1) or neutral defending (×2) multiplier
+- [x] `calculateAttackDamage(attacker, defender, attackType, advantage, isDefending)` — full roll sequence including miss / crit / mark bonus
 
 ### 2b — Status Effects in Combat Actions
 
-- [ ] Define `CombatEffectTrigger` type
-- [ ] `combat-effects.library.ts` — map `Stance × action` pairs to Tier 2/3 trigger chances:
+- [x] Define `CombatEffectTrigger` type
+- [x] `combat-effects.library.ts` — map `Stance × action` pairs to Tier 2/3 trigger chances:
   - Heart + Attack: emotional debuff (fear, charm)
   - Heart + Defend: emotional buff (regen, resilience)
   - Body + Attack: physical debuff (bleed, wound, knockdown)
   - Body + Defend: physical buff (damage reduction, counter)
   - Mind + Attack: mental debuff (daze, silence, confusion)
   - Mind + Defend: mental buff (evasion, accuracy boost)
-- [ ] `rollForCombatEffects(attacker, action, advantage): Effect[]`
-- [ ] `applyCombatEffects(combat, effects): CombatState`
-- [ ] Crit → guarantees strongest proc; fumble → may apply debuff to self
-- [ ] Document full matrix in `docs/combat.md`
+- [x] `rollForCombatEffects(attacker, action, attackRoll): CombatEffectRollResult[]`
+- [x] `applyCombatEffects(state, actor, results): { state, applied }`
+- [x] Crit → guarantees strongest proc; fumble → may apply debuff to self
+- [x] Document full matrix in `docs/combat.md`
 
 ### 2c — Combat Reducer (`combat.reducer.ts`)
 
 - [x] `initializeCombat(player, enemy): CombatState`
-- [ ] `resetCombat(): CombatState`
+- [x] `resetCombat(state): CombatState`
 - [x] `updateCombatPhase(state, phase): CombatState`
 - [x] `setPlayerStance(state, stance): CombatState` (was `setPlayerAttackType`)
 - [x] `setPlayerAction(state, action): CombatState`
-- [ ] `resolveCombatRound(state): CombatState` — full round via the reducer (attack/defense rolls, effect procs, DoT/regen tick, log entry)
-- [ ] `addBattleLogEntry(state, entry): CombatState` — stub
-- [ ] `incrementFriendship(state): CombatState` — stub
-- [ ] `endCombatPlayerVictory(state): CombatState` — stub
-- [ ] `endCombatPlayerDefeat(state): CombatState` — stub
-- [ ] `endCombatWithFriendship(state): CombatState` — stub
-- [ ] `processPlayerTurn(state)` — stub (lives in `Combat/index.ts`)
-- [ ] `processEnemyTurn(state)` — stub (lives in `Combat/index.ts`)
-- [ ] `determineTurnOrder(player, enemy)` — stub (lives in `Combat/index.ts`)
-- [ ] `rollInitiative(character)` — stub (lives in `Combat/index.ts`)
-- [ ] `createBattleLogEntry(state, roundResults)` — stub (lives in `Combat/index.ts`)
-- [ ] `formatAllBattleLogs(state)` — stub (lives in `Combat/index.ts`)
-- [ ] `generateCombatResultMessage(state)` — stub (lives in `Combat/index.ts`)
-- [ ] Unit tests for `resolveCombatRound`
+- [x] `resolveCombatRound(state): CombatState` — full round via the reducer (attack/defense rolls, effect procs, DoT/regen tick, log entry)
+- [x] `addBattleLogEntry(state, entry): CombatState`
+- [x] `incrementFriendship(state): CombatState`
+- [x] `endCombatPlayerVictory(state): CombatState`
+- [x] `endCombatPlayerDefeat(state): CombatState`
+- [x] `endCombatWithFriendship(state): CombatState`
+- [x] `processPlayerTurn(state)` (lives in `Combat/index.ts`)
+- [x] `processEnemyTurn(state)` (lives in `Combat/index.ts`)
+- [x] `determineTurnOrder(player, enemy)` (lives in `Combat/index.ts`)
+- [x] `rollInitiative(character)` (lives in `Combat/index.ts`)
+- [x] `createBattleLogEntry(state, roundResults)` (lives in `Combat/index.ts`)
+- [x] `formatAllBattleLogs(state)` (lives in `Combat/index.ts`)
+- [x] `generateCombatResultMessage(state)` (lives in `Combat/index.ts`)
+- [x] Unit tests for `resolveCombatRound`
 
 ### 2d — Combat CLI (`combat.cli.ts`)
 
@@ -119,11 +119,11 @@ Each phase builds on the one before it. `[x]` = done; `[ ]` = pending.
 - [x] Signed-term formatting for roll lines — `+ N stat` / `− N stat` / `+ N roll` with colour-coding (red for negative roll modifiers, green for positive)
 - [x] Damage roll logged separately from attack roll, with its own header and delay
 - [x] Damage bonus (`+N mark`) shown inline in the damage formula
-- [ ] Replace inline scenario logic with `resolveCombatRound` reducer (Phase 2c)
-- [ ] Show active buffs/debuffs each round
-- [ ] Add Tier 2/3 effect proc messages
-- [ ] Add skill selection (Phase 3)
-- [ ] Add item usage (Phase 4)
+- [x] Replace inline scenario logic with `resolveCombatRound` reducer (Phase 2c)
+- [x] Show active buffs/debuffs each round
+- [x] Add Tier 2/3 effect proc messages
+- [x] Add skill selection (Phase 3 placeholder — falls back to defend until skills land)
+- [x] Add item usage (Phase 4 placeholder — falls back to defend until items land)
 
 ---
 

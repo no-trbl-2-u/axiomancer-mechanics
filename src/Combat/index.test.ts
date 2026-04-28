@@ -1,9 +1,11 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import {
   determineAdvantage, getAdvantageModifier, hasAdvantage,
   calculateFinalDamage, applyDamage, healCharacter, tickAllEffects,
   isCriticalHit, isCriticalMiss, isAttackSuccessful,
   isAlive, isDefeated, getHealthPercentage,
+  performAttackRoll, performDefenseRoll,
+  calculateBaseDamage, calculateDamageReduction, calculateAttackDamage,
 } from './index';
 import { createCharacter } from '../Character';
 import { createEnemy } from '../Enemy';
@@ -88,6 +90,106 @@ describe('isAttackSuccessful', () => {
   it('equal or lower fails', () => {
     expect(isAttackSuccessful(10, 10)).toBe(false);
     expect(isAttackSuccessful(5, 10)).toBe(false);
+  });
+});
+
+// ---- Phase 2a Combat Math ----
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
+
+const stubRandom = (...values: number[]) => {
+  let i = 0;
+  vi.spyOn(Math, 'random').mockImplementation(() => {
+    const v = values[i++ % values.length];
+    return v;
+  });
+};
+
+// Math.random returns [0,1); randomInt(1,20) = floor(rand * 20) + 1.
+// To force a roll of N: rand = (N - 1) / 20  (so floor((N-1)/20 * 20) = N-1, +1 = N).
+const randForRoll = (n: number) => (n - 1) / 20;
+
+describe('performAttackRoll', () => {
+  it('rolls d20 + attack stat, returns details breakdown', () => {
+    stubRandom(randForRoll(15));
+    const player = makePlayer();
+    const r = performAttackRoll(player, 'body', 'neutral');
+    expect(r.roll).toBe(15);
+    expect(r.modifier).toBe(player.derivedStats.physicalAttack);
+    expect(r.total).toBe(15 + player.derivedStats.physicalAttack);
+    expect(r.details).toContain('body attack');
+  });
+
+  it('honours advantage by taking max of two d20 rolls', () => {
+    stubRandom(randForRoll(5), randForRoll(18));
+    const player = makePlayer();
+    const r = performAttackRoll(player, 'body', 'advantage');
+    expect(r.roll).toBe(18);
+    expect(r.details).toContain('(adv)');
+  });
+});
+
+describe('performDefenseRoll', () => {
+  it('returns defense stat modifier when defending', () => {
+    const enemy = makeEnemy();
+    const r = performDefenseRoll(enemy, 'body', true);
+    expect(r.total).toBe(enemy.derivedStats.physicalDefense);
+    expect(r.details).toContain('body defense');
+  });
+  it('returns base stat when not defending', () => {
+    const enemy = makeEnemy();
+    const r = performDefenseRoll(enemy, 'body', false);
+    expect(r.total).toBe(enemy.derivedStats.physicalAttack);
+    expect(r.details).toContain('body base');
+  });
+});
+
+describe('calculateBaseDamage', () => {
+  it('returns d20 + attack stat modifier', () => {
+    stubRandom(randForRoll(10));
+    const player = makePlayer();
+    const dmg = calculateBaseDamage(player, 'body', 'neutral');
+    expect(dmg).toBe(10 + player.derivedStats.physicalAttack);
+  });
+});
+
+describe('calculateDamageReduction', () => {
+  it('uses passive multiplier when not defending', () => {
+    const enemy = makeEnemy();
+    const r = calculateDamageReduction(enemy, 'body', false);
+    expect(r).toBe(enemy.derivedStats.physicalAttack * 1);
+  });
+  it('uses neutral defense multiplier (×2) when defending', () => {
+    const enemy = makeEnemy();
+    const r = calculateDamageReduction(enemy, 'body', true);
+    expect(r).toBe(enemy.derivedStats.physicalDefense * 2);
+  });
+});
+
+describe('calculateAttackDamage', () => {
+  it('reports a miss when attack roll loses to defense', () => {
+    stubRandom(randForRoll(1));
+    const player = makePlayer();
+    const enemy = makeEnemy();
+    const tank = { ...enemy, baseStats: { heart: 10, body: 10, mind: 10 },
+      derivedStats: { ...enemy.derivedStats, physicalAttack: 50, physicalDefense: 50 } };
+    const r = calculateAttackDamage(player, tank, 'body', 'neutral', false);
+    expect(r.hit).toBe(false);
+    expect(r.damage).toBe(0);
+    expect(r.details).toContain('Miss');
+  });
+
+  it('reports a hit and computes mitigated damage', () => {
+    stubRandom(randForRoll(20), randForRoll(15));
+    const player = makePlayer();
+    const enemy = makeEnemy();
+    const r = calculateAttackDamage(player, enemy, 'body', 'neutral', false);
+    expect(r.hit).toBe(true);
+    expect(r.critical).toBe(true);
+    expect(r.damage).toBeGreaterThan(0);
+    expect(r.details).toContain('CRIT');
   });
 });
 
