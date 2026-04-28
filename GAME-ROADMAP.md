@@ -246,12 +246,12 @@ Each phase builds on the one before it. `[x]` = done; `[ ]` = pending.
 - [x] `moveToNode(state, nodeId): WorldState`
 - [x] `changeContinent(state, continentName): WorldState`
 - [x] `completeUniqueEvent(state, eventId): WorldState`
-- [ ] Unit tests
+- [x] Unit tests for all eight world reducer functions
 
 ### 7b–7f — Content & Systems
 
 - [ ] Map content, quest system, NPC/dialogue, shop, rest & recovery (see roadmap sections)
-- [ ] Persistent hazard effects tick on map node transitions — call `processWorldEffectTick` each step so poison, curses, and persistent regen apply while exploring
+- [x] Persistent hazard effects tick on map node transitions — `moveToNodeWithEffects` + `processNode` call `processWorldEffectTick` each step so poison, curses, and persistent regen apply while exploring
 - [ ] Active hazard effects shown on the exploration HUD — effectId, remaining duration, DoT amount per step
 
 ---
@@ -267,12 +267,12 @@ Each phase builds on the one before it. `[x]` = done; `[ ]` = pending.
 - [x] `store.applyCombatTurn(updatedCombat)` — applies one resolved combat turn back into the store
 - [x] `store.endCombat()` — merge combat player back, clear `combatState`
 - [x] `actions.constants.ts` — `COMBAT_ACTION` constants (attack, defend, skill, item, flee, back)
-- [ ] `gameReducer(state, action): GameState`
-- [ ] `processNode(state, node): GameState`
+- [x] `gameReducer(state, action): GameState`
+- [x] `processNode(state, node): { state, events }`
 
 ### 8b — Main Game CLI
 
-- [ ] `game.cli.ts`, main menu, exploration flow, sub-flows, inventory screen, save/load
+- [x] `game.cli.ts` — minimal main menu (move, encounter, save, quit) wired to `gameReducer`. Inventory screen and richer exploration sub-flows remain follow-ups for Phase 9 content.
 
 ### 8c — Difficulty System
 

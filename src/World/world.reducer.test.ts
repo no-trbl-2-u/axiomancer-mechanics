@@ -1,6 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { completeMap, unlockMap, completeNode, unlockNode, completeUniqueEvent } from './world.reducer';
+import {
+  completeMap, unlockMap, completeNode, unlockNode, completeUniqueEvent,
+  changeMap, changeContinent, moveToNode, moveToNodeWithEffects,
+} from './world.reducer';
 import { createStartingWorld } from './index';
+import { createCharacter } from '../Character';
 
 const world = () => createStartingWorld();
 
@@ -48,5 +52,65 @@ describe('unlockNode', () => {
     const w = unlockNode(world(), 'fv-3');
     expect(w.currentMap.lockedNodes).not.toContain('fv-3');
     expect(w.currentMap.availableNodes).toContain('fv-3');
+  });
+});
+
+describe('changeMap', () => {
+  it('replaces currentMap', () => {
+    const w = world();
+    const newMap = { ...w.currentMap, name: 'northern-forest' as const };
+    expect(changeMap(w, newMap).currentMap.name).toBe('northern-forest');
+  });
+});
+
+describe('changeContinent', () => {
+  it('returns state unchanged when continent not found', () => {
+    const w = world();
+    expect(changeContinent(w, 'northern-continent').currentContinent.name)
+      .toBe(w.currentContinent.name);
+  });
+});
+
+describe('completeUniqueEvent', () => {
+  it('marks the matching event as completed', () => {
+    const w = world();
+    const withEvents = {
+      ...w,
+      currentMap: {
+        ...w.currentMap,
+        uniqueEvents: [
+          { id: 'evt-1', completed: false } as never,
+        ],
+      },
+    };
+    const after = completeUniqueEvent(withEvents, 'evt-1');
+    expect((after.currentMap.uniqueEvents[0] as { completed: boolean }).completed).toBe(true);
+  });
+});
+
+describe('moveToNode (legacy stub)', () => {
+  it('returns state unchanged', () => {
+    const w = world();
+    expect(moveToNode(w, 'fv-2')).toBe(w);
+  });
+});
+
+describe('moveToNodeWithEffects', () => {
+  const player = () => createCharacter({
+    name: 'Hero', level: 1,
+    baseStats: { heart: 2, body: 2, mind: 2 },
+  });
+
+  it('no-ops when target node is not available', () => {
+    const result = moveToNodeWithEffects(world(), 'unknown-node', player());
+    expect(result.tick).toBeNull();
+  });
+
+  it('ticks effects when moving to an available node', () => {
+    const w = world();
+    expect(w.currentMap.availableNodes.length).toBeGreaterThan(0);
+    const result = moveToNodeWithEffects(w, w.currentMap.availableNodes[0], player());
+    expect(result.tick).toBeDefined();
+    expect(result.tick?.player).toBeDefined();
   });
 });

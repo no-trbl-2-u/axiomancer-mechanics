@@ -81,7 +81,11 @@ export type { Skill, SkillCategory, SkillsStatType, SkillLearningRequirement } f
 // Game — store & reducers
 export { createGameStore, selectPlayer, selectCombatState, selectIsInCombat, selectInventory, selectVersion } from './Game/store';
 export type { GameStore, GameActions } from './Game/store';
-export { createNewGameState, GAME_STATE_VERSION } from './Game/game.reducer';
+export {
+    createNewGameState, GAME_STATE_VERSION,
+    gameReducer, processNode,
+} from './Game/game.reducer';
+export type { GameAction, ProcessNodeResult } from './Game/game.reducer';
 export type { GameState } from './Game/types';
 export { COMBAT_ACTION } from './Game/actions.constants';
 export type { CombatActionName } from './Game/actions.constants';
@@ -102,7 +106,7 @@ export { createNodeAdapter } from './Game/persistence/node.adapter';
 export { createStartingWorld } from './World';
 export {
     changeMap, completeMap, unlockMap,
-    completeNode, unlockNode, moveToNode,
+    completeNode, unlockNode, moveToNode, moveToNodeWithEffects,
     changeContinent, completeUniqueEvent,
 } from './World/world.reducer';
 export type { WorldState, Map, Continent, Quest, MapEvent, Reward } from './World/types';
