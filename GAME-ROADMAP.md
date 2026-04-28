@@ -132,28 +132,28 @@ Each phase builds on the one before it. `[x]` = done; `[ ]` = pending.
 ### 3a — Skill Type Refinement
 
 - [x] Base `Skill` type with `philosophicalAspect`, `category`, `manaCost`
-- [ ] `combatEffects: CombatEffectTrigger[]`
-- [ ] `targetType: 'self' | 'enemy' | 'all_enemies' | 'all_allies'`
-- [ ] `basePower` — base damage/healing before stat scaling
-- [ ] `scalingStat` — which derived stat multiplies base power
-- [ ] `advantageInteraction`
-- [ ] `teir` field
+- [x] `combatEffects: CombatEffectTrigger[]`
+- [x] `targetType: 'self' | 'enemy' | 'all_enemies' | 'all_allies'`
+- [x] `basePower` — base damage/healing before stat scaling
+- [x] `scalingStat` — which derived stat multiplies base power
+- [x] `advantageInteraction`
+- [x] `teir` field
 
 ### 3b — Skill Library
 
-- [ ] At least 18 skills (3 per stat × 2 categories: fallacies and paradoxes)
-- [ ] Each skill references effects from the library or introduces skill-specific effects
-- [ ] Flavor text matches the theme
-- [ ] Spread from Teir 1 to Teir 3
+- [x] At least 18 skills (3 per stat × 2 categories: fallacies and paradoxes)
+- [x] Each skill references effects from the library or introduces skill-specific effects
+- [x] Flavor text matches the theme
+- [x] Spread from Teir 1 to Teir 3
 
 ### 3c — Skill Engine
 
-- [ ] `createSkill(data): Skill`
-- [ ] `canUseSkill(character, skill)`
-- [ ] `calculateSkillDamage(character, skill, advantage)`
-- [ ] `executeSkill(state, skillId): CombatState`
-- [ ] `learnSkill(character, skillId): Character`
-- [ ] Unit tests
+- [x] `createSkill(data): Skill`
+- [x] `canUseSkill(character, skill)`
+- [x] `calculateSkillDamage(character, skill, advantage)`
+- [x] `executeSkill(state, skillId, actor): { state, ... }`
+- [x] `learnSkill(character, skillId): Character & { knownSkills }`
+- [x] Unit tests
 
 ---
 
