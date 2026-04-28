@@ -1,0 +1,21 @@
+{
+  "name": "axiomancer-cli",
+  "version": "1.0.0",
+  "description": "Interactive CLI front-ends for the axiomancer-mechanics engine.",
+  "private": true,
+  "scripts": {
+    "combat": "ts-node src/combat.cli.ts",
+    "character": "ts-node src/character.cli.ts",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint \"src/**/*.ts\""
+  },
+  "dependencies": {
+    "axiomancer-mechanics": "*",
+    "commander": "^14.0.2",
+    "inquirer": "^13.0.1"
+  },
+  "devDependencies": {
+    "@types/inquirer": "^9.0.9",
+    "ts-node": "^10.9.2"
+  }
+}

@@ -54,7 +54,7 @@ Committing to multiple Heart/Defend rounds is a meaningful healing investment.
 Restores `1 × currentIntensity` HP at the **start of each round** (before the player
 makes a choice). The higher the intensity, the more HP is recovered.
 
-**Where consumed:** `applyRegen(target)` in `src/Combat/index.ts`:
+**Where consumed:** `applyRegen(target)` in `packages/engine/src/combat/index.ts`:
 
 ```typescript
 const perRound = def?.payload.regeneration?.healthPerRound ?? 0;
@@ -157,7 +157,7 @@ At full health, start of round with Vital Empathy active:
 
 ```
 Automated:
-  import { applyRegen } from 'src/Combat/index.ts';
+  import { applyRegen } from 'packages/engine/src/combat/index.ts';
 
   const mockTarget = { ...baseCharacter, health: 50, maxHealth: 100,
     currentActiveEffects: [{
@@ -185,7 +185,7 @@ Run: npm run combat
 ### 6. Unit tests to write
 
 ```typescript
-// src/Combat/index.test.ts (add to existing applyRegen suite)
+// packages/engine/src/combat/index.test.ts (add to existing applyRegen suite)
 describe('Vital Empathy (tier1_heart_defend)', () => {
   it('heals healthPerRound × currentIntensity per round', () => { ... });
   it('does not overheal above maxHealth', () => { ... });

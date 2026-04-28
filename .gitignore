@@ -3,6 +3,7 @@ node_modules/
 
 # Build output
 dist/
+packages/*/dist/
 
 # IDE
 .vscode/
@@ -18,6 +19,7 @@ Thumbs.db
 *.log
 npm-debug.log*
 /automation/testing-logs/*.txt
+/packages/automation/testing-logs/*.txt
 
 # Runtime state
 game-state.json
