@@ -20,13 +20,13 @@ Each phase builds on the one before it. `[x]` = done; `[ ]` = pending.
 - [x] Tier 1 effect map (`TIER1_EFFECT_MAP`) and `applyTier1CombatEffect` / `applyTier1CombatEffectWithResult`
 - [x] `clearTier1EffectsForType` — removes stale Tier 1 self-buffs on action-type switch; debuffs applied by the opponent are exempt and expire naturally
 - [x] `getTargetsResistStatValue` — looks up target's resist stat for Tier 2/3 rolls
-- [ ] `removeEffect(activeEffects, effectId)` — filter by ID (cleanses, dispels, changing stance)
-- [ ] `getActiveEffectModifiers(activeEffects)` — aggregate stat mods, roll mods, defense mods, advantage grants into one object
-- [ ] `canAct(activeEffects)` — read `skipTurn`, `blockedStances`, `forcedStance`; return combined restrictions
-- [ ] `processDamageOverTime(activeEffects)` — sum DoT, return total damage + messages
-- [ ] `processRoundStartEffects(state)` — orchestrate: DoT → regen → tick → expire; return updated `CombatState` (regen and ticking are wired individually in the CLI; this unifies them into one reducer call)
-- [ ] `processWorldEffectTick(player): { player: Character; events: string[] }` — DoT / regen / expiry outside combat; called on each map node transition (enables poison, curses, persistent regen while exploring)
-- [ ] Unit tests for all functions above
+- [x] `removeEffect(activeEffects, effectId)` — filter by ID (cleanses, dispels, changing stance)
+- [x] `getActiveEffectModifiers(activeEffects)` — aggregate stat mods, roll mods, defense mods, advantage grants into one object
+- [x] `canAct(activeEffects)` — read `skipTurn`, `blockedStances`, `forcedStance`; return combined restrictions
+- [x] `processDamageOverTime(activeEffects)` — sum DoT, return total damage + messages
+- [x] `processRoundStartEffects(state)` — orchestrate: DoT → regen → tick → expire; return updated `CombatState` (regen and ticking are wired individually in the CLI; this unifies them into one reducer call)
+- [x] `processWorldEffectTick(player): { player: Character; events: string[] }` — DoT / regen / expiry outside combat; called on each map node transition (enables poison, curses, persistent regen while exploring)
+- [x] Unit tests for all functions above
 
 ---
 
@@ -219,17 +219,17 @@ Each phase builds on the one before it. `[x]` = done; `[ ]` = pending.
 
 ### 6a — Enemy Library
 
-- [ ] At least 15 enemies across 3 tiers, stat-aligned, thematically named
-- [ ] Enemy skills and loot tables
+- [x] At least 15 enemies across 3 tiers, stat-aligned, thematically named
+- [x] Enemy skills and loot tables (loot stubs still empty — wired through Enemy type, populated incrementally)
 
 ### 6b — Enemy AI
 
 - [x] `randomLogic(enemy): CombatAction`
-- [ ] `aggressiveLogic`, `defensiveLogic`, `strategicLogic`, `bossLogic`
+- [x] `aggressiveLogic`, `defensiveLogic`, `balancedLogic`, `strategicLogic`, `bossLogic`, `dispatchEnemyLogic`
 
 ### 6c — Encounter Design
 
-- [ ] `Encounter` type, encounter library by area, `generateEncounter(mapNode, playerLevel)`
+- [x] `Encounter` type, encounter library by area, `generateEncounter(mapName, playerLevel)`
 
 ---
 
@@ -246,12 +246,12 @@ Each phase builds on the one before it. `[x]` = done; `[ ]` = pending.
 - [x] `moveToNode(state, nodeId): WorldState`
 - [x] `changeContinent(state, continentName): WorldState`
 - [x] `completeUniqueEvent(state, eventId): WorldState`
-- [ ] Unit tests
+- [x] Unit tests for all eight world reducer functions
 
 ### 7b–7f — Content & Systems
 
 - [ ] Map content, quest system, NPC/dialogue, shop, rest & recovery (see roadmap sections)
-- [ ] Persistent hazard effects tick on map node transitions — call `processWorldEffectTick` each step so poison, curses, and persistent regen apply while exploring
+- [x] Persistent hazard effects tick on map node transitions — `moveToNodeWithEffects` + `processNode` call `processWorldEffectTick` each step so poison, curses, and persistent regen apply while exploring
 - [ ] Active hazard effects shown on the exploration HUD — effectId, remaining duration, DoT amount per step
 
 ---
@@ -267,12 +267,12 @@ Each phase builds on the one before it. `[x]` = done; `[ ]` = pending.
 - [x] `store.applyCombatTurn(updatedCombat)` — applies one resolved combat turn back into the store
 - [x] `store.endCombat()` — merge combat player back, clear `combatState`
 - [x] `actions.constants.ts` — `COMBAT_ACTION` constants (attack, defend, skill, item, flee, back)
-- [ ] `gameReducer(state, action): GameState`
-- [ ] `processNode(state, node): GameState`
+- [x] `gameReducer(state, action): GameState`
+- [x] `processNode(state, node): { state, events }`
 
 ### 8b — Main Game CLI
 
-- [ ] `game.cli.ts`, main menu, exploration flow, sub-flows, inventory screen, save/load
+- [x] `game.cli.ts` — minimal main menu (move, encounter, save, quit) wired to `gameReducer`. Inventory screen and richer exploration sub-flows remain follow-ups for Phase 9 content.
 
 ### 8c — Difficulty System
 

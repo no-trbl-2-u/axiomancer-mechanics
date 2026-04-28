@@ -4,7 +4,7 @@
  * Heart > Body > Mind > Heart (cyclic advantage)
  */
 
-import { randomLogic } from '../Enemy/enemy.logic';
+import { randomLogic, dispatchEnemyLogic } from '../Enemy/enemy.logic';
 import { Character } from '../Character/types';
 import { Enemy, EnemyLogic } from '../Enemy/types';
 import { getEnemyRelatedStat } from '../Enemy';
@@ -29,8 +29,16 @@ import { ActiveEffect, EffectApplicationResult, EffectType } from 'Effects/types
 // ============================================================================
 
 /**
- * Determines the enemy's action based on the enemy's logic
- * @param enemyLogic - The logic type chosen by the enemy (random, aggressive, etc.)
+ * Determines the enemy's action based on the enemy's logic.
+ *
+ * The simple `EnemyLogic`-only signature is kept for backwards
+ * compatibility with the original CLI flow. New AI strategies that need
+ * enemy stats and runtime context (HP %, player history) should call
+ * `dispatchEnemyLogic` from `Enemy/enemy.logic.ts` directly with the
+ * full enemy object.
+ *
+ * @param enemyLogic - The logic type chosen by the enemy (random,
+ *   aggressive, etc.)
  * @returns The enemy's combat action (stance + action)
  */
 export const determineEnemyAction = (enemyLogic: EnemyLogic): CombatAction => {

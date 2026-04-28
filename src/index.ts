@@ -7,8 +7,15 @@ export { createCharacter, getResistStatFromResistedBy } from './Character';
 export type { Character, BaseStats, DerivedStats, NonCombatStats } from './Character/types';
 
 // Enemy
-export { createEnemy, getEnemyRelatedStat } from './Enemy';
-export type { Enemy, EnemyLogic, EnemyTier1EffectMap } from './Enemy/types';
+export {
+    createEnemy, getEnemyRelatedStat,
+    randomLogic, aggressiveLogic, defensiveLogic, balancedLogic,
+    strategicLogic, bossLogic, dispatchEnemyLogic,
+    enemyLibrary, lookupEnemy, getEnemiesByMap, getEnemiesByTier, EnemyLibrary,
+    generateEncounter, listEncountersForMap, listAllEncounters,
+} from './Enemy';
+export type { Enemy, EnemyLogic, EnemyLogicContext, EnemyTier1EffectMap } from './Enemy/types';
+export type { Encounter } from './Enemy';
 
 // Combat — mechanics
 export {
@@ -44,8 +51,18 @@ export type {
 export {
     applyEffect, applyTier1CombatEffect, applyTier1CombatEffectWithResult,
     clearTier1EffectsForType, getTargetsResistStatValue,
+    removeEffect, getActiveEffectModifiers, canAct,
+    processDamageOverTime, processRoundStartEffects, processWorldEffectTick,
 } from './Effects';
-export type { ApplyEffectOptions } from './Effects';
+export type {
+    ApplyEffectOptions,
+    AggregatedEffectModifiers,
+    ActionRestrictions,
+    DamageOverTimeContribution,
+    CombatantRoundEvents,
+    RoundStartEvents,
+    WorldEffectTickResult,
+} from './Effects';
 export { lookupEffect, getEffectByName, getEffectsByType, effectsLibrary } from './Effects/effects.library';
 export type {
     Effect, EffectType, EffectStacking, EffectCategory, EffectPayload,
@@ -64,7 +81,11 @@ export type { Skill, SkillCategory, SkillsStatType, SkillLearningRequirement } f
 // Game — store & reducers
 export { createGameStore, selectPlayer, selectCombatState, selectIsInCombat, selectInventory, selectVersion } from './Game/store';
 export type { GameStore, GameActions } from './Game/store';
-export { createNewGameState, GAME_STATE_VERSION } from './Game/game.reducer';
+export {
+    createNewGameState, GAME_STATE_VERSION,
+    gameReducer, processNode,
+} from './Game/game.reducer';
+export type { GameAction, ProcessNodeResult } from './Game/game.reducer';
 export type { GameState } from './Game/types';
 export { COMBAT_ACTION } from './Game/actions.constants';
 export type { CombatActionName } from './Game/actions.constants';
@@ -85,7 +106,7 @@ export { createNodeAdapter } from './Game/persistence/node.adapter';
 export { createStartingWorld } from './World';
 export {
     changeMap, completeMap, unlockMap,
-    completeNode, unlockNode, moveToNode,
+    completeNode, unlockNode, moveToNode, moveToNodeWithEffects,
     changeContinent, completeUniqueEvent,
 } from './World/world.reducer';
 export type { WorldState, Map, Continent, Quest, MapEvent, Reward } from './World/types';
