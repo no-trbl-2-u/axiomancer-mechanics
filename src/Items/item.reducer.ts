@@ -1,102 +1,53 @@
 /**
- * Item Reducer
- * Functions that modify GameState related to items
- * All functions here are pure and return new state objects
+ * Inventory reducers — pure functions over an `Item[]` array.
+ *
+ * Earlier these took the full GameState; that coupled item logic to the
+ * shape of the root state. Operating on an inventory array keeps these
+ * helpers reusable from the Game store, the Combat module, or any UI
+ * layer that holds its own copy.
  */
 
-import { GameState } from "../Game/types";
-import { Item, Consumable, Material, isConsumable } from "./types";
+import { Item, isConsumable, isMaterial } from './types';
 
-// ============================================================================
-// INVENTORY MANAGEMENT (GameState level)
-// ============================================================================
+/** Appends an item to the inventory. */
+export function addItem(inventory: Item[], item: Item): Item[] {
+    return [...inventory, item];
+}
 
-/**
- * Adds an item to the player's inventory
- * @param state - The current game state
- * @param item - The item to add to the inventory
- * @returns The new game state with the item added to the inventory
- */
-export function addItemToInventory(state: GameState, item: Item): GameState {
-    return {
-        ...state,
-        player: {
-            ...state.player,
-            inventory: [...state.player.inventory, item],
-        },
-    };
+/** Removes the first item with the matching ID from the inventory. */
+export function removeItem(inventory: Item[], itemId: string): Item[] {
+    return inventory.filter(item => item.id !== itemId);
 }
 
 /**
- * Removes an item from the player's inventory by ID
- * @param state - The current game state
- * @param itemId - The ID of the item to remove
- * @returns The new game state with the item removed from inventory
+ * Uses one charge of a consumable. If the consumable was the last in its
+ * stack, the entry is removed entirely. No-op if the item is not a consumable.
  */
-export function removeItemFromInventory(state: GameState, itemId: string): GameState {
-    return {
-        ...state,
-        player: {
-            ...state.player,
-            inventory: state.player.inventory.filter(item => item.id !== itemId),
-        },
-    };
-}
+export function useConsumable(inventory: Item[], itemId: string): Item[] {
+    const item = inventory.find(i => i.id === itemId);
+    if (!item || !isConsumable(item)) return inventory;
 
-/**
- * Uses a consumable item, applying its effect and reducing quantity
- * @param state - The current game state
- * @param itemId - The ID of the consumable to use
- * @returns The new game state after using the consumable
- */
-export function useConsumable(state: GameState, itemId: string): GameState {
-    const item = state.player.inventory.find(i => i.id === itemId);
-
-    if (!item || !isConsumable(item)) {
-        return state;
-    }
-
-    // TODO: Apply consumable effect based on item.effect
-
-    // Reduce quantity or remove if last one
     if (item.quantity <= 1) {
-        return removeItemFromInventory(state, itemId);
+        return removeItem(inventory, itemId);
     }
-
-    return {
-        ...state,
-        player: {
-            ...state.player,
-            inventory: state.player.inventory.map(i =>
-                i.id === itemId && isConsumable(i)
-                    ? { ...i, quantity: i.quantity - 1 }
-                    : i
-            ),
-        },
-    };
+    return inventory.map(i =>
+        i.id === itemId && isConsumable(i)
+            ? { ...i, quantity: i.quantity - 1 }
+            : i,
+    );
 }
 
-/**
- * Increases the quantity of a stackable item in inventory
- * @param state - The current game state
- * @param itemId - The ID of the item to stack
- * @param amount - Amount to add to the stack
- * @returns The new game state with updated item quantity
- */
-export function stackItem(state: GameState, itemId: string, amount: number): GameState {
-    return {
-        ...state,
-        player: {
-            ...state.player,
-            inventory: state.player.inventory.map(item => {
-                if (item.id === itemId && isConsumable(item)) {
-                    return { ...item, quantity: item.quantity + amount };
-                }
-                if (item.id === itemId && item.category === 'material') {
-                    return { ...item, quantity: (item as Material).quantity + amount };
-                }
-                return item;
-            }),
-        },
-    };
+/** Increases the quantity of a stackable item (consumable or material). */
+export function stackItem(inventory: Item[], itemId: string, amount: number): Item[] {
+    return inventory.map(item => {
+        if (item.id !== itemId) return item;
+        if (isConsumable(item) || isMaterial(item)) {
+            return { ...item, quantity: item.quantity + amount };
+        }
+        return item;
+    });
 }
+
+// Legacy aliases used by older tests / callers.
+export const addItemToInventory = addItem;
+export const removeItemFromInventory = removeItem;
