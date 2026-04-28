@@ -9,5 +9,6 @@ This repository is the game engine only — not the final game. It will be consu
 - `GAME-ROADMAP.md` — phased development plan with progress tracking
 - `BRAINDUMP.md` — unorganized design ideas
 - `AUDIT.md` — code audit and quality assessment
+- `REORG-PROPOSAL.md` — proposed reorganization to make this importable from a UI app
 - `docs/` — per-system references (combat, effects, character)
 - `docs/references/` — source material (fallacies, paradoxes, pantheon, story)
