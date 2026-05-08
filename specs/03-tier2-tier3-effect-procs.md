@@ -1,0 +1,117 @@
+# Spec 03 — Tier 2 / Tier 3 Effect Procs from Combat Actions
+
+## Goal
+
+Beyond the auto-applied Tier 1 stance effects, every basic `attack` and `defend`
+should have a chance to inflict (or apply to self) a thematically appropriate
+Tier 2 or Tier 3 effect. This is "Phase 2b" in the roadmap.
+
+**Success state:** A basic Body/Attack on hit can apply `debuff_bleed`,
+`debuff_wound`, etc., with a documented per-stance proc table. Crits guarantee
+a proc; fumbles may apply a self-debuff. The matrix is in `docs/combat.md`.
+
+## Why now / dependencies
+
+- **Unblocks:** more interesting CLI fights without yet needing skills,
+  enemy AI variety (Spec 07), Mörk-Borg-style swing per Spec 02 Q5.
+- **Depends on:** Spec 02 (clean resolver site to plug into). Could land
+  before Spec 01 if you accept that the procced effects' downstream payloads
+  (DoT, stat mods) won't tick until Spec 01.
+
+## Current state
+
+- The roadmap describes the intended categories per `Stance × action`:
+  - Heart + Attack: emotional debuff (fear, charm)
+  - Heart + Defend: emotional buff (regen, resilience)
+  - Body + Attack: physical debuff (bleed, wound, knockdown)
+  - Body + Defend: physical buff (damage reduction, counter)
+  - Mind + Attack: mental debuff (daze, silence, confusion)
+  - Mind + Defend: mental buff (evasion, accuracy boost)
+- `applyEffect` and `resolveEffectApplication` already handle stacking and
+  resist resolution; this spec is about *which* effects fire, *when*, and
+  with what odds.
+- BRAINDUMP.md hints that Tier 2 should reward **switching** stance, while
+  Tier 1 already rewards repeating.
+
+## Open questions
+
+1. **Trigger gate.** Does a proc require a successful hit, or does any
+   completed `attack` (even a miss) roll for it?
+   > Your answer:
+
+2. **Base proc rate.** What's the baseline chance per qualifying action?
+   - (A) Fixed 25%.
+   - (B) Scales with the actor's relevant stat (e.g. `5% × heart` for
+     heart procs, capped).
+   - (C) Driven by Spec 01's `buff_status_chance_up` modifier on top of a
+     base rate.
+   > Your answer:
+
+3. **Crit / fumble interaction.** On a crit:
+   - (A) Always proc the strongest available effect.
+   - (B) Proc with bonus intensity / duration.
+   On a fumble:
+   - (A) Apply a thematic self-debuff to the actor.
+   - (B) Skip the proc entirely.
+   > Your answer:
+
+4. **One-of vs multi-proc.** When a stance has 3 candidate effects (e.g.
+   Body/Attack: bleed, wound, knockdown), do you:
+   - (A) Roll one slot, weight evenly.
+   - (B) Roll one slot, weight by tier (T2 common, T3 rare).
+   - (C) Roll each independently (multi-proc possible).
+   > Your answer:
+
+5. **Switching reward (BRAINDUMP).** "Tier 2 should reward switching." Three
+   ways to encode:
+   - (A) Proc rate is multiplied (e.g. ×1.5) when this round's stance differs
+     from last round's.
+   - (B) Switching unlocks a *different* effect pool (e.g. Body→Heart switch
+     procs `buff_advantage_body` instead of standard physical buffs).
+   - (C) Both.
+   > Your answer:
+
+6. **Proc table flexibility.** Should the table live as JSON
+   (`combat-effects.library.json`) for designer-friendliness, or as TypeScript
+   constants?
+   > Your answer:
+
+7. **Enemy procs.** Do enemies use the same proc table by default, or do they
+   have their own (boss enemies might have signature procs)? If shared, can
+   `Enemy` extend with `procOverrides` similar to `tier1Overrides`?
+   > Your answer:
+
+## Proposed approach
+
+1. **Type the proc table** — `CombatEffectTrigger { stance, action, effectId,
+   chance, tierGate?, durationOverride?, intensityOverride? }`. Whichever
+   storage Q6 picks, the runtime shape is the same.
+2. **`combat-effects.library.{ts,json}`** — at least 18 entries (3 per
+   stance × action combo) drawing from the existing buff/debuff catalogue.
+3. **`rollForCombatEffects(actor, action, advantage, target): Effect[]`** —
+   uses the table + Q1/Q2/Q3/Q4. Returns the list to apply.
+4. **`applyCombatEffects(combatState, procs): CombatState`** — composes with
+   `resolveEffectApplication` and updates the combat state's actor / target
+   effect arrays.
+5. **Wire into `resolveCombatRound`** (Spec 02) at the post-damage step.
+6. **Switching reward** — only if Q5 picks something. Add `previousStance` to
+   `CombatState.player` / `CombatState.enemy` (or compute from the log).
+7. **Enemy overrides** — only if Q7 keeps enemies on a separate path.
+8. **Document the matrix in `docs/combat.md`** — a full table including
+   chance, fumble effect, crit upgrade.
+
+## Acceptance checklist
+
+- [ ] All 7 questions answered.
+- [ ] Proc table covers every `Stance × action` cell.
+- [ ] Unit tests: each cell can fire its effect; crit/fumble paths covered;
+      switching multiplier (if used) covered.
+- [ ] Manual: 50-run automated combat shows a healthy distribution of procs
+      (no cell stuck at 0%).
+- [ ] `docs/combat.md` "Effect-Based Combat Specials" extended with the full
+      proc matrix.
+
+## Out of scope
+
+- Skill-driven effect application — Spec 04.
+- Equipment-driven effect application — Spec 05.
