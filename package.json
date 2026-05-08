@@ -38,10 +38,13 @@
   "devDependencies": {
     "@eslint/js": "^9.39.1",
     "@types/commander": "^2.12.0",
+    "@types/inquirer": "^9.0.9",
     "@types/node": "^22.10.2",
     "@typescript-eslint/eslint-plugin": "^8.48.1",
+    "commander": "^14.0.2",
     "eslint": "^9.39.1",
     "globals": "^16.5.0",
+    "inquirer": "^13.0.1",
     "jiti": "^2.6.1",
     "ts-node": "^10.9.2",
     "tsc-alias": "^1.8.16",
@@ -51,10 +54,7 @@
     "vitest": "^4.1.4"
   },
   "dependencies": {
-    "@types/inquirer": "^9.0.9",
-    "commander": "^14.0.2",
     "eslint-plugin-typescript": "^0.14.0",
-    "inquirer": "^13.0.1",
     "zustand": "^5.0.11"
   }
 }
