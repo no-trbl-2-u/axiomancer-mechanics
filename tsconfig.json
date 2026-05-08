@@ -40,6 +40,8 @@
   "exclude": [
     "node_modules",
     "dist",
-    "src/**/*.test.ts"
+    "src/**/*.test.ts",
+    "src/**/*.mock.ts",
+    "src/CLI"
   ]
 }

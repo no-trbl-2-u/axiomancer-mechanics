@@ -1,147 +1,61 @@
 /**
- * Combat Reducer
- * Functions that create or modify CombatState objects.
- * All functions here are pure and return new state objects.
+ * Combat reducer — pure state transitions over CombatState.
  */
 
 import { Character } from '../Character/types';
 import { Enemy } from '../Enemy/types';
-import { Stance, Action, CombatPhase, CombatState, BattleLogEntry } from './types';
 import { deepClone } from '../Utils';
-
-// ============================================================================
-// COMBAT STATE INITIALIZATION
-// ============================================================================
+import {
+    Stance, Action, CombatPhase, CombatState, BattleLogEntry,
+} from './types';
 
 /**
- * Initializes a new combat state between a player and an enemy
- * @param player - The player character entering combat
- * @param enemy - The enemy character being fought
- * @returns A new CombatState object with initial values
+ * Builds a fresh CombatState. Combatants are deep-cloned so combat
+ * mutations don't bleed back into the canonical player/enemy.
  */
 export function initializeCombat(player: Character, enemy: Enemy): CombatState {
     return {
         active: true,
-        phase: 'choosing_type',
+        phase: 'choosing_stance',
         round: 1,
         friendshipCounter: 0,
         player: deepClone(player),
         enemy: deepClone(enemy),
         playerChoice: {},
         enemyChoice: {},
-        logEntry: [],
+        log: [],
     };
 }
 
-// ============================================================================
-// COMBAT PHASE MANAGEMENT
-// ============================================================================
-
-/**
- * Updates the combat phase
- * @param state - The current combat state
- * @param phase - The new phase to transition to
- * @returns Updated combat state with new phase
- */
-export function updateCombatPhase(state: CombatState, phase: CombatPhase): CombatState {
+export function setPhase(state: CombatState, phase: CombatPhase): CombatState {
     return { ...state, phase };
 }
 
-// ============================================================================
-// COMBAT ACTION SELECTION
-// ============================================================================
-
-/**
- * Sets the player's chosen stance for the current round
- * @param state - The current combat state
- * @param stance - The stance chosen by the player (heart/body/mind)
- * @returns Updated combat state with player's stance choice
- */
 export function setPlayerStance(state: CombatState, stance: Stance): CombatState {
-    return { ...state, playerChoice: { ...state.playerChoice, type: stance } };
+    return { ...state, playerChoice: { ...state.playerChoice, stance } };
 }
 
-/**
- * Sets the player's chosen action for the current round
- * @param state - The current combat state
- * @param action - The action chosen by the player (attack/defend/skill/item/flee)
- * @returns Updated combat state with player's action choice
- */
 export function setPlayerAction(state: CombatState, action: Action): CombatState {
     return { ...state, playerChoice: { ...state.playerChoice, action } };
 }
 
-// ============================================================================
-// COMBAT ROUND RESOLUTION
-// ============================================================================
-
-/**
- * Resolves a complete combat round with both combatants' actions.
- * TODO (Phase 2c): implement full round resolution via the reducer
- * (attack/defense rolls, effect procs, DoT/regen tick, log entry).
- * @param state - The current combat state with both actions chosen
- * @returns Updated combat state with round results
- */
-export function resolveCombatRound(state: CombatState): CombatState {
-    return "Implement me" as any;
+export function appendLog(state: CombatState, entry: BattleLogEntry): CombatState {
+    return { ...state, log: [...state.log, entry] };
 }
 
-// ============================================================================
-// BATTLE LOG MANAGEMENT
-// ============================================================================
-
-/**
- * Adds a new log entry to combat state for the current round of combat
- * @param state - The current combat state
- * @param entry - The log entry to add
- * @returns Updated combat state with new log entry appended
- */
-export function addBattleLogEntry(state: CombatState, entry: BattleLogEntry): CombatState {
-    return { ...state, logEntry: [...state.logEntry, entry] };
-}
-
-// ============================================================================
-// FRIENDSHIP COUNTER (Special Mechanic)
-// ============================================================================
-
-/**
- * Increments the friendship counter by 1.
- * Called when both combatants choose 'defend' on the same turn.
- * @param state - The current combat state
- * @returns Updated state with incremented friendship counter
- */
+/** Increments the friendship counter (called when both combatants defend). */
 export function incrementFriendship(state: CombatState): CombatState {
     return { ...state, friendshipCounter: state.friendshipCounter + 1 };
 }
 
-/**
- * Ends combat with a friendship victory.
- * TODO (Phase 2c): add friendship-specific rewards/outcomes.
- * @param state - The current combat state
- * @returns Updated state with combat ended via friendship
- */
-export function endCombatWithFriendship(state: CombatState): CombatState {
+/** Marks combat as ended. The reason is encoded in `determineCombatEnd(state)`. */
+export function endCombat(state: CombatState): CombatState {
     return { ...state, active: false, phase: 'ended' };
 }
 
-// ============================================================================
-// COMBAT END STATE
-// ============================================================================
-
-/**
- * Ends combat with player victory
- * @param state - The current combat state
- * @returns Updated state with combat ended (player won)
- */
-export function endCombatPlayerVictory(state: CombatState): CombatState {
-    return { ...state, active: false, phase: 'ended' };
-}
-
-/**
- * Ends combat with player defeat
- * @param state - The current combat state
- * @returns Updated state with combat ended (player lost)
- */
-export function endCombatPlayerDefeat(state: CombatState): CombatState {
-    return { ...state, active: false, phase: 'ended' };
-}
+// Legacy aliases kept so older imports continue to resolve.
+export const updateCombatPhase = setPhase;
+export const addBattleLogEntry = appendLog;
+export const endCombatPlayerVictory = endCombat;
+export const endCombatPlayerDefeat = endCombat;
+export const endCombatWithFriendship = endCombat;

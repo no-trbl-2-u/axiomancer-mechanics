@@ -8,8 +8,8 @@
       "category": "stat",
       "duration": 1,
       "stacking": "intensity",
-      "teir": "Teir 1",
-      "payload": {}
+      "payload": {},
+      "tier": 1
     },
     {
       "id": "debuff_all_stats_down",
@@ -19,7 +19,6 @@
       "category": "stat",
       "duration": 3,
       "stacking": "intensity",
-      "teir": "Teir 2",
       "resistedBy": "heart",
       "resistDR": 13,
       "payload": {
@@ -56,7 +55,8 @@
           }
         ],
         "rollModifier": -1
-      }
+      },
+      "tier": 2
     },
     {
       "id": "debuff_poison",
@@ -66,7 +66,6 @@
       "category": "damage",
       "duration": 4,
       "stacking": "intensity",
-      "teir": "Teir 2",
       "resistedBy": "mind",
       "resistDR": 13,
       "payload": {
@@ -74,7 +73,8 @@
           "damagePerRound": 3,
           "damageType": "body"
         }
-      }
+      },
+      "tier": 2
     },
     {
       "id": "debuff_strong_poison",
@@ -84,7 +84,6 @@
       "category": "damage",
       "duration": 3,
       "stacking": "intensity",
-      "teir": "Teir 2",
       "resistedBy": "mind",
       "resistDR": 14,
       "payload": {
@@ -99,7 +98,8 @@
             "isMultiplier": false
           }
         ]
-      }
+      },
+      "tier": 2
     },
     {
       "id": "debuff_bleed",
@@ -109,7 +109,6 @@
       "category": "damage",
       "duration": 4,
       "stacking": "intensity",
-      "teir": "Teir 2",
       "resistedBy": "mind",
       "resistDR": 12,
       "payload": {
@@ -117,7 +116,8 @@
           "damagePerRound": 2,
           "damageType": "body"
         }
-      }
+      },
+      "tier": 2
     },
     {
       "id": "debuff_burn",
@@ -127,7 +127,6 @@
       "category": "damage",
       "duration": 3,
       "stacking": "intensity",
-      "teir": "Teir 2",
       "resistedBy": "body",
       "resistDR": 13,
       "payload": {
@@ -142,7 +141,8 @@
             "isMultiplier": false
           }
         ]
-      }
+      },
+      "tier": 2
     },
     {
       "id": "debuff_frostbite",
@@ -152,7 +152,6 @@
       "category": "damage",
       "duration": 3,
       "stacking": "duration",
-      "teir": "Teir 2",
       "resistedBy": "mind",
       "resistDR": 12,
       "payload": {
@@ -161,7 +160,8 @@
           "damageType": "body"
         },
         "rollModifier": -2
-      }
+      },
+      "tier": 2
     },
     {
       "id": "debuff_shock",
@@ -171,7 +171,6 @@
       "category": "damage",
       "duration": 2,
       "stacking": "intensity",
-      "teir": "Teir 2",
       "resistedBy": "heart",
       "resistDR": 13,
       "payload": {
@@ -180,7 +179,8 @@
           "damageType": "mind"
         },
         "rollModifier": -1
-      }
+      },
+      "tier": 2
     },
     {
       "id": "debuff_curse",
@@ -190,7 +190,6 @@
       "category": "stat",
       "duration": 5,
       "stacking": "none",
-      "teir": "Teir 2",
       "resistedBy": "body",
       "resistDR": 14,
       "payload": {
@@ -212,7 +211,8 @@
           }
         ],
         "rollModifier": -2
-      }
+      },
+      "tier": 2
     },
     {
       "id": "debuff_disease",
@@ -222,7 +222,6 @@
       "category": "damage",
       "duration": 4,
       "stacking": "duration",
-      "teir": "Teir 2",
       "resistedBy": "mind",
       "resistDR": 12,
       "payload": {
@@ -233,7 +232,8 @@
         "regeneration": {
           "healthPerRound": -1
         }
-      }
+      },
+      "tier": 2
     },
     {
       "id": "debuff_wound",
@@ -243,7 +243,6 @@
       "category": "stat",
       "duration": 4,
       "stacking": "intensity",
-      "teir": "Teir 2",
       "resistedBy": "mind",
       "resistDR": 13,
       "payload": {
@@ -255,7 +254,8 @@
           }
         ],
         "defenseModifier": -2
-      }
+      },
+      "tier": 2
     },
     {
       "id": "debuff_stun",
@@ -265,14 +265,14 @@
       "category": "control",
       "duration": 1,
       "stacking": "duration",
-      "teir": "Teir 2",
       "resistedBy": "heart",
       "resistDR": 14,
       "payload": {
         "actionRestriction": {
           "skipTurn": true
         }
-      }
+      },
+      "tier": 2
     },
     {
       "id": "debuff_sleep",
@@ -282,7 +282,6 @@
       "category": "control",
       "duration": 2,
       "stacking": "none",
-      "teir": "Teir 2",
       "resistedBy": "heart",
       "resistDR": 13,
       "payload": {
@@ -290,7 +289,8 @@
           "skipTurn": true
         },
         "defenseModifier": -3
-      }
+      },
+      "tier": 2
     },
     {
       "id": "debuff_daze",
@@ -300,7 +300,6 @@
       "category": "control",
       "duration": 2,
       "stacking": "duration",
-      "teir": "Teir 2",
       "resistedBy": "heart",
       "resistDR": 12,
       "payload": {
@@ -322,7 +321,8 @@
             "isMultiplier": false
           }
         ]
-      }
+      },
+      "tier": 2
     },
     {
       "id": "debuff_petrify",
@@ -332,7 +332,6 @@
       "category": "control",
       "duration": 2,
       "stacking": "none",
-      "teir": "Teir 3",
       "resistedBy": "heart",
       "resistDR": 17,
       "payload": {
@@ -340,7 +339,8 @@
           "skipTurn": true
         },
         "defenseModifier": -4
-      }
+      },
+      "tier": 3
     },
     {
       "id": "debuff_fear",
@@ -350,7 +350,6 @@
       "category": "control",
       "duration": 2,
       "stacking": "duration",
-      "teir": "Teir 2",
       "resistedBy": "body",
       "resistDR": 13,
       "payload": {
@@ -372,7 +371,8 @@
             "isMultiplier": false
           }
         ]
-      }
+      },
+      "tier": 2
     },
     {
       "id": "debuff_charm",
@@ -382,7 +382,6 @@
       "category": "control",
       "duration": 2,
       "stacking": "none",
-      "teir": "Teir 2",
       "resistedBy": "body",
       "resistDR": 14,
       "payload": {
@@ -401,7 +400,8 @@
             "isMultiplier": false
           }
         ]
-      }
+      },
+      "tier": 2
     },
     {
       "id": "debuff_confusion",
@@ -411,7 +411,6 @@
       "category": "control",
       "duration": 3,
       "stacking": "duration",
-      "teir": "Teir 2",
       "resistedBy": "heart",
       "resistDR": 13,
       "payload": {
@@ -423,7 +422,8 @@
             "heart"
           ]
         }
-      }
+      },
+      "tier": 2
     },
     {
       "id": "debuff_blind",
@@ -433,7 +433,6 @@
       "category": "control",
       "duration": 2,
       "stacking": "duration",
-      "teir": "Teir 2",
       "resistedBy": "heart",
       "resistDR": 13,
       "payload": {
@@ -444,7 +443,8 @@
             "mind"
           ]
         }
-      }
+      },
+      "tier": 2
     },
     {
       "id": "debuff_silence",
@@ -454,7 +454,6 @@
       "category": "control",
       "duration": 3,
       "stacking": "none",
-      "teir": "Teir 2",
       "resistedBy": "body",
       "resistDR": 13,
       "payload": {
@@ -475,7 +474,8 @@
             "isMultiplier": false
           }
         ]
-      }
+      },
+      "tier": 2
     },
     {
       "id": "debuff_berserk",
@@ -485,7 +485,6 @@
       "category": "stat",
       "duration": 3,
       "stacking": "none",
-      "teir": "Teir 2",
       "resistedBy": "heart",
       "resistDR": 13,
       "payload": {
@@ -522,7 +521,8 @@
           }
         ],
         "defenseModifier": -3
-      }
+      },
+      "tier": 2
     },
     {
       "id": "debuff_fatigue",
@@ -532,7 +532,6 @@
       "category": "stat",
       "duration": 4,
       "stacking": "intensity",
-      "teir": "Teir 2",
       "resistedBy": "heart",
       "resistDR": 12,
       "payload": {
@@ -559,7 +558,8 @@
           }
         ],
         "rollModifier": -1
-      }
+      },
+      "tier": 2
     },
     {
       "id": "debuff_exhaustion",
@@ -569,7 +569,6 @@
       "category": "stat",
       "duration": 3,
       "stacking": "intensity",
-      "teir": "Teir 2",
       "resistedBy": "heart",
       "resistDR": 13,
       "payload": {
@@ -606,7 +605,8 @@
           }
         ],
         "rollModifier": -2
-      }
+      },
+      "tier": 2
     },
     {
       "id": "debuff_slow",
@@ -616,7 +616,6 @@
       "category": "control",
       "duration": 3,
       "stacking": "duration",
-      "teir": "Teir 2",
       "resistedBy": "mind",
       "resistDR": 12,
       "payload": {
@@ -633,7 +632,8 @@
             "body"
           ]
         }
-      }
+      },
+      "tier": 2
     },
     {
       "id": "debuff_root",
@@ -643,13 +643,13 @@
       "category": "control",
       "duration": 2,
       "stacking": "duration",
-      "teir": "Teir 2",
       "resistedBy": "mind",
       "resistDR": 13,
       "payload": {
         "defenseModifier": -2,
         "rollModifier": -2
-      }
+      },
+      "tier": 2
     },
     {
       "id": "debuff_knockdown",
@@ -659,13 +659,13 @@
       "category": "control",
       "duration": 1,
       "stacking": "none",
-      "teir": "Teir 2",
       "resistedBy": "mind",
       "resistDR": 12,
       "payload": {
         "defenseModifier": -4,
         "rollModifier": -3
-      }
+      },
+      "tier": 2
     },
     {
       "id": "debuff_vulnerability_body",
@@ -675,7 +675,6 @@
       "category": "defense",
       "duration": 3,
       "stacking": "duration",
-      "teir": "Teir 2",
       "resistedBy": "mind",
       "resistDR": 13,
       "payload": {
@@ -696,7 +695,8 @@
             "isMultiplier": false
           }
         ]
-      }
+      },
+      "tier": 2
     },
     {
       "id": "debuff_vulnerability_mind",
@@ -706,7 +706,6 @@
       "category": "defense",
       "duration": 3,
       "stacking": "duration",
-      "teir": "Teir 2",
       "resistedBy": "heart",
       "resistDR": 13,
       "payload": {
@@ -727,7 +726,8 @@
             "isMultiplier": false
           }
         ]
-      }
+      },
+      "tier": 2
     },
     {
       "id": "debuff_vulnerability_heart",
@@ -737,7 +737,6 @@
       "category": "defense",
       "duration": 3,
       "stacking": "duration",
-      "teir": "Teir 2",
       "resistedBy": "body",
       "resistDR": 13,
       "payload": {
@@ -758,7 +757,8 @@
             "isMultiplier": false
           }
         ]
-      }
+      },
+      "tier": 2
     },
     {
       "id": "debuff_mark",
@@ -768,7 +768,6 @@
       "category": "advantage",
       "duration": 3,
       "stacking": "none",
-      "teir": "Teir 2",
       "resistedBy": "heart",
       "resistDR": 13,
       "payload": {
@@ -780,7 +779,8 @@
             "heart"
           ]
         }
-      }
+      },
+      "tier": 2
     },
     {
       "id": "debuff_body_attack_down",
@@ -790,7 +790,6 @@
       "category": "stat",
       "duration": 3,
       "stacking": "intensity",
-      "teir": "Teir 2",
       "resistedBy": "mind",
       "resistDR": 13,
       "payload": {
@@ -807,7 +806,8 @@
           }
         ],
         "rollModifier": -1
-      }
+      },
+      "tier": 2
     },
     {
       "id": "debuff_mind_attack_down",
@@ -817,7 +817,6 @@
       "category": "stat",
       "duration": 3,
       "stacking": "intensity",
-      "teir": "Teir 2",
       "resistedBy": "heart",
       "resistDR": 13,
       "payload": {
@@ -834,7 +833,8 @@
           }
         ],
         "rollModifier": -1
-      }
+      },
+      "tier": 2
     },
     {
       "id": "debuff_heart_attack_down",
@@ -844,7 +844,6 @@
       "category": "stat",
       "duration": 3,
       "stacking": "intensity",
-      "teir": "Teir 2",
       "resistedBy": "body",
       "resistDR": 13,
       "payload": {
@@ -861,7 +860,8 @@
           }
         ],
         "rollModifier": -1
-      }
+      },
+      "tier": 2
     },
     {
       "id": "debuff_evasion_down",
@@ -871,7 +871,6 @@
       "category": "defense",
       "duration": 3,
       "stacking": "duration",
-      "teir": "Teir 2",
       "resistedBy": "heart",
       "resistDR": 13,
       "payload": {
@@ -893,7 +892,8 @@
             "isMultiplier": false
           }
         ]
-      }
+      },
+      "tier": 2
     },
     {
       "id": "debuff_accuracy_down",
@@ -903,7 +903,6 @@
       "category": "advantage",
       "duration": 3,
       "stacking": "duration",
-      "teir": "Teir 2",
       "resistedBy": "heart",
       "resistDR": 12,
       "payload": {
@@ -925,7 +924,8 @@
             "isMultiplier": false
           }
         ]
-      }
+      },
+      "tier": 2
     },
     {
       "id": "debuff_defense_down",
@@ -935,7 +935,6 @@
       "category": "defense",
       "duration": 3,
       "stacking": "intensity",
-      "teir": "Teir 2",
       "resistedBy": "heart",
       "resistDR": 13,
       "payload": {
@@ -952,7 +951,8 @@
             "isMultiplier": false
           }
         ]
-      }
+      },
+      "tier": 2
     },
     {
       "id": "debuff_dispel",
@@ -962,10 +962,10 @@
       "category": "stat",
       "duration": 0,
       "stacking": "none",
-      "teir": "Teir 2",
       "resistedBy": "heart",
       "resistDR": 12,
-      "payload": {}
+      "payload": {},
+      "tier": 2
     },
     {
       "id": "debuff_hex",
@@ -975,7 +975,6 @@
       "category": "damage",
       "duration": 3,
       "stacking": "none",
-      "teir": "Teir 2",
       "resistedBy": "body",
       "resistDR": 13,
       "payload": {
@@ -983,7 +982,8 @@
           "damagePerRound": 2,
           "damageType": "heart"
         }
-      }
+      },
+      "tier": 2
     },
     {
       "id": "debuff_hp_decay",
@@ -993,7 +993,6 @@
       "category": "damage",
       "duration": 4,
       "stacking": "none",
-      "teir": "Teir 2",
       "resistedBy": "mind",
       "resistDR": 13,
       "payload": {
@@ -1004,7 +1003,8 @@
         "regeneration": {
           "healthPerRound": -2
         }
-      }
+      },
+      "tier": 2
     },
     {
       "id": "debuff_moral_learning",
@@ -1014,7 +1014,6 @@
       "category": "control",
       "duration": 3,
       "stacking": "none",
-      "teir": "Teir 2",
       "resistedBy": "body",
       "resistDR": 12,
       "payload": {
@@ -1041,7 +1040,8 @@
           }
         ],
         "rollModifier": -1
-      }
+      },
+      "tier": 2
     },
     {
       "id": "debuff_transformative",
@@ -1051,7 +1051,6 @@
       "category": "control",
       "duration": 2,
       "stacking": "none",
-      "teir": "Teir 2",
       "resistedBy": "heart",
       "resistDR": 13,
       "payload": {
@@ -1078,7 +1077,8 @@
             "isMultiplier": false
           }
         ]
-      }
+      },
+      "tier": 2
     },
     {
       "id": "debuff_rational_disagreement",
@@ -1088,7 +1088,6 @@
       "category": "stat",
       "duration": 2,
       "stacking": "duration",
-      "teir": "Teir 2",
       "resistedBy": "heart",
       "resistDR": 12,
       "payload": {
@@ -1110,7 +1109,8 @@
           }
         ],
         "rollModifier": -2
-      }
+      },
+      "tier": 2
     },
     {
       "id": "debuff_straw_man_echo",
@@ -1120,12 +1120,12 @@
       "category": "advantage",
       "duration": 2,
       "stacking": "none",
-      "teir": "Teir 1",
       "resistedBy": "body",
       "resistDR": 10,
       "payload": {
         "rollModifier": -1
-      }
+      },
+      "tier": 1
     },
     {
       "id": "debuff_post_hoc_tremor",
@@ -1135,7 +1135,6 @@
       "category": "stat",
       "duration": 2,
       "stacking": "none",
-      "teir": "Teir 1",
       "resistedBy": "mind",
       "resistDR": 10,
       "payload": {
@@ -1146,7 +1145,8 @@
             "isMultiplier": false
           }
         ]
-      }
+      },
+      "tier": 1
     },
     {
       "id": "debuff_affirming_consequent",
@@ -1156,7 +1156,6 @@
       "category": "stat",
       "duration": 2,
       "stacking": "none",
-      "teir": "Teir 1",
       "resistedBy": "mind",
       "resistDR": 10,
       "payload": {
@@ -1167,7 +1166,8 @@
             "isMultiplier": false
           }
         ]
-      }
+      },
+      "tier": 1
     },
     {
       "id": "debuff_causal_emergence",
@@ -1177,7 +1177,6 @@
       "category": "control",
       "duration": 2,
       "stacking": "none",
-      "teir": "Teir 2",
       "resistedBy": "heart",
       "resistDR": 13,
       "payload": {
@@ -1204,7 +1203,8 @@
             "mind"
           ]
         }
-      }
+      },
+      "tier": 2
     }
   ]
 }

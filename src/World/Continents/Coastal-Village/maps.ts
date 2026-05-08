@@ -1,4 +1,4 @@
-import { Map } from "World/types";
+import { WorldMap } from "../../types";
 
 /**
  * CoastalContinentMapNames are all the maps in the Coastal Continent
@@ -11,7 +11,7 @@ export type CoastalContinentMapNames =
   'fishing-village' |
   'northern-forest';
 
-const fishingVillage: Map = {
+const fishingVillage: WorldMap = {
   name: 'fishing-village',
   continent: 'coastal-continent',
   description: 'Your home town is filled with familiar faces, salty air as you hear the waves crash in the distance, and old shacks connected to the docks.',
@@ -34,7 +34,7 @@ const fishingVillage: Map = {
   }
 }
 
-const northernForest: Map = {
+const northernForest: WorldMap = {
   name: 'northern-forest',
   continent: 'coastal-continent',
   description: 'TODO',

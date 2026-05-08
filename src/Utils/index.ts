@@ -2,9 +2,9 @@
  * Utility functions used across the application
  */
 
-import { Advantage } from "Combat/types";
+import { Advantage } from "../Combat/types";
 import { STAT_MULTIPLIERS, RESOURCE_MULTIPLIERS } from "../Game/game-mechanics.constants";
-import { BaseStats, DerivedStats, NonCombatStats } from "Character/types";
+import { BaseStats, DerivedStats, NonCombatStats } from "../Character/types";
 
 // ===============================================
 // MATH

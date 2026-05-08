@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   determineAdvantage, getAdvantageModifier, hasAdvantage,
-  calculateFinalDamage, applyDamage, healCharacter, tickAllEffects,
+  calculateFinalDamage, applyDamage, heal, tickAllEffects,
   isCriticalHit, isCriticalMiss, isAttackSuccessful,
   isAlive, isDefeated, getHealthPercentage,
 } from './index';
@@ -13,7 +13,7 @@ const makePlayer = () => createCharacter({ name: 'Test', level: 1, baseStats: { 
 const makeEnemy = () => createEnemy({
   id: 'e1', name: 'Foe', description: '', level: 1,
   baseStats: { heart: 1, body: 1, mind: 1 },
-  mapLocation: { name: 'fishing-village' }, logic: 'random',
+  mapName: 'fishing-village', logic: 'random',
 });
 
 describe('determineAdvantage', () => {
@@ -43,9 +43,13 @@ describe('calculateFinalDamage', () => {
 });
 
 describe('applyDamage', () => {
-  it('reduces HP', () => {
+  it('reduces HP on a Character', () => {
     const p = makePlayer();
     expect(applyDamage(p, 10).health).toBe(p.health - 10);
+  });
+  it('reduces HP on an Enemy', () => {
+    const e = makeEnemy();
+    expect(applyDamage(e, 5).health).toBe(e.health - 5);
   });
   it('clamps to 0', () => {
     const p = makePlayer();
@@ -53,10 +57,10 @@ describe('applyDamage', () => {
   });
 });
 
-describe('healCharacter', () => {
+describe('heal', () => {
   it('heals up to max', () => {
     const p = { ...makePlayer(), health: 5 };
-    const healed = healCharacter(p, 9999);
+    const healed = heal(p, 9999);
     expect(healed.health).toBe(p.maxHealth);
   });
 });
@@ -94,25 +98,25 @@ describe('isAttackSuccessful', () => {
 describe('tickAllEffects', () => {
   it('decrements durations and removes expired', () => {
     const effects: ActiveEffect[] = [
-      { effectId: 'a', remainingDuration: 2, currentIntensity: 1, appliedAtRound: 1, teir: 'Teir 1' },
-      { effectId: 'b', remainingDuration: 1, currentIntensity: 1, appliedAtRound: 1, teir: 'Teir 1' },
+      { effectId: 'a', remainingDuration: 2, intensity: 1, appliedAt: 1, tier: 1 },
+      { effectId: 'b', remainingDuration: 1, intensity: 1, appliedAt: 1, tier: 1 },
     ];
-    const p = { ...makePlayer(), currentActiveEffects: effects };
+    const p = { ...makePlayer(), effects };
     const { target, expired } = tickAllEffects(p);
-    expect(target.currentActiveEffects).toHaveLength(1);
-    expect(target.currentActiveEffects[0].effectId).toBe('a');
-    expect(target.currentActiveEffects[0].remainingDuration).toBe(1);
+    expect(target.effects).toHaveLength(1);
+    expect(target.effects[0].effectId).toBe('a');
+    expect(target.effects[0].remainingDuration).toBe(1);
     expect(expired).toHaveLength(1);
     expect(expired[0].effectId).toBe('b');
   });
 
   it('skips permanent effects', () => {
     const effects: ActiveEffect[] = [
-      { effectId: 'perm', remainingDuration: -1, currentIntensity: 1, appliedAtRound: 1, teir: 'Teir 1' },
+      { effectId: 'perm', remainingDuration: -1, intensity: 1, appliedAt: 1, tier: 1 },
     ];
-    const p = { ...makePlayer(), currentActiveEffects: effects };
+    const p = { ...makePlayer(), effects };
     const { target, expired } = tickAllEffects(p);
-    expect(target.currentActiveEffects).toHaveLength(1);
+    expect(target.effects).toHaveLength(1);
     expect(expired).toHaveLength(0);
   });
 });

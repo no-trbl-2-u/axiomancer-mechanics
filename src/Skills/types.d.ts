@@ -43,9 +43,6 @@ export interface SkillLearningRequirement {
 export interface SkillCombatEffects {
     description: string;
     effect?: string;
-
-    // TODO: Add more combat effects
-    // --> potentialStatusEffects
 }
 
 /**

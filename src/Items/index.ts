@@ -3,4 +3,7 @@ export {
     type EquipmentSlot, type BaseItem,
     isEquipment, isConsumable, isMaterial, isQuestItem,
 } from './types';
-export { addItemToInventory, removeItemFromInventory, useConsumable, stackItem } from './item.reducer';
+export {
+    addItem, removeItem, useConsumable, stackItem,
+    addItemToInventory, removeItemFromInventory,
+} from './item.reducer';

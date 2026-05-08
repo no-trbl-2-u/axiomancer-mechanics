@@ -1,34 +1,19 @@
 /**
- * World Reducer
- * Functions that create or modify WorldState objects.
- * All functions here are pure and return new state objects.
+ * World reducer — pure transitions over WorldState. Idempotent where it
+ * makes sense (locking/unlocking, completing).
  */
 
-import { WorldState, Map } from "./types";
-import { MapName, ContinentName } from "./map.library";
+import { WorldState, WorldMap } from './types';
+import { MapName, ContinentName } from './map.library';
 
-// ============================================================================
-// MAP NAVIGATION
-// ============================================================================
+// ── Map navigation ──────────────────────────────────────────────────────────
 
-/**
- * Changes the current map in the world state.
- * Caller is responsible for looking up the Map object from the map library.
- * @param state - The current world state
- * @param map - The Map object to navigate to
- * @returns Updated world state with new current map
- */
-export function changeMap(state: WorldState, map: Map): WorldState {
+/** Sets the current map. Caller resolves the WorldMap from the registry. */
+export function changeMap(state: WorldState, map: WorldMap): WorldState {
     return { ...state, currentMap: map };
 }
 
-/**
- * Marks a map as completed on the current continent.
- * Idempotent — does nothing if the map is already completed.
- * @param state - The current world state
- * @param mapName - The name of the map to complete
- * @returns Updated world state with map marked as completed
- */
+/** Marks a map as completed on the current continent. Idempotent. */
 export function completeMap(state: WorldState, mapName: MapName): WorldState {
     const continent = state.currentContinent;
     if (continent.completedMaps.includes(mapName)) return state;
@@ -41,14 +26,7 @@ export function completeMap(state: WorldState, mapName: MapName): WorldState {
     };
 }
 
-/**
- * Unlocks a locked map, making it available for navigation.
- * Moves the map from lockedMaps to availableMaps.
- * Idempotent — does nothing if the map is already available.
- * @param state - The current world state
- * @param mapName - The name of the map to unlock
- * @returns Updated world state with map unlocked
- */
+/** Moves a map from `lockedMaps` to `availableMaps`. Idempotent. */
 export function unlockMap(state: WorldState, mapName: MapName): WorldState {
     const continent = state.currentContinent;
     if (continent.availableMaps.includes(mapName)) return state;
@@ -62,17 +40,9 @@ export function unlockMap(state: WorldState, mapName: MapName): WorldState {
     };
 }
 
-// ============================================================================
-// NODE PROGRESSION
-// ============================================================================
+// ── Node progression ────────────────────────────────────────────────────────
 
-/**
- * Marks a node as completed on the current map.
- * Idempotent — does nothing if the node is already completed.
- * @param state - The current world state
- * @param nodeId - The ID of the node to complete
- * @returns Updated world state with node marked as completed
- */
+/** Marks a node as completed on the current map. Idempotent. */
 export function completeNode(state: WorldState, nodeId: string): WorldState {
     const map = state.currentMap;
     if (map.completedNodes.includes(nodeId)) return state;
@@ -85,14 +55,7 @@ export function completeNode(state: WorldState, nodeId: string): WorldState {
     };
 }
 
-/**
- * Unlocks a node, making it available for traversal.
- * Moves the node from lockedNodes to availableNodes.
- * Idempotent — does nothing if the node is already available.
- * @param state - The current world state
- * @param nodeId - The ID of the node to unlock
- * @returns Updated world state with node unlocked
- */
+/** Moves a node from `lockedNodes` to `availableNodes`. Idempotent. */
 export function unlockNode(state: WorldState, nodeId: string): WorldState {
     const map = state.currentMap;
     if (map.availableNodes.includes(nodeId)) return state;
@@ -106,52 +69,25 @@ export function unlockNode(state: WorldState, nodeId: string): WorldState {
     };
 }
 
-/**
- * Moves the player to a connected node on the current map.
- * TODO (Phase 7): implement node traversal with event triggers.
- * @param state - The current world state
- * @param _nodeId - The ID of the node to move to
- * @returns Updated world state with new current node
- */
-export function moveToNode(state: WorldState, _nodeId: string): WorldState {
-    return state;
-}
+// ── Continent navigation ────────────────────────────────────────────────────
 
-// ============================================================================
-// CONTINENT NAVIGATION
-// ============================================================================
-
-/**
- * Changes the current continent.
- * Looks up the continent by name from the world array.
- * Returns unchanged state if continent is not found.
- * @param state - The current world state
- * @param continentName - The name of the continent to navigate to
- * @returns Updated world state with new current continent
- */
+/** Switches to the named continent. No-op when the name is not in `state.world`. */
 export function changeContinent(state: WorldState, continentName: ContinentName): WorldState {
     const continent = state.world.find(c => c.name === continentName);
     if (!continent) return state;
     return { ...state, currentContinent: continent };
 }
 
-// ============================================================================
-// EVENT MANAGEMENT
-// ============================================================================
+// ── Event management ────────────────────────────────────────────────────────
 
-/**
- * Marks a unique event as completed on the current map.
- * @param state - The current world state
- * @param eventId - The ID of the event to mark as completed
- * @returns Updated world state with event completed
- */
+/** Marks a unique event as completed on the current map. */
 export function completeUniqueEvent(state: WorldState, eventId: string): WorldState {
     return {
         ...state,
         currentMap: {
             ...state.currentMap,
             uniqueEvents: state.currentMap.uniqueEvents.map(e =>
-                e.id === eventId ? { ...e, completed: true } : e
+                e.id === eventId ? { ...e, completed: true } : e,
             ),
         },
     };

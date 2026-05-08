@@ -1,52 +1,39 @@
-// ===============================================
-// EFFECTS SYSTEM TYPES
-// ===============================================
-
 /**
- * Effects module type definitions
+ * Effect System Types
  *
- * This module contains types for buffs, debuffs, and conditions that modify
- * character/enemy stats or behavior. Inspired by D&D conditions and TTRPG status effects.
- *
- * Effect categories will eventually be renamed based on fallacies and paradoxes
- * to match the game's philosophical theme.
+ * Effects are buffs and debuffs that modify combatant behaviour. The library
+ * (./effects.library.ts) defines the catalogue; ActiveEffect tracks a runtime
+ * instance attached to a combatant.
  */
 
 import { Stance } from '../Combat/types';
 
-// ===============================================
-// EFFECT ENUMS & DISCRIMINATORS
-// ===============================================
-
-/**
- * Effect type discriminator
- * - 'buff': Positive effect that enhances capabilities
- * - 'debuff': Negative effect that hinders
- */
+/** Whether an effect helps (`buff`) or hinders (`debuff`) its bearer. */
 export type EffectType = 'buff' | 'debuff';
 
 /**
- * Stacking behavior when the same effect is applied multiple times
- * - 'none': Only the strongest instance applies (D&D-style)
- * - 'intensity': Effects stack, increasing power (e.g., multiple poison = more damage)
- * - 'duration': Reset or extend duration on reapply
+ * How repeated applications of the same effect interact:
+ * - `none`      — only the strongest instance wins; reapplications are ignored.
+ * - `intensity` — intensity increments (capped); duration resets or extends.
+ * - `duration`  — base duration is added to the remaining duration.
  */
 export type EffectStacking = 'none' | 'intensity' | 'duration';
 
 /**
- * Effect category for thematic grouping
- * - 'stat': Modifies base or derived stats
- * - 'damage': Deals or modifies damage (DoT, damage bonus)
- * - 'defense': Modifies defensive capabilities
- * - 'control': Restricts actions or forces behavior
- * - 'regeneration': Restores health or mana over time
- * - 'advantage': Grants or removes combat advantage
+ * Tier of the effect, which determines how it is applied/resisted:
+ * - 1 — auto-applies, no roll.
+ * - 2 — opposed roll determines whether the effect lands.
+ * - 3 — only a critical resist (nat 20) repels it.
  */
-export type EffectCategory = 'stat' | 'damage' | 'defense' | 'control' | 'regeneration' | 'advantage';
+export type EffectTier = 1 | 2 | 3;
+
+/** Thematic grouping for UI / library queries. */
+export type EffectCategory =
+    | 'stat' | 'damage' | 'defense' | 'control' | 'regeneration' | 'advantage';
 
 /**
- * Which stat type the effect targets or scales with.
- * Can target either base stats (body/mind/heart) or specific derived stats.
+ * Stat target for an effect's modifiers: a base stat (`heart`/`body`/`mind`)
+ * or any specific derived stat name.
  */
 export type EffectStatTarget =
     | Stance
@@ -55,192 +42,129 @@ export type EffectStatTarget =
     | 'emotionalAttack' | 'emotionalSkill'| 'emotionalDefense'| 'emotionalSave'| 'emotionalTest'
     | 'luck';
 
-// ===============================================
-// EFFECT MODIFIERS
-// ===============================================
-
-/**
- * Stat modification applied by an effect
- * @property stat - Which stat to modify (base or derived)
- * @property value - Amount to add (positive) or subtract (negative)
- * @property isMultiplier - If true, value is a multiplier (e.g., 1.5 = +50%)
- */
+/** A single stat modifier applied by an effect's payload. */
 export interface StatModifier {
-  stat: EffectStatTarget;
-  value: number;
-  isMultiplier?: boolean;
+    stat: EffectStatTarget;
+    value: number;
+    /** If true, `value` is a multiplier (1.5 = +50%); otherwise it's a flat delta. */
+    isMultiplier?: boolean;
 }
 
-/**
- * Damage over time configuration
- * @property damagePerRound - Amount of damage dealt each round
- * @property damageType - What type of damage (for resistance calculations)
- */
+/** Damage dealt at the start of each round to the bearer. */
 export interface DamageOverTime {
-  damagePerRound: number;
-  damageType: EffectStatTarget;
+    damagePerRound: number;
+    damageType: EffectStatTarget;
 }
 
-/**
- * Regeneration configuration
- * @property healthPerRound - Health restored each round
- * @property manaPerRound - Mana restored each round
- */
+/** Health and/or mana restored at the start of each round to the bearer. */
 export interface RegenerationConfig {
-  healthPerRound?: number;
-  manaPerRound?: number;
+    healthPerRound?: number;
+    manaPerRound?: number;
 }
 
-/**
- * Action restriction configuration
- * @property forcedStance - If set, target must use this stance
- * @property blockedStances - Stances the target cannot use
- * @property skipTurn - If true, target skips their next action
- */
+/** Constraints on what actions the bearer may take. */
 export interface ActionRestriction {
-  forcedStance?: Stance;
-  blockedStances?: Stance[];
-  skipTurn?: boolean;
+    forcedStance?: Stance;
+    blockedStances?: Stance[];
+    skipTurn?: boolean;
 }
 
-/**
- * Advantage modification configuration
- * @property grantAdvantage - Grants automatic advantage on specified types
- * @property grantDisadvantage - Grants automatic disadvantage on specified types
- */
+/** Auto-advantage / auto-disadvantage granted to the bearer. */
 export interface AdvantageModifier {
-  grantAdvantage?: Stance[];
-  grantDisadvantage?: Stance[];
+    grantAdvantage?: Stance[];
+    grantDisadvantage?: Stance[];
 }
 
-// ===============================================
-// EFFECT PAYLOAD (UNION OF MODIFIERS)
-// ===============================================
-
 /**
- * Effect payload containing the mechanical modifications.
- * Effects can have multiple modifier types active simultaneously.
- * @property statModifiers - Array of stat changes to apply
- * @property damageOverTime - Damage dealt each round
- * @property regeneration - Health/mana restoration each round
- * @property actionRestriction - Limits on what actions can be taken
- * @property advantageModifier - Changes to combat advantage
- * @property rollModifier - Flat bonus/penalty to dice rolls (does NOT scale with intensity)
- * @property rollModifierPerIntensity - Roll bonus/penalty multiplied by current intensity
- * @property defenseModifier - Flat bonus/penalty to defense values
- * @property reflectDamage - Damage per intensity dealt back to the attacker
- *   when the bearer of this effect is successfully hit (thorns mechanic)
+ * Mechanical payload of an effect. Every field is optional; an effect may
+ * combine several (e.g. a buff that grants stat bonuses AND a roll modifier).
  */
 export interface EffectPayload {
-  statModifiers?: StatModifier[];
-  damageOverTime?: DamageOverTime;
-  regeneration?: RegenerationConfig;
-  actionRestriction?: ActionRestriction;
-  advantageModifier?: AdvantageModifier;
-  rollModifier?: number;
-  rollModifierPerIntensity?: number;
-  defenseModifier?: number;
-  reflectDamage?: number;
+    statModifiers?: StatModifier[];
+    damageOverTime?: DamageOverTime;
+    regeneration?: RegenerationConfig;
+    actionRestriction?: ActionRestriction;
+    advantageModifier?: AdvantageModifier;
+    /** Flat bonus / penalty added to dice rolls. Does NOT scale with intensity. */
+    rollModifier?: number;
+    /** Roll modifier multiplied by the effect's current intensity. */
+    rollModifierPerIntensity?: number;
+    /** Flat bonus / penalty added to defense values. */
+    defenseModifier?: number;
+    /** Damage per intensity reflected back when the bearer is hit (thorns). */
+    reflectDamage?: number;
 }
 
-// ===============================================
-// CORE EFFECT INTERFACE
-// ===============================================
-
 /**
- * Effect definition representing a status effect, buff, or debuff
- * @property id - Unique identifier for this effect
- * @property name - Display name of the effect
- * @property description - Flavor text or lore description of the effect
- * @property type - Whether this is a buff or debuff
- * @property category - Thematic grouping for the effect
- * @property duration - Duration in rounds remaining (-1 for permanent, 0 for instant)
- * @property stacking - How this effect behaves when applied multiple times
- * @property teir - Determines the methodology for applying/resisting effects
- * @property intensity - Initial stack count for intensity-stacking effects
- * @property payload - The mechanical modifications this effect applies
- * @property resistedBy - Which stat the TARGET uses to resist this effect.
- *   Follows the RPS counter rule: body effects resisted by mind, heart effects
- *   by body, mind effects by heart. If absent, effect auto-applies (Tier 1).
- * @property resistDR - Base difficulty rating for the resistance roll (default 12).
- *   The attacker's heart bonus and equipment bonuses are added on top of this.
+ * A definition entry in the effects library.
+ *
+ * @property id          - Unique identifier used for lookups.
+ * @property duration    - Base duration in rounds (-1 permanent, 0 instant).
+ * @property tier        - Application/resist tier (1-3).
+ * @property resistedBy  - Which stance resists this effect. Absent for tier 1.
+ * @property resistDR    - Base difficulty for a resist roll. Absent for tier 1.
+ * @property payload     - Mechanical modifiers applied to the bearer.
  */
 export interface Effect {
-  id: string;
-  name: string;
-  description: string;
-  type: EffectType;
-  category: EffectCategory;
-  duration: number;
-  stacking: EffectStacking;
-  teir: 'Teir 1' | 'Teir 2' | 'Teir 3';
-  intensity?: number;
-  payload: EffectPayload;
-  resistedBy?: Stance;
-  resistDR?: number;
+    id: string;
+    name: string;
+    description: string;
+    type: EffectType;
+    category: EffectCategory;
+    duration: number;
+    stacking: EffectStacking;
+    tier: EffectTier;
+    payload: EffectPayload;
+    resistedBy?: Stance;
+    resistDR?: number;
 }
 
-// ===============================================
-// ACTIVE EFFECT INSTANCE
-// ===============================================
-
 /**
- * An active instance of an effect applied to a target.
- * Tracks runtime state like remaining duration and current intensity.
- * @property effectId - Reference to the base Effect definition
- * @property remainingDuration - Rounds left before effect expires (-1 for permanent)
- * @property currentIntensity - Current stack level for intensity-stacking effects
- * @property sourceId - ID of the character/enemy that applied this effect
- * @property appliedAtRound - Combat round when effect was applied
- * @property teir - Determines the methodology for applying effects
- * @property resistedBy - Which stat resists this (copied from Effect for quick lookup)
- * @property resistDR - Base resist difficulty (copied from Effect for quick lookup)
+ * A live instance of an Effect attached to a combatant.
+ *
+ * @property effectId          - Lookup key into the effects library.
+ * @property remainingDuration - Rounds left (-1 permanent).
+ * @property intensity         - Current stack count for intensity-stacking effects.
+ * @property appliedAt         - Combat round when the effect was first applied.
+ * @property tier              - Cached from Effect for quick application logic.
+ * @property resistedBy        - Cached from Effect for resist-roll lookups.
+ * @property resistDR          - Cached from Effect for resist-roll lookups.
+ * @property sourceId          - Optional ID of the combatant that applied it.
  */
 export interface ActiveEffect {
-  effectId: string;
-  remainingDuration: number;
-  currentIntensity: number;
-  sourceId?: string;
-  appliedAtRound: number;
-  teir: Effect['teir'];
-  resistedBy?: Stance;
-  resistDR?: number;
+    effectId: string;
+    remainingDuration: number;
+    intensity: number;
+    appliedAt: number;
+    tier: EffectTier;
+    resistedBy?: Stance;
+    resistDR?: number;
+    sourceId?: string;
 }
 
-// ===============================================
-// EFFECT APPLICATION RESULT
-// ===============================================
-
 /**
- * Result of attempting to apply an effect
- * @property success - Whether the effect was successfully applied
- * @property activeEffect - The resulting active effect instance (if successful)
- * @property message - Description of what happened (for the battle log)
- * @property stackedWith - If merged with existing effect, the previous intensity/duration
- * @property rebounded - True when debuff resistance crits (nat 20) — apply activeEffect to ATTACKER instead
- * @property roll - The resistance roll details, if a roll was made (Tier 2/3 effects only)
+ * Result of attempting to apply an effect.
+ *
+ * @property success     - True if the effect successfully landed on its intended target.
+ * @property activeEffect - The resulting ActiveEffect (if produced).
+ *                         For a rebound, this is the version to apply to the ATTACKER.
+ * @property message     - Human-readable description for battle logs.
+ * @property stackedWith - Previous intensity/duration when reapplied.
+ * @property rebounded   - True when a debuff was rebounded by a critical resist.
+ * @property roll        - Roll details, present only for tier 2/3 effects.
  */
 export interface EffectApplicationResult {
-  success: boolean;
-  activeEffect?: ActiveEffect;
-  message: string;
-  stackedWith?: {
-    previousIntensity: number;
-    previousDuration: number;
-  };
-  rebounded?: boolean;
-  roll?: {
-    /** Raw d20 result */
-    rolled: number;
-    /** Target's resist stat value added to the roll */
-    resistStat: number;
-    /** rolled + resistStat */
-    total: number;
-    /** Final DR (base + heart + equipment bonuses) */
-    dr: number;
-    /** Natural 20: rebound (debuff) or double intensity (buff) */
-    wasCrit: boolean;
-    /** Natural 1: double duration lands (debuff) or fumble (buff) */
-    wasFumble: boolean;
-  };
+    success: boolean;
+    activeEffect?: ActiveEffect;
+    message: string;
+    stackedWith?: { previousIntensity: number; previousDuration: number };
+    rebounded?: boolean;
+    roll?: {
+        rolled: number;
+        resistStat: number;
+        total: number;
+        dr: number;
+        wasCrit: boolean;
+        wasFumble: boolean;
+    };
 }

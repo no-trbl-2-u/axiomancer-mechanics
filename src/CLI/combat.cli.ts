@@ -10,9 +10,9 @@ import {
     determineEnemyAction,
     determineAdvantage,
     isCombatOngoing,
-    getAttackStatForType,
-    getBaseStatForType,
-    getDefenseStatForType,
+    getAttackStat,
+    getBaseStat,
+    getDefenseStat,
     getActiveRollModifier,
     calculateFinalDamage,
     applyDamage,
@@ -22,7 +22,7 @@ import {
     removeRandomBuff,
     extendRandomBuffDuration,
     applyRegen,
-} from '../Combat/index';
+} from '../Combat';
 import { createDieRoll } from '../Utils';
 import { Stance, Advantage, CombatState } from '../Combat/types';
 import { createGameStore } from '../Game/store';
@@ -31,7 +31,7 @@ import {
     DEFENSE_MULTIPLIERS,
     PASSIVE_DEFENSE_MULTIPLIER,
 } from '../Game/game-mechanics.constants';
-import { applyTier1CombatEffectWithResult, clearTier1EffectsForType } from '../Effects';
+import { applyTier1CombatEffect, clearTier1EffectsForStance } from '../Effects';
 import { lookupEffect } from '../Effects/effects.library';
 import {
     typeColor,
@@ -64,13 +64,13 @@ async function delay(ms: number): Promise<void> {
 // ─── Player Input ─────────────────────────────────────────────────────────────
 
 async function promptPlayerChoice(): Promise<{
-    reactionType: Stance;
+    stance: Stance;
     action: 'attack' | 'defend';
 }> {
     return inquirer.prompt([
         {
             type: 'rawlist',
-            name: 'reactionType',
+            name: 'stance',
             message: 'Respond with...',
             choices: [
                 { name: `${typeColor('heart', 'Heart')}  (emotional)`, value: 'heart' },
@@ -88,18 +88,6 @@ async function promptPlayerChoice(): Promise<{
 }
 
 // ─── Combat Scenarios ─────────────────────────────────────────────────────────
-//
-// One function per action-pair outcome. Each prints its own sections and
-// returns the updated combatants. State is never mutated.
-//
-// Defense multiplier rules:
-//   Both attack  → loser has no active defense: PASSIVE_DEFENSE_MULTIPLIER (×1)
-//   One defends  → defender's type-advantage over the attacker sets the multiplier
-//
-// Special modifiers applied before damage rolls:
-//   Mind/attack   → add studying mark intensity (Exposed Reasoning) to damage roll
-//   Heart/attack  → –5 to the attack roll modifier; on hit: strip enemy buff, extend player buff
-//   Thorns        → after ANY hit on a combatant with Briar Stance, reflect intensity dmg back
 
 async function resolveAttackVsAttack(
     player: Character,
@@ -108,19 +96,18 @@ async function resolveAttackVsAttack(
     enemyType: Stance,
     playerAdv: Advantage,
     enemyAdv: Advantage,
-    playerAction: 'attack' | 'defend',
 ): Promise<{ player: Character; enemy: Enemy }> {
     const playerDieRoll = createDieRoll(playerAdv);
     const enemyDieRoll  = createDieRoll(enemyAdv);
 
     const pRollMod  = getActiveRollModifier(player);
-    const pBaseStat = getAttackStatForType(player, playerType);
+    const pBaseStat = getAttackStat(player, playerType);
     const pMod      = pBaseStat + pRollMod;
     const playerRaw = playerDieRoll();
     const playerTotal = playerRaw + pMod;
 
     const eRollMod  = getActiveRollModifier(enemy);
-    const eBaseStat = getAttackStatForType(enemy, enemyType);
+    const eBaseStat = getAttackStat(enemy, enemyType);
     const eMod      = eBaseStat + eRollMod;
     const enemyRaw  = enemyDieRoll();
     const enemyTotal = enemyRaw + eMod;
@@ -136,7 +123,7 @@ async function resolveAttackVsAttack(
     await delay(1500);
 
     if (playerTotal > enemyTotal) {
-        const baseDefense   = getDefenseStatForType(enemy, enemyType);
+        const baseDefense   = getDefenseStat(enemy, enemyType);
         const studyBonus    = playerType === 'mind' ? getStudyMarkIntensity(enemy) : 0;
         const damageRaw     = playerDieRoll();
         const damageRoll    = damageRaw + pMod;
@@ -163,12 +150,11 @@ async function resolveAttackVsAttack(
         let updatedEnemy = applyDamage(enemy, finalDamage);
         let updatedPlayer = player;
 
-        // Heart/Attack special effects on hit
         if (playerType === 'heart') {
             const buffResult = removeRandomBuff(updatedEnemy);
-            updatedEnemy = buffResult.target as Enemy;
+            updatedEnemy = buffResult.target;
             const extResult = extendRandomBuffDuration(updatedPlayer, 1);
-            updatedPlayer = extResult.target as Character;
+            updatedPlayer = extResult.target;
             printHeartAttackSpecials(
                 buffResult.removed ? (lookupEffect(buffResult.removed.effectId)?.name ?? null) : null,
                 enemy.name,
@@ -180,7 +166,7 @@ async function resolveAttackVsAttack(
     }
 
     if (enemyTotal > playerTotal) {
-        const baseDefense = getBaseStatForType(player, playerType);
+        const baseDefense = getBaseStat(player, playerType);
         const studyBonus  = enemyType === 'mind' ? getStudyMarkIntensity(player) : 0;
         const damageRaw   = enemyDieRoll();
         const damageRoll  = damageRaw + eMod;
@@ -207,12 +193,11 @@ async function resolveAttackVsAttack(
         const updatedPlayer = applyDamage(player, finalDamage);
         let   updatedEnemy  = enemy;
 
-        // Thorns: player was hit — reflect to enemy
         const thorns = getThornsReflect(updatedPlayer);
         if (thorns > 0) {
             await delay(500);
             const hpBefore = updatedEnemy.health;
-            updatedEnemy   = applyDamage(updatedEnemy, thorns) as Enemy;
+            updatedEnemy   = applyDamage(updatedEnemy, thorns);
             printThornsReflect(enemy.name, thorns, hpBefore, updatedEnemy.health);
         }
 
@@ -229,11 +214,10 @@ async function resolvePlayerAttackEnemyDefend(
     enemyType: Stance,
     playerAdv: Advantage,
     enemyAdv: Advantage,
-    playerAction: 'attack' | 'defend',
 ): Promise<{ player: Character; enemy: Enemy }> {
     const playerDieRoll = createDieRoll(playerAdv);
     const pRollMod      = getActiveRollModifier(player);
-    const pBaseStat     = getAttackStatForType(player, playerType);
+    const pBaseStat     = getAttackStat(player, playerType);
     const attackMod     = pBaseStat + pRollMod;
     const playerRaw     = playerDieRoll();
 
@@ -241,15 +225,15 @@ async function resolvePlayerAttackEnemyDefend(
     printRollLine('Player attack roll:', playerRaw, pBaseStat, playerAdv, pRollMod || undefined);
     await delay(1500);
 
-    const baseDefense      = getDefenseStatForType(enemy, enemyType);
+    const baseDefense       = getDefenseStat(enemy, enemyType);
     const defenseMultiplier = DEFENSE_MULTIPLIERS[enemyAdv];
-    const studyBonus       = playerType === 'mind' ? getStudyMarkIntensity(enemy) : 0;
-    const damageRaw        = playerDieRoll();
-    const damageRoll       = damageRaw + attackMod;
+    const studyBonus        = playerType === 'mind' ? getStudyMarkIntensity(enemy) : 0;
+    const damageRaw         = playerDieRoll();
+    const damageRoll        = damageRaw + attackMod;
     console.log('\n[ Player Damage Roll ]');
     printRollLine('Player damage roll:', damageRaw, pBaseStat, playerAdv, pRollMod || undefined);
     await delay(800);
-    const finalDamage      = calculateFinalDamage(damageRoll, baseDefense * defenseMultiplier, false, studyBonus);
+    const finalDamage       = calculateFinalDamage(damageRoll, baseDefense * defenseMultiplier, false, studyBonus);
 
     printDamageCalc({
         header: 'Player Damage vs Defending Enemy',
@@ -269,12 +253,11 @@ async function resolvePlayerAttackEnemyDefend(
     let updatedEnemy  = applyDamage(enemy, finalDamage);
     let updatedPlayer = player;
 
-    // Heart/Attack specials
     if (playerType === 'heart') {
         const buffResult = removeRandomBuff(updatedEnemy);
-        updatedEnemy  = buffResult.target as Enemy;
+        updatedEnemy  = buffResult.target;
         const extResult = extendRandomBuffDuration(updatedPlayer, 1);
-        updatedPlayer = extResult.target as Character;
+        updatedPlayer = extResult.target;
         printHeartAttackSpecials(
             buffResult.removed ? (lookupEffect(buffResult.removed.effectId)?.name ?? null) : null,
             enemy.name,
@@ -295,7 +278,7 @@ async function resolvePlayerDefendEnemyAttack(
 ): Promise<{ player: Character; enemy: Enemy }> {
     const enemyDieRoll = createDieRoll(enemyAdv);
     const eRollMod     = getActiveRollModifier(enemy);
-    const eBaseStat    = getAttackStatForType(enemy, enemyType);
+    const eBaseStat    = getAttackStat(enemy, enemyType);
     const attackMod    = eBaseStat + eRollMod;
     const enemyRaw     = enemyDieRoll();
 
@@ -303,7 +286,7 @@ async function resolvePlayerDefendEnemyAttack(
     printRollLine('Enemy attack roll:', enemyRaw, eBaseStat, enemyAdv, eRollMod || undefined);
     await delay(1500);
 
-    const baseDefense       = getBaseStatForType(player, playerType);
+    const baseDefense       = getBaseStat(player, playerType);
     const defenseMultiplier = DEFENSE_MULTIPLIERS[playerAdv];
     const studyBonus        = enemyType === 'mind' ? getStudyMarkIntensity(player) : 0;
     const damageRaw         = enemyDieRoll();
@@ -331,12 +314,11 @@ async function resolvePlayerDefendEnemyAttack(
     const updatedPlayer = applyDamage(player, finalDamage);
     let   updatedEnemy  = enemy;
 
-    // Thorns: player was hit while defending — reflect to enemy
     const thorns = getThornsReflect(updatedPlayer);
     if (thorns > 0) {
         await delay(500);
         const hpBefore = updatedEnemy.health;
-        updatedEnemy   = applyDamage(updatedEnemy, thorns) as Enemy;
+        updatedEnemy   = applyDamage(updatedEnemy, thorns);
         printThornsReflect(enemy.name, thorns, hpBefore, updatedEnemy.health);
     }
 
@@ -346,60 +328,56 @@ async function resolvePlayerDefendEnemyAttack(
 // ─── Main Turn Loop ───────────────────────────────────────────────────────────
 
 async function runCombatTurn(state: CombatState): Promise<CombatState> {
-    // ── Regen phase (start of round, before player choice) ──────────────────
     let player = state.player;
     let enemy  = state.enemy;
 
     const playerRegen = applyRegen(player);
-    player = playerRegen.target as Character;
+    player = playerRegen.target;
     printRegenHeal('player', player.name, playerRegen.healed);
 
     const enemyRegen = applyRegen(enemy);
-    enemy = enemyRegen.target as Enemy;
+    enemy = enemyRegen.target;
     printRegenHeal('enemy', enemy.name, enemyRegen.healed);
 
     printStatus({ ...state, player, enemy });
 
-    const { reactionType, action } = await promptPlayerChoice();
-    const enemyAction   = determineEnemyAction(state.enemy.logic);
-    const playerAdvantage = determineAdvantage(reactionType, enemyAction.type);
-    const enemyAdvantage  = determineAdvantage(enemyAction.type, reactionType);
+    const { stance, action } = await promptPlayerChoice();
+    const enemyAction     = determineEnemyAction(state.enemy);
+    const playerAdvantage = determineAdvantage(stance, enemyAction.stance);
+    const enemyAdvantage  = determineAdvantage(enemyAction.stance, stance);
 
-    printRoundActions(action, reactionType, enemyAction.action, enemyAction.type);
-    printTypeMatchup(reactionType, enemyAction.type, playerAdvantage, enemyAdvantage);
+    printRoundActions(action, stance, enemyAction.action, enemyAction.stance);
+    printTypeMatchup(stance, enemyAction.stance, playerAdvantage, enemyAdvantage);
     await delay(1500);
 
     let friendshipCounter = state.friendshipCounter;
 
-    // ── Clear stale Tier 1 buffs on action type switch ───────────────────────
-    const playerClear = clearTier1EffectsForType(player.currentActiveEffects, reactionType);
-    player = { ...player, currentActiveEffects: playerClear.activeEffects };
-    printBuffsCleared('player', player.name, playerClear.cleared, reactionType);
+    const playerClear = clearTier1EffectsForStance(player.effects, stance);
+    player = { ...player, effects: playerClear.activeEffects };
+    printBuffsCleared('player', player.name, playerClear.cleared, stance);
 
-    const enemyClear = clearTier1EffectsForType(enemy.currentActiveEffects, enemyAction.type);
-    enemy = { ...enemy, currentActiveEffects: enemyClear.activeEffects };
-    printBuffsCleared('enemy', enemy.name, enemyClear.cleared, enemyAction.type);
+    const enemyClear = clearTier1EffectsForStance(enemy.effects, enemyAction.stance);
+    enemy = { ...enemy, effects: enemyClear.activeEffects };
+    printBuffsCleared('enemy', enemy.name, enemyClear.cleared, enemyAction.stance);
 
-    // ── Apply Tier 1 stance effects ──────────────────────────────────────────
-    // Player's action may mark the enemy (Mind); enemy's action may mark the player.
-    const playerTier1 = applyTier1CombatEffectWithResult(
-        player.currentActiveEffects,
-        enemy.currentActiveEffects,
-        { type: reactionType, action },
+    const playerTier1 = applyTier1CombatEffect(
+        player.effects,
+        enemy.effects,
+        { stance, action },
         state.round,
     );
-    player = { ...player, currentActiveEffects: playerTier1.actorEffects };
-    enemy  = { ...enemy,  currentActiveEffects: playerTier1.opponentEffects };
+    player = { ...player, effects: playerTier1.actorEffects };
+    enemy  = { ...enemy,  effects: playerTier1.opponentEffects };
 
-    const enemyTier1 = applyTier1CombatEffectWithResult(
-        enemy.currentActiveEffects,
-        player.currentActiveEffects,
+    const enemyTier1 = applyTier1CombatEffect(
+        enemy.effects,
+        player.effects,
         enemyAction,
         state.round,
-        enemy.tier1Effects,
+        enemy.tier1Overrides,
     );
-    enemy  = { ...enemy,  currentActiveEffects: enemyTier1.actorEffects };
-    player = { ...player, currentActiveEffects: enemyTier1.opponentEffects };
+    enemy  = { ...enemy,  effects: enemyTier1.actorEffects };
+    player = { ...player, effects: enemyTier1.opponentEffects };
 
     printStanceSection(
         playerTier1.effect && playerTier1.message && playerTier1.appliedTo
@@ -412,32 +390,29 @@ async function runCombatTurn(state: CombatState): Promise<CombatState> {
     );
     await delay(1000);
 
-    // ── Resolve combat ───────────────────────────────────────────────────────
     if (action === 'attack' && enemyAction.action === 'attack') {
         ({ player, enemy } = await resolveAttackVsAttack(
-            player, enemy, reactionType, enemyAction.type, playerAdvantage, enemyAdvantage, action,
+            player, enemy, stance, enemyAction.stance, playerAdvantage, enemyAdvantage,
         ));
     } else if (action === 'attack' && enemyAction.action === 'defend') {
         ({ player, enemy } = await resolvePlayerAttackEnemyDefend(
-            player, enemy, reactionType, enemyAction.type, playerAdvantage, enemyAdvantage, action,
+            player, enemy, stance, enemyAction.stance, playerAdvantage, enemyAdvantage,
         ));
     } else if (action === 'defend' && enemyAction.action === 'attack') {
         ({ player, enemy } = await resolvePlayerDefendEnemyAttack(
-            player, enemy, reactionType, enemyAction.type, playerAdvantage, enemyAdvantage,
+            player, enemy, stance, enemyAction.stance, playerAdvantage, enemyAdvantage,
         ));
     } else {
-        // Both defend → friendship mechanic
         friendshipCounter++;
         await delay(1500);
         printBothDefending(friendshipCounter - 1, friendshipCounter);
     }
 
-    // ── Tick effect durations ────────────────────────────────────────────────
     const playerTick = tickAllEffects(player);
-    player = playerTick.target as Character;
+    player = playerTick.target;
 
     const enemyTick = tickAllEffects(enemy);
-    enemy = enemyTick.target as Enemy;
+    enemy = enemyTick.target;
 
     if (playerTick.expired.length > 0 || enemyTick.expired.length > 0) {
         await delay(500);
@@ -460,14 +435,14 @@ async function main(): Promise<void> {
     store.getState().startCombat(Disatree_01);
 
     while (true) {
-        const combat = store.getState().combatState;
+        const combat = store.getState().combat;
         if (!combat || !isCombatOngoing(combat)) break;
 
         const next = await runCombatTurn(combat);
-        store.getState().applyCombatTurn(next);
+        store.getState().updateCombat(next);
     }
 
-    const finalCombat = store.getState().combatState!;
+    const finalCombat = store.getState().combat!;
     store.getState().endCombat();
     printCombatEnd(finalCombat);
 }

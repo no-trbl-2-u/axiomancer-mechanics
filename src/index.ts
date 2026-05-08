@@ -1,97 +1,114 @@
-// ─── Package API ──────────────────────────────────────────────────────────────
-// This is the public surface of axiomancer-mechanics.
-// Consumers (React Native app, etc.) import from this barrel.
+/**
+ * axiomancer-mechanics — public package surface.
+ *
+ * The library is consumed as the non-UI engine for an Axiomancer client
+ * (e.g. a React Native app). Imports are organised by domain.
+ */
 
-// Character
-export { createCharacter, getResistStatFromResistedBy } from './Character';
-export type { Character, BaseStats, DerivedStats, NonCombatStats } from './Character/types';
+// ─── Character ────────────────────────────────────────────────────────────────
+export { createCharacter } from './Character';
+export type {
+    Character, BaseStats, DerivedStats, NonCombatStats,
+    CreateCharacterOptions,
+} from './Character';
 
-// Enemy
-export { createEnemy, getEnemyRelatedStat } from './Enemy';
-export type { Enemy, EnemyLogic, EnemyTier1EffectMap } from './Enemy/types';
+// ─── Enemy ────────────────────────────────────────────────────────────────────
+export { createEnemy, randomLogic, decideEnemyAction } from './Enemy';
+export type {
+    Enemy, EnemyLogic, EnemyDifficulty, Tier1EffectOverrides,
+    CreateEnemyOptions,
+} from './Enemy';
 
-// Combat — mechanics
+// ─── Combat ───────────────────────────────────────────────────────────────────
 export {
     determineAdvantage, getAdvantageModifier, hasAdvantage,
-    determineEnemyAction, generateEnemyAttackType, generateEnemyAction,
-    isCombatOngoing, determineCombatEnd, isValidCombatAction,
-    getBaseStatForType, getAttackStatForType, getDefenseStatForType, getSaveStatForType,
+    getBaseStat, getAttackStat, getDefenseStat, getSaveStat, getResistStat,
     rollSkillCheck, isCriticalHit, isCriticalMiss,
     applyCriticalMultiplier, calculateFinalDamage, isAttackSuccessful,
-    isEffectApplied,
-    updateEffectDuration, tickAllEffects,
-    getStudyMarkIntensity, getActiveRollModifier, getThornsReflect,
-    removeRandomBuff, extendRandomBuffDuration, applyRegen,
-    applyDamage, healCharacter, isAlive, isDefeated, getHealthPercentage,
+    applyDamage, heal, isAlive, isDefeated, getHealthPercentage,
     MIND_MARK_ID,
+    getStudyMarkIntensity, getActiveRollModifier, getThornsReflect,
+    updateEffectDuration, tickAllEffects,
+    removeRandomBuff, extendRandomBuffDuration, applyRegen,
+    resolveEffectApplication,
+    determineEnemyAction, isCombatOngoing, determineCombatEnd, isValidCombatAction,
+    healCharacter,
+} from './Combat';
+export type {
+    Stance, Action, Advantage, CritStyle, CombatAction, CombatPhase,
+    BattleLogEntry, CombatState, Combatant,
 } from './Combat';
 
-// Combat — reducer
+// ─── Combat reducer ───────────────────────────────────────────────────────────
 export {
-    initializeCombat, updateCombatPhase,
-    setPlayerStance, setPlayerAction,
-    addBattleLogEntry, incrementFriendship,
+    initializeCombat, setPhase, setPlayerStance, setPlayerAction,
+    appendLog, incrementFriendship, endCombat,
+    updateCombatPhase, addBattleLogEntry,
     endCombatPlayerVictory, endCombatPlayerDefeat, endCombatWithFriendship,
 } from './Combat/combat.reducer';
 
-// Combat — types
-export type {
-    Stance, Action, Advantage, CritStyle, CombatAction, CombatPhase,
-    BattleLogEntry, CombatState,
-} from './Combat/types';
-
-// Effects
+// ─── Effects ──────────────────────────────────────────────────────────────────
 export {
-    applyEffect, applyTier1CombatEffect, applyTier1CombatEffectWithResult,
-    clearTier1EffectsForType, getTargetsResistStatValue,
+    applyEffect, applyTier1CombatEffect,
+    clearTier1EffectsForStance, clearTier1EffectsForType,
+    lookupEffect, getEffectByName, getEffectsByType, effectsLibrary,
 } from './Effects';
-export type { ApplyEffectOptions } from './Effects';
-export { lookupEffect, getEffectByName, getEffectsByType, effectsLibrary } from './Effects/effects.library';
 export type {
-    Effect, EffectType, EffectStacking, EffectCategory, EffectPayload,
+    Effect, EffectType, EffectTier, EffectStacking, EffectCategory, EffectPayload,
     ActiveEffect, EffectApplicationResult,
     StatModifier, DamageOverTime, RegenerationConfig, ActionRestriction, AdvantageModifier,
-} from './Effects/types';
+    EffectStatTarget,
+    ApplyEffectOptions, Tier1Outcome,
+} from './Effects';
 
-// Items
-export { addItemToInventory, removeItemFromInventory, useConsumable, stackItem } from './Items';
-export type { Item, Equipment, Consumable, Material, QuestItem, ItemCategory, EquipmentSlot } from './Items/types';
-export { isEquipment, isConsumable, isMaterial, isQuestItem } from './Items/types';
-
-// Skills — types only (no implementation yet)
-export type { Skill, SkillCategory, SkillsStatType, SkillLearningRequirement } from './Skills/types';
-
-// Game — store & reducers
-export { createGameStore, selectPlayer, selectCombatState, selectIsInCombat, selectInventory, selectVersion } from './Game/store';
-export type { GameStore, GameActions } from './Game/store';
-export { createNewGameState, GAME_STATE_VERSION } from './Game/game.reducer';
-export type { GameState } from './Game/types';
-export { COMBAT_ACTION } from './Game/actions.constants';
-export type { CombatActionName } from './Game/actions.constants';
-
-// Game — constants
+// ─── Items ────────────────────────────────────────────────────────────────────
 export {
+    addItem, removeItem, useConsumable, stackItem,
+    addItemToInventory, removeItemFromInventory,
+    isEquipment, isConsumable, isMaterial, isQuestItem,
+} from './Items';
+export type {
+    Item, Equipment, Consumable, Material, QuestItem,
+    ItemCategory, EquipmentSlot, BaseItem,
+} from './Items';
+
+// ─── Skills (types only) ──────────────────────────────────────────────────────
+export type {
+    Skill, SkillCategory, SkillsStatType, SkillLearningRequirement,
+} from './Skills';
+
+// ─── Game (state, store, persistence, constants) ──────────────────────────────
+export {
+    createGameStore, createNewGameState, GAME_STATE_VERSION,
+    selectPlayer, selectCombat, selectCombatState, selectIsInCombat,
+    selectInventory, selectVersion,
+    nullAdapter, createNodeAdapter,
     STAT_MULTIPLIERS, RESOURCE_MULTIPLIERS, EXPERIENCE_PER_LEVEL,
     DEFENSE_MULTIPLIERS, PASSIVE_DEFENSE_MULTIPLIER,
     MAX_EFFECT_INTENSITY, MAX_EFFECT_DURATION, FRIENDSHIP_COUNTER_MAX,
-} from './Game/game-mechanics.constants';
+} from './Game';
+export type { GameState, GameStore, GameActions, PersistenceAdapter, StoreApi } from './Game';
 
-// Game — persistence
-export type { PersistenceAdapter } from './Game/persistence/types';
-export { nullAdapter } from './Game/persistence/null.adapter';
-export { createNodeAdapter } from './Game/persistence/node.adapter';
+// Legacy combat-action constants (use Action type instead).
+export { COMBAT_ACTION } from './Game/actions.constants';
+export type { CombatActionName } from './Game/actions.constants';
 
-// World
-export { createStartingWorld } from './World';
+// ─── World ────────────────────────────────────────────────────────────────────
+export { createStartingWorld, getCoastalMap, MapNotFoundError } from './World';
 export {
     changeMap, completeMap, unlockMap,
-    completeNode, unlockNode, moveToNode,
-    changeContinent, completeUniqueEvent,
+    completeNode, unlockNode, changeContinent, completeUniqueEvent,
 } from './World/world.reducer';
-export type { WorldState, Map, Continent, Quest, MapEvent, Reward } from './World/types';
-export type { MapName, ContinentName } from './World/map.library';
+export type {
+    WorldState, WorldMap, Continent, Quest, MapEvent, MapEventType, UniqueEvent,
+    Reward, MapNode, NodeId,
+    MapName, ContinentName, QuestName,
+} from './World';
 
-// Utils
+// ─── NPCs (types only) ────────────────────────────────────────────────────────
+export type { NPC, DialogueMap } from './NPCs';
+
+// ─── Utilities ────────────────────────────────────────────────────────────────
 export {
     clamp, randomInt, deepClone, average, sum, max, min, inRange,
     capitalize, formatPercent,

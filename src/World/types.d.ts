@@ -6,113 +6,86 @@ import { QuestName } from './quest.library';
 import { NPC } from '../NPCs/types';
 
 /**
- * Quest represents a quest in the game world
- * @property name - The unique identifier for this quest
- * @property description - Description of the quest objectives
- * @property containingMap - The map where this quest takes place or is obtained
- * @property reward - The reward granted upon quest completion
- * @property connectingQuest - The next quest in a quest chain
+ * A reward grantable on event/combat completion. Either a tag (`'experience'`,
+ * `'currency'`, `'skill'`, `'quest'`) or a concrete `Item`.
+ */
+export type Reward = 'experience' | 'currency' | 'skill' | 'quest' | Item;
+
+/**
+ * Type of event that can occur on a map node. The actual event handler is
+ * driven by an event registry (TODO).
+ */
+export type MapEventType =
+    | 'encounter'
+    | 'boss-encounter'
+    | 'event'
+    | 'treasure'
+    | 'gather'
+    | 'quest'
+    | 'shop'
+    | 'npc'
+    | 'other';
+
+/**
+ * A quest in the game world.
+ *
+ * @property mapName        - The map where the quest takes place.
+ * @property reward         - Granted upon completion.
+ * @property nextQuest      - Next quest in a chain, if any.
  */
 export interface Quest {
     name: QuestName;
     description: string;
-    containingMap: MapName;
+    mapName: MapName;
     reward: Reward;
-    connectingQuest?: QuestName;
+    nextQuest?: QuestName;
 }
 
 /**
- * MapEvents represents the types of events that can occur on a map
- * - 'encounter': Combat encounter with an enemy
- * - 'boss-encounter': Encounter with a boss enemy
- * - 'event': Story or scripted event
- * - 'treasure': Loot or item discovery
- * - 'gather': Resource gathering. Forced decision between gathering nodes
- * - 'quest': Quest-related event
- * - 'shop': Shop for player to spend currency
- * - 'npc': NPC interaction
- * - 'other': Miscellaneous event type
- * @todo: Create an EventLibrary (or EventManager) to enumerate and handle these events
- */
-export type MapEvents = 'encounter' | 'boss-encounter' | 'event' | 'treasure' | 'gather' | 'quest' | 'shop' | 'npc' | 'other';
-
-/**
- * Reward types that can be obtained from events or combat
- * - 'experience': Experience points for the player (typically from encounter, but can come from other sources)
- * - 'item': Items (e.g. equipment, consumables, materials, etc.)
- * - 'currency': Currency (e.g. gold, gems, tomes, etc.)
- * - 'skill': New abilities or skills
- * - 'quest': An attached quest for continued quest lines
- * - 'quest-item': An item that is required to progress in a quest
- * @todo: Create a RewardLibrary (or RewardManager) to enumerate and handle these rewards
- */
-export type Reward = 'experience' | Item | 'currency' | 'skill' | 'quest';
-
-/**
- * MapEvent represents a specific event that can occur on a map node
- * @property name - The type of event that occurs
- * @property description - Text description of the event
- * @property enemy - (Guess) The enemy encountered in this event (may only apply to 'encounter' type events)
- * @property reward - Optional: reward granted upon completing this event
+ * An event that can occur on a map node.
+ *
+ * @property type    - Discriminator for the event kind.
+ * @property enemy   - Encountered enemy (only for `encounter`/`boss-encounter`).
+ * @property reward  - Optional reward granted on completion.
  */
 export interface MapEvent {
-    name: MapEvents;
+    type: MapEventType;
     description: string;
     enemy?: Enemy;
     reward?: Reward;
 }
 
 /**
- * A Unique Event is an event that can only occur once in the game
- * @property id - Unique identifier for this event
- * @property name - The type of event that occurs
- * @property description - Narration presented for event
- * @property nodeLocation - The coordinates of the node where this event occurs
- * @property completed - Whether or not this event has been completed
- * @todo Implement this type fully with proper event data
+ * An event that can only occur once per save.
  */
-interface UniqueEvent {
+export interface UniqueEvent {
     id: string;
-    name: MapEvents;
+    type: MapEventType;
     description: string;
     nodeLocation: [number, number];
     completed: boolean;
-    // TODO: Add more properties as needed (rewards, requirements, etc.)
 }
 
-/**
- * Node Id is in the form of "mapAcronym-number"
- * @example "fv-1"
- */
-type NodeId = string;
+/** Node IDs are formatted as `<map-acronym>-<number>`, e.g. `"fv-1"`. */
+export type NodeId = string;
 
-/**
- * MapNode represents a location on a map that can be traversed by the player
- * @property id - The unique identifier for this node
- * @property location - The coordinates of this node on the map
- * @property connectedNodes - The nodes that are connected to this node
- */
-interface MapNode {
+/** A traversable location on a map. */
+export interface MapNode {
     id: NodeId;
-    location: [number, number]
+    location: [number, number];
     connectedNodes: NodeId[];
 }
 
 /**
- * Map is a collection of map nodes that are traversable by the player
- * Represents a game area or level with encounters, events, and NPCs.
- * @property name - The name of the map/area
- * @property continent - The continent the map is located on
- * @property description - A brief description of the map's theme or setting
- * @property numberOfNodes - The number of nodes/locations on this map
- * @property enemies - A list of enemies that can be encountered on the map
- * @property events - Optional: list of events that can occur on the map (TODO: make mandatory)
- * @property npcs - Optional: list of NPCs that can be interacted with on the map (TODO: make mandatory)
- * @property images - Optional: visual assets for the map (mapImage for exploration, combatImage for battles)
- * @todo Create a collection of maps
- * @todo Implement "Node"
+ * A traversable game area. Renamed from `Map` to avoid shadowing the JS
+ * built-in `Map` constructor inside this module.
+ *
+ * @property startingNode    - Entry node when the player arrives.
+ * @property completedNodes  - Nodes the player has fully resolved.
+ * @property availableNodes  - Nodes currently traversable.
+ * @property lockedNodes     - Nodes not yet unlocked.
  */
-export interface Map {
+export interface WorldMap {
     name: MapName;
     continent: ContinentName;
     description: string;
@@ -124,22 +97,16 @@ export interface Map {
     enemies?: Enemy[];
     availableEvents: MapEvent[];
     uniqueEvents: UniqueEvent[];
-    images?: {
-        mapImage: Image,
-        combatImage: Image
-    }
+    images?: { mapImage: Image; combatImage: Image };
 }
 
+/**
+ * @deprecated Use `WorldMap`. Kept as an alias to avoid breaking older imports.
+ */
+export type Map = WorldMap;
 
 /**
- * Continent is a section of the World Map that contains a 
- * collection of maps.
- * @property name - The name of the continent
- * @property description - A brief description of the continent's theme or setting
- * @property availableMaps - The maps that are available to the player on this continent
- * @property lockedMaps - The maps that are locked and cannot be accessed yet
- * @property completedMaps - The maps that have been completed by the player
- * @todo Create a collection of continents
+ * A region containing several maps.
  */
 export interface Continent {
     name: ContinentName;
@@ -150,14 +117,11 @@ export interface Continent {
 }
 
 /**
- * World is the aggregation of all world states to maintain
- * a single source of truth for all parts of the world.
- * @property world - Array of all continents available in the game world
- * @property currentContinent - The current continent the player is on
- * @property currentMap - The current map the player is on
+ * Aggregate world state — the catalogue of continents plus the current
+ * navigation context.
  */
-export type WorldState = {
+export interface WorldState {
     world: Continent[];
     currentContinent: Continent;
-    currentMap: Map;
+    currentMap: WorldMap;
 }

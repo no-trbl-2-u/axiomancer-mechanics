@@ -76,7 +76,7 @@ function formatEffectTag(ae: ActiveEffect): string {
     const name     = def?.name ?? '???';
     const isBuff   = def?.type === 'buff';
     const color    = isBuff ? C.brightGreen : C.brightRed;
-    const intensity = (ae.currentIntensity ?? 1) > 1 ? ` ×${ae.currentIntensity}` : '';
+    const intensity = (ae.intensity ?? 1) > 1 ? ` ×${ae.intensity}` : '';
     const dur       = ae.remainingDuration === -1 ? '∞' : `${ae.remainingDuration}r`;
     return `${color}[${name}${intensity} ${dur}]${C.reset}`;
 }
@@ -110,10 +110,10 @@ function printEffectDetail(ae: ActiveEffect): void {
     const def       = lookupEffect(ae.effectId);
     const name      = def?.name ?? '???';
     const typeLabel = def?.type ?? 'unknown';
-    const intensity = ae.currentIntensity ?? 1;
+    const intensity = ae.intensity ?? 1;
     const dur       = ae.remainingDuration === -1 ? '∞' : `${ae.remainingDuration}r`;
     const typeClr   = typeLabel === 'buff' ? C.brightGreen : C.brightRed;
-    const appRound  = ae.appliedAtRound !== undefined ? `  applied r${ae.appliedAtRound}` : '';
+    const appRound  = ae.appliedAt !== undefined ? `  applied r${ae.appliedAt}` : '';
     const srcNote   = ae.sourceId ? `  src: ${ae.sourceId}` : '';
 
     console.log(
@@ -390,9 +390,9 @@ export function printStatus(state: CombatState): void {
     console.log(`  ${C.bold}Round ${state.round}${C.reset}`);
     console.log(HR_MAJOR);
     console.log(`  Player  ${hpBar(state.player.health, state.player.maxHealth)}  ${playerHpColor}${playerHp}${C.reset} / ${state.player.maxHealth}`);
-    printEffectStateBlock('Active Effects — Player:', state.player.currentActiveEffects as ActiveEffect[]);
+    printEffectStateBlock('Active Effects — Player:', state.player.effects);
     console.log(`  Enemy   ${hpBar(state.enemy.health, state.enemy.maxHealth)}  ${enemyHpColor}${enemyHp}${C.reset} / ${state.enemy.maxHealth}`);
-    printEffectStateBlock('Active Effects — Enemy:', state.enemy.currentActiveEffects as ActiveEffect[]);
+    printEffectStateBlock('Active Effects — Enemy:', state.enemy.effects);
 
     if (state.friendshipCounter > 0) {
         const hearts = '♥'.repeat(state.friendshipCounter) + '♡'.repeat(FRIENDSHIP_COUNTER_MAX - state.friendshipCounter);
