@@ -26,9 +26,9 @@ The codebase implements a solid foundation for a turn-based TTRPG engine with a 
 
 | Issue | Location | Action |
 |-------|----------|--------|
-| `getTargetsResistStatValue` defined in both `Character/index.ts` and `Effects/index.ts` with different implementations | Both modules | ✅ Removed from Character. Effects version (uses `baseStats`) is the canonical one. Character's `getResistStatFromResistedBy` (uses `derivedStats.defense`) kept as a separate utility since it has different semantics. |
+| `getTargetsResistStatValue` defined in both `Character/index.ts` and `Effects/index.ts` with different implementations | Both modules | ✅ Consolidated under `getResistStat` in `Combat/stats.ts` (uses `baseStats[resistedBy]`). The legacy `getResistStatFromResistedBy` helper was removed from Character. |
 | `getEffectById` identical to `lookupEffect` | `Effects/effects.library.ts` | ✅ Removed `getEffectById`. `lookupEffect` is the single ID lookup. |
-| `getEffectTeir` — trivially returns `effect.teir` | `Effects/effects.library.ts` | ✅ Removed. Callers access `.teir` directly. |
+| `getEffectTeir` — trivially returns `effect.tier` | `Effects/effects.library.ts` | ✅ Removed. Callers access `.tier` directly. |
 | `getEffectType` renamed to `getEffectsByType` | `Effects/effects.library.ts` | ✅ Renamed for clarity (returns an array, not a single type). |
 | `item.reducer.ts` logic duplicated inline in `Game/store.ts` | Both files | Noted — the store inlines the same inventory logic. This is acceptable since the store actions are the canonical write path, and `item.reducer.ts` exists for pure-function testing. No change needed. |
 | `CombatAction` name collision: `Game/actions.constants.ts` exports a string union type named `CombatAction`, while `Combat/types.d.ts` exports an interface named `CombatAction` | Both modules | ✅ Renamed the Game constant's type to `CombatActionName` to eliminate ambiguity. |
@@ -39,9 +39,9 @@ The codebase implements a solid foundation for a turn-based TTRPG engine with a 
 |-------|----------|--------|
 | `Enemy/types.d.ts` — `ActiveEffect` used without import | `Enemy/types.d.ts` | ✅ Added import. |
 | `Enemy/types.d.ts` — `import { Item } from 'Items'` pointed at empty barrel | `Enemy/types.d.ts` | ✅ Changed to `import { Item } from '../Items/types'`. |
-| `Effects/types.d.ts` — `CombatState['round']` used without importing `CombatState` | `Effects/types.d.ts` | ✅ Changed `appliedAtRound` to `number` and `sourceId` to `string`. Removed all cross-module type lookups from the type definition. |
+| `Effects/types.d.ts` — `CombatState['round']` used without importing `CombatState` | `Effects/types.d.ts` | ✅ Changed `appliedAt` to `number` and `sourceId` to `string`. Removed all cross-module type lookups from the type definition. |
 | `Combat/types.d.ts` — uses `@Character/types` path alias that doesn't exist in `tsconfig.paths` | `Combat/types.d.ts` | ✅ Changed to relative imports. |
-| `currentActiveEffects: ActiveEffect[] \| []` — redundant union | `Character/types.d.ts` | ✅ Simplified to `ActiveEffect[]`. |
+| `currentActiveEffects: ActiveEffect[] \| []` — redundant union | `Character/types.d.ts` | ✅ Simplified to `ActiveEffect[]` (and later renamed to `effects`). |
 | `(item as any).quantity` in `stackItem` | `Items/item.reducer.ts` | ✅ Replaced with proper type guard + typed access. |
 | `as any` casts in `applyRegen` | `Combat/index.ts` | ✅ Replaced with `isCharacter` type guard pattern. |
 
@@ -78,32 +78,34 @@ The codebase implements a solid foundation for a turn-based TTRPG engine with a 
 
 These are design choices or in-progress features, not bugs:
 
-1. **`teir` typo** — Used consistently throughout types, JSON data, and runtime code as `'Teir 1' | 'Teir 2' | 'Teir 3'`. Fixing this is a sweeping rename across types, JSON library files, and all runtime comparisons. Flagging for a deliberate rename pass.
+1. ✅ **`teir` typo (RESOLVED)** — Renamed across types, JSON libraries, and runtime. The `Effect.tier` / `ActiveEffect.tier` field is now `1 | 2 | 3` (numeric); display strings render as `Tier 1` / `Tier 2` / `Tier 3`.
 
-2. **Combat CLI inlines round resolution** — `combat.cli.ts` implements the full combat loop directly rather than calling `resolveCombatRound`. This is the intended interim approach (per roadmap Phase 2c). When `resolveCombatRound` is implemented, the CLI should delegate to it.
+2. **Combat CLI inlines round resolution** — `combat.cli.ts` implements the full combat loop directly rather than calling `resolveCombatRound`. This is the intended interim approach (per roadmap Phase 2c). When `resolveCombatRound` is implemented, the CLI should delegate to it. See `specs/02-combat-round-resolver.md`.
 
 3. **Store duplicates item.reducer logic** — The Zustand store inlines inventory mutations rather than calling `item.reducer.ts` functions. Both implementations are equivalent; the reducer exists for testing and reuse outside Zustand.
 
-4. **World reducer `changeMap` needs map registry** — Currently accepts a `Map` object directly. The caller must look up maps. A map registry pattern would make this cleaner.
+4. **World reducer `changeMap` needs map registry** — Currently accepts a `Map` object directly. The caller must look up maps. A map registry pattern would make this cleaner. See `specs/08-world-content-and-hazards.md`.
 
-5. **`createStartingWorld` has `northern-forest` in both `availableMaps` and `lockedMaps`** — Contradictory state. Should be in `lockedMaps` only until unlocked.
+5. ✅ **`createStartingWorld` map placement (RESOLVED)** — `northern-forest` now lives only in `lockedMaps` until `unlockMap` moves it. Verified by `world.reducer.test.ts`.
 
-6. **No RNG seeding** — All randomness uses `Math.random()`. For reproducible testing and replays, a seedable RNG (e.g., a simple LCG or external library) should replace `Math.random`.
+6. **No RNG seeding** — All randomness uses `Math.random()`. For reproducible testing and replays, a seedable RNG (e.g., a simple LCG or external library) should replace `Math.random`. See `specs/11-rng-seeding-and-test-harness.md`.
+
+7. **ESLint flat-config bug** — `npm run lint` fails because `@typescript-eslint/no-explicit-any` is registered without its plugin being declared in the same config object. `npm run type-check` is the reliable static-analysis check until this is fixed.
 
 ---
 
 ## Metrics
 
-| Metric | Value |
-|--------|-------|
-| Source files (`.ts`) | 29 |
-| Type definition files (`.d.ts`) | 8 |
-| Lines of source code (approx) | ~2,200 |
-| Lines of test code (approx) | ~350 |
-| Test files | 6 |
-| Tests | 71 |
-| `as any` casts remaining | 0 |
-| Stub functions remaining | 0 |
-| Build time | ~1.3s |
-| Type-check time | ~1.1s |
-| Test time | ~0.3s |
+> Snapshot from the audit pass. Values drift over time — re-run `find src -name '*.ts' | wc -l` and `npm test` to refresh.
+
+| Metric | Value (at last refresh) |
+|--------|------------------------|
+| `.ts` files under `src/` | 55 |
+| Test files (vitest) | 6 |
+| Tests | 76 |
+| `as any` casts remaining in `src/` | 0 in production code |
+| Stub functions remaining in `src/` | 0 |
+| Build (`npm run build`) | clean |
+| Type-check (`npm run type-check`) | clean |
+| Test (`npm test`) | 76 / 76 pass |
+| Lint (`npm run lint`) | broken — see Concern 7 |

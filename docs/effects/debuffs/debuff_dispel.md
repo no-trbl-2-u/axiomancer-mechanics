@@ -11,7 +11,7 @@
 | **ID** | `debuff_dispel` |
 | **Type** | debuff |
 | **Category** | stat |
-| **Tier** | Teir 2 |
+| **Tier** | Tier 2 |
 | **Duration** | 0 |
 | **Stacking** | none |
 | **Resisted By** | heart |
@@ -40,7 +40,7 @@ Empty. The "remove all buffs" mechanic should be triggered by the engine detecti
 
 > **PENDING (Phase 2):** When implemented:
 > ```typescript
-> target.currentActiveEffects = target.currentActiveEffects.filter(
+> target.effects = target.effects.filter(
 >     ae => lookupEffect(ae.effectId)?.type !== 'buff'
 > );
 > ```

@@ -11,7 +11,7 @@
 | **ID** | `debuff_petrify` |
 | **Type** | debuff |
 | **Category** | control |
-| **Tier** | Teir 3 |
+| **Tier** | Tier 3 |
 | **Duration** | 2 rounds |
 | **Stacking** | none |
 | **Resisted By** | heart |
@@ -29,7 +29,7 @@ helpless and highly vulnerable for 2 rounds.
 
 ## Data Fields
 
-### `teir: "Teir 3"`, `resistDR: 17`
+### `tier: "Tier 3"`, `resistDR: 17`
 
 Only a natural 20 on the resist roll prevents this debuff from applying. No DR
 calculation needed — just a raw nat-20 check.
@@ -47,7 +47,7 @@ control debuffs.
 
 ## Combat Behaviour
 
-`isEffectApplied` Tier 3 path:
+`resolveEffectApplication` Tier 3 path:
 
 ```typescript
 if (roll === 20) {

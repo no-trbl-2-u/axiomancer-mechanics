@@ -11,7 +11,7 @@
 | **ID** | `buff_cleanse` |
 | **Type** | buff |
 | **Category** | stat |
-| **Tier** | Teir 2 |
+| **Tier** | Tier 2 |
 | **Duration** | 0 |
 | **Stacking** | none |
 | **Resisted By** | heart |
@@ -40,11 +40,11 @@ removes it (duration ticks to 0 → expelled).
 Empty. The actual "remove all debuffs" behaviour is a direct action that should be
 triggered by detecting `duration === 0` and `id === 'buff_cleanse'` in the engine.
 
-> **PENDING (Phase 2):** The cleanse mechanic — reading the player's `currentActiveEffects`
+> **PENDING (Phase 2):** The cleanse mechanic — reading the player's `effects`
 > and filtering out all `debuff`-type entries — is not yet implemented. Currently this
 > effect has no mechanical effect. When implemented, use:
 > ```typescript
-> target.currentActiveEffects = target.currentActiveEffects.filter(
+> target.effects = target.effects.filter(
 >     ae => lookupEffect(ae.effectId)?.type !== 'debuff'
 > );
 > ```
@@ -56,10 +56,10 @@ triggered by detecting `duration === 0` and `id === 'buff_cleanse'` in the engin
 ### 1. Instant expiry
 
 ```typescript
-const target = { currentActiveEffects: [/* active cleanse */] };
+const target = { effects: [/* active cleanse */] };
 const { target: t1, expired } = tickAllEffects(target);
 assert(expired.some(ae => ae.effectId === 'buff_cleanse'));
-assert(t1.currentActiveEffects.length === 0); // cleanse itself is gone
+assert(t1.effects.length === 0); // cleanse itself is gone
 ```
 
 ### 2. Cleanse removes debuffs (Phase 2)

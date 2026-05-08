@@ -38,7 +38,11 @@ Advantage modifier (flat roll bonus/penalty from `getAdvantageModifier()`):
 
 ## Combat Phases
 
-`choosing_type` → `choosing_action` → `choosing_skill` → `resolving` → `ended`
+`choosing_stance` → `choosing_action` → `choosing_skill` → `resolving` → `ended`
+
+The Combat CLI currently drives both selection phases inline rather than persisting them
+on `state.phase`; the reducer still exposes `setPhase(state, phase)` for consumers that
+want explicit phase tracking.
 
 ## Defense Multipliers
 
@@ -65,10 +69,10 @@ Player Chooses
 └── determineEnemyAction()
 
 Pre-Combat
-├── clearTier1EffectsForType(player, type) — strip stale Tier 1 self-buffs
-├── clearTier1EffectsForType(enemy, type)
-├── applyTier1CombatEffectWithResult(player→enemy, playerAction)
-└── applyTier1CombatEffectWithResult(enemy→player, enemyAction)
+├── clearTier1EffectsForStance(player, type) — strip stale Tier 1 self-buffs
+├── clearTier1EffectsForStance(enemy, type)
+├── applyTier1CombatEffect(player→enemy, playerAction)
+└── applyTier1CombatEffect(enemy→player, enemyAction)
 
 Combat Resolution
 ├── attack vs attack  → roll contest; winner deals damage (with specials below)
@@ -85,7 +89,7 @@ Round End
 ## Tier 1 Auto-Effects
 
 Every `attack` or `defend` action automatically applies a Tier 1 effect — no resist roll.
-Switching action types removes the previous type's self-buff immediately via `clearTier1EffectsForType()`.
+Switching action types removes the previous type's self-buff immediately via `clearTier1EffectsForStance()`.
 
 | Action | Effect | Applied To |
 |--------|--------|------------|
@@ -108,17 +112,17 @@ These are live in `combat.cli.ts`:
 | **Heart/Attack — extend buff** | On hit | `extendRandomBuffDuration(player, 1)` → one random player buff gets +1 duration |
 | **Heart/Attack — roll penalty** | Roll phase | −5 to the player's attack modifier |
 
-## Effect Resistance Rules (`isEffectApplied`)
+## Effect Resistance Rules (`resolveEffectApplication`)
 
 | Tier | Rule |
 |------|------|
-| **Teir 1** | Auto-applies. No roll made. |
-| **Teir 2 Buff** | Only natural 1 (fumble) stops it. Natural 20 = crit focus → 2× intensity. |
-| **Teir 2 Debuff** | Target rolls `d20 + resistStat` vs `DR = resistDR + attackerHeartBonus + equipBonus`. Natural 20 = rebound (effect bounces to attacker at 2× intensity). Natural 1 = overwhelmed (lands at 2× duration). Total ≥ DR = resisted. |
-| **Teir 3** | Only natural 20 repels it. Everything else lands. |
+| **Tier 1** | Auto-applies. No roll made. |
+| **Tier 2 Buff** | Only natural 1 (fumble) stops it. Natural 20 = crit focus → 2× intensity. |
+| **Tier 2 Debuff** | Target rolls `d20 + resistStat` vs `DR = resistDR + attackerHeartBonus + equipBonus`. Natural 20 = rebound (effect bounces to attacker at 2× intensity). Natural 1 = overwhelmed (lands at 2× duration). Total ≥ DR = resisted. |
+| **Tier 3** | Only natural 20 repels it. Everything else lands. |
 
 DR formula: `effect.resistDR + attacker.baseStats.heart + equipmentBonus`
-Resist stat: `target.derivedStats[physicalDefense | mentalDefense | emotionalDefense]` (based on `resistedBy`)
+Resist stat: `target.baseStats[resistedBy]` (via `getResistStat()` in `Combat/stats.ts`).
 
 ## Friendship Path
 
@@ -153,18 +157,19 @@ Each resolved round can append a `BattleLogEntry` via `addBattleLogEntry()`:
 
 ## Combat Reducer API
 
-| Function | Description |
-|----------|-------------|
-| `initializeCombat(player, enemy)` | Creates fresh CombatState with deep-cloned combatants |
-| `updateCombatPhase(state, phase)` | Transitions to a new combat phase |
-| `setPlayerStance(state, stance)` | Sets the player's stance choice |
-| `setPlayerAction(state, action)` | Sets the player's action choice |
-| `addBattleLogEntry(state, entry)` | Appends a battle log entry |
-| `incrementFriendship(state)` | Increments the friendship counter |
-| `endCombatPlayerVictory(state)` | Ends combat with player win |
-| `endCombatPlayerDefeat(state)` | Ends combat with player loss |
-| `endCombatWithFriendship(state)` | Ends combat with friendship outcome |
-| `resolveCombatRound(state)` | **TODO (Phase 2c):** Full round resolution via reducer |
+Defined in `src/Combat/combat.reducer.ts`. The current names are on the left; legacy
+aliases are listed where they exist for backwards compatibility.
+
+| Function | Alias(es) | Description |
+|----------|-----------|-------------|
+| `initializeCombat(player, enemy)` | — | Creates fresh CombatState with deep-cloned combatants |
+| `setPhase(state, phase)` | `updateCombatPhase` | Transitions to a new combat phase |
+| `setPlayerStance(state, stance)` | — | Sets the player's stance choice |
+| `setPlayerAction(state, action)` | — | Sets the player's action choice |
+| `appendLog(state, entry)` | `addBattleLogEntry` | Appends a battle log entry |
+| `incrementFriendship(state)` | — | Increments the friendship counter |
+| `endCombat(state)` | `endCombatPlayerVictory`, `endCombatPlayerDefeat`, `endCombatWithFriendship` | Marks combat as ended; the reason is encoded in `determineCombatEnd(state)` |
+| `resolveCombatRound(state)` | — | **TODO (Phase 2c):** Full round resolution via reducer |
 
 ## Combat Mechanics API
 
@@ -176,15 +181,16 @@ Each resolved round can append a `BattleLogEntry` via `addBattleLogEntry()`:
 | `determineEnemyAction(logic)` | AI-driven enemy action selection |
 | `isCombatOngoing(state)` | True if combat should continue |
 | `determineCombatEnd(state)` | Returns outcome or 'ongoing' |
-| `getBaseStatForType(entity, stance)` | Raw base stat for a stance |
-| `getAttackStatForType(entity, stance)` | Attack derived stat for a stance |
-| `getDefenseStatForType(entity, stance)` | Defense derived stat for a stance |
-| `getSaveStatForType(entity, stance)` | Save stat for a stance (enemies fall back to defense) |
+| `getBaseStat(entity, stance)` | Raw base stat for a stance |
+| `getAttackStat(entity, stance)` | Attack derived stat for a stance |
+| `getDefenseStat(entity, stance)` | Defense derived stat for a stance |
+| `getSaveStat(entity, stance)` | Save stat for a stance (enemies fall back to defense) |
+| `getResistStat(entity, resistedBy)` | Base stat used when resisting an effect |
 | `rollSkillCheck(baseStat, advantage)` | d20 + modifier with advantage/disadvantage |
 | `calculateFinalDamage(base, reduction, crit, bonus)` | Damage after reductions |
 | `applyDamage(entity, damage)` | Reduces HP (clamps to 0) |
-| `healCharacter(entity, amount)` | Restores HP (clamps to max) |
-| `isEffectApplied(target, effect, type, heart, equip)` | Full tier-based resist logic |
+| `heal(entity, amount)` (alias `healCharacter`) | Restores HP (clamps to max) |
+| `resolveEffectApplication(target, effect, type, heart, equip)` | Full tier-based resist logic |
 | `tickAllEffects(target)` | Decrements all effect durations |
 | `getStudyMarkIntensity(target)` | Mind mark bonus for damage |
 | `getThornsReflect(bearer)` | Thorns reflect damage total |

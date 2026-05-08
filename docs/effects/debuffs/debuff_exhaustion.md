@@ -11,7 +11,7 @@
 | **ID** | `debuff_exhaustion` |
 | **Type** | debuff |
 | **Category** | stat |
-| **Tier** | Teir 2 |
+| **Tier** | Tier 2 |
 | **Duration** | 3 rounds |
 | **Stacking** | intensity |
 | **Resisted By** | heart |

@@ -11,7 +11,7 @@
 | **ID** | `debuff_stun` |
 | **Type** | debuff |
 | **Category** | control |
-| **Tier** | Teir 2 |
+| **Tier** | Tier 2 |
 | **Duration** | 1 round |
 | **Stacking** | duration |
 | **Resisted By** | heart |

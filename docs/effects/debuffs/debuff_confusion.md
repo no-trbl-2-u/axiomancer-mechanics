@@ -11,7 +11,7 @@
 | **ID** | `debuff_confusion` |
 | **Type** | debuff |
 | **Category** | control |
-| **Tier** | Teir 2 |
+| **Tier** | Tier 2 |
 | **Duration** | 3 rounds |
 | **Stacking** | duration |
 | **Resisted By** | heart |

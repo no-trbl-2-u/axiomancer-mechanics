@@ -11,7 +11,7 @@
 | **ID** | `buff_accuracy_up` |
 | **Type** | buff |
 | **Category** | advantage |
-| **Tier** | Teir 2 |
+| **Tier** | Tier 2 |
 | **Duration** | 3 rounds |
 | **Stacking** | intensity |
 | **Resisted By** | heart |
@@ -72,7 +72,7 @@ assert(mod === 3);
 ```typescript
 // Two applications (intensity 2): rollModifier still +3
 const { activeEffects: ae2 } = applyEffect(ae1, effect, 2);
-const mod = getActiveRollModifier({ currentActiveEffects: ae2, ...mock });
+const mod = getActiveRollModifier({ effects: ae2, ...mock });
 assert(mod === 3); // flat, not per-intensity
 ```
 

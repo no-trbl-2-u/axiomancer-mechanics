@@ -14,30 +14,38 @@ Three core stats. All derived stats and resources scale from these.
 | `mind` | Intelligence and reflexes. Governs mana (shared with heart), mental combat and skills, mind-type advantage. |
 | `heart` | Willpower and emotion. Governs HP (shared with body), mana (shared with mind), emotional combat and skills, heart-type advantage. |
 
-## Derived Stats
+## Derived Stats (`DerivedStats` — shared with Enemies)
 
-Each base stat produces five derived values. Multipliers are defined in `Game/game-mechanics.constants.ts`.
+Each base stat produces three combat-derived values plus a global `luck`. Multipliers
+are defined in `Game/game-mechanics.constants.ts`.
 
 | Derived Stat | Formula | Purpose |
 |--------------|---------|---------|
 | `physicalAttack` | `body × ATTACK (1)` | Combat roll modifier for body-type attacks |
 | `physicalSkill` | `body × SKILL (1)` | Skill usage and philosophy bar (body) |
 | `physicalDefense` | `body × DEFENSE (3)` | Defense against body-type attacks |
-| `physicalSave` | `body × SAVE (2)` | Saving throw vs body-type effects |
-| `physicalTest` | `body × TEST (4)` | General body ability tests |
 | `mentalAttack` | `mind × ATTACK (1)` | Combat roll modifier for mind-type attacks |
 | `mentalSkill` | `mind × SKILL (1)` | Skill usage and philosophy bar (mind) |
 | `mentalDefense` | `mind × DEFENSE (3)` | Defense against mind-type attacks |
-| `mentalSave` | `mind × SAVE (2)` | Saving throw vs mind-type effects |
-| `mentalTest` | `mind × TEST (4)` | General mind ability tests |
 | `emotionalAttack` | `heart × ATTACK (1)` | Combat roll modifier for heart-type attacks |
 | `emotionalSkill` | `heart × SKILL (1)` | Skill usage and philosophy bar (heart) |
 | `emotionalDefense` | `heart × DEFENSE (3)` | Defense against heart-type attacks |
-| `emotionalSave` | `heart × SAVE (2)` | Saving throw vs heart-type effects |
-| `emotionalTest` | `heart × TEST (4)` | General heart ability tests |
 | `luck` | `average(body, heart, mind)` | Crits, random events |
 
-**Note:** `DerivedStats` are shared between Characters and Enemies. `NonCombatStats` (saves, tests) are Character-only — enemies fall back to their defense stats.
+## Non-Combat Stats (`NonCombatStats` — Character only)
+
+Saving throws and ability tests live on `character.nonCombatStats`. Enemies do not have
+these fields and fall back to their defense stats when a save is requested via
+`getSaveStat()`.
+
+| Non-Combat Stat | Formula | Purpose |
+|-----------------|---------|---------|
+| `physicalSave` | `body × SAVE (2)` | Saving throw vs body-type effects |
+| `physicalTest` | `body × TEST (4)` | General body ability tests |
+| `mentalSave` | `mind × SAVE (2)` | Saving throw vs mind-type effects |
+| `mentalTest` | `mind × TEST (4)` | General mind ability tests |
+| `emotionalSave` | `heart × SAVE (2)` | Saving throw vs heart-type effects |
+| `emotionalTest` | `heart × TEST (4)` | General heart ability tests |
 
 ## Resources
 
@@ -57,24 +65,25 @@ experienceToNextLevel = level × EXPERIENCE_PER_LEVEL       (1000)
 
 ## Active Effects
 
-`currentActiveEffects: ActiveEffect[]` — effects currently applied to this character. Managed by the effect engine (`Effects/index.ts`). Never mutate directly; use `applyEffect`.
+`effects: ActiveEffect[]` — effects currently applied to this character. Managed by the effect engine (`Effects/index.ts`). Never mutate directly; use `applyEffect`.
 
 ## Resist Stat Lookup
 
-When resisting an effect, the target's defensive derived stat is used via `getResistStatFromResistedBy()`:
+When resisting an effect, the target's **base stat** for the resisting stance is used
+via `getResistStat()` in `Combat/stats.ts`:
 
 | `resistedBy` | Stat used |
 |-------------|-----------|
-| `body` | `physicalDefense` |
-| `mind` | `mentalDefense` |
-| `heart` | `emotionalDefense` |
+| `body` | `baseStats.body` |
+| `mind` | `baseStats.mind` |
+| `heart` | `baseStats.heart` |
 
 ## API
 
 | Function | Description |
 |----------|-------------|
 | `createCharacter(options)` | Factory — creates a fully derived Character from name, level, and base stats |
-| `getResistStatFromResistedBy(target, stance)` | Returns the defense stat value for resisting effects of a given stance |
+| `getResistStat(target, resistedBy)` | Base stat value for the resisting stance (lives in `Combat/stats.ts`) |
 
 ## Pending
 

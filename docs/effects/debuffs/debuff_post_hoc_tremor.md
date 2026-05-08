@@ -11,7 +11,7 @@
 | **ID** | `debuff_post_hoc_tremor` |
 | **Type** | debuff |
 | **Category** | stat |
-| **Tier** | Teir 1 |
+| **Tier** | Tier 1 |
 | **Duration** | 2 rounds |
 | **Stacking** | none |
 | **Resisted By** | mind |

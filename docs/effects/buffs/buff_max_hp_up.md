@@ -11,7 +11,7 @@
 | **ID** | `buff_max_hp_up` |
 | **Type** | buff |
 | **Category** | stat |
-| **Tier** | Teir 2 |
+| **Tier** | Tier 2 |
 | **Duration** | 5 rounds |
 | **Stacking** | none |
 | **Resisted By** | mind |

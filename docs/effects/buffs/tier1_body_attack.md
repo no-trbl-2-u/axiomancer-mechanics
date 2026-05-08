@@ -11,7 +11,7 @@
 | **ID** | `tier1_body_attack` |
 | **Type** | buff |
 | **Category** | stat |
-| **Tier** | Teir 1 |
+| **Tier** | Tier 1 |
 | **Duration** | 2 rounds |
 | **Stacking** | intensity |
 | **Resisted By** | — (auto-applies) |
@@ -37,20 +37,20 @@ The buff lasts for 2 rounds once applied. However, because Body/Attack re-applie
 effect every round it is chosen, the duration effectively resets each time the action is
 repeated — keeping it alive as long as the player continues Body attacking.
 
-If the player switches to a different stance, `clearTier1EffectsForType` removes this
+If the player switches to a different stance, `clearTier1EffectsForStance` removes this
 buff immediately at the start of the new round.
 
 ### `stacking: "intensity"`
 
-Each time Body/Attack is used, `currentIntensity` increments by 1 (up to
+Each time Body/Attack is used, `intensity` increments by 1 (up to
 `MAX_EFFECT_INTENSITY = 10`). Duration resets to 2 on each application
 (`durationMode: 'reset'` default).
 
 The intensity directly multiplies `rollModifierPerIntensity`:
 
 ```
-roll bonus = rollModifierPerIntensity × currentIntensity
-           = 1 × currentIntensity
+roll bonus = rollModifierPerIntensity × intensity
+           = 1 × intensity
 ```
 
 So after 3 consecutive Body/Attack rounds, the roll bonus is `+3`. After 5, it is `+5`.
@@ -71,13 +71,13 @@ Adds `+1` to `physicalAttack`. This is a **flat** additive bonus to the derived 
 
 ### `payload.rollModifierPerIntensity: 1`
 
-Adds `1 × currentIntensity` to every roll made by the bearer. This field **is live**
+Adds `1 × intensity` to every roll made by the bearer. This field **is live**
 in the combat engine.
 
 **Where consumed:** `getActiveRollModifier(target)` in `src/Combat/index.ts`:
 
 ```typescript
-const perIntensity = (def?.payload.rollModifierPerIntensity ?? 0) * (ae.currentIntensity ?? 1);
+const perIntensity = (def?.payload.rollModifierPerIntensity ?? 0) * (ae.intensity ?? 1);
 return total + flat + perIntensity;
 ```
 
@@ -89,7 +89,7 @@ This total is added to attack and damage rolls in `combat.cli.ts`.
 
 ### How it is applied
 
-Called every round via `applyTier1CombatEffectWithResult` in `src/Effects/index.ts`.
+Called every round via `applyTier1CombatEffect` in `src/Effects/index.ts`.
 The `TIER1_EFFECT_MAP` maps `{ body, attack }` to:
 
 ```typescript
@@ -112,7 +112,7 @@ The effect is applied to the **actor** (self), not the opponent.
 
 ### When it is removed
 
-- Stance switches: `clearTier1EffectsForType` removes it immediately when any non-body
+- Stance switches: `clearTier1EffectsForStance` removes it immediately when any non-body
   stance is chosen.
 - Natural expiry: `tickAllEffects` decrements `remainingDuration` each round; if the
   player skips Body/Attack for two rounds it expires.
@@ -166,9 +166,9 @@ Automated unit test approach:
   const { activeEffects } = applyEffect([], effect, 1);
   const { activeEffects: ae2 } = applyEffect(activeEffects, effect, 2);
   const { activeEffects: ae3 } = applyEffect(ae2, effect, 3);
-  // ae3[0].currentIntensity === 3
+  // ae3[0].intensity === 3
   // Create a mock target with these effects, then:
-  const mod = getActiveRollModifier({ currentActiveEffects: ae3, ...mockTarget });
+  const mod = getActiveRollModifier({ effects: ae3, ...mockTarget });
   assert(mod === 3); // 1 × 3
 ```
 
@@ -202,8 +202,8 @@ describe('Ad Baculum (tier1_body_attack)', () => {
   it('applies automatically on Body/Attack', () => { ... });
   it('increments intensity on reapplication', () => { ... });
   it('resets duration on reapplication', () => { ... });
-  it('is cleared by clearTier1EffectsForType when switching to mind', () => { ... });
-  it('is cleared by clearTier1EffectsForType when switching to heart', () => { ... });
-  it('roll bonus equals 1 × currentIntensity via getActiveRollModifier', () => { ... });
+  it('is cleared by clearTier1EffectsForStance when switching to mind', () => { ... });
+  it('is cleared by clearTier1EffectsForStance when switching to heart', () => { ... });
+  it('roll bonus equals 1 × intensity via getActiveRollModifier', () => { ... });
 });
 ```

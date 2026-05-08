@@ -11,7 +11,7 @@
 | **ID** | `buff_stealth` |
 | **Type** | buff |
 | **Category** | advantage |
-| **Tier** | Teir 2 |
+| **Tier** | Tier 2 |
 | **Duration** | 2 rounds |
 | **Stacking** | none |
 | **Resisted By** | mind |

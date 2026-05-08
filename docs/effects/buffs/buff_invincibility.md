@@ -11,7 +11,7 @@
 | **ID** | `buff_invincibility` |
 | **Type** | buff |
 | **Category** | defense |
-| **Tier** | Teir 3 |
+| **Tier** | Tier 3 |
 | **Duration** | 1 round |
 | **Stacking** | none |
 | **Resisted By** | heart |
@@ -33,7 +33,7 @@ protection.
 
 ## Data Fields
 
-### `teir: "Teir 3"`, `resistDR: 18`
+### `tier: "Tier 3"`, `resistDR: 18`
 
 Highest DR. Near-inescapable when applied.
 
@@ -57,7 +57,7 @@ impossible in the game's current stat ranges.
 ### 1. Tier 3: only nat 20 repels
 
 ```typescript
-// Mock isEffectApplied with Tier 3 path, d20 = 19
+// Mock resolveEffectApplication with Tier 3 path, d20 = 19
 // result.success === true, "Inescapable"
 // d20 = 20 → result.success === false, "Miracle"
 ```

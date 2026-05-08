@@ -11,7 +11,7 @@
 | **ID** | `debuff_body_attack_down` |
 | **Type** | debuff |
 | **Category** | stat |
-| **Tier** | Teir 2 |
+| **Tier** | Tier 2 |
 | **Duration** | 3 rounds |
 | **Stacking** | intensity |
 | **Resisted By** | mind |

@@ -11,7 +11,7 @@
 | **ID** | `buff_haste` |
 | **Type** | buff |
 | **Category** | advantage |
-| **Tier** | Teir 3 |
+| **Tier** | Tier 3 |
 | **Duration** | 2 rounds |
 | **Stacking** | none |
 | **Resisted By** | mind |
@@ -32,7 +32,7 @@ Short duration (2 rounds), non-stackable.
 
 ## Data Fields
 
-### `teir: "Teir 3"`, `resistDR: 17`
+### `tier: "Tier 3"`, `resistDR: 17`
 
 Inescapable except on a natural 20. When applied as a debuff on the opponent, they need
 a miracle to avoid it. When applied as a self-buff, the caster's own roll doesn't fail
@@ -40,7 +40,7 @@ it (Tier 3 resist rules only check the target's roll — for a self-buff, the Ti
 fumble/crit rules apply for the **caster**, while Tier 3 rules apply if this were a
 debuff targeting an opponent).
 
-> **Clarification:** The current `isEffectApplied` implementation treats Tier 3 effects
+> **Clarification:** The current `resolveEffectApplication` implementation treats Tier 3 effects
 > the same whether buff or debuff — the Tier 3 path always does a resist roll. If this
 > is applied as a self-buff by the player, the Tier 3 block would fire. This is a design
 > area to clarify in Phase 2 — currently Tier 3 buffs and debuffs share the same
@@ -78,7 +78,7 @@ assert(mod === 4);
 ### 2. Tier 3 resist: only nat 20 repels
 
 ```typescript
-// Mock isEffectApplied with d20 roll mocked to 19:
+// Mock resolveEffectApplication with d20 roll mocked to 19:
 // result.success === true, message contains "Inescapable"
 // Mock to 20:
 // result.success === false, message contains "Miracle"

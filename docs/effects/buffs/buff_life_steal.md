@@ -11,7 +11,7 @@
 | **ID** | `buff_life_steal` |
 | **Type** | buff |
 | **Category** | regeneration |
-| **Tier** | Teir 2 |
+| **Tier** | Tier 2 |
 | **Duration** | 4 rounds |
 | **Stacking** | intensity |
 | **Resisted By** | mind |
@@ -22,7 +22,7 @@
 ## Description
 
 A Tier 2 life-steal buff combining per-round healing with a small roll bonus. Heals
-`2 × currentIntensity` HP at the start of each round. Intensity-stacking — repeated
+`2 × intensity` HP at the start of each round. Intensity-stacking — repeated
 application increases healing output significantly.
 
 ---
@@ -31,7 +31,7 @@ application increases healing output significantly.
 
 ### `payload.regeneration.healthPerRound: 2`
 
-Restores `2 × currentIntensity` HP per round. **LIVE** via `applyRegen`.
+Restores `2 × intensity` HP per round. **LIVE** via `applyRegen`.
 
 At intensity 3: heals 6 HP/round. Combined with `buff_regeneration` (3 HP × intensity)
 and `tier1_heart_defend` (1 HP × intensity) the total can be substantial.
@@ -45,7 +45,7 @@ Flat +1 to all rolls. **LIVE** via `getActiveRollModifier`.
 ## Combat Behaviour
 
 `applyRegen` at round start sums all positive `healthPerRound × intensity` values.
-Maxwell's Siphon contributes `2 × currentIntensity`.
+Maxwell's Siphon contributes `2 × intensity`.
 
 ---
 
@@ -55,9 +55,9 @@ Maxwell's Siphon contributes `2 × currentIntensity`.
 
 ```typescript
 const mockTarget = { health: 50, maxHealth: 100,
-  currentActiveEffects: [{
+  effects: [{
     effectId: 'buff_life_steal', remainingDuration: 4,
-    currentIntensity: 3, appliedAtRound: 1, teir: 'Teir 2'
+    intensity: 3, appliedAt: 1, tier: 'Tier 2'
   }]
 };
 const { healed } = applyRegen(mockTarget);

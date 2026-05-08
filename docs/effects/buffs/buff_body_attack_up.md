@@ -11,7 +11,7 @@
 | **ID** | `buff_body_attack_up` |
 | **Type** | buff |
 | **Category** | stat |
-| **Tier** | Teir 2 |
+| **Tier** | Tier 2 |
 | **Duration** | 3 rounds |
 | **Stacking** | intensity |
 | **Resisted By** | mind |
@@ -32,7 +32,7 @@ Tier 2, the caster rolls a d20 — a fumble (natural 1) causes it to fizzle; a c
 
 ### `duration: 3`, `stacking: "intensity"`
 
-Each successful reapplication increments `currentIntensity` by 1 (capped at 10) and
+Each successful reapplication increments `intensity` by 1 (capped at 10) and
 resets duration to 3. At high intensity the roll bonus from stacking (via stat multiplier
 when Phase 2 implements stat mods) grows proportionally.
 
@@ -67,12 +67,12 @@ A flat +2 to all dice rolls made by the bearer.
 
 ## Combat Behaviour
 
-Applied via `isEffectApplied` (Tier 2 buff path). On application the caster rolls d20:
+Applied via `resolveEffectApplication` (Tier 2 buff path). On application the caster rolls d20:
 - Nat 1 → fizzles.
 - Nat 20 → applies at 2× intensity (intensity 2 instead of 1 on first application).
 - Other → applies at intensity 1.
 
-On reapplication, `applyEffect` with `stacking: 'intensity'` increments `currentIntensity`
+On reapplication, `applyEffect` with `stacking: 'intensity'` increments `intensity`
 and resets `remainingDuration` to 3.
 
 **Effective roll bonus at intensity 1:** +2 (flat, from `rollModifier`).
@@ -108,8 +108,8 @@ Two applications (intensity 2): rollModifier is still +2 (flat, not per-intensit
 ### 4. Verify fumble drops intensity on crit
 
 ```typescript
-// Unit: isEffectApplied with mocked d20 = 20
-// result.activeEffect.currentIntensity should be 2 (1 × 2)
+// Unit: resolveEffectApplication with mocked d20 = 20
+// result.activeEffect.intensity should be 2 (1 × 2)
 ```
 
 ### 5. Unit tests to write

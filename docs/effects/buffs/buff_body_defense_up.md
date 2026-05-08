@@ -11,7 +11,7 @@
 | **ID** | `buff_body_defense_up` |
 | **Type** | buff |
 | **Category** | defense |
-| **Tier** | Teir 2 |
+| **Tier** | Tier 2 |
 | **Duration** | 4 rounds |
 | **Stacking** | duration |
 | **Resisted By** | mind |
@@ -61,8 +61,8 @@ Flat +2 to defence calculations when blocking physical attacks.
 
 ## Combat Behaviour
 
-Tier 2 buff apply. Nat 1 fizzles. Nat 20 sets `currentIntensity` to 2 (double, as per
-Tier 2 buff crit rule — the engine doubles `currentIntensity` to min(1×2, 6) = 2, though
+Tier 2 buff apply. Nat 1 fizzles. Nat 20 sets `intensity` to 2 (double, as per
+Tier 2 buff crit rule — the engine doubles `intensity` to min(1×2, 6) = 2, though
 stacking is `'duration'`, so future reapplications will still extend duration rather than
 intensity).
 

@@ -11,7 +11,7 @@
 | **ID** | `tier1_heart_defend` |
 | **Type** | buff |
 | **Category** | regeneration |
-| **Tier** | Teir 1 |
+| **Tier** | Tier 1 |
 | **Duration** | 3 rounds |
 | **Stacking** | intensity |
 | **Resisted By** | — (auto-applies) |
@@ -39,19 +39,19 @@ immediately.
 
 ### `stacking: "intensity"`
 
-Each Heart/Defend action increments `currentIntensity` by 1 (capped at 10). Because
-`applyRegen` multiplies `healthPerRound × currentIntensity`, stacking has a direct and
+Each Heart/Defend action increments `intensity` by 1 (capped at 10). Because
+`applyRegen` multiplies `healthPerRound × intensity`, stacking has a direct and
 significant healing impact:
 
 ```
-heal per round = healthPerRound × currentIntensity = 1 × currentIntensity
+heal per round = healthPerRound × intensity = 1 × intensity
 ```
 
 Committing to multiple Heart/Defend rounds is a meaningful healing investment.
 
 ### `payload.regeneration.healthPerRound: 1`
 
-Restores `1 × currentIntensity` HP at the **start of each round** (before the player
+Restores `1 × intensity` HP at the **start of each round** (before the player
 makes a choice). The higher the intensity, the more HP is recovered.
 
 **Where consumed:** `applyRegen(target)` in `src/Combat/index.ts`:
@@ -59,7 +59,7 @@ makes a choice). The higher the intensity, the more HP is recovered.
 ```typescript
 const perRound = def?.payload.regeneration?.healthPerRound ?? 0;
 if (perRound <= 0) continue;          // skips negative values (disease/decay)
-const amount = perRound * (ae.currentIntensity ?? 1);
+const amount = perRound * (ae.intensity ?? 1);
 healed += amount;
 updated = healCharacter(updated, amount);  // clamped to maxHealth
 ```
@@ -101,7 +101,7 @@ old effect is still present at heal time and is only removed in step 2).
 
 ### When it is removed
 
-- Stance switch: `clearTier1EffectsForType` removes it when any non-heart stance is chosen.
+- Stance switch: `clearTier1EffectsForStance` removes it when any non-heart stance is chosen.
   However, because regen fires first in the round order, the final tick of healing still
   occurs on the round the stance changes.
 - Natural expiry: `tickAllEffects` removes it after 3 rounds without Heart/Defend.
@@ -160,12 +160,12 @@ Automated:
   import { applyRegen } from 'src/Combat/index.ts';
 
   const mockTarget = { ...baseCharacter, health: 50, maxHealth: 100,
-    currentActiveEffects: [{
+    effects: [{
       effectId: 'tier1_heart_defend',
       remainingDuration: 3,
-      currentIntensity: 4,   // should heal 4 per round
-      appliedAtRound: 1,
-      teir: 'Teir 1'
+      intensity: 4,   // should heal 4 per round
+      appliedAt: 1,
+      tier: 'Tier 1'
     }]
   };
   const { healed } = applyRegen(mockTarget);
@@ -187,10 +187,10 @@ Run: npm run combat
 ```typescript
 // src/Combat/index.test.ts (add to existing applyRegen suite)
 describe('Vital Empathy (tier1_heart_defend)', () => {
-  it('heals healthPerRound × currentIntensity per round', () => { ... });
+  it('heals healthPerRound × intensity per round', () => { ... });
   it('does not overheal above maxHealth', () => { ... });
   it('intensity increments on reapplication', () => { ... });
-  it('cleared by clearTier1EffectsForType on stance switch', () => { ... });
+  it('cleared by clearTier1EffectsForStance on stance switch', () => { ... });
   it('heal fires at start of round before action', () => { ... });
 });
 ```

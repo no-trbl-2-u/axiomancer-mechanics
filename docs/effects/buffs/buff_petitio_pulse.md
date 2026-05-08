@@ -11,7 +11,7 @@
 | **ID** | `buff_petitio_pulse` |
 | **Type** | buff |
 | **Category** | stat |
-| **Tier** | Teir 1 |
+| **Tier** | Tier 1 |
 | **Duration** | 2 rounds |
 | **Stacking** | none |
 | **Resisted By** | body |
@@ -32,15 +32,15 @@ auto-apply. With DR 10 it is the easiest possible resist roll to beat.
 
 ## Data Fields
 
-### `teir: "Teir 1"` with resist fields
+### `tier: "Tier 1"` with resist fields
 
 The combination of Tier 1 with `resistedBy` and `resistDR` is unusual — the four
 standard combat Tier 1 stance effects have no resist fields at all. This effect may have
-been intended as a slightly-resisted minor buff, but the `isEffectApplied` code short-
-circuits on `tier === 'Teir 1'` and returns `success: true` without a roll:
+been intended as a slightly-resisted minor buff, but the `resolveEffectApplication` code short-
+circuits on `tier === 'Tier 1'` and returns `success: true` without a roll:
 
 ```typescript
-if (tier === 'Teir 1') {
+if (tier === 'Tier 1') {
     return { success: true, activeEffect, message: `Effect applied automatically.` };
 }
 ```
@@ -63,7 +63,7 @@ current engine. The effect auto-applies.
 ### 1. Auto-applies despite resist fields
 
 ```typescript
-const result = isEffectApplied(target, activeEffect, 'buff', 0, 0);
+const result = resolveEffectApplication(target, activeEffect, 'buff', 0, 0);
 assert(result.success === true);
 assert(result.message === 'Effect applied automatically.');
 // No roll was made

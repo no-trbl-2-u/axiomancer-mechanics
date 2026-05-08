@@ -11,7 +11,7 @@
 | **ID** | `buff_reflect` |
 | **Type** | buff |
 | **Category** | defense |
-| **Tier** | Teir 2 |
+| **Tier** | Tier 2 |
 | **Duration** | 2 rounds |
 | **Stacking** | none |
 | **Resisted By** | heart |

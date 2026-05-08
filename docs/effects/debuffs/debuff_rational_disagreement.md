@@ -11,7 +11,7 @@
 | **ID** | `debuff_rational_disagreement` |
 | **Type** | debuff |
 | **Category** | stat |
-| **Tier** | Teir 2 |
+| **Tier** | Tier 2 |
 | **Duration** | 2 rounds |
 | **Stacking** | duration |
 | **Resisted By** | heart |

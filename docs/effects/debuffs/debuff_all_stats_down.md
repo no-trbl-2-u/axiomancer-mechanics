@@ -11,7 +11,7 @@
 | **ID** | `debuff_all_stats_down` |
 | **Type** | debuff |
 | **Category** | stat |
-| **Tier** | Teir 2 |
+| **Tier** | Tier 2 |
 | **Duration** | 3 rounds |
 | **Stacking** | intensity |
 | **Resisted By** | heart |
@@ -62,11 +62,11 @@ Broad penalty to all combat stats. **PENDING (Phase 2).**
 
 ### Resist roll
 
-`isEffectApplied(target, activeEffect, 'debuff', attackerHeartBonus, equipmentBonus)`:
+`resolveEffectApplication(target, activeEffect, 'debuff', attackerHeartBonus, equipmentBonus)`:
 
 ```
 DR   = 13 + attacker.baseStats.heart + equipBonus
-Roll = d20 + target.derivedStats.heartDefence (via getResistStatFromResistedBy)
+Roll = d20 + target.derivedStats.heartDefence (via getResistStat)
 ```
 
 - Nat 20 → rebounds to attacker at 2× intensity
@@ -98,9 +98,9 @@ assert(mod === -1);
 ### 3. Rebound on nat 20
 
 ```typescript
-// Mock isEffectApplied d20 = 20
+// Mock resolveEffectApplication d20 = 20
 // result.rebounded === true
-// result.activeEffect.currentIntensity === 2 (doubled)
+// result.activeEffect.intensity === 2 (doubled)
 ```
 
 ### 4. Unit tests to write

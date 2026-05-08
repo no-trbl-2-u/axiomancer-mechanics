@@ -11,7 +11,7 @@
 | **ID** | `debuff_straw_man_echo` |
 | **Type** | debuff |
 | **Category** | advantage |
-| **Tier** | Teir 1 |
+| **Tier** | Tier 1 |
 | **Duration** | 2 rounds |
 | **Stacking** | none |
 | **Resisted By** | body |
@@ -29,7 +29,7 @@ a roll. Non-stackable, trivially easy to resist if the resist check were active 
 
 ## Data Fields
 
-### `teir: "Teir 1"` with `resistedBy: "body"`, `resistDR: 10`
+### `tier: "Tier 1"` with `resistedBy: "body"`, `resistDR: 10`
 
 Auto-applies. The resist fields are unused in the current engine.
 
@@ -44,7 +44,7 @@ Flat -1 to all rolls. **LIVE** via `getActiveRollModifier`.
 ### 1. Auto-applies despite resist fields
 
 ```typescript
-const result = isEffectApplied(target, activeEffect, 'debuff', 0, 0);
+const result = resolveEffectApplication(target, activeEffect, 'debuff', 0, 0);
 assert(result.success === true);
 assert(result.message === 'Effect applied automatically.');
 ```

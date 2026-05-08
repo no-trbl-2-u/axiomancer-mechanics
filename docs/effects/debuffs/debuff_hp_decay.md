@@ -11,7 +11,7 @@
 | **ID** | `debuff_hp_decay` |
 | **Type** | debuff |
 | **Category** | damage |
-| **Tier** | Teir 2 |
+| **Tier** | Tier 2 |
 | **Duration** | 4 rounds |
 | **Stacking** | none |
 | **Resisted By** | mind |

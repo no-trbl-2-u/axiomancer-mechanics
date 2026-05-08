@@ -11,7 +11,7 @@
 | **ID** | `buff_buff_duration_up` |
 | **Type** | buff |
 | **Category** | advantage |
-| **Tier** | Teir 2 |
+| **Tier** | Tier 2 |
 | **Duration** | 3 rounds |
 | **Stacking** | none |
 | **Resisted By** | heart |

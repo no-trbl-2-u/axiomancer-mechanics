@@ -11,7 +11,7 @@
 | **ID** | `debuff_poison` |
 | **Type** | debuff |
 | **Category** | damage |
-| **Tier** | Teir 2 |
+| **Tier** | Tier 2 |
 | **Duration** | 4 rounds |
 | **Stacking** | intensity |
 | **Resisted By** | mind |
@@ -46,7 +46,7 @@ in the full DoT implementation.
 > There is no DoT processing loop in `combat.cli.ts` or `Combat/index.ts`. When
 > implemented, `processDamageOverTime` should:
 > ```typescript
-> const dotDamage = damagePerRound * (ae.currentIntensity ?? 1);
+> const dotDamage = damagePerRound * (ae.intensity ?? 1);
 > target = applyDamage(target, dotDamage);
 > ```
 

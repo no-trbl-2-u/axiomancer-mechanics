@@ -11,7 +11,7 @@
 | **ID** | `tier1_body_defend` |
 | **Type** | buff |
 | **Category** | defense |
-| **Tier** | Teir 1 |
+| **Tier** | Tier 1 |
 | **Duration** | 3 rounds |
 | **Stacking** | intensity |
 | **Resisted By** | — (auto-applies) |
@@ -38,11 +38,11 @@ the matching action is repeated. Switching stance removes it immediately.
 
 ### `stacking: "intensity"`
 
-Each Body/Defend action increments `currentIntensity` by 1 (capped at 10). The reflect
+Each Body/Defend action increments `intensity` by 1 (capped at 10). The reflect
 damage formula scales directly with intensity:
 
 ```
-reflect damage = reflectDamage × currentIntensity = 1 × currentIntensity
+reflect damage = reflectDamage × intensity = 1 × intensity
 ```
 
 More consecutive Body/Defend rounds → higher intensity → more thorns damage per hit.
@@ -50,15 +50,15 @@ More consecutive Body/Defend rounds → higher intensity → more thorns damage 
 ### `payload.reflectDamage: 1`
 
 The core mechanic of this effect. For each point of `reflectDamage`, the attacker takes
-`reflectDamage × currentIntensity` damage every time they successfully hit the bearer.
+`reflectDamage × intensity` damage every time they successfully hit the bearer.
 
 **Where consumed:** `getThornsReflect(bearer)` in `src/Combat/index.ts`:
 
 ```typescript
-return bearer.currentActiveEffects.reduce((total, ae) => {
+return bearer.effects.reduce((total, ae) => {
     const def = lookupEffect(ae.effectId);
     const perIntensity = def?.payload.reflectDamage ?? 0;
-    return total + perIntensity * (ae.currentIntensity ?? 1);
+    return total + perIntensity * (ae.intensity ?? 1);
 }, 0);
 ```
 
@@ -79,7 +79,7 @@ value is dealt as damage to the attacker.
 { effectId: 'tier1_body_defend', target: 'self' }
 ```
 
-Applied via `applyTier1CombatEffectWithResult` to the actor each round.
+Applied via `applyTier1CombatEffect` to the actor each round.
 Default `intensityDelta: 1`, `durationMode: 'reset'`.
 
 ### Reflect damage table
@@ -100,7 +100,7 @@ Stance bearer triggers the reflect.
 
 ### When it is removed
 
-- Stance switch: `clearTier1EffectsForType` removes it immediately when any non-body
+- Stance switch: `clearTier1EffectsForStance` removes it immediately when any non-body
   stance is chosen.
 - Natural expiry: `tickAllEffects` removes it after 3 rounds without a Body/Defend action.
 
@@ -113,7 +113,7 @@ Stance bearer triggers the reflect.
   only current source of `reflectDamage`.
 - **Multiple thorns stacks:** `getThornsReflect` sums across all effects — if future
   effects also carry `reflectDamage`, they combine additively.
-- **`tier1_body_attack` (Ad Baculum):** Mutual exclusion via `clearTier1EffectsForType`:
+- **`tier1_body_attack` (Ad Baculum):** Mutual exclusion via `clearTier1EffectsForStance`:
   switching between Body/Attack and Body/Defend clears the previous body Tier 1 buff
   and replaces it. The ID prefix check (`ae.effectId.includes('_body_')`) preserves
   any **body**-typed Tier 1 effect, so actually both `tier1_body_attack` and
@@ -177,6 +177,6 @@ describe('Briar Stance thorns (tier1_body_defend)', () => {
   it('getThornsReflect returns intensity × reflectDamage', () => { ... });
   it('getThornsReflect sums across multiple thorns effects', () => { ... });
   it('intensity increments on reapplication via applyEffect', () => { ... });
-  it('cleared by clearTier1EffectsForType on stance switch', () => { ... });
+  it('cleared by clearTier1EffectsForStance on stance switch', () => { ... });
 });
 ```

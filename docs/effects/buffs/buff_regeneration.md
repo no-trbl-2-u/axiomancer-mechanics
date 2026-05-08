@@ -11,7 +11,7 @@
 | **ID** | `buff_regeneration` |
 | **Type** | buff |
 | **Category** | regeneration |
-| **Tier** | Teir 2 |
+| **Tier** | Tier 2 |
 | **Duration** | 5 rounds |
 | **Stacking** | intensity |
 | **Resisted By** | mind |
@@ -21,7 +21,7 @@
 
 ## Description
 
-A Tier 2 regeneration buff. Heals `3 × currentIntensity` HP per round. Stacking by
+A Tier 2 regeneration buff. Heals `3 × intensity` HP per round. Stacking by
 intensity means each reapplication multiplies the healing output. Duration is 5 —
 the longest standard regeneration effect.
 
@@ -37,14 +37,14 @@ max).
 
 ### `payload.regeneration.healthPerRound: 3`
 
-Restores `3 × currentIntensity` HP at the start of each round.
+Restores `3 × intensity` HP at the start of each round.
 
 **LIVE:** `applyRegen` in `src/Combat/index.ts` sums this across all active effects
 with positive `healthPerRound` values. Scaling formula:
 
 ```
-healed += healthPerRound * (ae.currentIntensity ?? 1)
-        = 3 * currentIntensity
+healed += healthPerRound * (ae.intensity ?? 1)
+        = 3 * intensity
 ```
 
 ---
@@ -66,9 +66,9 @@ Healing is clamped to `maxHealth` via `healCharacter`.
 ```typescript
 const mockTarget = {
   health: 50, maxHealth: 100,
-  currentActiveEffects: [{
+  effects: [{
     effectId: 'buff_regeneration', remainingDuration: 5,
-    currentIntensity: 2, appliedAtRound: 1, teir: 'Teir 2'
+    intensity: 2, appliedAt: 1, tier: 'Tier 2'
   }]
 };
 const { healed } = applyRegen(mockTarget);

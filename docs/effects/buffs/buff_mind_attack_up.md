@@ -11,7 +11,7 @@
 | **ID** | `buff_mind_attack_up` |
 | **Type** | buff |
 | **Category** | stat |
-| **Tier** | Teir 2 |
+| **Tier** | Tier 2 |
 | **Duration** | 3 rounds |
 | **Stacking** | intensity |
 | **Resisted By** | heart |
@@ -56,7 +56,7 @@ Flat +2 to all rolls. **LIVE** via `getActiveRollModifier`.
 
 ## Combat Behaviour
 
-Tier 2 buff apply path in `isEffectApplied`. Nat 1 fizzles; nat 20 → intensity 2;
+Tier 2 buff apply path in `resolveEffectApplication`. Nat 1 fizzles; nat 20 → intensity 2;
 others → intensity 1. Reapplication increments intensity, resets duration.
 
 The +2 roll modifier immediately affects attack rolls in `combat.cli.ts`.
@@ -75,7 +75,7 @@ assert(mod === 2);
 ### 2. Crit/fumble on apply
 
 ```
-Nat 20 → currentIntensity === 2, message contains "double intensity"
+Nat 20 → intensity === 2, message contains "double intensity"
 Nat 1  → success === false, message contains "fizzles"
 ```
 

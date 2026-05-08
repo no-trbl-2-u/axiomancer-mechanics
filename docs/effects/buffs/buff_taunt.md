@@ -11,7 +11,7 @@
 | **ID** | `buff_taunt` |
 | **Type** | buff |
 | **Category** | control |
-| **Tier** | Teir 2 |
+| **Tier** | Tier 2 |
 | **Duration** | 3 rounds |
 | **Stacking** | none |
 | **Resisted By** | body |

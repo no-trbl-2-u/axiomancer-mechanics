@@ -11,7 +11,7 @@
 | **ID** | `tier1_heart_attack` |
 | **Type** | buff |
 | **Category** | stat |
-| **Tier** | Teir 1 |
+| **Tier** | Tier 1 |
 | **Duration** | 2 rounds |
 | **Stacking** | intensity |
 | **Resisted By** | — (auto-applies) |
@@ -83,13 +83,13 @@ Called from `combat.cli.ts` after a successful Heart/Attack hit on the enemy.
 ```typescript
 // src/Combat/index.ts
 export function removeRandomBuff(target) {
-    const buffs = target.currentActiveEffects.filter(
+    const buffs = target.effects.filter(
         ae => lookupEffect(ae.effectId)?.type === 'buff'
     );
     if (buffs.length === 0) return { target, removed: null };
     const removed = buffs[Math.floor(Math.random() * buffs.length)];
-    const updated = target.currentActiveEffects.filter(ae => ae !== removed);
-    return { target: { ...target, currentActiveEffects: updated }, removed };
+    const updated = target.effects.filter(ae => ae !== removed);
+    return { target: { ...target, effects: updated }, removed };
 }
 ```
 
@@ -103,7 +103,7 @@ Called from `combat.cli.ts` after a successful Heart/Attack hit.
 ```typescript
 // src/Combat/index.ts
 export function extendRandomBuffDuration(target, amount) {
-    const buffs = target.currentActiveEffects.filter(
+    const buffs = target.effects.filter(
         ae => lookupEffect(ae.effectId)?.type === 'buff'
     );
     if (buffs.length === 0) return { target, extended: null };
@@ -143,7 +143,7 @@ Applied to the actor. Default options.
 ### Combining with Ad Baculum
 
 If a player built up Body/Attack stacks (Ad Baculum, high intensity) before switching to
-Heart, the Ad Baculum buff is **cleared immediately** by `clearTier1EffectsForType`. The
+Heart, the Ad Baculum buff is **cleared immediately** by `clearTier1EffectsForStance`. The
 -5 from Fleeting Kindness is the dominant modifier on the first Heart/Attack round.
 
 ### When it is removed

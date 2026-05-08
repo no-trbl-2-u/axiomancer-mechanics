@@ -11,7 +11,7 @@
 | **ID** | `buff_heart_attack_up` |
 | **Type** | buff |
 | **Category** | stat |
-| **Tier** | Teir 2 |
+| **Tier** | Tier 2 |
 | **Duration** | 3 rounds |
 | **Stacking** | intensity |
 | **Resisted By** | body |

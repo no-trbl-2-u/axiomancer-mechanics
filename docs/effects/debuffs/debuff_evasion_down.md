@@ -11,7 +11,7 @@
 | **ID** | `debuff_evasion_down` |
 | **Type** | debuff |
 | **Category** | defense |
-| **Tier** | Teir 2 |
+| **Tier** | Tier 2 |
 | **Duration** | 3 rounds |
 | **Stacking** | duration |
 | **Resisted By** | heart |

@@ -11,7 +11,7 @@
 | **ID** | `buff_critical_damage_up` |
 | **Type** | buff |
 | **Category** | damage |
-| **Tier** | Teir 2 |
+| **Tier** | Tier 2 |
 | **Duration** | 3 rounds |
 | **Stacking** | none |
 | **Resisted By** | mind |

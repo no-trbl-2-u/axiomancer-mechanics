@@ -11,7 +11,7 @@
 | **ID** | `buff_gettiters_flicker` |
 | **Type** | buff |
 | **Category** | advantage |
-| **Tier** | Teir 1 |
+| **Tier** | Tier 1 |
 | **Duration** | 2 rounds |
 | **Stacking** | none |
 | **Resisted By** | heart |

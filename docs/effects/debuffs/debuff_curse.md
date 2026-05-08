@@ -11,7 +11,7 @@
 | **ID** | `debuff_curse` |
 | **Type** | debuff |
 | **Category** | stat |
-| **Tier** | Teir 2 |
+| **Tier** | Tier 2 |
 | **Duration** | 5 rounds |
 | **Stacking** | none |
 | **Resisted By** | body |

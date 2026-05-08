@@ -11,7 +11,7 @@
 | **ID** | `debuff_blind` |
 | **Type** | debuff |
 | **Category** | control |
-| **Tier** | Teir 2 |
+| **Tier** | Tier 2 |
 | **Duration** | 2 rounds |
 | **Stacking** | duration |
 | **Resisted By** | heart |

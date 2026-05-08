@@ -11,7 +11,7 @@
 | **ID** | `buff_resistance_body` |
 | **Type** | buff |
 | **Category** | defense |
-| **Tier** | Teir 2 |
+| **Tier** | Tier 2 |
 | **Duration** | 4 rounds |
 | **Stacking** | duration |
 | **Resisted By** | mind |

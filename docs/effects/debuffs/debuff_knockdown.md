@@ -11,7 +11,7 @@
 | **ID** | `debuff_knockdown` |
 | **Type** | debuff |
 | **Category** | control |
-| **Tier** | Teir 2 |
+| **Tier** | Tier 2 |
 | **Duration** | 1 round |
 | **Stacking** | none |
 | **Resisted By** | mind |

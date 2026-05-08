@@ -11,7 +11,7 @@
 | **ID** | `debuff_bleed` |
 | **Type** | debuff |
 | **Category** | damage |
-| **Tier** | Teir 2 |
+| **Tier** | Tier 2 |
 | **Duration** | 4 rounds |
 | **Stacking** | intensity |
 | **Resisted By** | mind |

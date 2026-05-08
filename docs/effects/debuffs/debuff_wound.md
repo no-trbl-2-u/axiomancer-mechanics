@@ -11,7 +11,7 @@
 | **ID** | `debuff_wound` |
 | **Type** | debuff |
 | **Category** | stat |
-| **Tier** | Teir 2 |
+| **Tier** | Tier 2 |
 | **Duration** | 4 rounds |
 | **Stacking** | intensity |
 | **Resisted By** | mind |
@@ -57,7 +57,7 @@ Currently no live mechanical effect — both fields are pending Phase 2.
 ```typescript
 const { activeEffects: ae1 } = applyEffect([], effect, 1);
 const { activeEffects: ae2 } = applyEffect(ae1, effect, 2);
-assert(ae2[0].currentIntensity === 2);
+assert(ae2[0].intensity === 2);
 ```
 
 ### 2. defenseModifier -2 (Phase 2)

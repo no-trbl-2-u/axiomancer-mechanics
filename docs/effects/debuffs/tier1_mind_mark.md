@@ -11,7 +11,7 @@
 | **ID** | `tier1_mind_mark` |
 | **Type** | debuff |
 | **Category** | stat |
-| **Tier** | Teir 1 |
+| **Tier** | Tier 1 |
 | **Duration** | 1 round (per Mind/Attack stack) |
 | **Stacking** | intensity |
 | **Resisted By** | — (auto-applies; no resist roll for Tier 1 debuffs) |
@@ -27,7 +27,7 @@ actions. It represents methodical study — cataloguing the enemy's weaknesses a
 over multiple rounds.
 
 The mark's `payload` is intentionally empty (`{}`). Its sole mechanical function is
-carried by its **intensity**: the integer `currentIntensity` is read directly by the
+carried by its **intensity**: the integer `intensity` is read directly by the
 Mind/Attack damage formula as a flat damage bonus.
 
 Tier 1 — auto-applies on opponent, no resist roll.
@@ -82,11 +82,11 @@ mind: {
 }
 ```
 
-Applied to the **opponent** via `applyTier1CombatEffectWithResult`. This is the only
+Applied to the **opponent** via `applyTier1CombatEffect`. This is the only
 Tier 1 effect that targets the opponent.
 
 Because it is a **debuff** on the opponent, it is **never removed** by the actor's own
-`clearTier1EffectsForType` call (that call only removes the actor's own self-buffs).
+`clearTier1EffectsForStance` call (that call only removes the actor's own self-buffs).
 The mark expires naturally via `tickAllEffects` on the opponent.
 
 ### Damage bonus formula
@@ -96,8 +96,8 @@ Called in `combat.cli.ts` during Mind/Attack resolution:
 ```typescript
 // src/Combat/index.ts
 export function getStudyMarkIntensity(target: Character | Enemy): number {
-    const mark = target.currentActiveEffects.find(e => e.effectId === MIND_MARK_ID);
-    return mark?.currentIntensity ?? 0;
+    const mark = target.effects.find(e => e.effectId === MIND_MARK_ID);
+    return mark?.intensity ?? 0;
 }
 ```
 
@@ -141,8 +141,8 @@ The player must maintain pressure to keep the mark's damage bonus alive.
 
 ## Interactions with Other Effects
 
-- **`clearTier1EffectsForType` on the opponent:** Enemies do not call
-  `clearTier1EffectsForType` for debuffs applied to them. The mark persists until
+- **`clearTier1EffectsForStance` on the opponent:** Enemies do not call
+  `clearTier1EffectsForStance` for debuffs applied to them. The mark persists until
   expired by tick. (Only self-applied Tier 1 buffs on the actor are cleared on stance
   switch.)
 - **`debuff_dispel` (Skolem's Reduction):** When the dispel mechanic is implemented,
@@ -198,12 +198,12 @@ Automated:
   // Two Mind/Attack applications
   const { activeEffects: ae1 } = applyEffect([], effect, 1, opts1);
   const { activeEffects: ae2 } = applyEffect(ae1, effect, 2, opts1);
-  assert(ae2[0].currentIntensity === 2);
+  assert(ae2[0].intensity === 2);
   assert(ae2[0].remainingDuration === 2);  // 1 + 1 additive
 
   // One Mind/Defend application on top
   const { activeEffects: ae3 } = applyEffect(ae2, effect, 3, opts3);
-  assert(ae3[0].currentIntensity === 5);
+  assert(ae3[0].intensity === 5);
   assert(ae3[0].remainingDuration === 5);  // 2 + 3 additive
 ```
 
@@ -213,19 +213,19 @@ Automated:
 Automated:
   import { tickAllEffects } from 'src/Combat/index.ts';
 
-  const target = { ...mockEnemy, currentActiveEffects: [{
-    effectId: 'tier1_mind_mark', remainingDuration: 1, currentIntensity: 3, ...
+  const target = { ...mockEnemy, effects: [{
+    effectId: 'tier1_mind_mark', remainingDuration: 1, intensity: 3, ...
   }]};
   const { target: t1, expired } = tickAllEffects(target);
   assert(expired.length === 1);
-  assert(t1.currentActiveEffects.length === 0);
+  assert(t1.effects.length === 0);
 ```
 
-### 6. Verify it is NOT cleared by actor's clearTier1EffectsForType
+### 6. Verify it is NOT cleared by actor's clearTier1EffectsForStance
 
 ```
 The mark lives on the enemy, not the actor.
-clearTier1EffectsForType is called on the actor's own effects.
+clearTier1EffectsForStance is called on the actor's own effects.
 The enemy's effects array is separate — confirmed by checking that
 the mark survives the player switching stances.
 ```
@@ -236,15 +236,15 @@ the mark survives the player switching stances.
 // src/Combat/index.test.ts
 describe('getStudyMarkIntensity', () => {
   it('returns 0 when no mark is present', () => { ... });
-  it('returns currentIntensity of tier1_mind_mark', () => { ... });
+  it('returns intensity of tier1_mind_mark', () => { ... });
 });
 
 // src/Effects/index.test.ts
 describe('Exposed Reasoning (tier1_mind_mark)', () => {
-  it('target is opponent, not self', () => { ... }); // verify via applyTier1CombatEffectWithResult
+  it('target is opponent, not self', () => { ... }); // verify via applyTier1CombatEffect
   it('Mind/Attack applies +1/+1 delta', () => { ... });
   it('Mind/Defend applies +3/+3 delta', () => { ... });
   it('additive duration accumulates across applications', () => { ... });
-  it('is not cleared by clearTier1EffectsForType on actor', () => { ... });
+  it('is not cleared by clearTier1EffectsForStance on actor', () => { ... });
 });
 ```

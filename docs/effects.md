@@ -27,8 +27,8 @@ documents in [`docs/effects/`](./effects/).
 ## Overview
 
 Effects are temporary modifiers applied to combatants during battle. Every effect is stored
-as an `ActiveEffect` instance on `character.currentActiveEffects` or
-`enemy.currentActiveEffects`. Effect data is loaded at runtime from
+as an `ActiveEffect` instance on `character.effects` or
+`enemy.effects`. Effect data is loaded at runtime from
 `src/Effects/buffs.library.json` and `src/Effects/debuffs.library.json` and keyed into an
 in-memory `Map` by `effect.id` via `src/Effects/effects.library.ts`.
 
@@ -42,9 +42,9 @@ All effect application logic lives in `src/Effects/index.ts`. All combat-time he
 
 | Tier   | Resist DR   | Rule                                                              |
 |--------|-------------|-------------------------------------------------------------------|
-| Teir 1 | —           | Auto-applies. No resist roll. Always lands.                       |
-| Teir 2 | 12 – 14     | Resist roll required (buff: fumble only; debuff: roll vs DR).     |
-| Teir 3 | 17 – 18     | Only a natural 20 on the resist roll repels it.                   |
+| Tier 1 | —           | Auto-applies. No resist roll. Always lands.                       |
+| Tier 2 | 12 – 14     | Resist roll required (buff: fumble only; debuff: roll vs DR).     |
+| Tier 3 | 17 – 18     | Only a natural 20 on the resist roll repels it.                   |
 
 Each effect carries two resist fields (copied onto the `ActiveEffect` for fast lookup):
 
@@ -53,7 +53,7 @@ Each effect carries two resist fields (copied onto the `ActiveEffect` for fast l
 
 **RPS Rule:** Body effects are resisted by Mind. Mind effects by Heart. Heart effects by Body.
 
-### Teir 2 — Buff (caster rolls)
+### Tier 2 — Buff (caster rolls)
 
 | Result    | Outcome                                         |
 |-----------|-------------------------------------------------|
@@ -61,11 +61,11 @@ Each effect carries two resist fields (copied onto the `ActiveEffect` for fast l
 | Natural 20 | Crit focus — buff applies at **2× intensity**. |
 | Any other | Auto-succeeds.                                  |
 
-### Teir 2 — Debuff (target rolls to resist)
+### Tier 2 — Debuff (target rolls to resist)
 
 ```
 DR   = effect.resistDR + attacker.baseStats.heart + equipmentBonus
-Roll = d20 + target.derivedStats[resistedBy defense]
+Roll = d20 + target.baseStats[resistedBy]
 ```
 
 | Result         | Outcome                                                              |
@@ -75,7 +75,7 @@ Roll = d20 + target.derivedStats[resistedBy defense]
 | Roll ≥ DR      | Resisted — no effect.                                                |
 | Roll < DR      | Lands normally.                                                      |
 
-### Teir 3
+### Tier 3
 
 | Result     | Outcome                   |
 |------------|---------------------------|
@@ -89,7 +89,7 @@ Roll = d20 + target.derivedStats[resistedBy defense]
 | Mode        | Behaviour                                                                                                  |
 |-------------|-------------------------------------------------------------------------------------------------------------|
 | `none`      | Strongest instance wins. Equal or weaker re-application is ignored. Duration is **not** refreshed.          |
-| `intensity` | `currentIntensity` increments by `intensityDelta` each application (capped at `MAX_EFFECT_INTENSITY = 10`). Duration resets or extends additively per `ApplyEffectOptions`. |
+| `intensity` | `intensity` increments by `intensityDelta` each application (capped at `MAX_EFFECT_INTENSITY = 10`). Duration resets or extends additively per `ApplyEffectOptions`. |
 | `duration`  | `remainingDuration` extends by `effect.duration` on reapply (capped at `MAX_EFFECT_DURATION = 10`).         |
 
 `ApplyEffectOptions` (used by Tier 1 system):
@@ -120,7 +120,7 @@ Every effect's mechanical modifications live in its `payload` object.
     // LIVE: summed by getActiveRollModifier() in src/Combat/index.ts.
     "rollModifier": 2,
 
-    // Per-stack roll bonus/penalty. Total = rollModifierPerIntensity × currentIntensity.
+    // Per-stack roll bonus/penalty. Total = rollModifierPerIntensity × intensity.
     // LIVE: included in getActiveRollModifier() sum.
     "rollModifierPerIntensity": 1,
 
@@ -169,7 +169,7 @@ Every effect's mechanical modifications live in its `payload` object.
 | Field                     | Status       | Where consumed                              |
 |---------------------------|--------------|---------------------------------------------|
 | `rollModifier`            | **LIVE**     | `getActiveRollModifier()` — `src/Combat/index.ts` |
-| `rollModifierPerIntensity` | **LIVE**    | `getActiveRollModifier()` — scaled by `currentIntensity` |
+| `rollModifierPerIntensity` | **LIVE**    | `getActiveRollModifier()` — scaled by `intensity` |
 | `reflectDamage`           | **LIVE**     | `getThornsReflect()` — `src/Combat/index.ts` |
 | `regeneration.healthPerRound` | **LIVE** | `applyRegen()` — `src/Combat/index.ts` (positive values only) |
 | `statModifiers`           | **PENDING**  | Defined in data; not auto-applied to `derivedStats` yet |
@@ -190,9 +190,9 @@ combatant:
 {
   effectId:          string;            // references Effect.id in the library
   remainingDuration: number;            // rounds until expiry; -1 = permanent
-  currentIntensity:  number;            // stack level for intensity-stacking effects
-  appliedAtRound:    number;            // which combat round the effect was first applied
-  teir:              'Teir 1' | 'Teir 2' | 'Teir 3';
+  intensity:         number;            // stack level for intensity-stacking effects
+  appliedAt:         number;            // which combat round the effect was first applied
+  tier:              1 | 2 | 3;
   resistedBy?:       Stance;            // copied from Effect for fast resist lookup
   resistDR?:         number;            // copied from Effect for fast resist lookup
   sourceId?:         string;            // ID of who applied it (optional attribution)
@@ -219,8 +219,8 @@ specific function in which it happens.
 **Function:** `getActiveRollModifier(target)` — `src/Combat/index.ts`
 
 ```
-total = Σ (def.payload.rollModifier + def.payload.rollModifierPerIntensity × ae.currentIntensity)
-        for each ae in target.currentActiveEffects
+total = Σ (def.payload.rollModifier + def.payload.rollModifierPerIntensity × ae.intensity)
+        for each ae in target.effects
 ```
 
 Called in `combat.cli.ts` to adjust attack and damage rolls before they are applied.
@@ -231,12 +231,12 @@ Both fields are summed across **all** active effects simultaneously.
 **Function:** `getThornsReflect(bearer)` — `src/Combat/index.ts`
 
 ```
-total = Σ (def.payload.reflectDamage × ae.currentIntensity)
-        for each ae in bearer.currentActiveEffects
+total = Σ (def.payload.reflectDamage × ae.intensity)
+        for each ae in bearer.effects
 ```
 
 Called in `combat.cli.ts` after a successful hit on the bearer. The total is dealt as
-reflect damage back to the attacker. Scales with `currentIntensity` — higher stacks deal
+reflect damage back to the attacker. Scales with `intensity` — higher stacks deal
 more thorns.
 
 ### `regeneration.healthPerRound`
@@ -244,12 +244,12 @@ more thorns.
 **Function:** `applyRegen(target)` — `src/Combat/index.ts`
 
 ```
-healed = Σ (def.payload.regeneration.healthPerRound × ae.currentIntensity)
+healed = Σ (def.payload.regeneration.healthPerRound × ae.intensity)
          for each ae where healthPerRound > 0
 ```
 
 Called at the **start of each round** before the player makes a choice. Scales with
-`currentIntensity` — stacking regen effects heal more per round. Negative
+`intensity` — stacking regen effects heal more per round. Negative
 `healthPerRound` values in the data (e.g. `debuff_disease`, `debuff_hp_decay`) are
 **skipped** by the current implementation (`perRound <= 0` check). The drain mechanic
 will be enabled in Phase 2.
@@ -259,9 +259,9 @@ will be enabled in Phase 2.
 **Function:** `getStudyMarkIntensity(target)` — `src/Combat/index.ts`
 
 ```
-intensity = target.currentActiveEffects
+intensity = target.effects
               .find(e => e.effectId === 'tier1_mind_mark')
-              ?.currentIntensity ?? 0
+              ?.intensity ?? 0
 ```
 
 Called in `combat.cli.ts` during Mind/Attack resolution. The mark's intensity is
@@ -289,7 +289,7 @@ as `expired[]` so the CLI can display expiry messages.
 
 ### Tier 1 application
 
-**Functions:** `applyTier1CombatEffectWithResult` / `applyTier1CombatEffect`
+**Function:** `applyTier1CombatEffect`
 — `src/Effects/index.ts`
 
 Called once per combatant per round, right after clearing stale Tier 1 buffs. The Tier 1
@@ -299,7 +299,7 @@ opponent; all other stances target self.
 
 ### Stance-switch buff clearing
 
-**Function:** `clearTier1EffectsForType(activeEffects, currentType)`
+**Function:** `clearTier1EffectsForStance(activeEffects, currentType)`
 — `src/Effects/index.ts`
 
 Removes any active Tier 1 buff whose effect ID contains a **different** stance prefix
@@ -308,12 +308,12 @@ here. Called once per combatant per round, before Tier 1 application.
 
 ### Resist resolution (Tier 2 / Tier 3)
 
-**Function:** `isEffectApplied(target, activeEffect, effectType, attackerHeartBonus, equipmentBonus)`
+**Function:** `resolveEffectApplication(target, activeEffect, effectType, attackerHeartBonus, equipmentBonus)`
 — `src/Combat/index.ts`
 
-Uses `getResistStatFromResistedBy(target, activeEffect.resistedBy)` (from
-`src/Character/index.ts`) to read the target's **derived defence stat** for the
-appropriate stance, then applies the Tier 2/3 resolution rules described above.
+Uses `getResistStat(target, activeEffect.resistedBy)` (from
+`src/Combat/stats.ts`) to read the target's **base stat** for the resisting stance,
+then applies the Tier 2/3 resolution rules described above.
 
 ---
 
@@ -323,8 +323,8 @@ The combat CLI processes effects in this order each round:
 
 ```
 1. applyRegen          — Start-of-round heal (player then enemy)
-2. clearTier1EffectsForType — Remove stale Tier 1 stance buffs (player then enemy)
-3. applyTier1CombatEffectWithResult — Apply new Tier 1 stance effect (player then enemy)
+2. clearTier1EffectsForStance — Remove stale Tier 1 stance buffs (player then enemy)
+3. applyTier1CombatEffect — Apply new Tier 1 stance effect (player then enemy)
 4. Resolve attacks:
      a. getActiveRollModifier   — Modifier to attack/damage rolls
      b. getStudyMarkIntensity   — Mind mark damage bonus
@@ -358,45 +358,45 @@ Full per-effect documentation: [`docs/effects/buffs/`](./effects/buffs/)
 
 | ID | Name | Tier | Category | Dur | Stack | resistedBy | resistDR | Payload Summary |
 |----|------|------|----------|-----|-------|-----------|---------|-----------------|
-| `tier1_body_attack` | Ad Baculum | Teir 1 | stat | 2 | intensity | — | — | `+physicalAttack 1`, `rollModifierPerIntensity 1` |
-| `tier1_body_defend` | Briar Stance | Teir 1 | defense | 3 | intensity | — | — | `reflectDamage 1` per intensity |
-| `tier1_heart_defend` | Vital Empathy | Teir 1 | regeneration | 3 | intensity | — | — | `healthPerRound 1` per intensity |
-| `tier1_heart_attack` | Fleeting Kindness | Teir 1 | stat | 2 | intensity | — | — | `rollModifier -5` |
-| `buff_body_attack_up` | Achilles' Momentum | Teir 2 | stat | 3 | intensity | mind | 13 | `+body 2`, `+physicalSkill 3`, `rollModifier +2` |
-| `buff_mind_attack_up` | Schrödinger's Focus | Teir 2 | stat | 3 | intensity | heart | 13 | `+mind 2`, `+mentalSkill 3`, `rollModifier +2` |
-| `buff_heart_attack_up` | Bootstrap Passion | Teir 2 | stat | 3 | intensity | body | 13 | `+heart 2`, `+emotionalSkill 3`, `rollModifier +2` |
-| `buff_body_defense_up` | Theseus' Constitution | Teir 2 | defense | 4 | duration | mind | 12 | `+body 2`, `+physicalDefense 3`, `defenseModifier +2` |
-| `buff_mind_defense_up` | Epistemic Shield | Teir 2 | defense | 4 | duration | heart | 12 | `+mind 2`, `+mentalDefense 3`, `defenseModifier +2` |
-| `buff_heart_defense_up` | Paradox of Tolerance | Teir 2 | defense | 4 | duration | body | 12 | `+heart 2`, `+emotionalDefense 3`, `defenseModifier +2` |
-| `buff_defend_up` | Hilbert's Shelter | Teir 2 | defense | 3 | none | heart | 14 | `defenseModifier +4`, `+body/mind/heart 1`, `+physDef/menDef/emoDef 2` |
-| `buff_accuracy_up` | Bertrand's Precision | Teir 2 | advantage | 3 | intensity | heart | 13 | `rollModifier +3`, `+physSkill/menSkill/emoSkill 2` |
-| `buff_evasion_up` | Arrow's Impossibility | Teir 2 | defense | 3 | duration | mind | 13 | `defenseModifier +3`, `+allDefense 2`, `grantDisadvantage [body,mind,heart]` |
-| `buff_critical_rate_up` | Observer's Collapse | Teir 2 | advantage | 4 | intensity | heart | 12 | `rollModifier +2`, `+luck 2` |
-| `buff_critical_damage_up` | Banach-Tarski Strike | Teir 2 | damage | 3 | none | mind | 14 | `×body 1.5`, `×mind 1.5`, `×heart 1.5` (multipliers) |
-| `buff_haste` | Twin's Dilation | Teir 3 | advantage | 2 | none | mind | 17 | `rollModifier +4`, `grantAdvantage [body,mind,heart]` |
-| `buff_regeneration` | Tristram's Recovery | Teir 2 | regeneration | 5 | intensity | mind | 12 | `healthPerRound 3` per intensity |
-| `buff_max_hp_up` | Galileo's Infinity | Teir 2 | stat | 5 | none | mind | 13 | `×body 1.25` (multiplier) |
-| `buff_barrier` | Gabriel's Horn | Teir 2 | defense | 3 | none | heart | 13 | `defenseModifier +5` |
-| `buff_damage_reduction` | Dichotomy Shield | Teir 2 | defense | 3 | none | heart | 13 | `defenseModifier +5` |
-| `buff_invincibility` | EPR Entanglement | Teir 3 | defense | 1 | none | heart | 18 | `defenseModifier +99` |
-| `buff_taunt` | Crocodile's Promise | Teir 2 | control | 3 | none | body | 12 | `defenseModifier +2`, `+body 1` |
-| `buff_stealth` | Fermi's Absence | Teir 2 | advantage | 2 | none | mind | 14 | `defenseModifier +6`, `grantAdvantage [body,mind,heart]` |
-| `buff_all_stats_up` | Sorites Ascension | Teir 2 | stat | 3 | none | heart | 14 | `+body/mind/heart 2`, `+allSkill 1`, `+luck 1`, `rollModifier +1` |
-| `buff_reflect` | Russell's Mirror | Teir 2 | defense | 2 | none | heart | 13 | `defenseModifier +2` |
-| `buff_counter` | Newcomb's Retribution | Teir 2 | advantage | 3 | none | mind | 13 | `rollModifier +2`, `grantAdvantage [body]` |
-| `buff_resistance_body` | Pole in Barn | Teir 2 | defense | 4 | duration | mind | 13 | `+body 3`, `+physicalDefense 4`, `+physicalSave 3` |
-| `buff_resistance_mind` | Liar's Shield | Teir 2 | defense | 4 | duration | heart | 13 | `+mind 3`, `+mentalDefense 4`, `+mentalSave 3` |
-| `buff_resistance_heart` | Fiction's Wall | Teir 2 | defense | 4 | duration | body | 13 | `+heart 3`, `+emotionalDefense 4`, `+emotionalSave 3` |
-| `buff_cleanse` | Barber's Paradox | Teir 2 | stat | 0 | none | heart | 12 | `{}` (instant — removes debuffs; mechanic pending) |
-| `buff_buff_duration_up` | Unexpected Extension | Teir 2 | advantage | 3 | none | heart | 12 | `rollModifier +1` |
-| `buff_status_chance_up` | Monty's Advantage | Teir 2 | advantage | 4 | none | heart | 13 | `rollModifier +3` |
-| `buff_life_steal` | Maxwell's Siphon | Teir 2 | regeneration | 4 | intensity | mind | 12 | `healthPerRound 2` per intensity, `rollModifier +1` |
-| `buff_advantage_body` | Predestination Strength | Teir 2 | advantage | 3 | none | mind | 13 | `grantAdvantage [body]`, `+body 1`, `+physicalSkill 2` |
-| `buff_advantage_mind` | Knowability Insight | Teir 2 | advantage | 3 | none | heart | 13 | `grantAdvantage [mind]`, `+mind 1`, `+mentalSkill 2` |
-| `buff_advantage_heart` | Hedonist's Loop | Teir 2 | advantage | 3 | none | body | 13 | `grantAdvantage [heart]`, `+heart 1`, `+emotionalSkill 2` |
-| `buff_petitio_pulse` | Petitio Principii Pulse | Teir 1 | stat | 2 | none | body | 10 | `+heart 1` |
-| `buff_gettiters_flicker` | Gettier's Flicker | Teir 1 | advantage | 2 | none | heart | 10 | `+luck 1` |
-| `buff_ad_hoc_patch` | Ad Hoc Patch | Teir 1 | stat | 2 | none | mind | 10 | `+physicalSkill 1` |
+| `tier1_body_attack` | Ad Baculum | Tier 1 | stat | 2 | intensity | — | — | `+physicalAttack 1`, `rollModifierPerIntensity 1` |
+| `tier1_body_defend` | Briar Stance | Tier 1 | defense | 3 | intensity | — | — | `reflectDamage 1` per intensity |
+| `tier1_heart_defend` | Vital Empathy | Tier 1 | regeneration | 3 | intensity | — | — | `healthPerRound 1` per intensity |
+| `tier1_heart_attack` | Fleeting Kindness | Tier 1 | stat | 2 | intensity | — | — | `rollModifier -5` |
+| `buff_body_attack_up` | Achilles' Momentum | Tier 2 | stat | 3 | intensity | mind | 13 | `+body 2`, `+physicalSkill 3`, `rollModifier +2` |
+| `buff_mind_attack_up` | Schrödinger's Focus | Tier 2 | stat | 3 | intensity | heart | 13 | `+mind 2`, `+mentalSkill 3`, `rollModifier +2` |
+| `buff_heart_attack_up` | Bootstrap Passion | Tier 2 | stat | 3 | intensity | body | 13 | `+heart 2`, `+emotionalSkill 3`, `rollModifier +2` |
+| `buff_body_defense_up` | Theseus' Constitution | Tier 2 | defense | 4 | duration | mind | 12 | `+body 2`, `+physicalDefense 3`, `defenseModifier +2` |
+| `buff_mind_defense_up` | Epistemic Shield | Tier 2 | defense | 4 | duration | heart | 12 | `+mind 2`, `+mentalDefense 3`, `defenseModifier +2` |
+| `buff_heart_defense_up` | Paradox of Tolerance | Tier 2 | defense | 4 | duration | body | 12 | `+heart 2`, `+emotionalDefense 3`, `defenseModifier +2` |
+| `buff_defend_up` | Hilbert's Shelter | Tier 2 | defense | 3 | none | heart | 14 | `defenseModifier +4`, `+body/mind/heart 1`, `+physDef/menDef/emoDef 2` |
+| `buff_accuracy_up` | Bertrand's Precision | Tier 2 | advantage | 3 | intensity | heart | 13 | `rollModifier +3`, `+physSkill/menSkill/emoSkill 2` |
+| `buff_evasion_up` | Arrow's Impossibility | Tier 2 | defense | 3 | duration | mind | 13 | `defenseModifier +3`, `+allDefense 2`, `grantDisadvantage [body,mind,heart]` |
+| `buff_critical_rate_up` | Observer's Collapse | Tier 2 | advantage | 4 | intensity | heart | 12 | `rollModifier +2`, `+luck 2` |
+| `buff_critical_damage_up` | Banach-Tarski Strike | Tier 2 | damage | 3 | none | mind | 14 | `×body 1.5`, `×mind 1.5`, `×heart 1.5` (multipliers) |
+| `buff_haste` | Twin's Dilation | Tier 3 | advantage | 2 | none | mind | 17 | `rollModifier +4`, `grantAdvantage [body,mind,heart]` |
+| `buff_regeneration` | Tristram's Recovery | Tier 2 | regeneration | 5 | intensity | mind | 12 | `healthPerRound 3` per intensity |
+| `buff_max_hp_up` | Galileo's Infinity | Tier 2 | stat | 5 | none | mind | 13 | `×body 1.25` (multiplier) |
+| `buff_barrier` | Gabriel's Horn | Tier 2 | defense | 3 | none | heart | 13 | `defenseModifier +5` |
+| `buff_damage_reduction` | Dichotomy Shield | Tier 2 | defense | 3 | none | heart | 13 | `defenseModifier +5` |
+| `buff_invincibility` | EPR Entanglement | Tier 3 | defense | 1 | none | heart | 18 | `defenseModifier +99` |
+| `buff_taunt` | Crocodile's Promise | Tier 2 | control | 3 | none | body | 12 | `defenseModifier +2`, `+body 1` |
+| `buff_stealth` | Fermi's Absence | Tier 2 | advantage | 2 | none | mind | 14 | `defenseModifier +6`, `grantAdvantage [body,mind,heart]` |
+| `buff_all_stats_up` | Sorites Ascension | Tier 2 | stat | 3 | none | heart | 14 | `+body/mind/heart 2`, `+allSkill 1`, `+luck 1`, `rollModifier +1` |
+| `buff_reflect` | Russell's Mirror | Tier 2 | defense | 2 | none | heart | 13 | `defenseModifier +2` |
+| `buff_counter` | Newcomb's Retribution | Tier 2 | advantage | 3 | none | mind | 13 | `rollModifier +2`, `grantAdvantage [body]` |
+| `buff_resistance_body` | Pole in Barn | Tier 2 | defense | 4 | duration | mind | 13 | `+body 3`, `+physicalDefense 4`, `+physicalSave 3` |
+| `buff_resistance_mind` | Liar's Shield | Tier 2 | defense | 4 | duration | heart | 13 | `+mind 3`, `+mentalDefense 4`, `+mentalSave 3` |
+| `buff_resistance_heart` | Fiction's Wall | Tier 2 | defense | 4 | duration | body | 13 | `+heart 3`, `+emotionalDefense 4`, `+emotionalSave 3` |
+| `buff_cleanse` | Barber's Paradox | Tier 2 | stat | 0 | none | heart | 12 | `{}` (instant — removes debuffs; mechanic pending) |
+| `buff_buff_duration_up` | Unexpected Extension | Tier 2 | advantage | 3 | none | heart | 12 | `rollModifier +1` |
+| `buff_status_chance_up` | Monty's Advantage | Tier 2 | advantage | 4 | none | heart | 13 | `rollModifier +3` |
+| `buff_life_steal` | Maxwell's Siphon | Tier 2 | regeneration | 4 | intensity | mind | 12 | `healthPerRound 2` per intensity, `rollModifier +1` |
+| `buff_advantage_body` | Predestination Strength | Tier 2 | advantage | 3 | none | mind | 13 | `grantAdvantage [body]`, `+body 1`, `+physicalSkill 2` |
+| `buff_advantage_mind` | Knowability Insight | Tier 2 | advantage | 3 | none | heart | 13 | `grantAdvantage [mind]`, `+mind 1`, `+mentalSkill 2` |
+| `buff_advantage_heart` | Hedonist's Loop | Tier 2 | advantage | 3 | none | body | 13 | `grantAdvantage [heart]`, `+heart 1`, `+emotionalSkill 2` |
+| `buff_petitio_pulse` | Petitio Principii Pulse | Tier 1 | stat | 2 | none | body | 10 | `+heart 1` |
+| `buff_gettiters_flicker` | Gettier's Flicker | Tier 1 | advantage | 2 | none | heart | 10 | `+luck 1` |
+| `buff_ad_hoc_patch` | Ad Hoc Patch | Tier 1 | stat | 2 | none | mind | 10 | `+physicalSkill 1` |
 
 ---
 
@@ -406,52 +406,52 @@ Full per-effect documentation: [`docs/effects/debuffs/`](./effects/debuffs/)
 
 | ID | Name | Tier | Category | Dur | Stack | resistedBy | resistDR | Payload Summary |
 |----|------|------|----------|-----|-------|-----------|---------|-----------------|
-| `tier1_mind_mark` | Exposed Reasoning | Teir 1 | stat | 1 | intensity | — | — | `{}` — intensity = Mind attack damage bonus |
-| `debuff_all_stats_down` | Heap's Collapse | Teir 2 | stat | 3 | intensity | heart | 13 | `-body/mind/heart 2`, `-allSkill 1`, `rollModifier -1` |
-| `debuff_poison` | Curry's Corruption | Teir 2 | damage | 4 | intensity | mind | 13 | `DoT 3/rd (body)` |
-| `debuff_strong_poison` | Yablo's Venom | Teir 2 | damage | 3 | intensity | mind | 14 | `DoT 5/rd (body)`, `-body 1` |
-| `debuff_bleed` | Theseus' Dissolution | Teir 2 | damage | 4 | intensity | mind | 12 | `DoT 2/rd (body)` |
-| `debuff_burn` | Olbers' Fire | Teir 2 | damage | 3 | intensity | body | 13 | `DoT 4/rd (heart)`, `-heart 1` |
-| `debuff_frostbite` | Boltzmann's Chill | Teir 2 | damage | 3 | duration | mind | 12 | `DoT 2/rd (body)`, `rollModifier -2` |
-| `debuff_shock` | Hardy's Discharge | Teir 2 | damage | 2 | intensity | heart | 13 | `DoT 3/rd (mind)`, `rollModifier -1` |
-| `debuff_curse` | Grelling's Malediction | Teir 2 | stat | 5 | none | body | 14 | `-body 1`, `-mind 1`, `-heart 2`, `rollModifier -2` |
-| `debuff_disease` | Inspection Sickness | Teir 2 | damage | 4 | duration | mind | 12 | `DoT 2/rd (body)`, `healthPerRound -1` (pending) |
-| `debuff_wound` | Berry's Injury | Teir 2 | stat | 4 | intensity | mind | 13 | `-body 2`, `defenseModifier -2` |
-| `debuff_stun` | Buridan's Paralysis | Teir 2 | control | 1 | duration | heart | 14 | `skipTurn true` (pending) |
-| `debuff_sleep` | Sleeping Beauty's Rest | Teir 2 | control | 2 | none | heart | 13 | `skipTurn true`, `defenseModifier -3` (pending) |
-| `debuff_daze` | Simpson's Confusion | Teir 2 | control | 2 | duration | heart | 12 | `rollModifier -3`, `-mind 2`, `-mentalSkill 2`, `-mentalDefense 1` |
-| `debuff_petrify` | Zeno's Stillness | Teir 3 | control | 2 | none | heart | 17 | `skipTurn true`, `defenseModifier -4` (pending) |
-| `debuff_fear` | Grandfather's Terror | Teir 2 | control | 2 | duration | body | 13 | `rollModifier -3`, `-heart 3`, `-emotionalSkill 2`, `-emotionalDefense 2` |
-| `debuff_charm` | Wigner's Friendship | Teir 2 | control | 2 | none | body | 14 | `forcedStance heart`, `-heart 2`, `-emotionalDefense 2` (pending) |
-| `debuff_confusion` | Two Envelope Delirium | Teir 2 | control | 3 | duration | heart | 13 | `rollModifier -4`, `grantDisadvantage [body,mind,heart]` |
-| `debuff_blind` | Quantum Erasure | Teir 2 | control | 2 | duration | heart | 13 | `rollModifier -5`, `grantDisadvantage [body,mind]` |
-| `debuff_silence` | Moore's Muteness | Teir 2 | control | 3 | none | body | 13 | `blockedStances [heart]`, `-heart 2`, `-emotionalSkill 3` (pending) |
-| `debuff_berserk` | Problem of Evil | Teir 2 | stat | 3 | none | heart | 13 | `+body 3`, `-mind 4`, `-heart 2`, `+physSkill 2`, `-menSkill 3`, `-menDef 2`, `defenseModifier -3` |
-| `debuff_fatigue` | Preface Exhaustion | Teir 2 | stat | 4 | intensity | heart | 12 | `-body/mind 1`, `-physSkill/menSkill 1`, `rollModifier -1` |
-| `debuff_exhaustion` | Lottery Despair | Teir 2 | stat | 3 | intensity | heart | 13 | `-body/mind/heart 2`, `-allSkill 1`, `rollModifier -2` |
-| `debuff_slow` | Achilles' Burden | Teir 2 | control | 3 | duration | mind | 12 | `rollModifier -2`, `-physicalSkill 2`, `grantDisadvantage [body]` |
-| `debuff_root` | Braess Binding | Teir 2 | control | 2 | duration | mind | 13 | `defenseModifier -2`, `rollModifier -2` |
-| `debuff_knockdown` | Ross-Littlewood Fall | Teir 2 | control | 1 | none | mind | 12 | `defenseModifier -4`, `rollModifier -3` |
-| `debuff_vulnerability_body` | Richard's Exposure | Teir 2 | defense | 3 | duration | mind | 13 | `-body 3`, `-physicalDefense 4`, `-physicalSave 3` |
-| `debuff_vulnerability_mind` | Cantor's Gap | Teir 2 | defense | 3 | duration | heart | 13 | `-mind 3`, `-mentalDefense 4`, `-mentalSave 3` |
-| `debuff_vulnerability_heart` | Burali-Forti Wound | Teir 2 | defense | 3 | duration | body | 13 | `-heart 3`, `-emotionalDefense 4`, `-emotionalSave 3` |
-| `debuff_mark` | Raven's Target | Teir 2 | advantage | 3 | none | heart | 13 | `defenseModifier -3`, `grantDisadvantage [body,mind,heart]` |
-| `debuff_body_attack_down` | Omnipotence Failure | Teir 2 | stat | 3 | intensity | mind | 13 | `-body 2`, `-physicalSkill 3`, `rollModifier -1` |
-| `debuff_mind_attack_down` | GHZ Collapse | Teir 2 | stat | 3 | intensity | heart | 13 | `-mind 2`, `-mentalSkill 3`, `rollModifier -1` |
-| `debuff_heart_attack_down` | Toxin Hesitation | Teir 2 | stat | 3 | intensity | body | 13 | `-heart 2`, `-emotionalSkill 3`, `rollModifier -1` |
-| `debuff_evasion_down` | Dartboard Certainty | Teir 2 | defense | 3 | duration | heart | 13 | `defenseModifier -3`, `-allDefense 2` |
-| `debuff_accuracy_down` | Ellsberg's Doubt | Teir 2 | advantage | 3 | duration | heart | 12 | `rollModifier -3`, `-allSkill 2` |
-| `debuff_defense_down` | Prisoner's Betrayal | Teir 2 | defense | 3 | intensity | heart | 13 | `defenseModifier -3`, `-body 1`, `-physicalDefense 2` |
-| `debuff_dispel` | Skolem's Reduction | Teir 2 | stat | 0 | none | heart | 12 | `{}` (instant — removes buffs; mechanic pending) |
-| `debuff_hex` | Allais' Curse | Teir 2 | damage | 3 | none | body | 13 | `DoT 2/rd (heart)` |
-| `debuff_hp_decay` | Centipede's End | Teir 2 | damage | 4 | none | mind | 13 | `DoT 3/rd (body)`, `healthPerRound -2` (pending) |
-| `debuff_moral_learning` | Moral Blindness | Teir 2 | control | 3 | none | body | 12 | `-heart 2`, `-mind 1`, `-emotionalSkill 2`, `-mentalSkill 1`, `rollModifier -1` |
-| `debuff_transformative` | Transformative Terror | Teir 2 | control | 2 | none | heart | 13 | `rollModifier -2`, `-mind 2`, `-heart 1`, `-mentalSkill 2`, `-emotionalDefense 1` |
-| `debuff_rational_disagreement` | Peer Doubt | Teir 2 | stat | 2 | duration | heart | 12 | `-mind 3`, `-mentalSkill 2`, `-mentalDefense 1`, `rollModifier -2` |
-| `debuff_straw_man_echo` | Straw Man's Echo | Teir 1 | advantage | 2 | none | body | 10 | `rollModifier -1` |
-| `debuff_post_hoc_tremor` | Post Hoc Tremor | Teir 1 | stat | 2 | none | mind | 10 | `-body 1` |
-| `debuff_affirming_consequent` | Affirming the Consequent | Teir 1 | stat | 2 | none | mind | 10 | `-physicalSkill 1` |
-| `debuff_causal_emergence` | Emergence Failure | Teir 2 | control | 2 | none | heart | 13 | `rollModifier -2`, `-mind 2`, `-mentalSkill 2`, `-physicalSkill 1`, `grantDisadvantage [mind]` |
+| `tier1_mind_mark` | Exposed Reasoning | Tier 1 | stat | 1 | intensity | — | — | `{}` — intensity = Mind attack damage bonus |
+| `debuff_all_stats_down` | Heap's Collapse | Tier 2 | stat | 3 | intensity | heart | 13 | `-body/mind/heart 2`, `-allSkill 1`, `rollModifier -1` |
+| `debuff_poison` | Curry's Corruption | Tier 2 | damage | 4 | intensity | mind | 13 | `DoT 3/rd (body)` |
+| `debuff_strong_poison` | Yablo's Venom | Tier 2 | damage | 3 | intensity | mind | 14 | `DoT 5/rd (body)`, `-body 1` |
+| `debuff_bleed` | Theseus' Dissolution | Tier 2 | damage | 4 | intensity | mind | 12 | `DoT 2/rd (body)` |
+| `debuff_burn` | Olbers' Fire | Tier 2 | damage | 3 | intensity | body | 13 | `DoT 4/rd (heart)`, `-heart 1` |
+| `debuff_frostbite` | Boltzmann's Chill | Tier 2 | damage | 3 | duration | mind | 12 | `DoT 2/rd (body)`, `rollModifier -2` |
+| `debuff_shock` | Hardy's Discharge | Tier 2 | damage | 2 | intensity | heart | 13 | `DoT 3/rd (mind)`, `rollModifier -1` |
+| `debuff_curse` | Grelling's Malediction | Tier 2 | stat | 5 | none | body | 14 | `-body 1`, `-mind 1`, `-heart 2`, `rollModifier -2` |
+| `debuff_disease` | Inspection Sickness | Tier 2 | damage | 4 | duration | mind | 12 | `DoT 2/rd (body)`, `healthPerRound -1` (pending) |
+| `debuff_wound` | Berry's Injury | Tier 2 | stat | 4 | intensity | mind | 13 | `-body 2`, `defenseModifier -2` |
+| `debuff_stun` | Buridan's Paralysis | Tier 2 | control | 1 | duration | heart | 14 | `skipTurn true` (pending) |
+| `debuff_sleep` | Sleeping Beauty's Rest | Tier 2 | control | 2 | none | heart | 13 | `skipTurn true`, `defenseModifier -3` (pending) |
+| `debuff_daze` | Simpson's Confusion | Tier 2 | control | 2 | duration | heart | 12 | `rollModifier -3`, `-mind 2`, `-mentalSkill 2`, `-mentalDefense 1` |
+| `debuff_petrify` | Zeno's Stillness | Tier 3 | control | 2 | none | heart | 17 | `skipTurn true`, `defenseModifier -4` (pending) |
+| `debuff_fear` | Grandfather's Terror | Tier 2 | control | 2 | duration | body | 13 | `rollModifier -3`, `-heart 3`, `-emotionalSkill 2`, `-emotionalDefense 2` |
+| `debuff_charm` | Wigner's Friendship | Tier 2 | control | 2 | none | body | 14 | `forcedStance heart`, `-heart 2`, `-emotionalDefense 2` (pending) |
+| `debuff_confusion` | Two Envelope Delirium | Tier 2 | control | 3 | duration | heart | 13 | `rollModifier -4`, `grantDisadvantage [body,mind,heart]` |
+| `debuff_blind` | Quantum Erasure | Tier 2 | control | 2 | duration | heart | 13 | `rollModifier -5`, `grantDisadvantage [body,mind]` |
+| `debuff_silence` | Moore's Muteness | Tier 2 | control | 3 | none | body | 13 | `blockedStances [heart]`, `-heart 2`, `-emotionalSkill 3` (pending) |
+| `debuff_berserk` | Problem of Evil | Tier 2 | stat | 3 | none | heart | 13 | `+body 3`, `-mind 4`, `-heart 2`, `+physSkill 2`, `-menSkill 3`, `-menDef 2`, `defenseModifier -3` |
+| `debuff_fatigue` | Preface Exhaustion | Tier 2 | stat | 4 | intensity | heart | 12 | `-body/mind 1`, `-physSkill/menSkill 1`, `rollModifier -1` |
+| `debuff_exhaustion` | Lottery Despair | Tier 2 | stat | 3 | intensity | heart | 13 | `-body/mind/heart 2`, `-allSkill 1`, `rollModifier -2` |
+| `debuff_slow` | Achilles' Burden | Tier 2 | control | 3 | duration | mind | 12 | `rollModifier -2`, `-physicalSkill 2`, `grantDisadvantage [body]` |
+| `debuff_root` | Braess Binding | Tier 2 | control | 2 | duration | mind | 13 | `defenseModifier -2`, `rollModifier -2` |
+| `debuff_knockdown` | Ross-Littlewood Fall | Tier 2 | control | 1 | none | mind | 12 | `defenseModifier -4`, `rollModifier -3` |
+| `debuff_vulnerability_body` | Richard's Exposure | Tier 2 | defense | 3 | duration | mind | 13 | `-body 3`, `-physicalDefense 4`, `-physicalSave 3` |
+| `debuff_vulnerability_mind` | Cantor's Gap | Tier 2 | defense | 3 | duration | heart | 13 | `-mind 3`, `-mentalDefense 4`, `-mentalSave 3` |
+| `debuff_vulnerability_heart` | Burali-Forti Wound | Tier 2 | defense | 3 | duration | body | 13 | `-heart 3`, `-emotionalDefense 4`, `-emotionalSave 3` |
+| `debuff_mark` | Raven's Target | Tier 2 | advantage | 3 | none | heart | 13 | `defenseModifier -3`, `grantDisadvantage [body,mind,heart]` |
+| `debuff_body_attack_down` | Omnipotence Failure | Tier 2 | stat | 3 | intensity | mind | 13 | `-body 2`, `-physicalSkill 3`, `rollModifier -1` |
+| `debuff_mind_attack_down` | GHZ Collapse | Tier 2 | stat | 3 | intensity | heart | 13 | `-mind 2`, `-mentalSkill 3`, `rollModifier -1` |
+| `debuff_heart_attack_down` | Toxin Hesitation | Tier 2 | stat | 3 | intensity | body | 13 | `-heart 2`, `-emotionalSkill 3`, `rollModifier -1` |
+| `debuff_evasion_down` | Dartboard Certainty | Tier 2 | defense | 3 | duration | heart | 13 | `defenseModifier -3`, `-allDefense 2` |
+| `debuff_accuracy_down` | Ellsberg's Doubt | Tier 2 | advantage | 3 | duration | heart | 12 | `rollModifier -3`, `-allSkill 2` |
+| `debuff_defense_down` | Prisoner's Betrayal | Tier 2 | defense | 3 | intensity | heart | 13 | `defenseModifier -3`, `-body 1`, `-physicalDefense 2` |
+| `debuff_dispel` | Skolem's Reduction | Tier 2 | stat | 0 | none | heart | 12 | `{}` (instant — removes buffs; mechanic pending) |
+| `debuff_hex` | Allais' Curse | Tier 2 | damage | 3 | none | body | 13 | `DoT 2/rd (heart)` |
+| `debuff_hp_decay` | Centipede's End | Tier 2 | damage | 4 | none | mind | 13 | `DoT 3/rd (body)`, `healthPerRound -2` (pending) |
+| `debuff_moral_learning` | Moral Blindness | Tier 2 | control | 3 | none | body | 12 | `-heart 2`, `-mind 1`, `-emotionalSkill 2`, `-mentalSkill 1`, `rollModifier -1` |
+| `debuff_transformative` | Transformative Terror | Tier 2 | control | 2 | none | heart | 13 | `rollModifier -2`, `-mind 2`, `-heart 1`, `-mentalSkill 2`, `-emotionalDefense 1` |
+| `debuff_rational_disagreement` | Peer Doubt | Tier 2 | stat | 2 | duration | heart | 12 | `-mind 3`, `-mentalSkill 2`, `-mentalDefense 1`, `rollModifier -2` |
+| `debuff_straw_man_echo` | Straw Man's Echo | Tier 1 | advantage | 2 | none | body | 10 | `rollModifier -1` |
+| `debuff_post_hoc_tremor` | Post Hoc Tremor | Tier 1 | stat | 2 | none | mind | 10 | `-body 1` |
+| `debuff_affirming_consequent` | Affirming the Consequent | Tier 1 | stat | 2 | none | mind | 10 | `-physicalSkill 1` |
+| `debuff_causal_emergence` | Emergence Failure | Tier 2 | control | 2 | none | heart | 13 | `rollModifier -2`, `-mind 2`, `-mentalSkill 2`, `-physicalSkill 1`, `grantDisadvantage [mind]` |
 
 ---
 
@@ -463,11 +463,10 @@ Full per-effect documentation: [`docs/effects/debuffs/`](./effects/debuffs/)
 | `getEffectByName(name)` | `src/Effects/effects.library.ts` | Find effect by display name (slower linear scan) |
 | `getEffectsByType(type)` | `src/Effects/effects.library.ts` | Get all buffs or all debuffs |
 | `applyEffect(effects, effect, round, options?)` | `src/Effects/index.ts` | Core stacking engine — applies an effect respecting all stacking modes |
-| `applyTier1CombatEffectWithResult(actorEffects, opponentEffects, action, round, customMap?)` | `src/Effects/index.ts` | Applies Tier 1 stance effect; returns updated arrays + UI feedback |
-| `applyTier1CombatEffect(...)` | `src/Effects/index.ts` | Simplified wrapper — returns only updated effect arrays |
-| `clearTier1EffectsForType(effects, currentType)` | `src/Effects/index.ts` | Removes stale Tier 1 self-buffs on stance switch |
-| `getTargetsResistStatValue(target, activeEffect)` | `src/Effects/index.ts` | Returns target's **base** stat for resist roll (note: `isEffectApplied` uses derived stats) |
-| `isEffectApplied(target, activeEffect, effectType, heartBonus, equipBonus)` | `src/Combat/index.ts` | Full Tier 2/3 resist resolution with roll details |
+| `applyTier1CombatEffect(actorEffects, opponentEffects, combatAction, round, overrides?)` | `src/Effects/index.ts` | Applies Tier 1 stance effect; returns `Tier1Outcome` with updated arrays + UI feedback |
+| `clearTier1EffectsForStance(effects, currentStance)` (alias `clearTier1EffectsForType`) | `src/Effects/index.ts` | Removes stale Tier 1 self-buffs on stance switch |
+| `getResistStat(target, resistedBy)` | `src/Combat/stats.ts` | Target's base stat for the resisting stance (used by `resolveEffectApplication`) |
+| `resolveEffectApplication(target, activeEffect, effectType, heartBonus, equipBonus)` | `src/Combat/index.ts` | Full Tier 2/3 resist resolution with roll details |
 | `tickAllEffects(target)` | `src/Combat/index.ts` | End-of-round duration decrement; returns expired list |
 | `updateEffectDuration(target, effectId)` | `src/Combat/index.ts` | Tick one specific effect by ID |
 | `getActiveRollModifier(target)` | `src/Combat/index.ts` | Sum of all `rollModifier` + `rollModifierPerIntensity × intensity` across active effects |

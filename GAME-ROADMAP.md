@@ -9,17 +9,17 @@ Each phase builds on the one before it. `[x]` = done; `[ ]` = pending.
 ## Phase 1 — Effects Engine
 
 - [x] Define `Effect`, `ActiveEffect`, `EffectPayload`, `EffectApplicationResult` types
-- [x] Create `buffs.library.json` with `teir`, `resistedBy`, `resistDR`
-- [x] Create `debuffs.library.json` with `teir`, `resistedBy`, `resistDR`
-- [x] `effects.library.ts` — unified registry, `lookupEffect`, `getEffectById`, `getEffectByName`, `getEffectType`, `getEffectTeir`
+- [x] Create `buffs.library.json` with `tier`, `resistedBy`, `resistDR`
+- [x] Create `debuffs.library.json` with `tier`, `resistedBy`, `resistDR`
+- [x] `effects.library.ts` — unified registry: `lookupEffect`, `getEffectByName`, `getEffectsByType`
 - [x] `applyEffect(activeEffects, effect, round, options?)` — `none` / `intensity` / `duration` stacking, capped at constants
 - [x] `EffectPayload.rollModifierPerIntensity` — per-intensity roll modifier scaling (complements flat `rollModifier` which never scales)
-- [x] `tickAllEffects(target)` — decrements all non-permanent durations; expired effects returned separately; permanent (−1) never ticks (`Combat/index.ts`)
+- [x] `tickAllEffects(target)` — decrements all non-permanent durations; expired effects returned separately; permanent (−1) never ticks (`Combat/effects.ts`)
 - [x] `updateEffectDuration(target, effectId)` — tick a single effect by ID
 - [x] `applyRegen(target)` — sums `payload.regeneration.healthPerRound × intensity` across all active effects; called at round start
-- [x] Tier 1 effect map (`TIER1_EFFECT_MAP`) and `applyTier1CombatEffect` / `applyTier1CombatEffectWithResult`
-- [x] `clearTier1EffectsForType` — removes stale Tier 1 self-buffs on action-type switch; debuffs applied by the opponent are exempt and expire naturally
-- [x] `getTargetsResistStatValue` — looks up target's resist stat for Tier 2/3 rolls
+- [x] Tier 1 effect map (`TIER1_EFFECT_MAP`) and `applyTier1CombatEffect` (returns `Tier1Outcome`)
+- [x] `clearTier1EffectsForStance` (legacy alias `clearTier1EffectsForType`) — removes stale Tier 1 self-buffs on stance switch; opponent-applied debuffs are exempt and expire naturally
+- [x] `getResistStat(target, resistedBy)` — looks up target's base stat for Tier 2/3 resist rolls (in `Combat/stats.ts`)
 - [ ] `removeEffect(activeEffects, effectId)` — filter by ID (cleanses, dispels, changing stance)
 - [ ] `getActiveEffectModifiers(activeEffects)` — aggregate stat mods, roll mods, defense mods, advantage grants into one object
 - [ ] `canAct(activeEffects)` — read `skipTurn`, `blockedStances`, `forcedStance`; return combined restrictions
@@ -57,7 +57,7 @@ Each phase builds on the one before it. `[x]` = done; `[ ]` = pending.
 - [x] `isAlive(target): boolean`
 - [x] `isDefeated(target): boolean`
 - [x] `getHealthPercentage(target): number`
-- [x] `isEffectApplied(target, activeEffect, effectType, attackerHeartBonus, equipmentBonus): EffectApplicationResult` — full Tier 1/2/3 resist logic (see `docs/combat.md`)
+- [x] `resolveEffectApplication(target, activeEffect, effectType, attackerHeartBonus, equipmentBonus): EffectApplicationResult` — full Tier 1/2/3 resist logic (see `docs/combat.md`)
 - [x] `getStudyMarkIntensity(target): number` — intensity of `tier1_mind_mark` on target; added to Mind/Attack damage rolls
 - [x] `getThornsReflect(bearer): number` — sums `reflectDamage × intensity` across all thorns effects; reflected after any hit
 - [x] `removeRandomBuff(target)` — strips one random buff; used by Heart/Attack on hit
@@ -89,15 +89,13 @@ Each phase builds on the one before it. `[x]` = done; `[ ]` = pending.
 
 - [x] `initializeCombat(player, enemy): CombatState`
 - [ ] `resetCombat(): CombatState`
-- [x] `updateCombatPhase(state, phase): CombatState`
+- [x] `setPhase(state, phase): CombatState` (legacy alias `updateCombatPhase`)
 - [x] `setPlayerStance(state, stance): CombatState` (was `setPlayerAttackType`)
 - [x] `setPlayerAction(state, action): CombatState`
-- [ ] `resolveCombatRound(state): CombatState` — full round via the reducer (attack/defense rolls, effect procs, DoT/regen tick, log entry)
-- [ ] `addBattleLogEntry(state, entry): CombatState` — stub
-- [ ] `incrementFriendship(state): CombatState` — stub
-- [ ] `endCombatPlayerVictory(state): CombatState` — stub
-- [ ] `endCombatPlayerDefeat(state): CombatState` — stub
-- [ ] `endCombatWithFriendship(state): CombatState` — stub
+- [x] `appendLog(state, entry): CombatState` (legacy alias `addBattleLogEntry`)
+- [x] `incrementFriendship(state): CombatState`
+- [x] `endCombat(state): CombatState` — generic terminator; legacy aliases `endCombatPlayerVictory`, `endCombatPlayerDefeat`, `endCombatWithFriendship` are kept for backwards compatibility but the reason is now read from `determineCombatEnd(state)`
+- [ ] `resolveCombatRound(state): CombatState` — full round via the reducer (attack/defense rolls, effect procs, DoT/regen tick, log entry). See `specs/02-combat-round-resolver.md`.
 - [ ] `processPlayerTurn(state)` — stub (lives in `Combat/index.ts`)
 - [ ] `processEnemyTurn(state)` — stub (lives in `Combat/index.ts`)
 - [ ] `determineTurnOrder(player, enemy)` — stub (lives in `Combat/index.ts`)
@@ -105,13 +103,13 @@ Each phase builds on the one before it. `[x]` = done; `[ ]` = pending.
 - [ ] `createBattleLogEntry(state, roundResults)` — stub (lives in `Combat/index.ts`)
 - [ ] `formatAllBattleLogs(state)` — stub (lives in `Combat/index.ts`)
 - [ ] `generateCombatResultMessage(state)` — stub (lives in `Combat/index.ts`)
-- [ ] Unit tests for `resolveCombatRound`
+- [x] Unit tests for the reducer (`combat.reducer.test.ts`); `resolveCombatRound` tests still pending its implementation
 
 ### 2d — Combat CLI (`combat.cli.ts`)
 
 - [x] Regen applied at round start (`applyRegen`)
-- [x] Stale Tier 1 buffs cleared on type switch (`clearTier1EffectsForType`)
-- [x] Tier 1 stance effects applied for both player and enemy (`applyTier1CombatEffectWithResult`)
+- [x] Stale Tier 1 buffs cleared on stance switch (`clearTier1EffectsForStance`)
+- [x] Tier 1 stance effects applied for both player and enemy (`applyTier1CombatEffect` returning `Tier1Outcome`)
 - [x] Effects ticked at round end (`tickAllEffects`); expired effects displayed
 - [x] Thorns reflect after any hit (`getThornsReflect`)
 - [x] Heart/Attack specials on hit: strip enemy buff, extend player buff (`removeRandomBuff`, `extendRandomBuffDuration`)
@@ -137,14 +135,14 @@ Each phase builds on the one before it. `[x]` = done; `[ ]` = pending.
 - [ ] `basePower` — base damage/healing before stat scaling
 - [ ] `scalingStat` — which derived stat multiplies base power
 - [ ] `advantageInteraction`
-- [ ] `teir` field
+- [ ] `tier` field
 
 ### 3b — Skill Library
 
 - [ ] At least 18 skills (3 per stat × 2 categories: fallacies and paradoxes)
 - [ ] Each skill references effects from the library or introduces skill-specific effects
 - [ ] Flavor text matches the theme
-- [ ] Spread from Teir 1 to Teir 3
+- [ ] Spread from Tier 1 to Tier 3
 
 ### 3c — Skill Engine
 
@@ -166,7 +164,7 @@ Each phase builds on the one before it. `[x]` = done; `[ ]` = pending.
 - [ ] `passiveEffects: string[]` on `Equipment`
 - [ ] `onHitEffects: CombatEffectTrigger[]` on `Equipment`
 - [ ] `onDefendEffects: CombatEffectTrigger[]` on `Equipment`
-- [ ] `teir` field on `Equipment`
+- [ ] `tier` field on `Equipment`
 - [ ] `effectId: string` on `Consumable`
 - [ ] `duration` and `power` overrides on `Consumable`
 
@@ -243,10 +241,10 @@ Each phase builds on the one before it. `[x]` = done; `[ ]` = pending.
 - [x] `unlockMap(state, mapName): WorldState`
 - [x] `completeNode(state, nodeId): WorldState`
 - [x] `unlockNode(state, nodeId): WorldState`
-- [x] `moveToNode(state, nodeId): WorldState`
+- [ ] `moveToNode(state, nodeId): WorldState` — pending; the world reducer doesn't yet track the player's current node
 - [x] `changeContinent(state, continentName): WorldState`
 - [x] `completeUniqueEvent(state, eventId): WorldState`
-- [ ] Unit tests
+- [x] Unit tests (`world.reducer.test.ts`)
 
 ### 7b–7f — Content & Systems
 
@@ -293,8 +291,10 @@ Each phase builds on the one before it. `[x]` = done; `[ ]` = pending.
 
 ### 10a — Test Suite
 
-- [ ] Test runner (vitest or jest)
-- [ ] Unit tests: Utils, Effects, Combat math, Combat reducer, Skill engine, Equipment, World reducer
+- [x] Test runner (vitest configured; `npm test`)
+- [x] Unit tests for Utils, Effects, Combat math, Combat reducer, Items reducer, World reducer
+- [ ] Unit tests for the Skill engine (Phase 3)
+- [ ] Unit tests for Equipment (Phase 4)
 - [ ] Integration tests: full combat encounters, game loop
 
 ### 10b — Balance Pass
@@ -314,10 +314,10 @@ Each phase builds on the one before it. `[x]` = done; `[ ]` = pending.
 - [x] `docs/effects.md`
 - [x] `docs/combat.md`
 - [x] `docs/character.md`
+- [x] `docs/skills.md` — index/scaffold; full content blocked on Phase 3
+- [x] `docs/equipment.md` — index/scaffold; full content blocked on Phase 4
+- [x] `docs/enemy.md` — index/scaffold; full content blocked on Phase 6
+- [x] `docs/npcs.md` — index/scaffold; full content blocked on Phase 7
+- [x] `docs/world.md` — index covering current World reducer
 - [ ] Complete `docs/combat.md` — full advantage matrix with effect proc matrix (Phase 2b)
-- [ ] `docs/skills.md` — file exists, content pending
-- [ ] `docs/equipment.md` — file exists, content pending
-- [ ] `docs/enemy.md` — file exists, content pending
-- [ ] `docs/npcs.md` — file exists, content pending
-- [ ] `docs/world.md`
-- [ ] Update `ARCHITECTURE.md` if modules change
+- [x] Planning specs replace the missing `ARCHITECTURE.md` for the in-flight work — see `specs/`

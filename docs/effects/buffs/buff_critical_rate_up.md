@@ -11,7 +11,7 @@
 | **ID** | `buff_critical_rate_up` |
 | **Type** | buff |
 | **Category** | advantage |
-| **Tier** | Teir 2 |
+| **Tier** | Tier 2 |
 | **Duration** | 4 rounds |
 | **Stacking** | intensity |
 | **Resisted By** | heart |
