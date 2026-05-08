@@ -3,23 +3,34 @@
 ## Project Overview
 This is a **Tabletop RPG mechanics engine** inspired by games like Mörk Borg, D&D, and other TTRPGs. The game features a unique **Heart/Body/Mind** stat system with rock-paper-scissors combat mechanics (Heart > Body > Mind > Heart).
 
+The engine is a **pure TypeScript library** — it will be consumed by a React Native mobile app. Core modules must not import Node-specific APIs (`fs`, `path`, etc.). The only permitted Node dependency is `src/Game/persistence/node.adapter.ts`.
+
 ## Core Concepts
 - **Heart**: Emotion, willpower, charisma - strong against Body
 - **Body**: Physical strength, constitution - strong against Mind  
 - **Mind**: Intelligence, reflexes, perception - strong against Heart
 - **Skills**: Based on logical fallacies and philosophical paradoxes
 - **Combat**: Turn-based with type advantages and dice rolling
+- **Effects**: Three tiers — Tier 1 guaranteed stance buffs, Tier 2/3 probabilistic resistible debuffs
+- **Friendship**: Consecutive defend actions can end combat peacefully (distinct from a combat victory)
+
+## Jira Project
+- **Site**: axiomancer.atlassian.net | **Cloud ID**: a7fbfd6c-fb3d-4c63-acec-54147274e42d
+- **Project key**: AX | **MCP server**: Atlassian
+- Before implementing any story, fetch it with `getJiraIssue` to read its Acceptance Criteria and Function Signature.
+- After completing a story, transition it to "Done" with `transitionJiraIssue`.
+- Find open work with JQL: `project = AX AND status = "To Do" ORDER BY priority DESC`
 
 ## Code Conventions
 
 ### File Structure
 - `index.ts` - Main module exports and pure utility functions
 - `types.d.ts` - Type definitions with JSDoc comments
-- `*.reducer.ts` - Functions that return State objects (GameState, CombatState, WorldState, etc.)
+- `*.reducer.ts` - Pure functions: `(state, action) => newState`
 - `*.library.ts` - Static data definitions (enemies, skills, items, maps)
 - `*.mock.ts` - Test data and fixtures
-- `*.test.ts` - Unit tests
-- `*.cli.ts` - Command-line interface components
+- `*.test.ts` - Vitest unit tests
+- `*.cli.ts` - Interactive CLI components (use `inquirer`)
 
 ### Naming Conventions
 - Use camelCase for functions and variables
@@ -32,6 +43,7 @@ This is a **Tabletop RPG mechanics engine** inspired by games like Mörk Borg, D
 - Use discriminated unions for item/action types
 - Prefer `Pick<T, K>` and `Partial<T>` over creating new interfaces
 - Document types with JSDoc including `@property` for each field
+- **Zero `as any` casts** — the audit cleaned them all; use type guards instead
 
 ### Functional Patterns
 - Reducers should be pure functions: `(state, action) => newState`
@@ -39,10 +51,24 @@ This is a **Tabletop RPG mechanics engine** inspired by games like Mörk Borg, D
 - Use spread operator for immutable updates
 - Extract calculation logic into separate pure functions
 
+### Known Intentional Quirks
+- **`teir` spelling**: The typo `teir` (should be `tier`) is used intentionally throughout types, JSON data, and runtime checks (`'Teir 1' | 'Teir 2' | 'Teir 3'`). Do **not** rename it unless the task explicitly asks for a rename pass.
+- **Math.random() only**: No seeded RNG yet. AX-102 tracks this.
+- **ESLint broken**: `npm run lint` fails with a pre-existing flat-config issue. Use `npm run type-check` instead.
+
 ### TTRPG Design Philosophy
 - Embrace randomness through dice rolls (d4, d6, d8, d10, d12, d20)
 - Stats should feel meaningful but not overwhelming
 - Combat should be quick and decisive (like Mörk Borg)
 - Failure should be interesting, not just punishing
 - Skills (fallacies/paradoxes) should have thematic flavor text
+- Mörk Borg tone: brutal, terse, atmospheric — no hand-holding
 
+## Development Workflow for Agents
+
+1. **Find the right Jira story** before writing code. Use `searchJiraIssuesUsingJql` or `getJiraIssue`.
+2. **Read Acceptance Criteria** from the Jira issue — this is the source of truth.
+3. **Type-check first**: `npm run type-check` must pass after every change.
+4. **Run tests**: `npm test` must pass (71 tests). Add tests for new public functions.
+5. **Build**: `npm run build` must succeed before marking work complete.
+6. **Transition the Jira story** to "Done" after verified implementation.
