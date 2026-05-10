@@ -1,5 +1,5 @@
 /**
- * Hermetic E2E Tests — Combat Engine
+ * Hermetic E2E Tests — Combat Resolver
  *
  * This file is the *canonical example* of a hermetic e2e test in this repo.
  * If you are writing a new e2e test, copy its structure. The full standard
@@ -13,7 +13,7 @@
  *                       independent.
  *
  * What IS covered here:
- *   • Full combat-turn resolution through `resolveCombatTurn` (the engine).
+ *   • Full combat-round resolution through `resolveCombatRound` (the resolver).
  *   • All three win conditions: player victory, KO, friendship.
  *   • State invariants (HP clamp, round counter, fixture immutability).
  *   • Game-store lifecycle (startCombat → updateCombat → endCombat) with
@@ -23,7 +23,7 @@
  *   • The interactive CLI layer (combat.cli.ts / character.cli.ts) — these
  *     own display and need TTY prompts via inquirer. Use the pexpect-based
  *     `npm run combat:auto` harness for those, and keep all engine logic
- *     in `*.engine.ts` so it stays testable here.
+ *     in `combat.resolver.ts` so it stays testable here.
  *   • Math.random seeding until Spec 11 lands a seedable PRNG.
  *
  * RNG convention used by `mockAlternatingRng`:
@@ -42,7 +42,7 @@ import { FRIENDSHIP_COUNTER_MAX } from '../../Game/game-mechanics.constants';
 import { mockAlternatingRng } from '../../test-utils/rng';
 import { isCombatOngoing, determineCombatEnd } from '../index';
 import { initializeCombat } from '../combat.reducer';
-import { resolveCombatTurn } from './combat.engine';
+import { resolveCombatRound } from '../combat.resolver';
 
 // ─── Tests ───────────────────────────────────────────────────────────────────
 
@@ -63,11 +63,11 @@ describe('Win condition: friendship victory', () => {
 
         let rounds = 0;
         while (isCombatOngoing(state) && rounds < 20) {
-            state = resolveCombatTurn(
+            ({ state } = resolveCombatRound(
                 state,
                 { stance: 'heart', action: 'defend' },
                 { stance: 'heart', action: 'defend' },
-            );
+            ));
             rounds++;
         }
 
@@ -97,11 +97,11 @@ describe('Win condition: player victory', () => {
 
         let rounds = 0;
         while (isCombatOngoing(state) && rounds < 50) {
-            state = resolveCombatTurn(
+            ({ state } = resolveCombatRound(
                 state,
                 { stance: 'mind', action: 'attack' },
                 { stance: 'heart', action: 'attack' },
-            );
+            ));
             rounds++;
         }
 
@@ -131,11 +131,11 @@ describe('Win condition: player KO', () => {
 
         let rounds = 0;
         while (isCombatOngoing(state) && rounds < 50) {
-            state = resolveCombatTurn(
+            ({ state } = resolveCombatRound(
                 state,
                 { stance: 'heart', action: 'attack' },
                 { stance: 'mind', action: 'attack' },
-            );
+            ));
             rounds++;
         }
 
@@ -150,16 +150,16 @@ describe('Win condition: player KO', () => {
 // ────────────────────────────────────────────────────────────────────────────
 
 describe('State invariants', () => {
-    it('round counter starts at 1 and increments once per resolveCombatTurn call', () => {
+    it('round counter starts at 1 and increments once per resolveCombatRound call', () => {
         mockAlternatingRng();
 
         let state = initializeCombat(Player, Disatree_01);
         expect(state.round).toBe(1);
 
-        state = resolveCombatTurn(state, { stance: 'body', action: 'defend' }, { stance: 'body', action: 'attack' });
+        ({ state } = resolveCombatRound(state, { stance: 'body', action: 'defend' }, { stance: 'body', action: 'attack' }));
         expect(state.round).toBe(2);
 
-        state = resolveCombatTurn(state, { stance: 'body', action: 'defend' }, { stance: 'body', action: 'attack' });
+        ({ state } = resolveCombatRound(state, { stance: 'body', action: 'defend' }, { stance: 'body', action: 'attack' }));
         expect(state.round).toBe(3);
     });
 
@@ -170,11 +170,11 @@ describe('State invariants', () => {
         let rounds = 0;
 
         while (isCombatOngoing(state) && rounds < 50) {
-            state = resolveCombatTurn(
+            ({ state } = resolveCombatRound(
                 state,
                 { stance: 'mind', action: 'attack' },
                 { stance: 'heart', action: 'attack' },
-            );
+            ));
             rounds++;
             expect(state.player.health).toBeGreaterThanOrEqual(0);
             expect(state.enemy.health).toBeGreaterThanOrEqual(0);
@@ -233,7 +233,7 @@ describe('Game store lifecycle with nullAdapter', () => {
         store.getState().startCombat(Disatree_01);
 
         // Advance one turn
-        const next = resolveCombatTurn(
+        const { state: next } = resolveCombatRound(
             store.getState().combat!,
             { stance: 'mind', action: 'attack' },
             { stance: 'heart', action: 'attack' },
@@ -258,13 +258,12 @@ describe('Game store lifecycle with nullAdapter', () => {
         while (true) {
             const combat = store.getState().combat;
             if (!combat || !isCombatOngoing(combat)) break;
-            store.getState().updateCombat(
-                resolveCombatTurn(
-                    combat,
-                    { stance: 'mind', action: 'attack' },
-                    { stance: 'heart', action: 'attack' },
-                ),
+            const { state: next } = resolveCombatRound(
+                combat,
+                { stance: 'mind', action: 'attack' },
+                { stance: 'heart', action: 'attack' },
             );
+            store.getState().updateCombat(next);
             if (++guard > 100) throw new Error('Combat loop did not terminate');
         }
 

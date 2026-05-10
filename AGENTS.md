@@ -27,6 +27,7 @@ All commands are in `package.json`:
 - **CLI apps are interactive**: Both `combat` and `character` CLIs use `inquirer` prompts. Set `COMBAT_NO_DELAY=1` to skip animation delays in combat. For automated testing, use the Python automation script (`npm run combat:auto`) or drive prompts via `pexpect`/tmux `send-keys`.
 - **Test runner**: `npm test` runs vitest. Use alongside `npm run type-check` and `npm run build` for correctness checks.
 - **State file**: The combat CLI writes a `game-state.json` in the project root. This file is gitignored and ephemeral.
+- **Spec update**: If using a spec file to implement a change, update the spec as you walk through the steps
 
 ### Hermetic E2E testing — REQUIRED
 
@@ -40,9 +41,12 @@ If you cannot, extract logic until you can — or document the
 (`vi.restoreAllMocks` in `afterEach`).
 
 - **Standard:** [`docs/testing.md`](./docs/testing.md) (canonical).
-- **Reference test:** [`src/Combat/e2e/combat.engine.test.ts`](./src/Combat/e2e/combat.engine.test.ts) (copy its structure).
-- **Location:** `src/<Module>/e2e/<feature>.engine.test.ts`. Engine logic
-  lives next to it as `*.engine.ts` so CLI files contain UI only.
+- **Reference test:** [`src/Combat/e2e/combat.resolver.test.ts`](./src/Combat/e2e/combat.resolver.test.ts) (copy its structure).
+- **Location:** `src/<Module>/e2e/<feature>.engine.test.ts` (the `.engine.test.ts`
+  suffix is a fixed marker meaning "hermetic e2e suite"). The engine code
+  itself lives next to the module as `<feature>.resolver.ts` (composite
+  orchestrators returning `{ state, events }`) or `<feature>.reducer.ts`
+  (single state-shape edits) so CLI files contain UI only.
 - **Stub helpers:** `mockAlternatingRng`, `mockFixedRng`, `mockSequentialRng`
   from `src/test-utils/rng.ts`. Do not re-roll your own `vi.spyOn(Math, 'random')`.
 - **Verification:** `npm test` green twice + `npm run type-check` clean before

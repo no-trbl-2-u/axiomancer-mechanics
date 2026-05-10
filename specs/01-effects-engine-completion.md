@@ -120,15 +120,15 @@ self-contained commit on the spec branch.
 
 ## Acceptance checklist
 
-- [ ] All 10 questions in section (4) are answered.
-- [ ] Each pending payload field has a consumer in `src/Combat/`.
-- [ ] `processRoundStartEffects` is called from the combat CLI; the CLI no longer
+- [x] All 10 questions in section (4) are answered.
+- [x] Each pending payload field has a consumer in `src/Combat/`.
+- [x] `processRoundStartEffects` is called from the combat CLI; the CLI no longer
       open-codes regen + tick.
-- [ ] `npm test` passes with at least one new test per wired field.
-- [ ] `npm run combat` shows DoT damage, stat-modifier-driven roll changes, and
+- [x] `npm test` passes with at least one new test per wired field.
+- [x] `npm run combat` shows DoT damage, stat-modifier-driven roll changes, and
       `skipTurn` actually skipping a turn (manual confirmation video attached to
       the PR).
-- [ ] `docs/effects.md` "Implementation Status" tables reflect reality.
+- [x] `docs/effects.md` "Implementation Status" tables reflect reality.
 
 ## Out of scope
 

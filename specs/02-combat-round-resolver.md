@@ -59,7 +59,7 @@ RNG is *not* part of this spec — it lives in Spec 11.
    - (B) D&D-style — defender always rolls, regardless of action.
    - (C) **(current)** Hybrid: attack-vs-attack when both attack;
      attack-vs-defense when one defends.
-   > Your answer:
+   > Your answer: Whatever option maintains the rock/paper/scissors format.
 
 2. **Damage formula.** **(de-facto answer: A — keep as-is.)** Today
    `damageRoll = die(attackerAdv) + attackerStat + rollMod`, then
@@ -68,13 +68,13 @@ RNG is *not* part of this spec — it lives in Spec 11.
    - (B) Introduce a separate "weapon damage" die (rolled once per action),
      stat scales as a flat add.
    - (C) `damage = attackRoll − defenseRoll`, no second roll.
-   > Your answer:
+   > Your answer: A or B. Whichever you think is more scalable. (ie. imagine what combat would looke like with entities 20 levels higher)
 
 3. **Defense base asymmetry.** Still present in code: when the player defends,
    defense uses `getBaseStat(player, stance) + defenseDelta`; when the enemy
    defends, it uses `getDefenseStat(enemy, stance)` (derived). Bug or
    intentional? Resolving this is a prerequisite for symmetric balancing.
-   > Your answer:
+   > Your answer: That is likely a bug. I want symmetric balancing.
 
 4. **Initiative.** Today both combatants act simultaneously. Options:
    - (A) Keep simultaneous.
@@ -82,7 +82,7 @@ RNG is *not* part of this spec — it lives in Spec 11.
      mind as tiebreaker.
    - (C) Simultaneous attacks resolve simultaneously, but skill / item actions
      happen before basic attacks.
-   > Your answer:
+   > Your answer: A. I want to maintain the rock/paper/scissors format. When skills/items are involved, they will happen at specific phases of combat instead.
 
 5. **Lethality.** With the friendship mechanic and regen effects, the current
    tone leans forgiving; the Mörk Borg inspiration suggests swingy lethality.
@@ -90,7 +90,7 @@ RNG is *not* part of this spec — it lives in Spec 11.
    - 3-5 rounds (Mörk-Borg-y, swingy)
    - 6-10 rounds (mid-weight)
    - 10+ rounds (drawn-out, attrition)
-   > Your answer:
+   > Your answer: I want this type of lethality to be a sliding scale as the user plays. During specific "Ethical dilemmas", if they make sacrifices for the "greater good" the game becomes increasingly lethal. (ie. Selfishness is rewarded with an easier experience and vice-versa). Keep that in mind when making all future difficulty decisions
 
 6. **What the resolver returns.** **(de-facto answer: state-only.)** Today
    `resolveCombatTurn` returns just `CombatState`; the CLI prints inline,
@@ -99,7 +99,7 @@ RNG is *not* part of this spec — it lives in Spec 11.
      rendering from the diff.
    - (B) Return `{ state, events: RoundEvent[] }` where `events` is a typed
      event stream the UI can consume (this is also Spec 12 Q5).
-   > Your answer:
+   > Your answer: B except name it "combatEvents". Make sure the RoundEvent is organized by phases though. 
 
 7. **`canAct` failure path.** **(de-facto answer: hybrid B/C — round
    advances; CLI surfaces the reason; the chosen action is mapped to
@@ -111,7 +111,7 @@ RNG is *not* part of this spec — it lives in Spec 11.
    - (B) Round advances; CLI displays the reason instead of the choice prompt.
    - (C) **(current)** Player still chooses; the chosen action is replaced
      with `'skip'` once resolution starts, and the reason is rendered.
-   > Your answer:
+   > Your answer: C
 
 8. **Resolver naming + location.** Pick the canonical name and home:
    - (A) Rename `resolveCombatTurn` → `resolveCombatRound`, move it to
@@ -120,7 +120,7 @@ RNG is *not* part of this spec — it lives in Spec 11.
      `src/Combat/` (engine logic should not live under `e2e/`).
    - (C) Keep both files; export `resolveCombatTurn` from `src/Combat/index.ts`
      where it currently lives.
-   > Your answer:
+   > Your answer: Hybrid A/B. Rename to "resolveCombatRound", no alias, lift it. I originally thought "combat.engine.ts" was only for the e2e testing. If it makes more sense to lift that entire module, move all of it out of e2e. I'll leave that decision to you.
 
 ## Proposed approach
 
@@ -154,18 +154,54 @@ RNG is *not* part of this spec — it lives in Spec 11.
 
 ## Acceptance checklist
 
-- [ ] Q3, Q4, Q5, Q8 answered. Q1, Q2, Q6, Q7 either confirmed (lock the
+- [x] Q3, Q4, Q5, Q8 answered. Q1, Q2, Q6, Q7 either confirmed (lock the
       current behaviour) or overridden (open a sub-task).
-- [ ] Resolver exported from `src/Combat/index.ts` and `src/index.ts` under
+- [x] Resolver exported from `src/Combat/index.ts` and `src/index.ts` under
       the name picked in Q8.
-- [ ] `combat.cli.ts` `runCombatTurn` delegates to the resolver — no inline
+- [x] `combat.cli.ts` `runCombatTurn` delegates to the resolver — no inline
       attack / damage math remains.
-- [ ] Hermetic e2e suite under `src/Combat/e2e/` covers the same win
+- [x] Hermetic e2e suite under `src/Combat/e2e/` covers the same win
       conditions plus any new branches added by this spec; `npm test` and
       `npm run type-check` clean.
-- [ ] `npm run auto:combat -- 20` produces stable logs without crashes.
-- [ ] `docs/combat.md` "Pending (Phase 2)" section reflects reality;
+- [x] `npm run auto:combat -- 20` produces stable logs without crashes.
+- [x] `docs/combat.md` "Pending (Phase 2)" section reflects reality;
       resolver is in the API table.
+
+## Implementation notes (landed)
+
+- **Q8 resolution.** Renamed `resolveCombatTurn` → `resolveCombatRound`,
+  no alias. Lifted out of `src/Combat/e2e/` into a new file
+  `src/Combat/combat.resolver.ts` (a new `*.resolver.ts` file convention,
+  documented in `.cursorrules`, `AGENTS.md`, `docs/testing.md`, and the
+  hermetic-e2e `.mdc` rule). Folding it into `combat.reducer.ts` per
+  option A would have crushed a 590-line orchestrator that returns
+  `{ state, events }` into a file currently containing only trivial
+  state-shape mutations — different conceptual layers. The `*.resolver.ts`
+  convention also matches the in-file naming of every sub-resolver
+  (`resolveAttackVsAttack`, `resolvePlayerAttackEnemyDefend`,
+  `resolveAttackHit`, etc.).
+- **Q6 (event stream).** `RoundResolution = { state, combatEvents }`. Events
+  are organised by `phase` (`round-start` → `action-restriction` →
+  `advantage` → `stance-effects` → `scenario` → `round-end`); the typed
+  `RoundEvent` union and per-phase sub-unions are exported from
+  `src/Combat/index.ts` and `src/index.ts`.
+- **Q3 (defense symmetry).** Both player- and enemy-defend paths now route
+  through `getDefenseStat`. The asymmetric "player uses base + defenseDelta,
+  enemy uses derived" gap is closed.
+- **CLI delegation.** `combat.cli.ts` now contains UI only: prompt → call
+  `resolveCombatRound` → `renderRoundEvents` from `combat.display.ts`.
+  All inline `resolveAttackVsAttack` / `resolvePlayerAttackEnemyDefend`
+  / `resolvePlayerDefendEnemyAttack` math has been removed from the CLI.
+- **UX shift.** Round-start ticks (regen / poison / etc.) now display
+  *after* the player's prompt rather than before, because the resolver
+  runs them inside the same single call. Acceptable per the
+  "single-call resolver" architecture goal of this spec.
+- **Tests.** Existing e2e suites (`combat.resolver.test.ts`,
+  `effects.engine.test.ts`) updated to drive `resolveCombatRound`
+  through its `{ state, combatEvents }` return shape. 132/132 tests
+  green twice in a row; `npm run type-check` clean;
+  `npm run auto:combat -- 20` finishes 20/20 sessions with exit code 0
+  and zero error patterns in the log.
 
 ## Out of scope
 

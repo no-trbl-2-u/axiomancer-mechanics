@@ -4,7 +4,7 @@
  * Hermetic = self-contained + deterministic + isolated.
  * See docs/testing.md for the full standard.
  *
- * What IS covered here (all driving through `resolveCombatTurn`):
+ * What IS covered here (all driving through `resolveCombatRound`):
  *   • Start-phase DoT (poison) reduces HP before actions resolve.
  *   • End-phase DoT (bleed) reduces HP after actions resolve.
  *   • Lethal start-phase DoT kills combatant and short-circuits the turn.
@@ -29,7 +29,7 @@ import { nullAdapter } from '../../Game/persistence/null.adapter';
 import { mockAlternatingRng } from '../../test-utils/rng';
 import { determineCombatEnd } from '../index';
 import { initializeCombat } from '../combat.reducer';
-import { resolveCombatTurn } from './combat.engine';
+import { resolveCombatRound } from '../combat.resolver';
 
 afterEach(() => {
     vi.restoreAllMocks();
@@ -55,7 +55,7 @@ describe('Effects E2E: start-phase DoT via processRoundStartEffects', () => {
             enemy: { ...base.enemy, effects: [ae('debuff_poison')] },
         };
 
-        const next = resolveCombatTurn(
+        const { state: next } = resolveCombatRound(
             state,
             { stance: 'body', action: 'defend' },
             { stance: 'body', action: 'defend' },
@@ -77,7 +77,7 @@ describe('Effects E2E: start-phase DoT via processRoundStartEffects', () => {
             enemy: { ...base.enemy, effects: [ae('debuff_poison', 2)] },
         };
 
-        const next = resolveCombatTurn(
+        const { state: next } = resolveCombatRound(
             state,
             { stance: 'body', action: 'defend' },
             { stance: 'body', action: 'defend' },
@@ -103,7 +103,7 @@ describe('Effects E2E: end-phase DoT via processRoundEndEffects', () => {
             enemy: { ...base.enemy, effects: [ae('debuff_bleed')] },
         };
 
-        const next = resolveCombatTurn(
+        const { state: next } = resolveCombatRound(
             state,
             { stance: 'body', action: 'defend' },
             { stance: 'body', action: 'defend' },
@@ -118,7 +118,7 @@ describe('Effects E2E: end-phase DoT via processRoundEndEffects', () => {
 
 // ─── Terminal condition: DoT kills before actions ────────────────────────────
 //
-// When start-phase DoT drops a combatant to 0 HP, `resolveCombatTurn` skips
+// When start-phase DoT drops a combatant to 0 HP, `resolveCombatRound` skips
 // the attack-resolution step and returns immediately after incrementing round.
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -132,7 +132,7 @@ describe('Effects E2E: lethal start-phase DoT — terminal condition', () => {
         };
 
         // Attack actions supplied — they must NOT fire (enemy dead before actions)
-        const next = resolveCombatTurn(
+        const { state: next } = resolveCombatRound(
             state,
             { stance: 'body', action: 'attack' },
             { stance: 'body', action: 'attack' },
@@ -156,7 +156,7 @@ describe('Effects E2E: HP invariant — never below 0', () => {
             enemy: { ...base.enemy, health: 1, effects: [ae('debuff_poison', 3)] },
         };
 
-        const next = resolveCombatTurn(
+        const { state: next } = resolveCombatRound(
             state,
             { stance: 'body', action: 'defend' },
             { stance: 'body', action: 'defend' },
@@ -171,7 +171,7 @@ describe('Effects E2E: HP invariant — never below 0', () => {
 //
 // A stunned combatant's action is resolved as 'skip'. Crucially, Tier 1 effects
 // are NOT applied for skipped combatants (the `if (enemyCan.canAct && …)` guard
-// in `resolveCombatTurn`). The stun also expires after its 1-round duration.
+// in `resolveCombatRound`). The stun also expires after its 1-round duration.
 //
 // RNG sequence (mockAlternatingRng, neutral advantage on both sides → 1d20 each):
 //   call 1 → 0.9 → 19  (player contest roll)
@@ -193,7 +193,7 @@ describe('Effects E2E: stun (skipTurn) prevents Tier 1 effect application', () =
             },
         };
 
-        const next = resolveCombatTurn(
+        const { state: next } = resolveCombatRound(
             state,
             { stance: 'body', action: 'attack' },
             { stance: 'body', action: 'attack' }, // enemy was going to attack — stun overrides
@@ -226,7 +226,7 @@ describe('Effects E2E: Game store lifecycle with active effects — nullAdapter'
             enemy: { ...combat.enemy, effects: [ae('debuff_poison')] },
         };
 
-        const next = resolveCombatTurn(
+        const { state: next } = resolveCombatRound(
             combatWithEffects,
             { stance: 'body', action: 'defend' },
             { stance: 'body', action: 'defend' },

@@ -15,11 +15,25 @@ This is a **Tabletop RPG mechanics engine** inspired by games like Mörk Borg, D
 ### File Structure
 - `index.ts` - Main module exports and pure utility functions
 - `types.d.ts` - Type definitions with JSDoc comments
-- `*.reducer.ts` - Functions that return State objects (GameState, CombatState, WorldState, etc.)
+- `*.reducer.ts` - Trivial state-shape mutations: `(state, …args) => newState`
+  for one slice of state (e.g. `setPhase`, `appendLog`, `incrementFriendship`).
+- `*.resolver.ts` - Composite, deterministic orchestrators that advance state
+  by one full step and return `{ state, events }` for UI consumers
+  (e.g. `combat.resolver.ts` → `resolveCombatRound`). The resolver itself
+  never logs; the CLI / UI renders the event stream.
 - `*.library.ts` - Static data definitions (enemies, skills, items, maps)
 - `*.mock.ts` - Test data and fixtures
 - `*.test.ts` - Unit tests
 - `*.cli.ts` - Command-line interface components
+
+### Reducer vs. resolver — when to use which
+- **Reducer:** small, single-concept state edit (`setPhase`, `setPlayerStance`,
+  `appendLog`). Returns `State`. No randomness, no orchestration.
+- **Resolver:** multi-phase round / turn / step orchestrator that composes
+  reducers, effect helpers, and dice rolls into one transition. Returns
+  `{ state, events }` so UIs render from the typed event stream and never
+  re-implement the math. RNG is the only source of non-determinism, and
+  tests stub it via `src/test-utils/rng.ts`.
 
 ### Naming Conventions
 - Use camelCase for functions and variables
@@ -48,7 +62,7 @@ This is a **Tabletop RPG mechanics engine** inspired by games like Mörk Borg, D
 
 ## Hermetic E2E Testing (REQUIRED for every implementation)
 
-Full standard: `docs/testing.md`. Reference: `src/Combat/e2e/combat.engine.test.ts`.
+Full standard: `docs/testing.md`. Reference: `src/Combat/e2e/combat.resolver.test.ts`.
 
 Every implementation lands with at least one hermetic e2e test that drives
 the change through the highest-level public entry point of its module.
@@ -60,17 +74,20 @@ the change through the highest-level public entry point of its module.
 - Isolated: `afterEach(() => vi.restoreAllMocks())`. No shared mutable state.
 
 **E2E** = drives the change through the public entry point of the module
-(`resolveCombatTurn`, `createGameStore` lifecycle, `applyEffect` to expiry,
+(`resolveCombatRound`, `createGameStore` lifecycle, `applyEffect` to expiry,
 etc.) — not through a private helper.
 
 Conventions:
-- Location: `src/<Module>/e2e/<feature>.engine.test.ts`; engine logic at
-  `src/<Module>/e2e/<feature>.engine.ts`.
+- Location: `src/<Module>/e2e/<feature>.engine.test.ts`. The `.engine.test.ts`
+  suffix is a fixed marker meaning "hermetic e2e suite"; the SUT is whatever
+  public entry point the test drives (e.g. `combat.resolver.ts`'s
+  `resolveCombatRound`). Engine code itself lives next to the module
+  (`src/<Module>/<feature>.resolver.ts`), not under `e2e/`.
 - Required suites: happy path, every terminal condition, invariants, and at
   least one `createGameStore(nullAdapter, …)` lifecycle assertion that
   `vi.spyOn(nullAdapter, 'save')` was *not* called.
-- CLI changes must delegate to an engine function with its own hermetic e2e
-  test. Inline math in `*.cli.ts` blocks this — extract it.
+- CLI changes must delegate to a resolver / engine function with its own
+  hermetic e2e test. Inline math in `*.cli.ts` blocks this — extract it.
 
 Before declaring done: `npm test` green twice + `npm run type-check` clean.
 

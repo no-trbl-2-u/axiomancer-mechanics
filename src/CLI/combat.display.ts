@@ -6,6 +6,7 @@
  */
 
 import { Stance, Advantage, CombatState } from '../Combat/types';
+import { CombatActor, RoundEvent } from '../Combat/combat.resolver';
 import {
     DEFENSE_MULTIPLIERS,
     FRIENDSHIP_COUNTER_MAX,
@@ -613,4 +614,251 @@ export function printCombatEnd(state: CombatState): void {
     console.log(`  Rounds     ${state.round - 1}`);
     console.log(HR_MAJOR);
     console.log('');
+}
+
+// ─── Round-event renderer ─────────────────────────────────────────────────────
+//
+// `resolveCombatRound` returns `{ state, combatEvents }`. The CLI's job is to
+// take the typed event stream and render it one round at a time using the
+// helpers above. The renderer owns its own pacing (delays between sections);
+// the resolver knows nothing about presentation.
+//
+// Events arrive grouped by phase (round-start → action-restriction →
+// advantage → stance-effects → scenario → round-end), so a single linear
+// pass is sufficient. Two events need lightweight buffering: the
+// `stance-effects.applied` events (so we can call `printStanceSection` once
+// with both sides), and the `scenario.attack-roll` events (so we can decide
+// between contest layout and single-attack layout).
+
+export interface RenderRoundParams {
+    events: RoundEvent[];
+    playerName: string;
+    enemyName: string;
+    /** Pacing delay; pass `() => Promise.resolve()` to skip animation. */
+    delay: (ms: number) => Promise<void>;
+}
+
+/** Render one round's worth of resolver events to the CLI. */
+export async function renderRoundEvents(p: RenderRoundParams): Promise<void> {
+    const { events, playerName, enemyName, delay } = p;
+    const label = (a: CombatActor): string => (a === 'player' ? playerName : enemyName);
+
+    // Split events by phase. Order within each phase is preserved.
+    const byPhase: Record<RoundEvent['phase'], RoundEvent[]> = {
+        'round-start':        [],
+        'action-restriction': [],
+        'advantage':          [],
+        'stance-effects':     [],
+        'scenario':           [],
+        'round-end':          [],
+    };
+    for (const ev of events) byPhase[ev.phase].push(ev);
+
+    await renderRoundStart(byPhase['round-start'], label, delay);
+    renderActionRestriction(byPhase['action-restriction'], label);
+    await renderAdvantage(byPhase['advantage'], delay);
+    await renderStanceEffects(byPhase['stance-effects'], enemyName, label, delay);
+    await renderScenario(byPhase['scenario'], enemyName, label, delay);
+    await renderRoundEnd(byPhase['round-end'], label, delay);
+}
+
+async function renderRoundStart(
+    events: RoundEvent[],
+    label: (a: CombatActor) => string,
+    delay: (ms: number) => Promise<void>,
+): Promise<void> {
+    if (events.length === 0) return;
+    for (const ev of events) {
+        if (ev.phase !== 'round-start') continue;
+        switch (ev.kind) {
+            case 'regen':        printRegenHeal(ev.actor,   label(ev.actor), ev.amount); break;
+            case 'mana-restore': printManaRestore(ev.actor, label(ev.actor), ev.amount); break;
+            case 'drain':        printDrain(ev.actor,       label(ev.actor), ev.amount); break;
+            case 'dot':          printDotDamage(ev.actor,   label(ev.actor), ev.amount, 'start'); break;
+            case 'lethal':       /* state already reflects the KO; pacing handled below */ break;
+        }
+    }
+    await delay(500);
+}
+
+function renderActionRestriction(
+    events: RoundEvent[],
+    label: (a: CombatActor) => string,
+): void {
+    for (const ev of events) {
+        if (ev.phase !== 'action-restriction') continue;
+        switch (ev.kind) {
+            case 'forced-stance': printForcedStance(ev.actor, label(ev.actor), ev.requested, ev.forced); break;
+            case 'turn-skipped':  printTurnSkipped(ev.actor,  label(ev.actor), ev.reason); break;
+        }
+    }
+}
+
+async function renderAdvantage(
+    events: RoundEvent[],
+    delay: (ms: number) => Promise<void>,
+): Promise<void> {
+    if (events.length === 0) return;
+    for (const ev of events) {
+        if (ev.phase !== 'advantage') continue;
+        if (ev.kind === 'actions') {
+            printRoundActions(ev.playerAction, ev.playerStance, ev.enemyAction, ev.enemyStance);
+        } else if (ev.kind === 'matchup') {
+            printTypeMatchup(ev.playerStance, ev.enemyStance, ev.playerAdvantage, ev.enemyAdvantage);
+        }
+    }
+    await delay(1500);
+}
+
+async function renderStanceEffects(
+    events: RoundEvent[],
+    enemyName: string,
+    label: (a: CombatActor) => string,
+    delay: (ms: number) => Promise<void>,
+): Promise<void> {
+    if (events.length === 0) return;
+
+    let playerApplied: { effect: Effect; message: string; appliedTo: 'self' | 'opponent' } | null = null;
+    let enemyApplied:  { effect: Effect; message: string; appliedTo: 'self' | 'opponent' } | null = null;
+
+    for (const ev of events) {
+        if (ev.phase !== 'stance-effects') continue;
+        if (ev.kind === 'cleared') {
+            printBuffsCleared(ev.actor, label(ev.actor), ev.cleared, ev.newStance);
+        } else if (ev.kind === 'applied') {
+            const payload = { effect: ev.effect, message: ev.message, appliedTo: ev.appliedTo };
+            if (ev.actor === 'player') playerApplied = payload;
+            else                       enemyApplied  = payload;
+        }
+    }
+
+    if (playerApplied || enemyApplied) {
+        printStanceSection(playerApplied, enemyName, enemyApplied);
+        await delay(1000);
+    }
+}
+
+async function renderScenario(
+    events: RoundEvent[],
+    enemyName: string,
+    label: (a: CombatActor) => string,
+    delay: (ms: number) => Promise<void>,
+): Promise<void> {
+    if (events.length === 0) return;
+
+    // Attack-roll count drives the layout: 2 → contest, 1 → single-attack, 0 → no attack-section.
+    const attackRollCount = events.filter(e => e.phase === 'scenario' && e.kind === 'attack-roll').length;
+    const isContest = attackRollCount === 2;
+
+    let firstContestRollPrinted = false;
+
+    for (const ev of events) {
+        if (ev.phase !== 'scenario') continue;
+
+        switch (ev.kind) {
+            case 'attack-roll': {
+                if (isContest) {
+                    if (!firstContestRollPrinted) {
+                        console.log(sectionHeader('Attack Contest'));
+                        firstContestRollPrinted = true;
+                    }
+                    const lbl = ev.actor === 'player' ? 'You attack:' : 'Enemy attacks:';
+                    printRollLine(lbl, ev.rawRoll, ev.statValue, ev.advantage, ev.rollModifier || undefined);
+                } else {
+                    const banner = ev.actor === 'player' ? '[ Player Attack Roll ]' : '[ Enemy Attack Roll ]';
+                    const lbl    = ev.actor === 'player' ? 'Player attack roll:'    : 'Enemy attack roll:';
+                    console.log(`\n${banner}`);
+                    printRollLine(lbl, ev.rawRoll, ev.statValue, ev.advantage, ev.rollModifier || undefined);
+                    await delay(1500);
+                }
+                break;
+            }
+            case 'contest-outcome': {
+                await delay(1500);
+                printContestOutcome(ev.playerTotal, ev.enemyTotal);
+                await delay(1500);
+                break;
+            }
+            case 'damage-roll': {
+                const banner = ev.actor === 'player' ? '[ Player Damage Roll ]' : '[ Enemy Damage Roll ]';
+                const lbl    = ev.actor === 'player' ? 'Player damage roll:'    : 'Enemy damage roll:';
+                console.log(`\n${banner}`);
+                printRollLine(lbl, ev.rawRoll, ev.statValue, ev.advantage, ev.rollModifier || undefined);
+                await delay(800);
+                break;
+            }
+            case 'damage-applied': {
+                const headerBase = ev.attacker === 'player' ? 'Player Damage' : 'Enemy Damage';
+                const header = ev.defenderActed ? `${headerBase} vs Defending ${ev.defender === 'player' ? 'Player' : 'Enemy'}` : headerBase;
+                const defenseStatName = ev.defenderActed ? `${ev.defenseStance} defense` : `${ev.defenseStance} base`;
+                printDamageCalc({
+                    header,
+                    defender:          ev.defender,
+                    attackStatName:    `${ev.attackStance} attack`,
+                    attackStatValue:   ev.attackStatValue,
+                    damageRoll:        ev.damageRoll,
+                    damageBonus:       ev.damageBonus || undefined,
+                    defenseStatName,
+                    baseDefense:       ev.baseDefense,
+                    defenseMultiplier: ev.defenseMultiplier,
+                    finalDamage:       ev.finalDamage,
+                    hpBefore:          ev.hpBefore,
+                    hpAfter:           ev.hpAfter,
+                });
+                break;
+            }
+            case 'thorns': {
+                await delay(500);
+                printThornsReflect(label(ev.attacker), ev.thorns, ev.hpBefore, ev.hpAfter);
+                break;
+            }
+            case 'heart-buff-removed': {
+                if (!ev.effect) break;
+                const targetName = ev.defender === 'player' ? 'You' : enemyName;
+                const verb       = ev.defender === 'player' ? 'lose' : 'loses';
+                console.log(`  ${C.brightCyan}✦ Fleeting Kindness: ${targetName} ${verb} ${C.bold}${ev.effect.name}${C.reset}${C.brightCyan}.${C.reset}`);
+                break;
+            }
+            case 'heart-buff-extended': {
+                if (!ev.effect) break;
+                const possessive = ev.attacker === 'player' ? 'your' : `${enemyName}'s`;
+                console.log(`  ${C.brightCyan}✦ Fleeting Kindness: ${possessive} ${C.bold}${ev.effect.name}${C.reset}${C.brightCyan} lasts 1 round longer.${C.reset}`);
+                break;
+            }
+            case 'both-defend': {
+                await delay(1500);
+                printBothDefending(ev.friendshipBefore, ev.friendshipAfter);
+                break;
+            }
+        }
+    }
+}
+
+async function renderRoundEnd(
+    events: RoundEvent[],
+    label: (a: CombatActor) => string,
+    delay: (ms: number) => Promise<void>,
+): Promise<void> {
+    if (events.length === 0) return;
+
+    let anyExpired = false;
+    for (const ev of events) {
+        if (ev.phase !== 'round-end') continue;
+        if (ev.kind === 'dot') {
+            printDotDamage(ev.actor, label(ev.actor), ev.amount, 'end');
+        } else if (ev.kind === 'expired' && ev.expired.length > 0) {
+            anyExpired = true;
+        }
+    }
+
+    if (anyExpired) {
+        await delay(500);
+        for (const ev of events) {
+            if (ev.phase === 'round-end' && ev.kind === 'expired') {
+                printEffectExpiry(ev.actor, label(ev.actor), ev.expired);
+            }
+        }
+    }
+
+    await delay(1500);
 }

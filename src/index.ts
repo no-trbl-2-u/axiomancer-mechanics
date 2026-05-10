@@ -47,6 +47,16 @@ export {
     endCombatPlayerVictory, endCombatPlayerDefeat, endCombatWithFriendship,
 } from './Combat/combat.reducer';
 
+// ─── Combat resolver ──────────────────────────────────────────────────────────
+// Single-call round resolution. UI clients consume the typed `combatEvents`
+// stream and render from it; the resolver itself never logs.
+export { resolveCombatRound } from './Combat';
+export type {
+    RoundResolution, RoundEvent, CombatActor,
+    RoundStartEvent, ActionRestrictionEvent, AdvantageEvent,
+    StanceEffectEvent, ScenarioEvent, RoundEndEvent,
+} from './Combat';
+
 // ─── Effects ──────────────────────────────────────────────────────────────────
 export {
     applyEffect, applyTier1CombatEffect,

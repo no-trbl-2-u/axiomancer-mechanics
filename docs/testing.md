@@ -38,7 +38,7 @@ Examples of e2e entry points by module:
 
 | Module           | Hermetic e2e entry point                                                             |
 | ---------------- | ------------------------------------------------------------------------------------- |
-| `Combat`         | `resolveCombatTurn` (in `Combat/e2e/combat.engine.ts`) + the `createGameStore` lifecycle |
+| `Combat`         | `resolveCombatRound` (in `Combat/combat.resolver.ts`) + the `createGameStore` lifecycle |
 | `Effects`        | `applyEffect` / `applyTier1CombatEffect` / `tickAllEffects` driving an effect to expiry |
 | `Game`           | `createGameStore(nullAdapter, …)` driven through `startCombat` / `updateCombat` / `endCombat` |
 | `World`          | World reducer chained through map → node → continent transitions                      |
@@ -61,7 +61,7 @@ the hermetic-e2e requirement on their own.
   [`src/test-utils/rng.ts`](../src/test-utils/rng.ts).
 
 If your change touches the CLI layer, the hermetic e2e test must target the
-underlying engine function (e.g. `resolveCombatTurn`) and the CLI must
+underlying engine function (e.g. `resolveCombatRound`) and the CLI must
 delegate to that function. Inline math in a CLI file is a code-smell that
 blocks hermetic testing — extract it.
 
@@ -70,8 +70,12 @@ blocks hermetic testing — extract it.
 ## File and naming conventions
 
 - **Location:** `src/<Module>/e2e/<feature>.engine.test.ts` for hermetic
-  full-flow tests. The companion engine code lives at
-  `src/<Module>/e2e/<feature>.engine.ts`.
+  full-flow tests. The `.engine.test.ts` suffix is a fixed marker meaning
+  "hermetic e2e suite" — the SUT is whatever public entry point the test
+  drives. The engine code itself lives next to the module as
+  `<feature>.resolver.ts` (composite orchestrators returning
+  `{ state, events }`) or `<feature>.reducer.ts` (single state-shape edits),
+  not under `e2e/`.
 - **Pure unit tests** stay alongside the source: `src/<Module>/<file>.test.ts`.
 - **Fixtures / mocks** live in `*.mock.ts` files, e.g.
   `src/Character/characters.mock.ts`. They must be plain data — no `Math.random`,
@@ -85,7 +89,7 @@ For every non-trivial implementation, the e2e file should cover at minimum:
 
 1. **Happy path** — the typical success scenario, end-to-end.
 2. **Boundary / win conditions** — every terminal state the change can reach
-   (e.g. `combat.engine.test.ts` covers all three: `friendship`, `player`, `ko`).
+   (e.g. `combat.resolver.test.ts` covers all three: `friendship`, `player`, `ko`).
 3. **Invariants** — properties that must hold throughout (HP ≥ 0, round
    counter monotonic, fixtures unmutated).
 4. **Lifecycle integration** — at least one test that drives the change
@@ -94,7 +98,7 @@ For every non-trivial implementation, the e2e file should cover at minimum:
 
 ## Canonical example
 
-[`src/Combat/e2e/combat.engine.test.ts`](../src/Combat/e2e/combat.engine.test.ts)
+[`src/Combat/e2e/combat.resolver.test.ts`](../src/Combat/e2e/combat.resolver.test.ts)
 is the reference implementation. Read it before writing a new e2e test —
 its top-of-file comment, its alternating-RNG helper, its three win-condition
 suites, and its store-lifecycle suite together demonstrate every property

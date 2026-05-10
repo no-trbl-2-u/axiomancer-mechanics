@@ -2,7 +2,11 @@
 
 ## Overview
 
-Turn-based combat with rock-paper-scissors mechanics. All combat functions are pure and live in `Combat/index.ts` (mechanics) and `Combat/combat.reducer.ts` (state management).
+Turn-based combat with rock-paper-scissors mechanics. All combat functions are pure and live in:
+
+- `Combat/index.ts` — module barrel + small mechanics helpers (advantage, stats, dice, damage, health, effect queries).
+- `Combat/combat.reducer.ts` — small `(state, …args) => newState` mutations on `CombatState`.
+- `Combat/combat.resolver.ts` — `resolveCombatRound`, the single round-resolution entry point. Returns `{ state, combatEvents }` so any UI client (CLI, future React Native UI, automated tester) can drive combat without re-implementing the math.
 
 ## Type System
 
@@ -58,33 +62,28 @@ The multiplier depends on the defender's type-advantage over the attacker.
 
 ## Round Flow (Current Implementation)
 
+A single call to `resolveCombatRound(state, playerAction, enemyAction)` runs
+every phase below and returns `{ state, combatEvents }`. The CLI prints the
+event stream via `renderRoundEvents` in `combat.display.ts`; the resolver
+itself never logs.
+
 ```
-Round Start
-├── applyRegen(player) — summed healthPerRound × intensity from all regen effects
-├── applyRegen(enemy)
-└── printStatus()
-
-Player Chooses
-├── promptPlayerChoice() — Stance + attack/defend
-└── determineEnemyAction()
-
-Pre-Combat
-├── clearTier1EffectsForStance(player, type) — strip stale Tier 1 self-buffs
-├── clearTier1EffectsForStance(enemy, type)
-├── applyTier1CombatEffect(player→enemy, playerAction)
-└── applyTier1CombatEffect(enemy→player, enemyAction)
-
-Combat Resolution
-├── attack vs attack  → roll contest; winner deals damage (with specials below)
-├── attack vs defend  → attacker rolls; defender uses boosted defense (DEFENSE_MULTIPLIERS)
-├── defend vs attack  → same, reversed
-└── both defend       → friendshipCounter++
-
-Round End
-├── tickAllEffects(player) — decrements durations; expired returned separately
-├── tickAllEffects(enemy)
-└── log expired effects
+resolveCombatRound(state, playerAction, enemyAction)
+├── 1. round-start          → processRoundStartEffects  → regen / mana / drain / start-phase DoT
+│                              (early exit if a combatant drops to 0 HP)
+├── 2. action-restriction   → canAct                    → forced-stance / blocked-stance / skipTurn
+├── 3. advantage            → resolveEffectiveAdvantage → matchup + per-side advantage label
+├── 4. stance-effects       → clearTier1EffectsForStance + applyTier1CombatEffect
+├── 5. scenario             → attack-vs-attack / attack-vs-defend / both-defend / skip variants
+│                              (rolls, damage, thorns, heart specials, friendship tick)
+└── 6. round-end            → end-phase DoT  → tickAllEffects  → log expired effects
+                              + round counter increments
 ```
+
+Events are emitted in the order above, grouped by `phase`:
+`round-start` → `action-restriction` → `advantage` → `stance-effects` →
+`scenario` → `round-end`. UI consumers render each section from the typed
+`RoundEvent` union exported alongside the resolver.
 
 ## Tier 1 Auto-Effects
 
@@ -102,7 +101,7 @@ Switching action types removes the previous type's self-buff immediately via `cl
 
 ## Effect-Based Combat Specials (Active)
 
-These are live in `combat.cli.ts`:
+These are live in `combat.resolver.ts` (no CLI inline math — the CLI just renders the events the resolver emits):
 
 | Mechanic | When | What |
 |----------|------|------|
@@ -157,8 +156,9 @@ Each resolved round can append a `BattleLogEntry` via `addBattleLogEntry()`:
 
 ## Combat Reducer API
 
-Defined in `src/Combat/combat.reducer.ts`. The current names are on the left; legacy
-aliases are listed where they exist for backwards compatibility.
+Defined in `src/Combat/combat.reducer.ts`. These are small, single-concept
+state-shape mutations. The current names are on the left; legacy aliases are
+listed where they exist for backwards compatibility.
 
 | Function | Alias(es) | Description |
 |----------|-----------|-------------|
@@ -169,7 +169,18 @@ aliases are listed where they exist for backwards compatibility.
 | `appendLog(state, entry)` | `addBattleLogEntry` | Appends a battle log entry |
 | `incrementFriendship(state)` | — | Increments the friendship counter |
 | `endCombat(state)` | `endCombatPlayerVictory`, `endCombatPlayerDefeat`, `endCombatWithFriendship` | Marks combat as ended; the reason is encoded in `determineCombatEnd(state)` |
-| `resolveCombatRound(state)` | — | **TODO (Phase 2c):** Full round resolution via reducer |
+
+## Combat Resolver API
+
+Defined in `src/Combat/combat.resolver.ts`. The resolver is the single
+round-resolution entry point used by every UI client.
+
+| Function / Type | Description |
+|-----------------|-------------|
+| `resolveCombatRound(state, playerAction, enemyAction): RoundResolution` | Runs all six phases of one round and returns `{ state, combatEvents }`. Pure; only RNG source is `Math.random` inside dice rolls and effect selectors (stub via `src/test-utils/rng.ts`). |
+| `RoundResolution` | `{ state: CombatState; combatEvents: RoundEvent[] }` |
+| `RoundEvent` | Discriminated union, organised by `phase` (`round-start`, `action-restriction`, `advantage`, `stance-effects`, `scenario`, `round-end`). UIs render each phase as a section. |
+| `CombatActor` | `'player' \| 'enemy'` — used by every event to identify which side it belongs to. |
 
 ## Combat Mechanics API
 
@@ -200,11 +211,17 @@ aliases are listed where they exist for backwards compatibility.
 
 ## Pending (Phase 2)
 
-- `performAttackRoll` / `performDefenseRoll` — full roll formulas with effect modifiers
-- `calculateBaseDamage` / `calculateDamageReduction` / `calculateAttackDamage` — stat-based damage
-- `processPlayerTurn` / `processEnemyTurn` — turn processing for the reducer
-- `determineTurnOrder` / `rollInitiative` — initiative system
 - `createBattleLogEntry` / `formatAllBattleLogs` / `generateCombatResultMessage` — log utilities
-- `resolveCombatRound` — full round resolution replacing inline CLI logic
-- Tier 2/3 effect proc matrix (`Stance × action` → trigger chances)
-- `canAct` / `getActiveEffectModifiers` wired into turn resolution
+- Tier 2/3 effect proc matrix (`Stance × action` → trigger chances) — Spec 03
+- Skill / item actions in the resolver pipeline — Specs 04 / 05
+- Seedable RNG so the round resolver is fully deterministic without `vi.spyOn` — Spec 11
+
+### Landed in Spec 02
+
+- `resolveCombatRound` (in `combat.resolver.ts`) replaces the CLI's inline
+  attack / defend math; the CLI is now UI-only.
+- Typed `RoundEvent` stream emitted alongside the new state for UI rendering.
+- `canAct` / `getActiveEffectModifiers` are wired through the resolver.
+- Symmetric defense (Q3): both player and enemy defenders now route through
+  `getDefenseStat` instead of the asymmetric base-stat path the CLI used to
+  use for the player.

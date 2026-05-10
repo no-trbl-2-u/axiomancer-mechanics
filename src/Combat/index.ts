@@ -2,13 +2,17 @@
  * Combat barrel.
  *
  * Combat-specific logic is split across focused modules:
- *   advantage.ts — type-advantage relationships and modifiers
- *   stats.ts     — stat lookups for combatants
- *   dice.ts      — skill checks and crit detection
- *   damage.ts    — final damage and attack outcome
- *   health.ts    — applyDamage / heal / status checks
- *   effects.ts   — combatant-side effect manipulations
- *   resist.ts    — tier 2/3 effect application resolver
+ *   advantage.ts        — type-advantage relationships and modifiers
+ *   stats.ts            — stat lookups for combatants
+ *   dice.ts             — skill checks and crit detection
+ *   damage.ts           — final damage and attack outcome
+ *   health.ts           — applyDamage / heal / status checks
+ *   effects.ts          — combatant-side effect manipulations
+ *   resist.ts           — tier 2/3 effect application resolver
+ *   combat.reducer.ts   — small state-shape mutations on CombatState
+ *   combat.resolver.ts  — `resolveCombatRound` (the single round-resolution
+ *                         entry point used by every UI client) and the
+ *                         `RoundEvent` discriminated union it emits.
  *
  * Round-resolution pure helpers also live here.
  */
@@ -40,6 +44,18 @@ export type {
     AggregatedEffectModifiers, EffectiveStats,
 } from './effect-modifiers';
 export { resolveEffectApplication } from './resist';
+
+// ─── Round resolver ──────────────────────────────────────────────────────────
+// `resolveCombatRound` is the single entry point any UI client (CLI, future
+// React Native UI, automated tester) calls to advance combat by one round.
+// It returns `{ state, combatEvents }` so consumers render from the typed
+// event stream and never re-implement the math.
+export { resolveCombatRound } from './combat.resolver';
+export type {
+    RoundResolution, RoundEvent, CombatActor,
+    RoundStartEvent, ActionRestrictionEvent, AdvantageEvent,
+    StanceEffectEvent, ScenarioEvent, RoundEndEvent,
+} from './combat.resolver';
 
 /**
  * Determines an enemy's action for the round. Pure wrapper over
