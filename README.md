@@ -106,6 +106,7 @@ automation/                # python combat-CLI test harness
 - [`AUDIT.md`](./AUDIT.md) — code audit and quality assessment
 - [`Knowledge-Gaps.md`](./Knowledge-Gaps.md) — open design and intent questions
 - [`BRAINDUMP.md`](./BRAINDUMP.md) — unorganised idea backlog
+- [`docs/testing.md`](./docs/testing.md) — **hermetic e2e testing standard (required for every implementation)**
 - [`specs/`](./specs) — phased planning specs to drive the next round of work (start with `specs/README.md`)
 - [`docs/`](./docs) — per-system references (combat, effects, character, world, etc.)
 - [`docs/effects/`](./docs/effects) — per-effect deep-dives (one file per buff/debuff)

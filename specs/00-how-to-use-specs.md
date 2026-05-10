@@ -105,13 +105,19 @@ If you have no overrides, the AI will implement in this order:
 ## Acceptance checklist
 
 - [ ] All questions answered.
-- [ ] …
+- [ ] At least one hermetic e2e test under `src/<Module>/e2e/` covers the
+      change (see `docs/testing.md`).
+- [ ] `npm test` and `npm run type-check` are clean.
 - [ ] …
 
 ## Out of scope
 
 - …
 ```
+
+> **Reminder:** the hermetic-e2e checkbox is non-negotiable for any spec
+> that touches runtime code. If a spec is purely docs / planning, strike
+> the line through with a one-sentence reason.
 
 ---
 

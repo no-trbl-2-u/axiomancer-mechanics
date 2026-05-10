@@ -46,3 +46,31 @@ This is a **Tabletop RPG mechanics engine** inspired by games like Mörk Borg, D
 - Failure should be interesting, not just punishing
 - Skills (fallacies/paradoxes) should have thematic flavor text
 
+## Hermetic E2E Testing (REQUIRED for every implementation)
+
+Full standard: `docs/testing.md`. Reference: `src/Combat/e2e/combat.engine.test.ts`.
+
+Every implementation lands with at least one hermetic e2e test that drives
+the change through the highest-level public entry point of its module.
+
+**Hermetic** = all three:
+- Self-contained: no disk I/O (use `nullAdapter`), no network, no TTY, no subprocess.
+- Deterministic: stub `Math.random` via `src/test-utils/rng.ts` helpers
+  (`mockAlternatingRng`, `mockFixedRng`, `mockSequentialRng`). No clock / env / PID.
+- Isolated: `afterEach(() => vi.restoreAllMocks())`. No shared mutable state.
+
+**E2E** = drives the change through the public entry point of the module
+(`resolveCombatTurn`, `createGameStore` lifecycle, `applyEffect` to expiry,
+etc.) — not through a private helper.
+
+Conventions:
+- Location: `src/<Module>/e2e/<feature>.engine.test.ts`; engine logic at
+  `src/<Module>/e2e/<feature>.engine.ts`.
+- Required suites: happy path, every terminal condition, invariants, and at
+  least one `createGameStore(nullAdapter, …)` lifecycle assertion that
+  `vi.spyOn(nullAdapter, 'save')` was *not* called.
+- CLI changes must delegate to an engine function with its own hermetic e2e
+  test. Inline math in `*.cli.ts` blocks this — extract it.
+
+Before declaring done: `npm test` green twice + `npm run type-check` clean.
+
