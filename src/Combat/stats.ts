@@ -1,45 +1,56 @@
 /**
- * Stat lookups for combatants. Each helper takes a `Combatant` plus a
- * `Stance` and returns the appropriate value, abstracting over the
- * Character/Enemy split.
+ * Stat lookups for combatants.
+ *
+ * Every helper passes through `getEffectiveStats` so active effects'
+ * `statModifiers` and stance-agnostic `defenseModifier` are baked into the
+ * value the rest of the engine sees. See `src/Combat/effect-modifiers.ts`
+ * for the aggregation pipeline.
  */
 
-import { isCharacter } from '../Utils/typeGuards';
 import { Stance, Combatant } from './types';
+import { getEffectiveStats } from './effect-modifiers';
 
-/** Raw base stat (heart/body/mind) for a stance. */
+/** Raw base stat (heart/body/mind) for a stance, after effect modifiers. */
 export function getBaseStat(combatant: Combatant, stance: Stance): number {
-    return combatant.baseStats[stance];
+    return getEffectiveStats(combatant).baseStats[stance];
 }
 
-/** Attack value for the given stance, taken from derivedStats. */
+/** Attack value for the given stance, taken from effective derivedStats. */
 export function getAttackStat(combatant: Combatant, stance: Stance): number {
+    const { derivedStats } = getEffectiveStats(combatant);
     switch (stance) {
-        case 'body':  return combatant.derivedStats.physicalAttack;
-        case 'mind':  return combatant.derivedStats.mentalAttack;
-        case 'heart': return combatant.derivedStats.emotionalAttack;
-    }
-}
-
-/** Defense value for the given stance, taken from derivedStats. */
-export function getDefenseStat(combatant: Combatant, stance: Stance): number {
-    switch (stance) {
-        case 'body':  return combatant.derivedStats.physicalDefense;
-        case 'mind':  return combatant.derivedStats.mentalDefense;
-        case 'heart': return combatant.derivedStats.emotionalDefense;
+        case 'body':  return derivedStats.physicalAttack;
+        case 'mind':  return derivedStats.mentalAttack;
+        case 'heart': return derivedStats.emotionalAttack;
     }
 }
 
 /**
+ * Defense value for the given stance, taken from effective derivedStats and
+ * augmented by the stance-agnostic `defenseModifier` aggregated from active effects.
+ */
+export function getDefenseStat(combatant: Combatant, stance: Stance): number {
+    const { derivedStats, defenseDelta } = getEffectiveStats(combatant);
+    let stat: number;
+    switch (stance) {
+        case 'body':  stat = derivedStats.physicalDefense; break;
+        case 'mind':  stat = derivedStats.mentalDefense; break;
+        case 'heart': stat = derivedStats.emotionalDefense; break;
+    }
+    return stat + defenseDelta;
+}
+
+/**
  * Saving-throw value for the given stance. Characters have dedicated saves;
- * enemies don't, so they fall back to their defense for that stance.
+ * enemies don't, so they fall back to their (effective) defense for that stance.
  */
 export function getSaveStat(combatant: Combatant, stance: Stance): number {
-    if (isCharacter(combatant)) {
+    const eff = getEffectiveStats(combatant);
+    if (eff.nonCombatStats) {
         switch (stance) {
-            case 'body':  return combatant.nonCombatStats.physicalSave;
-            case 'mind':  return combatant.nonCombatStats.mentalSave;
-            case 'heart': return combatant.nonCombatStats.emotionalSave;
+            case 'body':  return eff.nonCombatStats.physicalSave;
+            case 'mind':  return eff.nonCombatStats.mentalSave;
+            case 'heart': return eff.nonCombatStats.emotionalSave;
         }
     }
     return getDefenseStat(combatant, stance);
@@ -47,8 +58,9 @@ export function getSaveStat(combatant: Combatant, stance: Stance): number {
 
 /**
  * Returns the value used to resist an effect of the given stance.
- * Defenders' baseStats[stance] is the canonical resist stat.
+ * Defenders' baseStats[stance] (after effect modifiers) is the canonical
+ * resist stat.
  */
 export function getResistStat(combatant: Combatant, resistedBy: Stance): number {
-    return combatant.baseStats[resistedBy];
+    return getEffectiveStats(combatant).baseStats[resistedBy];
 }

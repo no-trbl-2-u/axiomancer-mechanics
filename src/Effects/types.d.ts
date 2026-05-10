@@ -50,10 +50,19 @@ export interface StatModifier {
     isMultiplier?: boolean;
 }
 
-/** Damage dealt at the start of each round to the bearer. */
+/** When in a round a DoT effect ticks. Different damage flavours feel different. */
+export type DotTickPhase = 'start' | 'end';
+
+/**
+ * Damage dealt each round to the bearer. Total per tick = `damagePerRound × intensity`
+ * and is dealt as raw HP loss — DoT bypasses `damageType`-keyed defense (Q5). The
+ * `damageType` is informational today and reserved for future immunities.
+ */
 export interface DamageOverTime {
     damagePerRound: number;
     damageType: EffectStatTarget;
+    /** Where in the round this DoT ticks. Defaults to `'start'`. */
+    tickPhase?: DotTickPhase;
 }
 
 /** Health and/or mana restored at the start of each round to the bearer. */

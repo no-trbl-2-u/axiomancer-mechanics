@@ -30,6 +30,23 @@ export interface ApplyEffectOptions {
 }
 
 /**
+ * Removes the first ActiveEffect with the given `effectId` from the array.
+ * Returns the updated array and the removed effect (or `null` if not found).
+ * Used by cleanse / dispel and other targeted-removal mechanics.
+ */
+export function removeEffect(
+    activeEffects: ActiveEffect[],
+    effectId: string,
+): { activeEffects: ActiveEffect[]; removed: ActiveEffect | null } {
+    const removed = activeEffects.find(e => e.effectId === effectId) ?? null;
+    if (!removed) return { activeEffects, removed: null };
+    return {
+        activeEffects: activeEffects.filter(e => e !== removed),
+        removed,
+    };
+}
+
+/**
  * Applies an effect to an existing ActiveEffect array. Pure; returns the
  * updated array and a result describing what happened. Handles the three
  * stacking modes (`none` / `intensity` / `duration`).
@@ -245,6 +262,33 @@ export function clearTier1EffectsForStance(
 
 // Legacy export name retained for backwards compatibility.
 export const clearTier1EffectsForType = clearTier1EffectsForStance;
+
+/**
+ * Removes every ActiveEffect whose `effectId` matches `lookupEffect(...)?.type === effectType`,
+ * optionally filtered by tier. Used by cleanse (removes debuffs) and dispel (removes buffs).
+ *
+ * @param activeEffects - Source array (not mutated).
+ * @param effectType    - `'buff'` or `'debuff'` — which kind to strip.
+ * @param maxTier       - If provided, only removes effects with `tier <= maxTier`. Tier 1
+ *                        self-buffs / opponent debuffs survive a Tier 1 dispel. Tier 3
+ *                        effects survive everything below their tier.
+ * @returns The pruned array plus the list of effects that were removed.
+ */
+export function removeEffectsByType(
+    activeEffects: ActiveEffect[],
+    effectType: 'buff' | 'debuff',
+    maxTier?: 1 | 2 | 3,
+): { activeEffects: ActiveEffect[]; removed: ActiveEffect[] } {
+    const removed: ActiveEffect[] = [];
+    const remaining = activeEffects.filter(ae => {
+        const def = lookupEffect(ae.effectId);
+        if (def?.type !== effectType) return true;
+        if (maxTier !== undefined && ae.tier > maxTier) return true;
+        removed.push(ae);
+        return false;
+    });
+    return { activeEffects: remaining, removed };
+}
 
 export { lookupEffect, getEffectByName, getEffectsByType, effectsLibrary } from './effects.library';
 export type {

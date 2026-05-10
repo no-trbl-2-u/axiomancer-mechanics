@@ -20,7 +20,7 @@ import { Stance, Action, CombatAction, CombatState } from './types';
 
 export type { Stance, Action, Advantage, CritStyle, CombatAction, CombatPhase, BattleLogEntry, CombatState, Combatant } from './types';
 
-export { determineAdvantage, hasAdvantage, getAdvantageModifier } from './advantage';
+export { determineAdvantage, hasAdvantage, getAdvantageModifier, resolveEffectiveAdvantage } from './advantage';
 export { getBaseStat, getAttackStat, getDefenseStat, getSaveStat, getResistStat } from './stats';
 export { rollSkillCheck, isCriticalHit, isCriticalMiss } from './dice';
 export { applyCriticalMultiplier, calculateFinalDamage, isAttackSuccessful } from './damage';
@@ -29,8 +29,16 @@ export {
     MIND_MARK_ID,
     getStudyMarkIntensity, getActiveRollModifier, getThornsReflect,
     updateEffectDuration, tickAllEffects,
-    removeRandomBuff, extendRandomBuffDuration, applyRegen,
+    removeRandomBuff, extendRandomBuffDuration, applyRegen, applyManaRegen, applyDrain,
+    processDamageOverTime, processRoundStartEffects, processRoundEndEffects,
+    applyCleanse, applyDispel,
 } from './effects';
+export {
+    getActiveEffectModifiers, getEffectiveStats, canAct,
+} from './effect-modifiers';
+export type {
+    AggregatedEffectModifiers, EffectiveStats,
+} from './effect-modifiers';
 export { resolveEffectApplication } from './resist';
 
 /**

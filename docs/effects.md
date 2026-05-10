@@ -109,8 +109,10 @@ Every effect's mechanical modifications live in its `payload` object.
 ```jsonc
 {
   "payload": {
-    // Modifies base or derived stats. Applied conceptually each round.
-    // NOT yet auto-applied in the combat engine — display only until Phase 2.
+    // Modifies base or derived stats. LIVE: applied via getEffectiveStats(). A
+    // `body`/`mind`/`heart` target re-derives every dependent derived stat.
+    // Targets like `physicalAttack` patch the derived stat directly. All
+    // modifiers scale with intensity (Q2). Multipliers compose additively (Q3).
     "statModifiers": [
       { "stat": "body", "value": 2, "isMultiplier": false },
       { "stat": "physicalAttack", "value": 1.5, "isMultiplier": true }
@@ -124,38 +126,48 @@ Every effect's mechanical modifications live in its `payload` object.
     // LIVE: included in getActiveRollModifier() sum.
     "rollModifierPerIntensity": 1,
 
-    // Flat bonus/penalty added to defence values.
-    // NOT yet wired into calculateFinalDamage / defense path — display only until Phase 2.
+    // Flat bonus/penalty added to defence values, intensity-scaled.
+    // LIVE: surfaced as `getEffectiveStats().defenseDelta`. Folded into the
+    // defending damage path via `getDefenseStat` and into passive (no-defend)
+    // hits via `getPassiveDefense` so it always applies.
     "defenseModifier": 3,
 
-    // Damage-over-time dealt at the START of each round.
-    // NOT yet consumed in the combat engine — display only until Phase 2.
+    // Damage-over-time. LIVE: consumed by `processDamageOverTime()`.
+    // `tickPhase` selects when the tick fires; missing → 'start'. Per Q5,
+    // DoT damage is unresisted (bypasses damageType-keyed defense) — the
+    // damageType is informational only and reserved for future immunities.
     "damageOverTime": {
       "damagePerRound": 3,
-      "damageType": "body"    // which stat type the damage is classified as
+      "damageType": "body",
+      "tickPhase": "start"          // 'start' | 'end' (default 'start')
     },
 
-    // Per-round healing applied at the START of each round.
-    // LIVE: consumed by applyRegen() in src/Combat/index.ts.
-    // Negative values (disease, hp_decay) are defined in data but applyRegen() skips
-    // values ≤ 0 — the drain mechanic is pending Phase 2 implementation.
+    // Per-round resource regen. LIVE:
+    //   healthPerRound > 0 → applyRegen()  (heals; clamped at maxHealth)
+    //   healthPerRound < 0 → applyDrain()  (raw HP loss; bypasses defense — Q6)
+    //   manaPerRound  > 0 → applyManaRegen() (clamped at maxMana — Q9)
     "regeneration": {
-      "healthPerRound": 3,    // LIVE
-      "manaPerRound": 0       // typed but not yet consumed
+      "healthPerRound": 3,
+      "manaPerRound":   0
     },
 
     // Damage per intensity reflected to attacker when bearer is hit.
-    // LIVE: consumed by getThornsReflect() in src/Combat/index.ts.
+    // LIVE: consumed by getThornsReflect() in src/Combat/effects.ts.
     "reflectDamage": 1,
 
-    // Action restrictions. NOT yet enforced — display only until Phase 2.
+    // Action restrictions. LIVE: resolved by canAct() (Q7 precedence).
+    //   skipTurn: bearer loses their action regardless of stance.
+    //   forcedStance: overrides bearer's chosen stance (charm).
+    //   blockedStances: bearer cannot use those stances (silence).
     "actionRestriction": {
-      "skipTurn": false,            // target loses their action
-      "blockedStances": ["heart"],  // stances the target cannot choose
-      "forcedStance": null          // target must use this stance
+      "skipTurn": false,
+      "blockedStances": ["heart"],
+      "forcedStance": null
     },
 
-    // Advantage/disadvantage grants. NOT yet wired into roll resolution — display only.
+    // Advantage/disadvantage grants. LIVE: resolved by
+    // resolveEffectiveAdvantage(). Per Q8 the grant overrides the matchup
+    // result outright. (If unbalanced, propose canceling overrides instead.)
     "advantageModifier": {
       "grantAdvantage":    ["body"],
       "grantDisadvantage": ["body", "mind", "heart"]
@@ -166,18 +178,18 @@ Every effect's mechanical modifications live in its `payload` object.
 
 ### Payload field implementation status
 
-| Field                     | Status       | Where consumed                              |
-|---------------------------|--------------|---------------------------------------------|
-| `rollModifier`            | **LIVE**     | `getActiveRollModifier()` — `src/Combat/index.ts` |
-| `rollModifierPerIntensity` | **LIVE**    | `getActiveRollModifier()` — scaled by `intensity` |
-| `reflectDamage`           | **LIVE**     | `getThornsReflect()` — `src/Combat/index.ts` |
-| `regeneration.healthPerRound` | **LIVE** | `applyRegen()` — `src/Combat/index.ts` (positive values only) |
-| `statModifiers`           | **PENDING**  | Defined in data; not auto-applied to `derivedStats` yet |
-| `defenseModifier`         | **PENDING**  | Defined in data; not applied in damage path yet |
-| `damageOverTime`          | **PENDING**  | Defined in data; no DoT loop in combat engine yet |
-| `advantageModifier`       | **PENDING**  | Defined in data; not wired into roll advantage logic yet |
-| `actionRestriction`       | **PENDING**  | Defined in data; skipTurn/blockedStances/forcedStance not enforced yet |
-| `regeneration.manaPerRound` | **PENDING** | Typed but not consumed anywhere            |
+| Field                     | Status   | Where consumed                              |
+|---------------------------|----------|---------------------------------------------|
+| `rollModifier`            | **LIVE** | `getActiveRollModifier()` — `src/Combat/effects.ts` |
+| `rollModifierPerIntensity` | **LIVE** | `getActiveRollModifier()` — scaled by `intensity` |
+| `reflectDamage`           | **LIVE** | `getThornsReflect()` — `src/Combat/effects.ts` |
+| `regeneration.healthPerRound` | **LIVE** | `applyRegen()` (positive) / `applyDrain()` (negative) — `src/Combat/effects.ts` |
+| `regeneration.manaPerRound` | **LIVE** | `applyManaRegen()` — `src/Combat/effects.ts` |
+| `statModifiers`           | **LIVE** | `getEffectiveStats()` re-derives stats; consumed by `getAttackStat` / `getDefenseStat` / `getResistStat` / `getSaveStat` — `src/Combat/stats.ts` |
+| `defenseModifier`         | **LIVE** | `getEffectiveStats().defenseDelta`; folded into defending paths via `getDefenseStat` and into passive damage paths via `getPassiveDefense` — `src/Combat/stats.ts`, `src/CLI/combat.cli.ts` |
+| `damageOverTime`          | **LIVE** | `processDamageOverTime()` — `src/Combat/effects.ts`, split by `tickPhase` (`'start'` / `'end'`) |
+| `advantageModifier`       | **LIVE** | `resolveEffectiveAdvantage()` — `src/Combat/advantage.ts` (grants override matchup per Q8) |
+| `actionRestriction`       | **LIVE** | `canAct()` — `src/Combat/effect-modifiers.ts` (skipTurn / forcedStance / blockedStances per Q7) |
 
 ---
 
@@ -322,16 +334,19 @@ then applies the Tier 2/3 resolution rules described above.
 The combat CLI processes effects in this order each round:
 
 ```
-1. applyRegen          — Start-of-round heal (player then enemy)
-2. clearTier1EffectsForStance — Remove stale Tier 1 stance buffs (player then enemy)
-3. applyTier1CombatEffect — Apply new Tier 1 stance effect (player then enemy)
-4. Resolve attacks:
-     a. getActiveRollModifier   — Modifier to attack/damage rolls
-     b. getStudyMarkIntensity   — Mind mark damage bonus
-     c. getThornsReflect        — Post-hit reflect damage
-     d. removeRandomBuff        — Heart/Attack: strip enemy buff
-     e. extendRandomBuffDuration — Heart/Attack: extend player buff
-5. tickAllEffects      — End-of-round duration decrement + expiry (player then enemy)
+1. processRoundStartEffects   — applyRegen → applyManaRegen → applyDrain → start-phase DoT
+2. canAct                     — resolves skipTurn / forcedStance / blockedStances (Q7)
+3. resolveEffectiveAdvantage  — folds advantageModifier grants/denies into matchup (Q8)
+4. clearTier1EffectsForStance — Remove stale Tier 1 stance buffs
+5. applyTier1CombatEffect     — Apply new Tier 1 stance effect (skipped combatants don't apply)
+6. Resolve attacks:
+     a. getEffectiveStats        — base + derived stat modifiers, defenseDelta
+     b. getActiveRollModifier    — flat + per-intensity roll mods
+     c. getStudyMarkIntensity    — Mind mark damage bonus
+     d. getThornsReflect         — Post-hit reflect damage
+     e. removeRandomBuff         — Heart/Attack: strip enemy buff
+     f. extendRandomBuffDuration — Heart/Attack: extend player buff
+7. processRoundEndEffects     — end-phase DoT (e.g. bleed) → tickAllEffects + expiry
 ```
 
 ---
@@ -387,7 +402,7 @@ Full per-effect documentation: [`docs/effects/buffs/`](./effects/buffs/)
 | `buff_resistance_body` | Pole in Barn | Tier 2 | defense | 4 | duration | mind | 13 | `+body 3`, `+physicalDefense 4`, `+physicalSave 3` |
 | `buff_resistance_mind` | Liar's Shield | Tier 2 | defense | 4 | duration | heart | 13 | `+mind 3`, `+mentalDefense 4`, `+mentalSave 3` |
 | `buff_resistance_heart` | Fiction's Wall | Tier 2 | defense | 4 | duration | body | 13 | `+heart 3`, `+emotionalDefense 4`, `+emotionalSave 3` |
-| `buff_cleanse` | Barber's Paradox | Tier 2 | stat | 0 | none | heart | 12 | `{}` (instant — removes debuffs; mechanic pending) |
+| `buff_cleanse` | Barber's Paradox | Tier 2 | stat | 0 | none | heart | 12 | `{}` (instant — `applyCleanse` ready; wired via skills in Spec 04) |
 | `buff_buff_duration_up` | Unexpected Extension | Tier 2 | advantage | 3 | none | heart | 12 | `rollModifier +1` |
 | `buff_status_chance_up` | Monty's Advantage | Tier 2 | advantage | 4 | none | heart | 13 | `rollModifier +3` |
 | `buff_life_steal` | Maxwell's Siphon | Tier 2 | regeneration | 4 | intensity | mind | 12 | `healthPerRound 2` per intensity, `rollModifier +1` |
@@ -415,17 +430,17 @@ Full per-effect documentation: [`docs/effects/debuffs/`](./effects/debuffs/)
 | `debuff_frostbite` | Boltzmann's Chill | Tier 2 | damage | 3 | duration | mind | 12 | `DoT 2/rd (body)`, `rollModifier -2` |
 | `debuff_shock` | Hardy's Discharge | Tier 2 | damage | 2 | intensity | heart | 13 | `DoT 3/rd (mind)`, `rollModifier -1` |
 | `debuff_curse` | Grelling's Malediction | Tier 2 | stat | 5 | none | body | 14 | `-body 1`, `-mind 1`, `-heart 2`, `rollModifier -2` |
-| `debuff_disease` | Inspection Sickness | Tier 2 | damage | 4 | duration | mind | 12 | `DoT 2/rd (body)`, `healthPerRound -1` (pending) |
+| `debuff_disease` | Inspection Sickness | Tier 2 | damage | 4 | duration | mind | 12 | `DoT 2/rd (body)`, `healthPerRound -1` (drain — via `applyDrain`) |
 | `debuff_wound` | Berry's Injury | Tier 2 | stat | 4 | intensity | mind | 13 | `-body 2`, `defenseModifier -2` |
-| `debuff_stun` | Buridan's Paralysis | Tier 2 | control | 1 | duration | heart | 14 | `skipTurn true` (pending) |
-| `debuff_sleep` | Sleeping Beauty's Rest | Tier 2 | control | 2 | none | heart | 13 | `skipTurn true`, `defenseModifier -3` (pending) |
+| `debuff_stun` | Buridan's Paralysis | Tier 2 | control | 1 | duration | heart | 14 | `skipTurn true` |
+| `debuff_sleep` | Sleeping Beauty's Rest | Tier 2 | control | 2 | none | heart | 13 | `skipTurn true`, `defenseModifier -3` |
 | `debuff_daze` | Simpson's Confusion | Tier 2 | control | 2 | duration | heart | 12 | `rollModifier -3`, `-mind 2`, `-mentalSkill 2`, `-mentalDefense 1` |
-| `debuff_petrify` | Zeno's Stillness | Tier 3 | control | 2 | none | heart | 17 | `skipTurn true`, `defenseModifier -4` (pending) |
+| `debuff_petrify` | Zeno's Stillness | Tier 3 | control | 2 | none | heart | 17 | `skipTurn true`, `defenseModifier -4` |
 | `debuff_fear` | Grandfather's Terror | Tier 2 | control | 2 | duration | body | 13 | `rollModifier -3`, `-heart 3`, `-emotionalSkill 2`, `-emotionalDefense 2` |
-| `debuff_charm` | Wigner's Friendship | Tier 2 | control | 2 | none | body | 14 | `forcedStance heart`, `-heart 2`, `-emotionalDefense 2` (pending) |
+| `debuff_charm` | Wigner's Friendship | Tier 2 | control | 2 | none | body | 14 | `forcedStance heart`, `-heart 2`, `-emotionalDefense 2` |
 | `debuff_confusion` | Two Envelope Delirium | Tier 2 | control | 3 | duration | heart | 13 | `rollModifier -4`, `grantDisadvantage [body,mind,heart]` |
 | `debuff_blind` | Quantum Erasure | Tier 2 | control | 2 | duration | heart | 13 | `rollModifier -5`, `grantDisadvantage [body,mind]` |
-| `debuff_silence` | Moore's Muteness | Tier 2 | control | 3 | none | body | 13 | `blockedStances [heart]`, `-heart 2`, `-emotionalSkill 3` (pending) |
+| `debuff_silence` | Moore's Muteness | Tier 2 | control | 3 | none | body | 13 | `blockedStances [heart]`, `-heart 2`, `-emotionalSkill 3` |
 | `debuff_berserk` | Problem of Evil | Tier 2 | stat | 3 | none | heart | 13 | `+body 3`, `-mind 4`, `-heart 2`, `+physSkill 2`, `-menSkill 3`, `-menDef 2`, `defenseModifier -3` |
 | `debuff_fatigue` | Preface Exhaustion | Tier 2 | stat | 4 | intensity | heart | 12 | `-body/mind 1`, `-physSkill/menSkill 1`, `rollModifier -1` |
 | `debuff_exhaustion` | Lottery Despair | Tier 2 | stat | 3 | intensity | heart | 13 | `-body/mind/heart 2`, `-allSkill 1`, `rollModifier -2` |
@@ -442,9 +457,9 @@ Full per-effect documentation: [`docs/effects/debuffs/`](./effects/debuffs/)
 | `debuff_evasion_down` | Dartboard Certainty | Tier 2 | defense | 3 | duration | heart | 13 | `defenseModifier -3`, `-allDefense 2` |
 | `debuff_accuracy_down` | Ellsberg's Doubt | Tier 2 | advantage | 3 | duration | heart | 12 | `rollModifier -3`, `-allSkill 2` |
 | `debuff_defense_down` | Prisoner's Betrayal | Tier 2 | defense | 3 | intensity | heart | 13 | `defenseModifier -3`, `-body 1`, `-physicalDefense 2` |
-| `debuff_dispel` | Skolem's Reduction | Tier 2 | stat | 0 | none | heart | 12 | `{}` (instant — removes buffs; mechanic pending) |
+| `debuff_dispel` | Skolem's Reduction | Tier 2 | stat | 0 | none | heart | 12 | `{}` (instant — `applyDispel` ready; wired via skills in Spec 04) |
 | `debuff_hex` | Allais' Curse | Tier 2 | damage | 3 | none | body | 13 | `DoT 2/rd (heart)` |
-| `debuff_hp_decay` | Centipede's End | Tier 2 | damage | 4 | none | mind | 13 | `DoT 3/rd (body)`, `healthPerRound -2` (pending) |
+| `debuff_hp_decay` | Centipede's End | Tier 2 | damage | 4 | none | mind | 13 | `DoT 3/rd (body)`, `healthPerRound -2` (drain — via `applyDrain`) |
 | `debuff_moral_learning` | Moral Blindness | Tier 2 | control | 3 | none | body | 12 | `-heart 2`, `-mind 1`, `-emotionalSkill 2`, `-mentalSkill 1`, `rollModifier -1` |
 | `debuff_transformative` | Transformative Terror | Tier 2 | control | 2 | none | heart | 13 | `rollModifier -2`, `-mind 2`, `-heart 1`, `-mentalSkill 2`, `-emotionalDefense 1` |
 | `debuff_rational_disagreement` | Peer Doubt | Tier 2 | stat | 2 | duration | heart | 12 | `-mind 3`, `-mentalSkill 2`, `-mentalDefense 1`, `rollModifier -2` |
@@ -465,16 +480,29 @@ Full per-effect documentation: [`docs/effects/debuffs/`](./effects/debuffs/)
 | `applyEffect(effects, effect, round, options?)` | `src/Effects/index.ts` | Core stacking engine — applies an effect respecting all stacking modes |
 | `applyTier1CombatEffect(actorEffects, opponentEffects, combatAction, round, overrides?)` | `src/Effects/index.ts` | Applies Tier 1 stance effect; returns `Tier1Outcome` with updated arrays + UI feedback |
 | `clearTier1EffectsForStance(effects, currentStance)` (alias `clearTier1EffectsForType`) | `src/Effects/index.ts` | Removes stale Tier 1 self-buffs on stance switch |
-| `getResistStat(target, resistedBy)` | `src/Combat/stats.ts` | Target's base stat for the resisting stance (used by `resolveEffectApplication`) |
+| `removeEffect(effects, effectId)` | `src/Effects/index.ts` | Removes the first ActiveEffect with the given ID |
+| `removeEffectsByType(effects, type, maxTier?)` | `src/Effects/index.ts` | Bulk strip by buff/debuff with optional tier cap (used by cleanse/dispel) |
+| `getResistStat(target, resistedBy)` | `src/Combat/stats.ts` | Target's effective base stat for the resisting stance |
 | `resolveEffectApplication(target, activeEffect, effectType, heartBonus, equipBonus)` | `src/Combat/index.ts` | Full Tier 2/3 resist resolution with roll details |
-| `tickAllEffects(target)` | `src/Combat/index.ts` | End-of-round duration decrement; returns expired list |
-| `updateEffectDuration(target, effectId)` | `src/Combat/index.ts` | Tick one specific effect by ID |
-| `getActiveRollModifier(target)` | `src/Combat/index.ts` | Sum of all `rollModifier` + `rollModifierPerIntensity × intensity` across active effects |
-| `getStudyMarkIntensity(target)` | `src/Combat/index.ts` | Intensity of `tier1_mind_mark` (Mind attack damage bonus) |
-| `getThornsReflect(bearer)` | `src/Combat/index.ts` | Total reflect damage from all thorns effects |
-| `removeRandomBuff(target)` | `src/Combat/index.ts` | Strips one random buff (Heart/Attack special) |
-| `extendRandomBuffDuration(target, amount)` | `src/Combat/index.ts` | Extends one random buff's duration (Heart/Attack special) |
-| `applyRegen(target)` | `src/Combat/index.ts` | Applies per-round health regeneration from all regen effects |
+| `tickAllEffects(target)` | `src/Combat/effects.ts` | End-of-round duration decrement; returns expired list |
+| `updateEffectDuration(target, effectId)` | `src/Combat/effects.ts` | Tick one specific effect by ID |
+| `getActiveRollModifier(target)` | `src/Combat/effects.ts` | Sum of all `rollModifier` + `rollModifierPerIntensity × intensity` across active effects |
+| `getActiveEffectModifiers(effects)` | `src/Combat/effect-modifiers.ts` | Aggregates stat / defense / advantage / restriction / DoT / regen / drain modifiers in one pass |
+| `getEffectiveStats(combatant)` | `src/Combat/effect-modifiers.ts` | Effective base, derived, and non-combat stats with intensity-scaled modifiers applied |
+| `canAct(effects, requestedStance?)` | `src/Combat/effect-modifiers.ts` | Resolves `skipTurn` / `forcedStance` / `blockedStances` (Q7) |
+| `resolveEffectiveAdvantage(matchup, attackerEffects, attackerStance)` | `src/Combat/advantage.ts` | Folds `advantageModifier` grants/denies into the matchup result (Q8) |
+| `getStudyMarkIntensity(target)` | `src/Combat/effects.ts` | Intensity of `tier1_mind_mark` (Mind attack damage bonus) |
+| `getThornsReflect(bearer)` | `src/Combat/effects.ts` | Total reflect damage from all thorns effects |
+| `removeRandomBuff(target)` | `src/Combat/effects.ts` | Strips one random buff (Heart/Attack special) |
+| `extendRandomBuffDuration(target, amount)` | `src/Combat/effects.ts` | Extends one random buff's duration (Heart/Attack special) |
+| `applyRegen(target)` | `src/Combat/effects.ts` | Applies positive per-round health regeneration |
+| `applyManaRegen(target)` | `src/Combat/effects.ts` | Applies positive per-round mana regeneration (clamped at maxMana) |
+| `applyDrain(target)` | `src/Combat/effects.ts` | Applies negative-regen drain as raw HP loss (bypasses defense) |
+| `processDamageOverTime(target, phase)` | `src/Combat/effects.ts` | Applies DoT damage routed by `tickPhase` (`'start'` / `'end'`) |
+| `processRoundStartEffects(target)` | `src/Combat/effects.ts` | Orchestrates regen → manaRegen → drain → start-phase DoT |
+| `processRoundEndEffects(target)` | `src/Combat/effects.ts` | Orchestrates end-phase DoT → tick & expire |
+| `applyCleanse(target, tier)` | `src/Combat/effects.ts` | Strip debuffs of `tier ≤ cleanseTier` (Q10) |
+| `applyDispel(target, tier)` | `src/Combat/effects.ts` | Strip buffs of `tier ≤ dispelTier` (Q10) |
 
 ---
 
@@ -494,35 +522,41 @@ Full per-effect documentation: [`docs/effects/debuffs/`](./effects/debuffs/)
 | Duration ticking / expiry | all effects |
 | Tier 2/3 resist resolution | all Tier 2 / Tier 3 effects |
 
-### Pending (Phase 2)
+### Now live (Phase 2 — Spec 01)
 
-| Mechanic | Affected effects |
-|----------|-----------------|
-| Stat modifier application | All effects with `statModifiers` |
-| Defense modifier application | `buff_body_defense_up`, `buff_invincibility`, `debuff_wound`, `debuff_sleep`, `debuff_petrify`, and ~20 others |
-| Damage-over-time loop | `debuff_poison`, `debuff_strong_poison`, `debuff_bleed`, `debuff_burn`, `debuff_frostbite`, `debuff_shock`, `debuff_disease`, `debuff_hex`, `debuff_hp_decay` |
-| Negative regeneration (drain) | `debuff_disease` (`healthPerRound -1`), `debuff_hp_decay` (`healthPerRound -2`) |
-| `skipTurn` enforcement | `debuff_stun`, `debuff_sleep`, `debuff_petrify` |
-| `blockedStances` enforcement | `debuff_silence` |
-| `forcedStance` enforcement | `debuff_charm` |
-| `advantageModifier` wiring | `buff_evasion_up`, `buff_haste`, `buff_stealth`, `buff_counter`, `buff_advantage_*`, `debuff_confusion`, `debuff_blind`, `debuff_slow`, `debuff_mark`, `debuff_causal_emergence` |
-| `manaPerRound` consumption | (all regen effects — mana system not yet implemented) |
-| Cleanse mechanic | `buff_cleanse` (Barber's Paradox) |
-| Dispel mechanic | `debuff_dispel` (Skolem's Reduction) |
-| `buff_critical_damage_up` multiplier | Banach-Tarski Strike (stat multiplier path) |
-| `buff_max_hp_up` multiplier | Galileo's Infinity (maxHealth path) |
+| Mechanic | Driving function(s) |
+|----------|---------------------|
+| Stat modifier application | `getEffectiveStats()` re-derives stats; intensity-scaled (Q2) |
+| Multiplier composition (additive — Q3) | `getActiveEffectModifiers().statMultBonus` |
+| Defense modifier application | `getEffectiveStats().defenseDelta` folded into defense paths |
+| Damage-over-time loop (split by tick phase — Q4) | `processDamageOverTime()` |
+| Negative regeneration (drain — Q6) | `applyDrain()` (raw HP loss, bypasses defense) |
+| `skipTurn` enforcement | `canAct()` (Q7 precedence) |
+| `blockedStances` enforcement | `canAct()` |
+| `forcedStance` enforcement | `canAct()` |
+| `advantageModifier` wiring (Q8 — grants override matchup) | `resolveEffectiveAdvantage()` |
+| Mana regeneration (Q9) | `applyManaRegen()` |
+| Cleanse mechanic (tier-bounded — Q10) | `applyCleanse(target, tier)` |
+| Dispel mechanic (tier-bounded — Q10) | `applyDispel(target, tier)` |
+| Round-start orchestration | `processRoundStartEffects()` |
+| Round-end orchestration | `processRoundEndEffects()` |
+
+### Still pending
+
+| Mechanic | Affected effects | Why deferred |
+|----------|-----------------|--------------|
+| Cleanse / dispel landing via skills | `buff_cleanse`, `debuff_dispel` | Skill system arrives in Spec 04. `applyCleanse` / `applyDispel` helpers are ready. |
+| `processWorldEffectTick` for hazards while exploring | World hazards | Covered by Spec 08. |
+| Equipment-driven `passiveEffects` | Gear that emits effects | Covered by Spec 05. |
+| DoT immunity by `damageType` (Q5 future-extension) | All DoT effects | Q5 explicitly defers; DoT is unresisted today. |
 
 ---
 
 ## Pending
 
-Engine stubs scheduled for Phase 2:
+Engine stubs scheduled for later specs:
 
-- `removeEffect(activeEffects, effectId)` — filter by ID for cleanses/dispels
-- `getActiveEffectModifiers(activeEffects)` — aggregate all stat/roll/defense/advantage mods
-- `canAct(activeEffects)` — read `skipTurn`, `blockedStances`, `forcedStance`
-- `processDamageOverTime(activeEffects)` — sum DoT damage per round
-- `processRoundStartEffects(state)` — orchestrate DoT → regen → tick → expire
-- `processWorldEffectTick(player)` — DoT/regen/expiry outside combat (per map node)
-- Wiring `defenseModifier` into `calculateFinalDamage`
-- Wiring `advantageModifier` into `createDieRoll` / advantage resolution
+- `processWorldEffectTick(player)` — DoT / regen / expiry outside combat per map node (Spec 08).
+- Skill-driven cleanse / dispel application — currently the helpers exist but are not invoked
+  by an effect-landing path. Wired in Spec 04.
+- Equipment passive-effect emission (Spec 05).

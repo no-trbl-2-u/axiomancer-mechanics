@@ -1,14 +1,16 @@
 /**
  * Effect-driven combat helpers — read-only queries plus pure mutators that
  * operate on a combatant's `effects` array (regen, thorns, marks, ticks,
- * buff manipulation).
+ * buff manipulation, DoT, drain, cleanse / dispel).
  */
 
 import { ActiveEffect } from '../Effects/types';
 import { lookupEffect } from '../Effects/effects.library';
+import { removeEffectsByType } from '../Effects';
 import { MAX_EFFECT_DURATION } from '../Game/game-mechanics.constants';
 import { Combatant } from './types';
-import { heal } from './health';
+import { applyDamage, heal } from './health';
+import { getActiveEffectModifiers } from './effect-modifiers';
 
 /** ID of the Mind studying mark. Used by Mind/Attack to add bonus damage. */
 export const MIND_MARK_ID = 'tier1_mind_mark';
@@ -116,21 +118,129 @@ export function extendRandomBuffDuration<T extends Combatant>(
 }
 
 /**
- * Applies start-of-round regeneration from any regen effects on the combatant.
- * Returns the healed combatant and total HP restored.
+ * Applies start-of-round health regeneration from all positive
+ * `regeneration.healthPerRound` payloads on the combatant. Per Q2, regen is
+ * intensity-scaled. Healing is clamped at `maxHealth` by `heal()`.
  */
 export function applyRegen<T extends Combatant>(target: T): { target: T; healed: number } {
-    let healed = 0;
-    let updated = target;
+    const mods = getActiveEffectModifiers(target.effects);
+    if (mods.healthRegen <= 0) return { target, healed: 0 };
+    return { target: heal(target, mods.healthRegen), healed: mods.healthRegen };
+}
 
-    for (const ae of target.effects) {
-        const def = lookupEffect(ae.effectId);
-        const perRound = def?.payload.regeneration?.healthPerRound ?? 0;
-        if (perRound <= 0) continue;
-        const amount = perRound * (ae.intensity ?? 1);
-        healed += amount;
-        updated = heal(updated, amount);
-    }
+/**
+ * Applies start-of-round mana regeneration from `regeneration.manaPerRound`
+ * payloads (Q9). Mirrors `applyRegen` for HP and clamps at `maxMana`. Drain
+ * (negative manaPerRound) is intentionally not supported — there is no
+ * mana-tied effect today that wants it.
+ */
+export function applyManaRegen<T extends Combatant>(target: T): { target: T; restored: number } {
+    const mods = getActiveEffectModifiers(target.effects);
+    if (mods.manaRegen <= 0) return { target, restored: 0 };
+    const restored = Math.min(mods.manaRegen, target.maxMana - target.mana);
+    if (restored <= 0) return { target, restored: 0 };
+    return { target: { ...target, mana: target.mana + restored }, restored };
+}
 
-    return { target: updated, healed };
+/**
+ * Applies drain (negative `regeneration.healthPerRound`) per Q6 as a unique
+ * raw-HP loss, separate from regen and from DoT. Drain bypasses defense (it's
+ * the body wasting itself, not an external hit) and is dealt at round start.
+ */
+export function applyDrain<T extends Combatant>(target: T): { target: T; drained: number } {
+    const mods = getActiveEffectModifiers(target.effects);
+    if (mods.healthDrain <= 0) return { target, drained: 0 };
+    return { target: applyDamage(target, mods.healthDrain), drained: mods.healthDrain };
+}
+
+/**
+ * Applies damage-over-time damage for the given phase (Q4). Each DoT effect
+ * declares an optional `tickPhase` (`'start'` or `'end'`); without one the
+ * effect ticks at start. Per Q5, DoT damage is unresisted — it bypasses
+ * defense and the `damageType` is purely informational for now.
+ */
+export function processDamageOverTime<T extends Combatant>(
+    target: T,
+    phase: 'start' | 'end',
+): { target: T; damage: number } {
+    const mods = getActiveEffectModifiers(target.effects);
+    const damage = phase === 'start' ? mods.dotStart : mods.dotEnd;
+    if (damage <= 0) return { target, damage: 0 };
+    return { target: applyDamage(target, damage), damage };
+}
+
+/**
+ * Round-start orchestration. Order:
+ *   1. Regen (HP, then mana)
+ *   2. Drain (negative regen)
+ *   3. Start-phase DoT
+ *
+ * Tick / expiry are intentionally *not* performed here; they belong to
+ * `processRoundEndEffects` so duration counts down once per round.
+ */
+export function processRoundStartEffects<T extends Combatant>(target: T): {
+    target: T;
+    healed: number;
+    manaRestored: number;
+    drained: number;
+    dotDamage: number;
+} {
+    const regen = applyRegen(target);
+    const mana  = applyManaRegen(regen.target);
+    const drain = applyDrain(mana.target);
+    const dot   = processDamageOverTime(drain.target, 'start');
+    return {
+        target:        dot.target,
+        healed:        regen.healed,
+        manaRestored:  mana.restored,
+        drained:       drain.drained,
+        dotDamage:     dot.damage,
+    };
+}
+
+/**
+ * Round-end orchestration. Order:
+ *   1. End-phase DoT (e.g. bleed)
+ *   2. Tick / expire all effects (single decrement per round)
+ */
+export function processRoundEndEffects<T extends Combatant>(target: T): {
+    target: T;
+    dotDamage: number;
+    expired: ActiveEffect[];
+} {
+    const dot   = processDamageOverTime(target, 'end');
+    const ticked = tickAllEffects(dot.target);
+    return {
+        target:    ticked.target,
+        dotDamage: dot.damage,
+        expired:   ticked.expired,
+    };
+}
+
+/**
+ * Cleanse — strip debuffs from the bearer scoped by the cleanse effect's tier.
+ * A Tier 2 cleanse removes Tier 1 + 2 debuffs; a Tier 3 cleanse strips
+ * everything. Pure: returns updated combatant and the list of removed effects.
+ *
+ * @param tier - Tier of the cleansing effect (1, 2, or 3). Removes any debuff
+ *               whose `tier <= cleanseTier`.
+ */
+export function applyCleanse<T extends Combatant>(
+    target: T,
+    tier: 1 | 2 | 3,
+): { target: T; removed: ActiveEffect[] } {
+    const { activeEffects, removed } = removeEffectsByType(target.effects, 'debuff', tier);
+    return { target: { ...target, effects: activeEffects }, removed };
+}
+
+/**
+ * Dispel — strip buffs from the bearer scoped by the dispel effect's tier
+ * (mirror of `applyCleanse`).
+ */
+export function applyDispel<T extends Combatant>(
+    target: T,
+    tier: 1 | 2 | 3,
+): { target: T; removed: ActiveEffect[] } {
+    const { activeEffects, removed } = removeEffectsByType(target.effects, 'buff', tier);
+    return { target: { ...target, effects: activeEffects }, removed };
 }

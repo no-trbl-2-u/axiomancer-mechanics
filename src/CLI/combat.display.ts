@@ -296,6 +296,67 @@ export function printRegenHeal(who: 'player' | 'enemy', label: string, amount: n
     console.log(`  ${C.brightGreen}❤ ${owner}: regenerated ${amount} HP.${C.reset}`);
 }
 
+/** Announces mana restored by mana regen at the start of a round. */
+export function printManaRestore(who: 'player' | 'enemy', label: string, amount: number): void {
+    if (amount <= 0) return;
+    const owner = who === 'player' ? `${C.brightBlue}You${C.reset}` : `${C.brightBlue}${label}${C.reset}`;
+    console.log(`  ${C.brightBlue}✦ ${owner}: restored ${amount} MP.${C.reset}`);
+}
+
+/** Announces HP lost to drain (negative regen) at the start of a round. */
+export function printDrain(who: 'player' | 'enemy', label: string, amount: number): void {
+    if (amount <= 0) return;
+    const owner = who === 'player' ? `${C.brightRed}You${C.reset}` : `${C.brightRed}${label}${C.reset}`;
+    console.log(`  ${C.brightRed}☠ ${owner}: drained for ${amount} HP.${C.reset}`);
+}
+
+/** Announces DoT damage applied at the start or end of a round. */
+export function printDotDamage(
+    who: 'player' | 'enemy',
+    label: string,
+    amount: number,
+    phase: 'start' | 'end',
+): void {
+    if (amount <= 0) return;
+    const owner = who === 'player' ? `${C.brightRed}You${C.reset}` : `${C.brightRed}${label}${C.reset}`;
+    const tag = phase === 'start' ? 'tick' : 'bleed';
+    console.log(`  ${C.brightRed}🩸 ${owner}: ${tag} for ${amount} damage.${C.reset}`);
+}
+
+/** Announces a stance forced by an effect (e.g. charm) overriding player choice. */
+export function printForcedStance(who: 'player' | 'enemy', label: string, requested: Stance | null, forced: Stance): void {
+    const owner = who === 'player' ? `${C.cyan}You${C.reset}` : `${C.cyan}${label}${C.reset}`;
+    if (requested && requested !== forced) {
+        console.log(`  ${C.brightYellow}↯ ${owner}: stance forced to ${typeColor(forced)} (was ${typeColor(requested)}).${C.reset}`);
+    } else {
+        console.log(`  ${C.brightYellow}↯ ${owner}: stance forced to ${typeColor(forced)}.${C.reset}`);
+    }
+}
+
+/** Announces a turn skipped due to skipTurn or a fully-blocked stance. */
+export function printTurnSkipped(who: 'player' | 'enemy', label: string, reason: string | null): void {
+    const owner = who === 'player' ? `${C.cyan}You${C.reset}` : `${C.cyan}${label}${C.reset}`;
+    const tag = reason === 'blockedStance' ? 'cannot use that stance' : 'cannot act';
+    console.log(`  ${C.brightYellow}⊘ ${owner}: ${tag} this round.${C.reset}`);
+}
+
+/** Announces buffs / debuffs removed by a cleanse or dispel. */
+export function printPurge(
+    who: 'player' | 'enemy',
+    label: string,
+    purgeKind: 'cleanse' | 'dispel',
+    removed: ActiveEffect[],
+): void {
+    if (removed.length === 0) return;
+    const owner = who === 'player' ? `${C.cyan}You${C.reset}` : `${C.cyan}${label}${C.reset}`;
+    const verb = purgeKind === 'cleanse' ? 'cleansed' : 'dispelled';
+    console.log(`  ${C.brightCyan}✦ ${owner}: ${verb} ${removed.length} effect${removed.length > 1 ? 's' : ''}.${C.reset}`);
+    for (const ae of removed) {
+        const name = lookupEffect(ae.effectId)?.name ?? ae.effectId;
+        console.log(`    ${C.dim}✕ ${name} dispersed.${C.reset}`);
+    }
+}
+
 /**
  * Announces thorns reflect damage dealt back to an attacker.
  */

@@ -19,18 +19,21 @@ import { Enemy } from '../../Enemy/types';
 import { CombatAction, CombatState, Stance, Advantage } from '../types';
 import {
     determineAdvantage,
+    resolveEffectiveAdvantage,
     getAttackStat,
     getBaseStat,
     getDefenseStat,
     getActiveRollModifier,
+    getEffectiveStats,
     calculateFinalDamage,
     applyDamage,
-    tickAllEffects,
     getThornsReflect,
     getStudyMarkIntensity,
     removeRandomBuff,
     extendRandomBuffDuration,
-    applyRegen,
+    canAct,
+    processRoundStartEffects,
+    processRoundEndEffects,
 } from '..';
 import { createDieRoll } from '../../Utils';
 import {
@@ -38,6 +41,9 @@ import {
     PASSIVE_DEFENSE_MULTIPLIER,
 } from '../../Game/game-mechanics.constants';
 import { applyTier1CombatEffect, clearTier1EffectsForStance } from '../../Effects';
+
+const passiveDefense = (combatant: Character | Enemy, stance: Stance): number =>
+    getBaseStat(combatant, stance) + getEffectiveStats(combatant).defenseDelta;
 
 // ─── Scenario Resolvers ───────────────────────────────────────────────────────
 
@@ -67,7 +73,7 @@ export function resolveAttackVsAttack(
     const enemyTotal = enemyDieRoll() + eMod;
 
     if (playerTotal > enemyTotal) {
-        const baseDefense = getDefenseStat(enemy, enemyType);
+        const baseDefense = passiveDefense(enemy, enemyType);
         const studyBonus = playerType === 'mind' ? getStudyMarkIntensity(enemy) : 0;
         const damageRoll = playerDieRoll() + pMod;
         const finalDamage = calculateFinalDamage(damageRoll, baseDefense * PASSIVE_DEFENSE_MULTIPLIER, false, studyBonus);
@@ -84,7 +90,7 @@ export function resolveAttackVsAttack(
     }
 
     if (enemyTotal > playerTotal) {
-        const baseDefense = getBaseStat(player, playerType);
+        const baseDefense = passiveDefense(player, playerType);
         const studyBonus = enemyType === 'mind' ? getStudyMarkIntensity(player) : 0;
         const damageRoll = enemyDieRoll() + eMod;
         const finalDamage = calculateFinalDamage(damageRoll, baseDefense * PASSIVE_DEFENSE_MULTIPLIER, false, studyBonus);
@@ -154,7 +160,7 @@ export function resolvePlayerDefendEnemyAttack(
     enemyDieRoll(); // attack roll (result shown in CLI, not used in damage formula)
     const damageRoll = enemyDieRoll() + attackMod;
 
-    const baseDefense = getBaseStat(player, playerType);
+    const baseDefense = getBaseStat(player, playerType) + getEffectiveStats(player).defenseDelta;
     const defenseMultiplier = DEFENSE_MULTIPLIERS[playerAdv];
     const studyBonus = enemyType === 'mind' ? getStudyMarkIntensity(player) : 0;
     const finalDamage = calculateFinalDamage(damageRoll, baseDefense * defenseMultiplier, false, studyBonus);
@@ -174,12 +180,16 @@ export function resolvePlayerDefendEnemyAttack(
  * Resolves one complete combat turn and returns the next `CombatState`.
  *
  * Order of operations (mirrors `runCombatTurn` in `combat.cli.ts`):
- *   1. Apply start-of-round regen.
- *   2. Clear stale Tier 1 stance buffs.
- *   3. Apply new Tier 1 stance effects.
- *   4. Resolve the attack/defend scenario.
- *   5. Tick (decrement) all active effects.
- *   6. Increment the round counter.
+ *   1. `processRoundStartEffects` — regen → mana regen → drain → start-phase DoT.
+ *   2. Resolve `canAct` (forcedStance / blockedStances / skipTurn — Q7 precedence).
+ *   3. Compute effective advantage with `resolveEffectiveAdvantage` (Q8 default:
+ *      effect grants override the matchup result outright).
+ *   4. Clear stale Tier 1 stance buffs and apply new ones (only for combatants
+ *      that can act).
+ *   5. Resolve the attack/defend scenario. A skipped combatant takes hits at the
+ *      passive multiplier and never retaliates.
+ *   6. `processRoundEndEffects` — end-phase DoT → tick & expire.
+ *   7. Increment the round counter.
  *
  * @param state        - Current combat snapshot.
  * @param playerAction - Stance and action chosen by the player this round.
@@ -193,53 +203,82 @@ export function resolveCombatTurn(
     let player = state.player;
     let enemy = state.enemy;
 
-    // 1. Regen
-    player = applyRegen(player).target;
-    enemy = applyRegen(enemy).target;
+    // 1. Round-start orchestration.
+    player = processRoundStartEffects(player).target;
+    enemy  = processRoundStartEffects(enemy).target;
 
-    // 2. Clear stale Tier 1 stance buffs
-    player = { ...player, effects: clearTier1EffectsForStance(player.effects, playerAction.stance).activeEffects };
-    enemy = { ...enemy, effects: clearTier1EffectsForStance(enemy.effects, enemyAction.stance).activeEffects };
+    if (player.health <= 0 || enemy.health <= 0) {
+        return { ...state, player, enemy, round: state.round + 1 };
+    }
 
-    // 3. Apply Tier 1 stance effects
-    const playerAdvantage = determineAdvantage(playerAction.stance, enemyAction.stance);
-    const enemyAdvantage = determineAdvantage(enemyAction.stance, playerAction.stance);
+    // 2. Action restriction resolution.
+    const playerCan = canAct(player.effects, playerAction.stance);
+    const enemyCan  = canAct(enemy.effects,  enemyAction.stance);
+    const playerStance = playerCan.resolvedStance ?? playerAction.stance;
+    const enemyStance  = enemyCan.resolvedStance  ?? enemyAction.stance;
+    const playerActionFinal = playerCan.canAct ? playerAction.action : 'skip';
+    const enemyActionFinal  = enemyCan.canAct  ? enemyAction.action  : 'skip';
 
-    const playerTier1 = applyTier1CombatEffect(
-        player.effects, enemy.effects, playerAction, state.round,
+    // 3. Advantage with effect overrides.
+    const playerAdvantage = resolveEffectiveAdvantage(
+        determineAdvantage(playerStance, enemyStance), player.effects, playerStance,
     );
-    player = { ...player, effects: playerTier1.actorEffects };
-    enemy = { ...enemy, effects: playerTier1.opponentEffects };
-
-    const enemyTier1 = applyTier1CombatEffect(
-        enemy.effects, player.effects, enemyAction, state.round,
-        state.enemy.tier1Overrides,
+    const enemyAdvantage = resolveEffectiveAdvantage(
+        determineAdvantage(enemyStance, playerStance), enemy.effects, enemyStance,
     );
-    enemy = { ...enemy, effects: enemyTier1.actorEffects };
-    player = { ...player, effects: enemyTier1.opponentEffects };
 
-    // 4. Resolve scenario
+    // 4. Clear stale Tier 1 stance buffs and apply new ones for active combatants.
+    player = { ...player, effects: clearTier1EffectsForStance(player.effects, playerStance).activeEffects };
+    enemy  = { ...enemy,  effects: clearTier1EffectsForStance(enemy.effects,  enemyStance).activeEffects };
+
+    if (playerCan.canAct && (playerActionFinal === 'attack' || playerActionFinal === 'defend')) {
+        const t1 = applyTier1CombatEffect(
+            player.effects, enemy.effects,
+            { stance: playerStance, action: playerActionFinal }, state.round,
+        );
+        player = { ...player, effects: t1.actorEffects };
+        enemy  = { ...enemy,  effects: t1.opponentEffects };
+    }
+    if (enemyCan.canAct && (enemyActionFinal === 'attack' || enemyActionFinal === 'defend')) {
+        const t1 = applyTier1CombatEffect(
+            enemy.effects, player.effects,
+            { stance: enemyStance, action: enemyActionFinal }, state.round,
+            state.enemy.tier1Overrides,
+        );
+        enemy  = { ...enemy,  effects: t1.actorEffects };
+        player = { ...player, effects: t1.opponentEffects };
+    }
+
+    // 5. Scenario resolution.
     let friendshipCounter = state.friendshipCounter;
 
-    if (playerAction.action === 'attack' && enemyAction.action === 'attack') {
+    if (playerActionFinal === 'attack' && enemyActionFinal === 'attack') {
         ({ player, enemy } = resolveAttackVsAttack(
-            player, enemy, playerAction.stance, enemyAction.stance, playerAdvantage, enemyAdvantage,
+            player, enemy, playerStance, enemyStance, playerAdvantage, enemyAdvantage,
         ));
-    } else if (playerAction.action === 'attack' && enemyAction.action === 'defend') {
+    } else if (playerActionFinal === 'attack' && enemyActionFinal === 'defend') {
         ({ player, enemy } = resolvePlayerAttackEnemyDefend(
-            player, enemy, playerAction.stance, enemyAction.stance, playerAdvantage, enemyAdvantage,
+            player, enemy, playerStance, enemyStance, playerAdvantage, enemyAdvantage,
         ));
-    } else if (playerAction.action === 'defend' && enemyAction.action === 'attack') {
+    } else if (playerActionFinal === 'defend' && enemyActionFinal === 'attack') {
         ({ player, enemy } = resolvePlayerDefendEnemyAttack(
-            player, enemy, playerAction.stance, enemyAction.stance, playerAdvantage, enemyAdvantage,
+            player, enemy, playerStance, enemyStance, playerAdvantage, enemyAdvantage,
         ));
-    } else {
+    } else if (playerActionFinal === 'attack' && enemyActionFinal === 'skip') {
+        ({ player, enemy } = resolveAttackVsAttack(
+            player, enemy, playerStance, enemyStance, playerAdvantage, enemyAdvantage,
+        ));
+    } else if (enemyActionFinal === 'attack' && playerActionFinal === 'skip') {
+        ({ player, enemy } = resolveAttackVsAttack(
+            player, enemy, playerStance, enemyStance, playerAdvantage, enemyAdvantage,
+        ));
+    } else if (playerActionFinal === 'defend' && enemyActionFinal === 'defend') {
         friendshipCounter++;
     }
 
-    // 5. Tick effects
-    player = tickAllEffects(player).target;
-    enemy = tickAllEffects(enemy).target;
+    // 6. Round-end orchestration.
+    player = processRoundEndEffects(player).target;
+    enemy  = processRoundEndEffects(enemy).target;
 
     return { ...state, player, enemy, friendshipCounter, round: state.round + 1 };
 }

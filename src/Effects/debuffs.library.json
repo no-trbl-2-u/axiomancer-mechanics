@@ -114,7 +114,8 @@
       "payload": {
         "damageOverTime": {
           "damagePerRound": 2,
-          "damageType": "body"
+          "damageType": "body",
+          "tickPhase": "end"
         }
       },
       "tier": 2

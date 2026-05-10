@@ -9,19 +9,22 @@ import { Enemy } from '../Enemy/types';
 import {
     determineEnemyAction,
     determineAdvantage,
+    resolveEffectiveAdvantage,
     isCombatOngoing,
     getAttackStat,
     getBaseStat,
     getDefenseStat,
     getActiveRollModifier,
+    getEffectiveStats,
     calculateFinalDamage,
     applyDamage,
-    tickAllEffects,
     getThornsReflect,
     getStudyMarkIntensity,
     removeRandomBuff,
     extendRandomBuffDuration,
-    applyRegen,
+    canAct,
+    processRoundStartEffects,
+    processRoundEndEffects,
 } from '../Combat';
 import { createDieRoll } from '../Utils';
 import { Stance, Advantage, CombatState } from '../Combat/types';
@@ -50,6 +53,11 @@ import {
     printEffectExpiry,
     printBuffsCleared,
     printRegenHeal,
+    printManaRestore,
+    printDrain,
+    printDotDamage,
+    printForcedStance,
+    printTurnSkipped,
     printThornsReflect,
     printHeartAttackSpecials,
 } from './combat.display';
@@ -89,6 +97,16 @@ async function promptPlayerChoice(): Promise<{
 
 // ─── Combat Scenarios ─────────────────────────────────────────────────────────
 
+/**
+ * Defense value the bearer gets when they did NOT pick `defend` this round —
+ * the base stat for their stance plus the stance-agnostic `defenseModifier`
+ * flat bonus from active effects (`buff_barrier`, `buff_invincibility`, ...).
+ */
+function getPassiveDefense(combatant: Character | Enemy, stance: Stance): number {
+    const { defenseDelta } = getEffectiveStats(combatant);
+    return getBaseStat(combatant, stance) + defenseDelta;
+}
+
 async function resolveAttackVsAttack(
     player: Character,
     enemy: Enemy,
@@ -123,7 +141,7 @@ async function resolveAttackVsAttack(
     await delay(1500);
 
     if (playerTotal > enemyTotal) {
-        const baseDefense   = getDefenseStat(enemy, enemyType);
+        const baseDefense   = getPassiveDefense(enemy, enemyType);
         const studyBonus    = playerType === 'mind' ? getStudyMarkIntensity(enemy) : 0;
         const damageRaw     = playerDieRoll();
         const damageRoll    = damageRaw + pMod;
@@ -166,7 +184,7 @@ async function resolveAttackVsAttack(
     }
 
     if (enemyTotal > playerTotal) {
-        const baseDefense = getBaseStat(player, playerType);
+        const baseDefense = getPassiveDefense(player, playerType);
         const studyBonus  = enemyType === 'mind' ? getStudyMarkIntensity(player) : 0;
         const damageRaw   = enemyDieRoll();
         const damageRoll  = damageRaw + eMod;
@@ -286,7 +304,7 @@ async function resolvePlayerDefendEnemyAttack(
     printRollLine('Enemy attack roll:', enemyRaw, eBaseStat, enemyAdv, eRollMod || undefined);
     await delay(1500);
 
-    const baseDefense       = getBaseStat(player, playerType);
+    const baseDefense       = getBaseStat(player, playerType) + getEffectiveStats(player).defenseDelta;
     const defenseMultiplier = DEFENSE_MULTIPLIERS[playerAdv];
     const studyBonus        = enemyType === 'mind' ? getStudyMarkIntensity(player) : 0;
     const damageRaw         = enemyDieRoll();
@@ -331,93 +349,162 @@ async function runCombatTurn(state: CombatState): Promise<CombatState> {
     let player = state.player;
     let enemy  = state.enemy;
 
-    const playerRegen = applyRegen(player);
-    player = playerRegen.target;
-    printRegenHeal('player', player.name, playerRegen.healed);
+    // 1. Round-start effect phase: regen → mana regen → drain → DoT (start phase).
+    //    `processRoundStartEffects` orchestrates the entire start sequence and
+    //    returns each component for the UI.
+    const pStart = processRoundStartEffects(player);
+    player = pStart.target;
+    printRegenHeal('player',   player.name, pStart.healed);
+    printManaRestore('player', player.name, pStart.manaRestored);
+    printDrain('player',       player.name, pStart.drained);
+    printDotDamage('player',   player.name, pStart.dotDamage, 'start');
 
-    const enemyRegen = applyRegen(enemy);
-    enemy = enemyRegen.target;
-    printRegenHeal('enemy', enemy.name, enemyRegen.healed);
+    const eStart = processRoundStartEffects(enemy);
+    enemy = eStart.target;
+    printRegenHeal('enemy',   enemy.name, eStart.healed);
+    printManaRestore('enemy', enemy.name, eStart.manaRestored);
+    printDrain('enemy',       enemy.name, eStart.drained);
+    printDotDamage('enemy',   enemy.name, eStart.dotDamage, 'start');
+
+    // If start-phase ticks dropped someone, exit early — combat ends here.
+    if (player.health <= 0 || enemy.health <= 0) {
+        await delay(500);
+        return { ...state, player, enemy, round: state.round + 1 };
+    }
 
     printStatus({ ...state, player, enemy });
 
     const { stance, action } = await promptPlayerChoice();
-    const enemyAction     = determineEnemyAction(state.enemy);
-    const playerAdvantage = determineAdvantage(stance, enemyAction.stance);
-    const enemyAdvantage  = determineAdvantage(enemyAction.stance, stance);
+    const enemyAction = determineEnemyAction(state.enemy);
 
-    printRoundActions(action, stance, enemyAction.action, enemyAction.stance);
-    printTypeMatchup(stance, enemyAction.stance, playerAdvantage, enemyAdvantage);
+    // 2. Action restriction resolution (per Q7 precedence). Forced stance from
+    //    e.g. `debuff_charm` overrides the requested stance; `debuff_silence`
+    //    blocks specific stances; `debuff_stun`/`_sleep`/`_petrify` skip the
+    //    turn entirely.
+    const playerCanResult = canAct(player.effects, stance);
+    const enemyCanResult  = canAct(enemy.effects,  enemyAction.stance);
+
+    const playerStance = playerCanResult.resolvedStance ?? stance;
+    const enemyStance  = enemyCanResult.resolvedStance  ?? enemyAction.stance;
+    if (playerCanResult.resolvedStance && playerCanResult.resolvedStance !== stance) {
+        printForcedStance('player', player.name, stance, playerCanResult.resolvedStance);
+    }
+    if (enemyCanResult.resolvedStance && enemyCanResult.resolvedStance !== enemyAction.stance) {
+        printForcedStance('enemy', enemy.name, enemyAction.stance, enemyCanResult.resolvedStance);
+    }
+    if (!playerCanResult.canAct) printTurnSkipped('player', player.name, playerCanResult.reason);
+    if (!enemyCanResult.canAct)  printTurnSkipped('enemy',  enemy.name,  enemyCanResult.reason);
+
+    // A skipped combatant takes no offensive or defensive action this round.
+    // Modeled as a no-op: defense uses `getPassiveDefense` (no defend bonus),
+    // and the combatant doesn't attack regardless of their chosen action.
+    const playerActs = playerCanResult.canAct;
+    const enemyActs  = enemyCanResult.canAct;
+    const playerActionFinal = playerActs ? action : 'skip';
+    const enemyActionFinal  = enemyActs  ? enemyAction.action : 'skip';
+
+    // 3. Advantage. Effect grants on the attacker's stance OVERRIDE the
+    //    matchup result (Q8 default). If unbalanced, propose canceling
+    //    overrides instead — see `resolveEffectiveAdvantage`.
+    const matchupP = determineAdvantage(playerStance, enemyStance);
+    const matchupE = determineAdvantage(enemyStance,  playerStance);
+    const playerAdvantage = resolveEffectiveAdvantage(matchupP, player.effects, playerStance);
+    const enemyAdvantage  = resolveEffectiveAdvantage(matchupE, enemy.effects,  enemyStance);
+
+    printRoundActions(playerActionFinal, playerStance, enemyActionFinal, enemyStance);
+    printTypeMatchup(playerStance, enemyStance, playerAdvantage, enemyAdvantage);
     await delay(1500);
 
     let friendshipCounter = state.friendshipCounter;
 
-    const playerClear = clearTier1EffectsForStance(player.effects, stance);
+    // 4. Tier 1 stance buffs: clear stale, apply new (only if combatant acted).
+    const playerClear = clearTier1EffectsForStance(player.effects, playerStance);
     player = { ...player, effects: playerClear.activeEffects };
-    printBuffsCleared('player', player.name, playerClear.cleared, stance);
+    printBuffsCleared('player', player.name, playerClear.cleared, playerStance);
 
-    const enemyClear = clearTier1EffectsForStance(enemy.effects, enemyAction.stance);
+    const enemyClear = clearTier1EffectsForStance(enemy.effects, enemyStance);
     enemy = { ...enemy, effects: enemyClear.activeEffects };
-    printBuffsCleared('enemy', enemy.name, enemyClear.cleared, enemyAction.stance);
+    printBuffsCleared('enemy', enemy.name, enemyClear.cleared, enemyStance);
 
-    const playerTier1 = applyTier1CombatEffect(
-        player.effects,
-        enemy.effects,
-        { stance, action },
-        state.round,
-    );
-    player = { ...player, effects: playerTier1.actorEffects };
-    enemy  = { ...enemy,  effects: playerTier1.opponentEffects };
-
-    const enemyTier1 = applyTier1CombatEffect(
-        enemy.effects,
-        player.effects,
-        enemyAction,
-        state.round,
-        enemy.tier1Overrides,
-    );
-    enemy  = { ...enemy,  effects: enemyTier1.actorEffects };
-    player = { ...player, effects: enemyTier1.opponentEffects };
+    let playerTier1Outcome = null as ReturnType<typeof applyTier1CombatEffect> | null;
+    let enemyTier1Outcome  = null as ReturnType<typeof applyTier1CombatEffect> | null;
+    if (playerActs && (playerActionFinal === 'attack' || playerActionFinal === 'defend')) {
+        playerTier1Outcome = applyTier1CombatEffect(
+            player.effects, enemy.effects,
+            { stance: playerStance, action: playerActionFinal },
+            state.round,
+        );
+        player = { ...player, effects: playerTier1Outcome.actorEffects };
+        enemy  = { ...enemy,  effects: playerTier1Outcome.opponentEffects };
+    }
+    if (enemyActs && (enemyActionFinal === 'attack' || enemyActionFinal === 'defend')) {
+        enemyTier1Outcome = applyTier1CombatEffect(
+            enemy.effects, player.effects,
+            { stance: enemyStance, action: enemyActionFinal },
+            state.round,
+            enemy.tier1Overrides,
+        );
+        enemy  = { ...enemy,  effects: enemyTier1Outcome.actorEffects };
+        player = { ...player, effects: enemyTier1Outcome.opponentEffects };
+    }
 
     printStanceSection(
-        playerTier1.effect && playerTier1.message && playerTier1.appliedTo
-            ? { effect: playerTier1.effect, message: playerTier1.message, appliedTo: playerTier1.appliedTo }
+        playerTier1Outcome?.effect && playerTier1Outcome.message && playerTier1Outcome.appliedTo
+            ? { effect: playerTier1Outcome.effect, message: playerTier1Outcome.message, appliedTo: playerTier1Outcome.appliedTo }
             : null,
         enemy.name,
-        enemyTier1.effect && enemyTier1.message && enemyTier1.appliedTo
-            ? { effect: enemyTier1.effect, message: enemyTier1.message, appliedTo: enemyTier1.appliedTo }
+        enemyTier1Outcome?.effect && enemyTier1Outcome.message && enemyTier1Outcome.appliedTo
+            ? { effect: enemyTier1Outcome.effect, message: enemyTier1Outcome.message, appliedTo: enemyTier1Outcome.appliedTo }
             : null,
     );
     await delay(1000);
 
-    if (action === 'attack' && enemyAction.action === 'attack') {
+    // 5. Resolve scenario. A skipped combatant is treated as neither attacker
+    //    nor defender — they take damage at PASSIVE multiplier and don't hit
+    //    back. This makes `skipTurn` actually skip a turn.
+    if (playerActionFinal === 'attack' && enemyActionFinal === 'attack') {
         ({ player, enemy } = await resolveAttackVsAttack(
-            player, enemy, stance, enemyAction.stance, playerAdvantage, enemyAdvantage,
+            player, enemy, playerStance, enemyStance, playerAdvantage, enemyAdvantage,
         ));
-    } else if (action === 'attack' && enemyAction.action === 'defend') {
+    } else if (playerActionFinal === 'attack' && enemyActionFinal === 'defend') {
         ({ player, enemy } = await resolvePlayerAttackEnemyDefend(
-            player, enemy, stance, enemyAction.stance, playerAdvantage, enemyAdvantage,
+            player, enemy, playerStance, enemyStance, playerAdvantage, enemyAdvantage,
         ));
-    } else if (action === 'defend' && enemyAction.action === 'attack') {
+    } else if (playerActionFinal === 'defend' && enemyActionFinal === 'attack') {
         ({ player, enemy } = await resolvePlayerDefendEnemyAttack(
-            player, enemy, stance, enemyAction.stance, playerAdvantage, enemyAdvantage,
+            player, enemy, playerStance, enemyStance, playerAdvantage, enemyAdvantage,
         ));
-    } else {
+    } else if (playerActionFinal === 'attack' && enemyActionFinal === 'skip') {
+        // Player attacks an unresisting enemy — passive defense, no thorns retaliation possible.
+        ({ player, enemy } = await resolveAttackVsAttack(
+            player, enemy, playerStance, enemyStance, playerAdvantage, enemyAdvantage,
+        ));
+    } else if (enemyActionFinal === 'attack' && playerActionFinal === 'skip') {
+        ({ player, enemy } = await resolveAttackVsAttack(
+            player, enemy, playerStance, enemyStance, playerAdvantage, enemyAdvantage,
+        ));
+    } else if (playerActionFinal === 'defend' && enemyActionFinal === 'defend') {
         friendshipCounter++;
         await delay(1500);
         printBothDefending(friendshipCounter - 1, friendshipCounter);
+    } else {
+        // skip vs skip / skip vs defend — no exchange happens.
+        await delay(800);
     }
 
-    const playerTick = tickAllEffects(player);
-    player = playerTick.target;
+    // 6. Round-end effect phase: end-phase DoT (e.g. bleed) → tick + expiry.
+    const pEnd = processRoundEndEffects(player);
+    player = pEnd.target;
+    printDotDamage('player', player.name, pEnd.dotDamage, 'end');
 
-    const enemyTick = tickAllEffects(enemy);
-    enemy = enemyTick.target;
+    const eEnd = processRoundEndEffects(enemy);
+    enemy = eEnd.target;
+    printDotDamage('enemy', enemy.name, eEnd.dotDamage, 'end');
 
-    if (playerTick.expired.length > 0 || enemyTick.expired.length > 0) {
+    if (pEnd.expired.length > 0 || eEnd.expired.length > 0) {
         await delay(500);
-        printEffectExpiry('player', player.name, playerTick.expired);
-        printEffectExpiry('enemy', enemy.name, enemyTick.expired);
+        printEffectExpiry('player', player.name, pEnd.expired);
+        printEffectExpiry('enemy',  enemy.name,  eEnd.expired);
     }
 
     await delay(1500);

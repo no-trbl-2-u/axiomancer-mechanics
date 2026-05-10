@@ -1,56 +1,48 @@
 /**
  * Hermetic E2E Tests — Combat Engine
  *
- * "Hermetic" means every test is:
+ * This file is the *canonical example* of a hermetic e2e test in this repo.
+ * If you are writing a new e2e test, copy its structure. The full standard
+ * lives in `docs/testing.md`.
+ *
+ * Hermetic = self-contained + deterministic + isolated:
  *   1. Self-contained — no disk I/O (nullAdapter), no network, no TTY.
- *   2. Deterministic  — Math.random is stubbed via vi.spyOn so rolls are
- *                       fixed and reproducible.
- *   3. Isolated       — no shared mutable state across tests.
+ *   2. Deterministic  — Math.random is stubbed via the helpers in
+ *                       `src/test-utils/rng.ts` so rolls are reproducible.
+ *   3. Isolated       — `vi.restoreAllMocks` in afterEach keeps tests
+ *                       independent.
  *
  * What IS covered here:
- *   • Full combat-turn resolution through resolveCombatTurn (the engine).
+ *   • Full combat-turn resolution through `resolveCombatTurn` (the engine).
  *   • All three win conditions: player victory, KO, friendship.
- *   • State invariants (HP clamp, round counter).
+ *   • State invariants (HP clamp, round counter, fixture immutability).
  *   • Game-store lifecycle (startCombat → updateCombat → endCombat) with
  *     the nullAdapter, confirming zero disk access.
  *
- * What CANNOT be tested hermetically (called out below):
+ * What CANNOT be tested hermetically (called out in `docs/testing.md`):
  *   • The interactive CLI layer (combat.cli.ts / character.cli.ts) — these
- *     own the display logic and require inquirer TTY prompts. They can only
- *     be driven by a subprocess driver such as the Python pexpect script
- *     (npm run combat:auto). Making this hermetic would require extracting
- *     display into pure event objects that the CLI renders separately.
- *   • Math.random seeding — Node's Math.random has no built-in seed, so
- *     we stub it rather than seed it. Swapping to a seedable PRNG (e.g.
- *     `seedrandom`) would eliminate the need for vi.spyOn entirely.
+ *     own display and need TTY prompts via inquirer. Use the pexpect-based
+ *     `npm run combat:auto` harness for those, and keep all engine logic
+ *     in `*.engine.ts` so it stays testable here.
+ *   • Math.random seeding until Spec 11 lands a seedable PRNG.
  *
- * RNG convention used in these tests:
- *   Alternating mock (0.9 / 0.1 / 0.9 / 0.1 …) → randomInt(1, 20) yields
- *   19 and 3 on successive calls. For a 2d20-keep-max (advantage) roll this
- *   gives max(19, 3) = 19; for 2d20-keep-min (disadvantage) min(19, 3) = 3.
+ * RNG convention used by `mockAlternatingRng`:
+ *   Alternating 0.9 / 0.1 → `randomInt(1, 20)` yields 19 then 3. For a
+ *   2d20-keep-max (advantage) roll this gives max(19, 3) = 19; for
+ *   2d20-keep-min (disadvantage) min(19, 3) = 3.
  */
 
-import { vi, describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 
 import { Player } from '../../Character/characters.mock';
 import { Disatree_01 } from '../../Enemy/enemy.library';
 import { createGameStore } from '../../Game/store';
 import { nullAdapter } from '../../Game/persistence/null.adapter';
 import { FRIENDSHIP_COUNTER_MAX } from '../../Game/game-mechanics.constants';
+import { mockAlternatingRng } from '../../test-utils/rng';
 import { isCombatOngoing, determineCombatEnd } from '../index';
 import { initializeCombat } from '../combat.reducer';
 import { resolveCombatTurn } from './combat.engine';
-
-// ─── Helper ───────────────────────────────────────────────────────────────────
-
-/** Returns a vi.spyOn stub that alternates 0.9 / 0.1 on each Math.random call. */
-function mockAlternatingRng() {
-    let n = 0;
-    return vi.spyOn(Math, 'random').mockImplementation(() => {
-        n++;
-        return n % 2 === 1 ? 0.9 : 0.1;
-    });
-}
 
 // ─── Tests ───────────────────────────────────────────────────────────────────
 

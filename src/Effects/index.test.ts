@@ -1,5 +1,9 @@
-import { describe, it, expect } from 'vitest';
-import { applyEffect, clearTier1EffectsForStance } from './index';
+import { afterEach, describe, it, expect, vi } from 'vitest';
+import { applyEffect, clearTier1EffectsForStance, removeEffect, removeEffectsByType } from './index';
+
+afterEach(() => {
+    vi.restoreAllMocks();
+});
 import { ActiveEffect, Effect } from './types';
 import { lookupEffect } from './effects.library';
 
@@ -79,6 +83,61 @@ describe('clearTier1EffectsForStance', () => {
         const { activeEffects, cleared } = clearTier1EffectsForStance(effects, 'body');
         expect(activeEffects).toHaveLength(1);
         expect(cleared).toHaveLength(0);
+    });
+});
+
+describe('removeEffect', () => {
+    it('removes the first effect matching the id', () => {
+        const effects: ActiveEffect[] = [
+            { effectId: 'buff_a', remainingDuration: 2, intensity: 1, appliedAt: 1, tier: 1 },
+            { effectId: 'buff_b', remainingDuration: 2, intensity: 1, appliedAt: 1, tier: 1 },
+        ];
+        const { activeEffects, removed } = removeEffect(effects, 'buff_a');
+        expect(removed?.effectId).toBe('buff_a');
+        expect(activeEffects).toHaveLength(1);
+        expect(activeEffects[0].effectId).toBe('buff_b');
+    });
+
+    it('returns null removed and original list when id missing', () => {
+        const effects: ActiveEffect[] = [
+            { effectId: 'buff_a', remainingDuration: 2, intensity: 1, appliedAt: 1, tier: 1 },
+        ];
+        const { activeEffects, removed } = removeEffect(effects, 'nope');
+        expect(removed).toBeNull();
+        expect(activeEffects).toHaveLength(1);
+    });
+});
+
+describe('removeEffectsByType', () => {
+    const effects: ActiveEffect[] = [
+        // a Tier 2 buff
+        { effectId: 'buff_regeneration',  remainingDuration: 4, intensity: 1, appliedAt: 1, tier: 2 },
+        // a Tier 2 debuff
+        { effectId: 'debuff_poison',      remainingDuration: 3, intensity: 1, appliedAt: 1, tier: 2 },
+        // a Tier 1 self-buff (Ad Baculum)
+        { effectId: 'tier1_body_attack',  remainingDuration: 2, intensity: 1, appliedAt: 1, tier: 1 },
+        // a Tier 3 buff (haste)
+        { effectId: 'buff_haste',         remainingDuration: 2, intensity: 1, appliedAt: 1, tier: 3 },
+    ];
+
+    it('strips all buffs when no tier cap', () => {
+        const { activeEffects, removed } = removeEffectsByType(effects, 'buff');
+        expect(removed.map(r => r.effectId).sort()).toEqual(['buff_haste', 'buff_regeneration', 'tier1_body_attack']);
+        expect(activeEffects).toHaveLength(1);
+        expect(activeEffects[0].effectId).toBe('debuff_poison');
+    });
+
+    it('respects maxTier — Tier 2 dispel does not touch Tier 3', () => {
+        const { activeEffects, removed } = removeEffectsByType(effects, 'buff', 2);
+        expect(removed.map(r => r.effectId).sort()).toEqual(['buff_regeneration', 'tier1_body_attack']);
+        expect(activeEffects.find(e => e.effectId === 'buff_haste')).toBeDefined();
+    });
+
+    it('strips debuffs without touching buffs', () => {
+        const { activeEffects, removed } = removeEffectsByType(effects, 'debuff', 2);
+        expect(removed).toHaveLength(1);
+        expect(removed[0].effectId).toBe('debuff_poison');
+        expect(activeEffects).toHaveLength(3);
     });
 });
 

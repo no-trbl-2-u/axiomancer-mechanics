@@ -2,6 +2,8 @@
  * Type-advantage system. Heart > Body > Mind > Heart (cyclic).
  */
 
+import { ActiveEffect } from '../Effects/types';
+import { getActiveEffectModifiers } from './effect-modifiers';
 import { Stance, Advantage } from './types';
 
 /** Returns the advantage relationship of `attacker` against `defender`. */
@@ -25,4 +27,26 @@ export function getAdvantageModifier(advantage: Advantage): number {
         case 'disadvantage': return -2;
         default:             return 0;
     }
+}
+
+/**
+ * Folds an attacker's `advantageModifier` payloads into the matchup advantage.
+ *
+ * Per Q8, an effect-granted advantage on the attacker's stance OVERRIDES the
+ * matchup result outright (no cancellation). Likewise for disadvantage. If a
+ * stance is granted both, granted advantage wins.
+ *
+ * If unbalanced, propose canceling overrides instead — i.e. matchup advantage
+ * + effect disadvantage = neutral. That logic would replace the override path
+ * here without changing call sites.
+ */
+export function resolveEffectiveAdvantage(
+    matchup: Advantage,
+    attackerEffects: ActiveEffect[],
+    attackerStance: Stance,
+): Advantage {
+    const mods = getActiveEffectModifiers(attackerEffects);
+    if (mods.advantageGrants.has(attackerStance)) return 'advantage';
+    if (mods.advantageDenies.has(attackerStance)) return 'disadvantage';
+    return matchup;
 }
