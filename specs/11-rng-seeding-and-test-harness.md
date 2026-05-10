@@ -20,13 +20,20 @@ results in `tier1_mind_mark` reaching intensity 3.
 
 ## Current state
 
-- All randomness uses `Math.random()` directly:
+- All runtime randomness uses `Math.random()` directly:
   - `enemy.logic.ts` (`randomLogic`).
   - `Utils/index.ts` (`randomInt`, `createDieRoll`, `createDie`).
-  - Various effect resist rolls.
-- `automation/combat-test.py` runs the CLI N times with random / fixed
-  inputs and writes logs to `automation/testing-logs/`. It does not seed
-  the RNG and does not assert on outputs.
+  - `Combat/resist.ts` (Tier 2/3 resist contests and crit/fumble rolls).
+  - `Combat/effects.ts` (random buff strip / extend).
+- `src/test-utils/rng.ts` already provides hermetic stubs
+  (`mockAlternatingRng`, `mockFixedRng`, `mockSequentialRng`) that wrap
+  `vi.spyOn(Math, 'random')`. Those stubs replace `Math.random` per-test;
+  they are **not** a seedable PRNG — there's no shared `Rng` instance and
+  no way for the runtime CLI to consume one.
+- `automation/combat-test.py` (run via `npm run auto:combat`) drives the
+  CLI N times with random / fixed inputs via `pexpect` and writes logs to
+  `automation/testing-logs/`. It does not seed the RNG and does not assert
+  on outputs.
 - `package.json` lists no test runner aside from vitest for unit tests.
 
 ## Open questions
@@ -99,7 +106,7 @@ results in `tier1_mind_mark` reaching intensity 3.
 - [ ] All 7 questions answered.
 - [ ] Two runs with the same seed produce byte-identical CLI logs (modulo
       timestamps).
-- [ ] At least 3 regression scripts pass via `npm run combat:auto`.
+- [ ] At least 3 regression scripts pass via `npm run auto:combat`.
 - [ ] Save/load preserves the RNG state per Q4 (verified by a save mid-fight
       and reload deterministic outcome).
 - [ ] `automation/README.md` updated with the new flags.

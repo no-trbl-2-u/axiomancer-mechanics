@@ -19,14 +19,16 @@ return to map → level up → quest progress → save / load → all driven by
 
 ## Current state
 
-- `Game/store.ts` is a Zustand store with combat-related actions
-  (`startCombat`, `applyCombatTurn`, `endCombat`, `save`).
-- `Game/game.reducer.ts` exists but is intentionally minimal (only reducer
-  helpers used by the store).
+- `Game/store.ts` is a Zustand vanilla store. Combat actions:
+  `startCombat(enemy)`, `updateCombat(combat)`, `endCombat()`. Inventory:
+  `addItem`, `removeItem`, `useConsumable`, `stackItem`. Persistence: `save()`.
+- `Game/game.reducer.ts` is intentionally minimal — only `createNewGameState`
+  and `GAME_STATE_VERSION`.
 - `actions.constants.ts` exports `COMBAT_ACTION` constants (attack, defend,
   skill, item, flee, back).
 - No `gameReducer`, no top-level dispatch.
-- `combat.cli.ts` has its own bespoke main loop.
+- `combat.cli.ts` has its own bespoke main loop calling
+  `store.getState().updateCombat(...)` after each round.
 - `character.cli.ts` is a one-shot character builder.
 
 ## Open questions

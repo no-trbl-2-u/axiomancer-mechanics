@@ -21,15 +21,18 @@ restores HP. The CLI item action works.
 
 ## Current state
 
-- Item type union exists (`Equipment`, `Consumable`, `Material`, `QuestItem`).
-- `Items/item.reducer.ts` covers `addItem`, `removeItem`, `useConsumable`,
-  `stackItem`. The Zustand store inlines the same logic.
+- Item type union exists (`Equipment`, `Consumable`, `Material`, `QuestItem`)
+  in `src/Items/types.ts`.
+- `src/Items/item.reducer.ts` covers `addItem`, `removeItem`, `useConsumable`,
+  `stackItem`. The Zustand store now delegates to these reducers rather than
+  inlining the logic (`src/Game/store.ts`).
 - `Equipment` has only `slot: EquipmentSlot` — no stat modifiers, passive
   effects, or tiers yet.
 - `Consumable.effect: string` is a free-text field; nothing reads it.
 - `Character` has no equipment slot field — currently equipment is just
   inventory.
-- Sample consumable: Healing Potion in `consumable.library.json`.
+- Library files: `src/Items/consumable.library.json`,
+  `src/Items/equipment.library.json` (e.g. Healing Potion).
 
 ## Open questions
 
