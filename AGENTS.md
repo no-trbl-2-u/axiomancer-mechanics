@@ -21,6 +21,28 @@ All commands are in `package.json`:
 | Character CLI | `npm run character` |
 | Automated combat test | `npm run combat:auto` (requires `pexpect`: `pip3 install pexpect`) |
 
+### Committing during spec implementations
+
+When implementing a spec, commit **incrementally** — do not accumulate all
+changes into a single commit at the end. A natural commit cadence is:
+
+1. **Per logical unit of work** — e.g. one commit per spec step, or one per
+   file/layer when multiple files form a cohesive change (resolver + exports +
+   tests can be one commit; CLI refactor can be another; docs/spec update can
+   be a third).
+2. **After each green gate** — only commit when `npm test` and
+   `npm run type-check` are clean for that increment. Never commit a broken
+   intermediate state.
+3. **Commit message format** — `<type>(<scope>): <short description>`, e.g.
+   `feat(combat): promote resolveCombatRound to first-class export` or
+   `refactor(cli): delegate runCombatTurn to resolver — no inline math`.
+   Keep the body concise; reference the spec number when relevant.
+4. **Spec update commit** — the final commit for any spec implementation must
+   include the updated spec file (acceptance checklist ticked + implementation
+   notes) and any doc files changed.
+
+Never squash or amend after pushing unless explicitly asked.
+
 ### Caveats
 
 - **ESLint config has a pre-existing issue**: `npm run lint` fails with `A configuration object specifies rule "@typescript-eslint/no-explicit-any", but could not find plugin "@typescript-eslint"` because `eslint.config.mts` declares the rule without registering the plugin in the same config object. `npm run type-check` works and is the reliable static analysis check.
