@@ -11,8 +11,8 @@ Three core stats. All derived stats and resources scale from these.
 | Stat | Role |
 |------|------|
 | `body` | Physical strength. Governs HP, physical combat and skills, body-type advantage. |
-| `mind` | Intelligence and reflexes. Governs mana (shared with heart), mental combat and skills, mind-type advantage. |
-| `heart` | Willpower and emotion. Governs HP (shared with body), mana (shared with mind), emotional combat and skills, heart-type advantage. |
+| `mind` | Intelligence and reflexes. Governs mental combat and skills, mind-type advantage. |
+| `heart` | Willpower and emotion. Governs HP (shared with body), emotional combat and skills, heart-type advantage. |
 
 ## Derived Stats (`DerivedStats` — shared with Enemies)
 
@@ -51,10 +51,22 @@ these fields and fall back to their defense stats when a save is requested via
 
 ```
 maxHealth = level × average(body, heart) × HEALTH_PER_STAT (10)
-maxMana   = level × average(mind, heart) × MANA_PER_STAT  (10)
 ```
 
-Both start at max on character creation.
+Health starts at max on character creation. Skills run on the per-combat
+five-resource economy described in [`docs/skills.md`](./skills.md), tracked
+on `CombatState.combatResources` rather than the character itself.
+
+## Skills
+
+Characters track learned and equipped skills as ID arrays:
+
+```ts
+knownSkills: string[]      // every skill ever learned
+equippedSkills: string[]   // available in combat (cap 4 today)
+```
+
+Equipping is out-of-combat only; mid-fight swaps are intentionally forbidden.
 
 ## Experience
 

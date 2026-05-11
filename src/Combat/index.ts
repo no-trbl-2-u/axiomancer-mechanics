@@ -22,7 +22,10 @@ import { Enemy } from '../Enemy/types';
 import { FRIENDSHIP_COUNTER_MAX } from '../Game/game-mechanics.constants';
 import { Stance, Action, CombatAction, CombatState } from './types';
 
-export type { Stance, Action, Advantage, CritStyle, CombatAction, CombatPhase, BattleLogEntry, CombatState, Combatant } from './types';
+export type {
+    Stance, Action, Advantage, CritStyle, CombatAction, PlayerCombatAction,
+    CombatPhase, BattleLogEntry, CombatState, Combatant,
+} from './types';
 
 export { determineAdvantage, hasAdvantage, getAdvantageModifier, resolveEffectiveAdvantage } from './advantage';
 export { getBaseStat, getAttackStat, getDefenseStat, getSaveStat, getResistStat } from './stats';
@@ -33,7 +36,7 @@ export {
     MIND_MARK_ID,
     getStudyMarkIntensity, getActiveRollModifier, getThornsReflect,
     updateEffectDuration, tickAllEffects,
-    removeRandomBuff, extendRandomBuffDuration, applyRegen, applyManaRegen, applyDrain,
+    removeRandomBuff, extendRandomBuffDuration, applyRegen, applyDrain,
     processDamageOverTime, processRoundStartEffects, processRoundEndEffects,
     applyCleanse, applyDispel,
 } from './effects';
@@ -62,7 +65,8 @@ export { resolveCombatRound } from './combat.resolver';
 export type {
     RoundResolution, RoundEvent, CombatActor,
     RoundStartEvent, ActionRestrictionEvent, AdvantageEvent,
-    StanceEffectEvent, ScenarioEvent, RoundEndEvent,
+    StanceEffectEvent, ScenarioEvent, SkillPhaseEvent, ResourceEvent,
+    RoundEndEvent,
 } from './combat.resolver';
 
 /**

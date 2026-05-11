@@ -65,10 +65,9 @@ export interface DamageOverTime {
     tickPhase?: DotTickPhase;
 }
 
-/** Health and/or mana restored at the start of each round to the bearer. */
+/** Health restored (positive) or drained (negative) at the start of each round. */
 export interface RegenerationConfig {
     healthPerRound?: number;
-    manaPerRound?: number;
 }
 
 /** Constraints on what actions the bearer may take. */

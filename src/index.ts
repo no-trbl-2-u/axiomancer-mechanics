@@ -82,9 +82,16 @@ export type {
     ItemCategory, EquipmentSlot, BaseItem,
 } from './Items';
 
-// ─── Skills (types only) ──────────────────────────────────────────────────────
+// ─── Skills ───────────────────────────────────────────────────────────────────
 export type {
-    Skill, SkillCategory, SkillsStatType, SkillLearningRequirement,
+    Skill, SkillCategory, SkillsStatType, SkillTier, SkillTarget,
+    ResourceCost, CombatResources,
+    SkillLearningRequirement, SkillCombatEffects,
+    BasicActionOutcome, SkillEvent, SkillResolution, SkillLookup,
+} from './Skills';
+export {
+    generateBasicActionResources, generatePhilosophicalResource,
+    canUseSkill, spendResources, calculateSkillDamage, executeSkill,
 } from './Skills';
 
 // ─── Game (state, store, persistence, constants) ──────────────────────────────
@@ -123,7 +130,7 @@ export {
     clamp, randomInt, deepClone, average, sum, max, min, inRange,
     capitalize, formatPercent,
     createDie, createDieRoll, determineRollAdvantageModifier,
-    deriveStats, deriveNonCombatStats, calculateMaxHealth, calculateMaxMana,
+    deriveStats, deriveNonCombatStats, calculateMaxHealth,
 } from './Utils';
 export { isCharacter, isEnemy, isCombatActive } from './Utils/typeGuards';
 export type { Image } from './Utils/types';

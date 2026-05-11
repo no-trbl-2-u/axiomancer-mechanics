@@ -195,14 +195,3 @@ export function calculateMaxHealth(level: number, healthStats: Pick<BaseStats, '
   return level * avg * RESOURCE_MULTIPLIERS.HEALTH_PER_STAT;
 }
 
-/**
- * Calculates the maximum mana of an entity based on level and base stats.
- * Equation: level × average(mind, heart) × MANA_PER_STAT
- * @param level - The level of the entity
- * @param manaStats - The stats that contribute to max mana (mind and heart)
- * @returns The maximum mana value
- */
-export function calculateMaxMana(level: number, manaStats: Pick<BaseStats, 'mind' | 'heart'>): number {
-  const avg = (manaStats.mind + manaStats.heart) / 2;
-  return level * avg * RESOURCE_MULTIPLIERS.MANA_PER_STAT;
-}

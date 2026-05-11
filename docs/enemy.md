@@ -12,7 +12,7 @@ Defined in [`src/Enemy/types.d.ts`](../src/Enemy/types.d.ts).
 |-------|------|---------|
 | `id` | `string` | Unique save / tracking identifier. |
 | `name`, `description` | `string` | Display + flavour. |
-| `level`, `health`, `maxHealth`, `mana`, `maxMana` | `number` | Resources. |
+| `level`, `health`, `maxHealth` | `number` | Resources. |
 | `baseStats` | `BaseStats` | Heart/Body/Mind. |
 | `derivedStats` | `DerivedStats` | Computed combat stats (no `NonCombatStats`). |
 | `mapName` | `MapName` | Map the enemy belongs to. |
@@ -27,8 +27,8 @@ Enemies do not have `nonCombatStats`; `getSaveStat()` falls back to `getDefenseS
 
 ## Factory
 
-`createEnemy(options): Enemy` — automatically derives `derivedStats`, `maxHealth`, and
-`maxMana` from `baseStats` + `level` and starts the enemy at full HP/MP.
+`createEnemy(options): Enemy` — automatically derives `derivedStats` and
+`maxHealth` from `baseStats` + `level` and starts the enemy at full HP.
 
 ## AI
 

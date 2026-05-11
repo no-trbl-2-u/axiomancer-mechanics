@@ -3,7 +3,7 @@ import { Skill } from '../Skills/types';
 import { MapName } from '../World/map.library';
 import { ActiveEffect } from '../Effects/types';
 import { BaseStats } from '../Character/types';
-import { deriveStats, calculateMaxHealth, calculateMaxMana } from '../Utils';
+import { deriveStats, calculateMaxHealth } from '../Utils';
 import { ProcOverrides, ProcUnlocks } from '../Combat/combat-effects';
 import { Enemy, EnemyLogic, EnemyDifficulty, Tier1EffectOverrides } from './types';
 
@@ -39,12 +39,10 @@ export function createEnemy(options: CreateEnemyOptions): Enemy {
     } = options;
 
     const maxHealth = calculateMaxHealth(level, baseStats);
-    const maxMana = calculateMaxMana(level, baseStats);
 
     return {
         id, name, description, level,
         health: maxHealth, maxHealth,
-        mana: maxMana, maxMana,
         baseStats,
         derivedStats: deriveStats(baseStats),
         mapName, logic,

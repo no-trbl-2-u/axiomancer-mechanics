@@ -59,6 +59,8 @@ export interface NonCombatStats {
  * @property nonCombatStats         - Saves and ability tests.
  * @property inventory              - Items the character is carrying.
  * @property effects                - Active status effects on the character.
+ * @property knownSkills            - IDs of skills the character has learned.
+ * @property equippedSkills         - IDs of skills available in combat (max 4).
  */
 export interface Character {
     name: string;
@@ -67,13 +69,13 @@ export interface Character {
     experienceToNextLevel: number;
     health: number;
     maxHealth: number;
-    mana: number;
-    maxMana: number;
     baseStats: BaseStats;
     derivedStats: DerivedStats;
     nonCombatStats: NonCombatStats;
     inventory: Item[];
     effects: ActiveEffect[];
+    knownSkills: string[];
+    equippedSkills: string[];
     /**
      * Per-cell Spec 03 proc unlock caps. Defaults to tier 1 in every cell —
      * basic actors only roll the lowest-tier proc table entries. Skills /

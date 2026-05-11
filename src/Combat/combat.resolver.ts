@@ -8,7 +8,7 @@
  *
  * Events are organised by combat phase (Q6) so a UI can render them in fixed
  * sections:
- *   `round-start`        — regen / mana / drain / start-phase DoT.
+ *   `round-start`        — regen / drain / start-phase DoT.
  *   `action-restriction` — forced-stance / blocked / skipTurn outcomes.
  *   `advantage`          — declared actions + per-side advantage labels.
  *   `stance-effects`     — Tier 1 stance buffs cleared and applied.
@@ -38,6 +38,11 @@ import {
 } from '../Game/game-mechanics.constants';
 import { CombatAction, CombatState, Stance, Action, Advantage } from './types';
 import {
+    BasicActionOutcome, SkillEvent, SkillLookup,
+    executeSkill, generateBasicActionResources,
+} from '../Skills/skill.engine';
+import { CombatResources, ResourceCost, SkillCategory } from '../Skills/types';
+import {
     determineAdvantage,
     resolveEffectiveAdvantage,
 } from './advantage';
@@ -66,12 +71,11 @@ export type CombatActor = 'player' | 'enemy';
 
 /** Per-actor outcomes from `processRoundStartEffects`. */
 export type RoundStartEvent =
-    | { phase: 'round-start'; kind: 'regen';        actor: CombatActor; amount: number }
-    | { phase: 'round-start'; kind: 'mana-restore'; actor: CombatActor; amount: number }
-    | { phase: 'round-start'; kind: 'drain';        actor: CombatActor; amount: number }
-    | { phase: 'round-start'; kind: 'dot';          actor: CombatActor; amount: number }
+    | { phase: 'round-start'; kind: 'regen'; actor: CombatActor; amount: number }
+    | { phase: 'round-start'; kind: 'drain'; actor: CombatActor; amount: number }
+    | { phase: 'round-start'; kind: 'dot';   actor: CombatActor; amount: number }
     /** Round terminated early because start-phase ticks dropped a combatant to 0 HP. */
-    | { phase: 'round-start'; kind: 'lethal';       actor: CombatActor };
+    | { phase: 'round-start'; kind: 'lethal'; actor: CombatActor };
 
 /** Forced-stance / blocked-stance / skipTurn outcomes from `canAct`. */
 export type ActionRestrictionEvent =
@@ -133,6 +137,38 @@ export type RoundEndEvent =
     | { phase: 'round-end'; kind: 'dot';     actor: CombatActor; amount: number }
     | { phase: 'round-end'; kind: 'expired'; actor: CombatActor; expired: ActiveEffect[] };
 
+/**
+ * Skill-execution and resource-economy events. Emitted when the player
+ * picks `action: 'skill'` (Spec 04 — only player skills today; enemy skills
+ * arrive in Spec 07) and after every basic-action contest that generates
+ * stance tokens.
+ */
+export type SkillPhaseEvent =
+    | { phase: 'skill'; kind: 'damage';
+        skillId: string; target: 'self' | 'enemy';
+        amount: number; hpBefore: number; hpAfter: number }
+    | { phase: 'skill'; kind: 'heal';
+        skillId: string; target: 'self' | 'enemy';
+        amount: number; hpBefore: number; hpAfter: number }
+    | { phase: 'skill'; kind: 'effect-applied';
+        skillId: string; appliedTo: 'self' | 'enemy';
+        effect: Effect; message: string }
+    | { phase: 'skill'; kind: 'effect-resisted';
+        skillId: string; appliedTo: 'self' | 'enemy';
+        effect: Effect; message: string }
+    | { phase: 'skill'; kind: 'effect-rebounded';
+        skillId: string; effect: Effect; message: string }
+    | { phase: 'skill'; kind: 'resources-spent';
+        skillId: string; cost: ResourceCost }
+    | { phase: 'skill'; kind: 'philosophical-generated';
+        skillId: string; category: SkillCategory };
+
+/** Stance-token generation from a player basic action (attack / defend). */
+export type ResourceEvent =
+    | { phase: 'resources'; kind: 'generated';
+        stance: Stance; outcome: BasicActionOutcome;
+        resources: CombatResources };
+
 /** Discriminated union of every event the resolver can emit, organised by phase. */
 export type RoundEvent =
     | RoundStartEvent
@@ -140,6 +176,8 @@ export type RoundEvent =
     | AdvantageEvent
     | StanceEffectEvent
     | ScenarioEvent
+    | SkillPhaseEvent
+    | ResourceEvent
     | RoundEndEvent;
 
 /** Return value of `resolveCombatRound`. */
@@ -524,21 +562,29 @@ function runActionProcs(p: RunProcsParams): {
  * the typed `combatEvents` stream UI consumers render against.
  *
  * Order of operations:
- *   1. `processRoundStartEffects` — regen → mana regen → drain → start-phase DoT.
+ *   1. `processRoundStartEffects` — regen → drain → start-phase DoT.
  *      If start-phase ticks drop a combatant to 0 HP, the round ends here.
  *   2. `canAct` — resolve forcedStance / blockedStances / skipTurn (Q7).
  *   3. `resolveEffectiveAdvantage` — fold effect grants/denies into the matchup.
  *   4. Clear stale Tier 1 stance buffs and apply new ones (only for combatants
  *      that can act).
- *   5. Resolve the attack/defend scenario. A skipped combatant takes hits at the
- *      passive multiplier and never retaliates.
+ *   5. Resolve the player's chosen path:
+ *        - `'skill'`  → routes through `executeSkill` (Spec 04). Enemy's
+ *          basic action still resolves (passive defence / no retaliation).
+ *        - otherwise → attack / defend scenario. A skipped combatant takes
+ *          hits at the passive multiplier and never retaliates.
+ *      Player basic actions also generate stance tokens into `combatResources`.
  *   6. `processRoundEndEffects` — end-phase DoT → tick & expire.
  *   7. Increment the round counter.
+ *
+ * @param skillLookup - Resolves a `skillId` to a Skill definition. Required
+ *   when the player chooses `action: 'skill'`; otherwise unused.
  */
 export function resolveCombatRound(
     state: CombatState,
     playerAction: CombatAction,
     enemyAction: CombatAction,
+    skillLookup?: SkillLookup,
 ): RoundResolution {
     const events: RoundEvent[] = [];
     let player = state.player;
@@ -547,17 +593,15 @@ export function resolveCombatRound(
     // 1. Round-start orchestration.
     const pStart = processRoundStartEffects(player);
     player = pStart.target;
-    if (pStart.healed       > 0) events.push({ phase: 'round-start', kind: 'regen',        actor: 'player', amount: pStart.healed });
-    if (pStart.manaRestored > 0) events.push({ phase: 'round-start', kind: 'mana-restore', actor: 'player', amount: pStart.manaRestored });
-    if (pStart.drained      > 0) events.push({ phase: 'round-start', kind: 'drain',        actor: 'player', amount: pStart.drained });
-    if (pStart.dotDamage    > 0) events.push({ phase: 'round-start', kind: 'dot',          actor: 'player', amount: pStart.dotDamage });
+    if (pStart.healed    > 0) events.push({ phase: 'round-start', kind: 'regen', actor: 'player', amount: pStart.healed });
+    if (pStart.drained   > 0) events.push({ phase: 'round-start', kind: 'drain', actor: 'player', amount: pStart.drained });
+    if (pStart.dotDamage > 0) events.push({ phase: 'round-start', kind: 'dot',   actor: 'player', amount: pStart.dotDamage });
 
     const eStart = processRoundStartEffects(enemy);
     enemy = eStart.target;
-    if (eStart.healed       > 0) events.push({ phase: 'round-start', kind: 'regen',        actor: 'enemy',  amount: eStart.healed });
-    if (eStart.manaRestored > 0) events.push({ phase: 'round-start', kind: 'mana-restore', actor: 'enemy',  amount: eStart.manaRestored });
-    if (eStart.drained      > 0) events.push({ phase: 'round-start', kind: 'drain',        actor: 'enemy',  amount: eStart.drained });
-    if (eStart.dotDamage    > 0) events.push({ phase: 'round-start', kind: 'dot',          actor: 'enemy',  amount: eStart.dotDamage });
+    if (eStart.healed    > 0) events.push({ phase: 'round-start', kind: 'regen', actor: 'enemy', amount: eStart.healed });
+    if (eStart.drained   > 0) events.push({ phase: 'round-start', kind: 'drain', actor: 'enemy', amount: eStart.drained });
+    if (eStart.dotDamage > 0) events.push({ phase: 'round-start', kind: 'dot',   actor: 'enemy', amount: eStart.dotDamage });
 
     if (player.health <= 0 || enemy.health <= 0) {
         if (player.health <= 0) events.push({ phase: 'round-start', kind: 'lethal', actor: 'player' });
@@ -671,12 +715,35 @@ export function resolveCombatRound(
 
     // 5. Scenario resolution.
     let friendshipCounter = state.friendshipCounter;
+    let combatResources = state.combatResources;
 
-    if (playerActionFinal === 'attack' && enemyActionFinal === 'attack') {
+    // 5a. Player picked `skill` → run skill engine, then let enemy's basic
+    // action resolve as if the player did nothing this round.
+    if (playerActionFinal === 'skill') {
+        if (!playerAction.skillId) {
+            throw new Error("playerAction.action === 'skill' requires a skillId.");
+        }
+        if (!skillLookup) {
+            throw new Error("Player chose a skill, but no skillLookup was supplied to resolveCombatRound.");
+        }
+        const skillState: CombatState = {
+            ...state, player, enemy, combatResources,
+        };
+        const resolution = executeSkill(skillState, playerAction.skillId, skillLookup);
+        player = resolution.state.player;
+        enemy  = resolution.state.enemy;
+        combatResources = resolution.state.combatResources;
+        for (const ev of resolution.events) events.push(toRoundEvent(ev));
+    }
+
+    const playerBasicAttacked = playerActionFinal === 'attack';
+    const playerBasicDefended = playerActionFinal === 'defend';
+
+    if (playerBasicAttacked && enemyActionFinal === 'attack') {
         ({ player, enemy } = resolveAttackVsAttack(
             player, enemy, playerStance, enemyStance, playerAdvantage, enemyAdvantage, events, state.round,
         ));
-    } else if (playerActionFinal === 'attack' && enemyActionFinal === 'defend') {
+    } else if (playerBasicAttacked && enemyActionFinal === 'defend') {
         ({ player, enemy } = resolvePlayerAttackEnemyDefend(
             player, enemy, playerStance, enemyStance, playerAdvantage, enemyAdvantage, events, state.round,
         ));
@@ -684,7 +751,7 @@ export function resolveCombatRound(
         ({ player, enemy } = resolvePlayerDefendEnemyAttack(
             player, enemy, playerStance, enemyStance, playerAdvantage, enemyAdvantage, events, state.round,
         ));
-    } else if (playerActionFinal === 'attack' && enemyActionFinal === 'skip') {
+    } else if (playerBasicAttacked && enemyActionFinal === 'skip') {
         ({ player, enemy } = resolveAttackVsAttack(
             player, enemy, playerStance, enemyStance, playerAdvantage, enemyAdvantage, events, state.round,
         ));
@@ -700,7 +767,24 @@ export function resolveCombatRound(
             friendshipBefore: before, friendshipAfter: friendshipCounter,
         });
     }
-    // Else: skip-vs-skip, skip-vs-defend, defend-vs-skip — no exchange happens.
+    // Else: skip-vs-skip, skip-vs-defend, defend-vs-skip, skill-vs-* (skill
+    // already handled above) — no basic-action exchange.
+
+    // Stance-token generation for the player's basic action this round.
+    if (playerBasicAttacked) {
+        const outcome: BasicActionOutcome = playerWonAttackContest(events) ? 'hit' : 'miss';
+        combatResources = generateBasicActionResources(combatResources, playerStance, outcome);
+        events.push({
+            phase: 'resources', kind: 'generated',
+            stance: playerStance, outcome, resources: combatResources,
+        });
+    } else if (playerBasicDefended) {
+        combatResources = generateBasicActionResources(combatResources, playerStance, 'defend');
+        events.push({
+            phase: 'resources', kind: 'generated',
+            stance: playerStance, outcome: 'defend', resources: combatResources,
+        });
+    }
 
     // 6. Round-end orchestration.
     const pEnd = processRoundEndEffects(player);
@@ -714,7 +798,55 @@ export function resolveCombatRound(
     if (eEnd.expired.length > 0) events.push({ phase: 'round-end', kind: 'expired', actor: 'enemy',  expired: eEnd.expired });
 
     return {
-        state: { ...state, player, enemy, friendshipCounter, round: state.round + 1 },
+        state: {
+            ...state,
+            player, enemy, friendshipCounter, combatResources,
+            round: state.round + 1,
+        },
         combatEvents: events,
     };
+}
+
+/**
+ * Did the player win this round's attack contest? Drives whether the player's
+ * stance token generation uses the hit (+3) or miss (+1) amount. Skim the
+ * just-emitted scenario events:
+ *   - explicit `contest-outcome` (attack-vs-attack) → look at winner.
+ *   - `damage-applied` with `attacker: 'player'` → counts as hit.
+ *   - otherwise no damage was dealt → miss.
+ */
+function playerWonAttackContest(events: RoundEvent[]): boolean {
+    for (let i = events.length - 1; i >= 0; i--) {
+        const ev = events[i];
+        if (ev.phase !== 'scenario') continue;
+        if (ev.kind === 'contest-outcome') return ev.winner === 'player';
+        if (ev.kind === 'damage-applied' && ev.attacker === 'player') return true;
+    }
+    return false;
+}
+
+/** Translates a `SkillEvent` from the skill engine into the resolver's `RoundEvent` union. */
+function toRoundEvent(ev: SkillEvent): SkillPhaseEvent {
+    switch (ev.kind) {
+        case 'damage':
+            return { phase: 'skill', kind: 'damage', skillId: ev.skillId, target: ev.target,
+                     amount: ev.amount, hpBefore: ev.hpBefore, hpAfter: ev.hpAfter };
+        case 'heal':
+            return { phase: 'skill', kind: 'heal', skillId: ev.skillId, target: ev.target,
+                     amount: ev.amount, hpBefore: ev.hpBefore, hpAfter: ev.hpAfter };
+        case 'effect-applied':
+            return { phase: 'skill', kind: 'effect-applied', skillId: ev.skillId,
+                     appliedTo: ev.appliedTo, effect: ev.effect, message: ev.message };
+        case 'effect-resisted':
+            return { phase: 'skill', kind: 'effect-resisted', skillId: ev.skillId,
+                     appliedTo: ev.appliedTo, effect: ev.effect, message: ev.message };
+        case 'effect-rebounded':
+            return { phase: 'skill', kind: 'effect-rebounded', skillId: ev.skillId,
+                     effect: ev.effect, message: ev.message };
+        case 'resources-spent':
+            return { phase: 'skill', kind: 'resources-spent', skillId: ev.skillId, cost: ev.cost };
+        case 'philosophical-generated':
+            return { phase: 'skill', kind: 'philosophical-generated',
+                     skillId: ev.skillId, category: ev.category };
+    }
 }

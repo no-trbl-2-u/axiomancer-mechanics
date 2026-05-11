@@ -142,13 +142,11 @@ Every effect's mechanical modifications live in its `payload` object.
       "tickPhase": "start"          // 'start' | 'end' (default 'start')
     },
 
-    // Per-round resource regen. LIVE:
-    //   healthPerRound > 0 → applyRegen()  (heals; clamped at maxHealth)
-    //   healthPerRound < 0 → applyDrain()  (raw HP loss; bypasses defense — Q6)
-    //   manaPerRound  > 0 → applyManaRegen() (clamped at maxMana — Q9)
+    // Per-round HP regen. LIVE:
+    //   healthPerRound > 0 → applyRegen() (heals; clamped at maxHealth)
+    //   healthPerRound < 0 → applyDrain() (raw HP loss; bypasses defense — Q6)
     "regeneration": {
-      "healthPerRound": 3,
-      "manaPerRound":   0
+      "healthPerRound": 3
     },
 
     // Damage per intensity reflected to attacker when bearer is hit.
@@ -184,7 +182,6 @@ Every effect's mechanical modifications live in its `payload` object.
 | `rollModifierPerIntensity` | **LIVE** | `getActiveRollModifier()` — scaled by `intensity` |
 | `reflectDamage`           | **LIVE** | `getThornsReflect()` — `src/Combat/effects.ts` |
 | `regeneration.healthPerRound` | **LIVE** | `applyRegen()` (positive) / `applyDrain()` (negative) — `src/Combat/effects.ts` |
-| `regeneration.manaPerRound` | **LIVE** | `applyManaRegen()` — `src/Combat/effects.ts` |
 | `statModifiers`           | **LIVE** | `getEffectiveStats()` re-derives stats; consumed by `getAttackStat` / `getDefenseStat` / `getResistStat` / `getSaveStat` — `src/Combat/stats.ts` |
 | `defenseModifier`         | **LIVE** | `getEffectiveStats().defenseDelta`; folded into defending paths via `getDefenseStat` and into passive damage paths via `getPassiveDefense` — `src/Combat/stats.ts`, `src/CLI/combat.cli.ts` |
 | `damageOverTime`          | **LIVE** | `processDamageOverTime()` — `src/Combat/effects.ts`, split by `tickPhase` (`'start'` / `'end'`) |
@@ -334,7 +331,7 @@ then applies the Tier 2/3 resolution rules described above.
 The combat CLI processes effects in this order each round:
 
 ```
-1. processRoundStartEffects   — applyRegen → applyManaRegen → applyDrain → start-phase DoT
+1. processRoundStartEffects   — applyRegen → applyDrain → start-phase DoT
 2. canAct                     — resolves skipTurn / forcedStance / blockedStances (Q7)
 3. resolveEffectiveAdvantage  — folds advantageModifier grants/denies into matchup (Q8)
 4. clearTier1EffectsForStance — Remove stale Tier 1 stance buffs
@@ -496,10 +493,9 @@ Full per-effect documentation: [`docs/effects/debuffs/`](./effects/debuffs/)
 | `removeRandomBuff(target)` | `src/Combat/effects.ts` | Strips one random buff (Heart/Attack special) |
 | `extendRandomBuffDuration(target, amount)` | `src/Combat/effects.ts` | Extends one random buff's duration (Heart/Attack special) |
 | `applyRegen(target)` | `src/Combat/effects.ts` | Applies positive per-round health regeneration |
-| `applyManaRegen(target)` | `src/Combat/effects.ts` | Applies positive per-round mana regeneration (clamped at maxMana) |
 | `applyDrain(target)` | `src/Combat/effects.ts` | Applies negative-regen drain as raw HP loss (bypasses defense) |
 | `processDamageOverTime(target, phase)` | `src/Combat/effects.ts` | Applies DoT damage routed by `tickPhase` (`'start'` / `'end'`) |
-| `processRoundStartEffects(target)` | `src/Combat/effects.ts` | Orchestrates regen → manaRegen → drain → start-phase DoT |
+| `processRoundStartEffects(target)` | `src/Combat/effects.ts` | Orchestrates regen → drain → start-phase DoT |
 | `processRoundEndEffects(target)` | `src/Combat/effects.ts` | Orchestrates end-phase DoT → tick & expire |
 | `applyCleanse(target, tier)` | `src/Combat/effects.ts` | Strip debuffs of `tier ≤ cleanseTier` (Q10) |
 | `applyDispel(target, tier)` | `src/Combat/effects.ts` | Strip buffs of `tier ≤ dispelTier` (Q10) |
@@ -535,7 +531,6 @@ Full per-effect documentation: [`docs/effects/debuffs/`](./effects/debuffs/)
 | `blockedStances` enforcement | `canAct()` |
 | `forcedStance` enforcement | `canAct()` |
 | `advantageModifier` wiring (Q8 — grants override matchup) | `resolveEffectiveAdvantage()` |
-| Mana regeneration (Q9) | `applyManaRegen()` |
 | Cleanse mechanic (tier-bounded — Q10) | `applyCleanse(target, tier)` |
 | Dispel mechanic (tier-bounded — Q10) | `applyDispel(target, tier)` |
 | Round-start orchestration | `processRoundStartEffects()` |
