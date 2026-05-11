@@ -3,6 +3,7 @@ import { MapName } from '../World/map.library';
 import { Stance } from '../Combat/types';
 import { BaseStats, DerivedStats } from '../Character/types';
 import { ActiveEffect } from '../Effects/types';
+import { ProcOverrides, ProcUnlocks } from '../Combat/combat-effects';
 import { Item } from '../Items/types';
 
 /**
@@ -54,6 +55,17 @@ export interface Enemy {
     logic: EnemyLogic;
     difficulty?: EnemyDifficulty;
     tier1Overrides?: Tier1EffectOverrides;
+    /**
+     * Spec 03 — per-cell proc unlock caps for this enemy. Default cap is
+     * tier 1; elite / boss enemies bump the cap to enable higher-tier procs.
+     */
+    procUnlocks?: ProcUnlocks;
+    /**
+     * Spec 03 — per-cell custom proc tables that fully replace the global
+     * entries for that Stance × action combo. Bosses get unique tables here;
+     * elite / basic enemies receive map-themed overrides (Q7).
+     */
+    procOverrides?: ProcOverrides;
     skills?: Skill[];
     loot?: Item[];
     effects: ActiveEffect[];

@@ -111,6 +111,43 @@ These are live in `combat.resolver.ts` (no CLI inline math — the CLI just rend
 | **Heart/Attack — extend buff** | On hit | `extendRandomBuffDuration(player, 1)` → one random player buff gets +1 duration |
 | **Heart/Attack — roll penalty** | Roll phase | −5 to the player's attack modifier |
 
+## Spec 03 — Tier 2 / Tier 3 Effect Procs
+
+Every basic `attack` or `defend` that lands a hit also rolls for effect procs from `combat-effects.library.json`. The proc table is organised as Stance × action × tier triples. Basic actors only roll the tier-1 entries; tier-2 and tier-3 procs are gated by per-cell unlocks on the actor (`procUnlocks` field on Character / Enemy).
+
+**Trigger gate** — procs only fire on a successful hit (i.e. inside `resolveAttackHit`). The attacker rolls procs from their `attack` table; the defender, when they actively defended, additionally rolls procs from their `defend` table.
+
+**Final proc chance** —
+
+```
+chance = baseChance
+       + (stanceBaseStat       × 0.02)    // STAT_PROC_BONUS_PER_POINT
+       + (statusChanceIntensity × 0.05)    // STATUS_CHANCE_BUFF_BONUS  (from buff_status_chance_up)
+```
+
+Clamped to [0, 1].
+
+**Crit (nat 20 attack roll)** — every eligible proc in the table fires automatically with +1 intensity / +1 duration on top of the trigger's defaults.
+
+**Fumble (nat 1 attack roll)** — applies the cell's `fumbleEffectId` to the actor as a self-debuff and skips other procs for that cell.
+
+**Application path** — procs hand off to `applyEffect` (to materialise the ActiveEffect with the right intensity / duration) and then `resolveEffectApplication` (Tier 2 / 3 resist contest, rebound, crit-resist). Tier 1 procs auto-apply via `applyEffect` alone.
+
+**Default proc matrix:**
+
+| Stance / Action | Tier 1 (basic) | Tier 2 (unlock) | Tier 3 (unlock) | Fumble (self) |
+|-----------------|----------------|------------------|------------------|----------------|
+| Body / Attack | `debuff_post_hoc_tremor` (opponent, 10%) | `debuff_bleed` (opponent, 18%) | `debuff_petrify` (opponent, 6%) | `debuff_post_hoc_tremor` |
+| Body / Defend | `buff_ad_hoc_patch` (self, 10%) | `buff_resistance_body` (self, 15%) | `buff_invincibility` (self, 5%) | `debuff_post_hoc_tremor` |
+| Mind / Attack | `debuff_affirming_consequent` (opponent, 10%) | `debuff_daze` (opponent, 18%) | `debuff_petrify` (opponent, 6%) | `debuff_affirming_consequent` |
+| Mind / Defend | `buff_gettiters_flicker` (self, 10%) | `buff_resistance_mind` (self, 15%) | `buff_haste` (self, 5%) | `debuff_affirming_consequent` |
+| Heart / Attack | `debuff_straw_man_echo` (opponent, 10%) | `debuff_fear` (opponent, 18%) | `debuff_petrify` (opponent, 6%) | `debuff_straw_man_echo` |
+| Heart / Defend | `buff_petitio_pulse` (self, 10%) | `buff_resistance_heart` (self, 15%) | `buff_invincibility` (self, 5%) | `debuff_straw_man_echo` |
+
+**Enemy customisation (Q7)** — `Enemy.procOverrides` swaps the entire cell's table wholesale (used for bosses with signature procs and elite / basic enemies whose tables depend on the encounter map). `Enemy.procUnlocks` raises the per-cell tier cap independently.
+
+**Switching (Q5)** — out of scope for this spec. The skill engine (Spec 04) will hook switching into a different effect pool; basic procs do not currently apply a switching multiplier.
+
 ## Effect Resistance Rules (`resolveEffectApplication`)
 
 | Tier | Rule |
@@ -212,8 +249,8 @@ round-resolution entry point used by every UI client.
 ## Pending (Phase 2)
 
 - `createBattleLogEntry` / `formatAllBattleLogs` / `generateCombatResultMessage` — log utilities
-- Tier 2/3 effect proc matrix (`Stance × action` → trigger chances) — Spec 03
 - Skill / item actions in the resolver pipeline — Specs 04 / 05
+- Spec 03 switching reward — currently out of scope; rolls into Spec 04's skill synergy work
 - Seedable RNG so the round resolver is fully deterministic without `vi.spyOn` — Spec 11
 
 ### Landed in Spec 02

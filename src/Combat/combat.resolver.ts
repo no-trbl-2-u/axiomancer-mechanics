@@ -23,10 +23,15 @@
 
 import { Character } from '../Character/types';
 import { Enemy } from '../Enemy/types';
-import { ActiveEffect, Effect } from '../Effects/types';
+import { ActiveEffect, Effect, EffectApplicationResult, EffectTier } from '../Effects/types';
 import { applyTier1CombatEffect, clearTier1EffectsForStance } from '../Effects';
 import { lookupEffect } from '../Effects/effects.library';
 import { createDieRoll } from '../Utils';
+import {
+    rollForCombatEffects,
+    applyProcOutcome,
+    applyFumbleOutcome,
+} from './combat-effects';
 import {
     DEFENSE_MULTIPLIERS,
     PASSIVE_DEFENSE_MULTIPLIER,
@@ -110,7 +115,18 @@ export type ScenarioEvent =
     | { phase: 'scenario'; kind: 'heart-buff-extended';
         attacker: CombatActor; effect: Effect | null }
     | { phase: 'scenario'; kind: 'both-defend';
-        friendshipBefore: number; friendshipAfter: number };
+        friendshipBefore: number; friendshipAfter: number }
+    | { phase: 'scenario'; kind: 'proc-applied';
+        actor: CombatActor;
+        appliedTo: 'self' | 'opponent';
+        effect: Effect;
+        tier: EffectTier;
+        decision: 'normal' | 'crit';
+        result: EffectApplicationResult }
+    | { phase: 'scenario'; kind: 'proc-fumbled';
+        actor: CombatActor;
+        effect: Effect;
+        result: EffectApplicationResult };
 
 /** End-phase DoT and ticked / expired effects. */
 export type RoundEndEvent =
@@ -183,6 +199,7 @@ export function resolveAttackVsAttack(
     playerAdv: Advantage,
     enemyAdv: Advantage,
     events: RoundEvent[],
+    round = 0,
 ): { player: Character; enemy: Enemy } {
     const playerDieRoll = createDieRoll(playerAdv);
     const enemyDieRoll  = createDieRoll(enemyAdv);
@@ -223,7 +240,7 @@ export function resolveAttackVsAttack(
             { actor: 'enemy',  combatant: enemy,  stance: enemyType,  advantage: enemyAdv },
             playerDieRoll, pBaseStat, pMod, pRollMod,
             passiveDefense(enemy, enemyType), PASSIVE_DEFENSE_MULTIPLIER,
-            true /* defenderIsPassive */, events,
+            true /* defenderIsPassive */, events, playerRaw, round,
         ) as { player: Character; enemy: Enemy };
     }
 
@@ -233,7 +250,7 @@ export function resolveAttackVsAttack(
             { actor: 'player', combatant: player, stance: playerType, advantage: playerAdv },
             enemyDieRoll, eBaseStat, eMod, eRollMod,
             passiveDefense(player, playerType), PASSIVE_DEFENSE_MULTIPLIER,
-            true, events,
+            true, events, enemyRaw, round,
         ) as { player: Character; enemy: Enemy };
     }
 
@@ -249,6 +266,7 @@ export function resolvePlayerAttackEnemyDefend(
     playerAdv: Advantage,
     enemyAdv: Advantage,
     events: RoundEvent[],
+    round = 0,
 ): { player: Character; enemy: Enemy } {
     const playerDieRoll = createDieRoll(playerAdv);
     const pRollMod  = getActiveRollModifier(player);
@@ -267,7 +285,7 @@ export function resolvePlayerAttackEnemyDefend(
         { actor: 'enemy',  combatant: enemy,  stance: enemyType,  advantage: enemyAdv },
         playerDieRoll, pBaseStat, attackMod, pRollMod,
         activeDefense(enemy, enemyType), DEFENSE_MULTIPLIERS[enemyAdv],
-        false /* defender chose defend */, events,
+        false /* defender chose defend */, events, attackRaw, round,
     ) as { player: Character; enemy: Enemy };
 }
 
@@ -280,6 +298,7 @@ export function resolvePlayerDefendEnemyAttack(
     playerAdv: Advantage,
     enemyAdv: Advantage,
     events: RoundEvent[],
+    round = 0,
 ): { player: Character; enemy: Enemy } {
     const enemyDieRoll = createDieRoll(enemyAdv);
     const eRollMod  = getActiveRollModifier(enemy);
@@ -298,7 +317,7 @@ export function resolvePlayerDefendEnemyAttack(
         { actor: 'player', combatant: player, stance: playerType, advantage: playerAdv },
         enemyDieRoll, eBaseStat, attackMod, eRollMod,
         activeDefense(player, playerType), DEFENSE_MULTIPLIERS[playerAdv],
-        false, events,
+        false, events, attackRaw, round,
     ) as { player: Character; enemy: Enemy };
 }
 
@@ -321,6 +340,8 @@ function resolveAttackHit(
     defenseMultiplier: number,
     defenderIsPassive: boolean,
     events: RoundEvent[],
+    rawAttackRoll: number,
+    round: number,
 ): { player: Character; enemy: Enemy } {
     const damageRaw  = rng();
     const damageRoll = damageRaw + rollPlusStatMod;
@@ -383,9 +404,117 @@ function resolveAttackHit(
         });
     }
 
+    // Spec 03 — Tier 2 / Tier 3 effect procs.
+    //   • Attacker rolls their `attack` table on every successful hit.
+    //   • Defender (when they actively defended) rolls their `defend` table.
+    // Crit / fumble are driven by the attacker's d20; the defender has no roll
+    // of their own, so we pass a neutral `rawAttackRoll = 10` to skip both.
+    const attackerProcs = runActionProcs({
+        actorRole:    attacker.actor,
+        actorStance:  attacker.stance,
+        action:       'attack',
+        actor:        updatedAttacker,
+        opponent:     updatedDefender,
+        rawAttackRoll,
+        round,
+        events,
+    });
+    updatedAttacker = attackerProcs.actor;
+    updatedDefender = attackerProcs.opponent;
+
+    if (!defenderIsPassive) {
+        const defenderProcs = runActionProcs({
+            actorRole:    defender.actor,
+            actorStance:  defender.stance,
+            action:       'defend',
+            actor:        updatedDefender,
+            opponent:     updatedAttacker,
+            rawAttackRoll: 10,
+            round,
+            events,
+        });
+        updatedDefender = defenderProcs.actor;
+        updatedAttacker = defenderProcs.opponent;
+    }
+
     return attacker.actor === 'player'
         ? { player: updatedAttacker as Character, enemy: updatedDefender as Enemy }
         : { player: updatedDefender as Character, enemy: updatedAttacker as Enemy };
+}
+
+interface RunProcsParams {
+    actorRole: CombatActor;
+    actorStance: Stance;
+    action: 'attack' | 'defend';
+    actor: Character | Enemy;
+    opponent: Character | Enemy;
+    rawAttackRoll: number;
+    round: number;
+    events: RoundEvent[];
+}
+
+/**
+ * Rolls Spec 03 procs for a single actor and applies them via the staged
+ * `applyProcOutcome` / `applyFumbleOutcome` helpers. Emits one
+ * `proc-applied` event per landed proc (success OR resist — the resolver
+ * result encodes the outcome) and one `proc-fumbled` event when the actor
+ * fumbled their attack roll.
+ */
+function runActionProcs(p: RunProcsParams): {
+    actor: Character | Enemy;
+    opponent: Character | Enemy;
+} {
+    const unlocks   = (p.actor as Character).procUnlocks
+                   ?? (p.actor as Enemy).procUnlocks;
+    const overrides = (p.actor as Enemy).procOverrides;
+
+    const { procs, fumble } = rollForCombatEffects({
+        actor:       p.actor,
+        stance:      p.actorStance,
+        action:      p.action,
+        rawAttackRoll: p.rawAttackRoll,
+        unlocks,
+        overrides,
+    });
+
+    let actor    = p.actor;
+    let opponent = p.opponent;
+
+    if (fumble) {
+        const { actorEffects, result } = applyFumbleOutcome(fumble, actor.effects, p.round);
+        actor = { ...actor, effects: actorEffects } as typeof actor;
+        p.events.push({
+            phase: 'scenario', kind: 'proc-fumbled',
+            actor: p.actorRole,
+            effect: fumble.effect,
+            result,
+        });
+    }
+
+    for (const outcome of procs) {
+        const attackerHeartBonus = actor.baseStats.heart;
+        const applied = applyProcOutcome(
+            outcome,
+            actor, actor.effects,
+            opponent, opponent.effects,
+            p.round,
+            attackerHeartBonus,
+        );
+        actor    = { ...actor,    effects: applied.actorEffects    } as typeof actor;
+        opponent = { ...opponent, effects: applied.opponentEffects } as typeof opponent;
+
+        p.events.push({
+            phase: 'scenario', kind: 'proc-applied',
+            actor: p.actorRole,
+            appliedTo: applied.appliedTo,
+            effect: outcome.effect,
+            tier: outcome.effect.tier,
+            decision: outcome.decision === 'skipped' ? 'normal' : outcome.decision,
+            result: applied.result,
+        });
+    }
+
+    return { actor, opponent };
 }
 
 // ─── Full Round ───────────────────────────────────────────────────────────────
@@ -545,23 +674,23 @@ export function resolveCombatRound(
 
     if (playerActionFinal === 'attack' && enemyActionFinal === 'attack') {
         ({ player, enemy } = resolveAttackVsAttack(
-            player, enemy, playerStance, enemyStance, playerAdvantage, enemyAdvantage, events,
+            player, enemy, playerStance, enemyStance, playerAdvantage, enemyAdvantage, events, state.round,
         ));
     } else if (playerActionFinal === 'attack' && enemyActionFinal === 'defend') {
         ({ player, enemy } = resolvePlayerAttackEnemyDefend(
-            player, enemy, playerStance, enemyStance, playerAdvantage, enemyAdvantage, events,
+            player, enemy, playerStance, enemyStance, playerAdvantage, enemyAdvantage, events, state.round,
         ));
     } else if (playerActionFinal === 'defend' && enemyActionFinal === 'attack') {
         ({ player, enemy } = resolvePlayerDefendEnemyAttack(
-            player, enemy, playerStance, enemyStance, playerAdvantage, enemyAdvantage, events,
+            player, enemy, playerStance, enemyStance, playerAdvantage, enemyAdvantage, events, state.round,
         ));
     } else if (playerActionFinal === 'attack' && enemyActionFinal === 'skip') {
         ({ player, enemy } = resolveAttackVsAttack(
-            player, enemy, playerStance, enemyStance, playerAdvantage, enemyAdvantage, events,
+            player, enemy, playerStance, enemyStance, playerAdvantage, enemyAdvantage, events, state.round,
         ));
     } else if (enemyActionFinal === 'attack' && playerActionFinal === 'skip') {
         ({ player, enemy } = resolveAttackVsAttack(
-            player, enemy, playerStance, enemyStance, playerAdvantage, enemyAdvantage, events,
+            player, enemy, playerStance, enemyStance, playerAdvantage, enemyAdvantage, events, state.round,
         ));
     } else if (playerActionFinal === 'defend' && enemyActionFinal === 'defend') {
         const before = friendshipCounter;

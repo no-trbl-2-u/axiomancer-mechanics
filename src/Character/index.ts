@@ -1,5 +1,6 @@
 import { Character, BaseStats } from './types';
 import { ActiveEffect } from '../Effects/types';
+import { ProcUnlocks } from '../Combat/combat-effects';
 import { Item } from '../Items/types';
 import { deriveStats, deriveNonCombatStats, calculateMaxHealth, calculateMaxMana } from '../Utils';
 import { EXPERIENCE_PER_LEVEL } from '../Game/game-mechanics.constants';
@@ -13,6 +14,7 @@ export interface CreateCharacterOptions {
     baseStats: BaseStats;
     inventory?: Item[];
     effects?: ActiveEffect[];
+    procUnlocks?: ProcUnlocks;
 }
 
 /**
@@ -20,7 +22,7 @@ export interface CreateCharacterOptions {
  * computed automatically from `baseStats` and `level`.
  */
 export function createCharacter(options: CreateCharacterOptions): Character {
-    const { name, level, baseStats, inventory = [], effects = [] } = options;
+    const { name, level, baseStats, inventory = [], effects = [], procUnlocks } = options;
 
     const maxHealth = calculateMaxHealth(level, baseStats);
     const maxMana = calculateMaxMana(level, baseStats);
@@ -39,6 +41,7 @@ export function createCharacter(options: CreateCharacterOptions): Character {
         nonCombatStats: deriveNonCombatStats(baseStats),
         inventory,
         effects,
+        procUnlocks,
     };
 }
 
