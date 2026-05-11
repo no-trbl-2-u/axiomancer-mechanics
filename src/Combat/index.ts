@@ -44,6 +44,14 @@ export type {
     AggregatedEffectModifiers, EffectiveStats,
 } from './effect-modifiers';
 export { resolveEffectApplication } from './resist';
+export {
+    rollForCombatEffects, applyProcOutcome, applyFumbleOutcome,
+    getEligibleTriggers, calculateProcChance, combatEffectsLibrary,
+} from './combat-effects';
+export type {
+    CombatEffectTrigger, ProcUnlocks, ProcOverrides,
+    ProcRollOutcome, FumbleOutcome, RollForCombatEffectsParams,
+} from './combat-effects';
 
 // ─── Round resolver ──────────────────────────────────────────────────────────
 // `resolveCombatRound` is the single entry point any UI client (CLI, future

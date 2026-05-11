@@ -1,5 +1,6 @@
 import { Item } from '../Items/types';
 import { ActiveEffect } from '../Effects/types';
+import { ProcUnlocks } from '../Combat/combat-effects';
 
 /**
  * The three core attributes from which all other character/enemy stats derive.
@@ -73,4 +74,10 @@ export interface Character {
     nonCombatStats: NonCombatStats;
     inventory: Item[];
     effects: ActiveEffect[];
+    /**
+     * Per-cell Spec 03 proc unlock caps. Defaults to tier 1 in every cell —
+     * basic actors only roll the lowest-tier proc table entries. Skills /
+     * progression in Spec 04 / 06 raise the cap to unlock T2 / T3 entries.
+     */
+    procUnlocks?: ProcUnlocks;
 }

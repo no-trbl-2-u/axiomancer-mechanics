@@ -42,7 +42,7 @@ a proc; fumbles may apply a self-debuff. The matrix is in `docs/combat.md`.
 
 1. **Trigger gate.** Does a proc require a successful hit, or does any
    completed `attack` (even a miss) roll for it?
-   > Your answer:
+   > Your answer: successful hit
 
 2. **Base proc rate.** What's the baseline chance per qualifying action?
    - (A) Fixed 25%.
@@ -50,7 +50,7 @@ a proc; fumbles may apply a self-debuff. The matrix is in `docs/combat.md`.
      heart procs, capped).
    - (C) Driven by Spec 01's `buff_status_chance_up` modifier on top of a
      base rate.
-   > Your answer:
+   > Your answer: Scales with relevant stat and certain buffs can increase proc
 
 3. **Crit / fumble interaction.** On a crit:
    - (A) Always proc the strongest available effect.
@@ -58,14 +58,14 @@ a proc; fumbles may apply a self-debuff. The matrix is in `docs/combat.md`.
    On a fumble:
    - (A) Apply a thematic self-debuff to the actor.
    - (B) Skip the proc entirely.
-   > Your answer:
+   > Your answer: B, A
 
 4. **One-of vs multi-proc.** When a stance has 3 candidate effects (e.g.
    Body/Attack: bleed, wound, knockdown), do you:
    - (A) Roll one slot, weight evenly.
    - (B) Roll one slot, weight by tier (T2 common, T3 rare).
    - (C) Roll each independently (multi-proc possible).
-   > Your answer:
+   > Your answer: Basic attacks should only have weak T1 effects. The higher teir basic-attack/defend procs must be unlocked by the character
 
 5. **Switching reward (BRAINDUMP).** "Tier 2 should reward switching." Three
    ways to encode:
@@ -74,19 +74,19 @@ a proc; fumbles may apply a self-debuff. The matrix is in `docs/combat.md`.
    - (B) Switching unlocks a *different* effect pool (e.g. Body→Heart switch
      procs `buff_advantage_body` instead of standard physical buffs).
    - (C) Both.
-   > Your answer:
+   > Your answer: B (But for basic attacks w/ T1 effects, switching has consequences. Switching should just allow for skill synergy later on)
 
 6. **Proc table flexibility.** Should the table live as JSON
    (`combat-effects.library.json`, mirroring `buffs.library.json` /
    `debuffs.library.json`) for designer-friendliness, or as TypeScript
    constants? The existing convention for effect content is JSON — staying
    consistent is the cheapest answer.
-   > Your answer:
+   > Your answer: JSON
 
 7. **Enemy procs.** Do enemies use the same proc table by default, or do they
    have their own (boss enemies might have signature procs)? If shared, can
    `Enemy` extend with `procOverrides` similar to `tier1Overrides`?
-   > Your answer:
+   > Your answer: Bosses will definitely have their own proc tables entirely, then proc tables for elites and basic enemies will have proc tables dependent upon the map the combat is taking place. (ie. The same enemy found in "Northern Woods" vs. some other map may have different proc tables)
 
 ## Proposed approach
 

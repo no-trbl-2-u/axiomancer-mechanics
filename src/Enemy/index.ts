@@ -4,6 +4,7 @@ import { MapName } from '../World/map.library';
 import { ActiveEffect } from '../Effects/types';
 import { BaseStats } from '../Character/types';
 import { deriveStats, calculateMaxHealth, calculateMaxMana } from '../Utils';
+import { ProcOverrides, ProcUnlocks } from '../Combat/combat-effects';
 import { Enemy, EnemyLogic, EnemyDifficulty, Tier1EffectOverrides } from './types';
 
 /**
@@ -19,6 +20,8 @@ export interface CreateEnemyOptions {
     logic: EnemyLogic;
     difficulty?: EnemyDifficulty;
     tier1Overrides?: Tier1EffectOverrides;
+    procUnlocks?: ProcUnlocks;
+    procOverrides?: ProcOverrides;
     skills?: Skill[];
     loot?: Item[];
     effects?: ActiveEffect[];
@@ -31,7 +34,8 @@ export interface CreateEnemyOptions {
 export function createEnemy(options: CreateEnemyOptions): Enemy {
     const {
         id, name, description, level, baseStats, mapName, logic,
-        difficulty, tier1Overrides, skills, loot, effects = [],
+        difficulty, tier1Overrides, procUnlocks, procOverrides,
+        skills, loot, effects = [],
     } = options;
 
     const maxHealth = calculateMaxHealth(level, baseStats);
@@ -44,7 +48,9 @@ export function createEnemy(options: CreateEnemyOptions): Enemy {
         baseStats,
         derivedStats: deriveStats(baseStats),
         mapName, logic,
-        difficulty, tier1Overrides, skills, loot,
+        difficulty, tier1Overrides,
+        procUnlocks, procOverrides,
+        skills, loot,
         effects,
     };
 }

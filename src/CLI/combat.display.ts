@@ -830,6 +830,28 @@ async function renderScenario(
                 printBothDefending(ev.friendshipBefore, ev.friendshipAfter);
                 break;
             }
+            case 'proc-applied': {
+                const owner = ev.actor === 'player' ? 'You' : enemyName;
+                const target = ev.appliedTo === 'self'
+                    ? (ev.actor === 'player' ? 'yourself' : 'themselves')
+                    : (ev.actor === 'player' ? enemyName : 'you');
+                const tag = ev.decision === 'crit' ? `${C.brightYellow}CRIT${C.reset} ` : '';
+                const tier = `T${ev.tier}`;
+                const success = ev.result.success ? C.brightGreen : C.brightRed;
+                console.log(
+                    `  ${success}⚡ ${owner} proc: ${tag}${C.bold}${ev.effect.name}${C.reset}${success} → ${target} (${tier})${C.reset}  ` +
+                    `${C.dim}${ev.result.message}${C.reset}`,
+                );
+                break;
+            }
+            case 'proc-fumbled': {
+                const owner = ev.actor === 'player' ? 'You' : enemyName;
+                console.log(
+                    `  ${C.brightRed}✘ ${owner} fumbled — ${C.bold}${ev.effect.name}${C.reset}${C.brightRed} self-applied.${C.reset}  ` +
+                    `${C.dim}${ev.result.message}${C.reset}`,
+                );
+                break;
+            }
         }
     }
 }
