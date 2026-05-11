@@ -43,7 +43,6 @@ export interface AggregatedEffectModifiers {
     dotEnd: number;
     healthRegen: number;
     healthDrain: number;
-    manaRegen: number;
 }
 
 const emptyAgg = (): AggregatedEffectModifiers => ({
@@ -59,7 +58,6 @@ const emptyAgg = (): AggregatedEffectModifiers => ({
     dotEnd:          0,
     healthRegen:     0,
     healthDrain:     0,
-    manaRegen:       0,
 });
 
 const addToMap = (map: Map<EffectStatTarget, number>, key: EffectStatTarget, value: number): void => {
@@ -125,9 +123,6 @@ export function getActiveEffectModifiers(effects: ActiveEffect[]): AggregatedEff
             const hp = (regen.healthPerRound ?? 0) * intensity;
             if (hp > 0) agg.healthRegen += hp;
             else if (hp < 0) agg.healthDrain += -hp;
-
-            const mana = (regen.manaPerRound ?? 0) * intensity;
-            if (mana > 0) agg.manaRegen += mana;
         }
     }
 

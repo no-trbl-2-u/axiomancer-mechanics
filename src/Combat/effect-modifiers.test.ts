@@ -12,7 +12,7 @@ import {
     canAct,
 } from './effect-modifiers';
 import {
-    applyRegen, applyManaRegen, applyDrain,
+    applyRegen, applyDrain,
     processDamageOverTime, processRoundStartEffects, processRoundEndEffects,
     applyCleanse, applyDispel,
 } from './effects';
@@ -210,15 +210,6 @@ describe('DoT and drain HP changes', () => {
         expect(r.target.health).toBe(16);
     });
 
-    it('applyManaRegen restores mana (Q9)', () => {
-        // synthesise a buff with manaPerRound by injecting buff data into an active effect.
-        // The library has no mana-only buff today, so simulate with buff_regeneration's healthPerRound.
-        // (manaRegen integration is verified by aggregator unit; this verifies clamp logic.)
-        const t = fixture([]);
-        const r = applyManaRegen({ ...t, mana: t.maxMana - 2 });
-        expect(r.restored).toBe(0);
-        expect(r.target.mana).toBe(t.maxMana - 2);
-    });
 });
 
 describe('processRoundStartEffects orchestrator', () => {

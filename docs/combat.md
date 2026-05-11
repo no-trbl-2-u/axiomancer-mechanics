@@ -62,28 +62,30 @@ The multiplier depends on the defender's type-advantage over the attacker.
 
 ## Round Flow (Current Implementation)
 
-A single call to `resolveCombatRound(state, playerAction, enemyAction)` runs
-every phase below and returns `{ state, combatEvents }`. The CLI prints the
+A single call to `resolveCombatRound(state, playerAction, enemyAction, lookupSkill?)`
+runs every phase below and returns `{ state, combatEvents }`. The CLI prints the
 event stream via `renderRoundEvents` in `combat.display.ts`; the resolver
 itself never logs.
 
 ```
-resolveCombatRound(state, playerAction, enemyAction)
-├── 1. round-start          → processRoundStartEffects  → regen / mana / drain / start-phase DoT
+resolveCombatRound(state, playerAction, enemyAction, lookupSkill?)
+├── 1. round-start          → processRoundStartEffects  → regen / drain / start-phase DoT
 │                              (early exit if a combatant drops to 0 HP)
 ├── 2. action-restriction   → canAct                    → forced-stance / blocked-stance / skipTurn
 ├── 3. advantage            → resolveEffectiveAdvantage → matchup + per-side advantage label
 ├── 4. stance-effects       → clearTier1EffectsForStance + applyTier1CombatEffect
-├── 5. scenario             → attack-vs-attack / attack-vs-defend / both-defend / skip variants
-│                              (rolls, damage, thorns, heart specials, friendship tick)
+├── 5. scenario             → 'skill' routes through executeSkill (Spec 04);
+│                              otherwise attack-vs-attack / attack-vs-defend / etc.
+│                              Player basic actions also generate stance tokens
+│                              into `combatResources` (hit +3 / miss +1 / defend +5).
 └── 6. round-end            → end-phase DoT  → tickAllEffects  → log expired effects
                               + round counter increments
 ```
 
 Events are emitted in the order above, grouped by `phase`:
 `round-start` → `action-restriction` → `advantage` → `stance-effects` →
-`scenario` → `round-end`. UI consumers render each section from the typed
-`RoundEvent` union exported alongside the resolver.
+`skill` → `scenario` → `resources` → `round-end`. UI consumers render each
+section from the typed `RoundEvent` union exported alongside the resolver.
 
 ## Tier 1 Auto-Effects
 

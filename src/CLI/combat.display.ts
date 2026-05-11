@@ -297,13 +297,6 @@ export function printRegenHeal(who: 'player' | 'enemy', label: string, amount: n
     console.log(`  ${C.brightGreen}❤ ${owner}: regenerated ${amount} HP.${C.reset}`);
 }
 
-/** Announces mana restored by mana regen at the start of a round. */
-export function printManaRestore(who: 'player' | 'enemy', label: string, amount: number): void {
-    if (amount <= 0) return;
-    const owner = who === 'player' ? `${C.brightBlue}You${C.reset}` : `${C.brightBlue}${label}${C.reset}`;
-    console.log(`  ${C.brightBlue}✦ ${owner}: restored ${amount} MP.${C.reset}`);
-}
-
 /** Announces HP lost to drain (negative regen) at the start of a round. */
 export function printDrain(who: 'player' | 'enemy', label: string, amount: number): void {
     if (amount <= 0) return;
@@ -650,6 +643,8 @@ export async function renderRoundEvents(p: RenderRoundParams): Promise<void> {
         'advantage':          [],
         'stance-effects':     [],
         'scenario':           [],
+        'skill':              [],
+        'resources':          [],
         'round-end':          [],
     };
     for (const ev of events) byPhase[ev.phase].push(ev);
@@ -658,8 +653,61 @@ export async function renderRoundEvents(p: RenderRoundParams): Promise<void> {
     renderActionRestriction(byPhase['action-restriction'], label);
     await renderAdvantage(byPhase['advantage'], delay);
     await renderStanceEffects(byPhase['stance-effects'], enemyName, label, delay);
+    await renderSkill(byPhase['skill'], delay);
     await renderScenario(byPhase['scenario'], enemyName, label, delay);
+    renderResources(byPhase['resources']);
     await renderRoundEnd(byPhase['round-end'], label, delay);
+}
+
+async function renderSkill(
+    events: RoundEvent[],
+    delay: (ms: number) => Promise<void>,
+): Promise<void> {
+    if (events.length === 0) return;
+    console.log(sectionHeader('Skill'));
+    for (const ev of events) {
+        if (ev.phase !== 'skill') continue;
+        switch (ev.kind) {
+            case 'damage':
+                console.log(`  ${C.brightRed}⚔ Skill ${ev.skillId} hit for ${ev.amount} damage.${C.reset}  HP ${ev.hpBefore} → ${ev.hpAfter}`);
+                break;
+            case 'heal':
+                console.log(`  ${C.brightGreen}✚ Skill ${ev.skillId} restored ${ev.amount} HP.${C.reset}  HP ${ev.hpBefore} → ${ev.hpAfter}`);
+                break;
+            case 'effect-applied':
+                console.log(`  ${C.brightGreen}✦ ${ev.effect.name} → ${ev.appliedTo}.${C.reset}  ${C.dim}${ev.message}${C.reset}`);
+                break;
+            case 'effect-resisted':
+                console.log(`  ${C.brightRed}✕ ${ev.effect.name} resisted by ${ev.appliedTo}.${C.reset}  ${C.dim}${ev.message}${C.reset}`);
+                break;
+            case 'effect-rebounded':
+                console.log(`  ${C.brightYellow}↩ ${ev.effect.name} rebounded.${C.reset}  ${C.dim}${ev.message}${C.reset}`);
+                break;
+            case 'resources-spent': {
+                const parts = Object.entries(ev.cost).filter(([, v]) => v && v > 0)
+                    .map(([k, v]) => `${v} ${k}`).join(', ');
+                console.log(`  ${C.dim}Spent ${parts || '(no cost)'}.${C.reset}`);
+                break;
+            }
+            case 'philosophical-generated':
+                console.log(`  ${C.brightCyan}+1 ${ev.category} token.${C.reset}`);
+                break;
+        }
+    }
+    await delay(800);
+}
+
+function renderResources(events: RoundEvent[]): void {
+    for (const ev of events) {
+        if (ev.phase !== 'resources') continue;
+        if (ev.kind !== 'generated') continue;
+        const r = ev.resources;
+        const verb = ev.outcome === 'defend' ? 'defend' : ev.outcome === 'hit' ? 'hit' : 'miss';
+        console.log(
+            `  ${C.dim}Tokens (${verb} on ${typeColor(ev.stance)}): ` +
+            `♥${r.heart} ⚡${r.body} ★${r.mind} ⚖${r.fallacy} ∞${r.paradox}${C.reset}`,
+        );
+    }
 }
 
 async function renderRoundStart(
@@ -671,11 +719,10 @@ async function renderRoundStart(
     for (const ev of events) {
         if (ev.phase !== 'round-start') continue;
         switch (ev.kind) {
-            case 'regen':        printRegenHeal(ev.actor,   label(ev.actor), ev.amount); break;
-            case 'mana-restore': printManaRestore(ev.actor, label(ev.actor), ev.amount); break;
-            case 'drain':        printDrain(ev.actor,       label(ev.actor), ev.amount); break;
-            case 'dot':          printDotDamage(ev.actor,   label(ev.actor), ev.amount, 'start'); break;
-            case 'lethal':       /* state already reflects the KO; pacing handled below */ break;
+            case 'regen':  printRegenHeal(ev.actor, label(ev.actor), ev.amount); break;
+            case 'drain':  printDrain(ev.actor,     label(ev.actor), ev.amount); break;
+            case 'dot':    printDotDamage(ev.actor, label(ev.actor), ev.amount, 'start'); break;
+            case 'lethal': /* state already reflects the KO; pacing handled below */ break;
         }
     }
     await delay(500);

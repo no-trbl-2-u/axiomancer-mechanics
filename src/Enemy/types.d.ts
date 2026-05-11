@@ -47,8 +47,6 @@ export interface Enemy {
     level: number;
     health: number;
     maxHealth: number;
-    mana: number;
-    maxMana: number;
     baseStats: BaseStats;
     derivedStats: DerivedStats;
     mapName: MapName;

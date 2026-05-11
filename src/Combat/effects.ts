@@ -129,20 +129,6 @@ export function applyRegen<T extends Combatant>(target: T): { target: T; healed:
 }
 
 /**
- * Applies start-of-round mana regeneration from `regeneration.manaPerRound`
- * payloads (Q9). Mirrors `applyRegen` for HP and clamps at `maxMana`. Drain
- * (negative manaPerRound) is intentionally not supported — there is no
- * mana-tied effect today that wants it.
- */
-export function applyManaRegen<T extends Combatant>(target: T): { target: T; restored: number } {
-    const mods = getActiveEffectModifiers(target.effects);
-    if (mods.manaRegen <= 0) return { target, restored: 0 };
-    const restored = Math.min(mods.manaRegen, target.maxMana - target.mana);
-    if (restored <= 0) return { target, restored: 0 };
-    return { target: { ...target, mana: target.mana + restored }, restored };
-}
-
-/**
  * Applies drain (negative `regeneration.healthPerRound`) per Q6 as a unique
  * raw-HP loss, separate from regen and from DoT. Drain bypasses defense (it's
  * the body wasting itself, not an external hit) and is dealt at round start.
@@ -171,7 +157,7 @@ export function processDamageOverTime<T extends Combatant>(
 
 /**
  * Round-start orchestration. Order:
- *   1. Regen (HP, then mana)
+ *   1. HP regen
  *   2. Drain (negative regen)
  *   3. Start-phase DoT
  *
@@ -181,20 +167,17 @@ export function processDamageOverTime<T extends Combatant>(
 export function processRoundStartEffects<T extends Combatant>(target: T): {
     target: T;
     healed: number;
-    manaRestored: number;
     drained: number;
     dotDamage: number;
 } {
     const regen = applyRegen(target);
-    const mana  = applyManaRegen(regen.target);
-    const drain = applyDrain(mana.target);
+    const drain = applyDrain(regen.target);
     const dot   = processDamageOverTime(drain.target, 'start');
     return {
-        target:        dot.target,
-        healed:        regen.healed,
-        manaRestored:  mana.restored,
-        drained:       drain.drained,
-        dotDamage:     dot.damage,
+        target:    dot.target,
+        healed:    regen.healed,
+        drained:   drain.drained,
+        dotDamage: dot.damage,
     };
 }
 

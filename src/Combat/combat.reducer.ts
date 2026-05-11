@@ -11,7 +11,8 @@ import {
 
 /**
  * Builds a fresh CombatState. Combatants are deep-cloned so combat
- * mutations don't bleed back into the canonical player/enemy.
+ * mutations don't bleed back into the canonical player/enemy. The
+ * per-combat resource counters (Spec 04) start at zero each fight.
  */
 export function initializeCombat(player: Character, enemy: Enemy): CombatState {
     return {
@@ -24,6 +25,10 @@ export function initializeCombat(player: Character, enemy: Enemy): CombatState {
         playerChoice: {},
         enemyChoice: {},
         log: [],
+        combatResources: {
+            heart: 0, body: 0, mind: 0,
+            fallacy: 0, paradox: 0,
+        },
     };
 }
 

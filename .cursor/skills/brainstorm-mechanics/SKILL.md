@@ -1,6 +1,6 @@
 ---
 name: brainstorm-mechanics
-description: Socratic brainstorming partner for TTRPG mechanic design in the Axiomancer Mechanics project. Asks probing questions to surface the better question the user should be asking, cites prior art from MTG, Slay the Spire, Hades, Mörk Borg, Disco Elysium, Sekiro, Pokémon, Undertale, and similar games (including what real players liked and disliked), offers multiple design alternatives with trade-offs, and captures outcomes to BRAINDUMP.md. Use when the user says "let's brainstorm", "what if", "how should X work", "I'm thinking about", "I want to design", or asks any open-ended design question about combat, stats, stances, effects, skills, items, equipment, enemies, world, difficulty, morality, narrative, or other game mechanics.
+description: Socratic brainstorming partner for TTRPG mechanic design in the Axiomancer Mechanics project. Asks probing questions to surface the better question the user should be asking, cites prior art from MTG, Slay the Spire, Hades, Mörk Borg, Disco Elysium, Sekiro, Pokémon, Undertale, and similar games (including what real players liked and disliked), offers multiple design alternatives with trade-offs, and captures the full session as a new file in the braindump/ folder. Use when the user says "let's brainstorm", "what if", "how should X work", "I'm thinking about", "I want to design", or asks any open-ended design question about combat, stats, stances, effects, skills, items, equipment, enemies, world, difficulty, morality, narrative, or other game mechanics.
 ---
 
 # Brainstorm Mechanics
@@ -16,7 +16,7 @@ fallacies and paradoxes, and a morality-driven difficulty meter.
 3. Show how 2–4 other games handled the same problem shape, including what
    real players actually liked and disliked.
 4. Offer 2–3 design alternatives with trade-offs, never just one.
-5. Capture the session as a dated entry in `BRAINDUMP.md`.
+5. Capture the full session as a new file in `braindump/`.
 
 ---
 
@@ -118,34 +118,70 @@ the design space**, not narrow it.
 
 ---
 
-## Phase 5 — Capture to `BRAINDUMP.md`
+## Phase 5 — Capture to `braindump/`
 
-When the user signals they're done, want to lock a direction, or have
-been brainstorming for a while, **append** an entry to `BRAINDUMP.md`.
+When the user signals they're done, wants to lock a direction, or the
+session has run long enough to be worth saving, **create a new file**
+in the `braindump/` folder at the project root.
 
-Rules:
-- If a `## Brainstorm Sessions` section doesn't exist, create it
-  **immediately after the H1** (`# Brain Dump — Unorganized Ideas`)
-  and **before** any other `##` section.
-- Insert the new entry as the **first item** under
-  `## Brainstorm Sessions` (newest on top).
-- **Never delete or rewrite existing content** in `BRAINDUMP.md`.
-- Use the current date from the system info, format `YYYY-MM-DD`.
+**Filename:** `braindump/YYYY-MM-DD-<topic-slug>.md`
 
-Entry template:
+- `YYYY-MM-DD` — current date from system info
+- `<topic-slug>` — 2–5 words kebab-cased that describe what was
+  brainstormed, e.g. `tier2-stance-switching`, `morality-difficulty-meter`,
+  `fallacy-skill-naming`
+- If a file with that name already exists (same topic, same day), append
+  `-2`, `-3`, etc.
+
+**File content template:**
 
 ```markdown
-### <Topic> — <YYYY-MM-DD>
-- **Surface question:** <one line, the user's original framing>
-- **Better question surfaced:** <one line, what we reframed to>
-- **Prior art consulted:** <Game (mechanic), Game (mechanic), …>
-- **Directions on the table:**
-  - Option A — <one line>
-  - Option B — <one line>
-  - Option C — <one line, optional>
-- **Decided / leaning:** <one line, or "still open">
-- **Open questions:** <bullets, or "none">
+# <Topic> — <YYYY-MM-DD>
+
+## Surface question
+<The user's original framing, one line>
+
+## Better question surfaced
+<The reframed question that got to the real design problem>
+
+## Prior art consulted
+- **<Game> — <Mechanic name>:** <one-sentence summary + player reception note>
+- …
+
+## Design directions on the table
+
+### Option A — <short name>
+*(inspired by <game / mechanic>)*
+
+<Sketch in Axiomancer terms>
+
+**Trade-off:** <complexity cost, balance surface, or theme tension>
+**Telltale failure mode:** <what would show up in playtest if broken>
+
+### Option B — <short name>
+…
+
+### Option C — <short name> *(optional)*
+…
+
+## Decision / leaning
+<One line — what was decided, direction chosen, or "still open">
+
+## Open questions
+- <bullet>
+- <bullet, or "none">
+
+## Raw notes
+<Any other loose thoughts from the session that don't fit above — quotes,
+half-ideas, tangents worth remembering. Omit section if empty.>
 ```
+
+**Rules:**
+- Create the `braindump/` directory if it doesn't exist yet.
+- Never overwrite an existing file; use the `-2` suffix instead.
+- The file is the *full record* — write enough that a future reader has
+  all context without needing the chat history.
+- Do not also append to `BRAINDUMP.md`; the new file replaces that step.
 
 ---
 
@@ -156,7 +192,7 @@ Entry template:
 - The question isn't about game design (e.g. a refactor, a bug, a
   TypeScript type) → do **not** invoke this skill; use normal tools.
 - User is mid-implementation and asks a quick scoped design question →
-  one compact Phase 3 + Phase 4 is fine; skip mirroring and capture.
+  one compact Phase 3 + Phase 4 is fine; skip mirroring and file capture.
 
 ---
 
