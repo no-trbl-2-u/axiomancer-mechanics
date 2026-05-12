@@ -82,13 +82,16 @@ export {
     isEquipment, isConsumable, isMaterial, isQuestItem,
     aggregateCombatStartTokens, applyEquipmentGenerationBonus,
     getEquipmentProcTriggers, useConsumableEffect,
-    equipmentLibrary, getEquipmentById, getEquipmentBySlot, getEquipmentByTier,
+    equipmentTemplates, getEquipmentTemplate, getTemplatesBySlot,
+    uniqueTemplates, getUniqueTemplate,
+    dropItem, rollModifiers, resolveModifiers, rarityWeightTable,
     consumableLibrary, getConsumableById,
 } from './Items';
 export type {
     Item, Equipment, Consumable, Material, QuestItem,
     ItemCategory, EquipmentSlot, BaseItem,
     EquipmentProcTrigger, ResourceInteraction, ResourceGenerationBonus,
+    ItemRarity, RolledModifier, EquipmentTemplate, UniqueItemTemplate,
     ConsumableUseResult,
 } from './Items';
 

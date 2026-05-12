@@ -1,10 +1,12 @@
 # Equipment & Items
 
-> **Status:** Spec 05 + Spec 05b landed. Types, reducers, combat-side engine,
-> store actions, CLI item prompt, hermetic e2e suites, and the full library
-> content (50 equipment pieces + 12 consumables) are all in place. Outstanding
-> work — loot drops (Spec 07), shop pricing (Spec 08), equipment as quest
-> rewards (Spec 08), engine-side set-bonus checks (deferred follow-up).
+> **Status:** Spec 05 + Spec 05c landed. Equipment is now an *instance* shape
+> with per-instance `rarity` + `requiredLevel` (PoE2-style); the legacy
+> `Equipment.tier` field is removed. The Spec 05b 50-item library is archived
+> at `src/Items/_archive/` and replaced by 21 `EquipmentTemplate`s and 2
+> `UniqueItemTemplate`s, dropped at runtime through the new `dropItem` factory.
+> Outstanding work — modifier catalogue content (Spec 05d), set bonuses
+> (Spec 05e), loot drops (Spec 07), shop pricing (Spec 08).
 
 ## Item Categories
 
@@ -12,7 +14,7 @@ Defined in [`src/Items/types.ts`](../src/Items/types.ts).
 
 | Category | Discriminator | Notes |
 |----------|---------------|-------|
-| Equipment | `category: 'equipment'` | Has `slot`, `tier`, optional `statModifiers`, `passiveEffects`, `onHitEffects`, `onDefendEffects`, `critStyle`, `resourceInteraction`. |
+| Equipment | `category: 'equipment'` | Has `slot`, `rarity`, `requiredLevel`, optional `rolledMods`, `statModifiers`, `passiveEffects`, `onHitEffects`, `onDefendEffects`, `critStyle`, `resourceInteraction`. |
 | Consumable | `category: 'consumable'` | Has `quantity` and any combination of `healAmount`, `effectId`, `inlineEffect`, `resourceGrant`, `intensityOverride`, `durationOverride`. |
 | Material | `category: 'material'` | Has `quantity`. Crafting is pending. |
 | Quest Item | `category: 'quest-item'` | Has `questId`. |
@@ -28,13 +30,15 @@ All seven slots may be simultaneously equipped (Spec 05 Q1). A
 `Character.equipment: Partial<Record<EquipmentSlot, Equipment>>` map carries
 the wearer's current loadout.
 
-## Equipment Type
+## Equipment Type (instance shape — Spec 05c)
 
 ```ts
 interface Equipment extends BaseItem {
     category: 'equipment';
     slot: EquipmentSlot;
-    tier: 1 | 2 | 3;
+    rarity: ItemRarity;                             // 'common' | 'uncommon' | 'rare' | 'unique'
+    requiredLevel: number;                          // gates drop / equip; scales mod ranges
+    rolledMods?:          RolledModifier[];         // present on Uncommon / Rare / Unique drops
     statModifiers?:       StatModifier[];           // folded into derivedStats at equip-time
     passiveEffects?:      string[];                 // effect IDs applied as permanent ActiveEffects
     onHitEffects?:        EquipmentProcTrigger[];   // surfaced into the Spec 03 proc roll on attack
@@ -42,7 +46,119 @@ interface Equipment extends BaseItem {
     critStyle?:           'double' | 'pierce';      // default crit style (per-skill override wins)
     resourceInteraction?: ResourceInteraction;      // optional combat-start tokens + generation bonuses
 }
+
+type ItemRarity = 'common' | 'uncommon' | 'rare' | 'unique';
+
+interface RolledModifier {
+    modId: string;   // catalogue entry id (Spec 05d)
+    value: number;   // rolled at drop time, within the catalogue's level-banded range
+}
 ```
+
+Per Spec 05c the legacy `Equipment.tier: 1 | 2 | 3` field is **removed**.
+Rarity is the instance-level grade (every drop carries one); `requiredLevel`
+controls when a template can drop and scales rolled-modifier value bands.
+Manually-constructed Equipment (test fixtures, hand-curated starting gear)
+may omit `rolledMods`; procedural drops always carry it on Uncommon+.
+
+### `EquipmentTemplate` / `UniqueItemTemplate` (definition shape)
+
+```ts
+interface EquipmentTemplate {
+    id: string;
+    name: string;
+    description: string;
+    slot: EquipmentSlot;
+    requiredLevel: number;
+    baseStatModifiers?: StatModifier[];   // stats on a 0-mod (Common) instance
+}
+
+interface UniqueItemTemplate extends EquipmentTemplate {
+    fixedModIds: [string, string, string];  // exactly 3 catalogue IDs
+    setMembership?: string;                  // reserved for Spec 05e
+}
+```
+
+Templates live in [`src/Items/equipment.templates.ts`](../src/Items/equipment.templates.ts)
+(21 entries, 7 slots × 3 progression tiers by `requiredLevel`) and
+[`src/Items/unique.templates.ts`](../src/Items/unique.templates.ts) (2 entries).
+A template is the authored data — `dropItem` turns it into a runtime
+`Equipment` instance with rolled modifiers.
+
+### `dropItem` factory
+
+```ts
+function dropItem(
+    templateId: string,
+    playerLevel: number,
+    rarity?: ItemRarity,         // omit to draw from the weighted table
+    rng?: () => number,          // defaults to Math.random
+): Equipment;
+```
+
+Pipeline (per [`src/Items/item.factory.ts`](../src/Items/item.factory.ts)):
+
+1. Look up the template (regular first, then Unique).
+2. Resolve rarity. Unique templates always drop at `'unique'` rarity. A
+   regular template's rarity is the caller-supplied value, otherwise drawn
+   from the weighted table below. Passing `rarity: 'unique'` for a regular
+   template throws — `unique` is reserved for `UniqueItemTemplate`.
+3. Assert `playerLevel >= template.requiredLevel`.
+4. Call `rollModifiers(template, rarity, playerLevel, rng)` to produce the
+   `RolledModifier[]` payload.
+5. Call `resolveModifiers(template, rolledMods)` to merge base stats and
+   rolled-mod payloads into the final `statModifiers`.
+6. Return the fully-formed `Equipment` instance.
+
+**Determinism:** every random draw inside the factory consumes from the
+caller-supplied `rng`. Two calls with the same seeded `rng` return identical
+Equipment.
+
+#### Rarity weight table (Spec 05c §9)
+
+| Rarity   | Weight | Notes                                                  |
+|----------|--------|--------------------------------------------------------|
+| common   | 60     | Majority of drops; no rolled mods.                     |
+| uncommon | 30     | One rolled procedural mod.                             |
+| rare     |  9     | Two distinct rolled procedural mods.                   |
+| unique   |  1     | UniqueItemTemplate only — exactly 3 `fixedModIds`.     |
+
+For regular templates the unique row is excluded from the random draw —
+the spec's "unique: 1" is the table-level weight, but uniqueness is
+template-gated (specific templates only).
+
+#### Mod count by rarity
+
+| Rarity   | Mod count | Source                                       |
+|----------|-----------|----------------------------------------------|
+| common   | 0         | —                                            |
+| uncommon | 1         | Procedural pool, slot-scoped                 |
+| rare     | 2         | Procedural pool, slot-scoped, non-duplicate  |
+| unique   | 3         | `UniqueItemTemplate.fixedModIds` (ordered)   |
+
+Spec 05c ships a minimal procedural mod catalogue inline with the factory;
+Spec 05d replaces it with a richer catalogue (proc triggers, multipliers,
+themed pools). Until Spec 05d lands, every rolled mod adds a single flat
+`StatModifier`.
+
+### Base template list (Spec 05c §6)
+
+| Slot      | lvl 1 ID         | lvl 10 ID         | lvl 20 ID          |
+|-----------|------------------|-------------------|--------------------|
+| weapon    | `iron-blade`     | `steel-blade`     | `mithril-blade`    |
+| armor     | `hide-vest`      | `chain-mail`      | `plate-mail`       |
+| head      | `leather-cap`    | `chain-coif`      | `full-helm`        |
+| body      | `cloth-wrap`     | `leather-coat`    | `scaled-coat`      |
+| hands     | `cloth-gloves`   | `chain-gauntlets` | `plate-gauntlets`  |
+| feet      | `sandals`        | `leather-boots`   | `iron-greaves`     |
+| accessory | `copper-ring`    | `silver-ring`     | `gold-ring`        |
+
+### Unique templates (Spec 05c §7)
+
+| ID             | Slot      | requiredLevel | fixedModIds (placeholders — Spec 05d fills final IDs) |
+|----------------|-----------|---------------|--------------------------------------------------------|
+| `axioms-edge`  | weapon    | 5             | `weapon_body_flat`, `weapon_physical_attack`, `unique_axioms_edge_crit` |
+| `paradox-loop` | accessory | 15            | `accessory_mind_flat`, `accessory_mental_defense`, `unique_paradox_loop_echo` |
 
 ### `EquipmentProcTrigger`
 
@@ -185,12 +301,17 @@ consumable's effect via `useConsumableEffect`.
   `ItemPhaseEvent` (`used` or `blocked`) on the combat event stream. The
   enemy's basic action still resolves at passive defense.
 
-## Library (Spec 05b)
+## Library
 
-Source: [`src/Items/equipment.library.ts`](../src/Items/equipment.library.ts)
-and [`src/Items/consumable.library.ts`](../src/Items/consumable.library.ts).
+Sources: [`src/Items/equipment.templates.ts`](../src/Items/equipment.templates.ts),
+[`src/Items/unique.templates.ts`](../src/Items/unique.templates.ts), and
+[`src/Items/consumable.library.ts`](../src/Items/consumable.library.ts).
 
-### Notation
+> The previous 50-item Spec 05b library lives at
+> [`src/Items/_archive/equipment.library.ts`](../src/Items/_archive/equipment.library.ts)
+> for reference and migration auditing. It is no longer wired into the engine.
+
+### Notation (consumables)
 
 - `cs:` — `combatStartTokens` granted by `initializeCombat`. Format
   `cs: heart+N body+N mind+N` (omitted keys are 0). Per Q3 only the three
@@ -203,105 +324,14 @@ and [`src/Items/consumable.library.ts`](../src/Items/consumable.library.ts).
   with no per-resource cap (Q2). Generation bonuses fire per applicable
   basic action and stack additively on top of the base table from Spec 04.
 
-### Equipment (50 pieces)
+### Equipment templates (Spec 05c)
 
-#### Weapons (8)
-
-| ID | Tier | Stat Modifiers | Resource Interaction |
-|----|------|----------------|----------------------|
-| `iron-blade` | 1 | +2 body | — |
-| `mind-needle` | 1 | +1 mind, +1 mentalAttack | — |
-| `heartstring-bow` | 1 | +2 heart | — |
-| `berserker-axe` | 2 | +3 body | cs: body+2 |
-| `philosopher-knife` | 2 | +2 mind, +1 mentalAttack | gb: mind/hit/+1 |
-| `soulbond-rapier` | 2 | +3 heart | gb: heart/defend/+1 |
-| `titan-cleaver` | 3 | +4 body, +2 physicalAttack | cs: body+3 |
-| `paradox-shard` | 3 | +3 mind, +2 mentalAttack | cs: mind+2, gb: mind/hit/+1 |
-
-#### Armor (7)
-
-| ID | Tier | Stat Modifiers | Resource Interaction |
-|----|------|----------------|----------------------|
-| `leather-vest` | 1 | +1 physicalDefense, +1 body | — |
-| `scholar-robe` | 1 | +1 mentalDefense, +1 mind | — |
-| `heart-cuirass` | 1 | +2 emotionalDefense | — |
-| `iron-platemail` | 2 | +3 physicalDefense, +1 body | cs: body+1 |
-| `mystic-cloak` | 2 | +2 mentalDefense, +2 mind | gb: mind/defend/+1 |
-| `guardian-mail` | 2 | +3 emotionalDefense, +1 heart | gb: heart/defend/+2 |
-| `titan-aegis` | 3 | +5 physicalDefense, +2 body | cs: body+2 |
-
-#### Accessories (8)
-
-| ID | Tier | Stat Modifiers | Resource Interaction |
-|----|------|----------------|----------------------|
-| `iron-ring` | 1 | +1 body | — |
-| `crystal-pendant` | 1 | +1 mind | — |
-| `rose-talisman` | 1 | +1 heart | — |
-| `berserker-band` | 2 | +2 body | cs: body+3 |
-| `scholar-lens` | 2 | +2 mind | cs: mind+3 |
-| `empathy-locket` | 2 | +2 heart | cs: heart+3 |
-| `resonance-prism` | 3 | +1 body, +1 mind, +1 heart | cs: body+1, mind+1, heart+1 |
-| `void-sigil` | 3 | +2 mind | cs: mind+2, gb: mind/hit/+1 |
-
-#### Head (7)
-
-| ID | Tier | Stat Modifiers | Resource Interaction |
-|----|------|----------------|----------------------|
-| `leather-cap` | 1 | +1 physicalDefense | — |
-| `thinking-cap` | 1 | +2 mind | — |
-| `circlet-of-valor` | 1 | +1 heart, +1 emotionalDefense | — |
-| `iron-helm` | 2 | +2 physicalDefense, +1 body | cs: body+1 |
-| `mind-crown` | 2 | +3 mind | gb: mind/defend/+2 |
-| `vision-mask` | 3 | +2 mind, +2 mentalDefense | cs: mind+2 |
-| `warlord-helm` | 3 | +2 body, +3 physicalDefense | cs: body+2, gb: body/hit/+1 |
-
-#### Body / Chest (7)
-
-| ID | Tier | Stat Modifiers | Resource Interaction |
-|----|------|----------------|----------------------|
-| `rough-tunic` | 1 | +1 physicalDefense | — |
-| `warrior-garb` | 1 | +1 body, +1 physicalDefense | — |
-| `mystic-vestment` | 2 | +2 mind, +1 mentalDefense | gb: mind/any/+1 |
-| `heart-mantle` | 2 | +2 heart, +1 emotionalDefense | gb: heart/defend/+1 |
-| `berserker-plate` | 2 | +2 body, +2 physicalDefense | cs: body+2 |
-| `sage-vestment` | 3 | +4 mind, +2 mentalDefense | cs: mind+3 |
-| `champion-plate` | 3 | +3 body, +3 physicalDefense | cs: body+3, gb: body/hit/+1 |
-
-#### Hands (7)
-
-| ID | Tier | Stat Modifiers | Resource Interaction |
-|----|------|----------------|----------------------|
-| `cloth-wraps` | 1 | +1 physicalAttack | — |
-| `iron-gauntlets` | 1 | +1 body, +1 physicalAttack | — |
-| `mind-gloves` | 2 | +2 mind | gb: mind/hit/+1 |
-| `heart-bracers` | 2 | +1 heart, +1 emotionalAttack | gb: heart/any/+1 |
-| `berserker-gauntlets` | 2 | +2 body, +1 physicalAttack | cs: body+2 |
-| `philosopher-wraps` | 3 | +3 mind | cs: mind+2, gb: mind/hit/+1 |
-| `titan-gauntlets` | 3 | +3 body, +2 physicalAttack | cs: body+3 |
-
-#### Feet (6)
-
-| ID | Tier | Stat Modifiers | Resource Interaction |
-|----|------|----------------|----------------------|
-| `soft-boots` | 1 | +1 physicalDefense | — |
-| `iron-boots` | 1 | +1 body, +1 physicalDefense | — |
-| `scholar-shoes` | 1 | +1 mind, +1 mentalDefense | — |
-| `fleet-boots` | 2 | +2 mind | gb: mind/any/+1 |
-| `heart-treads` | 2 | +2 heart | gb: heart/defend/+1 |
-| `berserker-boots` | 2 | +2 body | cs: body+2 |
-
-### Set IDs (data-only — engine bonus deferred)
-
-Per Spec 05b Q7 selected items carry a `setId` field for future set-bonus
-work. The engine does not yet grant a bonus when ≥2 set pieces are equipped;
-the data is curated now so a follow-up spec can layer the math on top.
-
-| `setId`       | Pieces |
-|---------------|--------|
-| `berserker`   | berserker-axe, berserker-band, berserker-plate, berserker-gauntlets, berserker-boots |
-| `scholar`     | scholar-robe, crystal-pendant, scholar-lens, thinking-cap, mind-crown, sage-vestment, philosopher-wraps, scholar-shoes |
-| `heart`       | heart-cuirass, rose-talisman, empathy-locket, guardian-mail, heart-mantle, heart-bracers, heart-treads |
-| `titan`       | titan-cleaver, titan-aegis, champion-plate, titan-gauntlets |
+See the [Base template list](#base-template-list-spec-05c-§6) and
+[Unique templates](#unique-templates-spec-05c-§7) above for the active 21+2
+template set. Templates carry only base identity and a `baseStatModifiers`
+floor; rarity, rolled mods, and the rest of the instance shape are decided
+by `dropItem` at drop time. Spec 05d will layer themed mod pools and proc
+triggers onto the rolled-mod catalogue.
 
 ### Consumables (12)
 
@@ -330,7 +360,9 @@ when a dedicated "negate next lethal hit" effect lands.
 
 ## Out of scope / future work
 
-- Engine-side set bonuses (data is encoded; math is a follow-up).
+- Modifier catalogue content (Spec 05d) — the in-factory mod catalogue
+  shipped with Spec 05c is intentionally minimal.
+- Set items and engine-side set bonuses (Spec 05e).
 - Loot drops (Spec 07), shop pricing (Spec 08), equipment as quest rewards
   (Spec 08).
 - A bespoke `prevent_ko` / "negates next lethal hit" effect.
