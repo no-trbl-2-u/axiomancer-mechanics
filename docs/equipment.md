@@ -1,8 +1,10 @@
 # Equipment & Items
 
-> **Status:** Spec 05 landed — types, reducers, combat-side engine, store
-> actions, CLI item prompt, and a hermetic e2e suite are all in place. The
-> 50-equipment-piece + 12-consumable library is deferred to Spec 05b.
+> **Status:** Spec 05 + Spec 05b landed. Types, reducers, combat-side engine,
+> store actions, CLI item prompt, hermetic e2e suites, and the full library
+> content (50 equipment pieces + 12 consumables) are all in place. Outstanding
+> work — loot drops (Spec 07), shop pricing (Spec 08), equipment as quest
+> rewards (Spec 08), engine-side set-bonus checks (deferred follow-up).
 
 ## Item Categories
 
@@ -11,7 +13,7 @@ Defined in [`src/Items/types.ts`](../src/Items/types.ts).
 | Category | Discriminator | Notes |
 |----------|---------------|-------|
 | Equipment | `category: 'equipment'` | Has `slot`, `tier`, optional `statModifiers`, `passiveEffects`, `onHitEffects`, `onDefendEffects`, `critStyle`, `resourceInteraction`. |
-| Consumable | `category: 'consumable'` | Has `quantity` and any combination of `healAmount`, `effectId`, `inlineEffect`, `intensityOverride`, `durationOverride`. |
+| Consumable | `category: 'consumable'` | Has `quantity` and any combination of `healAmount`, `effectId`, `inlineEffect`, `resourceGrant`, `intensityOverride`, `durationOverride`. |
 | Material | `category: 'material'` | Has `quantity`. Crafting is pending. |
 | Quest Item | `category: 'quest-item'` | Has `questId`. |
 
@@ -93,9 +95,10 @@ clamped at zero per counter.
 interface Consumable extends BaseItem {
     category: 'consumable';
     quantity: number;
-    effectId?:          string;   // library lookup key
-    inlineEffect?:      Effect;   // bespoke one-off effect (Q8 option C)
-    healAmount?:        number;   // immediate flat HP heal (Q9 option C)
+    effectId?:          string;                  // library lookup key
+    inlineEffect?:      Effect;                  // bespoke one-off effect (Q8 option C)
+    healAmount?:        number;                  // immediate flat HP heal (Q9 option C)
+    resourceGrant?:     Partial<CombatResources>;// in-combat token delta (Spec 05b Q6)
     intensityOverride?: number;
     durationOverride?:  number;
 }
@@ -108,10 +111,18 @@ payload onto a player snapshot:
 2. If `inlineEffect` is present, applies it via `applyEffect`.
 3. If `effectId` resolves into the library, applies that effect via
    `applyEffect`.
+4. The `resourceGrant` field (if any) is normalised into a full
+   `CombatResources` delta and returned on `ConsumableUseResult.resourceGrant`.
+   The combat resolver folds this into the live `combatResources` snapshot
+   when the consumable is used inside a fight via `action: 'item'`.
 
 Both inline and referenced effects may be present simultaneously. The caller
 is responsible for decrementing the inventory stack via the existing
 `useConsumable` inventory reducer.
+
+Per Spec 05b Q3 (option B) philosophical tokens (`fallacy` / `paradox`) remain
+skill-only. Library authors should restrict `resourceGrant` to `heart` /
+`body` / `mind` keys even though the type permits the full union.
 
 ## Reducers
 
@@ -174,8 +185,152 @@ consumable's effect via `useConsumableEffect`.
   `ItemPhaseEvent` (`used` or `blocked`) on the combat event stream. The
   enemy's basic action still resolves at passive defense.
 
-## Pending (Spec 05b)
+## Library (Spec 05b)
 
-- 50 equipment pieces curated by tier and slot, with resource interactions.
-- 12 consumables exercising heal / library effect / inline effect paths.
-- Loot drops, shop pricing, equipment as quest rewards (Spec 07 / 08).
+Source: [`src/Items/equipment.library.ts`](../src/Items/equipment.library.ts)
+and [`src/Items/consumable.library.ts`](../src/Items/consumable.library.ts).
+
+### Notation
+
+- `cs:` — `combatStartTokens` granted by `initializeCombat`. Format
+  `cs: heart+N body+N mind+N` (omitted keys are 0). Per Q3 only the three
+  stance keys are allowed.
+- `gb:` — `generationBonus` entry, format
+  `gb: <resourceType>/<trigger>/+<bonus>`. Trigger is one of
+  `'hit' | 'miss' | 'defend' | 'any'` (Q10 option B — outcome-only, no stance
+  filter).
+- Stacking rule: all `combatStartTokens` from equipped items add together
+  with no per-resource cap (Q2). Generation bonuses fire per applicable
+  basic action and stack additively on top of the base table from Spec 04.
+
+### Equipment (50 pieces)
+
+#### Weapons (8)
+
+| ID | Tier | Stat Modifiers | Resource Interaction |
+|----|------|----------------|----------------------|
+| `iron-blade` | 1 | +2 body | — |
+| `mind-needle` | 1 | +1 mind, +1 mentalAttack | — |
+| `heartstring-bow` | 1 | +2 heart | — |
+| `berserker-axe` | 2 | +3 body | cs: body+2 |
+| `philosopher-knife` | 2 | +2 mind, +1 mentalAttack | gb: mind/hit/+1 |
+| `soulbond-rapier` | 2 | +3 heart | gb: heart/defend/+1 |
+| `titan-cleaver` | 3 | +4 body, +2 physicalAttack | cs: body+3 |
+| `paradox-shard` | 3 | +3 mind, +2 mentalAttack | cs: mind+2, gb: mind/hit/+1 |
+
+#### Armor (7)
+
+| ID | Tier | Stat Modifiers | Resource Interaction |
+|----|------|----------------|----------------------|
+| `leather-vest` | 1 | +1 physicalDefense, +1 body | — |
+| `scholar-robe` | 1 | +1 mentalDefense, +1 mind | — |
+| `heart-cuirass` | 1 | +2 emotionalDefense | — |
+| `iron-platemail` | 2 | +3 physicalDefense, +1 body | cs: body+1 |
+| `mystic-cloak` | 2 | +2 mentalDefense, +2 mind | gb: mind/defend/+1 |
+| `guardian-mail` | 2 | +3 emotionalDefense, +1 heart | gb: heart/defend/+2 |
+| `titan-aegis` | 3 | +5 physicalDefense, +2 body | cs: body+2 |
+
+#### Accessories (8)
+
+| ID | Tier | Stat Modifiers | Resource Interaction |
+|----|------|----------------|----------------------|
+| `iron-ring` | 1 | +1 body | — |
+| `crystal-pendant` | 1 | +1 mind | — |
+| `rose-talisman` | 1 | +1 heart | — |
+| `berserker-band` | 2 | +2 body | cs: body+3 |
+| `scholar-lens` | 2 | +2 mind | cs: mind+3 |
+| `empathy-locket` | 2 | +2 heart | cs: heart+3 |
+| `resonance-prism` | 3 | +1 body, +1 mind, +1 heart | cs: body+1, mind+1, heart+1 |
+| `void-sigil` | 3 | +2 mind | cs: mind+2, gb: mind/hit/+1 |
+
+#### Head (7)
+
+| ID | Tier | Stat Modifiers | Resource Interaction |
+|----|------|----------------|----------------------|
+| `leather-cap` | 1 | +1 physicalDefense | — |
+| `thinking-cap` | 1 | +2 mind | — |
+| `circlet-of-valor` | 1 | +1 heart, +1 emotionalDefense | — |
+| `iron-helm` | 2 | +2 physicalDefense, +1 body | cs: body+1 |
+| `mind-crown` | 2 | +3 mind | gb: mind/defend/+2 |
+| `vision-mask` | 3 | +2 mind, +2 mentalDefense | cs: mind+2 |
+| `warlord-helm` | 3 | +2 body, +3 physicalDefense | cs: body+2, gb: body/hit/+1 |
+
+#### Body / Chest (7)
+
+| ID | Tier | Stat Modifiers | Resource Interaction |
+|----|------|----------------|----------------------|
+| `rough-tunic` | 1 | +1 physicalDefense | — |
+| `warrior-garb` | 1 | +1 body, +1 physicalDefense | — |
+| `mystic-vestment` | 2 | +2 mind, +1 mentalDefense | gb: mind/any/+1 |
+| `heart-mantle` | 2 | +2 heart, +1 emotionalDefense | gb: heart/defend/+1 |
+| `berserker-plate` | 2 | +2 body, +2 physicalDefense | cs: body+2 |
+| `sage-vestment` | 3 | +4 mind, +2 mentalDefense | cs: mind+3 |
+| `champion-plate` | 3 | +3 body, +3 physicalDefense | cs: body+3, gb: body/hit/+1 |
+
+#### Hands (7)
+
+| ID | Tier | Stat Modifiers | Resource Interaction |
+|----|------|----------------|----------------------|
+| `cloth-wraps` | 1 | +1 physicalAttack | — |
+| `iron-gauntlets` | 1 | +1 body, +1 physicalAttack | — |
+| `mind-gloves` | 2 | +2 mind | gb: mind/hit/+1 |
+| `heart-bracers` | 2 | +1 heart, +1 emotionalAttack | gb: heart/any/+1 |
+| `berserker-gauntlets` | 2 | +2 body, +1 physicalAttack | cs: body+2 |
+| `philosopher-wraps` | 3 | +3 mind | cs: mind+2, gb: mind/hit/+1 |
+| `titan-gauntlets` | 3 | +3 body, +2 physicalAttack | cs: body+3 |
+
+#### Feet (6)
+
+| ID | Tier | Stat Modifiers | Resource Interaction |
+|----|------|----------------|----------------------|
+| `soft-boots` | 1 | +1 physicalDefense | — |
+| `iron-boots` | 1 | +1 body, +1 physicalDefense | — |
+| `scholar-shoes` | 1 | +1 mind, +1 mentalDefense | — |
+| `fleet-boots` | 2 | +2 mind | gb: mind/any/+1 |
+| `heart-treads` | 2 | +2 heart | gb: heart/defend/+1 |
+| `berserker-boots` | 2 | +2 body | cs: body+2 |
+
+### Set IDs (data-only — engine bonus deferred)
+
+Per Spec 05b Q7 selected items carry a `setId` field for future set-bonus
+work. The engine does not yet grant a bonus when ≥2 set pieces are equipped;
+the data is curated now so a follow-up spec can layer the math on top.
+
+| `setId`       | Pieces |
+|---------------|--------|
+| `berserker`   | berserker-axe, berserker-band, berserker-plate, berserker-gauntlets, berserker-boots |
+| `scholar`     | scholar-robe, crystal-pendant, scholar-lens, thinking-cap, mind-crown, sage-vestment, philosopher-wraps, scholar-shoes |
+| `heart`       | heart-cuirass, rose-talisman, empathy-locket, guardian-mail, heart-mantle, heart-bracers, heart-treads |
+| `titan`       | titan-cleaver, titan-aegis, champion-plate, titan-gauntlets |
+
+### Consumables (12)
+
+| ID | Effect | Resource Grant |
+|----|--------|----------------|
+| `healing-potion` | `healAmount: 20` | — |
+| `minor-healing-potion` | `healAmount: 10` | — |
+| `antidote` | `effectId: buff_cleanse` | — |
+| `clarity-serum` | `effectId: buff_cleanse` | — |
+| `focus-vial` | — | mind: 3 |
+| `heart-draught` | — | heart: 3 |
+| `body-elixir` | — | body: 3 |
+| `berserker-brew` | `effectId: buff_haste` | body: 5 |
+| `philosopher-tea` | `effectId: buff_critical_damage_up` | mind: 2 |
+| `resonance-crystal` | — | body: 2, mind: 2, heart: 2 |
+| `revive-crystal` | `effectId: buff_invincibility` (1 round) | — |
+| `void-essence` | `effectId: buff_critical_damage_up` | heart: 2 |
+
+Per Spec 05b Q3 the philosophical-token grants originally sketched for
+`philosopher-tea` and `void-essence` were rewritten to stance tokens so the
+Tier-1 → Tier-3 generation chain isn't short-circuited by an item.
+
+`revive-crystal` substitutes `buff_invincibility` for the speculative
+`prevent_ko` effect (which is not yet in the global effects library); revisit
+when a dedicated "negate next lethal hit" effect lands.
+
+## Out of scope / future work
+
+- Engine-side set bonuses (data is encoded; math is a follow-up).
+- Loot drops (Spec 07), shop pricing (Spec 08), equipment as quest rewards
+  (Spec 08).
+- A bespoke `prevent_ko` / "negates next lethal hit" effect.

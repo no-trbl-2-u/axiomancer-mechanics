@@ -133,7 +133,9 @@ the resource-seeding path end-to-end.
     - (B) Outcome-only — stance filtering is out of scope; the library will
       naturally align resource types to stance via thematic design (a body
       weapon grants body tokens, not mind tokens).
-    > Your answer:
+    > Your answer: B — outcome-only. The implementation keeps
+    > `ResourceGenerationBonus.trigger` as `'hit' | 'miss' | 'defend' | 'any'`;
+    > library curation handles stance alignment via thematic design.
 
 ## Equipment Library (50 pieces)
 
@@ -285,19 +287,53 @@ resolves to option (B) (no in-combat grants from consumables).
 
 ## Acceptance checklist
 
-- [ ] All 10 questions answered.
-- [ ] `src/Items/equipment.library.ts` exports exactly 50 items with no
+- [x] All 10 questions answered.
+- [x] `src/Items/equipment.library.ts` exports exactly 50 items with no
       TypeScript errors.
-- [ ] At least 15 items carry a populated `resourceInteraction` payload.
-- [ ] `src/Items/consumable.library.ts` exports exactly 12 consumables.
-- [ ] At least 3 consumables carry `resourceGrant` (pending Q6).
-- [ ] `src/Items/e2e/equipment-resource.engine.test.ts` exists; all
+- [x] At least 15 items carry a populated `resourceInteraction` payload.
+      (31 of 50 carry one — every Tier 2 / Tier 3 piece.)
+- [x] `src/Items/consumable.library.ts` exports exactly 12 consumables.
+- [x] At least 3 consumables carry `resourceGrant` (per Q6 option A).
+      (8 of 12 carry one.)
+- [x] `src/Items/e2e/equipment-resource.engine.test.ts` exists; all
       scenarios pass.
-- [ ] Combat-start seeding test (Scenario 1) is green.
-- [ ] Generation bonus test (Scenario 2) is green.
-- [ ] Multi-item stacking test (Scenario 3) is green per the Q2 answer.
-- [ ] `npm test` green twice and `npm run type-check` clean.
-- [ ] `docs/equipment.md` updated with full library and resource interaction docs.
+- [x] Combat-start seeding test (Scenario 1) is green.
+- [x] Generation bonus test (Scenario 2) is green.
+- [x] Multi-item stacking test (Scenario 3) is green per the Q2 answer.
+- [x] `npm test` green twice and `npm run type-check` clean.
+- [x] `docs/equipment.md` updated with full library and resource interaction docs.
+
+## Implementation notes (post-implementation)
+
+- The 50-piece equipment library lives in
+  [`src/Items/equipment.library.ts`](../src/Items/equipment.library.ts).
+  Slot distribution matches the spec table (8 / 7 / 8 / 7 / 7 / 7 / 6). Sixteen
+  Tier 1 entries carry no `resourceInteraction`; thirty-one Tier 2 / Tier 3
+  entries do (well above the 15-item floor).
+- Per Q3 (B), `combatStartTokens` on equipment never contains `fallacy` or
+  `paradox` — the spec's `void-sigil` was rewritten to grant mind tokens
+  (`cs: mind+2, gb: mind/hit/+1`) instead. A library-wide invariant test in
+  `equipment-resource.engine.test.ts` enforces this.
+- Per Q7 (A) thematic groups carry a `setId` (`berserker`, `scholar`,
+  `heart`, `titan`). Engine-side set-bonus math is deferred to a follow-up
+  spec; the data layer is encoded today so no migration is needed when the
+  math lands.
+- Per Q6 (A), `Consumable.resourceGrant?: Partial<CombatResources>` was added
+  to the type, surfaced through `ConsumableUseResult.resourceGrant`, and
+  folded into `state.combatResources` by `resolveCombatRound` when the player
+  picks `action: 'item'`. The grant is reported on the `ItemPhaseEvent` so
+  UIs can render "+3 body" feedback. The same Q3 restriction (no philosophical
+  tokens) is applied to consumable grants by library convention — both
+  `philosopher-tea` and `void-essence` were re-aligned to stance tokens.
+- Per Q10 (B), `ResourceGenerationBonus.trigger` stays outcome-only — the
+  existing implementation already chose this option; the spec answer locks
+  it in.
+- The legacy `consumable.library.json` / `equipment.library.json` files were
+  replaced by `*.library.ts` modules. The combat CLI now imports the typed
+  library directly.
+- New hermetic e2e suite:
+  [`src/Items/e2e/equipment-resource.engine.test.ts`](../src/Items/e2e/equipment-resource.engine.test.ts) —
+  covers library inventory invariants and all four scenarios from the spec.
 
 ## Out of scope
 
