@@ -28,8 +28,11 @@ import { Character } from '../Character/types';
 import { Enemy } from '../Enemy/types';
 import { CombatState } from '../Combat/types';
 import { initializeCombat } from '../Combat/combat.reducer';
-import { Item } from '../Items/types';
+import { Item, Equipment, EquipmentSlot, isConsumable } from '../Items/types';
 import { addItem, removeItem, useConsumable as useConsumableItem, stackItem as stackInventoryItem } from '../Items/item.reducer';
+import { useConsumableEffect } from '../Items/equipment.engine';
+import { equipItem as equipItemReducer, unequipItem as unequipItemReducer } from '../Character/equipment.reducer';
+import { lookupEffect } from '../Effects/effects.library';
 import { GameState } from './types';
 import { createNewGameState } from './game.reducer';
 import { PersistenceAdapter } from './persistence/types';
@@ -49,8 +52,24 @@ export interface GameActions {
     // ── Inventory ────────────────────────────────────────────────────────────
     addItem: (item: Item) => void;
     removeItem: (itemId: string) => void;
+    /**
+     * Uses a consumable from the player's inventory: applies its
+     * `healAmount` and/or `effectId` / `inlineEffect` payload via
+     * `useConsumableEffect`, then decrements the stack. No-op if `itemId`
+     * is unknown or refers to a non-consumable item.
+     */
     useConsumable: (itemId: string) => void;
     stackItem: (itemId: string, amount: number) => void;
+
+    // ── Equipment ────────────────────────────────────────────────────────────
+    /**
+     * Equips the given `Equipment` onto the player. If another item is
+     * already in the slot, it is dropped (caller is responsible for first
+     * pushing it back into inventory if desired).
+     */
+    equipItem: (item: Equipment) => void;
+    /** Unequips the item in the given slot (no-op if empty). */
+    unequipItem: (slot: EquipmentSlot) => void;
 
     // ── Persistence ──────────────────────────────────────────────────────────
     save: () => void;
@@ -101,11 +120,25 @@ export function createGameStore(
         },
 
         useConsumable(itemId) {
-            set(state => ({ player: { ...state.player, inventory: useConsumableItem(state.player.inventory, itemId) } }));
+            const { player } = get();
+            const item = player.inventory.find(i => i.id === itemId);
+            if (!item || !isConsumable(item)) return;
+            const { player: nextPlayer } = useConsumableEffect(player, item, 0, lookupEffect);
+            const nextInventory = useConsumableItem(nextPlayer.inventory, itemId);
+            set({ player: { ...nextPlayer, inventory: nextInventory } });
         },
 
         stackItem(itemId, amount) {
             set(state => ({ player: { ...state.player, inventory: stackInventoryItem(state.player.inventory, itemId, amount) } }));
+        },
+
+        // ── Equipment ────────────────────────────────────────────────────────
+        equipItem(item) {
+            set(state => ({ player: equipItemReducer(state.player, item) }));
+        },
+
+        unequipItem(slot) {
+            set(state => ({ player: unequipItemReducer(state.player, slot) }));
         },
 
         // ── Persistence ──────────────────────────────────────────────────────

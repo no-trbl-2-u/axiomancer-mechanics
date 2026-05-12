@@ -644,6 +644,7 @@ export async function renderRoundEvents(p: RenderRoundParams): Promise<void> {
         'stance-effects':     [],
         'scenario':           [],
         'skill':              [],
+        'item':               [],
         'resources':          [],
         'round-end':          [],
     };
@@ -654,9 +655,31 @@ export async function renderRoundEvents(p: RenderRoundParams): Promise<void> {
     await renderAdvantage(byPhase['advantage'], delay);
     await renderStanceEffects(byPhase['stance-effects'], enemyName, label, delay);
     await renderSkill(byPhase['skill'], delay);
+    await renderItem(byPhase['item'], delay);
     await renderScenario(byPhase['scenario'], enemyName, label, delay);
     renderResources(byPhase['resources']);
     await renderRoundEnd(byPhase['round-end'], label, delay);
+}
+
+async function renderItem(
+    events: RoundEvent[],
+    delay: (ms: number) => Promise<void>,
+): Promise<void> {
+    if (events.length === 0) return;
+    console.log(sectionHeader('Item'));
+    for (const ev of events) {
+        if (ev.phase !== 'item') continue;
+        if (ev.kind === 'used') {
+            const healStr = ev.healed > 0
+                ? `  ${C.brightGreen}+${ev.healed} HP${C.reset}  HP ${ev.hpBefore} → ${C.brightGreen}${ev.hpAfter}${C.reset}`
+                : '';
+            const effStr = ev.appliedEffectId ? `  effect: ${ev.appliedEffectId}` : '';
+            console.log(`  ${C.brightGreen}✚ Used ${C.bold}${ev.itemName}${C.reset}${C.brightGreen}.${C.reset}${healStr}${effStr}`);
+        } else if (ev.kind === 'blocked') {
+            console.log(`  ${C.brightRed}✕ Item action failed: ${ev.reason}${C.reset}`);
+        }
+    }
+    await delay(800);
 }
 
 async function renderSkill(

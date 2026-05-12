@@ -6,10 +6,13 @@
  */
 
 // ─── Character ────────────────────────────────────────────────────────────────
-export { createCharacter } from './Character';
+export {
+    createCharacter,
+    equipItem, unequipItem, getEquipmentModifiers,
+} from './Character';
 export type {
     Character, BaseStats, DerivedStats, NonCombatStats,
-    CreateCharacterOptions,
+    CreateCharacterOptions, AggregatedEquipmentModifiers,
 } from './Character';
 
 // ─── Enemy ────────────────────────────────────────────────────────────────────
@@ -55,6 +58,7 @@ export type {
     RoundResolution, RoundEvent, CombatActor,
     RoundStartEvent, ActionRestrictionEvent, AdvantageEvent,
     StanceEffectEvent, ScenarioEvent, RoundEndEvent,
+    ItemPhaseEvent,
 } from './Combat';
 
 // ─── Effects ──────────────────────────────────────────────────────────────────
@@ -76,10 +80,14 @@ export {
     addItem, removeItem, useConsumable, stackItem,
     addItemToInventory, removeItemFromInventory,
     isEquipment, isConsumable, isMaterial, isQuestItem,
+    aggregateCombatStartTokens, applyEquipmentGenerationBonus,
+    getEquipmentProcTriggers, useConsumableEffect,
 } from './Items';
 export type {
     Item, Equipment, Consumable, Material, QuestItem,
     ItemCategory, EquipmentSlot, BaseItem,
+    EquipmentProcTrigger, ResourceInteraction, ResourceGenerationBonus,
+    ConsumableUseResult,
 } from './Items';
 
 // ─── Skills ───────────────────────────────────────────────────────────────────
