@@ -1,17 +1,13 @@
 /**
- * Unique Item Templates — Spec 05c stubs.
+ * Unique Item Templates — Spec 05c stubs, Spec 05d wiring.
  *
- * Two curated Uniques for initial playtesting. Per Spec 05c the modifier
- * catalogue lives in Spec 05d; `fixedModIds` reference catalogue entries by
- * ID. The IDs below are *placeholders* — Spec 05d fills in canonical mod IDs
- * (and the matching value ranges) when the catalogue is authored. The factory
- * (`item.factory.ts`) tolerates unknown mod IDs by rolling a value of 0, so
- * Uniques still drop with the right shape today; they simply have no
- * mechanical effect until the catalogue lands.
+ * Two curated Uniques for initial playtesting. `fixedModIds` reference the
+ * canonical Spec 05d catalogue (`src/Items/modifier.catalogue.ts`); the
+ * factory rolls each ID through the same machinery a procedural mod uses.
  *
- * Spec 05c, point 7:
- *   - `axioms-edge`   — weapon, lvl 5
- *   - `paradox-loop`  — accessory, lvl 15
+ * Spec 05d §8:
+ *   - `axioms-edge`   — `['wm-flat-damage', 'wm-body-gen', 'um-paradox-edge']`
+ *   - `paradox-loop`  — `['am-stance-res', 'am-proc-boost', 'um-resonance-prime']`
  */
 
 import { UniqueItemTemplate } from './types';
@@ -31,11 +27,11 @@ export const uniqueTemplates: UniqueItemTemplate[] = [
             { stat: 'body',           value: 2 },
             { stat: 'physicalAttack', value: 1 },
         ],
-        // Spec 05d fills in canonical IDs; the names below describe intent.
+        // Spec 05d §8 — canonical IDs from the catalogue.
         fixedModIds: [
-            'weapon_body_flat',         // +body flat (procedural mod)
-            'weapon_physical_attack',   // +physicalAttack flat (procedural mod)
-            'unique_axioms_edge_crit',  // unique-only crit-on-hit signature
+            'wm-flat-damage',     // common procedural — +physicalAttack
+            'wm-body-gen',        // uncommon procedural — body/hit generation
+            'um-paradox-edge',    // unique-only — double-proc on hit
         ],
     },
     {
@@ -47,10 +43,11 @@ export const uniqueTemplates: UniqueItemTemplate[] = [
         baseStatModifiers: [
             { stat: 'mind', value: 2 },
         ],
+        // Spec 05d §8.
         fixedModIds: [
-            'accessory_mind_flat',          // +mind flat (procedural mod)
-            'accessory_mental_defense',     // +mentalDefense flat (procedural mod)
-            'unique_paradox_loop_echo',     // unique-only mind-token echo signature
+            'am-stance-res',         // uncommon procedural — combat-start mind tokens
+            'am-proc-boost',         // rare procedural — luck-driven proc adjacency
+            'um-resonance-prime',    // unique-only — combat-start tokens for all stances
         ],
     },
 ];

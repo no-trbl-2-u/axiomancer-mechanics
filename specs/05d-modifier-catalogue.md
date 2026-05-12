@@ -237,16 +237,53 @@ than a `common_mod` weapon mod across 1000 simulated drops.
 
 ## Acceptance checklist
 
-- [ ] `HiddenModRarity`, `ModValueTier`, `ModifierPayload`, `Modifier` types
+- [x] `HiddenModRarity`, `ModValueTier`, `ModifierPayload`, `Modifier` types
       exported from `src/Items/`.
-- [ ] All 7 slot pools + `uniqueModPool` defined in `src/Items/modifier.catalogue.ts`.
-- [ ] `rollModifiers` and `resolveModifiers` functions implemented in
+- [x] All 7 slot pools + `uniqueModPool` defined in `src/Items/modifier.catalogue.ts`.
+- [x] `rollModifiers` and `resolveModifiers` functions implemented in
       `src/Items/item.factory.ts`.
-- [ ] Unique template `fixedModIds` in `src/Items/unique.templates.ts` filled in.
-- [ ] Hermetic tests covering roll count, level gating, unique exclusion,
+- [x] Unique template `fixedModIds` in `src/Items/unique.templates.ts` filled in.
+- [x] Hermetic tests covering roll count, level gating, unique exclusion,
       determinism, and weight distribution.
-- [ ] `docs/equipment.md` updated with a "Modifiers" section describing
+- [x] `docs/equipment.md` updated with a "Modifiers" section describing
       the pool structure and resolve pipeline.
+
+## Implementation notes (post-implementation)
+
+- New module `src/Items/modifier.types.ts` carries `HiddenModRarity`,
+  `ModValueTier`, `ModifierPayload`, and `Modifier`. `HIDDEN_MOD_RARITY_WEIGHTS`
+  encodes the documented 10/3/1 weights as a `Record<HiddenModRarity, number>`.
+- `src/Items/modifier.catalogue.ts` ships 22 procedural mods (4/3/3/3/3/3/3
+  across the 7 slot pools) and 3 unique-only signature mods. `MOD_POOLS`
+  keys procedural pools by slot; `getModifierById` is the unified O(1)
+  registry across every pool.
+- `item.factory.ts` was rewritten to drive everything through the catalogue.
+  `rollModifiers` now filters the slot pool by level eligibility, samples
+  without replacement using `HIDDEN_MOD_RARITY_WEIGHTS`, and reads the
+  rolled value from the highest eligible `levelTier`. `resolveModifiers` now
+  returns a `Pick<Equipment, ...>` instead of just `StatModifier[]` so the
+  factory can spread it onto the instance.
+- Substitution rules (Q3): `value: 0` in `payload.statModifiers`, `bonus: 0`
+  in `generationBonus`, and `0` token entries in `combatStartTokens` all get
+  the rolled value; same `combatStartTokens` keys sum across mods (Spec 05b
+  Q2). `passiveEffects` / `onHitEffects` / `onDefendEffects` are
+  presence-only and concatenated as authored.
+- A few spec-suggested payloads have no direct engine primitive yet — see
+  `docs/equipment.md` "Where the catalogue compromises with existing
+  primitives" for `hm-max-hp` (passive `buff_max_hp_up`), `bm-reflect`
+  (passive `buff_reflect`), and `am-proc-boost` (`+luck` until a meta-mod
+  resolver lands).
+- Unique templates now reference canonical catalogue IDs:
+  `axioms-edge → ['wm-flat-damage', 'wm-body-gen', 'um-paradox-edge']`,
+  `paradox-loop → ['am-stance-res', 'am-proc-boost', 'um-resonance-prime']`.
+- New hermetic suite at
+  [`src/Items/e2e/modifier.catalogue.engine.test.ts`](../src/Items/e2e/modifier.catalogue.engine.test.ts)
+  covers catalogue inventory invariants, per-rarity roll counts, level
+  gating (wm-exploit excluded at lvl 8, present at lvl 15), unique-pool
+  exclusion across 500 procedural drops, hidden-rarity weight distribution
+  across 1000 rolls, sentinel substitution, multi-mod payload merging, and
+  an `equipItem` round-trip. The pre-existing `item.factory.engine.test.ts`
+  was migrated to the new mod IDs and still passes (24 tests).
 
 ## Out of scope
 

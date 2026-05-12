@@ -136,10 +136,10 @@ template-gated (specific templates only).
 | rare     | 2         | Procedural pool, slot-scoped, non-duplicate  |
 | unique   | 3         | `UniqueItemTemplate.fixedModIds` (ordered)   |
 
-Spec 05c ships a minimal procedural mod catalogue inline with the factory;
-Spec 05d replaces it with a richer catalogue (proc triggers, multipliers,
-themed pools). Until Spec 05d lands, every rolled mod adds a single flat
-`StatModifier`.
+Spec 05d replaces the Spec 05c stub catalogue with a slot-keyed catalogue of
+22 procedural mods + 3 unique-only signature mods. See **[Modifiers](#modifiers-spec-05d)**
+below for the full catalogue, the substitution contract, and the
+hidden-rarity weight table.
 
 ### Base template list (Spec 05c §6)
 
@@ -153,12 +153,12 @@ themed pools). Until Spec 05d lands, every rolled mod adds a single flat
 | feet      | `sandals`        | `leather-boots`   | `iron-greaves`     |
 | accessory | `copper-ring`    | `silver-ring`     | `gold-ring`        |
 
-### Unique templates (Spec 05c §7)
+### Unique templates (Spec 05c §7 / Spec 05d §8)
 
-| ID             | Slot      | requiredLevel | fixedModIds (placeholders — Spec 05d fills final IDs) |
+| ID             | Slot      | requiredLevel | fixedModIds (canonical Spec 05d catalogue IDs) |
 |----------------|-----------|---------------|--------------------------------------------------------|
-| `axioms-edge`  | weapon    | 5             | `weapon_body_flat`, `weapon_physical_attack`, `unique_axioms_edge_crit` |
-| `paradox-loop` | accessory | 15            | `accessory_mind_flat`, `accessory_mental_defense`, `unique_paradox_loop_echo` |
+| `axioms-edge`  | weapon    | 5             | `wm-flat-damage`, `wm-body-gen`, `um-paradox-edge`     |
+| `paradox-loop` | accessory | 15            | `am-stance-res`, `am-proc-boost`, `um-resonance-prime` |
 
 ### `EquipmentProcTrigger`
 
@@ -204,6 +204,148 @@ applicable bonuses on top of the base generation table from
 `generateBasicActionResources` (Spec 04). `'any'` matches every outcome;
 specific triggers match only the matching outcome. Negative bonuses are
 clamped at zero per counter.
+
+## Modifiers (Spec 05d)
+
+Modifiers are the data layer behind `rollModifiers` / `resolveModifiers`. A
+`Modifier` carries an ID, a hidden rarity, eligible slots, level-banded value
+tiers, and a `payload` template that the factory substitutes at resolve time
+into the wearer's `Equipment` shape (`statModifiers`, `passiveEffects`,
+`onHitEffects`, `onDefendEffects`, `resourceInteraction`).
+
+```ts
+type HiddenModRarity = 'common_mod' | 'uncommon_mod' | 'rare_mod';
+
+interface ModValueTier {
+    levelReq: number;
+    range: [number, number]; // inclusive uniform integer roll
+}
+
+type ModifierPayload = Partial<Pick<Equipment,
+    | 'statModifiers'
+    | 'passiveEffects'
+    | 'onHitEffects'
+    | 'onDefendEffects'
+    | 'resourceInteraction'
+>>;
+
+interface Modifier {
+    id: string;
+    name: string;
+    hiddenRarity: HiddenModRarity;
+    validSlots: EquipmentSlot[];
+    levelTiers: ModValueTier[]; // ascending by levelReq; pickValueTier picks the highest <= playerLevel
+    payload: ModifierPayload;
+}
+```
+
+### Hidden rarity weights
+
+`rollModifiers` weighted-samples without replacement using these per-mod
+weights:
+
+| HiddenModRarity | Weight |
+|-----------------|--------|
+| `common_mod`    | 10     |
+| `uncommon_mod`  | 3      |
+| `rare_mod`      | 1      |
+
+### Substitution contract
+
+`resolveModifiers` walks each `RolledModifier`, looks up the catalogue entry,
+and merges the `payload` into the resulting Equipment instance:
+
+| Payload field                              | Substitution rule                                                                              |
+|--------------------------------------------|------------------------------------------------------------------------------------------------|
+| `statModifiers[].value`                    | `value: 0` sentinel → rolled value. Non-zero values are kept as authored.                       |
+| `resourceInteraction.generationBonus[].bonus` | `bonus: 0` sentinel → rolled value.                                                          |
+| `resourceInteraction.combatStartTokens[k]` | A `0` value → rolled value. Same key across mods is summed (additive — Spec 05b Q2).            |
+| `passiveEffects: string[]`                 | Concatenated as-is. Rolled value is a presence marker (no substitution).                        |
+| `onHitEffects` / `onDefendEffects`         | Concatenated as-is. Proc triggers ride the existing Spec 03 proc-roll machinery.                |
+
+### Procedural pools
+
+Each pool ships at least 3 mods (one per hidden rarity) so an Uncommon roll
+always has at least one `uncommon_mod` candidate and a Rare roll always has
+at least one `rare_mod` candidate when level requirements allow.
+
+#### `weaponModPool` (4)
+| ID | Name | hiddenRarity | Level tiers (levelReq → range) |
+|----|------|--------------|--------------------------------|
+| `wm-flat-damage` | Keen Edge | `common_mod` | 1 → [1,3], 10 → [4,8], 20 → [9,15] |
+| `wm-lifesteal` | Vampiric Strike | `uncommon_mod` | 1 → [1,2], 10 → [2,3], 20 → [3,5] |
+| `wm-body-gen` | Body Resonance | `uncommon_mod` | 1 → [1,1], 10 → [1,2], 20 → [2,3] |
+| `wm-exploit` | Exploit Weakness | `rare_mod` | 10 → [2,4], 20 → [5,8] |
+
+#### `headModPool` (3)
+| ID | Name | hiddenRarity | Level tiers |
+|----|------|--------------|-------------|
+| `hm-max-hp` | Resilient Mind | `common_mod` | 1 → [5,15], 10 → [16,35], 20 → [36,60] |
+| `hm-mind-gen` | Clear Thought | `uncommon_mod` | 1 → [1,1], 10 → [1,2], 20 → [2,3] |
+| `hm-effect-dur` | Focused Channel | `rare_mod` | 10 → [1,1] |
+
+#### `bodyModPool` (3)
+| ID | Name | hiddenRarity | Level tiers |
+|----|------|--------------|-------------|
+| `bm-armor` | Fortified | `common_mod` | 1 → [2,5], 10 → [6,12], 20 → [13,22] |
+| `bm-heart-gen` | Steady Heart | `uncommon_mod` | 1 → [1,1], 10 → [1,2], 20 → [2,3] |
+| `bm-reflect` | Thorned | `rare_mod` | 10 → [1,3], 20 → [4,7] |
+
+#### `handsModPool` (3)
+| ID | Name | hiddenRarity | Level tiers |
+|----|------|--------------|-------------|
+| `hndm-body-gen` | Iron Grip | `common_mod` | 1 → [1,1], 10 → [1,2], 20 → [2,2] |
+| `hndm-crit` | Precise Hands | `uncommon_mod` | 1 → [1,2], 10 → [3,5], 20 → [6,9] |
+| `hndm-block` | Shield Training | `rare_mod` | 5 → [1,1] |
+
+#### `feetModPool` (3)
+| ID | Name | hiddenRarity | Level tiers |
+|----|------|--------------|-------------|
+| `fm-evasion` | Swift Feet | `common_mod` | 1 → [1,3], 10 → [4,7], 20 → [8,12] |
+| `fm-cs-tokens` | Ready Stride | `uncommon_mod` | 1 → [1,1], 10 → [1,2], 20 → [2,3] |
+| `fm-initiative` | First Step | `rare_mod` | 5 → [1,3], 20 → [4,7] |
+
+#### `accessoryModPool` (3)
+| ID | Name | hiddenRarity | Level tiers |
+|----|------|--------------|-------------|
+| `am-cross-stat` | Balanced Focus | `common_mod` | 1 → [1,2], 10 → [2,4], 20 → [4,7] |
+| `am-stance-res` | Resonant Stone | `uncommon_mod` | 1 → [1,2], 10 → [2,3], 20 → [3,4] |
+| `am-proc-boost` | Catalyst Charm | `rare_mod` | 10 → [5,10], 20 → [11,20] |
+
+#### `armorModPool` (3)
+| ID | Name | hiddenRarity | Level tiers |
+|----|------|--------------|-------------|
+| `armm-defense` | Hardened | `common_mod` | 1 → [3,7], 10 → [8,16], 20 → [17,28] |
+| `armm-heart-start` | Brave Bearing | `uncommon_mod` | 1 → [1,2], 10 → [2,3], 20 → [3,5] |
+| `armm-regen` | Enduring | `rare_mod` | 5 → [1,1] |
+
+### `uniqueModPool` (3 — Unique-only)
+
+Per Spec 05d Q4 these mods are **never** drawn by the procedural roll path.
+They only resolve when a `UniqueItemTemplate.fixedModIds` entry references
+them.
+
+| ID | Name | hiddenRarity | Level tiers |
+|----|------|--------------|-------------|
+| `um-stance-echo` | Stance Echo | `rare_mod` | 5 → [1,1], 15 → [1,2] |
+| `um-paradox-edge` | Paradox Edge | `rare_mod` | 10 → [1,1] |
+| `um-resonance-prime` | Resonance Prime | `rare_mod` | 15 → [1,2], 20 → [2,3] |
+
+### Where the catalogue compromises with existing primitives
+
+A few spec-suggested payloads have no direct primitive in the engine yet.
+The catalogue maps to the closest existing effect and documents the trade
+in a per-mod comment in [`modifier.catalogue.ts`](../src/Items/modifier.catalogue.ts):
+
+- `hm-max-hp` — `EffectStatTarget` has no `maxHp`; the mod surfaces the
+  `buff_max_hp_up` passive instead. Rolled value is a presence marker until
+  the engine supports per-mod intensity overrides.
+- `bm-reflect` — no `reflectDamage` stat; the mod attaches the `buff_reflect`
+  passive.
+- `am-proc-boost` — Spec 05d's "increase baseChance of existing onHitEffects
+  by N%" is a meta-mod that isn't expressible as a data-only payload (Q1).
+  The catalogue boosts `luck` (the proc-adjacent stat) by the rolled value
+  until a meta-mod resolver lands.
 
 ## Consumable Type
 
