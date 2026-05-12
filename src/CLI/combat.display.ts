@@ -674,7 +674,18 @@ async function renderItem(
                 ? `  ${C.brightGreen}+${ev.healed} HP${C.reset}  HP ${ev.hpBefore} → ${C.brightGreen}${ev.hpAfter}${C.reset}`
                 : '';
             const effStr = ev.appliedEffectId ? `  effect: ${ev.appliedEffectId}` : '';
-            console.log(`  ${C.brightGreen}✚ Used ${C.bold}${ev.itemName}${C.reset}${C.brightGreen}.${C.reset}${healStr}${effStr}`);
+            const grant = ev.resourceGrant;
+            const grantParts = ([
+                ['heart',   grant.heart],
+                ['body',    grant.body],
+                ['mind',    grant.mind],
+                ['fallacy', grant.fallacy],
+                ['paradox', grant.paradox],
+            ] as const).filter(([, n]) => n !== 0).map(([k, n]) => `+${n} ${k}`);
+            const grantStr = grantParts.length > 0
+                ? `  ${C.brightYellow}${grantParts.join(', ')}${C.reset}`
+                : '';
+            console.log(`  ${C.brightGreen}✚ Used ${C.bold}${ev.itemName}${C.reset}${C.brightGreen}.${C.reset}${healStr}${effStr}${grantStr}`);
         } else if (ev.kind === 'blocked') {
             console.log(`  ${C.brightRed}✕ Item action failed: ${ev.reason}${C.reset}`);
         }
