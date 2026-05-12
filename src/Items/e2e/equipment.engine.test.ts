@@ -58,7 +58,8 @@ const ironWeapon: Equipment = {
     description: 'A simple iron blade. +2 body, +1 physicalAttack.',
     category: 'equipment',
     slot: 'weapon',
-    tier: 1,
+    rarity: 'common',
+    requiredLevel: 1,
     statModifiers: [
         { stat: 'body',           value: 2 },
         { stat: 'physicalAttack', value: 1 },
@@ -71,7 +72,8 @@ const passiveCirclet: Equipment = {
     description: 'Grants Briar Stance permanently while worn.',
     category: 'equipment',
     slot: 'head',
-    tier: 1,
+    rarity: 'common',
+    requiredLevel: 1,
     passiveEffects: ['tier1_body_defend'],
 };
 
@@ -81,7 +83,8 @@ const berserkerBand: Equipment = {
     description: '+3 body tokens at combat start.',
     category: 'equipment',
     slot: 'accessory',
-    tier: 2,
+    rarity: 'uncommon',
+    requiredLevel: 1,
     resourceInteraction: {
         combatStartTokens: { body: 3 },
         generationBonus: [
@@ -96,7 +99,8 @@ const guaranteedHitProc: Equipment = {
     description: 'Marks the foe on every hit.',
     category: 'equipment',
     slot: 'weapon',
-    tier: 1,
+    rarity: 'common',
+    requiredLevel: 1,
     onHitEffects: [
         {
             effectId:   'tier1_mind_mark',
@@ -248,7 +252,8 @@ describe('initializeCombat: combat-start token seeding', () => {
             description: '',
             category: 'equipment',
             slot: 'hands',
-            tier: 1,
+            rarity: 'common',
+            requiredLevel: 1,
             resourceInteraction: { combatStartTokens: { body: 4, heart: 1 } },
         };
         const tokens = aggregateCombatStartTokens({ accessory, hands: offhand });
@@ -281,7 +286,8 @@ describe('generateBasicActionResources: equipment generation bonus', () => {
             description: '',
             category: 'equipment',
             slot: 'feet',
-            tier: 1,
+            rarity: 'common',
+            requiredLevel: 1,
             resourceInteraction: {
                 generationBonus: [{ trigger: 'any', resourceType: 'mind', bonus: 1 }],
             },

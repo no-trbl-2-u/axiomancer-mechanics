@@ -193,17 +193,51 @@ replace them. Existing tests that reference `equipment.tier` are updated.
 
 ## Acceptance checklist
 
-- [ ] `ItemRarity` and `RolledModifier` types exported from `src/Items/`.
-- [ ] `Equipment.tier` removed; `rarity` and `requiredLevel` added.
-- [ ] `EquipmentTemplate` and `UniqueItemTemplate` interfaces defined and exported.
-- [ ] 21 base templates in `src/Items/equipment.templates.ts`.
-- [ ] 2 Unique templates in `src/Items/unique.templates.ts` (stubs; mod IDs filled
+- [x] `ItemRarity` and `RolledModifier` types exported from `src/Items/`.
+- [x] `Equipment.tier` removed; `rarity` and `requiredLevel` added.
+- [x] `EquipmentTemplate` and `UniqueItemTemplate` interfaces defined and exported.
+- [x] 21 base templates in `src/Items/equipment.templates.ts`.
+- [x] 2 Unique templates in `src/Items/unique.templates.ts` (stubs; mod IDs filled
       in when Spec 05d is complete).
-- [ ] `dropItem` factory in `src/Items/item.factory.ts` with seeded-RNG support.
-- [ ] `src/Items/equipment.library.json` archived; no remaining imports.
-- [ ] All `equipment.tier` references updated across codebase.
-- [ ] Hermetic drop tests covering all four rarity levels.
-- [ ] `docs/equipment.md` reflects the updated type shape.
+- [x] `dropItem` factory in `src/Items/item.factory.ts` with seeded-RNG support.
+- [x] `src/Items/equipment.library.ts` archived to `src/Items/_archive/`; no
+      remaining imports. (The Spec text references `.json` — the actual archived
+      file is the `.ts` library that replaced it earlier in the project.)
+- [x] All `equipment.tier` references updated across codebase.
+- [x] Hermetic drop tests covering all four rarity levels.
+- [x] `docs/equipment.md` reflects the updated type shape.
+
+## Implementation notes (post-implementation)
+
+- `Equipment.tier: 1 | 2 | 3` is removed. The instance now carries
+  `rarity: ItemRarity` and `requiredLevel: number`, plus an optional
+  `rolledMods: RolledModifier[]` populated by the factory.
+- The 50-item Spec 05b library is archived at
+  `src/Items/_archive/equipment.library.ts` together with its e2e suite
+  (`equipment-resource.engine.test.ts`). Both `tsconfig.json` and
+  `vitest.config.ts` exclude `src/**/_archive/**` so the archived code is
+  neither type-checked nor run; it lives on as a migration reference.
+- `equipment.templates.ts` lists exactly 21 `EquipmentTemplate`s across the
+  documented 7-slot × 3-progression-tier grid (lvl 1 / 10 / 20). Common drops
+  carry the template's `baseStatModifiers` and no `rolledMods`.
+- `unique.templates.ts` lists the 2 ship-with Uniques (`axioms-edge`,
+  `paradox-loop`). Their `fixedModIds` reference placeholder catalogue entries
+  that Spec 05d will canonicalise; the factory tolerates the placeholders
+  today by rolling a value of 0 for unknown IDs (intent: stable shape, neutral
+  mechanics, until the catalogue lands).
+- `item.factory.ts` ships a *minimal* inline modifier catalogue — enough to
+  drop Commons / Uncommons / Rares / Uniques with the right shape, slot-scoped
+  procedural pool, level-banded value ranges, and deterministic RNG. Spec 05d
+  replaces this catalogue with a richer one (proc triggers, multiplier mods,
+  themed pools) without changing the `dropItem` signature.
+- The rarity weight table (`rarityWeightTable`) follows the documented
+  60/30/9/1 distribution. For regular templates the random draw excludes the
+  `unique` row — uniqueness is template-gated. Passing `rarity: 'unique'`
+  with a regular template throws.
+- Hermetic e2e suite at `src/Items/e2e/item.factory.engine.test.ts` (24 tests)
+  covers Common / Uncommon / Rare / Unique drop shapes, determinism, validation
+  errors, the weighted-draw distribution, and an `equipItem` round-trip that
+  proves the Spec 05 equip pipeline is unaffected by removing `Equipment.tier`.
 
 ## Out of scope
 

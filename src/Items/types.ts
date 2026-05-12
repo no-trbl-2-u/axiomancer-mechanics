@@ -7,6 +7,11 @@
  * and an optional `resourceInteraction` payload the combat resolver reads to
  * seed token counters at battle start and amplify per-action generation.
  *
+ * Per Spec 05c, `Equipment` is an *instance* shape — every drop carries an
+ * instance-level `rarity` and `requiredLevel`, optionally with a list of
+ * rolled modifiers in `rolledMods`. The definition shape lives in
+ * `EquipmentTemplate` (procedural) and `UniqueItemTemplate` (curated).
+ *
  * Consumables (Spec 05) reference real effects from the effects library —
  * either by ID, by inline `Effect`, and/or with an immediate `healAmount` —
  * with optional `intensityOverride` / `durationOverride` per-instance tuning.
@@ -36,6 +41,27 @@ export interface BaseItem {
 /** Equipment slots available on a character. Per Spec 05 Q1 every slot may be
  * occupied simultaneously. */
 export type EquipmentSlot = 'weapon' | 'armor' | 'accessory' | 'head' | 'body' | 'hands' | 'feet';
+
+/**
+ * Per-instance rarity grade (Spec 05c). Drives modifier count and value bands.
+ *  - `common`    — 0 rolled modifiers; base stats only.
+ *  - `uncommon`  — 1 rolled modifier.
+ *  - `rare`      — 2 non-duplicate rolled modifiers.
+ *  - `unique`    — exactly 3 fixed modifiers (whose values are still rolled),
+ *                  drawn from a `UniqueItemTemplate.fixedModIds` triple.
+ */
+export type ItemRarity = 'common' | 'uncommon' | 'rare' | 'unique';
+
+/**
+ * A modifier rolled once at drop time and stored on the resulting `Equipment`
+ * instance. `modId` keys into the Spec 05d modifier catalogue; `value` is the
+ * concrete rolled magnitude (within the catalogue's range for the wearer's
+ * level at drop time).
+ */
+export interface RolledModifier {
+    modId: string;
+    value: number;
+}
 
 /**
  * Trigger that fires when the wearer lands a hit (`onHitEffects`) or
@@ -88,16 +114,25 @@ export interface ResourceInteraction {
 }
 
 /**
- * Equipment item that can be equipped by the player.
+ * Equipment instance — what a player actually carries, equips, and drops.
+ *
+ * Per Spec 05c the legacy `tier: 1 | 2 | 3` field is gone; rarity is the
+ * instance-level grade and `requiredLevel` controls when the item can drop
+ * (and scales rolled-modifier value bands). Procedural drops carry a
+ * `rolledMods` list; manually-constructed items and `common`-rarity drops
+ * may omit it.
  *
  * @property category         - Always `'equipment'`.
  * @property slot             - The equipment slot this item occupies.
- * @property tier             - Power tier (1 / 2 / 3). Drives library curation
- *                              and UI display; does not currently gate combat
- *                              math.
+ * @property rarity           - Instance-level rarity grade (Spec 05c).
+ * @property requiredLevel    - Level required to equip / for the item to drop.
+ * @property rolledMods       - Modifiers rolled at drop time. Absent on Common
+ *                              drops and manually-constructed items; present
+ *                              on Uncommon / Rare / Unique instances.
  * @property statModifiers    - Persistent stat modifiers folded into the
  *                              wearer's `derivedStats` at equip-time (Spec 05
- *                              Q3 option A).
+ *                              Q3 option A). On a procedural drop this is the
+ *                              resolved sum of base stats + rolled-mod payloads.
  * @property passiveEffects   - Effect library IDs applied as permanent
  *                              ActiveEffects while equipped. Removed on
  *                              unequip (Spec 05 Q5).
@@ -115,13 +150,53 @@ export interface ResourceInteraction {
 export interface Equipment extends BaseItem {
     category: 'equipment';
     slot: EquipmentSlot;
-    tier: EffectTier;
+    rarity: ItemRarity;
+    requiredLevel: number;
+    rolledMods?: RolledModifier[];
     statModifiers?: StatModifier[];
     passiveEffects?: string[];
     onHitEffects?: EquipmentProcTrigger[];
     onDefendEffects?: EquipmentProcTrigger[];
     critStyle?: 'double' | 'pierce';
     resourceInteraction?: ResourceInteraction;
+}
+
+/**
+ * Definition shape for a procedural equipment item (Spec 05c).
+ *
+ * A template is the authored data that the `dropItem` factory turns into an
+ * `Equipment` instance: base stats + an ID/name/slot identity. Rarity, rolled
+ * mods, and the rest of the instance shape are decided at drop time.
+ *
+ * @property id                 - Stable identifier (matches the dropped instance's `id`).
+ * @property name               - Display name.
+ * @property description        - Flavor / lore text.
+ * @property slot               - The equipment slot this template fills.
+ * @property requiredLevel      - Minimum player level required to drop this item.
+ *                                Also scales rolled-modifier value bands.
+ * @property baseStatModifiers  - Stat modifiers on a 0-mod (Common) instance.
+ *                                Higher rarities add rolled mods on top.
+ */
+export interface EquipmentTemplate {
+    id: string;
+    name: string;
+    description: string;
+    slot: EquipmentSlot;
+    requiredLevel: number;
+    baseStatModifiers?: StatModifier[];
+}
+
+/**
+ * Curated unique-item definition (Spec 05c). Uniques are conceptually distinct
+ * from procedural drops: their modifier identities are *fixed* (the values are
+ * still rolled within band), and they may belong to a thematic set.
+ *
+ * @property fixedModIds   - Exactly three modifier IDs the dropped instance carries.
+ * @property setMembership - Optional set ID (Spec 05e). Reserved for late-game.
+ */
+export interface UniqueItemTemplate extends EquipmentTemplate {
+    fixedModIds: [string, string, string];
+    setMembership?: string;
 }
 
 /**
