@@ -42,6 +42,11 @@ import {
     canUseSkill, executeSkill, generateBasicActionResources,
 } from '../Skills/skill.engine';
 import { CombatResources, ResourceCost, SkillCategory } from '../Skills/types';
+import { Consumable } from '../Items/types';
+import { isConsumable } from '../Items/types';
+import { getEquipmentProcTriggers, useConsumableEffect } from '../Items/equipment.engine';
+import { useConsumable as useInventoryConsumable } from '../Items/item.reducer';
+import { lookupEffect as lookupEffectById } from '../Effects/effects.library';
 import {
     determineAdvantage,
     resolveEffectiveAdvantage,
@@ -184,6 +189,24 @@ export type ResourceEvent =
         stance: Stance; outcome: BasicActionOutcome;
         resources: CombatResources };
 
+/**
+ * Item-use events from a player picking `action: 'item'`. Per Spec 05 the
+ * resolver:
+ *   - applies the consumable's `healAmount` (immediate) and/or its
+ *     `effectId` / `inlineEffect` payload through `applyEffect`;
+ *   - decrements the inventory stack via the existing inventory reducer;
+ *   - lets the enemy's basic action still resolve at passive-defense, but
+ *     the player neither attacks nor defends this round.
+ */
+export type ItemPhaseEvent =
+    | { phase: 'item'; kind: 'used';
+        itemId: string; itemName: string;
+        healed: number; hpBefore: number; hpAfter: number;
+        appliedEffectId: string | null }
+    | { phase: 'item'; kind: 'blocked';
+        itemId: string;
+        reason: 'unknown-item' | 'not-consumable' | 'missing-item-id' };
+
 /** Discriminated union of every event the resolver can emit, organised by phase. */
 export type RoundEvent =
     | RoundStartEvent
@@ -193,6 +216,7 @@ export type RoundEvent =
     | ScenarioEvent
     | SkillPhaseEvent
     | ResourceEvent
+    | ItemPhaseEvent
     | RoundEndEvent;
 
 /** Return value of `resolveCombatRound`. */
@@ -507,6 +531,20 @@ interface RunProcsParams {
 }
 
 /**
+ * Pulls the actor's equipment-provided proc triggers for the given action.
+ * Today only `Character`s carry `equipment` (enemies pre-Spec 07 don't), so
+ * Enemy actors always yield an empty list.
+ */
+function equipmentTriggersFor(
+    actor: Character | Enemy,
+    action: 'attack' | 'defend',
+): ReturnType<typeof getEquipmentProcTriggers> {
+    const equipment = (actor as Character).equipment;
+    if (!equipment) return [];
+    return getEquipmentProcTriggers(equipment, action);
+}
+
+/**
  * Rolls Spec 03 procs for a single actor and applies them via the staged
  * `applyProcOutcome` / `applyFumbleOutcome` helpers. Emits one
  * `proc-applied` event per landed proc (success OR resist — the resolver
@@ -528,6 +566,7 @@ function runActionProcs(p: RunProcsParams): {
         rawAttackRoll: p.rawAttackRoll,
         unlocks,
         overrides,
+        equipmentTriggers: equipmentTriggersFor(p.actor, p.action),
     });
 
     let actor    = p.actor;
@@ -770,6 +809,42 @@ export function resolveCombatRound(
         }
     }
 
+    // 5b. Player picked `item` → look up the consumable, apply its payload
+    // to the player, and decrement the stack. The player neither attacks nor
+    // defends this round; the enemy still resolves their basic action against
+    // a passive-defense player. The shape of the item action is:
+    //   action: 'item', itemId: <id of consumable in player.inventory>
+    // Missing or invalid IDs emit an `item-blocked` event and the player
+    // whiffs their turn (no inventory change, enemy still acts).
+    if (playerActionFinal === 'item') {
+        const itemId = playerAction.itemId;
+        if (!itemId) {
+            events.push({ phase: 'item', kind: 'blocked', itemId: '', reason: 'missing-item-id' });
+        } else {
+            const item = player.inventory.find(i => i.id === itemId);
+            if (!item) {
+                events.push({ phase: 'item', kind: 'blocked', itemId, reason: 'unknown-item' });
+            } else if (!isConsumable(item)) {
+                events.push({ phase: 'item', kind: 'blocked', itemId, reason: 'not-consumable' });
+            } else {
+                const consumable: Consumable = item;
+                const hpBefore = player.health;
+                const useResult = useConsumableEffect(
+                    player, consumable, state.round, lookupEffectById,
+                );
+                const nextInventory = useInventoryConsumable(useResult.player.inventory, itemId);
+                player = { ...useResult.player, inventory: nextInventory };
+                events.push({
+                    phase: 'item', kind: 'used',
+                    itemId, itemName: consumable.name,
+                    healed: useResult.healed,
+                    hpBefore, hpAfter: player.health,
+                    appliedEffectId: useResult.applied?.id ?? null,
+                });
+            }
+        }
+    }
+
     const playerBasicAttacked = !skillBlocked && playerActionFinal === 'attack';
     const playerBasicDefended = !skillBlocked && playerActionFinal === 'defend';
 
@@ -793,6 +868,13 @@ export function resolveCombatRound(
         ({ player, enemy } = resolveAttackVsAttack(
             player, enemy, playerStance, enemyStance, playerAdvantage, enemyAdvantage, events, state.round,
         ));
+    } else if (enemyActionFinal === 'attack' && playerActionFinal === 'item') {
+        // Player used an item this round and the enemy attacked — the enemy
+        // strikes the player at passive defense. The player neither attacks
+        // back nor defends actively. Mirrors the skip-vs-attack branch.
+        ({ player, enemy } = resolveAttackVsAttack(
+            player, enemy, playerStance, enemyStance, playerAdvantage, enemyAdvantage, events, state.round,
+        ));
     } else if (playerActionFinal === 'defend' && enemyActionFinal === 'defend') {
         const before = friendshipCounter;
         friendshipCounter = before + 1;
@@ -805,15 +887,22 @@ export function resolveCombatRound(
     // already handled above) — no basic-action exchange.
 
     // Stance-token generation for the player's basic action this round.
+    // Equipment `generationBonus` entries from the player's currently
+    // equipped items are folded on top of the base generation table
+    // (Spec 05 Q10 / step 6).
     if (playerBasicAttacked) {
         const outcome: BasicActionOutcome = playerWonAttackContest(events) ? 'hit' : 'miss';
-        combatResources = generateBasicActionResources(combatResources, playerStance, outcome);
+        combatResources = generateBasicActionResources(
+            combatResources, playerStance, outcome, player.equipment,
+        );
         events.push({
             phase: 'resources', kind: 'generated',
             stance: playerStance, outcome, resources: combatResources,
         });
     } else if (playerBasicDefended) {
-        combatResources = generateBasicActionResources(combatResources, playerStance, 'defend');
+        combatResources = generateBasicActionResources(
+            combatResources, playerStance, 'defend', player.equipment,
+        );
         events.push({
             phase: 'resources', kind: 'generated',
             stance: playerStance, outcome: 'defend', resources: combatResources,

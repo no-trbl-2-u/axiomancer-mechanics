@@ -25,6 +25,8 @@ import {
     RESOURCE_GENERATION,
     SKILL_STAT_MULTIPLIER,
 } from '../Game/game-mechanics.constants';
+import { Equipment, EquipmentSlot } from '../Items/types';
+import { applyEquipmentGenerationBonus } from '../Items/equipment.engine';
 import {
     CombatResources, ResourceCost, Skill, SkillCategory, SkillCombatEffects,
     SkillSpecialMechanic,
@@ -43,18 +45,26 @@ export type BasicActionOutcome = 'hit' | 'miss' | 'defend';
  *   attack miss → +1 of stance colour
  *   defend      → +5 of stance colour
  *
+ * Per Spec 05 Q10 / step 6, the optional `equipment` argument applies any
+ * matching `generationBonus` entries from the wearer's equipped items on
+ * top of the base table. Items without a `resourceInteraction` contribute
+ * nothing — `equipment = undefined` reproduces pre-Spec 05 behaviour.
+ *
  * Pure: input snapshot is not mutated.
  */
 export function generateBasicActionResources(
     resources: CombatResources,
     stance: Stance,
     outcome: BasicActionOutcome,
+    equipment?: Partial<Record<EquipmentSlot, Equipment>>,
 ): CombatResources {
     const amount =
         outcome === 'defend' ? RESOURCE_GENERATION.DEFEND
       : outcome === 'hit'    ? RESOURCE_GENERATION.ATTACK_HIT
       :                        RESOURCE_GENERATION.ATTACK_MISS;
-    return { ...resources, [stance]: resources[stance] + amount };
+    const base: CombatResources = { ...resources, [stance]: resources[stance] + amount };
+    if (!equipment) return base;
+    return applyEquipmentGenerationBonus(base, equipment, outcome);
 }
 
 /**
