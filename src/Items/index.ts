@@ -13,3 +13,7 @@ export {
     getEquipmentProcTriggers, useConsumableEffect,
 } from './equipment.engine';
 export type { ConsumableUseResult } from './equipment.engine';
+export {
+    equipmentLibrary, getEquipmentById, getEquipmentBySlot, getEquipmentByTier,
+} from './equipment.library';
+export { consumableLibrary, getConsumableById } from './consumable.library';

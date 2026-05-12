@@ -82,6 +82,8 @@ export {
     isEquipment, isConsumable, isMaterial, isQuestItem,
     aggregateCombatStartTokens, applyEquipmentGenerationBonus,
     getEquipmentProcTriggers, useConsumableEffect,
+    equipmentLibrary, getEquipmentById, getEquipmentBySlot, getEquipmentByTier,
+    consumableLibrary, getConsumableById,
 } from './Items';
 export type {
     Item, Equipment, Consumable, Material, QuestItem,
