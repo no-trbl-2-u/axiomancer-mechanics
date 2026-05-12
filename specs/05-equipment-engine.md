@@ -48,42 +48,42 @@ which depends on this spec.
    | hands | feet`. Are all 7 slots simultaneously equippable, or do
    `weapon/armor/accessory` and `head/body/hands/feet` represent two
    different layouts (e.g. early vs late game)?
-   > Your answer:
+   > Your answer: All 7 are simultaneously equippable.
 
 2. **Stat modifier shape.** Reuse `StatModifier` from `Effects/types`
    (`stat`, `value`, `isMultiplier`)? That gives flat + multiplier support
    for free.
-   > Your answer:
+   > Your answer: Yes, reuse that. If enough reuse is happening, we should consider lifting the type to a higher level of abstraction.
 
 3. **Aggregation site.** Equipment modifiers are persistent. Should they:
    - (A) Be folded into `derivedStats` at equip-time (so the character's
      `derivedStats` is "post-equipment"), or
    - (B) Be aggregated on-demand per roll (`getEffectiveStats(character)`),
      mirroring the temporary effects in Spec 01.
-   > Your answer:
+   > Your answer:A
 
 4. **Stance alignment.** Should equipment carry a `stance?: Stance`
    so e.g. a "Body weapon" gives the wearer a tier-1-style passive when
    attacking with body? If yes, what's the bonus shape?
-   > Your answer:
+   > Your answer: No
 
 5. **Passive effects.** `passiveEffects: string[]` references effect IDs.
    When does a passive tick down — never (effectively permanent), or per
    round like normal? And does removing the equipment remove the effect?
-   > Your answer:
+   > Your answer: never and yes, removing the equipment removes the effect
 
 6. **`onHitEffects` vs Spec 03 procs.** Equipment-based on-hit effects could
    either share the Spec 03 proc machinery or run separately:
    - (A) Share — equipment adds entries to the proc roll.
    - (B) Separate — equipment procs roll on every hit independently.
-   > Your answer:
+   > Your answer: A
 
 7. **CritStyle mapping.** The `CritStyle` type (`'double' | 'pierce'`)
    exists. Tie it to:
    - (A) The equipped weapon (`Equipment.critStyle?: CritStyle`).
    - (B) The chosen stance (heart/body/mind each prefer one).
    - (C) Per-skill (Spec 04 extends `Skill` with `critStyle`).
-   > Your answer:
+   > Your answer: A but is overridden by C
 
 8. **Consumable → effect link.** Replace `Consumable.effect: string` with:
    - (A) `effectId: string` referencing the effects library.
@@ -91,7 +91,7 @@ which depends on this spec.
      per-instance tuning.
    - (C) Option (B) plus an inline `Effect` if the consumable wants a
      bespoke one-off effect not in the library.
-   > Your answer:
+   > Your answer: C
 
 9. **Healing potion shape.** Healing Potion currently restores HP. Should
    the engine model healing as:
@@ -99,7 +99,7 @@ which depends on this spec.
    - (B) A `regeneration` effect that applies for 1 round (uses the same
      machinery as `Vital Empathy`).
    - (C) Both, depending on the consumable.
-   > Your answer:
+   > Your answer: C
 
 10. **Resource interaction interface.** Equipment in Spec 05b will carry
     combat-start token grants and per-action generation bonuses. What is the
@@ -113,7 +113,7 @@ which depends on this spec.
     - (C) Wrap both fields in a `resourceInteraction?: ResourceInteraction`
       sub-object to keep the top-level `Equipment` shape flat and enable
       complete omission when the item has no resource interactions.
-    > Your answer:
+    > Your answer: C
 
 ## Proposed approach
 
