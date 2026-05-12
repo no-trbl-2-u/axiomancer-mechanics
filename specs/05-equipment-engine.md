@@ -150,21 +150,51 @@ which depends on this spec.
 
 ## Acceptance checklist
 
-- [ ] All 10 questions answered.
-- [ ] `Equipment` type has `statModifiers`, `passiveEffects`, `onHitEffects`,
+- [x] All 10 questions answered.
+- [x] `Equipment` type has `statModifiers`, `passiveEffects`, `onHitEffects`,
       `onDefendEffects`, `tier`, and `resourceInteraction?: ResourceInteraction`.
-- [ ] `ResourceInteraction` type exported from `src/Items/`.
-- [ ] `initializeCombat` seeds `combatResources` from equipped items'
+- [x] `ResourceInteraction` type exported from `src/Items/`.
+- [x] `initializeCombat` seeds `combatResources` from equipped items'
       `combatStartTokens` (items with no `resourceInteraction` contribute 0
       to each counter).
-- [ ] `generateBasicActionResources` applies `generationBonus` entries from
+- [x] `generateBasicActionResources` applies `generationBonus` entries from
       equipped items on top of the base generation table.
-- [ ] Equipping a stat-mod weapon visibly changes the player's
+- [x] Equipping a stat-mod weapon visibly changes the player's
       `derivedStats` in the CLI display.
-- [ ] Using a Healing Potion in the CLI restores HP and decrements the stack.
-- [ ] An equipment with `onHitEffects` lands the effect at the right time.
-- [ ] `docs/equipment.md` updated with the final type shape, formulas, and
+- [x] Using a Healing Potion in the CLI restores HP and decrements the stack.
+- [x] An equipment with `onHitEffects` lands the effect at the right time.
+- [x] `docs/equipment.md` updated with the final type shape, formulas, and
       `ResourceInteraction` interface.
+
+## Implementation notes (post-implementation)
+
+- Equipment statModifiers are aggregated by `getEquipmentModifiers` and
+  recomputed into `derivedStats` inside `equipItem` / `unequipItem` so
+  `derivedStats` is always "post-equipment" (Q3 option A). `baseStats` are
+  never mutated by equipment.
+- Passive effects are pushed into `Character.effects` as permanent
+  `ActiveEffect`s with `remainingDuration: -1` and `sourceId = item.id` so
+  `unequipItem` can remove exactly those entries (Q5).
+- `onHitEffects` / `onDefendEffects` are surfaced to the combat resolver
+  via `getEquipmentProcTriggers` and folded into `getEligibleTriggers`
+  (alongside the JSON table and any per-cell overrides) so the existing
+  Spec 03 `rollForCombatEffects` / `applyProcOutcome` machinery handles
+  them transparently (Q6 option A).
+- `Consumable.effect: string` was renamed to `effectId` and a new
+  `inlineEffect?: Effect` + `healAmount?: number` pair was added so a
+  consumable can apply an immediate heal AND/OR a referenced/inline effect
+  (Q8 option C, Q9 option C). `intensityOverride` / `durationOverride`
+  retune the applied effect on a per-instance basis.
+- `resolveCombatRound` routes `action: 'item'` through
+  `useConsumableEffect`, decrements the inventory stack via the existing
+  `useConsumable` inventory reducer, and lets the enemy's basic action
+  still resolve (mirrors skip-vs-attack semantics so a phantom contest
+  still rolls — same convention as pre-Spec 05). The new
+  `ItemPhaseEvent` is emitted to the combat event stream.
+- Library content (50 equipment pieces, 12 consumables) is intentionally
+  deferred to Spec 05b. This spec ships the types, reducers, engine
+  wiring, store actions, CLI prompt, and a hermetic e2e suite under
+  `src/Items/e2e/equipment.engine.test.ts`.
 
 ## Out of scope
 
