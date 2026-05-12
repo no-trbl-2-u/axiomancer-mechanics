@@ -1,7 +1,20 @@
 /**
  * Item System Types
  * Discriminated union of all item types with type guards.
+ *
+ * Equipment (Spec 05) carries persistent stat modifiers, passive effect IDs,
+ * optional onHit / onDefend proc triggers that share Spec 03's proc machinery,
+ * and an optional `resourceInteraction` payload the combat resolver reads to
+ * seed token counters at battle start and amplify per-action generation.
+ *
+ * Consumables (Spec 05) reference real effects from the effects library —
+ * either by ID, by inline `Effect`, and/or with an immediate `healAmount` —
+ * with optional `intensityOverride` / `durationOverride` per-instance tuning.
  */
+
+import { Effect, EffectTier, StatModifier } from '../Effects/types';
+import { Stance } from '../Combat/types';
+import { CombatResources } from '../Skills/types';
 
 /** Item categories */
 export type ItemCategory = 'equipment' | 'consumable' | 'material' | 'quest-item';
@@ -20,29 +33,126 @@ export interface BaseItem {
     category: ItemCategory;
 }
 
-/** Equipment slots available on a character */
+/** Equipment slots available on a character. Per Spec 05 Q1 every slot may be
+ * occupied simultaneously. */
 export type EquipmentSlot = 'weapon' | 'armor' | 'accessory' | 'head' | 'body' | 'hands' | 'feet';
 
 /**
- * Equipment item that can be equipped by the player
- * @property category - Always 'equipment'
- * @property slot - The equipment slot this item occupies
+ * Trigger that fires when the wearer lands a hit (`onHitEffects`) or
+ * successfully defends (`onDefendEffects`). Per Spec 05 Q6 these entries
+ * are folded into the Spec 03 proc roll the resolver already runs, so they
+ * use the same `tier` / `baseChance` / `intensityOverride` / `durationOverride`
+ * shape as a `CombatEffectTrigger` minus the `stance` / `action` fields
+ * (those are implicit — `onHit` always fires on an attack, `onDefend` always
+ * fires on a defend, regardless of the wearer's stance).
+ */
+export interface EquipmentProcTrigger {
+    effectId: string;
+    target: 'self' | 'opponent';
+    baseChance: number;
+    tier: EffectTier;
+    intensityOverride?: number;
+    durationOverride?: number;
+    fumbleEffectId?: string;
+}
+
+/**
+ * Per-equipment bonus to `generateBasicActionResources`. Stacks additively
+ * on top of the base resource-generation table from Spec 04.
+ *
+ * - `trigger`: which basic-action outcome the bonus applies to. `'any'`
+ *   adds the bonus to every basic action the wearer takes.
+ * - `resourceType`: which `CombatResources` counter the bonus tops up.
+ * - `bonus`: flat token delta added (negative values are allowed but
+ *   clamped to zero by the engine).
+ */
+export interface ResourceGenerationBonus {
+    trigger: 'hit' | 'miss' | 'defend' | 'any';
+    resourceType: keyof CombatResources;
+    bonus: number;
+}
+
+/**
+ * Equipment-driven contribution to the combat resource economy (Spec 05 Q10,
+ * option C — wrapped sub-object so the top-level `Equipment` shape stays
+ * flat and items without resource interactions can omit the field entirely).
+ *
+ * - `combatStartTokens`: tokens granted to the wearer at the start of every
+ *   combat. Summed across all equipped items in `initializeCombat`.
+ * - `generationBonus`: per-action bonuses applied on top of the base
+ *   generation table from `generateBasicActionResources`.
+ */
+export interface ResourceInteraction {
+    combatStartTokens?: Partial<CombatResources>;
+    generationBonus?: ResourceGenerationBonus[];
+}
+
+/**
+ * Equipment item that can be equipped by the player.
+ *
+ * @property category         - Always `'equipment'`.
+ * @property slot             - The equipment slot this item occupies.
+ * @property tier             - Power tier (1 / 2 / 3). Drives library curation
+ *                              and UI display; does not currently gate combat
+ *                              math.
+ * @property statModifiers    - Persistent stat modifiers folded into the
+ *                              wearer's `derivedStats` at equip-time (Spec 05
+ *                              Q3 option A).
+ * @property passiveEffects   - Effect library IDs applied as permanent
+ *                              ActiveEffects while equipped. Removed on
+ *                              unequip (Spec 05 Q5).
+ * @property onHitEffects     - Equipment-provided proc entries added to the
+ *                              wearer's `attack` proc roll (Spec 05 Q6 / Spec
+ *                              03 machinery).
+ * @property onDefendEffects  - Equipment-provided proc entries added to the
+ *                              wearer's `defend` proc roll.
+ * @property critStyle        - Default critical-hit resolution style. Spec 05
+ *                              Q7: weapon-set default which can be overridden
+ *                              by a skill's per-skill `critStyle` (Spec 04+).
+ * @property resourceInteraction - Optional combat-start token grants and per-
+ *                                 action generation bonuses (Spec 05 Q10C).
  */
 export interface Equipment extends BaseItem {
     category: 'equipment';
     slot: EquipmentSlot;
+    tier: EffectTier;
+    statModifiers?: StatModifier[];
+    passiveEffects?: string[];
+    onHitEffects?: EquipmentProcTrigger[];
+    onDefendEffects?: EquipmentProcTrigger[];
+    critStyle?: 'double' | 'pierce';
+    resourceInteraction?: ResourceInteraction;
 }
 
 /**
- * Consumable item that can be used once (quantity decrements)
- * @property category - Always 'consumable'
- * @property effect - Effect identifier applied on use
- * @property quantity - Number of this item in the stack
+ * Consumable item that can be used once (quantity decrements).
+ *
+ * Per Spec 05 Q8 (option C) and Q9 (option C), a consumable may carry any
+ * combination of:
+ *   - `effectId`     — reference into the global effects library.
+ *   - `inlineEffect` — bespoke one-off `Effect` definition not in the library.
+ *   - `healAmount`   — immediate flat HP heal (no effect entry).
+ * At least one of these must be present.
+ *
+ * `intensityOverride` / `durationOverride` retune the referenced or inline
+ * effect on a per-instance basis.
+ *
+ * @property category         - Always `'consumable'`.
+ * @property quantity         - Number of this item in the stack.
+ * @property effectId         - Optional effect-library lookup key applied on use.
+ * @property inlineEffect     - Optional bespoke `Effect` applied on use.
+ * @property healAmount       - Optional immediate flat HP heal applied on use.
+ * @property intensityOverride - Optional intensity override for the applied effect.
+ * @property durationOverride  - Optional duration override for the applied effect.
  */
 export interface Consumable extends BaseItem {
     category: 'consumable';
-    effect: string;
     quantity: number;
+    effectId?: string;
+    inlineEffect?: Effect;
+    healAmount?: number;
+    intensityOverride?: number;
+    durationOverride?: number;
 }
 
 /**
@@ -67,6 +177,12 @@ export interface QuestItem extends BaseItem {
 
 /** Discriminated union of all item types */
 export type Item = Equipment | Consumable | Material | QuestItem;
+
+/** Re-export `Stance` so downstream consumers of `EquipmentSlot` don't need
+ *  a separate import path; some library authors key generation bonuses to
+ *  stance-aligned items (Spec 05 Q10b is OFF for now but keep the surface).
+ */
+export type { Stance };
 
 // ============================================================================
 // ITEM TYPE GUARDS
