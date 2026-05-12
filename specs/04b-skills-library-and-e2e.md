@@ -35,6 +35,7 @@ no `Math.random`.
 1. **Skill IDs.**
    > **Snake_case** strings (e.g. `ad_hominem_strike`), matching the existing
    effect library convention (`debuff_bleed`, `buff_haste`, etc.).
+   Answer: Effects should be snake case, but skills should be kebab-case
 
 2. **Damage multiplier constant.**
    > **0.5** (from `SKILL_STAT_MULTIPLIER` in `game-mechanics.constants.ts`).
@@ -50,6 +51,29 @@ no `Math.random`.
    Keeps the existing `Player` mock stable and gives the e2e test a character
    with `equippedSkills: ['ad_hominem_strike']` and base stats tuned for
    predictable damage calculations.
+
+5. **Expand Test fixture.**
+   > **Combat testing** needs a way to make sure that the various skills and effects can be tested and logged. The current issue is that combat is over very quickly (after a few basic actions). We will need a strategy to expand the current auto:combat testing to have more actions per run/simulation. We could maybe add an arg to the auto:combat to select the enemy and/or allow the combat simultation to select the enemy to simulate combate with. Furthermore, we should have an enemy with the lowest possible stats except for health (which would be high enough to allow for several rounds of combat). This is not locked-in, I'm open to any better strategy for this, I just want the skills/effects to be able to be tested through automation and tested manually via the CLI tool.
+   >
+   > **Answer (implemented):** Added a dedicated **`Sandbag_01`** enemy to
+   > [`src/Enemy/enemy.library.ts`](../src/Enemy/enemy.library.ts): `level: 10`
+   > with `baseStats: { body: 1, mind: 1, heart: 1 }`, which yields
+   > `maxHealth = level × avg(body, heart) × 10 = 100` while keeping attack /
+   > defence rolls at the floor. Combats with the Sandbag last long enough
+   > to exercise Tier 1 → Tier 3 skill chains and multi-round effect ticks.
+   >
+   > To pick the opponent without code changes, the CLI and the auto-tester
+   > both accept a slug from the new `ENEMY_REGISTRY` (`disatree`, `sandbag`):
+   >
+   > - **Combat CLI:** `COMBAT_ENEMY=sandbag npm run combat` (or
+   >   `npm run combat -- --enemy=sandbag`).
+   > - **`auto:combat`:** `python3 automation/combat-test.py <runs> [reaction] [action] [enemy]`
+   >   — positional `[enemy]` accepts `disatree` / `sandbag`, and `-` skips
+   >   any earlier positional slot (e.g.
+   >   `python3 automation/combat-test.py 20 - - sandbag`).
+   >
+   > Spec 04b's e2e suite uses the same `Sandbag_01` fixture so the test
+   > shares its conditions with the manual playtesting path.
 
 ## Early-game Skill Library
 
@@ -197,16 +221,51 @@ invoked hermetically.
 
 ## Acceptance checklist
 
-- [ ] All 4 open questions answered (done above).
-- [ ] `src/Skills/skill.library.ts` exports exactly 12 skills with no TypeScript errors.
-- [ ] All 12 skills have valid `resourceCost`, `tier`, `basePower`, `scalingStat`, `targetType`.
-- [ ] `src/Skills/e2e/fixtures.ts` exports `SkillTestPlayer` with `equippedSkills` populated.
-- [ ] `src/Skills/e2e/skill-resource-system.test.ts` exists and all three scenarios pass.
-- [ ] Scenario 1 (happy path), Scenario 2 (insufficient resources), and
+- [x] All 5 open questions answered (done above).
+- [x] `src/Skills/skill.library.ts` exports exactly 12 skills with no TypeScript errors.
+- [x] All 12 skills have valid `resourceCost`, `tier`, `basePower`, `scalingStat`, `targetType`.
+- [x] `src/Skills/e2e/fixtures.ts` exports `SkillTestPlayer` with `equippedSkills` populated.
+- [x] `src/Skills/e2e/skill-resource-system.engine.test.ts` exists and all three scenarios pass.
+      (Filename uses the workspace `.engine.test.ts` hermetic-suite suffix
+      from `docs/testing.md`; content matches the spec's pseudocode.)
+- [x] Scenario 1 (happy path), Scenario 2 (insufficient resources), and
       Scenario 3 (Tier 3 gate) are all covered.
-- [ ] `combatEvents` assertions verify skill events are emitted correctly.
-- [ ] `npm test` and `npm run type-check` are clean.
-- [ ] `docs/skills.md` updated with library overview table and resource economy summary.
+- [x] `combatEvents` assertions verify skill events are emitted correctly
+      (including the new `phase: 'skill', kind: 'blocked'` for Scenario 2 and
+      `kind: 'buff-stripped'` for Scenario 1).
+- [x] `npm test` and `npm run type-check` are clean (verified twice).
+- [x] `docs/skills.md` updated with library overview table and resource economy summary.
+
+## Implementation notes
+
+- **Type extensions (`src/Skills/types.d.ts`):**
+  - `SkillCombatEffects` gained optional `intensity` / `duration` overrides
+    so skills like Liar's Echo (Tier 1 Mind Mark at intensity 2, 2 rounds)
+    and Sorites' Cascade (intensity-2 Bleed) can lean on existing effect
+    library entries without warping their definitions.
+  - `Skill.scalingMultiplier` added (default 1) — multiplies the stat term
+    of the damage / heal formula. Drives Appeal to Pity and Bootstrap Paradox.
+  - `SkillSpecialMechanic` discriminated union added with `strip_random_buff`,
+    `convert_enemy_buff_to_self`, `secondary_heal_self`, and a `bypass_defense`
+    marker. Resolved in `executeSkill` after damage and after `combatEffects`.
+- **Tier 3 token inversion:** `philosophicalCategoryFor(skill)` (in
+  `skill.engine.ts`) returns the opposing category for Tier 3 skills so
+  Fallacy → Paradox and Paradox → Fallacy late-combat chains keep flowing.
+- **`skill-blocked` event:** the resolver now validates the skill before
+  calling `executeSkill`. If the skill is unknown, not equipped, or
+  unaffordable, the resolver emits a single
+  `{ phase: 'skill', kind: 'blocked', skillId, reason }` event, skips the
+  scenario phase, and returns with `combatResources` / HP untouched. UIs
+  (CLI today, future React Native) render that as "you can't afford that yet".
+- **CLI wiring (`src/CLI/combat.cli.ts`):** the live `skillLibrary` is now
+  threaded through `lookupSkill`; the demo player gets the first four
+  skills equipped on session start so the Skills sub-prompt is non-empty.
+  Enemy selection follows `COMBAT_ENEMY=<slug>` / `--enemy=<slug>` and
+  `ENEMY_REGISTRY` (per Q5).
+- **`auto:combat` enemy selector:** `automation/combat-test.py` now accepts
+  a fourth positional argument (`disatree` / `sandbag`), with `-` as a
+  skip-this-slot sentinel so the existing `[reaction] [action]` arguments
+  remain optional.
 
 ## Out of scope
 
@@ -216,6 +275,6 @@ invoked hermetically.
 - Level-up skill grants — Spec 06.
 - Moral alignment learning gates — Spec 10.
 - Bootstrap Paradox's "restore HP equal to damage dealt" requires tracking
-  round damage totals — flag as a deferred mechanic in the library entry if
-  Spec 04's `RoundEvent` stream doesn't expose it; implement a simpler
-  fallback (flat heal) until that data is available.
+  round damage totals — shipped today as a flat heal via
+  `scalingMultiplier: 4` (heart × 2). Re-visit once the resolver surfaces a
+  per-round damage total (deferred alongside seedable RNG, Spec 11).

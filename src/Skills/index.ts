@@ -11,14 +11,19 @@
 export type {
     Skill, SkillCategory, SkillsStatType, SkillTier, SkillTarget,
     ResourceCost, CombatResources,
-    SkillLearningRequirement, SkillCombatEffects,
+    SkillLearningRequirement, SkillCombatEffects, SkillSpecialMechanic,
 } from './types';
 
 export {
     generateBasicActionResources, generatePhilosophicalResource,
     canUseSkill, spendResources, calculateSkillDamage, executeSkill,
+    philosophicalCategoryFor,
 } from './skill.engine';
 
 export type {
     BasicActionOutcome, SkillEvent, SkillResolution, SkillLookup,
 } from './skill.engine';
+
+export {
+    skillLibrary, getSkillById,
+} from './skill.library';

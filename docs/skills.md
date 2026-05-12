@@ -1,7 +1,9 @@
 # Skills
 
-> **Status:** Engine landed (Spec 04). The named skill library and end-to-end
-> scripted test ship in [`specs/04b-skills-library-and-e2e.md`](../specs/04b-skills-library-and-e2e.md).
+> **Status:** Engine landed (Spec 04). Early-game library + hermetic e2e
+> landed (Spec 04b — see
+> [`specs/04b-skills-library-and-e2e.md`](../specs/04b-skills-library-and-e2e.md)
+> and [`src/Skills/e2e/skill-resource-system.engine.test.ts`](../src/Skills/e2e/skill-resource-system.engine.test.ts)).
 > Source material for fallacies and paradoxes lives in
 > [`docs/references/`](./references/).
 
@@ -78,11 +80,14 @@ import {
   // types
   Skill, SkillCategory, SkillsStatType, SkillTier, SkillTarget,
   ResourceCost, CombatResources,
-  SkillLearningRequirement, SkillCombatEffects,
+  SkillLearningRequirement, SkillCombatEffects, SkillSpecialMechanic,
   BasicActionOutcome, SkillEvent, SkillResolution, SkillLookup,
   // pure helpers
   generateBasicActionResources, generatePhilosophicalResource,
   canUseSkill, spendResources, calculateSkillDamage, executeSkill,
+  philosophicalCategoryFor,
+  // library (Spec 04b)
+  skillLibrary, getSkillById,
 } from 'axiomancer-mechanics';
 ```
 
@@ -91,13 +96,88 @@ optional `lookupSkill` callback. When the player picks
 `{ action: 'skill', skillId }`, the resolver routes through `executeSkill`,
 spends the resource cost, generates the matching philosophical token, and
 emits a `phase: 'skill'` event stream alongside the existing `combatEvents`.
+If the skill cannot be used (not equipped, unknown, or `canUseSkill` fails)
+the resolver emits a single `phase: 'skill', kind: 'blocked'` event and
+leaves `combatResources` / HP untouched — the player whiffs their turn.
+
+## Early-Game Library (Spec 04b)
+
+Lives in [`src/Skills/skill.library.ts`](../src/Skills/skill.library.ts).
+IDs follow **kebab-case** to keep the skill namespace visually distinct from
+the snake_case effect IDs (`tier1_body_attack`, `debuff_bleed`, …).
+
+### Tier 1 — Single-stance cost (6 skills)
+
+Each costs 3 tokens of its `philosophicalAspect`. On use generates +1 of the
+skill's own category (Fallacy or Paradox).
+
+| ID | Name | Aspect | Cat. | Cost | Target | Base | Scale | Mechanic |
+|---|---|---|---|---|---|---:|---|---|
+| `ad-hominem-strike` | Ad Hominem Strike | body  | fallacy | `body: 3`  | enemy | 8  | body  | damage + strip one random enemy buff |
+| `false-dilemma`     | False Dilemma     | mind  | fallacy | `mind: 3`  | enemy | 4  | mind  | damage + 2-round Confusion |
+| `appeal-to-pity`    | Appeal to Pity    | heart | fallacy | `heart: 3` | self  | 0  | heart | heal `heart × 0.5 × 4` |
+| `achilles-gambit`   | Achilles' Gambit  | body  | paradox | `body: 3`  | enemy | 12 | body  | pure damage |
+| `liars-echo`        | Liar's Echo       | mind  | paradox | `mind: 3`  | enemy | 3  | mind  | damage + Mind Mark intensity 2, 2 rounds |
+| `ship-of-theseus`   | Ship of Theseus   | heart | paradox | `heart: 3` | enemy | 0  | heart | convert one random enemy buff onto self |
+
+### Tier 2 — Resonance required (3 skills)
+
+Multi-key cost; resonance is implicit (the player must hold both pools).
+Generates +1 token of the skill's own category.
+
+| ID | Name | Cat. | Cost | Target | Base | Scale | Mechanic |
+|---|---|---|---|---|---:|---|---|
+| `mob-appeal`           | Mob Appeal           | fallacy | `body: 2, heart: 2`  | enemy | 10 | body  | damage + small self-heal (`heart × 0.5`) |
+| `undistributed-middle` | Undistributed Middle | paradox | `body: 2, mind: 2`   | enemy |  8 | mind  | damage + 3-round Mind Mark intensity 3 |
+| `eternal-regress`      | Eternal Regress      | fallacy | `heart: 2, mind: 2`  | enemy |  6 | heart | applies Confusion AND Slow |
+
+### Tier 3 — Philosophical resource required (3 skills)
+
+Requires a Fallacy or Paradox token in addition to stance tokens. **Generates
+the OPPOSING philosophical type** (Fallacy → Paradox, Paradox → Fallacy) so
+late-combat skill chains keep spinning.
+
+| ID | Name | Cat. | Cost | Target | Base | Scale | Mechanic |
+|---|---|---|---|---|---:|---|---|
+| `sorites-cascade`   | Sorites' Cascade  | paradox | `mind: 2, paradox: 1`  | enemy |  5 | mind  | stacking Bleed intensity 2, 4 rounds |
+| `straw-giant`       | Straw Giant       | fallacy | `body: 3, fallacy: 1`  | enemy | 18 | body  | flat damage (bypasses defence) |
+| `bootstrap-paradox` | Bootstrap Paradox | paradox | `heart: 2, paradox: 1` | self  |  0 | heart | self-heal (`heart × 0.5 × 4`; flat-heal fallback until round-damage telemetry lands) |
+
+### Special mechanics
+
+Bespoke behaviours the engine surfaces alongside the standard
+`combatEffects` path. Declared on `Skill.specialMechanics: SkillSpecialMechanic[]`
+and resolved by `executeSkill` after damage and after effect application.
+
+- `strip_random_buff` — removes one random buff from the target. Emits
+  `kind: 'buff-stripped'`.
+- `convert_enemy_buff_to_self` — strips a random enemy buff and re-applies
+  the same effect to the caster at the same intensity / duration. Emits
+  `kind: 'buff-converted'`.
+- `secondary_heal_self` — bolts an extra heal onto an enemy-targeted skill.
+  Amount = `baseStats[stat] × SKILL_STAT_MULTIPLIER × (multiplier ?? 1)`.
+- `bypass_defense` — marker today; skill damage already produces flat HP
+  loss without routing through defence multipliers. Preserved so a future
+  damage path can branch on it without warping the library.
+
+### Test fixtures
+
+- [`src/Skills/e2e/fixtures.ts`](../src/Skills/e2e/fixtures.ts) →
+  `SkillTestPlayer` (stable hermetic character).
+- [`src/Enemy/enemy.library.ts`](../src/Enemy/enemy.library.ts) → `Sandbag_01`,
+  a `level: 10` / `baseStats: 1/1/1` punching-bag with `maxHealth = 100`. Use
+  it for long combats that need many rounds of skill / effect exercise:
+  - CLI: `COMBAT_ENEMY=sandbag npm run combat` (or `--enemy=sandbag`).
+  - Auto-tester: `python3 automation/combat-test.py 10 2 1 sandbag` (always
+    Body Attack vs. Sandbag).
 
 ## Out of Scope (here)
 
-- Named skill library — Spec 04b.
 - Skill purchasing / learning flow — Spec 06 / 08.
 - Enemy skill use — Spec 07.
 - Moral-alignment gates — Spec 10.
+- Round-damage-total telemetry that would replace Bootstrap Paradox's flat
+  heal — deferred along with seedable RNG (Spec 11).
 
 ## Source Material
 

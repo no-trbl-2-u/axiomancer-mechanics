@@ -18,6 +18,7 @@ import { Enemy } from '../Enemy/types';
 import { ActiveEffect, Effect } from '../Effects/types';
 import { lookupEffect, applyEffect } from '../Effects';
 import { applyDamage, heal } from '../Combat/health';
+import { removeRandomBuff } from '../Combat/effects';
 import { resolveEffectApplication } from '../Combat/resist';
 import { Combatant, CombatState, Stance } from '../Combat/types';
 import {
@@ -26,6 +27,7 @@ import {
 } from '../Game/game-mechanics.constants';
 import {
     CombatResources, ResourceCost, Skill, SkillCategory, SkillCombatEffects,
+    SkillSpecialMechanic,
 } from './types';
 
 // ─── Resource Generation ─────────────────────────────────────────────────────
@@ -109,18 +111,38 @@ export function spendResources(
 /**
  * Skill damage formula:
  *
- *   damage = basePower + character.baseStats[scalingStat] × SKILL_STAT_MULTIPLIER
+ *   damage = basePower
+ *          + character.baseStats[scalingStat] × SKILL_STAT_MULTIPLIER × (scalingMultiplier ?? 1)
  *
  * The actor's baseStats are read directly (not effective stats) — skill
  * scaling is intentionally simpler than the basic-attack rolls so balancing
  * stays predictable. Stat-modifier effects influence the basic-attack path,
- * not the skill scaling path.
+ * not the skill scaling path. `scalingMultiplier` lets individual skills like
+ * Appeal to Pity amplify the stat term without warping `basePower`.
  */
 export function calculateSkillDamage(actor: Combatant, skill: Skill): number {
+    const multiplier = skill.scalingMultiplier ?? 1;
     return Math.max(
         0,
-        Math.round(skill.basePower + actor.baseStats[skill.scalingStat] * SKILL_STAT_MULTIPLIER),
+        Math.round(
+            skill.basePower
+            + actor.baseStats[skill.scalingStat] * SKILL_STAT_MULTIPLIER * multiplier,
+        ),
     );
+}
+
+/**
+ * Returns the philosophical category the skill should generate on use.
+ * Tier 1 / 2 skills generate their own category (Fallacy → Fallacy, Paradox
+ * → Paradox). Tier 3 skills already consumed a philosophical token to fire,
+ * so they generate the OPPOSING type — Fallacy → Paradox, Paradox → Fallacy.
+ * This drives the late-combat skill chain described in Spec 04b.
+ */
+export function philosophicalCategoryFor(skill: Skill): SkillCategory {
+    if (skill.tier === 3) {
+        return skill.category === 'fallacy' ? 'paradox' : 'fallacy';
+    }
+    return skill.category;
 }
 
 // ─── Skill Execution ─────────────────────────────────────────────────────────
@@ -152,6 +174,14 @@ export type SkillEvent =
     | { kind: 'effect-rebounded';
         skillId: string;
         effect: Effect;
+        message: string }
+    | { kind: 'buff-stripped';
+        skillId: string;
+        target: 'self' | 'enemy';
+        effect: Effect | null }
+    | { kind: 'buff-converted';
+        skillId: string;
+        effect: Effect | null;
         message: string }
     | { kind: 'resources-spent';
         skillId: string;
@@ -244,12 +274,22 @@ export function executeSkill(
         events.push(...result.events);
     }
 
+    for (const mechanic of skill.specialMechanics ?? []) {
+        const result = applySpecialMechanic(
+            mechanic, skill, workingPlayer, workingEnemy, state.round,
+        );
+        workingPlayer = result.player;
+        workingEnemy  = result.enemy;
+        events.push(...result.events);
+    }
+
+    const genCategory = philosophicalCategoryFor(skill);
     const nextResources = generatePhilosophicalResource(
         spendResources(state.combatResources, skill.resourceCost),
-        skill.category,
+        genCategory,
     );
     events.push({ kind: 'resources-spent', skillId, cost: skill.resourceCost });
-    events.push({ kind: 'philosophical-generated', skillId, category: skill.category });
+    events.push({ kind: 'philosophical-generated', skillId, category: genCategory });
 
     return {
         state: {
@@ -273,6 +313,11 @@ interface SkillEffectResult {
  * `resolveEffectApplication` resolver and lands the outcome on the correct
  * combatant. Tier-driven resist behaviour is inherited from the underlying
  * effect definition (Tier 1 auto, Tier 2 resisted, Tier 3 nat-20 only).
+ *
+ * `payload.intensity` and `payload.duration` override the effect's default
+ * stack/duration so skills like Liar's Echo (+2 intensity, 2-round mark) and
+ * Sorites' Cascade (intensity-2 bleed) can lean on the same library entry as
+ * the proc system without warping the underlying effect definition.
  */
 function applySkillEffect(
     payload: SkillCombatEffects,
@@ -289,8 +334,10 @@ function applySkillEffect(
 
     const targetIsSelf = payload.appliedTo === 'self';
     const target: Combatant = targetIsSelf ? player : enemy;
+    const intensityOverride = payload.intensity;
+    const durationOverride  = payload.duration;
 
-    const built = buildActiveEffect(effect, round);
+    const built = buildActiveEffect(effect, round, intensityOverride, durationOverride);
     const result = resolveEffectApplication(
         target,
         built,
@@ -298,10 +345,30 @@ function applySkillEffect(
         player.baseStats.heart,
     );
 
+    // When the skill payload explicitly overrides duration we must apply in
+    // `additive` mode so the override survives the apply path, which otherwise
+    // resets to `effect.duration` on first application. The override value is
+    // also the value to write.
+    const buildApplyOptions = (intensity: number, duration: number) => {
+        if (durationOverride !== undefined) {
+            return {
+                intensityDelta: intensity,
+                durationMode:   'additive' as const,
+                durationDelta:  duration,
+            };
+        }
+        return {
+            intensityDelta: intensity,
+            durationDelta:  duration,
+        };
+    };
+
     if (result.rebounded && result.activeEffect) {
+        const reboundIntensity = result.activeEffect.intensity ?? intensityOverride ?? 1;
+        const reboundDuration  = result.activeEffect.remainingDuration ?? durationOverride ?? effect.duration;
         const reboundedEffects = applyEffect(
             player.effects, effect, round,
-            { intensityDelta: result.activeEffect.intensity ?? 1 },
+            buildApplyOptions(reboundIntensity, reboundDuration),
         );
         events.push({
             kind: 'effect-rebounded', skillId: skill.id, effect, message: result.message,
@@ -322,10 +389,13 @@ function applySkillEffect(
         return { player, enemy, events };
     }
 
-    const applied = applyEffect(target.effects, effect, round, {
-        intensityDelta: result.activeEffect?.intensity ?? 1,
-        durationDelta:  result.activeEffect?.remainingDuration ?? effect.duration,
-    });
+    const appliedIntensity = result.activeEffect?.intensity ?? intensityOverride ?? 1;
+    const appliedDuration  = result.activeEffect?.remainingDuration ?? durationOverride ?? effect.duration;
+
+    const applied = applyEffect(
+        target.effects, effect, round,
+        buildApplyOptions(appliedIntensity, appliedDuration),
+    );
 
     events.push({
         kind: 'effect-applied', skillId: skill.id,
@@ -347,14 +417,113 @@ function applySkillEffect(
     };
 }
 
-function buildActiveEffect(effect: Effect, round: number): ActiveEffect {
+function buildActiveEffect(
+    effect: Effect,
+    round: number,
+    intensityOverride?: number,
+    durationOverride?: number,
+): ActiveEffect {
     return {
         effectId:          effect.id,
-        remainingDuration: effect.duration,
-        intensity:         1,
+        remainingDuration: durationOverride  ?? effect.duration,
+        intensity:         intensityOverride ?? 1,
         appliedAt:         round,
         tier:              effect.tier,
         resistedBy:        effect.resistedBy,
         resistDR:          effect.resistDR,
     };
+}
+
+// ─── Special Mechanics ───────────────────────────────────────────────────────
+
+/**
+ * Resolves a `SkillSpecialMechanic` (buff-strip, conversion, secondary heal,
+ * etc.) against the current working player / enemy snapshots and returns the
+ * updated snapshots plus any `SkillEvent`s the resolver should forward to
+ * the combat event stream.
+ *
+ * Mechanics run AFTER `combatEffects` so that, for example, Ship of Theseus
+ * sees the same buff list a player can observe in the CLI before this round
+ * resolves.
+ */
+function applySpecialMechanic(
+    mechanic: SkillSpecialMechanic,
+    skill: Skill,
+    player: Character,
+    enemy: Enemy,
+    round: number,
+): SkillEffectResult {
+    const events: SkillEvent[] = [];
+
+    switch (mechanic.kind) {
+        case 'bypass_defense':
+            return { player, enemy, events };
+
+        case 'strip_random_buff': {
+            if (mechanic.appliedTo === 'enemy') {
+                const { target: nextEnemy, removed } = removeRandomBuff(enemy);
+                events.push({
+                    kind: 'buff-stripped', skillId: skill.id, target: 'enemy',
+                    effect: removed ? lookupEffect(removed.effectId) ?? null : null,
+                });
+                return { player, enemy: nextEnemy, events };
+            }
+            const { target: nextPlayer, removed } = removeRandomBuff(player);
+            events.push({
+                kind: 'buff-stripped', skillId: skill.id, target: 'self',
+                effect: removed ? lookupEffect(removed.effectId) ?? null : null,
+            });
+            return { player: nextPlayer, enemy, events };
+        }
+
+        case 'convert_enemy_buff_to_self': {
+            const { target: nextEnemy, removed } = removeRandomBuff(enemy);
+            if (!removed) {
+                events.push({
+                    kind: 'buff-converted', skillId: skill.id, effect: null,
+                    message: 'No buffs to convert.',
+                });
+                return { player, enemy: nextEnemy, events };
+            }
+            const effect = lookupEffect(removed.effectId);
+            if (!effect) {
+                events.push({
+                    kind: 'buff-converted', skillId: skill.id, effect: null,
+                    message: 'Buff stripped but unknown — could not transfer.',
+                });
+                return { player, enemy: nextEnemy, events };
+            }
+            const applied = applyEffect(player.effects, effect, round, {
+                intensityDelta: removed.intensity ?? 1,
+                durationDelta:  removed.remainingDuration,
+            });
+            events.push({
+                kind: 'buff-converted', skillId: skill.id, effect,
+                message: `${effect.name} converted onto the player.`,
+            });
+            return {
+                player: { ...player, effects: applied.activeEffects },
+                enemy:  nextEnemy,
+                events,
+            };
+        }
+
+        case 'secondary_heal_self': {
+            const multiplier = mechanic.multiplier ?? 1;
+            const amount = Math.max(
+                0,
+                Math.round(player.baseStats[mechanic.stat] * SKILL_STAT_MULTIPLIER * multiplier),
+            );
+            if (amount <= 0) {
+                return { player, enemy, events };
+            }
+            const hpBefore = player.health;
+            const nextPlayer = heal(player, amount);
+            events.push({
+                kind: 'heal', skillId: skill.id, target: 'self',
+                amount, hpBefore, hpAfter: nextPlayer.health,
+            });
+            return { player: nextPlayer, enemy, events };
+        }
+    }
 }

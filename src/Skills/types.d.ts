@@ -88,12 +88,46 @@ export interface SkillLearningRequirement {
  * @property effectId    - ID of the effect in the global effects library.
  * @property appliedTo   - 'self' or 'opponent' (relative to the caster).
  * @property description - Display text for the CLI / UI.
+ * @property intensity   - Optional initial intensity override (default 1).
+ *                         Used by skills like Liar's Echo that stack a Tier 1
+ *                         mark with extra intensity on first application.
+ * @property duration    - Optional remaining-duration override (defaults to
+ *                         the effect's library duration). Switches the apply
+ *                         path into `additive` duration mode so the override
+ *                         survives stacking.
  */
 export interface SkillCombatEffects {
     effectId: string;
     appliedTo: 'self' | 'opponent';
     description?: string;
+    intensity?: number;
+    duration?: number;
 }
+
+/**
+ * Bespoke skill mechanics that don't map cleanly onto an ActiveEffect
+ * payload. Each is processed by `executeSkill` after damage and after
+ * `combatEffects`. Kept as a discriminated union so the resolver / UI can
+ * branch on `kind` without runtime tag parsing.
+ *
+ * - `strip_random_buff`: remove one random buff from the target. Used by
+ *   Ad Hominem Strike (enemy) and similar harassment effects.
+ * - `convert_enemy_buff_to_self`: strip a random buff from the enemy and
+ *   apply the same effect to the player. Ship of Theseus.
+ * - `secondary_heal_self`: heal the player for
+ *   `baseStats[stat] × SKILL_STAT_MULTIPLIER × (multiplier ?? 1)` after the
+ *   primary damage resolves. Used by Mob Appeal to bolt a small self-heal
+ *   onto an enemy-targeted strike.
+ * - `bypass_defense`: marker flag indicating the skill ignores defence math.
+ *   `calculateSkillDamage` already produces flat damage today, so this is a
+ *   no-op marker; it is preserved so future damage paths can branch on it
+ *   without changing the library.
+ */
+export type SkillSpecialMechanic =
+    | { kind: 'strip_random_buff'; appliedTo: 'self' | 'enemy' }
+    | { kind: 'convert_enemy_buff_to_self' }
+    | { kind: 'secondary_heal_self'; stat: SkillsStatType; multiplier?: number }
+    | { kind: 'bypass_defense' };
 
 /**
  * Skill entity — an ability that can be learned, equipped, and used in combat.
@@ -110,7 +144,15 @@ export interface SkillCombatEffects {
  * @property basePower       - Flat damage / heal magnitude before stat scaling.
  * @property scalingStat     - Base stat the skill scales off of (typically
  *                             matches `philosophicalAspect`, but may deviate).
+ * @property scalingMultiplier - Optional multiplier on the scaling-stat term
+ *                               (default 1). Skill damage / heal becomes
+ *                               `basePower + stat × SKILL_STAT_MULTIPLIER × scalingMultiplier`.
+ *                               Used by self-heals like Appeal to Pity that want
+ *                               a more substantial restorative effect.
  * @property combatEffects   - Optional list of effect payloads to apply.
+ * @property specialMechanics - Optional bespoke behaviours (buff-strip,
+ *                              buff-conversion, secondary heal, etc.). Resolved
+ *                              after damage and after `combatEffects`.
  * @property learningRequirement - Optional prerequisites needed to learn.
  */
 export interface Skill {
@@ -124,6 +166,8 @@ export interface Skill {
     targetType: SkillTarget;
     basePower: number;
     scalingStat: SkillsStatType;
+    scalingMultiplier?: number;
     combatEffects?: SkillCombatEffects[];
+    specialMechanics?: SkillSpecialMechanic[];
     learningRequirement?: SkillLearningRequirement;
 }

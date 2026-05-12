@@ -39,7 +39,7 @@ import {
 import { CombatAction, CombatState, Stance, Action, Advantage } from './types';
 import {
     BasicActionOutcome, SkillEvent, SkillLookup,
-    executeSkill, generateBasicActionResources,
+    canUseSkill, executeSkill, generateBasicActionResources,
 } from '../Skills/skill.engine';
 import { CombatResources, ResourceCost, SkillCategory } from '../Skills/types';
 import {
@@ -158,10 +158,25 @@ export type SkillPhaseEvent =
         effect: Effect; message: string }
     | { phase: 'skill'; kind: 'effect-rebounded';
         skillId: string; effect: Effect; message: string }
+    | { phase: 'skill'; kind: 'buff-stripped';
+        skillId: string; target: 'self' | 'enemy';
+        effect: Effect | null }
+    | { phase: 'skill'; kind: 'buff-converted';
+        skillId: string; effect: Effect | null; message: string }
     | { phase: 'skill'; kind: 'resources-spent';
         skillId: string; cost: ResourceCost }
     | { phase: 'skill'; kind: 'philosophical-generated';
-        skillId: string; category: SkillCategory };
+        skillId: string; category: SkillCategory }
+    /**
+     * The player chose `action: 'skill'` but either the skill is missing
+     * from the lookup or `canUseSkill` failed. The resolver does NOT execute
+     * the skill, does NOT spend resources, and the round ends here for both
+     * combatants (the player effectively whiffs their turn). UIs render this
+     * as a "you can't afford that yet" message.
+     */
+    | { phase: 'skill'; kind: 'blocked';
+        skillId: string;
+        reason: 'insufficient-resources' | 'unknown-skill' | 'not-equipped' };
 
 /** Stance-token generation from a player basic action (attack / defend). */
 export type ResourceEvent =
@@ -717,8 +732,12 @@ export function resolveCombatRound(
     let friendshipCounter = state.friendshipCounter;
     let combatResources = state.combatResources;
 
-    // 5a. Player picked `skill` → run skill engine, then let enemy's basic
-    // action resolve as if the player did nothing this round.
+    // 5a. Player picked `skill` → validate, then run the skill engine. If the
+    // skill is unknown, not equipped, or unaffordable, emit a `skill-blocked`
+    // event, leave `combatResources` / HP untouched, and short-circuit the
+    // rest of the scenario phase: the player whiffs their turn and no basic
+    // exchange resolves. Round-start / round-end effects still tick.
+    let skillBlocked = false;
     if (playerActionFinal === 'skill') {
         if (!playerAction.skillId) {
             throw new Error("playerAction.action === 'skill' requires a skillId.");
@@ -726,18 +745,33 @@ export function resolveCombatRound(
         if (!skillLookup) {
             throw new Error("Player chose a skill, but no skillLookup was supplied to resolveCombatRound.");
         }
-        const skillState: CombatState = {
-            ...state, player, enemy, combatResources,
-        };
-        const resolution = executeSkill(skillState, playerAction.skillId, skillLookup);
-        player = resolution.state.player;
-        enemy  = resolution.state.enemy;
-        combatResources = resolution.state.combatResources;
-        for (const ev of resolution.events) events.push(toRoundEvent(ev));
+
+        const skillId = playerAction.skillId;
+        const skill   = skillLookup(skillId);
+
+        if (!skill) {
+            events.push({ phase: 'skill', kind: 'blocked', skillId, reason: 'unknown-skill' });
+            skillBlocked = true;
+        } else if (!player.equippedSkills.includes(skillId)) {
+            events.push({ phase: 'skill', kind: 'blocked', skillId, reason: 'not-equipped' });
+            skillBlocked = true;
+        } else if (!canUseSkill(combatResources, skill)) {
+            events.push({ phase: 'skill', kind: 'blocked', skillId, reason: 'insufficient-resources' });
+            skillBlocked = true;
+        } else {
+            const skillState: CombatState = {
+                ...state, player, enemy, combatResources,
+            };
+            const resolution = executeSkill(skillState, skillId, skillLookup);
+            player = resolution.state.player;
+            enemy  = resolution.state.enemy;
+            combatResources = resolution.state.combatResources;
+            for (const ev of resolution.events) events.push(toRoundEvent(ev));
+        }
     }
 
-    const playerBasicAttacked = playerActionFinal === 'attack';
-    const playerBasicDefended = playerActionFinal === 'defend';
+    const playerBasicAttacked = !skillBlocked && playerActionFinal === 'attack';
+    const playerBasicDefended = !skillBlocked && playerActionFinal === 'defend';
 
     if (playerBasicAttacked && enemyActionFinal === 'attack') {
         ({ player, enemy } = resolveAttackVsAttack(
@@ -842,6 +876,12 @@ function toRoundEvent(ev: SkillEvent): SkillPhaseEvent {
                      appliedTo: ev.appliedTo, effect: ev.effect, message: ev.message };
         case 'effect-rebounded':
             return { phase: 'skill', kind: 'effect-rebounded', skillId: ev.skillId,
+                     effect: ev.effect, message: ev.message };
+        case 'buff-stripped':
+            return { phase: 'skill', kind: 'buff-stripped', skillId: ev.skillId,
+                     target: ev.target, effect: ev.effect };
+        case 'buff-converted':
+            return { phase: 'skill', kind: 'buff-converted', skillId: ev.skillId,
                      effect: ev.effect, message: ev.message };
         case 'resources-spent':
             return { phase: 'skill', kind: 'resources-spent', skillId: ev.skillId, cost: ev.cost };

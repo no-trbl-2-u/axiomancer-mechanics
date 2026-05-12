@@ -4,20 +4,28 @@ Automates `npm run combat` in the Axiomancer-mechanics project.
 Picks a random option for each prompt and logs all output to a timestamped file.
 
 Usage:
-    python3 run_combat.py <runs> [reaction] [action]
-    python3 run_combat.py 50          # 50 runs, both choices random every round
-    python3 run_combat.py 50 1        # 50 runs, always Heart (1) for Q1, random Q2
-    python3 run_combat.py 50 2        # 50 runs, always Body  (2) for Q1, random Q2
-    python3 run_combat.py 50 3        # 50 runs, always Mind  (3) for Q1, random Q2
-    python3 run_combat.py 50 1 1      # 50 runs, always Heart + always Attack
-    python3 run_combat.py 50 2 2      # 50 runs, always Body  + always Defend
+    python3 combat-test.py <runs> [reaction] [action] [enemy]
+    python3 combat-test.py 50                 # both choices random every round
+    python3 combat-test.py 50 1               # always Heart (1) for Q1, random Q2
+    python3 combat-test.py 50 2               # always Body  (2) for Q1, random Q2
+    python3 combat-test.py 50 3               # always Mind  (3) for Q1, random Q2
+    python3 combat-test.py 50 1 1             # always Heart + always Attack
+    python3 combat-test.py 50 2 2             # always Body  + always Defend
+    python3 combat-test.py 50 - - sandbag     # use the high-HP training dummy
+    python3 combat-test.py 50 2 1 sandbag     # always Body Attack vs Sandbag
+                                              # (Spec 04b § Q5 — long combats so
+                                              # skills/effects can be exercised
+                                              # over many rounds)
+
+Pass `-` for any positional slot to skip it (keep random / default).
 
 Uses pexpect to drive a real PTY session so that inquirer renders correctly.
 Two prompts alternate each round:
   Q1 "Respond with..." → 3 choices (1=heart, 2=body, 3=mind)
      last option text: "(mental)"
-  Q2 "Action..."       → 2 choices (1=attack, 2=defend)
-     last option text: "2) defend"
+  Q2 "Action..."       → 2 choices (1=attack, 2=defend) — or 3 when at least
+     one skill is equipped (skills slot added by Spec 04).
+     last option text: ends with "defend" — we anchor on that.
 
 By alternating which pattern we wait for, inquirer's mid-input re-renders
 (which repeat the choice list) are naturally skipped.
@@ -77,11 +85,19 @@ Q1_PATTERN = r'\(mental\)'
 Q2_PATTERN = r'2\) defend'
 
 
-def run_one_combat(run_index: int, total: int, q1_choice: int | None, q2_choice: int | None) -> str:
+def run_one_combat(
+    run_index: int,
+    total: int,
+    q1_choice: int | None,
+    q2_choice: int | None,
+    enemy_slug: str | None,
+) -> str:
     """Run a single combat session and return the cleaned output string.
 
     q1_choice: fixed value (1/2/3) for the "Respond with..." prompt, or None for random.
     q2_choice: fixed value (1/2)   for the "Action..."        prompt, or None for random.
+    enemy_slug: opponent slug (passed to the CLI via COMBAT_ENEMY), or None
+                for the CLI's default ("disatree").
     """
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     raw_log = RawLogWriter()
@@ -89,6 +105,8 @@ def run_one_combat(run_index: int, total: int, q1_choice: int | None, q2_choice:
     print(f"  [{run_index}/{total}] Starting at {timestamp} …", flush=True)
 
     env = {**os.environ, "COMBAT_NO_DELAY": "1"}
+    if enemy_slug:
+        env["COMBAT_ENEMY"] = enemy_slug
     child = pexpect.spawn(
         "npm run combat",
         cwd=COMBAT_DIR,
@@ -138,12 +156,34 @@ def run_one_combat(run_index: int, total: int, q1_choice: int | None, q2_choice:
 Q1_NAMES = {HEART: "Heart", BODY: "Body", MIND: "Mind"}
 Q2_NAMES = {ATTACK: "Attack", DEFEND: "Defend"}
 
+# Spec 04b § Q5 — known opponent slugs recognised by the CLI's COMBAT_ENEMY
+# env var. Keep this in sync with `ENEMY_REGISTRY` in
+# `src/Enemy/enemy.library.ts`.
+KNOWN_ENEMY_SLUGS = ("disatree", "sandbag")
+
+
+def _parse_optional(value: str, parser, valid, label: str):
+    if value == "-":
+        return None
+    try:
+        parsed = parser(value)
+    except ValueError:
+        print(f"Error: {label} must be one of {valid} (or '-' to skip).")
+        sys.exit(1)
+    if parsed not in valid:
+        print(f"Error: {label} must be one of {valid} (or '-' to skip).")
+        sys.exit(1)
+    return parsed
+
 
 def main() -> None:
-    if not (2 <= len(sys.argv) <= 4):
-        print(f"Usage: python3 {Path(__file__).name} <runs> [reaction] [action]")
-        print(f"  reaction  1=Heart  2=Body  3=Mind   (omit for random)")
-        print(f"  action    1=Attack 2=Defend          (omit for random)")
+    if not (2 <= len(sys.argv) <= 5):
+        print(
+            f"Usage: python3 {Path(__file__).name} <runs> [reaction] [action] [enemy]"
+        )
+        print("  reaction  1=Heart  2=Body  3=Mind     (or '-' to randomise)")
+        print("  action    1=Attack 2=Defend            (or '-' to randomise)")
+        print(f"  enemy     one of {KNOWN_ENEMY_SLUGS} (or '-' for CLI default)")
         sys.exit(1)
 
     try:
@@ -156,36 +196,37 @@ def main() -> None:
 
     q1_choice: int | None = None
     if len(sys.argv) >= 3:
-        try:
-            q1_choice = int(sys.argv[2])
-            if q1_choice not in (HEART, BODY, MIND):
-                raise ValueError
-        except ValueError:
-            print("Error: [reaction] must be 1 (Heart), 2 (Body), or 3 (Mind).")
-            sys.exit(1)
+        q1_choice = _parse_optional(sys.argv[2], int, (HEART, BODY, MIND), "[reaction]")
 
     q2_choice: int | None = None
-    if len(sys.argv) == 4:
-        try:
-            q2_choice = int(sys.argv[3])
-            if q2_choice not in (ATTACK, DEFEND):
-                raise ValueError
-        except ValueError:
-            print("Error: [action] must be 1 (Attack) or 2 (Defend).")
-            sys.exit(1)
+    if len(sys.argv) >= 4:
+        q2_choice = _parse_optional(sys.argv[3], int, (ATTACK, DEFEND), "[action]")
+
+    enemy_slug: str | None = None
+    if len(sys.argv) == 5:
+        if sys.argv[4] != "-":
+            slug = sys.argv[4].lower()
+            if slug not in KNOWN_ENEMY_SLUGS:
+                print(f"Error: [enemy] must be one of {KNOWN_ENEMY_SLUGS} (or '-' for default).")
+                sys.exit(1)
+            enemy_slug = slug
 
     reaction_label = Q1_NAMES[q1_choice] if q1_choice is not None else "Random"
     action_label   = Q2_NAMES[q2_choice] if q2_choice is not None else "Random"
+    enemy_label    = enemy_slug.capitalize() if enemy_slug else "Default"
 
-    """ Saves to /automation/combat-logs/{log-file} """
+    """ Saves to /automation/testing-logs/{log-file} """
     session_start = datetime.now()
     log_file = (
         Path(__file__).parent / "testing-logs"
-        # Path(__file__).parent
-        / f"{reaction_label}_{action_label}_{session_start.strftime('%Y-%m-%d_%H-%M')}.txt"
+        / f"{reaction_label}_{action_label}_{enemy_label}_{session_start.strftime('%Y-%m-%d_%H-%M')}.txt"
     )
 
-    print(f"Running {total} combat session(s) — Reaction: {reaction_label}, Action: {action_label}. Log → {log_file}")
+    print(
+        f"Running {total} combat session(s) — "
+        f"Reaction: {reaction_label}, Action: {action_label}, Enemy: {enemy_label}. "
+        f"Log → {log_file}"
+    )
 
     with open(log_file, "w", encoding="utf-8") as fh:
         fh.write(f"{'#' * 54}\n")
@@ -194,10 +235,11 @@ def main() -> None:
         fh.write(f"  Runs     : {total}\n")
         fh.write(f"  Reaction : {reaction_label}\n")
         fh.write(f"  Action   : {action_label}\n")
+        fh.write(f"  Enemy    : {enemy_label}\n")
         fh.write(f"{'#' * 54}\n\n")
 
         for i in range(1, total + 1):
-            result = run_one_combat(i, total, q1_choice, q2_choice)
+            result = run_one_combat(i, total, q1_choice, q2_choice, enemy_slug)
             fh.write(result)
             fh.flush()  # write each run immediately so partial logs are readable
 

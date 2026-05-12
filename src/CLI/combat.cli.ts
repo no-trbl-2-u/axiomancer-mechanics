@@ -17,7 +17,7 @@
 
 import inquirer from 'inquirer';
 
-import { Disatree_01 } from '../Enemy/enemy.library';
+import { ENEMY_REGISTRY, Disatree_01, EnemySlug } from '../Enemy/enemy.library';
 import { Player } from '../Character/characters.mock';
 import {
     determineEnemyAction,
@@ -26,6 +26,7 @@ import {
 } from '../Combat';
 import { Stance, CombatAction, CombatState } from '../Combat/types';
 import { Skill } from '../Skills/types';
+import { getSkillById, skillLibrary } from '../Skills/skill.library';
 import { createGameStore } from '../Game/store';
 import { nullAdapter } from '../Game/persistence/null.adapter';
 import {
@@ -44,11 +45,30 @@ async function delay(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// Empty skill library for now — Spec 04b populates it. The CLI threads
-// `lookupSkill` through `resolveCombatRound` so the engine path is exercised
-// even when the library is empty.
-const SKILL_LIBRARY: Record<string, Skill> = {};
-const lookupSkill = (id: string): Skill | undefined => SKILL_LIBRARY[id];
+// Spec 04b — full early-game skill library wired in. `getSkillById` is the
+// canonical lookup; the CLI passes it straight through to `resolveCombatRound`
+// so the resolver can route `action: 'skill'` through `executeSkill`.
+const lookupSkill = (id: string): Skill | undefined => getSkillById(id);
+
+/**
+ * Picks the opponent for the CLI session. Resolved from `COMBAT_ENEMY`
+ * (or the optional `--enemy=<slug>` flag) against `ENEMY_REGISTRY`. Defaults
+ * to Disatree so the existing demo flow stays stable. Spec 04b Q5: the
+ * `sandbag` slug surfaces the high-HP / low-stat dummy used for testing
+ * long combats (skills, effects, etc.).
+ */
+function resolveEnemyFromEnv(): typeof Disatree_01 {
+    const cliFlag = process.argv.find(arg => arg.startsWith('--enemy='));
+    const cliSlug = cliFlag?.split('=')[1];
+    const slug = (cliSlug ?? process.env.COMBAT_ENEMY ?? 'disatree').toLowerCase();
+    if (slug in ENEMY_REGISTRY) {
+        return ENEMY_REGISTRY[slug as EnemySlug];
+    }
+    console.warn(
+        `[combat] Unknown enemy slug "${slug}". Known: ${Object.keys(ENEMY_REGISTRY).join(', ')}. Falling back to Disatree.`,
+    );
+    return Disatree_01;
+}
 
 // ─── Player Input ─────────────────────────────────────────────────────────────
 
@@ -127,12 +147,23 @@ async function runCombatTurn(state: CombatState): Promise<CombatState> {
 // ─── Entry Point ──────────────────────────────────────────────────────────────
 
 async function main(): Promise<void> {
-    const store = createGameStore(nullAdapter, { player: Player });
+    const enemy = resolveEnemyFromEnv();
 
-    printCombatIntro(Player.name, Player.level, Disatree_01.name, Disatree_01.level);
+    // Equip the first 4 skills from the library so the CLI demoer immediately
+    // has a meaningful Skills sub-prompt. Spec 06 will turn this into a real
+    // out-of-combat equipping flow.
+    const demoSkillIds = skillLibrary.slice(0, 4).map(s => s.id);
+    const playerWithSkills = {
+        ...Player,
+        knownSkills:    skillLibrary.map(s => s.id),
+        equippedSkills: demoSkillIds,
+    };
+    const store = createGameStore(nullAdapter, { player: playerWithSkills });
+
+    printCombatIntro(playerWithSkills.name, playerWithSkills.level, enemy.name, enemy.level);
     printCombatRules();
 
-    store.getState().startCombat(Disatree_01);
+    store.getState().startCombat(enemy);
 
     while (true) {
         const combat = store.getState().combat;
