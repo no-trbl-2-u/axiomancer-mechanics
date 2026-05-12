@@ -35,6 +35,7 @@ import { lookupEffect } from '../Effects/effects.library';
 import { resolveEffectApplication } from './resist';
 import { applyEffect } from '../Effects';
 import { getBaseStat } from './stats';
+import { EquipmentProcTrigger } from '../Items/types';
 
 /** A single Stance × action × tier proc candidate, as authored in JSON. */
 export interface CombatEffectTrigger {
@@ -109,24 +110,59 @@ function unlockedTier(
 }
 
 /**
+ * Adapts an `EquipmentProcTrigger` into the `CombatEffectTrigger` shape the
+ * proc roller expects. Equipment triggers don't carry a `stance` of their own
+ * — they inherit the wearer's current stance — and they always pair with the
+ * action that surfaced them (`onHitEffects` ↔ attack, `onDefendEffects` ↔
+ * defend). Per Spec 05 Q6 (option A) these adapted entries share the same
+ * proc machinery as the JSON-defined Stance × action triggers.
+ */
+function adaptEquipmentTrigger(
+    eq: EquipmentProcTrigger,
+    stance: Stance,
+    action: 'attack' | 'defend',
+): CombatEffectTrigger {
+    return {
+        stance,
+        action,
+        tier:              eq.tier,
+        effectId:          eq.effectId,
+        target:            eq.target,
+        baseChance:        eq.baseChance,
+        intensityOverride: eq.intensityOverride,
+        durationOverride:  eq.durationOverride,
+        fumbleEffectId:    eq.fumbleEffectId,
+    };
+}
+
+/**
  * Pulls the proc entries the actor is allowed to roll for. Per-cell overrides
  * (boss / map-themed enemies) take precedence over the global table; otherwise
  * we filter the global table by Stance × action × tier ≤ unlocked cap.
+ *
+ * Per Spec 05 Q6 option A: `equipmentTriggers` (equipment-provided onHit /
+ * onDefend entries) are appended on top of the cell's eligible list, filtered
+ * by the same per-cell unlock cap so equipment can't sneak past tier gating.
  */
 export function getEligibleTriggers(
     stance: Stance,
     action: 'attack' | 'defend',
     unlocks?: ProcUnlocks,
     overrides?: ProcOverrides,
+    equipmentTriggers?: EquipmentProcTrigger[],
 ): CombatEffectTrigger[] {
     const cap = unlockedTier(unlocks, stance, action);
-    const override = overrides?.[stance]?.[action];
-    if (override) {
-        return override.filter(t => t.tier <= cap);
-    }
-    return TRIGGER_TABLE.filter(t =>
-        t.stance === stance && t.action === action && t.tier <= cap,
-    );
+    const base = overrides?.[stance]?.[action]
+        ? overrides[stance]![action]!.filter(t => t.tier <= cap)
+        : TRIGGER_TABLE.filter(t =>
+            t.stance === stance && t.action === action && t.tier <= cap,
+          );
+
+    if (!equipmentTriggers || equipmentTriggers.length === 0) return base;
+    const adapted = equipmentTriggers
+        .filter(eq => eq.tier <= cap)
+        .map(eq => adaptEquipmentTrigger(eq, stance, action));
+    return [...base, ...adapted];
 }
 
 /**
@@ -177,6 +213,12 @@ export interface RollForCombatEffectsParams {
     unlocks?: ProcUnlocks;
     overrides?: ProcOverrides;
     /**
+     * Equipment-provided proc triggers from the actor's currently-equipped
+     * items. Per Spec 05 Q6 option A these are folded into the eligible list
+     * before the proc roll, sharing the same chance / crit / fumble math.
+     */
+    equipmentTriggers?: EquipmentProcTrigger[];
+    /**
      * RNG used for the per-trigger proc roll. Defaults to `Math.random`.
      * Injected so tests can pin behavior deterministically alongside the
      * existing `mockFixedRng` flow used elsewhere in Combat.
@@ -197,7 +239,9 @@ export function rollForCombatEffects(
     p: RollForCombatEffectsParams,
 ): { procs: ProcRollOutcome[]; fumble: FumbleOutcome | null } {
     const rng = p.rng ?? Math.random;
-    const eligible = getEligibleTriggers(p.stance, p.action, p.unlocks, p.overrides);
+    const eligible = getEligibleTriggers(
+        p.stance, p.action, p.unlocks, p.overrides, p.equipmentTriggers,
+    );
 
     if (isFumble(p.rawAttackRoll)) {
         const fumbleId = eligible.find(t => t.fumbleEffectId)?.fumbleEffectId;

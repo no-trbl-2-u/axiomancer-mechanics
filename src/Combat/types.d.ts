@@ -38,11 +38,15 @@ export type CritStyle = 'double' | 'pierce';
  * @property stance  - heart/body/mind.
  * @property action  - attack/defend/skill/item/flee.
  * @property skillId - Skill ID, required when `action === 'skill'`.
+ * @property itemId  - Inventory item ID, required when `action === 'item'`.
+ *                    Per Spec 05 only consumables are usable in combat — the
+ *                    resolver emits an `item-blocked` event for anything else.
  */
 export interface CombatAction {
     stance: Stance;
     action: Action;
     skillId?: string;
+    itemId?: string;
 }
 
 /**

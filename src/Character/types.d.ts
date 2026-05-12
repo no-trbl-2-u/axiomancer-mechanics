@@ -1,4 +1,4 @@
-import { Item } from '../Items/types';
+import { Item, Equipment, EquipmentSlot } from '../Items/types';
 import { ActiveEffect } from '../Effects/types';
 import { ProcUnlocks } from '../Combat/combat-effects';
 
@@ -58,6 +58,13 @@ export interface NonCombatStats {
  * @property derivedStats           - Combat stats derived from baseStats.
  * @property nonCombatStats         - Saves and ability tests.
  * @property inventory              - Items the character is carrying.
+ * @property equipment              - Items currently equipped, keyed by slot.
+ *                                    Spec 05 Q1: all seven slots may be
+ *                                    occupied simultaneously. Spec 05 Q3:
+ *                                    equipment `statModifiers` are folded
+ *                                    into `derivedStats` at equip-time, so
+ *                                    the character's `derivedStats` is
+ *                                    already "post-equipment".
  * @property effects                - Active status effects on the character.
  * @property knownSkills            - IDs of skills the character has learned.
  * @property equippedSkills         - IDs of skills available in combat (max 4).
@@ -73,6 +80,7 @@ export interface Character {
     derivedStats: DerivedStats;
     nonCombatStats: NonCombatStats;
     inventory: Item[];
+    equipment: Partial<Record<EquipmentSlot, Equipment>>;
     effects: ActiveEffect[];
     knownSkills: string[];
     equippedSkills: string[];

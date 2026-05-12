@@ -5,16 +5,24 @@
 import { Character } from '../Character/types';
 import { Enemy } from '../Enemy/types';
 import { deepClone } from '../Utils';
+import { aggregateCombatStartTokens } from '../Items/equipment.engine';
 import {
     Stance, Action, CombatPhase, CombatState, BattleLogEntry,
 } from './types';
 
 /**
  * Builds a fresh CombatState. Combatants are deep-cloned so combat
- * mutations don't bleed back into the canonical player/enemy. The
- * per-combat resource counters (Spec 04) start at zero each fight.
+ * mutations don't bleed back into the canonical player/enemy.
+ *
+ * Per Spec 05, the per-combat resource counters are NOT unconditionally
+ * zeroed — they are seeded from the sum of every equipped item's
+ * `resourceInteraction.combatStartTokens`. Items without a
+ * `resourceInteraction` contribute zero, so the default behaviour (no
+ * equipment) is unchanged. Today only the player's equipment seeds tokens;
+ * enemies pre-Spec 07 do not carry equipment.
  */
 export function initializeCombat(player: Character, enemy: Enemy): CombatState {
+    const seeded = aggregateCombatStartTokens(player.equipment ?? {});
     return {
         active: true,
         phase: 'choosing_stance',
@@ -25,10 +33,7 @@ export function initializeCombat(player: Character, enemy: Enemy): CombatState {
         playerChoice: {},
         enemyChoice: {},
         log: [],
-        combatResources: {
-            heart: 0, body: 0, mind: 0,
-            fallacy: 0, paradox: 0,
-        },
+        combatResources: seeded,
     };
 }
 

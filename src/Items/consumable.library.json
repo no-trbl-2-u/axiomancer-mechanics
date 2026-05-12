@@ -4,7 +4,8 @@
             "id": "csl-01",
             "name": "Healing Potion",
             "description": "A potion that heals 10 HP.",
-            "effect": "heal",
+            "category": "consumable",
+            "healAmount": 10,
             "quantity": 1
         }
     ]

@@ -29,6 +29,8 @@ import { Skill } from '../Skills/types';
 import { getSkillById, skillLibrary } from '../Skills/skill.library';
 import { createGameStore } from '../Game/store';
 import { nullAdapter } from '../Game/persistence/null.adapter';
+import { isConsumable, Consumable, Item } from '../Items/types';
+import consumableLibrary from '../Items/consumable.library.json';
 import {
     typeColor,
     printCombatIntro,
@@ -75,12 +77,15 @@ function resolveEnemyFromEnv(): typeof Disatree_01 {
 async function promptPlayerChoice(state: CombatState): Promise<CombatAction> {
     const equipped = state.player.equippedSkills;
     const hasSkills = equipped.length > 0;
+    const consumables = state.player.inventory.filter(isConsumable) as Consumable[];
+    const hasItems = consumables.length > 0;
 
-    const actionChoices: Array<{ name: string; value: 'attack' | 'defend' | 'skill' }> = [
+    const actionChoices: Array<{ name: string; value: 'attack' | 'defend' | 'skill' | 'item' }> = [
         { name: 'attack', value: 'attack' },
         { name: 'defend', value: 'defend' },
     ];
     if (hasSkills) actionChoices.push({ name: 'skill', value: 'skill' });
+    if (hasItems)  actionChoices.push({ name: 'item',  value: 'item'  });
 
     const { stance, action } = await inquirer.prompt([
         {
@@ -99,24 +104,41 @@ async function promptPlayerChoice(state: CombatState): Promise<CombatAction> {
             message: 'Action...',
             choices: actionChoices,
         },
-    ]) as { stance: Stance; action: 'attack' | 'defend' | 'skill' };
+    ]) as { stance: Stance; action: 'attack' | 'defend' | 'skill' | 'item' };
 
-    if (action !== 'skill') return { stance, action };
+    if (action === 'skill') {
+        const skillChoices = equipped.map(id => {
+            const skill = lookupSkill(id);
+            return { name: skill ? `${skill.name} (${id})` : id, value: id };
+        });
+        const { skillId } = await inquirer.prompt([
+            {
+                type: 'rawlist',
+                name: 'skillId',
+                message: 'Pick a skill...',
+                choices: skillChoices,
+            },
+        ]) as { skillId: string };
+        return { stance, action, skillId };
+    }
 
-    const skillChoices = equipped.map(id => {
-        const skill = lookupSkill(id);
-        return { name: skill ? `${skill.name} (${id})` : id, value: id };
-    });
-    const { skillId } = await inquirer.prompt([
-        {
-            type: 'rawlist',
-            name: 'skillId',
-            message: 'Pick a skill...',
-            choices: skillChoices,
-        },
-    ]) as { skillId: string };
+    if (action === 'item') {
+        const itemChoices = consumables.map(c => ({
+            name: `${c.name}  (×${c.quantity})  ${c.description}`,
+            value: c.id,
+        }));
+        const { itemId } = await inquirer.prompt([
+            {
+                type: 'rawlist',
+                name: 'itemId',
+                message: 'Use which item?',
+                choices: itemChoices,
+            },
+        ]) as { itemId: string };
+        return { stance, action, itemId };
+    }
 
-    return { stance, action, skillId };
+    return { stance, action };
 }
 
 // ─── Main Turn Loop ───────────────────────────────────────────────────────────
@@ -153,10 +175,19 @@ async function main(): Promise<void> {
     // has a meaningful Skills sub-prompt. Spec 06 will turn this into a real
     // out-of-combat equipping flow.
     const demoSkillIds = skillLibrary.slice(0, 4).map(s => s.id);
+
+    // Seed the demo player's inventory with the consumable library so the
+    // `item` action is reachable from the CLI. Spec 05b will expand this
+    // into a real loot / shop flow.
+    const demoConsumables: Item[] = consumableLibrary.consumables.map(c => ({
+        ...c,
+        category: 'consumable' as const,
+    })) as Item[];
     const playerWithSkills = {
         ...Player,
         knownSkills:    skillLibrary.map(s => s.id),
         equippedSkills: demoSkillIds,
+        inventory:      [...Player.inventory, ...demoConsumables],
     };
     const store = createGameStore(nullAdapter, { player: playerWithSkills });
 
