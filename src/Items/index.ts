@@ -6,6 +6,10 @@ export {
     isEquipment, isConsumable, isMaterial, isQuestItem,
 } from './types';
 export {
+    type HiddenModRarity, type ModValueTier, type ModifierPayload, type Modifier,
+    HIDDEN_MOD_RARITY_WEIGHTS,
+} from './modifier.types';
+export {
     addItem, removeItem, useConsumable, stackItem,
     addItemToInventory, removeItemFromInventory,
 } from './item.reducer';
@@ -20,6 +24,11 @@ export {
 export {
     uniqueTemplates, getUniqueTemplate,
 } from './unique.templates';
+export {
+    weaponModPool, headModPool, bodyModPool, handsModPool, feetModPool,
+    accessoryModPool, armorModPool, uniqueModPool,
+    MOD_POOLS, getModifierById, pickValueTier, allModifiers,
+} from './modifier.catalogue';
 export {
     dropItem, rollModifiers, resolveModifiers, rarityWeightTable,
 } from './item.factory';

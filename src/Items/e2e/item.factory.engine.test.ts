@@ -117,11 +117,15 @@ describe('dropItem: Uncommon rarity', () => {
     });
 
     it('Uncommon value falls within the catalogue range for the given player level', () => {
-        // perLevel = 1, minBase = 1 → range at lvl 8 is [1, 8] inclusive.
+        // Spec 05d weapon-pool ranges at lvl 8 (pre-lvl-10):
+        //   wm-flat-damage  → [1,3]
+        //   wm-lifesteal    → [1,2]
+        //   wm-body-gen     → [1,1]
+        // The widest range is [1,3] across the eligible pool.
         const drop = dropItem('iron-blade', 8, 'uncommon', seededRng(4));
         const rolled = drop.rolledMods![0]!;
         expect(rolled.value).toBeGreaterThanOrEqual(1);
-        expect(rolled.value).toBeLessThanOrEqual(8);
+        expect(rolled.value).toBeLessThanOrEqual(3);
     });
 
     it('statModifiers fold base stats + rolled mod payload', () => {
@@ -162,13 +166,22 @@ describe('dropItem: Unique rarity', () => {
 
     it('Unique mod values fall within the catalogue range', () => {
         const drop = dropItem('paradox-loop', 20, 'unique', seededRng(8));
-        // `unique_paradox_loop_echo`: minBase=2, perLevel=0 → always exactly 2.
-        const echo = drop.rolledMods!.find(m => m.modId === 'unique_paradox_loop_echo')!;
-        expect(echo.value).toBe(2);
-        // `accessory_mind_flat`: minBase=1, perLevel=1 → range [1, 1 + 19] = [1,20].
-        const mindMod = drop.rolledMods!.find(m => m.modId === 'accessory_mind_flat')!;
-        expect(mindMod.value).toBeGreaterThanOrEqual(1);
-        expect(mindMod.value).toBeLessThanOrEqual(20);
+        // `paradox-loop` fixedModIds: am-stance-res, am-proc-boost, um-resonance-prime.
+        // At lvl 20:
+        //   am-stance-res        — combatStartTokens mind, range [3, 4]
+        //   am-proc-boost        — luck stat,            range [11, 20]
+        //   um-resonance-prime   — combatStartTokens 3x, range [2, 3]
+        const stanceRes = drop.rolledMods!.find(m => m.modId === 'am-stance-res')!;
+        expect(stanceRes.value).toBeGreaterThanOrEqual(3);
+        expect(stanceRes.value).toBeLessThanOrEqual(4);
+
+        const procBoost = drop.rolledMods!.find(m => m.modId === 'am-proc-boost')!;
+        expect(procBoost.value).toBeGreaterThanOrEqual(11);
+        expect(procBoost.value).toBeLessThanOrEqual(20);
+
+        const resonance = drop.rolledMods!.find(m => m.modId === 'um-resonance-prime')!;
+        expect(resonance.value).toBeGreaterThanOrEqual(2);
+        expect(resonance.value).toBeLessThanOrEqual(3);
     });
 
     it('explicit rarity=\'unique\' on a regular template throws (no fixedModIds)', () => {
@@ -186,10 +199,9 @@ describe('dropItem: deterministic with seeded rng', () => {
     });
 
     it('different seeds can produce different mod ids and / or values', () => {
-        // Probabilistic — but with a small pool and distinct seeds, at least
-        // one of {modId, value} should differ. Use a fixed pair known to diverge.
+        // Probabilistic — pick a seed pair known to diverge under the LCG.
         const a = dropItem('iron-blade', 20, 'rare', seededRng(111));
-        const b = dropItem('iron-blade', 20, 'rare', seededRng(222));
+        const b = dropItem('iron-blade', 20, 'rare', seededRng(987));
         const aSig = a.rolledMods!.map(m => `${m.modId}:${m.value}`).join('|');
         const bSig = b.rolledMods!.map(m => `${m.modId}:${m.value}`).join('|');
         expect(aSig).not.toBe(bSig);
@@ -264,12 +276,13 @@ describe('dropItem → equipItem round-trip (Spec 05c §12)', () => {
         const drop = dropItem('iron-blade', 8, 'uncommon', seededRng(43));
         const equipped = equipItem(player, drop);
         expect(equipped.equipment.weapon).toBe(drop);
-        // Some derivedStat must move beyond the Common baseline since the
-        // rolled mod adds a flat boost on top of `iron-blade`'s base stats.
+        // The Common baseline already lifts `physicalAttack` by +2 (from
+        // `iron-blade`'s base body stat). The rolled mod may add more on top:
+        //   - wm-flat-damage adds +N physicalAttack directly
+        //   - wm-lifesteal / wm-body-gen contribute non-stat payloads
+        // So the bound is "at least the Common baseline".
         const playerPhysAtk = player.derivedStats.physicalAttack;
         const equippedPhysAtk = equipped.derivedStats.physicalAttack;
-        // Bound: at least +2 (base body), and likely more because the rolled
-        // mod is a procedural weapon mod (body / physicalAttack / mentalAttack).
         expect(equippedPhysAtk).toBeGreaterThanOrEqual(playerPhysAtk + 2);
     });
 });
@@ -286,10 +299,11 @@ describe('rollModifiers / resolveModifiers', () => {
 
     it('resolveModifiers merges base stats with rolled mod payloads', () => {
         const template = getEquipmentTemplate('iron-blade')!;
-        const rolled = [{ modId: 'weapon_physical_attack', value: 4 }];
+        const rolled = [{ modId: 'wm-flat-damage', value: 4 }];
         const merged = resolveModifiers(template, rolled);
-        // Base = [+2 body]; rolled = [+4 physicalAttack]; merged = both.
-        expect(merged).toContainEqual({ stat: 'body', value: 2 });
-        expect(merged).toContainEqual({ stat: 'physicalAttack', value: 4 });
+        // Base = [+2 body]; rolled mod payload (wm-flat-damage) =
+        // [+0 physicalAttack sentinel → +4 after substitution].
+        expect(merged.statModifiers).toContainEqual({ stat: 'body', value: 2 });
+        expect(merged.statModifiers).toContainEqual({ stat: 'physicalAttack', value: 4 });
     });
 });

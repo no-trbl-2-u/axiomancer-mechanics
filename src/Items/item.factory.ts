@@ -1,21 +1,22 @@
 /**
- * Item Factory — `dropItem` (Spec 05c).
+ * Item Factory — `dropItem` (Spec 05c) + Spec 05d catalogue integration.
  *
  * Turns an authored `EquipmentTemplate` / `UniqueItemTemplate` into a runtime
  * `Equipment` instance. Rarity is decided either by the caller (loot tables /
  * tests) or by a weighted random draw against the table in Spec 05c §9.
  *
- * The mod-catalogue inlined here is a minimal Spec 05c stub — exactly enough
- * to drop Commons / Uncommons / Rares / Uniques with the right *shape* and
- * deterministic value ranges. Spec 05d will replace it with a richer catalogue
- * (and richer `rollModifiers` / `resolveModifiers` implementations). Until
- * then, dropped items mechanically work end-to-end through `equipItem` and
- * `getEquipmentModifiers`.
+ * Modifier rolls and payload merging now run through the Spec 05d catalogue
+ * (`src/Items/modifier.catalogue.ts`). Per Spec 05d Q3 the resolve step
+ * substitutes rolled values into `value: 0` / `bonus: 0` / `0` token sentinels
+ * inside each mod's `payload`, then concatenates array fields and sums
+ * `combatStartTokens` across mods so the existing `equipItem` /
+ * `getEquipmentModifiers` / `aggregateCombatStartTokens` pipeline picks
+ * everything up transparently.
  *
  * Determinism — every random draw inside the factory consumes from the
  * caller-supplied `rng` (defaults to `Math.random`). Two calls with the same
- * seeded `rng` produce identical Equipment instances. This keeps Spec 05c
- * hermetically testable today and aligns with Spec 11's seeded-RNG design.
+ * seeded `rng` produce identical Equipment instances. This keeps Spec 05c /
+ * 05d hermetically testable today and aligns with Spec 11's seeded-RNG design.
  */
 
 import {
@@ -24,88 +25,25 @@ import {
     UniqueItemTemplate,
     ItemRarity,
     RolledModifier,
-    EquipmentSlot,
+    EquipmentProcTrigger,
+    ResourceInteraction,
+    ResourceGenerationBonus,
 } from './types';
-import { StatModifier, EffectStatTarget } from '../Effects/types';
+import { CombatResources } from '../Skills/types';
+import { StatModifier } from '../Effects/types';
 import { getEquipmentTemplate } from './equipment.templates';
 import { getUniqueTemplate } from './unique.templates';
-
-// ─── Modifier catalogue (Spec 05c stub) ──────────────────────────────────────
-
-/**
- * Minimal mod-catalogue entry. Spec 05d replaces this with a richer shape
- * (proc triggers, multiplier mods, themed pools). Each entry declares:
- *
- *   - `stat`      — the `EffectStatTarget` the rolled mod boosts.
- *   - `slotScope` — slots this mod can roll on. `undefined` means "unique-only"
- *                   (excluded from the procedural pool — only ever drops when
- *                   referenced by a `UniqueItemTemplate.fixedModIds`).
- *   - `minBase`   — minimum rolled value at any player level.
- *   - `perLevel`  — additional rolled value cap per player level above 1.
- *
- * The roll range at level `L` is `[minBase, minBase + floor(perLevel * (L-1))]`
- * inclusive — i.e. an Uncommon dropped at level 8 with `perLevel: 1` rolls
- * between `minBase` and `minBase + 7`.
- */
-interface ModCatalogueEntry {
-    id: string;
-    stat: EffectStatTarget;
-    slotScope?: EquipmentSlot[];
-    minBase: number;
-    perLevel: number;
-}
-
-const MOD_CATALOGUE: ModCatalogueEntry[] = [
-    // ─── Procedural — weapon ─────────────────────────────────────────────────
-    { id: 'weapon_body_flat',          stat: 'body',           slotScope: ['weapon'],                          minBase: 1, perLevel: 1 },
-    { id: 'weapon_physical_attack',    stat: 'physicalAttack', slotScope: ['weapon'],                          minBase: 1, perLevel: 1 },
-    { id: 'weapon_mental_attack',      stat: 'mentalAttack',   slotScope: ['weapon'],                          minBase: 1, perLevel: 1 },
-
-    // ─── Procedural — armor / head / body / feet ─────────────────────────────
-    { id: 'armor_physical_defense',    stat: 'physicalDefense', slotScope: ['armor', 'head', 'body', 'feet'], minBase: 1, perLevel: 1 },
-    { id: 'armor_body_flat',           stat: 'body',            slotScope: ['armor', 'head', 'body', 'feet'], minBase: 1, perLevel: 1 },
-    { id: 'armor_mental_defense',      stat: 'mentalDefense',   slotScope: ['armor', 'head', 'body', 'feet'], minBase: 1, perLevel: 1 },
-
-    // ─── Procedural — hands ──────────────────────────────────────────────────
-    { id: 'hands_physical_attack',     stat: 'physicalAttack', slotScope: ['hands'], minBase: 1, perLevel: 1 },
-    { id: 'hands_body_flat',           stat: 'body',           slotScope: ['hands'], minBase: 1, perLevel: 1 },
-
-    // ─── Procedural — accessory ──────────────────────────────────────────────
-    { id: 'accessory_mind_flat',       stat: 'mind',           slotScope: ['accessory'], minBase: 1, perLevel: 1 },
-    { id: 'accessory_body_flat',       stat: 'body',           slotScope: ['accessory'], minBase: 1, perLevel: 1 },
-    { id: 'accessory_heart_flat',      stat: 'heart',          slotScope: ['accessory'], minBase: 1, perLevel: 1 },
-    { id: 'accessory_mental_defense',  stat: 'mentalDefense',  slotScope: ['accessory'], minBase: 1, perLevel: 1 },
-
-    // ─── Unique-only signature mods (not in procedural pool) ─────────────────
-    { id: 'unique_axioms_edge_crit',   stat: 'luck',           minBase: 2, perLevel: 0 },
-    { id: 'unique_paradox_loop_echo',  stat: 'mentalAttack',   minBase: 2, perLevel: 0 },
-];
-
-const MOD_REGISTRY: Map<string, ModCatalogueEntry> = new Map(
-    MOD_CATALOGUE.map(entry => [entry.id, entry]),
-);
-
-/**
- * Procedural pool for a given slot — every catalogue entry whose `slotScope`
- * includes the slot. Unique-only mods (`slotScope` omitted) are excluded.
- */
-function proceduralPoolForSlot(slot: EquipmentSlot): ModCatalogueEntry[] {
-    return MOD_CATALOGUE.filter(entry => entry.slotScope?.includes(slot));
-}
-
-/**
- * Rolls a single mod value within `[minBase, minBase + floor(perLevel * (L-1))]`
- * inclusive, using the caller-supplied RNG. Unknown mod IDs (e.g. a Unique
- * template referencing a Spec 05d mod that doesn't exist yet) roll `0` so the
- * shape stays well-formed without crashing.
- */
-function rollValue(modId: string, playerLevel: number, rng: () => number): number {
-    const entry = MOD_REGISTRY.get(modId);
-    if (!entry) return 0;
-    const levelBonus = Math.floor(entry.perLevel * Math.max(0, playerLevel - 1));
-    const delta = Math.floor(rng() * (levelBonus + 1));
-    return entry.minBase + delta;
-}
+import {
+    Modifier,
+    HiddenModRarity,
+    HIDDEN_MOD_RARITY_WEIGHTS,
+} from './modifier.types';
+import {
+    MOD_POOLS,
+    uniqueModPool,
+    getModifierById,
+    pickValueTier,
+} from './modifier.catalogue';
 
 // ─── Rarity weight table (Spec 05c §9) ───────────────────────────────────────
 
@@ -142,16 +80,62 @@ const MODS_PER_RARITY: Record<ItemRarity, number> = {
     unique:   3,
 };
 
+function isUnique(template: EquipmentTemplate): template is UniqueItemTemplate {
+    return Array.isArray((template as UniqueItemTemplate).fixedModIds);
+}
+
+/** Inclusive uniform integer roll across `[min, max]`. */
+function rollInRange(min: number, max: number, rng: () => number): number {
+    if (max <= min) return min;
+    return min + Math.floor(rng() * (max - min + 1));
+}
+
+/**
+ * Filters a pool to mods with at least one `levelTier.levelReq <= playerLevel`.
+ * Mods with no eligible tier are excluded from the procedural draw.
+ */
+function eligibleMods(pool: Modifier[], playerLevel: number): Modifier[] {
+    return pool.filter(mod => mod.levelTiers.some(t => t.levelReq <= playerLevel));
+}
+
+/**
+ * Weighted sample without replacement from `pool` using each mod's
+ * `hiddenRarity` weight. Throws if `count` exceeds the pool size.
+ */
+function sampleByHiddenRarity(
+    pool: Modifier[],
+    count: number,
+    rng: () => number,
+): Modifier[] {
+    if (pool.length < count) {
+        throw new Error(
+            `dropItem: requested ${count} mods but only ${pool.length} eligible.`,
+        );
+    }
+    const remaining = pool.slice();
+    const picked: Modifier[] = [];
+    for (let i = 0; i < count; i++) {
+        const entries = remaining.map(mod =>
+            [mod, HIDDEN_MOD_RARITY_WEIGHTS[mod.hiddenRarity as HiddenModRarity]] as const,
+        );
+        const choice = drawWeighted(entries, rng);
+        picked.push(choice);
+        const idx = remaining.indexOf(choice);
+        remaining.splice(idx, 1);
+    }
+    return picked;
+}
+
 /**
  * Rolls the modifier list for a given (template, rarity, playerLevel).
  *
  * - `common`            — empty array.
- * - `uncommon` / `rare` — N distinct procedural mods drawn (without replacement)
- *                         from the slot's procedural pool. Throws if the pool
- *                         is smaller than the requested count.
- * - `unique`             — the template's `fixedModIds` triple, in declaration
- *                         order, with values rolled from the catalogue. Requires
- *                         a `UniqueItemTemplate`.
+ * - `uncommon` / `rare` — N distinct procedural mods drawn (weighted-without-
+ *                         replacement) from the slot's procedural pool. Mods
+ *                         without an eligible level tier are filtered out.
+ * - `unique`            — the template's `fixedModIds` triple, in declaration
+ *                         order, with values rolled from the catalogue.
+ *                         Requires a `UniqueItemTemplate`.
  */
 export function rollModifiers(
     template: EquipmentTemplate,
@@ -168,64 +152,133 @@ export function rollModifiers(
                 `template '${template.id}' has no fixedModIds.`,
             );
         }
-        return template.fixedModIds.map(modId => ({
-            modId,
-            value: rollValue(modId, playerLevel, rng),
-        }));
+        return template.fixedModIds.map(modId => {
+            const mod = getModifierById(modId);
+            if (!mod) {
+                // Unknown unique-template mod ID — keep the shape stable, roll 0.
+                return { modId, value: 0 };
+            }
+            const tier = pickValueTier(mod, playerLevel);
+            const value = tier ? rollInRange(tier.range[0], tier.range[1], rng) : 0;
+            return { modId, value };
+        });
     }
 
     const count = MODS_PER_RARITY[rarity];
-    const pool = proceduralPoolForSlot(template.slot);
-    if (pool.length < count) {
+    const pool = MOD_POOLS[template.slot] ?? [];
+    const eligible = eligibleMods(pool, playerLevel);
+    if (eligible.length < count) {
         throw new Error(
-            `dropItem: procedural pool for slot '${template.slot}' has ` +
-            `${pool.length} entries; cannot roll ${count} distinct mods for ` +
-            `rarity '${rarity}'.`,
+            `dropItem: eligible procedural pool for slot '${template.slot}' at ` +
+            `playerLevel ${playerLevel} has ${eligible.length} entries; ` +
+            `cannot roll ${count} distinct mods for rarity '${rarity}'.`,
         );
     }
 
-    // Sample without replacement: pick indices in turn, swap-removed.
-    const remaining = pool.slice();
-    const rolled: RolledModifier[] = [];
-    for (let i = 0; i < count; i++) {
-        const idx = Math.floor(rng() * remaining.length);
-        const entry = remaining[idx]!;
-        rolled.push({ modId: entry.id, value: rollValue(entry.id, playerLevel, rng) });
-        // Swap-and-pop to avoid re-rolling the same mod.
-        remaining[idx] = remaining[remaining.length - 1]!;
-        remaining.pop();
-    }
-    return rolled;
+    const sampled = sampleByHiddenRarity(eligible, count, rng);
+    return sampled.map(mod => {
+        const tier = pickValueTier(mod, playerLevel)!;
+        return { modId: mod.id, value: rollInRange(tier.range[0], tier.range[1], rng) };
+    });
 }
 
 /**
- * Merges `template.baseStatModifiers` with the `rolledMods` payload into the
- * final `Equipment.statModifiers` list. Spec 05d will move this to the
- * modifier catalogue once the catalogue learns about non-stat payloads (proc
- * triggers, resource interactions); for Spec 05c every rolled mod adds a
- * single flat `StatModifier`.
+ * Resolves rolled mods + base template stats into the `Equipment` payload
+ * fields the engine consumes (`statModifiers`, `passiveEffects`,
+ * `onHitEffects`, `onDefendEffects`, `resourceInteraction`).
+ *
+ * Per Spec 05d:
+ *   - Array fields are concatenated (not replaced).
+ *   - `value: 0` sentinels in `payload.statModifiers` get the rolled value.
+ *   - `bonus: 0` sentinels in `generationBonus` entries get the rolled value.
+ *   - `0` values inside `combatStartTokens` get the rolled value, then the
+ *     keys are summed across all rolled mods (additive — Spec 05b Q2).
  */
 export function resolveModifiers(
     template: EquipmentTemplate,
     rolledMods: RolledModifier[],
-): StatModifier[] {
-    const out: StatModifier[] = [];
+): Pick<Equipment,
+    'statModifiers' | 'passiveEffects' | 'onHitEffects' | 'onDefendEffects' | 'resourceInteraction'
+> {
+    const statModifiers: StatModifier[] = [];
+    const passiveEffects: string[] = [];
+    const onHitEffects: EquipmentProcTrigger[] = [];
+    const onDefendEffects: EquipmentProcTrigger[] = [];
+    const startTokens: Partial<CombatResources> = {};
+    const generationBonus: ResourceGenerationBonus[] = [];
+
     if (template.baseStatModifiers) {
-        out.push(...template.baseStatModifiers);
+        statModifiers.push(...template.baseStatModifiers);
     }
+
+    const addStartTokens = (delta: Partial<CombatResources>, rolledValue: number): void => {
+        for (const key of Object.keys(delta) as Array<keyof CombatResources>) {
+            const raw = delta[key];
+            if (typeof raw !== 'number') continue;
+            const concrete = raw === 0 ? rolledValue : raw;
+            startTokens[key] = (startTokens[key] ?? 0) + concrete;
+        }
+    };
+
     for (const rolled of rolledMods) {
-        const entry = MOD_REGISTRY.get(rolled.modId);
-        if (!entry) continue;
-        out.push({ stat: entry.stat, value: rolled.value });
+        const mod = getModifierById(rolled.modId);
+        if (!mod) continue;
+        const { payload } = mod;
+
+        if (payload.statModifiers) {
+            for (const sm of payload.statModifiers) {
+                const value = sm.value === 0 ? rolled.value : sm.value;
+                const next: StatModifier = { stat: sm.stat, value };
+                if (sm.isMultiplier) next.isMultiplier = true;
+                statModifiers.push(next);
+            }
+        }
+        if (payload.passiveEffects) {
+            passiveEffects.push(...payload.passiveEffects);
+        }
+        if (payload.onHitEffects) {
+            onHitEffects.push(...payload.onHitEffects);
+        }
+        if (payload.onDefendEffects) {
+            onDefendEffects.push(...payload.onDefendEffects);
+        }
+        if (payload.resourceInteraction) {
+            const ri = payload.resourceInteraction;
+            if (ri.combatStartTokens) addStartTokens(ri.combatStartTokens, rolled.value);
+            if (ri.generationBonus) {
+                for (const entry of ri.generationBonus) {
+                    const bonus = entry.bonus === 0 ? rolled.value : entry.bonus;
+                    generationBonus.push({
+                        trigger: entry.trigger,
+                        resourceType: entry.resourceType,
+                        bonus,
+                    });
+                }
+            }
+        }
     }
+
+    const out: Pick<Equipment,
+        'statModifiers' | 'passiveEffects' | 'onHitEffects' | 'onDefendEffects' | 'resourceInteraction'
+    > = {};
+
+    if (statModifiers.length > 0) out.statModifiers = statModifiers;
+    if (passiveEffects.length > 0) out.passiveEffects = passiveEffects;
+    if (onHitEffects.length > 0)   out.onHitEffects   = onHitEffects;
+    if (onDefendEffects.length > 0) out.onDefendEffects = onDefendEffects;
+
+    const startKeys = Object.keys(startTokens) as Array<keyof CombatResources>;
+    if (startKeys.length > 0 || generationBonus.length > 0) {
+        const ri: ResourceInteraction = {};
+        if (startKeys.length > 0) ri.combatStartTokens = startTokens;
+        if (generationBonus.length > 0) ri.generationBonus = generationBonus;
+        out.resourceInteraction = ri;
+    }
+
     return out;
 }
 
 // ─── Public factory ──────────────────────────────────────────────────────────
-
-function isUnique(template: EquipmentTemplate): template is UniqueItemTemplate {
-    return Array.isArray((template as UniqueItemTemplate).fixedModIds);
-}
 
 /**
  * Drops an `Equipment` instance from a template.
@@ -235,7 +288,7 @@ function isUnique(template: EquipmentTemplate): template is UniqueItemTemplate {
  *      Unique templates, rarity is forced to `'unique'`.
  *   3. Assert `playerLevel >= template.requiredLevel`.
  *   4. Roll the modifier list via `rollModifiers`.
- *   5. Merge base stats + rolled mods into the final `statModifiers`.
+ *   5. Merge base stats + rolled-mod payloads via `resolveModifiers`.
  *   6. Return the fully-formed `Equipment` instance.
  *
  * Pure when `rng` is deterministic; calls do not mutate input.
@@ -278,7 +331,7 @@ export function dropItem(
     })();
 
     const rolledMods = rollModifiers(template, finalRarity, playerLevel, rng);
-    const statModifiers = resolveModifiers(template, rolledMods);
+    const resolved = resolveModifiers(template, rolledMods);
 
     const instance: Equipment = {
         id:            template.id,
@@ -288,8 +341,8 @@ export function dropItem(
         slot:          template.slot,
         rarity:        finalRarity,
         requiredLevel: template.requiredLevel,
-        ...(statModifiers.length > 0 ? { statModifiers } : {}),
-        ...(rolledMods.length > 0    ? { rolledMods }    : {}),
+        ...resolved,
+        ...(rolledMods.length > 0 ? { rolledMods } : {}),
     };
     return instance;
 }
@@ -298,3 +351,7 @@ export function dropItem(
 // introspect the same constants the factory uses.
 export const rarityWeightTable: ReadonlyArray<readonly [ItemRarity, number]> =
     RARITY_WEIGHTS_WITH_UNIQUE;
+
+// Re-export the unique-pool shape so tests / loot tables can introspect it
+// without reaching into `modifier.catalogue.ts` directly.
+export { uniqueModPool };
