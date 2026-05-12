@@ -4,20 +4,28 @@
 
 Make equipping and using items meaningful. Equipment must contribute to derived
 stats; consumables must reference real effects from the library; both must show
-up in combat math.
+up in combat math. Equipment also carries an optional `ResourceInteraction`
+payload that the combat resolver reads to seed token counters at battle start
+and amplify generation from basic actions.
 
 **Success state:** A player can equip a `weapon` that adds `+2 body` and
 `+1 physicalAttack`; the bonus shows in `derivedStats` and on attack rolls.
 A `Healing Potion` consumable applies the right effect from the library and
-restores HP. The CLI item action works.
+restores HP. The CLI item action works. A `Berserker Band` (accessory tier 2)
+grants 3 Body tokens at the start of combat; the combat resolver reads the
+equipped item and seeds `combatResources.body = 3` in `initializeCombat`.
+Library content (50 equipment pieces + 12 consumables) lives in **Spec 05b**,
+which depends on this spec.
 
 ## Why now / dependencies
 
-- **Unblocks:** Phase 5 (level-up flow gives equipment-shaped rewards),
-  shop NPCs (Spec 08), enemy loot drops (Spec 07).
+- **Unblocks:** Spec 05b (equipment library + resource interaction content),
+  Phase 5 level-up flow (Spec 06), shop NPCs (Spec 08), enemy loot drops
+  (Spec 07).
 - **Depends on:** Spec 01 for stat-modifier aggregation (so equipment can
   share the same machinery as effects); Spec 02 for the action pipeline so
-  the `item` action runs through the resolver.
+  the `item` action runs through the resolver; Spec 04 for `CombatResources` /
+  `ResourceCost` types reused here.
 
 ## Current state
 
@@ -27,7 +35,7 @@ restores HP. The CLI item action works.
   `stackItem`. The Zustand store now delegates to these reducers rather than
   inlining the logic (`src/Game/store.ts`).
 - `Equipment` has only `slot: EquipmentSlot` — no stat modifiers, passive
-  effects, or tiers yet.
+  effects, tiers, or resource interactions yet.
 - `Consumable.effect: string` is a free-text field; nothing reads it.
 - `Character` has no equipment slot field — currently equipment is just
   inventory.
@@ -93,44 +101,76 @@ restores HP. The CLI item action works.
    - (C) Both, depending on the consumable.
    > Your answer:
 
-10. **Library breadth.** Roadmap says 18 equipment + 12 consumables. Is the
-    initial PR's scope:
-    - (A) Hit those numbers in this spec.
-    - (B) Land 6 + 6 here, defer the rest to a follow-up content spec.
+10. **Resource interaction interface.** Equipment in Spec 05b will carry
+    combat-start token grants and per-action generation bonuses. What is the
+    right type shape for the `ResourceInteraction` payload on `Equipment`?
+    - (A) Two flat optional fields directly on `Equipment`:
+      `combatStartTokens?: Partial<CombatResources>` and
+      `generationBonus?: Array<{ trigger: 'hit' | 'miss' | 'defend' | 'any'; resourceType: keyof CombatResources; bonus: number }>`.
+    - (B) Same as (A), but `trigger` also accepts a `Stance` key
+      (`'body' | 'mind' | 'heart'`) so a bonus can be limited to one stance
+      (e.g., "only triggers on a body-stance hit").
+    - (C) Wrap both fields in a `resourceInteraction?: ResourceInteraction`
+      sub-object to keep the top-level `Equipment` shape flat and enable
+      complete omission when the item has no resource interactions.
     > Your answer:
 
 ## Proposed approach
 
 1. **Type updates** — `Equipment.statModifiers`, `passiveEffects`,
    `onHitEffects`, `onDefendEffects`, `tier`, optionally `stance`, optionally
-   `critStyle` per Q4/Q7.
-2. **`Character.equipment: Partial<Record<EquipmentSlot, Equipment>>`** plus
+   `critStyle` per Q4/Q7, and a `resourceInteraction?` field per Q10.
+2. **`ResourceInteraction` type** — new interface in `src/Items/types.ts`
+   with fields resolved in Q10. Reuses `CombatResources` imported from
+   `src/Skills/types.d.ts` (already a public export via `src/index.ts`).
+3. **`Character.equipment: Partial<Record<EquipmentSlot, Equipment>>`** plus
    `equipItem(character, item)` / `unequipItem(character, slot)` reducers.
-3. **`getEquipmentModifiers(character): AggregatedModifiers`** — same shape
+4. **`getEquipmentModifiers(character): AggregatedModifiers`** — same shape
    Spec 01 produces for active effects; gets merged into the same site so
    `getAttackStat`/`getDefenseStat` etc. transparently pick up equipment.
-4. **Consumables: rename `effect` → `effectId`** (keep a back-compat type
+5. **Combat-start token seeding** — `initializeCombat` reads
+   `character.equipment`, sums `combatStartTokens` across all occupied slots,
+   and adds them to the initial `combatResources` instead of zeroing all five
+   counters unconditionally.
+6. **Generation bonus wiring** — `generateBasicActionResources` (in
+   `src/Skills/skill.engine.ts`) accepts an optional `equippedItems` array
+   and applies applicable `generationBonus` entries on top of the base
+   table from Spec 04.
+7. **Consumables: rename `effect` → `effectId`** (keep a back-compat type
    alias for one release). Wire `useConsumable` to call `applyEffect`
    against the player and tick the inventory.
-5. **Store integration** — `store.equipItem`, `store.unequipItem`,
+8. **Store integration** — `store.equipItem`, `store.unequipItem`,
    `store.useConsumable` calls the new reducer functions.
-6. **CLI** — `'item'` action lists usable consumables, applies the chosen
+9. **CLI** — `'item'` action lists usable consumables, applies the chosen
    one, decrements the stack.
-7. **Library** — at least the count agreed in Q10. Naming follows the
-   philosophical theme.
-8. **Tests:** equip/unequip math, consumable application, CLI smoke test.
+10. **Library** — content (50 equipment pieces + 12 consumables) lives in
+    Spec 05b. This spec ships only the types, reducers, and engine wiring.
+11. **Tests:** equip/unequip stat math, consumable application, combat-start
+    token seeding, generation bonus, CLI smoke test.
 
 ## Acceptance checklist
 
 - [ ] All 10 questions answered.
+- [ ] `Equipment` type has `statModifiers`, `passiveEffects`, `onHitEffects`,
+      `onDefendEffects`, `tier`, and `resourceInteraction?: ResourceInteraction`.
+- [ ] `ResourceInteraction` type exported from `src/Items/`.
+- [ ] `initializeCombat` seeds `combatResources` from equipped items'
+      `combatStartTokens` (items with no `resourceInteraction` contribute 0
+      to each counter).
+- [ ] `generateBasicActionResources` applies `generationBonus` entries from
+      equipped items on top of the base generation table.
 - [ ] Equipping a stat-mod weapon visibly changes the player's
       `derivedStats` in the CLI display.
 - [ ] Using a Healing Potion in the CLI restores HP and decrements the stack.
 - [ ] An equipment with `onHitEffects` lands the effect at the right time.
-- [ ] `docs/equipment.md` filled in with the final type, formulas, library.
+- [ ] `docs/equipment.md` updated with the final type shape, formulas, and
+      `ResourceInteraction` interface.
 
 ## Out of scope
 
+- Library content (50 pieces of equipment + 12 consumables) — Spec 05b.
+- Which specific items carry `combatStartTokens` / `generationBonus` and at
+  what amounts — Spec 05b.
 - Crafting from `Material` items.
 - Shop economy / pricing — Spec 08.
 - Equipment as quest rewards — Spec 08.
