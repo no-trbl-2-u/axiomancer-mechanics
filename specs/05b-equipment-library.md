@@ -45,14 +45,14 @@ the resource-seeding path end-to-end.
    so no retroactive seeding is needed. Should the spec explicitly lock this
    as "tokens granted only at the moment `initializeCombat` is called, never
    recalculated during a fight"?
-   > Your answer:
+   > Your answer: Correct and actually, the player should never be able to change equipment during combat.
 
 2. **Stacking rules.** If the player equips both a weapon (`cs: body+2`) and
    an accessory (`cs: body+3`), do they stack additively (total body+5 at
    combat start), or does a per-resource cap apply? Suggested default: additive
    stacking with no cap (matching the Spec 04 decision to leave resource counts
    unbounded).
-   > Your answer:
+   > Your answer: Stack additively
 
 3. **Philosophical token grants at combat start.** Can `combatStartTokens`
    include `fallacy` or `paradox` tokens (e.g., `void-sigil` granting
@@ -64,7 +64,7 @@ the resource-seeding path end-to-end.
      thematic accessories can provide; balance via high tier requirement.
    - (B) Disallow it — `combatStartTokens` may only include `heart`, `body`,
      and `mind` keys. Philosophical tokens remain skill-only.
-   > Your answer:
+   > Your answer: B
 
 4. **Tier gating for resource interactions.** Should the library enforce
    that Tier 1 items never carry `resourceInteraction`, Tier 2 items carry
@@ -72,7 +72,7 @@ the resource-seeding path end-to-end.
    strongest (`+3` to `+5` tokens)? Or are tier and resource interactions
    orthogonal, with the designer free to place small interactions on Tier 1
    items?
-   > Your answer:
+   > Your answer: Orthogonal. We can balance the benefits by having the items also cause passive debuffs (ie. +2 stance tokens per attack, but a passive poison at 5 intensity so long as the item is equipped)
 
 5. **Flavor alignment.** Must a body-stance weapon's `combatStartTokens` only
    include `body` tokens? Or can accessories span types (e.g.,
@@ -81,7 +81,7 @@ the resource-seeding path end-to-end.
      match its primary stance; accessories may span types.
    - (B) Loose alignment — any item may grant any combination, but the
      library will use thematic alignment as a design guideline.
-   > Your answer:
+   > Your answer: Equipment should not scope to a stance. Rather equipment modifiers should have specific alignments. (ie. bloody iron sword vs. Thoughtful iron sword. Same base sword but modifier causes different modifiers. Except for unique items)
 
 6. **Consumable resource grants.** Should consumables carry a
    `resourceGrant?: Partial<CombatResources>` field that immediately adds
@@ -91,7 +91,7 @@ the resource-seeding path end-to-end.
    - (B) No — consumables interact with HP and status effects only; resource
      economy remains equipment-driven at battle start and action-driven
      during the fight.
-   > Your answer:
+   > Your answer:A
 
 7. **Named equipment sets.** Should some items form thematic sets (e.g., a
    "Berserker Set": `berserker-axe` + `berserker-plate` + `berserker-band`)
@@ -100,7 +100,7 @@ the resource-seeding path end-to-end.
      in `getEquipmentModifiers` grant a bonus if ≥2 matching IDs are present.
    - (B) No — items are independent; set flavour lives in naming and lore
      only. Revisit after playtesting.
-   > Your answer:
+   > Your answer: A except check the answer to question 6. There will be base sets vs. unique sets. A base set is when all of the base items are part of a set (Common, uncommon, rare) vs. a unique set (which will always have the same modifiers)
 
 8. **Library slot distribution.** The table below proposes 50 pieces spread
    across 7 slots. Is this distribution acceptable?
@@ -116,12 +116,12 @@ the resource-seeding path end-to-end.
    | feet | 6 | Utility / minor bonuses |
    | **Total** | **50** | |
 
-   > Your answer:
+   > Your answer: Specific slots should not have a focus on stances. I do not want to couple specific equipment or equipment slots with specific stance bonuses. However, I do like having specific modifiers only available on specific slots.
 
 9. **Enemy drop sourcing.** Should this spec define a `dropSource?: string[]`
    field on `Equipment` (listing enemy IDs that can yield this item as loot),
    or defer the drop table entirely to Spec 07?
-   > Your answer:
+   > Your answer: Defer
 
 10. **Generation bonus trigger granularity.** `GenerationBonusEntry.trigger`
     currently covers `'hit' | 'miss' | 'defend' | 'any'`. Should the trigger
