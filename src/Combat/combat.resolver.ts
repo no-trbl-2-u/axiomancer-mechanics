@@ -194,15 +194,23 @@ export type ResourceEvent =
  * resolver:
  *   - applies the consumable's `healAmount` (immediate) and/or its
  *     `effectId` / `inlineEffect` payload through `applyEffect`;
+ *   - folds the consumable's `resourceGrant` into `combatResources`
+ *     (Spec 05b Q6 option A);
  *   - decrements the inventory stack via the existing inventory reducer;
  *   - lets the enemy's basic action still resolve at passive-defense, but
  *     the player neither attacks nor defends this round.
+ *
+ * `resourceGrant` is the delta the resolver added to `combatResources` for
+ * the consumed item — included on the `used` event so UIs can show "+3 body"
+ * style feedback. Always present (zeroed when the consumable did not grant
+ * any tokens) for a stable UI contract.
  */
 export type ItemPhaseEvent =
     | { phase: 'item'; kind: 'used';
         itemId: string; itemName: string;
         healed: number; hpBefore: number; hpAfter: number;
-        appliedEffectId: string | null }
+        appliedEffectId: string | null;
+        resourceGrant: CombatResources }
     | { phase: 'item'; kind: 'blocked';
         itemId: string;
         reason: 'unknown-item' | 'not-consumable' | 'missing-item-id' };
@@ -834,12 +842,23 @@ export function resolveCombatRound(
                 );
                 const nextInventory = useInventoryConsumable(useResult.player.inventory, itemId);
                 player = { ...useResult.player, inventory: nextInventory };
+                // Spec 05b Q6 — fold the consumable's resourceGrant into
+                // combatResources. Empty grants are zero-sum so the call is
+                // safe to make unconditionally.
+                combatResources = {
+                    heart:   combatResources.heart   + useResult.resourceGrant.heart,
+                    body:    combatResources.body    + useResult.resourceGrant.body,
+                    mind:    combatResources.mind    + useResult.resourceGrant.mind,
+                    fallacy: combatResources.fallacy + useResult.resourceGrant.fallacy,
+                    paradox: combatResources.paradox + useResult.resourceGrant.paradox,
+                };
                 events.push({
                     phase: 'item', kind: 'used',
                     itemId, itemName: consumable.name,
                     healed: useResult.healed,
                     hpBefore, hpAfter: player.health,
                     appliedEffectId: useResult.applied?.id ?? null,
+                    resourceGrant: useResult.resourceGrant,
                 });
             }
         }

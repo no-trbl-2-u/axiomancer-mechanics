@@ -30,7 +30,7 @@ import { getSkillById, skillLibrary } from '../Skills/skill.library';
 import { createGameStore } from '../Game/store';
 import { nullAdapter } from '../Game/persistence/null.adapter';
 import { isConsumable, Consumable, Item } from '../Items/types';
-import consumableLibrary from '../Items/consumable.library.json';
+import { consumableLibrary } from '../Items/consumable.library';
 import {
     typeColor,
     printCombatIntro,
@@ -177,12 +177,9 @@ async function main(): Promise<void> {
     const demoSkillIds = skillLibrary.slice(0, 4).map(s => s.id);
 
     // Seed the demo player's inventory with the consumable library so the
-    // `item` action is reachable from the CLI. Spec 05b will expand this
-    // into a real loot / shop flow.
-    const demoConsumables: Item[] = consumableLibrary.consumables.map(c => ({
-        ...c,
-        category: 'consumable' as const,
-    })) as Item[];
+    // `item` action is reachable from the CLI. Spec 05b populated the
+    // library with 12 entries spanning heals, cleanses, and resource grants.
+    const demoConsumables: Item[] = consumableLibrary.map(c => ({ ...c })) as Item[];
     const playerWithSkills = {
         ...Player,
         knownSkills:    skillLibrary.map(s => s.id),
