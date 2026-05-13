@@ -27,6 +27,7 @@ permissions:
   contents: write        # git push commits the loop produces
   issues: write          # /triage + phase-mirror issue ops
   pull-requests: write   # /critique / /iterate may open PRs
+  id-token: write
 
 concurrency:
   group: march-${{ github.ref }}
