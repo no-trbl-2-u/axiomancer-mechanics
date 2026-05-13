@@ -14,14 +14,6 @@
 
 ## Pending
 
-### [MED] docs/npcs.md is stale — claims "no runtime functions exported"
-- pass: critique-1 (commit dd26ef0)
-- area: docs
-- observation: `docs/npcs.md` documents the NPCs module as "Types only. Dialogue runtime, shop logic, and quest dialogue are pending Phase 7" and the "Public API (current)" section states *"No runtime functions are exported yet."* The barrel already exports `getDialogueNode`, `visibleChoices`, `isLeafNode`, plus the `DialogueTree`, `DialogueNode`, `DialogueChoice` types.
-- evidence: `docs/npcs.md` lines describing "Public API (current)" / "Pending (Phase 7)"; contradicted by `src/NPCs/index.ts` and `src/index.ts` NPCs export block.
-- suggested_fix: rewrite the "Public API" section to document the three runtime helpers + `DialogueContext`, and move shop/quest-giver-flow items from "Pending" to a "Remaining for full Spec 08 surface" subsection once verified against `specs/08`.
-- source: critique
-
 ### [MED] Tests bypass test-utils/rng.ts and stub Math.random directly
 - pass: critique-1 (commit dd26ef0)
 - area: tests
@@ -68,3 +60,4 @@
 
 - [x] **[HIGH] NPCs — exported dialogue runtime has no tests** — resolved at commit `00cda59` (2026-05-13) by adding `src/NPCs/e2e/dialogue.engine.test.ts` (13 hermetic cases).
 - [x] **[HIGH] Character — zero module-level tests for public API** — resolved at commit `8e20626` (2026-05-13) by adding `src/Character/e2e/character.engine.test.ts` (16 hermetic cases).
+- [x] **[MED] docs/npcs.md is stale** — resolved at commit `1193b19` (2026-05-13) by rewriting `docs/npcs.md` against the live Spec 08 Q9 dialogue surface (helpers, DialogueContext, applyDialogueChoice cross-link, accurate Pending section).

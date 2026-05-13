@@ -12,14 +12,6 @@
 
 ## Pending
 
-### [Z-MED] docs/npcs.md is stale — claims "no runtime functions exported"
-- category: docs
-- impact: 6 (consumers read the doc to discover surface; current wording is actively wrong)
-- ease: 9 (single doc edit)
-- source: critique (pass-1)
-- score: 5.4
-- next: rewrite "Public API (current)" to document `getDialogueNode`, `visibleChoices`, `isLeafNode`, `DialogueContext`; reframe "Pending" section against the now-shipped Spec 08 surface.
-
 ### [Z-MED] Tests use raw `vi.spyOn(Math, 'random')` instead of test-utils/rng.ts
 - category: tests
 - impact: 6 (violates locked RNG-stub convention; future refactors of `test-utils/rng.ts` won't propagate)
@@ -78,3 +70,4 @@
 
 - [x] **[Z-HIGH] NPCs — exported dialogue runtime has no tests** — shipped `src/NPCs/e2e/dialogue.engine.test.ts` (13 cases) at commit `00cda59` (2026-05-13). Drains critique pass-1 finding.
 - [x] **[Z-HIGH] Character — zero module-level tests for public API** — shipped `src/Character/e2e/character.engine.test.ts` (16 cases) at commit `8e20626` (2026-05-13). Drains critique pass-1 finding.
+- [x] **[Z-MED] docs/npcs.md stale** — rewrote `docs/npcs.md` against the live Spec 08 Q9 surface at commit `1193b19` (2026-05-13). Drains critique pass-1 finding.
