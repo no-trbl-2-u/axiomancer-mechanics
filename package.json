@@ -56,6 +56,7 @@
     "vitest": "^4.1.4"
   },
   "dependencies": {
+    "dotenv": "^17.4.2",
     "eslint-plugin-typescript": "^0.14.0",
     "zustand": "^5.0.11"
   }

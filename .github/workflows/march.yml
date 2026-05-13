@@ -1,0 +1,85 @@
+name: march
+
+# Manually fire the autonomous-beast loop: one tick of `/march`, which
+# dispatches to triage / critique / ship-a-phase / expand / iterate.
+#
+# Trigger: Actions tab → "march" → Run workflow. Pick the branch you want
+# the tick to commit against. The skill follows its normal contract — it
+# may push commits, open / close GitHub issues, and run the verify gate.
+#
+# Required secrets (Settings → Secrets and variables → Actions):
+#   ANTHROPIC_API_KEY — your Anthropic API key
+#
+# The workflow uses the auto-provisioned GITHUB_TOKEN for `gh` and git
+# operations. No PAT needed unless you want cross-repo behaviour.
+
+on:
+  workflow_dispatch:
+    inputs:
+      args:
+        description: 'Optional argument passed to /march (e.g. "phase 10", "iterate")'
+        required: false
+        default: ''
+
+permissions:
+  contents: write        # git push commits the loop produces
+  issues: write          # /triage + phase-mirror issue ops
+  pull-requests: write   # /critique / /iterate may open PRs
+
+concurrency:
+  group: march-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  march:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Configure git identity
+        run: |
+          git config user.name  "axiomancer-march[bot]"
+          git config user.email "41898282+axiomancer-march[bot]@users.noreply.github.com"
+
+      - name: Provision .env for nexus skills
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # The nexus skills read GH_TOKEN / GH_REPO from a local .env via
+          # `awk -F=`. Provision a CI-scoped copy so /triage and the phase
+          # mirror (scripts/loop-issue.mjs) work out of the box.
+          umask 077
+          cat > .env <<EOF
+          GH_TOKEN=${GH_TOKEN}
+          GH_REPO=${{ github.repository }}
+          EOF
+
+      - name: Run /march
+        uses: anthropics/claude-code-base-action@beta
+        with:
+          prompt: "/march ${{ github.event.inputs.args }}"
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # The loop needs to: read everything, edit files, run npm / gh /
+          # git, and dispatch sub-agents. Bash is the broadest hammer it
+          # leans on — keep the allowlist permissive in CI since the
+          # workflow itself is the trust boundary.
+          allowed_tools: "Bash,Read,Edit,Write,Glob,Grep,Agent,TodoWrite,WebFetch,WebSearch"
+          timeout_minutes: '60'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
