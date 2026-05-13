@@ -17,7 +17,7 @@ import { Character } from '../Character/types';
 import { Encounter, QuestLog } from '../World/types';
 import { Enemy } from '../Enemy/types';
 import { initializeCombat } from '../Combat/combat.reducer';
-import { determineEnemyAction } from '../Combat';
+import { determineEnemyAction, determineCombatEnd } from '../Combat';
 import { resolveCombatRound } from '../Combat/combat.resolver';
 import { getSkillById } from '../Skills/skill.library';
 import {
@@ -37,7 +37,7 @@ import { processNode as processWorldNode } from '../World/process-node';
 import { applyDialogueChoice as applyDialogueRuntime } from '../World/dialogue.runtime';
 import { killObjectives, progressQuest, findQuest } from '../World/quest.engine';
 import { calculateMaxHealth } from '../Utils';
-import { EXPERIENCE_PER_LEVEL } from './game-mechanics.constants';
+import { EXPERIENCE_PER_LEVEL, FRIENDSHIP_COUNTER_MAX } from './game-mechanics.constants';
 import { addItemStacking, rollEncounterLoot, totalEncounterXp } from './combat-grants';
 
 /**
@@ -166,19 +166,21 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
             const { combat } = state;
             if (!combat) return state;
 
-            const outcome: 'victory' | 'defeat' | 'flee' =
-                combat.enemy.health <= 0 ? 'victory'
-                : combat.player.health <= 0 ? 'defeat'
+            const combatEnd = determineCombatEnd(combat);
+            const outcome: 'victory' | 'defeat' | 'flee' | 'friendship' =
+                combatEnd === 'player' ? 'victory'
+                : combatEnd === 'ko' ? 'defeat'
+                : combatEnd === 'friendship' ? 'friendship'
                 : 'flee';
 
             // Promote the combat-snapshot player back to root, restoring the
             // root inventory for defeat / flee so combat mutations don't leak.
-            let nextPlayer: Character = outcome === 'victory'
+            let nextPlayer: Character = (outcome === 'victory' || outcome === 'friendship')
                 ? combat.player
                 : { ...combat.player, inventory: state.player.inventory };
             let nextQuests: QuestLog = state.quests;
 
-            if (outcome === 'victory' && state.currentEncounter) {
+            if ((outcome === 'victory' || outcome === 'friendship') && state.currentEncounter) {
                 const grantedLoot = action.payload?.grantedLoot
                     ?? rollEncounterLoot(state.currentEncounter);
                 const grantedXp = action.payload?.grantedXp
@@ -213,13 +215,18 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
                 }
             }
 
-            return {
+            // Friendship victories grant +1 to moral meter (compassion)
+            const baseState = {
                 ...state,
                 player: nextPlayer,
                 quests: nextQuests,
                 combat: null,
                 currentEncounter: undefined,
             };
+
+            return outcome === 'friendship'
+                ? shiftMoralMeter(baseState, 1)
+                : baseState;
         }
 
         case 'MOVE_TO_NODE': {
