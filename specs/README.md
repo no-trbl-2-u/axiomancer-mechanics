@@ -69,9 +69,9 @@ most other work. Feel free to override.
 | 5b **DONE** | [`05b-equipment-library.md`](./05b-equipment-library.md) | Companion to (5). Ships 50 equipment pieces + 12 consumables with resource economy interactions. Depends on (5). |
 | 6 **DONE** | [`06-character-progression.md`](./06-character-progression.md) | Phase 5. Depends on (4) for skill learning. |
 | 7 **DONE** | [`07-enemy-content-and-ai.md`](./07-enemy-content-and-ai.md) | Phase 6. Depends on (3) for richer AI behaviour. |
-| 8 | [`08-world-content-and-hazards.md`](./08-world-content-and-hazards.md) | Phase 7. Depends on (1) for hazard ticks while exploring. |
-| 9 | [`09-game-loop-orchestration.md`](./09-game-loop-orchestration.md) | Phase 8. Top-level orchestration; depends on most of the above. |
-| 10 | [`10-moral-difficulty-meter.md`](./10-moral-difficulty-meter.md) | Touches multiple systems; OK to spec early, implement after (8) and (9). |
+| 8 **DONE** | [`08-world-content-and-hazards.md`](./08-world-content-and-hazards.md) | Phase 7. Depends on (1) for hazard ticks while exploring. |
+| 9 | [`09-game-loop-orchestration.md`](./09-game-loop-orchestration.md) | Phase 8. Top-level orchestration + `createGameStore` wiring for world/exploration; depends on (8) and most of the above. |
+| 10 | [`10-moral-difficulty-meter.md`](./10-moral-difficulty-meter.md) | Touches multiple systems; OK to spec early; implement after (9) (and (8) where it touches `MapEvent` / `processNode`). |
 | 11 | [`11-rng-seeding-and-test-harness.md`](./11-rng-seeding-and-test-harness.md) | Cross-cutting test infra. Doable any time; biggest payoff when (1) & (2) are landing. |
 | 12 | [`12-package-architecture-and-events.md`](./12-package-architecture-and-events.md) | Defines the engine ↔ React Native UI boundary. Pull this in before the UI consumer starts. |
 

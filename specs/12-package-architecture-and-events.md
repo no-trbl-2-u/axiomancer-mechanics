@@ -15,7 +15,8 @@ The package's public API is documented at the source level.
 
 - **Unblocks:** the React Native UI development.
 - **Depends on:** Spec 09 (the orchestration that decides what events
-  exist).
+  exist). Spec 08 world primitives are already implemented; Spec 09 must
+  compose them into `createGameStore` (or an agreed equivalent).
 
 ## Current state
 

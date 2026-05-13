@@ -1,16 +1,19 @@
 # Spec 08 — World Content, Exploration & Hazards
 
+> [DONE on 2026-05-13 — acceptance complete; canonical API: `docs/world.md`]
+
 ## Goal
 
 Make the world reducer the engine of an actual exploration loop: track which
 node the player is on, process node events (encounter / treasure / shop /
 quest / NPC), tick persistent effects on movement, and handle quest progress.
 
-**Success state:** From a `WorldState`, `processNode(state, node)` returns a
-new `GameState` reflecting whatever happened on that node — including hazard
-DoT, quest progress, encounter resolution, NPC dialogue. The world reducer
-gains `moveToNode`. A small piece of map content (1 quest, 2 NPCs, 3
-encounters) is enough to demo the loop.
+**Success state:** From a `GameState`, `processNode(gameState)` returns a
+`ProcessNodeResult` (updated `gameState`, `ProcessedEvent`, messages, quest
+side-effects). `moveToNode` / `completeCurrentNode` on `WorldState` validate
+movement (linear graph, no back-travel into completed nodes). Hazard ticking
+pairs with movement via `processWorldEffectTick`. A small demo map chain
+exercises the loop end-to-end.
 
 ## Why now / dependencies
 
@@ -20,12 +23,21 @@ encounters) is enough to demo the loop.
 
 ## Current state
 
-- World reducer covers `changeMap`, `completeMap`, `unlockMap`,
-  `completeNode`, `unlockNode`, `changeContinent`, `completeUniqueEvent`.
-- `WorldMap` carries `availableEvents`, `uniqueEvents`, `npcs`, `enemies`.
-- `Quest` type exists; `quest.library.ts` defines only quest names.
-- No `currentNode` field, no `moveToNode`, no `processNode`.
-- Map registry is hard-coded in `getCoastalMap` for the one continent.
+- **Implemented:** `MapDefinition` / `MapState` split, continent-keyed
+  `MAP_REGISTRY`, `moveToNode` + `IllegalMoveError`, `completeCurrentNode`,
+  `processNode(gameState)`, `processWorldEffectTick`, `getActiveHazards`,
+  per-objective `Quest` / `QuestLog`, branching NPC dialogue
+  (`DialogueTree`, `applyDialogueChoice`), demo coastal map content. See
+  `docs/world.md` and `src/World/spec08.test.ts` / `src/Game/spec08.e2e.test.ts`.
+- **Still legacy on the reducer:** `changeMap`, `completeMap`, `unlockMap`,
+  `completeNode`, `unlockNode`, `changeContinent`, `completeUniqueEvent` —
+  retained for compatibility; the Spec 08 path is registry + `MapState`.
+- **Not in this spec:** a dedicated “story choice node” on `MapEvent` with
+  generic `choices[]` / `resolveEvent`. `MapEvent.type === 'event'` is the
+  **rest** path (instant heal + narration). Multi-step narrative today is
+  **NPC dialogue**, not a free-standing `EventChoice` list on map nodes.
+- **`createGameStore`:** still combat / inventory / persistence — it does
+  **not** yet wrap `moveToNode` / `processNode` (that orchestration is Spec 09).
 
 ## Open questions
 
@@ -63,7 +75,7 @@ encounters) is enough to demo the loop.
 
 6. **Map registry.** Replace `getCoastalMap` with a continent-keyed
    registry so adding a continent doesn't touch existing files? Suggested
-   shape: `MAP_REGISTRY: Record<ContinentName, Record<MapName, WorldMap>>`.
+   shape: `MAP_REGISTRY: Record<ContinentName, Partial<Record<MapName, MapDefinition>>>` (implemented).
    > Your answer: yes
 
 7. **Quest engine scope.** Minimum viable:
@@ -92,11 +104,13 @@ encounters) is enough to demo the loop.
    adjacency per Q2.
 2. **Map definition vs state** per Q5.
 3. **Map registry refactor** per Q6.
-4. **`processNode(gameState, node): GameState`** — dispatches by event
-   type; encounters call `startCombat`, quests call `completeQuest`,
-   NPCs return dialogue data, shops return shop view.
+4. **`processNode(gameState): ProcessNodeResult`** — dispatches by event
+   type; encounters return an `Encounter` for the caller to pass to
+   `startCombat`; quests / NPCs / shops return structured payloads (see
+   `docs/world.md`).
 5. **`processWorldEffectTick(player)`** per Q3 — DoT / regen / expiry.
-   Called from `moveToNode`. Lives in `Effects/` since it's effect-shaped.
+   Paired with each `moveToNode` at the **orchestrator** layer (Spec 09),
+   not inside the pure `moveToNode` reducer. Lives under `Effects/`.
 6. **`getActiveHazards(player)`** if Q4 wants it.
 7. **Quest engine** scoped to Q7.
 8. **Shop reducers** if Q8 says yes.

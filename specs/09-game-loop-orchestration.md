@@ -19,9 +19,13 @@ return to map → level up → quest progress → save / load → all driven by
 
 ## Current state
 
-- `Game/store.ts` is a Zustand vanilla store. Combat actions:
-  `startCombat(enemy)`, `updateCombat(combat)`, `endCombat()`. Inventory:
-  `addItem`, `removeItem`, `useConsumable`, `stackItem`. Persistence: `save()`.
+- **Spec 08 landed** — pure `moveToNode`, `processNode`,
+  `applyDialogueChoice`, quest log, map registry, etc. (see
+  `docs/world.md`). Consumers can import and compose these
+  **outside** the package store today.
+- `Game/store.ts` is still a Zustand vanilla store scoped to
+  combat, inventory, equipment, and `save()` — **no** world-move
+  or `processNode` actions on `GameStore` yet.
 - `Game/game.reducer.ts` is intentionally minimal — only `createNewGameState`
   and `GAME_STATE_VERSION`.
 - `actions.constants.ts` exports `COMBAT_ACTION` constants (attack, defend,
