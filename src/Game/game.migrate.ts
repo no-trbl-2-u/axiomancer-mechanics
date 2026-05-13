@@ -11,6 +11,23 @@
 import { GameState } from './types';
 import { GAME_STATE_VERSION } from './game.reducer';
 
+/** GameState shape before v3 (before moralMeter field was added). */
+interface GameStateV2 extends Omit<GameState, 'moralMeter'> {
+    version: 2;
+}
+
+/**
+ * Migrate from v2 to v3: add moralMeter field defaulting to 0 (neutral).
+ * v2 saves had no moral tracking; new field allows existing saves to continue.
+ */
+function migrateV2toV3(v2: GameStateV2): GameState {
+    return {
+        ...v2,
+        version: 3,
+        moralMeter: 0,
+    };
+}
+
 /**
  * Migrate a raw save payload to the current `GameState` shape.
  *
@@ -40,14 +57,14 @@ export function migrate(
         );
     }
 
-    // Stepwise migration funnel. No upgrade paths are needed today because v2
-    // is the baseline; later phases can chain calls like:
-    //   if (fromVersion < 3) raw = migrateV2toV3(raw as GameStateV2);
-    console.warn(
-        `migrate: no upgrade path from v${fromVersion} to v${toVersion}; ` +
-        'returning payload as-is (this will likely fail validation).',
-    );
-    return assertGameState(raw);
+    // Stepwise migration funnel
+    let migrated = raw;
+    
+    if (fromVersion < 3) {
+        migrated = migrateV2toV3(migrated as GameStateV2);
+    }
+    
+    return assertGameState(migrated);
 }
 
 /**
@@ -63,6 +80,7 @@ function assertGameState(raw: unknown): GameState {
         || !('combat' in r)
         || r.quests == null
         || !Array.isArray(r.flags)
+        || typeof r.moralMeter !== 'number'
     ) {
         throw new Error('migrate: payload missing required GameState fields.');
     }
