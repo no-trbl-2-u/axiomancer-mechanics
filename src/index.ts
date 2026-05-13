@@ -123,6 +123,7 @@ export {
 // ─── Game (state, store, persistence, constants) ──────────────────────────────
 export {
     createGameStore, createNewGameState, GAME_STATE_VERSION,
+    gameReducer, migrate, createEventEmitter,
     selectPlayer, selectCombat, selectCombatState, selectIsInCombat,
     selectInventory, selectVersion,
     nullAdapter, createNodeAdapter,
@@ -130,7 +131,11 @@ export {
     DEFENSE_MULTIPLIERS, PASSIVE_DEFENSE_MULTIPLIER,
     MAX_EFFECT_INTENSITY, MAX_EFFECT_DURATION, FRIENDSHIP_COUNTER_MAX,
 } from './Game';
-export type { GameState, GameStore, GameActions, PersistenceAdapter, StoreApi } from './Game';
+export type {
+    GameState, GameStore, GameActions, PersistenceAdapter, StoreApi,
+    GameAction, GameActionOf,
+    GameEvent, GameEventEmitter, GameEventHandler, GameEventType,
+} from './Game';
 
 // Legacy combat-action constants (use Action type instead).
 export { COMBAT_ACTION } from './Game/actions.constants';

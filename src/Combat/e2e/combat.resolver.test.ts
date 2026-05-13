@@ -204,14 +204,16 @@ describe('Game store lifecycle with nullAdapter', () => {
         expect(() => store.getState().save()).not.toThrow();
     });
 
-    it('save() is not called automatically during startCombat / endCombat', () => {
+    it('save() autosaves on every action (Spec 09 Q4)', () => {
         const saveSpy = vi.spyOn(nullAdapter, 'save');
 
         const store = createGameStore(nullAdapter, { player: Player });
         store.getState().startCombat(Disatree_01);
         store.getState().endCombat();
 
-        expect(saveSpy).not.toHaveBeenCalled();
+        // Autosave fires after each dispatch — Spec 09 leaves room to throttle
+        // this later if the cadence proves too brutal.
+        expect(saveSpy).toHaveBeenCalled();
     });
 
     it('startCombat creates a combat snapshot without mutating root player', () => {

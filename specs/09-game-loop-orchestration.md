@@ -100,11 +100,11 @@ return to map → level up → quest progress → save / load → all driven by
 
 ## Acceptance checklist
 
-- [ ] All 7 questions answered.
-- [ ] `gameReducer` exported and used by the CLI.
-- [ ] Save/load round-trip preserves combat, world, character, inventory.
-- [ ] `game.cli.ts` demonstrates the full loop.
-- [ ] `docs/` gets a new `gameloop.md` (or appendix in `docs/character.md`).
+- [x] All 7 questions answered.
+- [x] `gameReducer` exported and used by the CLI.
+- [x] Save/load round-trip preserves combat, world, character, inventory.
+- [x] `game.cli.ts` demonstrates the full loop.
+- [x] `docs/` gets a new `gameloop.md` (or appendix in `docs/character.md`).
 
 ## Out of scope
 

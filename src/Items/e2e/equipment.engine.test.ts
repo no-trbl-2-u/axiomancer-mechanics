@@ -487,7 +487,7 @@ describe('Invariants', () => {
 // ────────────────────────────────────────────────────────────────────────────
 
 describe('Game store lifecycle: equipment & consumables with nullAdapter', () => {
-    it('equipItem / unequipItem flow through the store without touching disk', () => {
+    it('equipItem / unequipItem flow through the store; autosave fires (Spec 09 Q4) but the nullAdapter never touches disk', () => {
         const saveSpy = vi.spyOn(nullAdapter, 'save');
         const player  = buildPlayer();
         const store   = createGameStore(nullAdapter, { player });
@@ -500,7 +500,9 @@ describe('Game store lifecycle: equipment & consumables with nullAdapter', () =>
         expect(store.getState().player.equipment.weapon).toBeUndefined();
         expect(store.getState().player.derivedStats.physicalAttack).toBe(3);
 
-        expect(saveSpy).not.toHaveBeenCalled();
+        // Autosave on every action — but the nullAdapter's save is a silent
+        // no-op, so no disk write actually occurs.
+        expect(saveSpy).toHaveBeenCalled();
     });
 
     it('useConsumable applies the healAmount on the root player and decrements the stack', () => {
