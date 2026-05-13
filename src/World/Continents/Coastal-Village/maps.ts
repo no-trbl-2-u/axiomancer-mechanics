@@ -112,6 +112,69 @@ const tideShopkeeper: NPC = {
     isShopkeeper: true,
 };
 
+const beggarTree: DialogueTree = {
+    rootId: 'greet',
+    nodes: {
+        greet: {
+            id: 'greet',
+            text: "A haggard figure sits against the weathered wall, an empty bowl at their feet. \"Spare a coin for one fallen on hard times? The sea took my nets... my livelihood...\"",
+            choices: [
+                {
+                    text: "Give 10 gold generously. \"Here, take this.\"",
+                    nextNodeId: 'grateful_generous',
+                    effect: { grantCurrency: -10, setFlag: 'beggar_generous_gift' },
+                },
+                {
+                    text: "Give 5 gold. \"I can spare a little.\"",
+                    nextNodeId: 'grateful_small',
+                    effect: { grantCurrency: -5, setFlag: 'beggar_small_gift' },
+                },
+                {
+                    text: "Offer to share your rations instead.",
+                    nextNodeId: 'grateful_kind',
+                    effect: { setFlag: 'beggar_kind_gesture' },
+                },
+                {
+                    text: "\"Everyone has their struggles.\" (Walk away)",
+                    nextNodeId: 'dismissed',
+                    effect: { setFlag: 'beggar_dismissed' },
+                },
+                {
+                    text: "\"Find work like everyone else.\" (Be harsh)",
+                    nextNodeId: 'harsh',
+                    effect: { setFlag: 'beggar_harsh_words' },
+                },
+            ],
+        },
+        grateful_generous: {
+            id: 'grateful_generous',
+            text: "The beggar's eyes brighten with genuine gratitude. \"Ten gold! Bless you, kind soul. This will see me through the harsh season.\" They clutch the coins with trembling hands. [Moral meter +5]",
+        },
+        grateful_small: {
+            id: 'grateful_small',
+            text: "The beggar nods gratefully. \"Five gold is more kindness than most show. Thank you, friend.\" [Moral meter +1]",
+        },
+        grateful_kind: {
+            id: 'grateful_kind',
+            text: "The beggar's weathered face lights up. \"You would share your own food? Such kindness is rarer than gold. I'll remember this.\" [Moral meter +3]",
+        },
+        dismissed: {
+            id: 'dismissed',
+            text: "The beggar nods wearily, accustomed to indifference. \"Aye, we all must find our way.\" They turn back to watching the harbor. [Moral meter -1]",
+        },
+        harsh: {
+            id: 'harsh',
+            text: "The beggar recoils as if struck. \"I... I have tried. But the storms...\" They lower their head in shame and say no more. [Moral meter -5]",
+        },
+    },
+};
+
+const coastalBeggar: NPC = {
+    name: 'Coastal Beggar',
+    description: 'A weather-beaten soul whose luck ran out with the changing tides.',
+    dialogueTree: beggarTree,
+};
+
 // ─── Quest content ────────────────────────────────────────────────────────────
 
 const startingQuest: Quest = {
@@ -159,6 +222,11 @@ const fishingVillageEvents: Partial<Record<NodeId, MapEvent>> = {
         description: 'The Coastal Tyrant rises from the breakwater.',
         enemySlug: 'coastal-tyrant',
     },
+    'fv-7': {
+        type: 'npc',
+        description: 'A beggar sits by the weathered wall, bowl at their feet.',
+        npcName: 'Coastal Beggar',
+    },
 };
 
 // ─── Map definitions ──────────────────────────────────────────────────────────
@@ -185,7 +253,7 @@ const fishingVillage: MapDefinition = {
         { id: 'fv-10', location: [9, 0], connectedNodes: [] },
     ],
     nodeEvents: fishingVillageEvents,
-    npcs: [oldMarrow, tideShopkeeper],
+    npcs: [oldMarrow, tideShopkeeper, coastalBeggar],
     enemies: [],
     availableEvents: [],
     uniqueEvents: [],
