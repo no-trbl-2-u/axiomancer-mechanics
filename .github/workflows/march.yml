@@ -8,7 +8,9 @@ name: march
 # may push commits, open / close GitHub issues, and run the verify gate.
 #
 # Required secrets (Settings → Secrets and variables → Actions):
-#   ANTHROPIC_API_KEY — your Anthropic API key
+#   CLAUDE_CODE_OAUTH_TOKEN — OAuth token from `claude setup-token`,
+#                             draws from your Claude Code subscription
+#                             instead of per-token API billing.
 #
 # The workflow uses the auto-provisioned GITHUB_TOKEN for `gh` and git
 # operations. No PAT needed unless you want cross-repo behaviour.
@@ -73,7 +75,7 @@ jobs:
         uses: anthropics/claude-code-base-action@beta
         with:
           prompt: "/march ${{ github.event.inputs.args }}"
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # The loop needs to: read everything, edit files, run npm / gh /
           # git, and dispatch sub-agents. Bash is the broadest hammer it
           # leans on — keep the allowlist permissive in CI since the
