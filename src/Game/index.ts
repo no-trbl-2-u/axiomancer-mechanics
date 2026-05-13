@@ -7,7 +7,7 @@ export {
     selectPlayer, selectCombat, selectCombatState, selectIsInCombat,
     selectInventory, selectVersion,
 } from './store';
-export type { GameStore, GameActions, StoreApi } from './store';
+export type { GameStore, GameActions, StoreApi, CombatEndReport } from './store';
 
 export { createNewGameState, GAME_STATE_VERSION } from './game.reducer';
 export type { GameState } from './types';

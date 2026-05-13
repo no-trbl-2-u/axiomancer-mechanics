@@ -25,29 +25,73 @@
 
 import { createStore, StoreApi } from 'zustand/vanilla';
 import { Character } from '../Character/types';
-import { Enemy } from '../Enemy/types';
+import { Enemy, LootTableEntry } from '../Enemy/types';
+import { rollLoot } from '../Enemy/loot';
 import { CombatState } from '../Combat/types';
 import { initializeCombat } from '../Combat/combat.reducer';
-import { Item, Equipment, EquipmentSlot, isConsumable } from '../Items/types';
-import { addItem, removeItem, useConsumable as useConsumableItem, stackItem as stackInventoryItem } from '../Items/item.reducer';
+import { Encounter } from '../World/types';
+import {
+    Item, Equipment, EquipmentSlot, isConsumable, isMaterial,
+} from '../Items/types';
+import {
+    addItem, removeItem, useConsumable as useConsumableItem,
+    stackItem as stackInventoryItem,
+} from '../Items/item.reducer';
 import { useConsumableEffect } from '../Items/equipment.engine';
-import { equipItem as equipItemReducer, unequipItem as unequipItemReducer } from '../Character/equipment.reducer';
+import {
+    equipItem as equipItemReducer,
+    unequipItem as unequipItemReducer,
+} from '../Character/equipment.reducer';
 import { lookupEffect } from '../Effects/effects.library';
 import { GameState } from './types';
 import { createNewGameState } from './game.reducer';
 import { PersistenceAdapter } from './persistence/types';
 
 /**
+ * Summary of what an `endCombat` call granted to the player (Spec 07).
+ *
+ * Returned from `endCombat()` so the CLI / UI can render an after-action
+ * report. Spec 06 will turn this into the level-up prompt; today the store
+ * already applies the XP delta to `player.experience` and adds the rolled
+ * loot to `player.inventory`.
+ *
+ * - `outcome` — `'victory'` when the player killed the enemy, `'defeat'`
+ *   when the player went down first, `'flee'` when combat ended without
+ *   either combatant being KO'd (covers the friendship-counter exit).
+ * - `xpGained` — flat XP added to `player.experience` this turn. Zero on
+ *   defeat or when no encounter was active.
+ * - `loot` — items added to `player.inventory` (post stack-merge).
+ */
+export interface CombatEndReport {
+    outcome: 'victory' | 'defeat' | 'flee';
+    xpGained: number;
+    loot: Item[];
+}
+
+/**
  * Every operation that mutates the root GameState. Grouped by domain.
  */
 export interface GameActions {
     // ── Combat ───────────────────────────────────────────────────────────────
-    /** Begins a combat encounter against `enemy`, snapshotting the player. */
-    startCombat: (enemy: Enemy) => void;
+    /**
+     * Begins a combat encounter. Accepts either a bare `Enemy` (back-compat)
+     * or an `Encounter` produced by `generateEncounter`. When given an
+     * `Encounter`, only the first enemy is consumed by the 1v1 resolver
+     * today; the rest are retained on the encounter and will be picked up
+     * by multi-enemy combat in a later spec.
+     */
+    startCombat: (target: Enemy | Encounter) => void;
     /** Replaces the in-progress combat snapshot. */
     updateCombat: (combat: CombatState) => void;
-    /** Promotes the combat snapshot's player back to root and clears combat. */
-    endCombat: () => void;
+    /**
+     * Promotes the combat snapshot's player back to root and clears combat.
+     * Returns a {@link CombatEndReport} summarising XP + loot grants so the
+     * CLI / UI can show an after-action panel. Spec 06 progression consumes
+     * the XP delta; until level-up math lands, the store just adds the
+     * delta to `player.experience` and stack-merges the rolled loot into
+     * `player.inventory`.
+     */
+    endCombat: () => CombatEndReport;
 
     // ── Inventory ────────────────────────────────────────────────────────────
     addItem: (item: Item) => void;
@@ -79,6 +123,55 @@ export interface GameActions {
 export type GameStore = GameState & GameActions;
 
 /**
+ * Internal — type-guard for the `Enemy | Encounter` overload. A bare
+ * `Enemy` carries `level` / `baseStats` directly; an `Encounter` carries
+ * the `enemies` array.
+ */
+function isEncounter(target: Enemy | Encounter): target is Encounter {
+    return Array.isArray((target as Encounter).enemies);
+}
+
+/**
+ * Stack-aware inventory append. If `item` is a stackable kind (consumable /
+ * material) and an entry with the same `id` already exists, its quantity
+ * is bumped; otherwise the item is appended.
+ */
+function addItemStacking(inventory: Item[], item: Item): Item[] {
+    if (isConsumable(item) || isMaterial(item)) {
+        const existing = inventory.find(i => i.id === item.id);
+        if (existing && (isConsumable(existing) || isMaterial(existing))) {
+            return stackInventoryItem(inventory, item.id, item.quantity);
+        }
+    }
+    return addItem(inventory, item);
+}
+
+/**
+ * Rolls one drop per enemy in the encounter, returning the non-null items.
+ * Each enemy's loot table is rolled independently.
+ */
+function rollEncounterLoot(encounter: Encounter, rng: () => number = Math.random): Item[] {
+    const drops: Item[] = [];
+    for (const enemy of encounter.enemies) {
+        const drop = rollLoot(enemy.loot as LootTableEntry[] | undefined, rng);
+        if (drop) drops.push(drop);
+    }
+    return drops;
+}
+
+/**
+ * Sums every enemy's `xpReward` to produce the encounter-level XP grant.
+ * Missing values fall through as zero so old enemies without `xpReward`
+ * are still safe to encounter.
+ */
+function totalXpReward(encounter: Encounter): number {
+    return encounter.enemies.reduce(
+        (sum, e) => sum + (e.xpReward ?? 0),
+        0,
+    );
+}
+
+/**
  * Constructs a Zustand vanilla store backed by `adapter`.
  *
  * @param adapter   - Persistence backend (Node fs, AsyncStorage, null for tests).
@@ -92,12 +185,24 @@ export function createGameStore(
     const base    = saved ?? createNewGameState();
     const initial: GameState = { ...base, ...overrides };
 
+    // `currentEncounter` lives outside `GameState` so it doesn't leak into
+    // save files (encounters are re-rolled on load). It tracks the currently
+    // active fight so `endCombat` can grant XP + loot per Spec 07.
+    let currentEncounter: Encounter | null = null;
+
     return createStore<GameStore>()((set, get) => ({
         ...initial,
 
         // ── Combat ───────────────────────────────────────────────────────────
-        startCombat(enemy) {
-            set({ combat: initializeCombat(get().player, enemy) });
+        startCombat(target) {
+            const encounter: Encounter = isEncounter(target)
+                ? target
+                : { enemies: [target] };
+            if (encounter.enemies.length === 0) {
+                throw new Error('startCombat: encounter has no enemies.');
+            }
+            currentEncounter = encounter;
+            set({ combat: initializeCombat(get().player, encounter.enemies[0]) });
         },
 
         updateCombat(combat) {
@@ -105,9 +210,45 @@ export function createGameStore(
         },
 
         endCombat() {
-            const { combat } = get();
-            if (!combat) return;
-            set({ player: combat.player, combat: null });
+            const { combat, player } = get();
+            if (!combat) {
+                return { outcome: 'flee', xpGained: 0, loot: [] };
+            }
+
+            // Decide outcome from the combat snapshot.
+            const outcome: CombatEndReport['outcome'] =
+                combat.enemy.health <= 0 ? 'victory'
+                : combat.player.health <= 0 ? 'defeat'
+                : 'flee';
+
+            // Promote the combat snapshot's player back to root.
+            let nextPlayer: Character = combat.player;
+
+            // Victory grant: roll loot, sum XP, fold into the player.
+            let xpGained = 0;
+            const loot: Item[] = [];
+            if (outcome === 'victory' && currentEncounter) {
+                xpGained = totalXpReward(currentEncounter);
+                const rolled = rollEncounterLoot(currentEncounter);
+                let nextInventory = nextPlayer.inventory;
+                for (const drop of rolled) {
+                    nextInventory = addItemStacking(nextInventory, drop);
+                    loot.push(drop);
+                }
+                nextPlayer = {
+                    ...nextPlayer,
+                    experience: nextPlayer.experience + xpGained,
+                    inventory: nextInventory,
+                };
+            } else {
+                // Use the existing root inventory so loot doesn't leak when
+                // the player is KO'd or flees.
+                nextPlayer = { ...nextPlayer, inventory: player.inventory };
+            }
+
+            currentEncounter = null;
+            set({ player: nextPlayer, combat: null });
+            return { outcome, xpGained, loot };
         },
 
         // ── Inventory ────────────────────────────────────────────────────────

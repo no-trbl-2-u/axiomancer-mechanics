@@ -12,6 +12,28 @@ import { NPC } from '../NPCs/types';
 export type Reward = 'experience' | 'currency' | 'skill' | 'quest' | Item;
 
 /**
+ * A combat encounter (Spec 07 Q5B). Wraps the list of enemies that take
+ * part in the fight plus any encounter-level rewards beyond the per-enemy
+ * `xpReward` / `loot` tables.
+ *
+ * The engine is 1v1 today — `enemies` carries a single entry. The list shape
+ * is retained so future multi-enemy fights can land without touching every
+ * call site that passes an encounter around.
+ *
+ * @property enemies  - Enemies in the encounter (length 1 today).
+ * @property rewards  - Optional bonus rewards layered on top of per-enemy
+ *                      drops. Useful for "first-time" rewards on a node, or
+ *                      quest-driven guaranteed grants.
+ * @property origin   - Optional source label (`<mapName>:<nodeId>`) so the
+ *                      world can attribute the encounter to a specific node.
+ */
+export interface Encounter {
+    enemies: Enemy[];
+    rewards?: Reward[];
+    origin?: string;
+}
+
+/**
  * Type of event that can occur on a map node. The actual event handler is
  * driven by an event registry (TODO).
  */

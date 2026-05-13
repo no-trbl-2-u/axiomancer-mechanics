@@ -16,11 +16,22 @@ export type {
 } from './Character';
 
 // ─── Enemy ────────────────────────────────────────────────────────────────────
-export { createEnemy, randomLogic, decideEnemyAction } from './Enemy';
+export {
+    createEnemy, randomLogic, decideEnemyAction,
+    aggressiveLogic, defensiveLogic, balancedLogic, strategicLogic, bossLogic,
+    counterStanceOf, weakestStanceOf,
+    rollLoot, rollLootMany,
+    DEFAULT_XP_BY_DIFFICULTY,
+} from './Enemy';
 export type {
     Enemy, EnemyLogic, EnemyDifficulty, Tier1EffectOverrides,
-    CreateEnemyOptions,
+    LootTableEntry, CreateEnemyOptions,
+    LootRng,
 } from './Enemy';
+export {
+    EnemyLibrary, EnemiesByMap, ENEMY_REGISTRY,
+} from './Enemy/enemy.library';
+export type { EnemySlug } from './Enemy/enemy.library';
 
 // ─── Combat ───────────────────────────────────────────────────────────────────
 export {
@@ -129,10 +140,15 @@ export {
     changeMap, completeMap, unlockMap,
     completeNode, unlockNode, changeContinent, completeUniqueEvent,
 } from './World/world.reducer';
+export {
+    generateEncounter, scaleEnemyToLevel, scaledEncounterLevel,
+    DIFFICULTY_LEVEL_BANDS,
+} from './World';
 export type {
     WorldState, WorldMap, Continent, Quest, MapEvent, MapEventType, UniqueEvent,
-    Reward, MapNode, NodeId,
+    Reward, MapNode, NodeId, Encounter,
     MapName, ContinentName, QuestName,
+    GenerateEncounterOptions,
 } from './World';
 
 // ─── NPCs (types only) ────────────────────────────────────────────────────────

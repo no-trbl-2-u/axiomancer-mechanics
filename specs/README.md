@@ -60,15 +60,15 @@ most other work. Feel free to override.
 
 | # | Spec | Why this order |
 |---|------|----------------|
-| 1 | [`01-effects-engine-completion.md`](./01-effects-engine-completion.md) | Many roadmap items reference unwired effect mechanics (DoT, stat mods, action restrictions). Finish them first. |
-| 2 | [`02-combat-round-resolver.md`](./02-combat-round-resolver.md) | Replaces the inline CLI loop with `resolveCombatRound`. Required before skills/items can plug in cleanly. |
-| 3 | [`03-tier2-tier3-effect-procs.md`](./03-tier2-tier3-effect-procs.md) | Phase 2b: `Stance × action` proc tables. Builds on (1) + (2). |
-| 4 | [`04-skills-engine.md`](./04-skills-engine.md) | Phase 3. Depends on (2) and (3) for combat integration. Ships types + engine only (no skill content). |
-| 4b | [`04b-skills-library-and-e2e.md`](./04b-skills-library-and-e2e.md) | Companion to (4). Ships 12 early-game skills and the hermetic e2e scripted test. Depends on (4). |
-| 5 | [`05-equipment-engine.md`](./05-equipment-engine.md) | Phase 4. Depends on (1) for stat-mod aggregation. Ships types + engine only (no library content). |
-| 5b | [`05b-equipment-library.md`](./05b-equipment-library.md) | Companion to (5). Ships 50 equipment pieces + 12 consumables with resource economy interactions. Depends on (5). |
-| 6 | [`06-character-progression.md`](./06-character-progression.md) | Phase 5. Depends on (4) for skill learning. |
-| 7 | [`07-enemy-content-and-ai.md`](./07-enemy-content-and-ai.md) | Phase 6. Depends on (3) for richer AI behaviour. |
+| 1 **DONE** | [`01-effects-engine-completion.md`](./01-effects-engine-completion.md) | Many roadmap items reference unwired effect mechanics (DoT, stat mods, action restrictions). Finish them first. |
+| 2 **DONE** | [`02-combat-round-resolver.md`](./02-combat-round-resolver.md) | Replaces the inline CLI loop with `resolveCombatRound`. Required before skills/items can plug in cleanly. |
+| 3 **DONE** | [`03-tier2-tier3-effect-procs.md`](./03-tier2-tier3-effect-procs.md) | Phase 2b: `Stance × action` proc tables. Builds on (1) + (2). |
+| 4 **DONE** | [`04-skills-engine.md`](./04-skills-engine.md) | Phase 3. Depends on (2) and (3) for combat integration. Ships types + engine only (no skill content). |
+| 4b **DONE** | [`04b-skills-library-and-e2e.md`](./04b-skills-library-and-e2e.md) | Companion to (4). Ships 12 early-game skills and the hermetic e2e scripted test. Depends on (4). |
+| 5 **DONE** | [`05-equipment-engine.md`](./05-equipment-engine.md) | Phase 4. Depends on (1) for stat-mod aggregation. Ships types + engine only (no library content). |
+| 5b **DONE** | [`05b-equipment-library.md`](./05b-equipment-library.md) | Companion to (5). Ships 50 equipment pieces + 12 consumables with resource economy interactions. Depends on (5). |
+| 6 **DONE** | [`06-character-progression.md`](./06-character-progression.md) | Phase 5. Depends on (4) for skill learning. |
+| 7 **DONE** | [`07-enemy-content-and-ai.md`](./07-enemy-content-and-ai.md) | Phase 6. Depends on (3) for richer AI behaviour. |
 | 8 | [`08-world-content-and-hazards.md`](./08-world-content-and-hazards.md) | Phase 7. Depends on (1) for hazard ticks while exploring. |
 | 9 | [`09-game-loop-orchestration.md`](./09-game-loop-orchestration.md) | Phase 8. Top-level orchestration; depends on most of the above. |
 | 10 | [`10-moral-difficulty-meter.md`](./10-moral-difficulty-meter.md) | Touches multiple systems; OK to spec early, implement after (8) and (9). |

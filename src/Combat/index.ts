@@ -71,10 +71,19 @@ export type {
 
 /**
  * Determines an enemy's action for the round. Pure wrapper over
- * `decideEnemyAction(logic)` so the Combat module owns enemy-action APIs.
+ * `decideEnemyAction(enemy, state?)` so the Combat module owns enemy-action
+ * APIs.
+ *
+ * Spec 07 Q2: when a `CombatState` is supplied the enemy's strategy can
+ * react to the player's HP / effects / last stance. Older callers that only
+ * have the enemy in hand still work (strategies fall back to stateless
+ * heuristics).
  */
-export function determineEnemyAction(enemy: Pick<Enemy, 'logic'>): CombatAction {
-    return decideEnemyAction(enemy.logic);
+export function determineEnemyAction(
+    enemy: Enemy,
+    state?: CombatState,
+): CombatAction {
+    return decideEnemyAction(enemy, state);
 }
 
 /** True while combat should continue (both alive and friendship hasn't capped). */

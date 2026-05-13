@@ -41,7 +41,13 @@ export function createStartingWorld(): WorldState {
 
 export type {
     WorldState, WorldMap, Continent, Quest, MapEvent, MapEventType, UniqueEvent,
-    Reward, MapNode, NodeId,
+    Reward, MapNode, NodeId, Encounter,
 } from './types';
 export type { MapName, ContinentName } from './map.library';
 export type { QuestName } from './quest.library';
+
+export {
+    generateEncounter, scaleEnemyToLevel, scaledEncounterLevel,
+    DIFFICULTY_LEVEL_BANDS,
+} from './encounter';
+export type { GenerateEncounterOptions } from './encounter';

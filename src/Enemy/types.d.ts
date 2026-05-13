@@ -7,13 +7,23 @@ import { ProcOverrides, ProcUnlocks } from '../Combat/combat-effects';
 import { Item } from '../Items/types';
 
 /**
- * Decision-making strategy used by an enemy each round.
- * - `random`     — picks any stance and action uniformly.
- * - `aggressive` — favours attacking.
- * - `defensive`  — favours defending.
- * - `balanced`   — mixes attack and defence based on state.
+ * Decision-making strategy used by an enemy each round (Spec 07).
+ *
+ * - `random`     — picks any stance and any action uniformly.
+ * - `aggressive` — attacks ~75% of the time; favours the stance that beats
+ *                  the player's last stance (rock-paper-scissors counter).
+ * - `defensive`  — defends until HP > 50% of max; then attacks the stance
+ *                  the player has the *lowest* base stat in.
+ * - `balanced`   — attacks while HP > 50%; defends below that threshold.
+ * - `strategic`  — inspects the player's active effects and exploits
+ *                  matching vulnerabilities (e.g. `debuff_vulnerability_body`
+ *                  pulls Body attacks). Falls back to `aggressive` heuristics
+ *                  when no exploit is on the board.
+ * - `boss`       — deterministic phase script keyed off `state.round`. Used
+ *                  by `bossLogic` enemies for telegraphed signature patterns.
  */
-export type EnemyLogic = 'random' | 'aggressive' | 'defensive' | 'balanced';
+export type EnemyLogic =
+    | 'random' | 'aggressive' | 'defensive' | 'balanced' | 'strategic' | 'boss';
 
 /**
  * Difficulty classification used by the world to seed encounters.
@@ -29,6 +39,27 @@ export type Tier1EffectOverrides =
     Partial<Record<Stance, Partial<Record<'attack' | 'defend', string>>>>;
 
 /**
+ * Weighted drop entry on an `Enemy.loot` table (Spec 07 Q7B).
+ *
+ * Each entry contributes its `weight` to the roll; the rolled bucket spawns
+ * the entry's `item` (or, if `item` is `null`, nothing — that bucket is the
+ * empty / no-drop slot). Library authors can express "nothing 60%, herb 30%,
+ * potion 10%" with `[ { item: null, weight: 60 }, { item: herb, weight: 30 },
+ * { item: potion, weight: 10 } ]`. Weights are unitless integers; the runtime
+ * normalises them at roll time.
+ *
+ * `loot` on the `Enemy` is intentionally a runtime-mutable variable: encounters
+ * can splice in extra entries (e.g. quest-driven guaranteed drops, biome
+ * tables) before combat starts. See `rollLoot` in `Enemy/loot.ts`.
+ */
+export interface LootTableEntry {
+    /** Item to drop when this bucket rolls. `null` represents a no-drop slot. */
+    item: Item | null;
+    /** Positive integer weight; normalised across the table at roll time. */
+    weight: number;
+}
+
+/**
  * An adversary that can be encountered in combat.
  *
  * @property id           - Unique identifier (used for save/load and tracking).
@@ -37,7 +68,9 @@ export type Tier1EffectOverrides =
  * @property difficulty   - Optional encounter classification.
  * @property tier1Overrides - Optional Tier 1 effect ID overrides per stance.
  * @property skills       - Optional skill list the enemy can use.
- * @property loot         - Optional drops.
+ * @property loot         - Optional weighted drop table (Spec 07 Q7B). Each
+ *                          successful kill rolls the table once. May be empty
+ *                          / undefined for enemies that don't drop anything.
  * @property effects      - Active status effects on the enemy.
  */
 export interface Enemy {
@@ -65,6 +98,9 @@ export interface Enemy {
      */
     procOverrides?: ProcOverrides;
     skills?: Skill[];
-    loot?: Item[];
+    /** Weighted drop table — see {@link LootTableEntry}. */
+    loot?: LootTableEntry[];
+    /** Flat experience-point award on kill. Defaults computed by difficulty. */
+    xpReward?: number;
     effects: ActiveEffect[];
 }

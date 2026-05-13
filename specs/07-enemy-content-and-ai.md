@@ -1,5 +1,7 @@
 # Spec 07 — Enemy Content & AI
 
+> [DONE on 2026-05-13]
+
 ## Goal
 
 A library of at least 15 enemies stretched across difficulty tiers, plus AI
@@ -68,7 +70,16 @@ returns a sensible enemy.
      level.
    - (B) Scale enemy level to ±1 of player level — adaptive.
    - (C) Use difficulty meter (Spec 10) to bias.
-   > Your answer:
+   > Your answer: Adaptive, but the offset band varies by encounter
+   > difficulty (and is extensible to other factors later, e.g. Spec 10's
+   > difficulty meter). Per-difficulty bands:
+   >   - `simple`  → playerLevel − 1 … playerLevel
+   >   - `normal`  → playerLevel     … playerLevel + 1
+   >   - `elite`   → playerLevel + 1 … playerLevel + 2
+   >   - `boss`    → playerLevel + 2 … playerLevel + 3
+   >   - `unique`  → authored level, no adaptive scaling (signature fights).
+   > The band is clamped to ≥ 1 so simple enemies don't drop below level 1
+   > when the player is also level 1.
 
 7. **Loot tables.** Each enemy has a fixed `loot?: Item[]`. Or weighted
    drops?
@@ -77,7 +88,10 @@ returns a sensible enemy.
 8. **Library composition.** ≥15 enemies. Suggested split:
    - 3 simple, 6 normal, 3 elite, 2 boss, 1 unique.
    Stat alignment evenly across heart/body/mind. Override?
-   > Your answer:
+   > Your answer: Default split (3 simple, 6 normal, 3 elite, 2 boss,
+   > 1 unique = 15 total). Stat alignment distributed across heart/body/mind
+   > affinities so each tier has at least one of each stance focus where
+   > the count allows.
 
 ## Proposed approach
 
@@ -99,13 +113,14 @@ returns a sensible enemy.
 
 ## Acceptance checklist
 
-- [ ] All 8 questions answered.
-- [ ] ≥15 enemies in the library, distributed as agreed.
-- [ ] `decideEnemyAction` produces visibly different choices for each logic
-      tag (verified by automated combat run).
-- [ ] `generateEncounter` exposed and used by the combat CLI to pick the
-      starting fight (instead of hard-coding Disatree).
-- [ ] `docs/enemy.md` filled in with API + library overview.
+- [x] All 8 questions answered.
+- [x] ≥15 enemies in the library, distributed as agreed (3/6/3/2/1 across
+      heart/body/mind affinities).
+- [x] `decideEnemyAction` produces visibly different choices for each logic
+      tag (verified by `src/Enemy/enemy.logic.test.ts`).
+- [x] `generateEncounter` exposed and consumed by the combat CLI via
+      `COMBAT_ENCOUNTER=1`; `startCombat` accepts `Enemy | Encounter`.
+- [x] `docs/enemy.md` rewritten with the API + library overview.
 
 ## Out of scope
 

@@ -31,6 +31,9 @@ import { createGameStore } from '../Game/store';
 import { nullAdapter } from '../Game/persistence/null.adapter';
 import { isConsumable, Consumable, Item } from '../Items/types';
 import { consumableLibrary } from '../Items/consumable.library';
+import { generateEncounter } from '../World/encounter';
+import { Encounter } from '../World/types';
+import { Enemy } from '../Enemy/types';
 import {
     typeColor,
     printCombatIntro,
@@ -53,23 +56,47 @@ async function delay(ms: number): Promise<void> {
 const lookupSkill = (id: string): Skill | undefined => getSkillById(id);
 
 /**
- * Picks the opponent for the CLI session. Resolved from `COMBAT_ENEMY`
- * (or the optional `--enemy=<slug>` flag) against `ENEMY_REGISTRY`. Defaults
- * to Disatree so the existing demo flow stays stable. Spec 04b Q5: the
- * `sandbag` slug surfaces the high-HP / low-stat dummy used for testing
- * long combats (skills, effects, etc.).
+ * Picks the opponent for the CLI session.
+ *
+ * Resolution order:
+ *   1. `COMBAT_ENEMY=<slug>` (or `--enemy=<slug>`) — explicit pin; used by
+ *      `auto:combat` and CI runners to lock onto a specific opponent.
+ *   2. `COMBAT_ENCOUNTER=1` — Spec 07's encounter generator picks an enemy
+ *      from the player's authored starting node (`fv-1`).
+ *   3. Default — Disatree, preserving the original demo flow.
+ *
+ * Returning a tuple of `{ enemy, encounter? }` lets the caller forward an
+ * `Encounter` to `store.startCombat` so XP / loot grants fire on victory.
  */
-function resolveEnemyFromEnv(): typeof Disatree_01 {
+interface ResolvedOpponent {
+    enemy: Enemy;
+    encounter?: Encounter;
+    label: string;
+}
+
+function resolveOpponentFromEnv(playerLevel: number): ResolvedOpponent {
     const cliFlag = process.argv.find(arg => arg.startsWith('--enemy='));
     const cliSlug = cliFlag?.split('=')[1];
-    const slug = (cliSlug ?? process.env.COMBAT_ENEMY ?? 'disatree').toLowerCase();
-    if (slug in ENEMY_REGISTRY) {
-        return ENEMY_REGISTRY[slug as EnemySlug];
+    const explicitSlug = (cliSlug ?? process.env.COMBAT_ENEMY)?.toLowerCase();
+
+    if (explicitSlug) {
+        if (explicitSlug in ENEMY_REGISTRY) {
+            const enemy = ENEMY_REGISTRY[explicitSlug as EnemySlug];
+            return { enemy, encounter: { enemies: [enemy] }, label: explicitSlug };
+        }
+        console.warn(
+            `[combat] Unknown enemy slug "${explicitSlug}". Known: ${Object.keys(ENEMY_REGISTRY).join(', ')}. Falling back to Disatree.`,
+        );
+        return { enemy: Disatree_01, encounter: { enemies: [Disatree_01] }, label: 'disatree' };
     }
-    console.warn(
-        `[combat] Unknown enemy slug "${slug}". Known: ${Object.keys(ENEMY_REGISTRY).join(', ')}. Falling back to Disatree.`,
-    );
-    return Disatree_01;
+
+    if (process.env.COMBAT_ENCOUNTER === '1') {
+        const startingNode = { id: 'fv-1', location: [0, 0] as [number, number], connectedNodes: [] };
+        const encounter = generateEncounter(startingNode, playerLevel);
+        return { enemy: encounter.enemies[0], encounter, label: 'encounter' };
+    }
+
+    return { enemy: Disatree_01, encounter: { enemies: [Disatree_01] }, label: 'disatree' };
 }
 
 // ─── Player Input ─────────────────────────────────────────────────────────────
@@ -147,7 +174,7 @@ async function runCombatTurn(state: CombatState): Promise<CombatState> {
     printStatus(state);
 
     const playerAction = await promptPlayerChoice(state);
-    const enemyAction  = determineEnemyAction(state.enemy);
+    const enemyAction  = determineEnemyAction(state.enemy, state);
 
     const { state: next, combatEvents } = resolveCombatRound(
         state,
@@ -169,8 +196,6 @@ async function runCombatTurn(state: CombatState): Promise<CombatState> {
 // ─── Entry Point ──────────────────────────────────────────────────────────────
 
 async function main(): Promise<void> {
-    const enemy = resolveEnemyFromEnv();
-
     // Equip the first 4 skills from the library so the CLI demoer immediately
     // has a meaningful Skills sub-prompt. Spec 06 will turn this into a real
     // out-of-combat equipping flow.
@@ -188,10 +213,15 @@ async function main(): Promise<void> {
     };
     const store = createGameStore(nullAdapter, { player: playerWithSkills });
 
+    const { enemy, encounter } = resolveOpponentFromEnv(playerWithSkills.level);
+
     printCombatIntro(playerWithSkills.name, playerWithSkills.level, enemy.name, enemy.level);
     printCombatRules();
 
-    store.getState().startCombat(enemy);
+    // Spec 07 — startCombat accepts either a bare Enemy or an Encounter. The
+    // CLI always passes the encounter when one is available so XP / loot
+    // grants fire on victory.
+    store.getState().startCombat(encounter ?? enemy);
 
     while (true) {
         const combat = store.getState().combat;
@@ -202,8 +232,15 @@ async function main(): Promise<void> {
     }
 
     const finalCombat = store.getState().combat!;
-    store.getState().endCombat();
+    const report = store.getState().endCombat();
     printCombatEnd(finalCombat);
+    if (report.outcome === 'victory') {
+        console.log(`\nYou gained ${report.xpGained} XP.`);
+        if (report.loot.length > 0) {
+            console.log('Loot:');
+            for (const item of report.loot) console.log(`  • ${item.name}`);
+        }
+    }
 }
 
 main();
