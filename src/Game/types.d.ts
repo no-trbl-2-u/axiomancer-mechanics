@@ -21,6 +21,10 @@ import { Character } from '../Character/types';
  * @property flags            - Generic world flags set by dialogue / events.
  *                              Used by dialogue `requires.flag` gates and by
  *                              quest objectives of type `'flag'`.
+ * @property moralMeter       - Moral choice difficulty meter (-100 to +100).
+ *                              Tracks player alignment from choices: negative
+ *                              values (ruthless), positive values (compassionate).
+ *                              Affects available dialogue options and story paths.
  */
 export interface GameState {
     version: number;
@@ -30,4 +34,5 @@ export interface GameState {
     currentEncounter?: Encounter;
     quests: QuestLog;
     flags: string[];
+    moralMeter: number;
 }

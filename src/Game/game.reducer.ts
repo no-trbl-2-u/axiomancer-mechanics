@@ -59,6 +59,7 @@ export function createNewGameState(): GameState {
         combat: null,
         quests: emptyQuestLog(),
         flags: [],
+        moralMeter: 0,
     };
 }
 

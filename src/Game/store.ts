@@ -176,8 +176,8 @@ export function createGameStore(
             if (event && emitter) emitter.emit(event);
             // Save excludes transient currentEncounter — encounters re-roll on
             // load (Spec 07).
-            const { currentEncounter: _drop, version, player, world, combat, quests, flags } = next;
-            adapter.save({ version, player, world, combat, quests, flags });
+            const { currentEncounter: _drop, version, player, world, combat, quests, flags, moralMeter } = next;
+            adapter.save({ version, player, world, combat, quests, flags, moralMeter });
             return next;
         }
 
@@ -201,8 +201,8 @@ export function createGameStore(
                     type: 'combat:round',
                     payload: { state: next },
                 });
-                const { currentEncounter: _drop, version, player, world, combat: cb, quests, flags } = next;
-                adapter.save({ version, player, world, combat: cb, quests, flags });
+                const { currentEncounter: _drop, version, player, world, combat: cb, quests, flags, moralMeter } = next;
+                adapter.save({ version, player, world, combat: cb, quests, flags, moralMeter });
             },
 
             endCombat() {
@@ -285,8 +285,8 @@ export function createGameStore(
 
             save() {
                 const next = get();
-                const { currentEncounter: _drop, version, player, world, combat, quests, flags } = next;
-                adapter.save({ version, player, world, combat, quests, flags });
+                const { currentEncounter: _drop, version, player, world, combat, quests, flags, moralMeter } = next;
+                adapter.save({ version, player, world, combat, quests, flags, moralMeter });
                 if (emitter) emitter.emit({ type: 'game:saved', payload: { state: next } });
             },
         };
