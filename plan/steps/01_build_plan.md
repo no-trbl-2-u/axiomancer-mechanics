@@ -29,7 +29,7 @@ shipped (with commit hash).
 - [x] Spec 08 — World content and hazards (pre-loop)
 
 **Next up (autonomous loop's queue):**
-- [ ] Phase 09 — Game loop orchestration (`gameReducer`, full store wiring, `game.cli.ts`)
+- [x] Phase 09 — Game loop orchestration (`gameReducer`, full store wiring, `game.cli.ts`) (e6ce034)
 - [ ] Phase 10 — Moral/difficulty meter (choice tracking, alignment, difficulty scaling)
 - [ ] Phase 11 — RNG seeding and test harness (seeded RNG, deterministic replays, full test harness)
 - [ ] Phase 12 — Package architecture and events (event surface, React Native adapter docs, clean barrel)
