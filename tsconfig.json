@@ -42,7 +42,6 @@
     "dist",
     "src/**/*.test.ts",
     "src/**/*.mock.ts",
-    "src/**/_archive/**",
     "src/CLI",
     "src/test-utils"
   ]
