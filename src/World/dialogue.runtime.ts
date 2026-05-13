@@ -14,6 +14,15 @@ import {
 import { getMapDefinition } from './map.registry';
 import { QuestName } from './quest.library';
 
+/** Maps specific flag names to moral meter shifts. */
+const MORAL_FLAG_EFFECTS: Record<string, number> = {
+    'beggar_generous_gift': 5,
+    'beggar_small_gift': 1,
+    'beggar_kind_gesture': 3,
+    'beggar_dismissed': -1,
+    'beggar_harsh_words': -5,
+} as const;
+
 /** Result of applying a dialogue choice to the GameState. */
 export interface ApplyDialogueChoiceResult {
     gameState: GameState;
@@ -26,6 +35,7 @@ export interface ApplyDialogueChoiceResult {
         learnedSkill?: string;
         setFlag?: string;
         grantedCurrency?: number;
+        moralShift?: number;
     };
 }
 
@@ -99,10 +109,18 @@ export function applyDialogueChoice(
         }
     }
 
+    // Check if any newly set flag triggers a moral meter shift
+    let moralMeter = gameState.moralMeter;
+    if (effects.setFlag && MORAL_FLAG_EFFECTS[effects.setFlag] !== undefined) {
+        const delta = MORAL_FLAG_EFFECTS[effects.setFlag];
+        moralMeter = Math.max(-100, Math.min(100, moralMeter + delta));
+        effects.moralShift = delta;
+    }
+
     const nextNode = choice.nextNodeId ? (tree.nodes[choice.nextNodeId] ?? null) : null;
 
     return {
-        gameState: { ...gameState, player, quests, flags },
+        gameState: { ...gameState, player, quests, flags, moralMeter },
         nextNode,
         effects,
     };
