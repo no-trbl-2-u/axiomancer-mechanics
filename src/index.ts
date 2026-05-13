@@ -77,6 +77,7 @@ export {
     applyEffect, applyTier1CombatEffect,
     clearTier1EffectsForStance, clearTier1EffectsForType,
     lookupEffect, getEffectByName, getEffectsByType, effectsLibrary,
+    processWorldEffectTick, getActiveHazards,
 } from './Effects';
 export type {
     Effect, EffectType, EffectTier, EffectStacking, EffectCategory, EffectPayload,
@@ -84,6 +85,7 @@ export type {
     StatModifier, DamageOverTime, RegenerationConfig, ActionRestriction, AdvantageModifier,
     EffectStatTarget,
     ApplyEffectOptions, Tier1Outcome,
+    WorldTickResult, ActiveHazard,
 } from './Effects';
 
 // ─── Items ────────────────────────────────────────────────────────────────────
@@ -135,7 +137,15 @@ export { COMBAT_ACTION } from './Game/actions.constants';
 export type { CombatActionName } from './Game/actions.constants';
 
 // ─── World ────────────────────────────────────────────────────────────────────
-export { createStartingWorld, getCoastalMap, MapNotFoundError } from './World';
+export {
+    createStartingWorld, getCoastalMap, MapNotFoundError,
+    MAP_REGISTRY, getMapDefinition, createMapState,
+    moveToNode, completeCurrentNode, IllegalMoveError,
+    processNode, applyDialogueChoice,
+    emptyQuestLog, isQuestComplete, findActiveQuest, findQuest,
+    startQuest, progressQuest, completeQuest, discoverQuest,
+    reachableObjectives, killObjectives,
+} from './World';
 export {
     changeMap, completeMap, unlockMap,
     completeNode, unlockNode, changeContinent, completeUniqueEvent,
@@ -148,11 +158,16 @@ export type {
     WorldState, WorldMap, Continent, Quest, MapEvent, MapEventType, UniqueEvent,
     Reward, MapNode, NodeId, Encounter,
     MapName, ContinentName, QuestName,
+    MapDefinition, MapState, QuestObjective, QuestObjectiveType, QuestStatus, QuestLog,
     GenerateEncounterOptions,
+    ProcessNodeResult, ProcessedEvent, ApplyDialogueChoiceResult,
 } from './World';
 
-// ─── NPCs (types only) ────────────────────────────────────────────────────────
-export type { NPC, DialogueMap } from './NPCs';
+// ─── NPCs (types + dialogue helpers) ──────────────────────────────────────────
+export type {
+    NPC, DialogueMap, DialogueTree, DialogueNode, DialogueChoice, DialogueContext,
+} from './NPCs';
+export { getDialogueNode, visibleChoices, isLeafNode } from './NPCs';
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 export {

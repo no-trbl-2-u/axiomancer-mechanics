@@ -4,13 +4,13 @@
 
 import { GameState } from './types';
 import { createCharacter } from '../Character';
-import { createStartingWorld } from '../World';
+import { createStartingWorld, emptyQuestLog } from '../World';
 
 /**
  * Increment when GameState's shape changes. Save loaders branch on this so
  * old saves can be migrated rather than corrupted.
  */
-export const GAME_STATE_VERSION = 1;
+export const GAME_STATE_VERSION = 2;
 
 /** Builds a brand-new GameState with default player and world. */
 export function createNewGameState(): GameState {
@@ -23,5 +23,7 @@ export function createNewGameState(): GameState {
         }),
         world: createStartingWorld(),
         combat: null,
+        quests: emptyQuestLog(),
+        flags: [],
     };
 }

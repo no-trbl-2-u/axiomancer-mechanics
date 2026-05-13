@@ -3,14 +3,99 @@
  * makes sense (locking/unlocking, completing).
  */
 
-import { WorldState, WorldMap } from './types';
+import { WorldState, WorldMap, MapState, MapNode, NodeId } from './types';
 import { MapName, ContinentName } from './map.library';
+import { getMapDefinition } from './map.registry';
 
 // ── Map navigation ──────────────────────────────────────────────────────────
 
-/** Sets the current map. Caller resolves the WorldMap from the registry. */
-export function changeMap(state: WorldState, map: WorldMap): WorldState {
+/** Sets the current map. Caller resolves the MapState from the registry. */
+export function changeMap(state: WorldState, map: MapState): WorldState {
     return { ...state, currentMap: map };
+}
+
+// ── Node movement (Spec 08 Q2) ──────────────────────────────────────────────
+
+/** Thrown by `moveToNode` when the requested transition is illegal. */
+export class IllegalMoveError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = 'IllegalMoveError';
+    }
+}
+
+/** Lookup a node on the current map's definition. */
+function findNode(map: MapState, nodeId: NodeId): MapNode | undefined {
+    const def = getMapDefinition(map.continent, map.name);
+    return def.nodes.find(n => n.id === nodeId);
+}
+
+/**
+ * Moves the player to `nodeId` on the current map. Pure WorldState reducer.
+ *
+ * Validation (Spec 08 Q2 — option B with completed-node locking):
+ *   1. The destination must be a real node on the map.
+ *   2. The destination must be in the *current* node's `connectedNodes`
+ *      (linear adjacency).
+ *   3. Completed nodes are locked from re-entry — no back-travel.
+ *   4. The destination must not be in `lockedNodes`.
+ *
+ * Hazard ticking (Spec 08 Q3 — each `moveToNode` call) is performed by the
+ * higher-level orchestrator in `Game/world.orchestrator.ts`, since the world
+ * reducer is purely WorldState-shaped and the player lives at the
+ * `GameState` level.
+ */
+export function moveToNode(state: WorldState, nodeId: NodeId): WorldState {
+    const map = state.currentMap;
+    if (map.currentNode === nodeId) {
+        // Idempotent on no-op (already here).
+        return state;
+    }
+    const currentNode = findNode(map, map.currentNode);
+    if (!currentNode) {
+        throw new IllegalMoveError(`moveToNode: current node '${map.currentNode}' is unknown on map '${map.name}'.`);
+    }
+    if (!currentNode.connectedNodes.includes(nodeId)) {
+        throw new IllegalMoveError(`moveToNode: '${nodeId}' is not adjacent to '${map.currentNode}'.`);
+    }
+    if (map.completedNodes.includes(nodeId)) {
+        throw new IllegalMoveError(`moveToNode: '${nodeId}' is already completed — back-travel is not permitted.`);
+    }
+    if (map.lockedNodes.includes(nodeId)) {
+        throw new IllegalMoveError(`moveToNode: '${nodeId}' is locked.`);
+    }
+    return {
+        ...state,
+        currentMap: { ...map, currentNode: nodeId },
+    };
+}
+
+/**
+ * Completes the current node and unlocks every `connectedNode` that isn't
+ * already completed. Idempotent on completed nodes. Used by the world
+ * orchestrator after a node event resolves successfully.
+ */
+export function completeCurrentNode(state: WorldState): WorldState {
+    const map = state.currentMap;
+    const nodeId = map.currentNode;
+    if (map.completedNodes.includes(nodeId)) return state;
+
+    const node = findNode(map, nodeId);
+    const unlocks = node?.connectedNodes ?? [];
+
+    const newLocked = map.lockedNodes.filter(n => !unlocks.includes(n));
+    const newlyAvailable = unlocks.filter(
+        n => !map.completedNodes.includes(n) && !map.availableNodes.includes(n),
+    );
+    return {
+        ...state,
+        currentMap: {
+            ...map,
+            completedNodes: [...map.completedNodes, nodeId],
+            availableNodes: [...map.availableNodes, ...newlyAvailable],
+            lockedNodes: newLocked,
+        },
+    };
 }
 
 /** Marks a map as completed on the current continent. Idempotent. */

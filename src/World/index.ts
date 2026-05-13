@@ -1,47 +1,31 @@
-import { WorldState, WorldMap } from './types';
+import { WorldState } from './types';
 import { MapName } from './map.library';
-import { fishingVillage, northernForest } from './Continents/Coastal-Village/maps';
-
-/** Thrown when the world tries to navigate to a map that isn't registered. */
-export class MapNotFoundError extends Error {
-    constructor(mapName: string, continent: string = 'Coastal Continent') {
-        super(`Map "${mapName}" not found in ${continent}`);
-        this.name = 'MapNotFoundError';
-    }
-}
-
-/** Resolves a `MapName` belonging to the Coastal Continent into a `WorldMap`. */
-export function getCoastalMap(mapName: MapName): WorldMap {
-    switch (mapName) {
-        case 'fishing-village':
-            return fishingVillage;
-        case 'northern-forest':
-            return northernForest;
-        default: {
-            const exhaustiveCheck = mapName as never;
-            throw new MapNotFoundError(exhaustiveCheck);
-        }
-    }
-}
+import { createMapState, getMapDefinition, getCoastalMap, MapNotFoundError, MAP_REGISTRY } from './map.registry';
 
 /** Builds the initial WorldState for a new save. */
 export function createStartingWorld(): WorldState {
+    const fishingVillage = getMapDefinition('coastal-continent', 'fishing-village');
     return {
         world: [],
         currentContinent: {
             name: 'coastal-continent',
             description: 'The coastal continent is a landmass bordered by the sea to the east and west. It is home to a variety of biomes, including forests, mountains, and plains.',
-            availableMaps: ['fishing-village'],
-            lockedMaps: ['northern-forest'],
+            availableMaps: ['fishing-village' as MapName],
+            lockedMaps: ['northern-forest' as MapName],
             completedMaps: [],
         },
-        currentMap: getCoastalMap('fishing-village'),
+        currentMap: createMapState(fishingVillage),
     };
 }
+
+export {
+    MAP_REGISTRY, getMapDefinition, createMapState, getCoastalMap, MapNotFoundError,
+} from './map.registry';
 
 export type {
     WorldState, WorldMap, Continent, Quest, MapEvent, MapEventType, UniqueEvent,
     Reward, MapNode, NodeId, Encounter,
+    MapDefinition, MapState, QuestObjective, QuestObjectiveType, QuestStatus, QuestLog,
 } from './types';
 export type { MapName, ContinentName } from './map.library';
 export type { QuestName } from './quest.library';
@@ -51,3 +35,23 @@ export {
     DIFFICULTY_LEVEL_BANDS,
 } from './encounter';
 export type { GenerateEncounterOptions } from './encounter';
+
+export {
+    emptyQuestLog, isQuestComplete, findActiveQuest, findQuest,
+    startQuest, progressQuest, completeQuest, discoverQuest,
+    reachableObjectives, killObjectives,
+} from './quest.engine';
+
+export {
+    moveToNode, completeCurrentNode, IllegalMoveError,
+    changeMap, completeMap, unlockMap,
+    completeNode, unlockNode, changeContinent, completeUniqueEvent,
+} from './world.reducer';
+
+export { processNode } from './process-node';
+export type { ProcessNodeResult, ProcessedEvent } from './process-node';
+
+export {
+    applyDialogueChoice,
+} from './dialogue.runtime';
+export type { ApplyDialogueChoiceResult } from './dialogue.runtime';

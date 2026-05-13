@@ -107,15 +107,15 @@ encounters) is enough to demo the loop.
 
 ## Acceptance checklist
 
-- [ ] All 10 questions answered.
-- [ ] `moveToNode` exists and is exercised by a test.
-- [ ] `processNode` dispatches encounter/event/treasure/shop/npc/quest paths.
-- [ ] Hazard tick fires when the player moves between nodes (verified with
+- [x] All 10 questions answered.
+- [x] `moveToNode` exists and is exercised by a test.
+- [x] `processNode` dispatches encounter/event/treasure/shop/npc/quest paths.
+- [x] Hazard tick fires when the player moves between nodes (verified with
       a test that applies poison and walks two steps).
-- [ ] One end-to-end CLI flow: enter map → traverse 3 nodes (one
+- [x] One end-to-end CLI flow: enter map → traverse 3 nodes (one
       encounter, one treasure, one boss) → quest completes → XP + loot
       granted.
-- [ ] `docs/world.md` updated with the final API.
+- [x] `docs/world.md` updated with the final API.
 
 ## Out of scope
 

@@ -291,6 +291,8 @@ export function removeEffectsByType(
 }
 
 export { lookupEffect, getEffectByName, getEffectsByType, effectsLibrary } from './effects.library';
+export { processWorldEffectTick, getActiveHazards } from './world-tick';
+export type { WorldTickResult, ActiveHazard } from './world-tick';
 export type {
     Effect, EffectType, EffectStacking, EffectTier, EffectCategory, EffectPayload,
     ActiveEffect, EffectApplicationResult,

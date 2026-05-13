@@ -46,6 +46,8 @@ import { lookupEffect } from '../Effects/effects.library';
 import { GameState } from './types';
 import { createNewGameState } from './game.reducer';
 import { PersistenceAdapter } from './persistence/types';
+import { killObjectives, progressQuest, findQuest } from '../World/quest.engine';
+import { QuestLog } from '../World/types';
 
 /**
  * Summary of what an `endCombat` call granted to the player (Spec 07).
@@ -227,6 +229,7 @@ export function createGameStore(
             // Victory grant: roll loot, sum XP, fold into the player.
             let xpGained = 0;
             const loot: Item[] = [];
+            let nextQuests: QuestLog = get().quests;
             if (outcome === 'victory' && currentEncounter) {
                 xpGained = totalXpReward(currentEncounter);
                 const rolled = rollEncounterLoot(currentEncounter);
@@ -240,6 +243,26 @@ export function createGameStore(
                     experience: nextPlayer.experience + xpGained,
                     inventory: nextInventory,
                 };
+                // Advance any active `kill` objectives whose target matches.
+                // Quest objectives compare against the enemy's display `name`
+                // (avoids needing a separate slug field on every enemy).
+                for (const enemy of currentEncounter.enemies) {
+                    const kills = killObjectives(nextQuests, enemy.name);
+                    for (const k of kills) {
+                        const res = progressQuest(nextQuests, k.questName, k.objectiveId, 1);
+                        nextQuests = res.log;
+                        if (res.completedName) {
+                            const q = findQuest(get().quests, res.completedName);
+                            if (q && typeof q.reward !== 'string' && q.reward && 'kind' in q.reward) {
+                                if (q.reward.kind === 'currency') {
+                                    nextPlayer = { ...nextPlayer, currency: nextPlayer.currency + q.reward.amount };
+                                } else if (q.reward.kind === 'experience') {
+                                    nextPlayer = { ...nextPlayer, experience: nextPlayer.experience + q.reward.amount };
+                                }
+                            }
+                        }
+                    }
+                }
             } else {
                 // Use the existing root inventory so loot doesn't leak when
                 // the player is KO'd or flees.
@@ -247,7 +270,7 @@ export function createGameStore(
             }
 
             currentEncounter = null;
-            set({ player: nextPlayer, combat: null });
+            set({ player: nextPlayer, combat: null, quests: nextQuests });
             return { outcome, xpGained, loot };
         },
 
@@ -284,8 +307,8 @@ export function createGameStore(
 
         // ── Persistence ──────────────────────────────────────────────────────
         save() {
-            const { version, player, world, combat } = get();
-            adapter.save({ version, player, world, combat });
+            const { version, player, world, combat, quests, flags } = get();
+            adapter.save({ version, player, world, combat, quests, flags });
         },
     }));
 }

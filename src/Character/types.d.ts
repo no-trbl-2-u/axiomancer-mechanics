@@ -80,6 +80,11 @@ export interface Character {
     derivedStats: DerivedStats;
     nonCombatStats: NonCombatStats;
     inventory: Item[];
+    /**
+     * Spec 08 Q8 — generic in-game currency counter. Shops have not landed yet,
+     * so only the number is tracked; shop reducers come in a later spec.
+     */
+    currency: number;
     equipment: Partial<Record<EquipmentSlot, Equipment>>;
     effects: ActiveEffect[];
     knownSkills: string[];

@@ -14,6 +14,8 @@ export interface CreateCharacterOptions {
     level: number;
     baseStats: BaseStats;
     inventory?: Item[];
+    /** Starting currency (Spec 08 Q8). Defaults to 0. */
+    currency?: number;
     /**
      * Optional starting equipment, keyed by slot. Stat modifiers from each
      * piece are folded into the resulting `derivedStats` at character-create
@@ -33,7 +35,7 @@ export interface CreateCharacterOptions {
  */
 export function createCharacter(options: CreateCharacterOptions): Character {
     const {
-        name, level, baseStats, inventory = [], equipment = {}, effects = [],
+        name, level, baseStats, inventory = [], currency = 0, equipment = {}, effects = [],
         knownSkills = [], equippedSkills = [], procUnlocks,
     } = options;
 
@@ -50,6 +52,7 @@ export function createCharacter(options: CreateCharacterOptions): Character {
         derivedStats: deriveStats(baseStats),
         nonCombatStats: deriveNonCombatStats(baseStats),
         inventory,
+        currency,
         equipment: {},
         effects,
         knownSkills,
