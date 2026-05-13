@@ -125,7 +125,7 @@ export {
     createGameStore, createNewGameState, GAME_STATE_VERSION,
     gameReducer, migrate, createEventEmitter,
     selectPlayer, selectCombat, selectCombatState, selectIsInCombat,
-    selectInventory, selectVersion,
+    selectInventory, selectVersion, selectMoralMeter,
     nullAdapter, createNodeAdapter,
     STAT_MULTIPLIERS, RESOURCE_MULTIPLIERS, EXPERIENCE_PER_LEVEL,
     DEFENSE_MULTIPLIERS, PASSIVE_DEFENSE_MULTIPLIER,
