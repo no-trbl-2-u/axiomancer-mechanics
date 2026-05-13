@@ -30,7 +30,7 @@ shipped (with commit hash).
 
 **Next up (autonomous loop's queue):**
 - [x] Phase 09 — Game loop orchestration (`gameReducer`, full store wiring, `game.cli.ts`) (e6ce034)
-- [ ] Phase 10 — Moral/difficulty meter (choice tracking, alignment, difficulty scaling)
+- [x] Phase 10 — Moral/difficulty meter (choice tracking, alignment, difficulty scaling) (a6085c4)
 - [ ] Phase 11 — RNG seeding and test harness (seeded RNG, deterministic replays, full test harness)
 - [ ] Phase 12 — Package architecture and events (event surface, React Native adapter docs, clean barrel)
 - [ ] Phase 13 — ESLint fix (repair `eslint.config.mts`, add `@typescript-eslint` plugin correctly)
