@@ -12,14 +12,6 @@
 
 ## Pending
 
-### [Z-HIGH] NPCs — exported dialogue runtime has no tests
-- category: tests
-- impact: 7 (data-driven gate logic in the public barrel; off-by-one in `requires` filtering ships silently)
-- ease: 9 (three pure functions, no RNG, no I/O)
-- source: critique (pass-1)
-- score: 6.3
-- next: add `src/NPCs/e2e/dialogue.engine.test.ts` covering leaf detection, requires-gated choice visibility (quest/questCompleted/flag), and unknown-id throw.
-
 ### [Z-HIGH] Character — zero module-level tests for public API
 - category: tests
 - impact: 9 (THE engine entry point; `createCharacter`/`equipItem`/`unequipItem`/`getEquipmentModifiers` carry the public contract)
@@ -92,4 +84,4 @@
 
 ## Done
 
-(Empty — no iterate ticks have run yet.)
+- [x] **[Z-HIGH] NPCs — exported dialogue runtime has no tests** — shipped `src/NPCs/e2e/dialogue.engine.test.ts` (13 cases) at commit `00cda59` (2026-05-13). Drains critique pass-1 finding.

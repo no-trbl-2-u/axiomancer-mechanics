@@ -22,14 +22,6 @@
 - suggested_fix: add `src/Character/e2e/character.engine.test.ts` exercising `createCharacter` (level/xp derivation, starting equipment fold-in) and `equipItem`/`unequipItem`/`getEquipmentModifiers` round-trip with the RNG stubs from `src/test-utils/rng.ts`.
 - source: critique
 
-### [HIGH] NPCs — exported dialogue runtime has no tests
-- pass: critique-1 (commit dd26ef0)
-- area: tests
-- observation: `src/NPCs/` exports runtime helpers `getDialogueNode`, `visibleChoices`, `isLeafNode` (and the `DialogueContext` predicate type) but the module contains zero `.test.ts` files. The branching dialogue traversal is part of the Spec 08 surface and is data-driven, so an off-by-one in `requires` filtering or a stale `nextNodeId` lookup would slip through.
-- evidence: `src/NPCs/` contains only `dialogue.ts`, `index.ts`, `types.d.ts`; `find src/NPCs -name '*.test.ts'` returns empty.
-- suggested_fix: add `src/NPCs/e2e/dialogue.engine.test.ts` covering: leaf detection, choice visibility with quest/flag gates set or unset, and `getDialogueNode` throwing on unknown ids.
-- source: critique
-
 ### [MED] docs/npcs.md is stale — claims "no runtime functions exported"
 - pass: critique-1 (commit dd26ef0)
 - area: docs
@@ -82,4 +74,4 @@
 
 ## Done
 
-(Empty.)
+- [x] **[HIGH] NPCs — exported dialogue runtime has no tests** — resolved at commit `00cda59` (2026-05-13) by adding `src/NPCs/e2e/dialogue.engine.test.ts` (13 hermetic cases).
