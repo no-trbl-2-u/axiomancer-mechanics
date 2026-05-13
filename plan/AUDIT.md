@@ -12,14 +12,6 @@
 
 ## Pending
 
-### [Z-HIGH] Character — zero module-level tests for public API
-- category: tests
-- impact: 9 (THE engine entry point; `createCharacter`/`equipItem`/`unequipItem`/`getEquipmentModifiers` carry the public contract)
-- ease: 6 (stat derivation + equipment fold-in requires several arrange/assert cycles)
-- source: critique (pass-1)
-- score: 5.4
-- next: add `src/Character/e2e/character.engine.test.ts` exercising createCharacter (stat derivation, starting equipment fold-in, xp threshold) and equip/unequip round-trip.
-
 ### [Z-MED] docs/npcs.md is stale — claims "no runtime functions exported"
 - category: docs
 - impact: 6 (consumers read the doc to discover surface; current wording is actively wrong)
@@ -85,3 +77,4 @@
 ## Done
 
 - [x] **[Z-HIGH] NPCs — exported dialogue runtime has no tests** — shipped `src/NPCs/e2e/dialogue.engine.test.ts` (13 cases) at commit `00cda59` (2026-05-13). Drains critique pass-1 finding.
+- [x] **[Z-HIGH] Character — zero module-level tests for public API** — shipped `src/Character/e2e/character.engine.test.ts` (16 cases) at commit `8e20626` (2026-05-13). Drains critique pass-1 finding.

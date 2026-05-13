@@ -14,14 +14,6 @@
 
 ## Pending
 
-### [HIGH] Character — zero module-level tests for public API
-- pass: critique-1 (commit dd26ef0)
-- area: tests
-- observation: `src/Character/` ships `createCharacter`, `equipItem`, `unequipItem`, `getEquipmentModifiers` through the public barrel but the module contains zero `.test.ts` files — no `e2e/*.engine.test.ts`, no sibling unit tests. Coverage is incidental via Combat/Items tests; nothing guards the Character API directly.
-- evidence: `find src/Character -name '*.test.ts'` returns empty; `src/Character/` contains only `characters.mock.ts`, `equipment.reducer.ts`, `index.ts`, `types.d.ts`.
-- suggested_fix: add `src/Character/e2e/character.engine.test.ts` exercising `createCharacter` (level/xp derivation, starting equipment fold-in) and `equipItem`/`unequipItem`/`getEquipmentModifiers` round-trip with the RNG stubs from `src/test-utils/rng.ts`.
-- source: critique
-
 ### [MED] docs/npcs.md is stale — claims "no runtime functions exported"
 - pass: critique-1 (commit dd26ef0)
 - area: docs
@@ -75,3 +67,4 @@
 ## Done
 
 - [x] **[HIGH] NPCs — exported dialogue runtime has no tests** — resolved at commit `00cda59` (2026-05-13) by adding `src/NPCs/e2e/dialogue.engine.test.ts` (13 hermetic cases).
+- [x] **[HIGH] Character — zero module-level tests for public API** — resolved at commit `8e20626` (2026-05-13) by adding `src/Character/e2e/character.engine.test.ts` (16 hermetic cases).
