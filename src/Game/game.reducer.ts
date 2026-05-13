@@ -94,6 +94,33 @@ function applyLevelUps(player: Character): Character {
 
 const skillLookup = (id: string) => getSkillById(id);
 
+/**
+ * Shifts the moral meter by the specified delta, clamping to [-100, +100].
+ * Optionally gated by min/max requirements — if the current meter doesn't meet
+ * the gating criteria, the shift is blocked and state returns unchanged.
+ */
+function shiftMoralMeter(state: GameState, delta: number, gating?: { min?: number; max?: number }): GameState {
+    const current = state.moralMeter;
+    
+    // Check gating constraints
+    if (gating) {
+        if (gating.min !== undefined && current < gating.min) {
+            return state; // Blocked by minimum requirement
+        }
+        if (gating.max !== undefined && current > gating.max) {
+            return state; // Blocked by maximum requirement
+        }
+    }
+    
+    // Apply shift with clamping
+    const newMeter = Math.max(-100, Math.min(100, current + delta));
+    
+    return {
+        ...state,
+        moralMeter: newMeter,
+    };
+}
+
 // ─── Reducer ──────────────────────────────────────────────────────────────────
 
 /**
@@ -229,6 +256,10 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
         case 'LEVEL_UP': {
             return { ...state, player: applyLevelUps(state.player) };
+        }
+
+        case 'SHIFT_MORAL_METER': {
+            return shiftMoralMeter(state, action.payload.delta, action.payload.gating);
         }
 
         case 'SAVE_GAME':
