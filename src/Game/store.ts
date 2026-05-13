@@ -106,6 +106,8 @@ export interface GameActions {
     // ── Progression / persistence ────────────────────────────────────────────
     levelUp: () => void;
     save: () => void;
+    // ── Morality ─────────────────────────────────────────────────────────────
+    shiftMoralMeter: (delta: number, gating?: { min?: number; max?: number }) => void;
 }
 
 /** Full store type — state + actions. */
@@ -289,6 +291,11 @@ export function createGameStore(
                 adapter.save({ version, player, world, combat, quests, flags, moralMeter });
                 if (emitter) emitter.emit({ type: 'game:saved', payload: { state: next } });
             },
+
+            // ── Morality ──────────────────────────────────────────────────────
+            shiftMoralMeter(delta: number, gating?: { min?: number; max?: number }) {
+                dispatch({ type: 'SHIFT_MORAL_METER', payload: { delta, gating } });
+            },
         };
     });
 }
@@ -302,6 +309,7 @@ export const selectCombat      = (s: GameStore): CombatState | null => s.combat;
 export const selectIsInCombat  = (s: GameStore): boolean            => s.combat !== null;
 export const selectInventory   = (s: GameStore): Item[]             => s.player.inventory;
 export const selectVersion     = (s: GameStore): number             => s.version;
+export const selectMoralMeter  = (s: GameStore): number             => s.moralMeter;
 
 // Backwards-compat alias.
 export const selectCombatState = selectCombat;
