@@ -30,7 +30,7 @@ exercises a moral choice.
 1. **Meter shape.** Single integer (e.g. -100 to +100), bucketed enum
    (`'compassionate' | 'neutral' | 'ruthless'`), or multi-axis (e.g.
    compassion + cunning + honour)?
-   > Your answer:
+   > Your answer: For now, a single integer, but in the future it'll be multi-axis
 
 2. **Tick magnitude.** What's a typical shift? Suggested:
    - Minor choices: ±1.
@@ -40,7 +40,7 @@ exercises a moral choice.
 
 3. **Visibility.** Is the meter visible to the player, hidden, or
    hinted-at via narrative cues?
-   > Your answer:
+   > Your answer: visible
 
 4. **Combat tie-ins.** Does the meter affect combat?
    - (A) No — purely narrative.
@@ -48,32 +48,32 @@ exercises a moral choice.
      low meter = easier enemies).
    - (C) Yes — it gates some skills/effects (e.g. only available when
      meter > N).
-   > Your answer:
+   > Your answer: A (for now, will have more effects later)
 
 5. **Effect on rewards.** If the player chooses the "evil" path, do
    rewards change (different items, different XP)? Or are reward changes
    purely narrative (ending text)?
-   > Your answer:
+   > Your answer: Evil = more XP and more items
 
 6. **Friendship + meter.** Spec 03 friendship outcomes — do they shift the
    meter? Suggested: friendship win = +1 to compassion-flavoured meter.
-   > Your answer:
+   > Your answer: Yes
 
 7. **Persistence across save.** Meter saves with state (assumed yes, but
    confirm).
-   > Your answer:
+   > Your answer: Yes
 
 8. **Endings.** How are endings selected at the end of the game?
    - (A) Pure meter thresholds.
    - (B) Combination of meter + specific story flags.
    - (C) Specific story flags only; meter is colour, not gating.
-   > Your answer:
+   > Your answer: C (as the meter will effect available stories as well)
 
 9. **The "child escort" example.** BRAINDUMP describes an escort quest
    where one ending requires forgiving the murderer. Is this meant to be
    a tutorial example for the system or actual game content? If actual,
    place it in the world map.
-   > Your answer:
+   > Your answer: Yes, this will be in the endgame. Don't worry about it now.
 
 ## Proposed approach
 
