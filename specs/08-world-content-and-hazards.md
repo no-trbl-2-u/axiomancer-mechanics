@@ -32,7 +32,7 @@ encounters) is enough to demo the loop.
 1. **Player position.** Add `currentNode: NodeId` to `WorldMap` (per-map
    position) or `currentNode: NodeId` to `WorldState` (one global position)?
    Reasoning: per-map position remembers progress across map switches.
-   > Your answer:
+   > Your answer: per map position
 
 2. **Movement model.** Branch via `connectedNodes`:
    - (A) Free movement — any connected node.
@@ -40,51 +40,51 @@ encounters) is enough to demo the loop.
      side-paths.
    - (C) Hex/grid — `MapNode.location` is a coordinate; movement is
      directional.
-   > Your answer:
+   > Your answer: B (but lock completed nodes so no back travel)
 
 3. **What counts as a "step" for hazard ticks?** Each `moveToNode` call,
    or each map node *transition that crosses a tile* (not idle ticks)? Or
    real-time?
-   > Your answer:
+   > Your answer: Each moveToNode call
 
 4. **Active effects in the exploration HUD.** The roadmap notes "Active
    hazard effects shown on the exploration HUD." Engine just exposes the
    data; the UI renders. What does the engine need beyond
    `player.effects` for the UI to present this? E.g. a derived
    `getActiveHazards(player)` helper?
-   > Your answer:
+   > Your answer: Yes
 
 5. **Map vs MapState.** Knowledge-Gap 22: split static `MapDefinition` from
    runtime `MapState` so the JSON catalogue is separate from save data?
    - (A) Yes — refactor `WorldMap` into `MapDefinition` (template) +
      `MapState` (per-save progress).
    - (B) No — keep `WorldMap` as the merged object.
-   > Your answer:
+   > Your answer: A
 
 6. **Map registry.** Replace `getCoastalMap` with a continent-keyed
    registry so adding a continent doesn't touch existing files? Suggested
    shape: `MAP_REGISTRY: Record<ContinentName, Record<MapName, WorldMap>>`.
-   > Your answer:
+   > Your answer: yes
 
 7. **Quest engine scope.** Minimum viable:
    - (A) Quest state on `GameState.activeQuests: QuestName[]`,
      completion via explicit `completeQuest` reducer.
    - (B) Track per-quest objectives (kill X, find Y) — bigger scope.
-   > Your answer:
+   > Your answer:B
 
 8. **Shop economics.** Currency exists conceptually; nothing tracks it.
    Add `Character.currency: number` and shop reducers?
-   > Your answer:
+   > Your answer: Just add the currency number. Shop to come in future spec
 
 9. **NPC dialogue depth.** Plain `DialogueMap` (string keyed) or branching
    tree? Branching adds complexity but enables moral choices (Spec 10).
-   > Your answer:
+   > Your answer: Branching tree
 
 10. **Rest & recovery.** Roadmap mentions rest. Where?
     - (A) On specific node types (`type: 'event'`, narrated as resting).
     - (B) Anywhere — ability to "wait" on a node.
     - (C) Tied to NPCs / shops (inn).
-    > Your answer:
+    > Your answer: A
 
 ## Proposed approach
 
