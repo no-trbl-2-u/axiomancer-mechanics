@@ -14,14 +14,6 @@
 
 ## Pending
 
-### [MED] Tests bypass test-utils/rng.ts and stub Math.random directly
-- pass: critique-1 (commit dd26ef0)
-- area: tests
-- observation: `plan/bearings.md` ("Decisions standing for the autonomous loop") locks RNG stubbing to `mockAlternatingRng`, `mockFixedRng`, `mockSequentialRng` from `src/test-utils/rng.ts` and explicitly forbids ad-hoc `vi.spyOn(Math, 'random')`. Two test files violate this.
-- evidence: `src/Game/store.encounter.test.ts:48`, `src/Game/store.encounter.test.ts:99`, `src/Game/spec08.e2e.test.ts:38` all call `vi.spyOn(Math, 'random').mockReturnValue(...)` directly.
-- suggested_fix: replace each call with the appropriate helper from `src/test-utils/rng.ts` (likely `mockFixedRng(0.99)` / `mockFixedRng(0.5)`). Update the comments in `src/Enemy/loot.ts:9` and `src/Combat/combat.resolver.ts:20` that still describe the deprecated `vi.spyOn` pattern as the canonical stub mechanism.
-- source: critique
-
 ### [MED] combat.resolver.ts is 1000 lines — phase logic is unsplit
 - pass: critique-1 (commit dd26ef0)
 - area: structure
@@ -61,3 +53,4 @@
 - [x] **[HIGH] NPCs — exported dialogue runtime has no tests** — resolved at commit `00cda59` (2026-05-13) by adding `src/NPCs/e2e/dialogue.engine.test.ts` (13 hermetic cases).
 - [x] **[HIGH] Character — zero module-level tests for public API** — resolved at commit `8e20626` (2026-05-13) by adding `src/Character/e2e/character.engine.test.ts` (16 hermetic cases).
 - [x] **[MED] docs/npcs.md is stale** — resolved at commit `1193b19` (2026-05-13) by rewriting `docs/npcs.md` against the live Spec 08 Q9 dialogue surface (helpers, DialogueContext, applyDialogueChoice cross-link, accurate Pending section).
+- [x] **[MED] Tests bypass test-utils/rng.ts and stub Math.random directly** — resolved at commit `6b5ea3f` (2026-05-13) by routing 3 call sites through `mockSequentialRng` and updating stale header comments in `src/Enemy/loot.ts` and `src/Combat/combat.resolver.ts`.

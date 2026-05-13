@@ -12,14 +12,6 @@
 
 ## Pending
 
-### [Z-MED] Tests use raw `vi.spyOn(Math, 'random')` instead of test-utils/rng.ts
-- category: tests
-- impact: 6 (violates locked RNG-stub convention; future refactors of `test-utils/rng.ts` won't propagate)
-- ease: 8 (3 call sites, mechanical substitution)
-- source: critique (pass-1)
-- score: 4.8
-- next: replace `vi.spyOn(Math, 'random').mockReturnValue(...)` with `mockFixedRng(...)` in `src/Game/store.encounter.test.ts:48,99` and `src/Game/spec08.e2e.test.ts:38`; update stale comment references in `src/Enemy/loot.ts:9` and `src/Combat/combat.resolver.ts:20`.
-
 ### [MED] ESLint config broken — `npm run lint` fails
 - category: test-quality
 - impact: 5 (silent static-analysis gap; type-check covers most cases)
@@ -71,3 +63,4 @@
 - [x] **[Z-HIGH] NPCs — exported dialogue runtime has no tests** — shipped `src/NPCs/e2e/dialogue.engine.test.ts` (13 cases) at commit `00cda59` (2026-05-13). Drains critique pass-1 finding.
 - [x] **[Z-HIGH] Character — zero module-level tests for public API** — shipped `src/Character/e2e/character.engine.test.ts` (16 cases) at commit `8e20626` (2026-05-13). Drains critique pass-1 finding.
 - [x] **[Z-MED] docs/npcs.md stale** — rewrote `docs/npcs.md` against the live Spec 08 Q9 surface at commit `1193b19` (2026-05-13). Drains critique pass-1 finding.
+- [x] **[Z-MED] Tests use raw `vi.spyOn(Math, 'random')`** — migrated 3 call sites to `mockSequentialRng` and refreshed stale header comments at commit `6b5ea3f` (2026-05-13). Drains critique pass-1 finding.
