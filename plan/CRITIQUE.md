@@ -22,14 +22,6 @@
 - suggested_fix: extract per-phase helpers (`resolveRoundStart`, `resolveActionRestriction`, `resolveAdvantage`, `resolveStanceEffects`, `resolveScenario`, `resolveRoundEnd`) into colocated files; keep `resolveCombatRound` as the orchestrator that wires them and produces the `combatEvents` stream. Land behind the existing e2e suite so the public contract is unchanged.
 - source: critique
 
-### [LOW] Dead code: src/Items/_archive/ (1,104 LOC, zero references)
-- pass: critique-1 (commit dd26ef0)
-- area: dead-code
-- observation: `src/Items/_archive/` contains `equipment.library.ts` (773 lines) and `equipment-resource.engine.test.ts` (331 lines). Nothing in `src/` or the barrel references the archive directory.
-- evidence: `grep -rn "Items/_archive\|_archive/equipment" src` returns empty; directory contains only the two files above.
-- suggested_fix: delete `src/Items/_archive/` outright; the content is preserved in git history. If retention is intentional (e.g., reference material for an upcoming spec), move it under `braindump/` or `docs/references/` and add a one-line README explaining why.
-- source: critique
-
 ### [LOW] Empty committed directory: src/Game/backups/
 - pass: critique-1 (commit dd26ef0)
 - area: structure
@@ -54,3 +46,4 @@
 - [x] **[HIGH] Character — zero module-level tests for public API** — resolved at commit `8e20626` (2026-05-13) by adding `src/Character/e2e/character.engine.test.ts` (16 hermetic cases).
 - [x] **[MED] docs/npcs.md is stale** — resolved at commit `1193b19` (2026-05-13) by rewriting `docs/npcs.md` against the live Spec 08 Q9 dialogue surface (helpers, DialogueContext, applyDialogueChoice cross-link, accurate Pending section).
 - [x] **[MED] Tests bypass test-utils/rng.ts and stub Math.random directly** — resolved at commit `6b5ea3f` (2026-05-13) by routing 3 call sites through `mockSequentialRng` and updating stale header comments in `src/Enemy/loot.ts` and `src/Combat/combat.resolver.ts`.
+- [x] **[LOW] Dead code: src/Items/_archive/ (1,104 LOC)** — resolved at commit `cdcc630` (2026-05-13) by deleting the archive directory and dropping the corresponding `tsconfig.json` / `vitest.config.ts` exclude entries.

@@ -21,13 +21,6 @@
 - notes: `@typescript-eslint/no-explicit-any` referenced without plugin
   registration. See `AGENTS.md` Caveats and `plan/bearings.md` Hard Rules.
 
-### [Z-LOW] Dead code: src/Items/_archive/ (1,104 LOC, zero references)
-- category: dead-code
-- impact: 3 (build size + reader confusion only)
-- ease: 9 (delete + verify)
-- source: critique (pass-1)
-- score: 2.7
-
 ### [LOW] `Knowledge-Gaps.md` contains open design questions not yet spec'd
 - category: spec-gap
 - impact: 4 (answers needed before implementation; doesn't block current phases)
@@ -64,3 +57,4 @@
 - [x] **[Z-HIGH] Character — zero module-level tests for public API** — shipped `src/Character/e2e/character.engine.test.ts` (16 cases) at commit `8e20626` (2026-05-13). Drains critique pass-1 finding.
 - [x] **[Z-MED] docs/npcs.md stale** — rewrote `docs/npcs.md` against the live Spec 08 Q9 surface at commit `1193b19` (2026-05-13). Drains critique pass-1 finding.
 - [x] **[Z-MED] Tests use raw `vi.spyOn(Math, 'random')`** — migrated 3 call sites to `mockSequentialRng` and refreshed stale header comments at commit `6b5ea3f` (2026-05-13). Drains critique pass-1 finding.
+- [x] **[Z-LOW] Dead code: src/Items/_archive/** — deleted 1,104 LOC plus tsconfig / vitest exclude entries at commit `cdcc630` (2026-05-13). Drains critique pass-1 finding.
