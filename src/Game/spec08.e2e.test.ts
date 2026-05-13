@@ -17,6 +17,7 @@ import { Player } from '../Character/characters.mock';
 import { createCharacter } from '../Character';
 import { GameState } from './types';
 import { applyEffect, lookupEffect, processWorldEffectTick } from '../Effects';
+import { mockSequentialRng } from '../test-utils/rng';
 
 afterEach(() => vi.restoreAllMocks());
 
@@ -35,7 +36,7 @@ function bootstrap(): ReturnType<typeof createGameStore> {
 describe('Spec 08 e2e — fishing-village exploration loop', () => {
     it('travels start → encounter → treasure → boss; quest completes; rewards granted', () => {
         // Fix RNG so encounter rolls and loot rolls are deterministic.
-        vi.spyOn(Math, 'random').mockReturnValue(0.5);
+        mockSequentialRng(0.5);
 
         const store = bootstrap();
         let state = store.getState();

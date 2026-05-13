@@ -15,6 +15,7 @@ import { Player } from '../Character/characters.mock';
 import { TidepoolCrab, CoastalTyrant } from '../Enemy/enemy.library';
 import { Encounter } from '../World/types';
 import { Item } from '../Items/types';
+import { mockSequentialRng } from '../test-utils/rng';
 
 afterEach(() => vi.restoreAllMocks());
 
@@ -45,7 +46,7 @@ describe('store.endCombat — grants XP + loot on victory', () => {
         // Fix the RNG so the loot table always lands on a non-null bucket.
         // TidepoolCrab's table: [none(80), drop(minor-healing-potion, 20)].
         // A roll of 0.99 lands at the right edge → second (item) bucket.
-        vi.spyOn(Math, 'random').mockReturnValue(0.99);
+        mockSequentialRng(0.99);
 
         const store = createGameStore(nullAdapter, { player: Player });
         store.getState().startCombat(TidepoolCrab);
@@ -96,7 +97,7 @@ describe('store.endCombat — grants XP + loot on victory', () => {
     });
 
     it('victory loot stacks into an existing inventory entry', () => {
-        vi.spyOn(Math, 'random').mockReturnValue(0.99);
+        mockSequentialRng(0.99);
 
         const seededInventory: Item[] = [
             { id: 'minor-healing-potion', name: 'Minor Healing Potion',

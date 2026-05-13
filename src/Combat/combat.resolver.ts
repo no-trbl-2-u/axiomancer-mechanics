@@ -17,8 +17,9 @@
  *   `round-end`          — end-phase DoT and effect expiry.
  *
  * Determinism: the only RNG source is `Math.random` inside `createDieRoll` and
- * the buff selectors in `effects.ts`; tests stub via `vi.spyOn(Math, 'random')`
- * (see `src/test-utils/rng.ts`). Seeded RNG arrives in Spec 11.
+ * the buff selectors in `effects.ts`; tests stub via the helpers in
+ * `src/test-utils/rng.ts` (`mockSequentialRng` / `mockFixedRng` /
+ * `mockAlternatingRng`). Seeded RNG arrives in Spec 11.
  */
 
 import { Character } from '../Character/types';
