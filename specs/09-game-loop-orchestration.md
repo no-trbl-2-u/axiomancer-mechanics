@@ -42,27 +42,27 @@ return to map → level up → quest progress → save / load → all driven by
    - (B) The store keeps its inlined actions; `gameReducer` is only used by
      non-Zustand consumers.
    - (C) Drop Zustand from this package entirely (Spec 12).
-   > Your answer:
+   > Your answer: B, except let's fully switch to zustand instead of it bring a wrapper.
 
 2. **Action shape.** Tagged union (`{ type: 'START_COMBAT', payload }`) vs
    sub-action records (`{ kind: 'combat'; combat: CombatAction }`).
-   > Your answer:
+   > Your answer: First one
 
 3. **Save format versioning.** `GAME_STATE_VERSION` exists. When the schema
    changes, do you:
    - (A) Refuse to load older versions.
    - (B) Migrate via `migrate(state, fromVersion, toVersion)`.
-   > Your answer:
+   > Your answer: B
 
 4. **Save granularity.** Save on every action (autosave), only on map
    transitions, only when the player explicitly saves?
-   > Your answer:
+   > Your answer: Autosave but leave a comment near the main logic that we'll revisit this  if the game seems too brutal
 
 5. **Persistence transport.** `nullAdapter` and `node.adapter.ts` exist.
    The React Native app needs an `AsyncStorage` adapter. Should this
    package ship one, or document the interface and let the consumer
    provide it?
-   > Your answer:
+   > Your answer: I don't know. Whatever one keeps both parts' responsibilities separate.
 
 6. **Event surface for UI.** When the engine performs combat / level-up /
    quest progress, how do consumers learn about it?
@@ -70,7 +70,7 @@ return to map → level up → quest progress → save / load → all driven by
    - (B) `gameReducer` returns `{ state, events: GameEvent[] }`.
    - (C) Event emitter / observable.
    See Spec 12 for the broader question.
-   > Your answer:
+   > Your answer: C
 
 7. **`game.cli.ts` shape.** The main CLI wires:
    - Title / load-or-new.
@@ -79,7 +79,7 @@ return to map → level up → quest progress → save / load → all driven by
      `gameReducer`).
    - Inventory / character screens.
    Anything missing?
-   > Your answer:
+   > Your answer: There'll be a "Journal" tab as well that keeps track of main and side quests, as well as, current "philosophy/alignment". There'll also be "Skills" to keep track of unlocked skills. The CLI is only a way to test changes so will eventually need this stuff.
 
 ## Proposed approach
 
