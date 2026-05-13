@@ -40,28 +40,28 @@ returns a sensible enemy.
    - `bossLogic` — a deterministic phase script (e.g. round 1: stance, round
      2: attack pattern, round 3: signature ability).
    Pick or override.
-   > Your answer:
+   > Your answer: For now, yes, this'll work for now
 
 2. **Knowledge of the player.** AI logic functions currently take only the
    `enemy` (and through it, the action only). Should they receive the full
    `CombatState` so they can react to player choices / HP / effects?
-   > Your answer:
+   > Your answer: yes
 
 3. **Strategic logic depth.** "Strategic" implies looking at the player's
    active effects and exploiting weaknesses (e.g. cast Body if the player
    has `debuff_vulnerability_body`). Worth doing in this spec, or defer?
-   > Your answer:
+   > Your answer: yes
 
 4. **Proc-table parity.** Should enemies use the same Spec 03 proc table by
    default, with optional per-enemy overrides? (Mirrors `tier1Overrides`.)
-   > Your answer:
+   > Your answer: For now, yes
 
 5. **Encounter design.** `generateEncounter(mapNode, playerLevel)` returns
    what?
    - (A) Single `Enemy`.
    - (B) `Encounter { enemies: Enemy[], reward: Reward }` to set up future
      multi-enemy fights even if the engine is 1v1 today.
-   > Your answer:
+   > Your answer: B
 
 6. **Difficulty scaling.** When the encounter generator picks an enemy:
    - (A) Use the enemy's stored `level` as-is — content authored at fixed
@@ -72,7 +72,7 @@ returns a sensible enemy.
 
 7. **Loot tables.** Each enemy has a fixed `loot?: Item[]`. Or weighted
    drops?
-   > Your answer:
+   > Your answer: B (but make it a variable so it can be dynamic)
 
 8. **Library composition.** ≥15 enemies. Suggested split:
    - 3 simple, 6 normal, 3 elite, 2 boss, 1 unique.
