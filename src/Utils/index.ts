@@ -5,6 +5,7 @@
 import { Advantage } from "../Combat/types";
 import { STAT_MULTIPLIERS, RESOURCE_MULTIPLIERS } from "../Game/game-mechanics.constants";
 import { BaseStats, DerivedStats, NonCombatStats } from "../Character/types";
+import { getRng, Rng } from './rng';
 
 // ===============================================
 // MATH
@@ -30,7 +31,7 @@ export function clamp(value: number, min: number, max: number): number {
  * @example randomInt(1, 6) // a number between 1 and 6 (like a die roll)
  */
 export function randomInt(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+  return Math.floor(getRng().random() * (max - min + 1)) + min;
 }
 
 /**
@@ -125,11 +126,14 @@ export const determineRollAdvantageModifier = (advantage: Advantage): (arr: numb
  * const advAtk = createDie(20, 2, max)   // roll 2d20, keep highest
  * const disadvAtk = createDie(20, 2, min) // roll 2d20, keep lowest
  */
-export function createDie(sides: number, timesRolled: number, func?: (arr: number[]) => number) {
+export function createDie(sides: number, timesRolled: number, func?: (arr: number[]) => number, rng?: Rng) {
+  const rngInstance = rng ?? getRng();
   return () => {
-    const rolls = Array.from({ length: timesRolled }, () => randomInt(1, sides));
+    const rolls = Array.from({ length: timesRolled }, () => 
+      Math.floor(rngInstance.random() * sides) + 1
+    );
     return (func ?? sum)(rolls);
-  }
+  };
 }
 
 /**
