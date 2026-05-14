@@ -12,10 +12,12 @@ pip3 install pexpect
 
 ## Usage
 
+### Random Testing Mode
+
 ```bash
-npm run combat:auto -- <runs> [stance] [action]
+npm run combat:auto -- <runs> [stance] [action] [enemy]
 # or directly:
-python3 automation/combat-test.py <runs> [stance] [action]
+python3 automation/combat-test.py <runs> [stance] [action] [enemy]
 ```
 
 | Argument | Required | Values | Default |
@@ -23,6 +25,7 @@ python3 automation/combat-test.py <runs> [stance] [action]
 | `<runs>` | yes | positive integer | — |
 | `[stance]` | no | `1` Heart, `2` Body, `3` Mind | random |
 | `[action]` | no | `1` Attack, `2` Defend | random |
+| `[enemy]` | no | enemy slug or `-` | default |
 
 Examples:
 
@@ -33,18 +36,54 @@ npm run combat:auto -- 50 2 2      # 50 runs, always Body + Defend
 npm run combat:auto -- 10 3 1      # 10 runs, always Mind + Attack
 ```
 
-`COMBAT_NO_DELAY=1` is set automatically by the script so animation delays do not
-inflate run time.
+### Script Testing Mode
+
+```bash
+python3 automation/combat-test.py --script <path> [--seed <seed>]
+```
+
+| Argument | Required | Description |
+|----------|----------|-------------|
+| `--script <path>` | yes | JSON script file with actions and expectations |
+| `--seed <seed>` | no | RNG seed for deterministic runs |
+
+Examples:
+
+```bash
+python3 automation/combat-test.py --script scripts/mind-mark-stack.json
+python3 automation/combat-test.py --script scripts/ad-baculum-clear.json --seed deterministic_001
+```
+
+## Script Format
+
+Scripts are JSON files with predefined actions and expectations:
+
+```json
+{
+    "seed": "test_001",
+    "actions": ["mind", "attack", "mind", "attack"],
+    "expectations": [
+        "EXPECT effect tier1_mind_mark intensity == 2"
+    ]
+}
+```
+
+## Seeded RNG
+
+The combat CLI now supports deterministic runs:
+
+```bash
+npm run combat -- --seed=my_seed_value
+```
+
+Two runs with the same seed produce identical combat transcripts. Use `COMBAT_DEBUG=1` to enable effect state dumps for test verification:
+
+```bash
+COMBAT_DEBUG=1 npm run combat -- --seed=test_123
+```
 
 ## Logs
 
 Each invocation writes one file per run to `automation/testing-logs/` named
 `<timestamp>-run-<n>.txt`. ANSI escapes are stripped and CRLFs normalised to LFs so
 the logs are diff-friendly.
-
-## Pending (`specs/11-rng-seeding-and-test-harness.md`)
-
-- RNG seed parameter (so a specific run can be deterministically replayed).
-- Full active-effect dump per round.
-- Pre-defined input scripts for regression-testing specific interactions.
-- Assertion layer flagging runs where damage / effect math deviates from spec.
