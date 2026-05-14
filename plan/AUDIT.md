@@ -53,6 +53,7 @@
 
 ## Done
 
+- [x] **[MED] README Public API table out of sync with `src/index.ts`** — table omitted entire groups (Skills, NPCs, Combat resolver, RNG) and lagged on Items/Game/World/Enemy/Effects expansions. Rewrote against the live barrel (`src/index.ts`) at commit `69c2cb0` (2026-05-13). Impact 6 × Ease 7 / 10 = 4.2.
 - [x] **[HIGH] Baseline tests red — Phase 11 RNG plumbing leak + 4 stale assertions** — root cause: Phase 11's `getRng()` singleton bypassed `Math.random`, so `src/test-utils/rng.ts` mocks no longer controlled production rolls; tests passed by luck and order. Fix: helpers now also `setRng()` a Math-backed singleton so existing `Math.random` spies route to all `getRng().random()` callers; also fixed the 4 stale assertions in `game.loop.engine.test.ts` (snapshot + reducer SAVE_GAME contract) and `moral.meter.engine.test.ts` (friendship-counter seeding + currency setup). Shipped at commit `5626d30` (2026-05-13). 373/373 green.
 - [x] **[Z-HIGH] NPCs — exported dialogue runtime has no tests** — shipped `src/NPCs/e2e/dialogue.engine.test.ts` (13 cases) at commit `00cda59` (2026-05-13). Drains critique pass-1 finding.
 - [x] **[Z-HIGH] Character — zero module-level tests for public API** — shipped `src/Character/e2e/character.engine.test.ts` (16 cases) at commit `8e20626` (2026-05-13). Drains critique pass-1 finding.
