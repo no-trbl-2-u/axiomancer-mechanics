@@ -16,10 +16,11 @@
  *                          thorns, heart specials, both-defending tick.
  *   `round-end`          — end-phase DoT and effect expiry.
  *
- * Determinism: the only RNG source is `Math.random` inside `createDieRoll` and
- * the buff selectors in `effects.ts`; tests stub via the helpers in
- * `src/test-utils/rng.ts` (`mockSequentialRng` / `mockFixedRng` /
- * `mockAlternatingRng`). Seeded RNG arrives in Spec 11.
+ * Determinism: all rolls — dice in `createDieRoll`, buff selectors in
+ * `effects.ts`, the resist pipeline — go through the seedable `getRng()`
+ * singleton (Spec 11). Tests install a `Math.random`-backed RNG via the
+ * helpers in `src/test-utils/rng.ts` (`mockSequentialRng` / `mockFixedRng` /
+ * `mockAlternatingRng`).
  */
 
 import { Character } from '../Character/types';

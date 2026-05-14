@@ -24,7 +24,6 @@
  *     own display and need TTY prompts via inquirer. Use the pexpect-based
  *     `npm run combat:auto` harness for those, and keep all engine logic
  *     in `combat.resolver.ts` so it stays testable here.
- *   • Math.random seeding until Spec 11 lands a seedable PRNG.
  *
  * RNG convention used by `mockAlternatingRng`:
  *   Alternating 0.9 / 0.1 → `randomInt(1, 20)` yields 19 then 3. For a

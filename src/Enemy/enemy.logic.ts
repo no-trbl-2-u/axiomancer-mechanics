@@ -5,8 +5,9 @@
  * Strategies may read the live `CombatState` so they can react to player HP /
  * active effects / last declared stance (Spec 07 Q2).
  *
- * Variety comes from `Math.random`; tests stub it via the harness in
- * `src/test-utils/rng.ts`. Seeded RNG arrives in Spec 11.
+ * Variety routes through the seedable `getRng()` singleton (Spec 11); tests
+ * install a `Math.random`-backed RNG via the helpers in
+ * `src/test-utils/rng.ts`.
  */
 
 import { Stance, Action, CombatAction, CombatState } from '../Combat/types';

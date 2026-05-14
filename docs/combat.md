@@ -253,7 +253,6 @@ round-resolution entry point used by every UI client.
 - `createBattleLogEntry` / `formatAllBattleLogs` / `generateCombatResultMessage` — log utilities
 - Skill / item actions in the resolver pipeline — Specs 04 / 05
 - Spec 03 switching reward — currently out of scope; rolls into Spec 04's skill synergy work
-- Seedable RNG so the round resolver is fully deterministic without `vi.spyOn` — Spec 11
 
 ### Landed in Spec 02
 

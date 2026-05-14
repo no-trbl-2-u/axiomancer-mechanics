@@ -17,9 +17,11 @@ A test is **hermetic** if and only if all three of these hold:
    no subprocess. The test must run in plain `vitest` with no environment
    setup beyond `npm install`.
 2. **Deterministic.** No reliance on wall-clock time, real `Math.random`,
-   process IDs, or environment variables. Stub `Math.random` via
-   `mockAlternatingRng` / `mockFixedRng` from `src/test-utils/rng.ts`. (When
-   Spec 11 lands, swap these stubs for the seedable RNG.)
+   process IDs, or environment variables. Stub via `mockAlternatingRng` /
+   `mockFixedRng` / `mockSequentialRng` from `src/test-utils/rng.ts` — these
+   spy on `Math.random` **and** install a `Math.random`-backed `Rng` into the
+   `getRng()` singleton (Spec 11), so every production callsite, including
+   `randomInt` and the resist pipeline, becomes deterministic.
 3. **Isolated.** No shared mutable state across tests. `afterEach` restores
    any `vi.spyOn` mocks. Fixtures are deep-cloned by the code under test,
    not by the test.
@@ -56,9 +58,9 @@ the hermetic-e2e requirement on their own.
   the `pexpect`-based Python harness (`npm run combat:auto`) — that is *not*
   hermetic, and is a smoke test, not a substitute for the engine-level
   hermetic e2e tests.
-- **`Math.random` seeding** until [Spec 11](../specs/11-rng-seeding-and-test-harness.md)
-  ships a seedable PRNG. Until then, stub via the helpers in
-  [`src/test-utils/rng.ts`](../src/test-utils/rng.ts).
+- Tests that require **real Date / wall-clock time** or **real network /
+  filesystem** — they fall outside the hermetic contract by definition.
+  Use a `nullAdapter`, fake clock, or extract the dependency.
 
 If your change touches the CLI layer, the hermetic e2e test must target the
 underlying engine function (e.g. `resolveCombatRound`) and the CLI must

@@ -177,7 +177,7 @@ and resolved by `executeSkill` after damage and after effect application.
 - Enemy skill use — Spec 07.
 - Moral-alignment gates — Spec 10.
 - Round-damage-total telemetry that would replace Bootstrap Paradox's flat
-  heal — deferred along with seedable RNG (Spec 11).
+  heal — deferred; needs a per-round damage accumulator on `CombatState`.
 
 ## Source Material
 
