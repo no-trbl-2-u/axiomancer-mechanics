@@ -44,7 +44,7 @@ results in `tier1_mind_mark` reaching intensity 3.
    - (C) `pure-rand` npm package.
    The audit policy is "don't make up dependency versions" — if you pick
    (B) or (C), I'll install the latest at implementation time.
-   > Your answer:
+   > Your answer: A
 
 2. **Injection model.** How does seeded RNG reach call sites?
    - (A) `Rng` interface threaded through every function that needs it
@@ -52,34 +52,34 @@ results in `tier1_mind_mark` reaching intensity 3.
    - (B) Module-level singleton `setSeed(seed)` mutates a shared instance.
    - (C) Hybrid — a default singleton, with helpers accepting an optional
      `Rng` for tests.
-   > Your answer:
+   > Your answer: I'm leaning towards B, but I don't have a strong opinion here
 
 3. **CLI seed argument.** Where does the seed live?
    - `npm run combat -- --seed=foo`
    - `COMBAT_SEED=foo npm run combat`
    - Both.
-   > Your answer:
+   > Your answer: A (as flag)
 
 4. **Save state seed.** Does the saved game capture the RNG state so
    reload produces the same future rolls? Or is RNG state purely
    in-memory?
-   > Your answer:
+   > Your answer: Yes
 
 5. **Scripted-input file format.**
    - (A) Plain text, one action per line: `body attack` / `mind defend`.
    - (B) JSON: `{ seed, actions: ['heart', 'attack', ...] }`.
    - (C) YAML.
-   > Your answer:
+   > Your answer: I don't know
 
 6. **Assertion model.** Pick a minimal assertion language:
    - (A) Each script ends with `EXPECT effect <id> intensity == N` lines.
    - (B) Embedded `# expect:` comments parsed by the harness.
    - (C) A separate JSON file alongside each script.
-   > Your answer:
+   > Your answer: I don't know
 
 7. **Effect-state dump format.** Per-round JSON dump? Same line as the
    roll? Side-channel file?
-   > Your answer:
+   > Your answer: I don't know
 
 ## Proposed approach
 
