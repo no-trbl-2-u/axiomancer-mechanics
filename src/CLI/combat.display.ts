@@ -427,7 +427,8 @@ export function printCombatRules(): void {
     console.log(`  ${typeColor('heart')} > ${typeColor('body')} > ${typeColor('mind')} > ${typeColor('heart')}  (type advantage cycle)`);
     console.log(`  Advantage → roll 2d20 keep ${C.brightGreen}HIGHER${C.reset}  |  Disadvantage → roll 2d20 keep ${C.brightRed}LOWER${C.reset}`);
     console.log(`  Defending multipliers  →  advantage: ${C.brightGreen}×${DEFENSE_MULTIPLIERS.advantage}${C.reset}  |  neutral: ${C.yellow}×${DEFENSE_MULTIPLIERS.neutral}${C.reset}  |  disadvantage: ${C.brightRed}×${DEFENSE_MULTIPLIERS.disadvantage}${C.reset}`);
-    console.log(`  Damage = roll − ( defense × multiplier )  (min 0)\n`);
+    console.log(`  Damage = roll − ( defense × multiplier )  (min 0)`);
+    console.log(`  ${C.dim}Seeded RNG: use --seed=value for deterministic replays${C.reset}\n`);
 }
 
 // ─── Status Display ───────────────────────────────────────────────────────────

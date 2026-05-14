@@ -29,6 +29,7 @@ import { Skill } from '../Skills/types';
 import { getSkillById, skillLibrary } from '../Skills/skill.library';
 import { createGameStore } from '../Game/store';
 import { nullAdapter } from '../Game/persistence/null.adapter';
+import { setSeed, getRng } from '../Utils/rng';
 import { isConsumable, Consumable, Item } from '../Items/types';
 import { consumableLibrary } from '../Items/consumable.library';
 import { generateEncounter } from '../World/encounter';
@@ -196,6 +197,15 @@ async function runCombatTurn(state: CombatState): Promise<CombatState> {
 // ─── Entry Point ──────────────────────────────────────────────────────────────
 
 async function main(): Promise<void> {
+    // Parse --seed argument
+    const seedArg = process.argv.find(arg => arg.startsWith('--seed='));
+    if (seedArg) {
+        const seed = seedArg.split('=')[1];
+        setSeed(seed!);
+        console.log(`Combat seeded with: ${seed}`);
+        console.log(`Initial RNG state: ${getRng().getState()}`);
+    }
+
     // Equip the first 4 skills from the library so the CLI demoer immediately
     // has a meaningful Skills sub-prompt. Spec 06 will turn this into a real
     // out-of-combat equipping flow.
