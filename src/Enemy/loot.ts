@@ -13,6 +13,7 @@
 
 import { Item } from '../Items/types';
 import { LootTableEntry } from './types';
+import { getRng } from '../Utils/rng';
 
 /** Pluggable RNG. Returns a number in `[0, 1)`. */
 export type LootRng = () => number;
@@ -25,7 +26,7 @@ export type LootRng = () => number;
  */
 export function rollLoot(
     table: LootTableEntry[] | undefined,
-    rng: LootRng = Math.random,
+    rng: LootRng = () => getRng().random(),
 ): Item | null {
     if (!table || table.length === 0) return null;
 
@@ -51,7 +52,7 @@ export function rollLoot(
 export function rollLootMany(
     table: LootTableEntry[] | undefined,
     n: number,
-    rng: LootRng = Math.random,
+    rng: LootRng = () => getRng().random(),
 ): Item[] {
     const out: Item[] = [];
     for (let i = 0; i < n; i++) {

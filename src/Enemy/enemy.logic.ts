@@ -11,6 +11,7 @@
 
 import { Stance, Action, CombatAction, CombatState } from '../Combat/types';
 import { Enemy, EnemyLogic } from './types';
+import { getRng } from '../Utils/rng';
 
 const STANCES: readonly Stance[] = ['heart', 'body', 'mind'];
 const ATTACK_OR_DEFEND: readonly Extract<Action, 'attack' | 'defend'>[] =
@@ -26,11 +27,11 @@ export function counterStanceOf(s: Stance): Stance {
 }
 
 function pickRandom<T>(items: readonly T[]): T {
-    return items[Math.floor(Math.random() * items.length)];
+    return items[Math.floor(getRng().random() * items.length)];
 }
 
 function chance(p: number): boolean {
-    return Math.random() < p;
+    return getRng().random() < p;
 }
 
 /** Stance with the lowest base stat on `target` — the easiest to break. */
