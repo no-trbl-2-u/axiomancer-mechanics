@@ -45,7 +45,7 @@ import { getRng } from '../Utils/rng';
  * Increment when GameState's shape changes. Save loaders branch on this so
  * old saves can be migrated rather than corrupted.
  */
-export const GAME_STATE_VERSION = 3;
+export const GAME_STATE_VERSION = 4;
 
 /** Builds a brand-new GameState with default player and world. */
 export function createNewGameState(): GameState {

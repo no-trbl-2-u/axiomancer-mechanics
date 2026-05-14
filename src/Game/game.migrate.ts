@@ -10,21 +10,39 @@
 
 import { GameState } from './types';
 import { GAME_STATE_VERSION } from './game.reducer';
+import { getRng } from '../Utils/rng';
 
 /** GameState shape before v3 (before moralMeter field was added). */
-interface GameStateV2 extends Omit<GameState, 'moralMeter'> {
+interface GameStateV2 extends Omit<GameState, 'moralMeter' | 'rngState'> {
     version: 2;
+}
+
+/** GameState shape before v4 (before rngState field was added). */
+interface GameStateV3 extends Omit<GameState, 'rngState'> {
+    version: 3;
 }
 
 /**
  * Migrate from v2 to v3: add moralMeter field defaulting to 0 (neutral).
  * v2 saves had no moral tracking; new field allows existing saves to continue.
  */
-function migrateV2toV3(v2: GameStateV2): GameState {
+function migrateV2toV3(v2: GameStateV2): GameStateV3 {
     return {
         ...v2,
         version: 3,
         moralMeter: 0,
+    };
+}
+
+/**
+ * Migrate from v3 to v4: add rngState field defaulting to current RNG state.
+ * v3 saves had no RNG state persistence; default to current state.
+ */
+function migrateV3toV4(v3: GameStateV3): GameState {
+    return {
+        ...v3,
+        version: 4,
+        rngState: getRng().getState(),
     };
 }
 
@@ -64,6 +82,10 @@ export function migrate(
         migrated = migrateV2toV3(migrated as GameStateV2);
     }
     
+    if (fromVersion < 4) {
+        migrated = migrateV3toV4(migrated as GameStateV3);
+    }
+    
     return assertGameState(migrated);
 }
 
@@ -81,6 +103,7 @@ function assertGameState(raw: unknown): GameState {
         || r.quests == null
         || !Array.isArray(r.flags)
         || typeof r.moralMeter !== 'number'
+        || typeof r.rngState !== 'number'
     ) {
         throw new Error('migrate: payload missing required GameState fields.');
     }
