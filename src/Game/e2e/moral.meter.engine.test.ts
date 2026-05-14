@@ -10,23 +10,17 @@
  * - Clamping behavior at bounds [-100, +100]
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
-import { mockFixedRng } from '../../test-utils/rng';
-import { Player } from '../../Character/characters.mock';
+import { describe, it, expect } from 'vitest';
 import { TidepoolCrab } from '../../Enemy/enemy.library';
 import { createGameStore, selectMoralMeter } from '../store';
 import { createNewGameState } from '../game.reducer';
 import { nullAdapter } from '../persistence/null.adapter';
-import { initializeCombat } from '../../Combat/combat.reducer';
-import { resolveCombatRound } from '../../Combat/combat.resolver';
-import { isCombatOngoing, determineCombatEnd } from '../../Combat';
+import { determineCombatEnd } from '../../Combat';
+import { FRIENDSHIP_COUNTER_MAX } from '../game-mechanics.constants';
 import { getMapDefinition } from '../../World/map.registry';
 import { applyDialogueChoice } from '../../World/dialogue.runtime';
 
 describe('Moral meter system — complete pipeline', () => {
-    beforeEach(() => {
-        mockFixedRng(0.5);
-    });
 
     it('initializes moral meter to 0 in new game state', () => {
         const state = createNewGameState();
@@ -77,31 +71,25 @@ describe('Moral meter system — complete pipeline', () => {
 
     it('friendship victory grants +1 moral meter bonus', () => {
         const store = createGameStore(nullAdapter);
-        
-        // Start combat
+
         store.getState().startCombat(TidepoolCrab);
         expect(store.getState().combat).toBeTruthy();
-        
-        // Get initial moral meter
+
         const initialMeter = selectMoralMeter(store.getState());
-        
-        // Both defend repeatedly to trigger friendship victory
-        let rounds = 0;
-        while (isCombatOngoing(store.getState().combat!) && rounds < 10) {
-            store.getState().dispatch({
-                type: 'COMBAT_ROUND',
-                payload: { playerAction: 'defend', playerStance: 'body' }
-            });
-            rounds++;
-        }
-        
-        // End combat (should be friendship victory)
-        const combatEnd = determineCombatEnd(store.getState().combat!);
-        expect(combatEnd).toBe('friendship');
-        
+
+        // Drive directly to a friendship outcome — the enemy AI for
+        // `TidepoolCrab` is aggressive, so we seed the friendship counter at
+        // its cap rather than depend on both combatants choosing defend.
+        const combat = store.getState().combat!;
+        store.getState().updateCombat({
+            ...combat,
+            friendshipCounter: FRIENDSHIP_COUNTER_MAX,
+        });
+
+        expect(determineCombatEnd(store.getState().combat!)).toBe('friendship');
+
         store.getState().endCombat();
-        
-        // Verify moral meter increased by 1
+
         expect(selectMoralMeter(store.getState())).toBe(initialMeter + 1);
         expect(store.getState().combat).toBeNull();
     });
@@ -137,7 +125,8 @@ describe('Moral meter system — complete pipeline', () => {
         
         // Test kind gesture (+3)
         gameState = createNewGameState();
-        
+        gameState.player.currency = 50;
+
         const kindChoice = beggarTree.nodes.greet.choices![2];
         expect(kindChoice.effect?.setFlag).toBe('beggar_kind_gesture');
         

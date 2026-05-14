@@ -98,12 +98,14 @@ describe('Game loop — full transcript through gameReducer', () => {
 
         // 6. Snapshot for round-trip.
         const preSave: GameState = JSON.parse(JSON.stringify({
-            version:  store.getState().version,
-            player:   store.getState().player,
-            world:    store.getState().world,
-            combat:   store.getState().combat,
-            quests:   store.getState().quests,
-            flags:    store.getState().flags,
+            version:    store.getState().version,
+            player:     store.getState().player,
+            world:      store.getState().world,
+            combat:     store.getState().combat,
+            quests:     store.getState().quests,
+            flags:      store.getState().flags,
+            moralMeter: store.getState().moralMeter,
+            rngState:   store.getState().rngState,
         }));
 
         // 7. SAVE_GAME (autosave already fired through the dispatch chain).
@@ -126,9 +128,13 @@ describe('Game loop — full transcript through gameReducer', () => {
 });
 
 describe('gameReducer — pure path (no store)', () => {
-    it('SAVE_GAME and LOAD_GAME are no-ops at the reducer layer', () => {
+    it('SAVE_GAME refreshes rngState; LOAD_GAME is a reducer-level no-op', () => {
         const s = createNewGameState();
-        expect(gameReducer(s, { type: 'SAVE_GAME' })).toBe(s);
+        // SAVE_GAME stamps a fresh `rngState` snapshot (Phase 11) — every other
+        // field passes through unchanged.
+        const afterSave = gameReducer(s, { type: 'SAVE_GAME' });
+        expect(afterSave).toEqual({ ...s, rngState: afterSave.rngState });
+        // LOAD_GAME owns its side effect at the store layer; reducer is pure.
         expect(gameReducer(s, { type: 'LOAD_GAME' })).toBe(s);
     });
 
