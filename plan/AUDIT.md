@@ -12,6 +12,18 @@
 
 ## Pending
 
+### [HIGH] Baseline tests red — Phase 10/11 left 4 stale assertions
+- category: test-quality
+- impact: 9 (`npm test` red on main blocks every other iterate / phase tick — verify gate fails on arrival)
+- ease: 8 (mechanical: 1 file shape mismatch, 2 stale value assertions, 1 misuse of a helper signature)
+- score: 7.2
+- failures:
+  - `src/Game/e2e/game.loop.engine.test.ts:116` — round-trip snapshot omits `moralMeter` + `rngState` added in Phase 10/11.
+  - `src/Game/e2e/game.loop.engine.test.ts:131` — Phase 11 made `SAVE_GAME` stamp `rngState`, no longer strict-equal to input.
+  - `src/Game/e2e/moral.meter.engine.test.ts:100` — friendship-victory test relies on `TidepoolCrab` (aggressive AI) to mutually defend; needs to seed `friendshipCounter` directly.
+  - `src/Game/e2e/moral.meter.engine.test.ts:147` — kindChoice block missing the `currency = 50` setup line; also `beforeEach` calls `mockFixedRng(0.5)` with a non-array (helper signature changed but caller didn't).
+- next: ship test fixes only; do not touch reducer purity / SAVE_GAME rngState design (deeper finding to file separately).
+
 ### [MED] ESLint config broken — `npm run lint` fails
 - category: test-quality
 - impact: 5 (silent static-analysis gap; type-check covers most cases)
