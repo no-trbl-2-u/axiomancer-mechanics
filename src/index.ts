@@ -1,8 +1,11 @@
 /**
  * axiomancer-mechanics — public package surface.
+ * 
+ * Core game engine exports for React Native and other JavaScript consumers.
+ * For Node.js specific adapters, import from 'axiomancer-mechanics/node'.
  *
- * The library is consumed as the non-UI engine for an Axiomancer client
- * (e.g. a React Native app). Imports are organised by domain.
+ * The library is consumed as the non-UI engine for an Axiomancer client.
+ * Imports are organised by domain.
  */
 
 // ─── Character ────────────────────────────────────────────────────────────────
@@ -40,7 +43,6 @@ export {
     rollSkillCheck, isCriticalHit, isCriticalMiss,
     applyCriticalMultiplier, calculateFinalDamage, isAttackSuccessful,
     applyDamage, heal, isAlive, isDefeated, getHealthPercentage,
-    MIND_MARK_ID,
     getStudyMarkIntensity, getActiveRollModifier, getThornsReflect,
     updateEffectDuration, tickAllEffects,
     removeRandomBuff, extendRandomBuffDuration, applyRegen,
@@ -57,7 +59,6 @@ export type {
 export {
     initializeCombat, setPhase, setPlayerStance, setPlayerAction,
     appendLog, incrementFriendship, endCombat,
-    updateCombatPhase, addBattleLogEntry,
     endCombatPlayerVictory, endCombatPlayerDefeat, endCombatWithFriendship,
 } from './Combat/combat.reducer';
 
@@ -185,3 +186,19 @@ export { setRng, getRng, setSeed } from './Utils/rng';
 export type { Rng } from './Utils/rng';
 export { isCharacter, isEnemy, isCombatActive } from './Utils/typeGuards';
 export type { Image } from './Utils/types';
+
+// ── Events ─────────────────────────────────────────────────────────────────
+export type {
+    CombatStartedPayload, CombatEndedPayload, CombatRoundPayload,
+    LevelUpPayload, InventoryChangedPayload, WorldMovedPayload, WorldProcessedPayload,
+    TypedCombatStartedEvent, TypedCombatEndedEvent, TypedCombatRoundEvent,
+    TypedLevelUpEvent, TypedInventoryChangedEvent, TypedWorldMovedEvent, TypedWorldProcessedEvent,
+    TypedGameEvent, CombatSubEvent,
+} from './Game/events.types';
+
+export {
+    createCombatStartedEvent, createCombatEndedEvent, createCombatRoundEvent,
+    createLevelUpEvent, createInventoryChangedEvent, createWorldMovedEvent, createWorldProcessedEvent,
+    isCombatStartedEvent, isCombatEndedEvent, isCombatRoundEvent,
+    isLevelUpEvent, isInventoryChangedEvent, isWorldMovedEvent, isWorldProcessedEvent,
+} from './Game/events.utils';
