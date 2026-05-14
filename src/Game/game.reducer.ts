@@ -39,6 +39,7 @@ import { killObjectives, progressQuest, findQuest } from '../World/quest.engine'
 import { calculateMaxHealth } from '../Utils';
 import { EXPERIENCE_PER_LEVEL, FRIENDSHIP_COUNTER_MAX } from './game-mechanics.constants';
 import { addItemStacking, rollEncounterLoot, totalEncounterXp } from './combat-grants';
+import { getRng } from '../Utils/rng';
 
 /**
  * Increment when GameState's shape changes. Save loaders branch on this so
@@ -60,6 +61,7 @@ export function createNewGameState(): GameState {
         quests: emptyQuestLog(),
         flags: [],
         moralMeter: 0,
+        rngState: getRng().getState(),
     };
 }
 
@@ -269,7 +271,13 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
             return shiftMoralMeter(state, action.payload.delta, action.payload.gating);
         }
 
-        case 'SAVE_GAME':
+        case 'SAVE_GAME': {
+            return {
+                ...state,
+                rngState: getRng().getState(),
+            };
+        }
+
         case 'LOAD_GAME':
             // Side effects owned by the store layer; reducer is pure.
             return state;

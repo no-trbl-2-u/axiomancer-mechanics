@@ -25,6 +25,9 @@ import { Character } from '../Character/types';
  *                              Tracks player alignment from choices: negative
  *                              values (ruthless), positive values (compassionate).
  *                              Affects available dialogue options and story paths.
+ * @property rngState         - Current RNG seed state for deterministic replays.
+ *                              Persisted and restored to maintain reproducible
+ *                              random sequences across save/load cycles.
  */
 export interface GameState {
     version: number;
@@ -35,4 +38,5 @@ export interface GameState {
     quests: QuestLog;
     flags: string[];
     moralMeter: number;
+    rngState: number;
 }

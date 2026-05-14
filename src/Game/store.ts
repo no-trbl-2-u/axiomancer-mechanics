@@ -46,6 +46,7 @@ import { gameReducer, createNewGameState } from './game.reducer';
 import { GameEventEmitter, GameEvent, GameEventType } from './events';
 import { PersistenceAdapter } from './persistence/types';
 import { rollEncounterLoot, totalEncounterXp } from './combat-grants';
+import { getRng } from '../Utils/rng';
 import {
     addItem as addItemReducer,
     removeItem as removeItemReducer,
@@ -165,6 +166,11 @@ export function createGameStore(
     const base    = saved ?? createNewGameState();
     const initial: GameState = { ...base, ...overrides };
 
+    // Restore RNG state from loaded save
+    if (saved?.rngState !== undefined) {
+        getRng().setState(saved.rngState);
+    }
+
     return createStore<GameStore>()((set, get) => {
         // Core dispatch: run reducer → set → emit → autosave.
         // TODO(spec-09): autosave fires on every action. Throttle (or restrict
@@ -178,8 +184,8 @@ export function createGameStore(
             if (event && emitter) emitter.emit(event);
             // Save excludes transient currentEncounter — encounters re-roll on
             // load (Spec 07).
-            const { currentEncounter: _drop, version, player, world, combat, quests, flags, moralMeter } = next;
-            adapter.save({ version, player, world, combat, quests, flags, moralMeter });
+            const { currentEncounter: _drop, version, player, world, combat, quests, flags, moralMeter, rngState } = next;
+            adapter.save({ version, player, world, combat, quests, flags, moralMeter, rngState });
             return next;
         }
 
