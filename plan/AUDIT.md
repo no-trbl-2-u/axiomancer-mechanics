@@ -12,18 +12,6 @@
 
 ## Pending
 
-### [HIGH] Baseline tests red — Phase 10/11 left 4 stale assertions
-- category: test-quality
-- impact: 9 (`npm test` red on main blocks every other iterate / phase tick — verify gate fails on arrival)
-- ease: 8 (mechanical: 1 file shape mismatch, 2 stale value assertions, 1 misuse of a helper signature)
-- score: 7.2
-- failures:
-  - `src/Game/e2e/game.loop.engine.test.ts:116` — round-trip snapshot omits `moralMeter` + `rngState` added in Phase 10/11.
-  - `src/Game/e2e/game.loop.engine.test.ts:131` — Phase 11 made `SAVE_GAME` stamp `rngState`, no longer strict-equal to input.
-  - `src/Game/e2e/moral.meter.engine.test.ts:100` — friendship-victory test relies on `TidepoolCrab` (aggressive AI) to mutually defend; needs to seed `friendshipCounter` directly.
-  - `src/Game/e2e/moral.meter.engine.test.ts:147` — kindChoice block missing the `currency = 50` setup line; also `beforeEach` calls `mockFixedRng(0.5)` with a non-array (helper signature changed but caller didn't).
-- next: ship test fixes only; do not touch reducer purity / SAVE_GAME rngState design (deeper finding to file separately).
-
 ### [MED] ESLint config broken — `npm run lint` fails
 - category: test-quality
 - impact: 5 (silent static-analysis gap; type-check covers most cases)
@@ -65,6 +53,7 @@
 
 ## Done
 
+- [x] **[HIGH] Baseline tests red — Phase 11 RNG plumbing leak + 4 stale assertions** — root cause: Phase 11's `getRng()` singleton bypassed `Math.random`, so `src/test-utils/rng.ts` mocks no longer controlled production rolls; tests passed by luck and order. Fix: helpers now also `setRng()` a Math-backed singleton so existing `Math.random` spies route to all `getRng().random()` callers; also fixed the 4 stale assertions in `game.loop.engine.test.ts` (snapshot + reducer SAVE_GAME contract) and `moral.meter.engine.test.ts` (friendship-counter seeding + currency setup). Shipped at commit `5626d30` (2026-05-13). 373/373 green.
 - [x] **[Z-HIGH] NPCs — exported dialogue runtime has no tests** — shipped `src/NPCs/e2e/dialogue.engine.test.ts` (13 cases) at commit `00cda59` (2026-05-13). Drains critique pass-1 finding.
 - [x] **[Z-HIGH] Character — zero module-level tests for public API** — shipped `src/Character/e2e/character.engine.test.ts` (16 cases) at commit `8e20626` (2026-05-13). Drains critique pass-1 finding.
 - [x] **[Z-MED] docs/npcs.md stale** — rewrote `docs/npcs.md` against the live Spec 08 Q9 surface at commit `1193b19` (2026-05-13). Drains critique pass-1 finding.
