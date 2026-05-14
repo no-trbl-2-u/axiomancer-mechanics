@@ -1,0 +1,13 @@
+{
+    "seed": "clear_test_001", 
+    "actions": [
+        "body", "attack",
+        "body", "attack", 
+        "body", "attack",
+        "mind", "attack"
+    ],
+    "expectations": [
+        "EXPECT effect ad_baculum intensity == 0",
+        "EXPECT effect tier1_mind_mark intensity == 1"
+    ]
+}

@@ -1,0 +1,9 @@
+{
+    "seed": "strip_test_001",
+    "actions": [
+        "heart", "attack"
+    ],
+    "expectations": [
+        "EXPECT enemy_buffs_count < initial_buffs_count"
+    ]
+}

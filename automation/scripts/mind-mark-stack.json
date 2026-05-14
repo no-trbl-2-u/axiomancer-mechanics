@@ -1,0 +1,11 @@
+{
+    "seed": "mind_test_001",
+    "actions": [
+        "mind", "attack",
+        "mind", "attack", 
+        "mind", "attack"
+    ],
+    "expectations": [
+        "EXPECT effect tier1_mind_mark intensity == 3"
+    ]
+}
