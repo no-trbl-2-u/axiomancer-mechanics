@@ -36,6 +36,7 @@ import { resolveEffectApplication } from './resist';
 import { applyEffect } from '../Effects';
 import { getBaseStat } from './stats';
 import { EquipmentProcTrigger } from '../Items/types';
+import { getRng } from '../Utils/rng';
 
 /** A single Stance × action × tier proc candidate, as authored in JSON. */
 export interface CombatEffectTrigger {
@@ -238,7 +239,7 @@ export interface RollForCombatEffectsParams {
 export function rollForCombatEffects(
     p: RollForCombatEffectsParams,
 ): { procs: ProcRollOutcome[]; fumble: FumbleOutcome | null } {
-    const rng = p.rng ?? Math.random;
+    const rng = p.rng ?? (() => getRng().random());
     const eligible = getEligibleTriggers(
         p.stance, p.action, p.unlocks, p.overrides, p.equipmentTriggers,
     );

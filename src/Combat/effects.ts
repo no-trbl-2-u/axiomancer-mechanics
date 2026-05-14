@@ -11,6 +11,7 @@ import { MAX_EFFECT_DURATION } from '../Game/game-mechanics.constants';
 import { Combatant } from './types';
 import { applyDamage, heal } from './health';
 import { getActiveEffectModifiers } from './effect-modifiers';
+import { getRng } from '../Utils/rng';
 
 /** ID of the Mind studying mark. Used by Mind/Attack to add bonus damage. */
 export const MIND_MARK_ID = 'tier1_mind_mark';
@@ -92,7 +93,7 @@ export function removeRandomBuff<T extends Combatant>(target: T): { target: T; r
     const buffs = target.effects.filter(ae => lookupEffect(ae.effectId)?.type === 'buff');
     if (buffs.length === 0) return { target, removed: null };
 
-    const removed = buffs[Math.floor(Math.random() * buffs.length)];
+    const removed = buffs[Math.floor(getRng().random() * buffs.length)];
     const updated = target.effects.filter(ae => ae !== removed);
     return { target: { ...target, effects: updated }, removed };
 }
@@ -108,7 +109,7 @@ export function extendRandomBuffDuration<T extends Combatant>(
     const buffs = target.effects.filter(ae => lookupEffect(ae.effectId)?.type === 'buff');
     if (buffs.length === 0) return { target, extended: null };
 
-    const original = buffs[Math.floor(Math.random() * buffs.length)];
+    const original = buffs[Math.floor(getRng().random() * buffs.length)];
     const extended: ActiveEffect = {
         ...original,
         remainingDuration: Math.min(original.remainingDuration + amount, MAX_EFFECT_DURATION),
