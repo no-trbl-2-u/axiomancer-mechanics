@@ -10,18 +10,22 @@
 
 ```ts
 interface GameState {
-  version: number;                   // GAME_STATE_VERSION (current: 2)
+  version: number;                   // GAME_STATE_VERSION (current: 4)
   player: Character;
   world: WorldState;
   combat: CombatState | null;        // null when out of combat
   currentEncounter?: Encounter;      // transient — excluded from saves
   quests: QuestLog;
   flags: string[];
+  moralMeter: number;                // Spec 10 — clamped to [-100, +100]
+  rngState: number;                  // Spec 11 — LCG seed snapshot
 }
 ```
 
 `currentEncounter` is the only field the persisted save omits — encounters
-re-roll on load (see Spec 07 Q1). Everything else round-trips identically.
+re-roll on load (see Spec 07 Q1). Every other field round-trips identically,
+including `rngState`: the store calls `getRng().setState(saved.rngState)` on
+load so the dice sequence resumes exactly where the save was taken (Spec 11).
 
 ## The dispatch spine
 
@@ -30,8 +34,9 @@ function gameReducer(state: GameState, action: GameAction): GameState
 ```
 
 The reducer is **pure**: it returns a fresh `GameState` and never touches
-disk, time, or RNG side channels. Every top-level transition is expressed as a
-`GameAction`:
+disk or time. The single exception is `SAVE_GAME`, which reads the live
+`getRng().getState()` so the persisted snapshot can resume the dice sequence
+on load (Spec 11). Every top-level transition is expressed as a `GameAction`:
 
 ```ts
 type GameAction =
@@ -46,7 +51,8 @@ type GameAction =
   | { type: 'EQUIP_ITEM';     payload: { item: Equipment } }
   | { type: 'UNEQUIP_ITEM';   payload: { slot: EquipmentSlot } }
   | { type: 'LEVEL_UP'      }
-  | { type: 'SAVE_GAME'     }   // reducer no-op — store handles I/O
+  | { type: 'SHIFT_MORAL_METER'; payload: { delta: number; gating?: { min?: number; max?: number } } }
+  | { type: 'SAVE_GAME'     }   // reducer stamps `rngState`; store handles I/O
   | { type: 'LOAD_GAME'     };  // reducer no-op — store handles I/O
 ```
 
@@ -139,12 +145,14 @@ to `migrate()`, which:
 
 - Returns it as-is when versions match.
 - Refuses payloads newer than the runtime.
-- Funnels older payloads through stepwise upgrades (none defined yet —
-  v2 is the baseline).
+- Funnels older payloads through stepwise upgrades. The ladder today:
+  `migrateV2toV3` (adds `moralMeter`, Spec 10) → `migrateV3toV4` (adds
+  `rngState`, Spec 11).
 - Validates the top-level shape before handing back a `GameState`.
 
-When `GAME_STATE_VERSION` next bumps, add the matching `migrateV2toV3` step
-and call it from `migrate()` for `fromVersion < 3`.
+When `GAME_STATE_VERSION` next bumps, add a `migrateV4toV5` step and call it
+from `migrate()` for `fromVersion < 5`. Each step is a pure
+`(prev) => next` function — no I/O, no defaults pulled at call time.
 
 ## game.cli.ts
 
