@@ -48,6 +48,8 @@ import { isConsumable } from '../Items/types';
 import { getEquipmentProcTriggers, useConsumableEffect } from '../Items/equipment.engine';
 import { useConsumable as useInventoryConsumable } from '../Items/item.reducer';
 import { lookupEffect as lookupEffectById } from '../Effects/effects.library';
+import { dumpEffectState } from './debug';
+import { getRng } from '../Utils/rng';
 import {
     determineAdvantage,
     resolveEffectiveAdvantage,
@@ -940,12 +942,20 @@ export function resolveCombatRound(
     if (eEnd.dotDamage   > 0)   events.push({ phase: 'round-end', kind: 'dot',     actor: 'enemy',  amount: eEnd.dotDamage });
     if (eEnd.expired.length > 0) events.push({ phase: 'round-end', kind: 'expired', actor: 'enemy',  expired: eEnd.expired });
 
+    const newCombat = {
+        ...state,
+        player, enemy, friendshipCounter, combatResources,
+        round: state.round + 1,
+    };
+
+    // Debug state dump when COMBAT_DEBUG=1
+    if (process.env.COMBAT_DEBUG === '1') {
+        const dump = dumpEffectState(newCombat, newCombat.round, getRng().getState());
+        console.log('EFFECT_DUMP:', JSON.stringify(dump));
+    }
+
     return {
-        state: {
-            ...state,
-            player, enemy, friendshipCounter, combatResources,
-            round: state.round + 1,
-        },
+        state: newCombat,
         combatEvents: events,
     };
 }
