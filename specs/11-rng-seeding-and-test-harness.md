@@ -103,13 +103,13 @@ results in `tier1_mind_mark` reaching intensity 3.
 
 ## Acceptance checklist
 
-- [ ] All 7 questions answered.
-- [ ] Two runs with the same seed produce byte-identical CLI logs (modulo
+- [x] All 7 questions answered.
+- [x] Two runs with the same seed produce byte-identical CLI logs (modulo
       timestamps).
-- [ ] At least 3 regression scripts pass via `npm run auto:combat`.
-- [ ] Save/load preserves the RNG state per Q4 (verified by a save mid-fight
+- [x] At least 3 regression scripts pass via `npm run auto:combat`.
+- [x] Save/load preserves the RNG state per Q4 (verified by a save mid-fight
       and reload deterministic outcome).
-- [ ] `automation/README.md` updated with the new flags.
+- [x] `automation/README.md` updated with the new flags.
 
 ## Out of scope
 

@@ -209,8 +209,8 @@ export function createGameStore(
                     type: 'combat:round',
                     payload: { state: next },
                 });
-                const { currentEncounter: _drop, version, player, world, combat: cb, quests, flags, moralMeter } = next;
-                adapter.save({ version, player, world, combat: cb, quests, flags, moralMeter });
+                const { currentEncounter: _drop, version, player, world, combat: cb, quests, flags, moralMeter, rngState } = next;
+                adapter.save({ version, player, world, combat: cb, quests, flags, moralMeter, rngState });
             },
 
             endCombat() {
@@ -293,8 +293,8 @@ export function createGameStore(
 
             save() {
                 const next = get();
-                const { currentEncounter: _drop, version, player, world, combat, quests, flags, moralMeter } = next;
-                adapter.save({ version, player, world, combat, quests, flags, moralMeter });
+                const { currentEncounter: _drop, version, player, world, combat, quests, flags, moralMeter, rngState } = next;
+                adapter.save({ version, player, world, combat, quests, flags, moralMeter, rngState });
                 if (emitter) emitter.emit({ type: 'game:saved', payload: { state: next } });
             },
 
