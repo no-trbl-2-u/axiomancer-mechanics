@@ -181,5 +181,7 @@ export {
     createDie, createDieRoll, determineRollAdvantageModifier,
     deriveStats, deriveNonCombatStats, calculateMaxHealth,
 } from './Utils';
+export { setRng, getRng, setSeed } from './Utils/rng';
+export type { Rng } from './Utils/rng';
 export { isCharacter, isEnemy, isCombatActive } from './Utils/typeGuards';
 export type { Image } from './Utils/types';
