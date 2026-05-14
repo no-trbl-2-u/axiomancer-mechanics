@@ -55,17 +55,21 @@ while (isCombatOngoing(store.getState().combat!)) {
 
 The barrel exports are organised by domain:
 
-| Group      | Highlights                                                                                                  |
-| ---------- | ------------------------------------------------------------------------------------------------------------ |
-| Character  | `createCharacter`, `Character`, `BaseStats`, `DerivedStats`, `NonCombatStats`                                |
-| Enemy      | `createEnemy`, `Enemy`, `EnemyLogic`, `Tier1EffectOverrides`, `randomLogic`, `decideEnemyAction`              |
-| Combat     | `determineAdvantage`, `getBaseStat`/`getAttackStat`/`getDefenseStat`/`getSaveStat`/`getResistStat`, `applyDamage`, `heal`, `tickAllEffects`, `applyRegen`, `getActiveRollModifier`, `getThornsReflect`, `resolveEffectApplication`, `Stance`, `Action`, `CombatState`, `Combatant` |
-| Combat reducer | `initializeCombat`, `setPhase`, `setPlayerStance`, `setPlayerAction`, `appendLog`, `incrementFriendship`, `endCombat` |
-| Effects    | `applyEffect`, `applyTier1CombatEffect`, `clearTier1EffectsForStance`, `lookupEffect`, `Effect`, `ActiveEffect`, `EffectTier` |
-| Items      | `addItem`, `removeItem`, `useConsumable`, `stackItem`, `Item` and its variants, type guards                  |
-| Game       | `createGameStore`, `GameState`, persistence adapters, mechanic constants                                     |
-| World      | `createStartingWorld`, world reducer (map/node/continent transitions), `WorldState`, `WorldMap`              |
-| Utils      | `clamp`, `randomInt`, `deepClone`, `deriveStats`, `calculateMaxHealth`, `createDieRoll`, `isCharacter`, `isEnemy` |
+| Group           | Highlights                                                                                                   |
+| --------------- | ------------------------------------------------------------------------------------------------------------ |
+| Character       | `createCharacter`, `equipItem`/`unequipItem`, `getEquipmentModifiers`, `Character`, `BaseStats`, `DerivedStats`, `NonCombatStats` |
+| Enemy           | `createEnemy`, `decideEnemyAction`, AI presets (`aggressive`/`defensive`/`balanced`/`strategic`/`bossLogic`), `rollLoot`/`rollLootMany`, `EnemyLibrary`, `EnemiesByMap`, `ENEMY_REGISTRY`, `DEFAULT_XP_BY_DIFFICULTY` |
+| Combat          | `determineAdvantage`, stat accessors (`getBaseStat`/`getAttackStat`/`getDefenseStat`/`getSaveStat`/`getResistStat`), `applyDamage`/`heal`/`healCharacter`, `tickAllEffects`/`applyRegen`, `getActiveRollModifier`/`getThornsReflect`, `resolveEffectApplication`, `determineCombatEnd`, `isCombatOngoing`, `Stance`/`Action`/`CombatState`/`Combatant` |
+| Combat reducer  | `initializeCombat`, `setPhase`/`setPlayerStance`/`setPlayerAction`, `appendLog`/`addBattleLogEntry`, `incrementFriendship`, `endCombat`, `endCombatPlayerVictory`/`endCombatPlayerDefeat`/`endCombatWithFriendship` |
+| Combat resolver | `resolveCombatRound` plus its typed event stream: `RoundResolution`, `RoundEvent` (`RoundStartEvent`, `ActionRestrictionEvent`, `AdvantageEvent`, `StanceEffectEvent`, `ScenarioEvent`, `ItemPhaseEvent`, `RoundEndEvent`) |
+| Effects         | `applyEffect`, `applyTier1CombatEffect`, `clearTier1EffectsForStance`/`ForType`, `lookupEffect`/`getEffectByName`/`getEffectsByType`, `effectsLibrary`, `processWorldEffectTick`/`getActiveHazards`, types (`Effect`, `ActiveEffect`, `EffectTier`, `StatModifier`, `DamageOverTime`, `RegenerationConfig`, `ActiveHazard`) |
+| Items           | `addItem`/`removeItem`/`stackItem`, `useConsumable`/`useConsumableEffect`, equipment helpers (`aggregateCombatStartTokens`, `applyEquipmentGenerationBonus`, `getEquipmentProcTriggers`), `equipmentTemplates`/`uniqueTemplates`, `consumableLibrary`, type guards, types (`Item`, `Equipment`, `Consumable`, `Material`, `QuestItem`, `EquipmentTemplate`, `UniqueItemTemplate`) |
+| Skills          | `executeSkill`, `canUseSkill`/`spendResources`/`calculateSkillDamage`, `generateBasicActionResources`/`generatePhilosophicalResource`, types (`Skill`, `CombatResources`, `SkillTier`, `SkillResolution`, `SkillEvent`, `SkillLookup`) |
+| Game            | `createGameStore`/`createNewGameState`, `gameReducer`/`migrate`, `createEventEmitter`, selectors (`selectPlayer`, `selectCombat`, `selectInventory`, `selectMoralMeter`, `selectVersion`), persistence adapters (`nullAdapter`, `createNodeAdapter`), mechanic constants (`FRIENDSHIP_COUNTER_MAX`, `MAX_EFFECT_DURATION`, `PASSIVE_DEFENSE_MULTIPLIER`, …), types (`GameState`, `GameStore`, `GameAction`, `GameEvent`/`GameEventEmitter`, `PersistenceAdapter`) |
+| World           | `createStartingWorld`, world reducer (`changeMap`/`completeMap`/`unlockMap`/`completeNode`/`unlockNode`/`changeContinent`), map registry (`MAP_REGISTRY`, `getMapDefinition`, `createMapState`), node traversal (`moveToNode`, `completeCurrentNode`, `processNode`, `applyDialogueChoice`), quests (`emptyQuestLog`, `startQuest`/`progressQuest`/`completeQuest`/`discoverQuest`), encounters (`generateEncounter`, `scaleEnemyToLevel`, `DIFFICULTY_LEVEL_BANDS`), types (`WorldState`, `WorldMap`, `MapNode`, `Quest`, `Encounter`) |
+| NPCs            | `getDialogueNode`, `visibleChoices`, `isLeafNode`, types (`NPC`, `DialogueMap`, `DialogueTree`, `DialogueNode`, `DialogueChoice`, `DialogueContext`) |
+| Utils           | `clamp`/`inRange`/`average`/`sum`/`max`/`min`, `randomInt`, `deepClone`, `capitalize`/`formatPercent`, `createDie`/`createDieRoll`/`determineRollAdvantageModifier`, `deriveStats`/`deriveNonCombatStats`/`calculateMaxHealth`, type guards (`isCharacter`, `isEnemy`, `isCombatActive`) |
+| Utils — RNG     | `getRng`/`setRng`/`setSeed`, `Rng` interface (seedable LCG; Phase 11 routed all gameplay rolls through this singleton so saves are reproducible) |
 
 ## CLIs
 
