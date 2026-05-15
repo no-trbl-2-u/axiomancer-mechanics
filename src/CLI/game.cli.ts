@@ -28,7 +28,8 @@ import { createGameStore } from '../Game/store';
 import { createEventEmitter } from '../Game/events';
 import { nullAdapter } from '../Game/persistence/null.adapter';
 import { getMapDefinition } from '../World/map.registry';
-import { processNode } from '../World/process-node';
+import { resolveMapEvent } from '../World';
+import type { ResolvedEvent } from '../World';
 import { isCombatOngoing, determineEnemyAction, resolveCombatRound } from '../Combat';
 import { Stance, CombatState } from '../Combat/types';
 import { getSkillById } from '../Skills/skill.library';
@@ -111,22 +112,36 @@ async function mapTab(store: GameStoreHandle): Promise<void> {
     store.getState().moveToNode(target);
     log(`Moved to ${target}.`);
 
-    // PROCESS_NODE — let the authored event for the new node resolve.
+    // Spec 23 — resolve the node's MapEvent from the registered pools.
     const before = store.getState();
-    const result = processNode(before);
+    const result = resolveMapEvent(before);
     store.setState({
-        player: result.gameState.player,
-        world:  result.gameState.world,
-        quests: result.gameState.quests,
-        flags:  result.gameState.flags,
+        player: result.state.player,
+        world:  result.state.world,
+        quests: result.state.quests,
+        flags:  result.state.flags,
     });
-    log(result.message);
+    log(describeResolvedEvent(result.event));
 
     if (result.event.kind === 'encounter') {
         // The CLI consumer is responsible for pushing the encounter into
         // combat. Driving combat here lets the player feel the loop close.
         store.getState().startCombat(result.event.encounter);
         await combatTab(store);
+    }
+}
+
+function describeResolvedEvent(event: ResolvedEvent): string {
+    switch (event.kind) {
+        case 'encounter':   return `Encounter! ${event.isBoss ? '(boss) ' : ''}${event.encounter.enemies.map(e => e.name).join(', ')}`;
+        case 'interaction': return `You meet ${event.npcName}.`;
+        case 'gathering':   return `You gather ${event.items.map(i => i.name).join(', ')}.`;
+        case 'rest':        return `You rest. (+${event.healed} HP)`;
+        case 'village':     return `Village: ${event.villageName} (${event.merchants.length} merchant${event.merchants.length === 1 ? '' : 's'}).`;
+        case 'cutscene':    return event.lines.join(' ');
+        case 'hazard':      return `Hazard! (-${event.damage} HP${event.effects.length > 0 ? `, ${event.effects.length} effect${event.effects.length === 1 ? '' : 's'}` : ''})`;
+        case 'loot-cache':  return `Loot cache: ${event.items.length} item${event.items.length === 1 ? '' : 's'}, ${event.currency} currency.`;
+        case 'none':        return 'Nothing of note happens.';
     }
 }
 
