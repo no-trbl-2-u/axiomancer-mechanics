@@ -12,23 +12,13 @@
 
 ## Pending
 
-### [MED] README Public API table missing Phase 18 / 21 / 23 / 24 additions
-- category: docs
-- impact: 6 (README is the package's front door; npm consumers read this first)
-- ease: 7 (table-row edits)
-- score: 4.2
-- source: iterate audit pass (2026-05-15)
-- evidence:
-  - Character group (`README.md:60`) omits `characterPresets`, `getPresetById`, `buildCharacterFromPreset` (Phase 18).
-  - Game group (`README.md:68`) lists `createNodeAdapter` as a core-barrel export — Phase 21 (commit `e478bdd`) moved it to the `./node` subpath. Also missing `EnginePayload` + 10 typed event aliases + 10 guards (Phase 21).
-  - World group (`README.md:69`) lists `processNode` as a primary node-traversal export — Phase 24 made it legacy. Missing `resolveMapEvent` + pool registration helpers + `revealAdjacent` / `markNodeConsumed` (Phase 23 / 24).
-  - Combat resolver group (`README.md:64`) omits `SkillPhaseEvent`, `ResourceEvent`, `CombatActor`.
-- next: rewrite the four affected table rows. Mirror the post-Phase-24 surface from `src/index.ts` exactly.
+(Empty.)
 
 ---
 
 ## Done
 
+- [x] **[MED] README Public API table missing Phase 18 / 21 / 23 / 24 additions** — resolved at commit 2a8a9ae (2026-05-15). Character row gained presets API (`characterPresets`, `getPresetById`, `buildCharacterFromPreset`, `CharacterPreset`). Game row demoted `createNodeAdapter` to a "lives on `'/node'` subpath" parenthetical and added the Phase 21 typed event surface (`EnginePayload` + 10 typed aliases + 10 `is*Event` guards). World row gained the MapEvents engine block (`resolveMapEvent`, pool registration helpers, `revealAdjacent`, `markNodeConsumed`, types); `processNode` demoted to "legacy / deprecated". Combat resolver row added `SkillPhaseEvent`, `ResourceEvent`, `CombatActor` and a `Combat/phases/` reference. Impact 6 × Ease 7 / 10 = 4.2.
 - [x] **[MED] Module doc `## Pending` sections list features that have already shipped** — resolved at commit 9d0aeb9 (2026-05-15). docs/effects.md, docs/character.md, and docs/combat.md Pending sections rewritten to reflect what's actually still open (only `Character.id` per Knowledge-Gaps Q12 remains genuinely pending). Dropped the stray "drain mechanic will be enabled in Phase 2" note in effects.md (Spec 01 already shipped `applyDrain` and the round-start drain pass). Impact 5 × Ease 8 / 10 = 4.0.
 - [x] **[MED] docs/world.md + docs/combat.md drifted after Phase 15 + Phase 24** — resolved at commit ac20950 (2026-05-15). docs/world.md "Node Event Dispatcher" section now leads with `resolveMapEvent` + the 8-kind taxonomy; `processNode` demoted to a labelled "legacy / deprecated" subsection that points at the deferred Phase 25 cleanup. The MapEvents section moved Phase 24 to past tense with the commit hash. docs/combat.md overview now lists the six `Combat/phases/` files explicitly. Impact 6 × Ease 8 / 10 = 4.8.
 - [x] **[Z-MED] combat.resolver.ts is 1000 LOC — phase logic unsplit** — closed at commit 8deedeb (2026-05-15) as superseded by Phase 15 (commit `48c56be`, 2026-05-15). Resolver shrunk from 1,012 LOC to 301 LOC; per-phase helpers under `src/Combat/phases/`. The AUDIT row was a tracking placeholder before Phase 15 shipped. Impact 7 × Ease 3 / 10 = 2.1.
