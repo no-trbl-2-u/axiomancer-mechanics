@@ -36,7 +36,7 @@ shipped (with commit hash).
 - [x] Phase 13 — ESLint fix (repair `eslint.config.mts`, add `@typescript-eslint` plugin correctly) (4f58f66)
 - [x] Phase 14 — Story content foundation (NPC types + first named NPC with moral dialogue) (846f968)
 - [x] Phase 15 — Split `combat.resolver.ts` into per-phase helpers (round-start, action-restriction, advantage, stance-effects, scenario, round-end) (48c56be)
-- [ ] Phase 16 — Migrate sibling tests into `src/<Module>/e2e/` for layout consistency
+- [x] Phase 16 — Migrate sibling tests into `src/<Module>/e2e/` for layout consistency (bb369c1)
 - [ ] Phase 17 — Unify CLI surface (drop `combat` + `character` + `auto:combat` scripts; single `npm run game` entry)
 - [ ] Phase 18 — Preset character roster (curated progression tiers selectable at boot)
 - [ ] Phase 19 — Enemy spawn picker (debug tab to spawn arbitrary enemies into combat)

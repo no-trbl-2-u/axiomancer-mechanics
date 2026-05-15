@@ -78,19 +78,12 @@
 - suggested_fix: write a one-paragraph description in-place (the map already has an established tone from `fishing-village`), or fold the rewrite into Phase 24 and gate the placeholder behind a TODO-tracked review note in the phase brief so it's not silently shipped.
 - source: critique
 
-### [LOW] Hermetic e2e layout is half-adopted across modules
-- pass: critique-1 (commit dd26ef0)
-- area: structure
-- observation: `plan/bearings.md` locates hermetic e2e tests at `src/<Module>/e2e/<feature>.engine.test.ts`. Combat (1), Game (1), Items (3), Skills (1) follow it; Effects, Enemy, Utils, World use sibling `*.test.ts` and Character/NPCs have neither. The convention is documented but only half-enforced, which makes "is this module covered?" a per-module search.
-- evidence: `find src -type d -name e2e` lists only Combat/Game/Items/Skills; Enemy/Effects/Utils/World keep tests in the module root (e.g. `src/Enemy/enemy.logic.test.ts`, `src/World/world.reducer.test.ts`).
-- suggested_fix: either broaden bearings to bless sibling `*.test.ts` for non-engine tests and reserve `e2e/` for full-stack module exits, or migrate sibling tests into `e2e/` per module. Pick one and update bearings in the same commit.
-- source: critique
-
 ---
 
 ## Done
 
 - [x] **[MED] combat.resolver.ts is 1000 lines — phase logic is unsplit** — resolved at commit `48c56be` (2026-05-15) by extracting `phases/round-start.ts`, `phases/action-restriction.ts`, `phases/advantage.ts`, `phases/stance-effects.ts`, `phases/scenario.ts`, `phases/round-end.ts`; orchestrator shrunk from 1,012 LOC to 301 LOC.
+- [x] **[LOW] Hermetic e2e layout is half-adopted across modules** — resolved at commit `bb369c1` (2026-05-15) by moving `Effects/index.test.ts → Effects/e2e/effects.engine.test.ts`, `Enemy/enemy.logic.test.ts → Enemy/e2e/enemy.engine.test.ts`, `World/spec08.test.ts → World/e2e/world.engine.test.ts`, and updating bearings to formalize the e2e + sibling-unit convention.
 - [x] **[HIGH] NPCs — exported dialogue runtime has no tests** — resolved at commit `00cda59` (2026-05-13) by adding `src/NPCs/e2e/dialogue.engine.test.ts` (13 hermetic cases).
 - [x] **[HIGH] Character — zero module-level tests for public API** — resolved at commit `8e20626` (2026-05-13) by adding `src/Character/e2e/character.engine.test.ts` (16 hermetic cases).
 - [x] **[MED] docs/npcs.md is stale** — resolved at commit `1193b19` (2026-05-13) by rewriting `docs/npcs.md` against the live Spec 08 Q9 dialogue surface (helpers, DialogueContext, applyDialogueChoice cross-link, accurate Pending section).
