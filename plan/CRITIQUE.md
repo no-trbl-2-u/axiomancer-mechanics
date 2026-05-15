@@ -90,27 +90,6 @@
   indexes the package surface.
 - source: critique
 
-### [LOW] Acceptance checklists for Specs 06 + 12 still all `[ ]` despite Phase 28/29 work
-- pass: critique-8 (commit ef1b486)
-- area: docs
-- observation: `specs/06-character-progression.md:181-187` and
-  `specs/12-package-architecture-and-events.md:193-200` carry
-  acceptance checklists. Phase 28 unit 2/4 closed every
-  "All N questions answered" prerequisite; Phase 29 closed Spec 06's
-  "Allocating a stat point updates `derivedStats`" line. Neither
-  spec ticks any box. Future contributors reading the spec see a 0%
-  acceptance bar and assume nothing has shipped.
-- evidence: `specs/06-character-progression.md:181-187`,
-  `specs/12-package-architecture-and-events.md:193-200`. Compare
-  against commit log: 75f250b (Spec 06 answers), bb0d895 (Spec 12
-  answers), db7c26f (Spec 06 acceptance line 4).
-- suggested_fix: tick the now-shipped checkboxes with a commit-hash
-  reference: Spec 06 boxes 1 + 4; Spec 12 box 1. Leave the still-
-  unmet boxes (Spec 06 box 2 — XP visible after combat is wired but
-  the CLI display might still miss the new pool; Spec 12 box 5 —
-  `docs/api.md` is a stub) `[ ]` with a one-line note.
-- source: critique
-
 ### [LOW] Combat reducer carries five aliases that add no behaviour
 - pass: critique-7 (commit 1f4911b)
 - area: dead-code
@@ -175,6 +154,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] Acceptance checklists for Specs 06 + 12 still all `[ ]` despite Phase 28/29 work** — resolved at Phase 34 unit 5 (this commit). Spec 06 acceptance: boxes 1 (all Qs answered), 3 (level-up flow per Q8), 4 (stat allocation updates derivedStats), 5 (docs/character.md Pending drained) ticked with commit hashes; box 2 (XP visible in CLI transcript) left open with a note pointing at /iterate. Spec 12 acceptance: boxes 1, 2, 3, 5, 6 ticked; box 4 (pre-refactor transcript comparison) left open with a note that the window for that one-shot comparison has passed, and the Phase 26 walkthroughs are the standing equivalent. Impact 4 × Ease 8 / 10 = 3.2.
 
 - [x] **[LOW] Spec 06 backfill answers grew stale after Phases 29 + 30 unit 1 shipped** — resolved at Phase 34 unit 4 (this commit). Q3 rewritten to confirm 3 pts/level adopted (Phase 29 `9f2e3f6` + `121aea8` + `db7c26f`); Q7 rewritten to point at the Phase 30 runtime path (`learnSkill` / `getAvailableSkills` / `meetsLearningRequirement` + `unlockedSkills` event payload); Q8 rewritten to confirm option (B) — deferred allocation via the Character tab — is the shipped shape. Impact 4 × Ease 7 / 10 = 2.8.
 

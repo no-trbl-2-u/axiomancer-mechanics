@@ -190,14 +190,31 @@ The package's public API is documented at the source level.
 
 ## Acceptance checklist
 
-- [ ] All 8 questions answered.
-- [ ] React Native consumer can import from the core entry point with
-      *no* `fs` errors.
-- [ ] Event channel exposes the events listed in Q6.
+- [x] All 8 questions answered. — Phase 28 unit 4 (`bb0d895`) backfilled
+      the answers against the live engine.
+- [x] React Native consumer can import from the core entry point with
+      *no* `fs` errors. — Phase 12 (`251dda9`) split the Node-only
+      `createNodeAdapter` onto the `./node` subpath; the root entry
+      ships only RN-safe code.
+- [x] Event channel exposes the events listed in Q6. — Phase 12
+      shipped the 10 `GameEventType` topics; Phase 21 (`a3f1693`) added
+      `EnginePayload` + typed aliases + guards; Phase 30 unit 2
+      (`6097001`) extended the envelope with `unlockedSkills?` on
+      level-up.
 - [ ] CLI rendered output is unchanged from before the refactor (run a
-      seeded combat before/after — same transcript).
-- [ ] `docs/api.md` lists the public API.
-- [ ] `package.json` `exports` field reflects the agreed subpath layout.
+      seeded combat before/after — same transcript). — Pre-refactor
+      transcript was never captured; the Phase 26 walkthrough harness
+      now pins golden-path traces, but a direct before/after comparison
+      against the pre-Phase-12 CLI is no longer recoverable. Treat as
+      a one-shot verification step that is past its window; the green
+      walkthroughs are the standing equivalent.
+- [x] `docs/api.md` lists the public API. — Last rewritten at
+      `353933f`; Phase 34 unit 3 (`18f0038`) added the Phase 29 + 30
+      surface (stat allocation, runtime skill learning,
+      `EnginePayload.unlockedSkills`).
+- [x] `package.json` `exports` field reflects the agreed subpath
+      layout. — Verified: `"."` and `"./node"` subpaths are present
+      with the standard types / import / require triples.
 
 ## Out of scope
 

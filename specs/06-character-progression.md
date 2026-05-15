@@ -184,12 +184,27 @@ to learn.
 
 ## Acceptance checklist
 
-- [ ] All 9 questions answered.
-- [ ] Defeating Disatree in the CLI grants XP visible after combat.
-- [ ] Hitting the XP threshold triggers a level-up flow per Q8.
-- [ ] Allocating a stat point updates `derivedStats` (verified in CLI display).
-- [ ] `docs/character.md` "Pending" section drained; replaced with the new
-      progression API.
+- [x] All 9 questions answered. — Phase 28 unit 2 (`75f250b`) backfilled
+      the original answers; Phase 34 unit 4 (`61a8b94`) refreshed Q3/Q7/Q8
+      after Phase 29 + Phase 30 shipped.
+- [ ] Defeating Disatree in the CLI grants XP visible after combat. —
+      XP grant is wired (`endCombat` in `src/Game/store.ts` adds
+      `enemy.xpReward` on victory; Q2 answer in this spec), but a
+      walkthrough that surfaces the post-combat XP delta in the CLI
+      transcript hasn't been pinned. Leave open for an `/iterate` pass.
+- [x] Hitting the XP threshold triggers a level-up flow per Q8. —
+      Cascade level-up shipped pre-loop (`applyLevelUps` in
+      `src/Game/game.reducer.ts`); the deferred-allocation flow chosen
+      in Q8 lives in the Character tab via Phase 29 (`db7c26f`) +
+      Phase 30 unit 3 (`32dc22c`).
+- [x] Allocating a stat point updates `derivedStats` (verified in CLI
+      display). — Phase 29 unit 3 (`db7c26f`) shipped the Character-tab
+      prompt loop; `allocateStatPoint` re-derives `derivedStats` /
+      `nonCombatStats` / `maxHealth` on every spend.
+- [x] `docs/character.md` "Pending" section drained; replaced with the
+      new progression API. — Phase 34 unit 2 (`1d6cc13`) trimmed
+      Pending to just the `id` field (Knowledge-Gaps Q12) and added a
+      Stat allocation section.
 
 ## Out of scope
 
