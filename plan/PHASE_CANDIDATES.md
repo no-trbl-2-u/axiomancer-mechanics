@@ -55,6 +55,21 @@
 
 ## Promoted
 
+### Phase 34 — Docs sweep
+- promoted: 2026-05-15 (oversight; user pick after critique pass 9)
+- source: not a `/expand` candidate — bundled directly from 7
+  doc-quality findings in `plan/CRITIQUE.md` Pending after passes
+  7-9. User opted to ship as one phase (commit-per-finding) instead
+  of having `/iterate` chew through them tick-by-tick.
+- summary: 7 commit units (one per finding) — docs/gameloop.md
+  GameEvent surface, docs/character.md Pending section,
+  docs/api.md Phase 25-30 additions, Spec 06 backfill answers,
+  Spec 06 + 12 acceptance checklists,
+  automation/scripts/walkthroughs/README, docs/items.md.
+- acceptance: each shipped unit moves its corresponding critique row
+  Pending → Done. `grep -c "deferred" specs/06-*.md` drops; Spec 06
+  + 12 acceptance boxes show at least one `[x]`.
+
 ### Phase 33 — Tier 2 / Tier 3 skill content polish
 - promoted: 2026-05-15 (oversight; user pick after critique pass 7)
 - source: `/expand` candidate (pass 2); the 6 mid-late skills in

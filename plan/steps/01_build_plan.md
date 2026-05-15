@@ -54,6 +54,7 @@ shipped (with commit hash).
 - [ ] Phase 31 — CLI mapTab progression fix: extend `resolveMapEvent` (or `mapTab`'s filter) so post-resolve adjacents enter `availableNodes`, not just `discoveredNodes`. Drains the HIGH critique finding from pass 7 (player blocked at fv-2 today). Promoted via `/oversight` 2026-05-15 — interleaves between Phase 30 unit 2 and unit 3.
 - [ ] Phase 32 — `critStyle` auto-selection (`double` vs `pierce`): compute both crit paths in `Combat/phases/scenario.ts` and pick the higher; hermetic test pins the choice for a stat-set where the two diverge. Promoted via `/oversight` 2026-05-15 from a PHASE_CANDIDATES candidate.
 - [ ] Phase 33 — Tier 2 / Tier 3 skill content polish: balance pass over the 6 mid-late skills, refine resource costs to match the Resonance Pairs vision from braindump, author 3-4 line flavour text per skill, update `docs/skills.md`. Promoted via `/oversight` 2026-05-15 from a PHASE_CANDIDATES candidate.
+- [ ] Phase 34 — Docs sweep: drain the 7 doc-staleness critique findings in one phase, commit-per-finding. Targets `docs/gameloop.md` (GameEvent surface), `docs/character.md` (Pending section), `docs/api.md` (Phase 25-30 additions), Spec 06 backfill answers, Spec 06 + 12 acceptance checklists, `automation/scripts/walkthroughs/` README, `docs/items.md`. Promoted via `/oversight` 2026-05-15.
 
 > **After phase 26:** the loop transitions to `/iterate` —
 > spec gap filling, test coverage improvements, doc updates,
@@ -502,6 +503,48 @@ document the resource progression model.
 
 Likely commit units (2): (1) Tier 2 polish (3 skills + tests), (2)
 Tier 3 polish (3 skills + tests + docs update).
+
+### Phase 34 — Docs sweep
+
+**Promoted via `/oversight` 2026-05-15 to drain the docs-staleness
+backlog accumulated across critique passes 7-9.**
+
+Critique left 7 doc-quality findings open after pass 9. The user opted
+to drain them as one bundled phase (commit-per-finding) rather than
+rely on `/iterate` picking through them one tick at a time. Phase 34
+is pure docs work — no `src/` edits, no test changes, no verify-gate
+failures expected.
+
+Likely commit units (7):
+1. `docs/gameloop.md` GameEvent surface rewrite: replace
+   `payload: unknown` with the Phase-21 `EnginePayload` shape;
+   document `TypedGameEvent<T>` aliases + `is*Event` guards; note
+   Phase 30 unit 2's `unlockedSkills?` extension. (critique pass 9, MED)
+2. `docs/character.md` Pending section rewrite: stop claiming
+   "no `availableStatPoints` state field is needed" — Phase 29 added
+   exactly that field. Document the shipped allocation surface.
+   (critique pass 8, MED)
+3. `docs/api.md` additions for Phases 25-30: `allocateStatPoint`,
+   `STAT_POINTS_PER_LEVEL`, `availableStatPoints` (Phase 29);
+   `getAvailableSkills`, `learnSkill`, `meetsLearningRequirement`
+   (Phase 30 unit 1); `EnginePayload.unlockedSkills` (Phase 30
+   unit 2). (critique pass 9, LOW)
+4. Spec 06 backfill answer refresh: Q3 / Q7 / Q8 still say
+   "deferred — not yet implemented" while Phases 29 + 30 unit 1
+   shipped the work. Update each to "shipped at <hash>". (critique
+   pass 8, LOW)
+5. Spec 06 + Spec 12 acceptance checklists: tick the now-shipped
+   boxes (Spec 06 boxes 1 + 4; Spec 12 box 1). (critique pass 8, LOW)
+6. `automation/scripts/walkthroughs/README.md`: one-page index of
+   the 7 walkthroughs — script, surface under test, preset, enemy,
+   required flags, exit expectation. (critique pass 9, LOW)
+7. `docs/items.md`: create as a short module index — one paragraph
+   per item kind (Consumable / Material / QuestItem / Equipment),
+   table of public exports keyed to `docs/equipment.md`. (critique
+   pass 7, LOW)
+
+Phase 34 ships after Phase 33. After the phase closes, each shipped
+unit moves its corresponding critique row Pending → Done.
 
 ---
 

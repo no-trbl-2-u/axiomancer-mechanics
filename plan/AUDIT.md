@@ -8,7 +8,7 @@
 > Bias: <category> (set via oversight <date>)
 -->
 
-> Bias: tests (set via oversight 2026-05-15) — 1.5× score multiplier on test-category findings until cleared via `/oversight reset`.
+<!-- Bias cleared via oversight 2026-05-15 after one full lifecycle (set 2026-05-15, cleared 2026-05-15). The bias did its job — Phase 25 follow-up was the only finding it weighted, and that one LOW remains without needing the multiplier. -->
 
 ---
 
