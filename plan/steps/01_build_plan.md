@@ -50,7 +50,10 @@ shipped (with commit hash).
 - [x] Phase 27 — Expand walkthrough coverage: scripted walkthroughs + goal companions for the 4 remaining named Phase 26 surfaces (skills-in-combat, save/load, item use, debug-spawn / boss encounter). All four units shipped at 5e5a5b0, 4d11739, 1b5c717, 24885d7; units 2 and 3 built small inline CLI primitives (Save/Load tabs + `item` action) per oversight 2026-05-15.
 - [x] Phase 28 — Backfill `> Your answer:` lines in shipped specs (specs 01, 06, 10, 12 — 19 answers across 4 files). Pure docs work; ground-truth lives in the shipped code. All four units shipped (a1d59fa, 75f250b, 4593b76, bb0d895); `grep -c "> Your answer:$" specs/{01,06,10,12}-*.md` returns 0 across all four files.
 - [x] Phase 29 — Stat allocation flow: add `availableStatPoints` field on `Character`, grant 3 points per level in `applyLevelUps`, ship an `allocateStatPoint` reducer + Character-tab UI per Spec 06 Q3 + Q8. All three units shipped (9f2e3f6, 121aea8, db7c26f); 430/430 tests green; walkthrough at `automation/scripts/walkthroughs/stat-allocation.{json,goal.md}` exercises the full flow.
-- [ ] Phase 30 — Runtime skill learning: implement `learnSkill(character, skillId)` reducer that respects each skill's `learningRequirement`, surface unlocks during level-up + a "learn skill" action on the Character tab per Spec 06 Q7. Promoted via `/oversight` 2026-05-15 from a Spec 06 backfill finding.
+- [ ] Phase 30 — Runtime skill learning: implement `learnSkill(character, skillId)` reducer that respects each skill's `learningRequirement`, surface unlocks during level-up + a "learn skill" action on the Character tab per Spec 06 Q7. Unit 1 shipped (1e14a8e); units 2 + 3 remain. Promoted via `/oversight` 2026-05-15 from a Spec 06 backfill finding.
+- [ ] Phase 31 — CLI mapTab progression fix: extend `resolveMapEvent` (or `mapTab`'s filter) so post-resolve adjacents enter `availableNodes`, not just `discoveredNodes`. Drains the HIGH critique finding from pass 7 (player blocked at fv-2 today). Promoted via `/oversight` 2026-05-15 — interleaves between Phase 30 unit 2 and unit 3.
+- [ ] Phase 32 — `critStyle` auto-selection (`double` vs `pierce`): compute both crit paths in `Combat/phases/scenario.ts` and pick the higher; hermetic test pins the choice for a stat-set where the two diverge. Promoted via `/oversight` 2026-05-15 from a PHASE_CANDIDATES candidate.
+- [ ] Phase 33 — Tier 2 / Tier 3 skill content polish: balance pass over the 6 mid-late skills, refine resource costs to match the Resonance Pairs vision from braindump, author 3-4 line flavour text per skill, update `docs/skills.md`. Promoted via `/oversight` 2026-05-15 from a PHASE_CANDIDATES candidate.
 
 > **After phase 26:** the loop transitions to `/iterate` —
 > spec gap filling, test coverage improvements, doc updates,
@@ -424,6 +427,81 @@ prompt + walkthrough.
 
 Phase 30 depends on Phase 29 only for the Character-tab affordance
 pattern. The reducer work is independent.
+
+### Phase 31 — CLI mapTab progression fix
+
+**Promoted via `/oversight` 2026-05-15 from CRITIQUE pass-7 HIGH.**
+
+Surfaced live during the Phase 27 unit-2 save/load dry-run: after
+moving from `fv-1` to `fv-2`, the apprentice has no reachable nodes
+because `mapTab` in `src/CLI/game.cli.ts:100` filters by
+`state.world.currentMap.availableNodes`, which Phase 23's
+`resolveMapEvent` never updates — it only writes
+`discoveredNodes` via `revealAdjacent`. The legacy
+`completeCurrentNode` reducer (still present in
+`src/World/world.reducer.ts:78-99`) did update both. Result: any
+walkthrough or playtest is stuck at the first map event.
+
+Scope:
+1. **Engine fix** — in `src/World/MapEvents/resolve-map-event.ts`,
+   after `markNodeConsumed`, also add the just-resolved node's
+   `connectedNodes` to `availableNodes` (or call the existing
+   `completeCurrentNode` helper post-resolve). Drop nodes from
+   `lockedNodes` to mirror the legacy path.
+2. **Hermetic e2e** — `src/World/MapEvents/e2e/` (or extend
+   `world.engine.test.ts`) walks fv-1 → fv-2 → fv-3 → fv-4 and
+   asserts that each transition's target is in
+   `state.world.currentMap.availableNodes`.
+3. **Walkthrough update** — extend
+   `automation/scripts/walkthroughs/save-load.json` to include a
+   second move (now that fv-3 is reachable) and document the
+   reverted goal in `save-load.goal.md`'s diagnostic block.
+
+Interleave ordering: ship after Phase 30 unit 2, before Phase 30
+unit 3 — keeps Phase 30 unit 3's walkthrough writable on a CLI that
+can traverse. Confirmed via oversight 2026-05-15.
+
+Likely commit units (2): (1) engine fix + hermetic test, (2)
+walkthrough revision.
+
+### Phase 32 — `critStyle` auto-selection (`double` vs `pierce`)
+
+**Promoted via `/oversight` 2026-05-15 from a PHASE_CANDIDATES candidate.**
+
+`Knowledge-Gaps.md` Q3: `CritStyle` exists as a type but the
+"whichever-deals-more" auto-selection is not implemented. Live
+combat treats every crit as the default. The mechanic is invisible
+today.
+
+Scope: at crit time in `src/Combat/phases/scenario.ts`, compute both
+`double` and `pierce` damage paths and pick the higher. Add a
+hermetic test that pins the choice for a stat-set where the two
+diverge. Update `docs/combat.md` and `docs/effects/README.md` to
+mark this as LIVE (currently flagged "genuinely open" in the
+effects README).
+
+Likely commit units (1): the engine change + tests + docs ride in
+one commit.
+
+### Phase 33 — Tier 2 / Tier 3 skill content polish
+
+**Promoted via `/oversight` 2026-05-15 from a PHASE_CANDIDATES candidate.**
+
+`spec.md` 6-month horizon — "Additional skill tiers (Tier 2+)". The
+library at `src/Skills/skill.library.ts` already ships 3 tier-2 + 3
+tier-3 entries, but they're placeholder numbers; the Resonance Pairs
+design in `braindump/BRAINDUMP.md` ("Decided / leaning: Option C")
+never got wired into the actual skill payloads. The 12 skills exist;
+the *flavour* and *balance* of the higher tiers does not.
+
+Scope: balance pass over the 6 tier-2 + tier-3 skills; refine
+resource costs to match the Resonance Pairs vision (Tier 2 =
+mixed-stance gates, Tier 3 = mind + philosophical-token gates).
+Author 3-4 line flavour text per skill. Update `docs/skills.md` to
+document the resource progression model.
+
+Likely commit units (2): (1) Tier 2 polish (3 skills + tests), (2)
+Tier 3 polish (3 skills + tests + docs update).
 
 ---
 

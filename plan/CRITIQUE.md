@@ -65,6 +65,36 @@
 - suggested_fix: delete `updateCombatPhase` and `addBattleLogEntry` (zero callers, not on barrel). For the three end-variants on the barrel, either (a) drop them and update `docs/combat.md:216`, or (b) give each a real distinguishing effect (e.g. set a specific `outcome` field). Pick (a) unless an external React-Native consumer is known to depend on them.
 - source: critique
 
+### [MED] agent-e2e grader is blind to fine-grained combat sub-events
+- pass: critique-7-follow-up (commit at oversight 2026-05-15)
+- area: tests
+- observation: `src/CLI/game.cli.ts:235-237` logs a `combatRound`
+  state-log entry whose `event` field only carries
+  `{ playerAction, enemyAction, eventCount }` — the actual
+  `combatEvents: RoundEvent[]` array (with `phase: 'item' | 'skill' |
+  'effect-application' | …, kind, hpBefore/hpAfter, healed,
+  appliedEffectId, …`) is dropped. The `combat:round` GameEvent
+  payload also doesn't include them. Result: the agent-e2e grader
+  reading the state log can verify HP/inventory diffs and the action
+  taken, but cannot inspect *what the skill did* (effects applied,
+  resists, crits, friendship-counter ticks) — those are the most
+  semantically interesting per-round signals. Surfaced by the
+  user during oversight 2026-05-15 ("Does the e2e testing workflow
+  have enough logging information to determine if a goal is met?").
+- evidence: `src/CLI/game.cli.ts:220-222`, `src/Combat/combat.resolver.ts`
+  (`RoundEvent` union), `automation/scripts/walkthroughs/item-use.goal.md`
+  (already notes the agent has to infer item-use from the inventory
+  decrement because the `item:used` sub-event isn't in the log).
+- suggested_fix: extend the `combatRound` `logState` payload with the
+  full `combatEvents` array (or a JSON-safe projection of it). For
+  size: typical rounds emit 1-5 sub-events at ~50 bytes each, so 50
+  rounds is ~12 KB — well inside the state log's budget. The
+  `combat:round` GameEvent payload should likely mirror this so a
+  React Native UI can subscribe to round-by-round detail too. Add a
+  hermetic test in `src/CLI/e2e/io.engine.test.ts` that asserts a
+  scripted skill round populates the array.
+- source: critique (oversight follow-up)
+
 ### [LOW] `Items` module has no top-level docs page
 - pass: critique-7 (commit 1f4911b)
 - area: docs

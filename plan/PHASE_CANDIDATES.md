@@ -13,27 +13,6 @@
 
 ## Pending
 
-### Candidate: Tier 2 / Tier 3 skill content polish
-- signal: `spec.md` 6-month horizon — "Additional skill tiers
-  (Tier 2+)". The library at `src/Skills/skill.library.ts` already
-  ships 3 tier-2 + 3 tier-3 entries, but they're placeholder
-  numbers; the Resonance Pairs design in
-  `braindump/BRAINDUMP.md` ("Decided / leaning: Option C") never
-  got wired into the actual skill payloads. The 12 skills exist;
-  the *flavor* and *balance* of the higher tiers does not.
-- scope: Run a balance pass over the 6 tier-2 + tier-3 skills;
-  refine resource costs to match the Resonance Pairs vision (Tier
-  2 = mixed-stance gates, Tier 3 = mind + philosophical-token
-  gates). Author 3-4 line flavour text per skill. Update
-  `docs/skills.md` to document the resource progression model.
-- unblocks: a more readable mid-to-late-game skill library; the
-  philosophical-resource economy from braindump becomes legible
-  in code.
-- blocked-by: none — content-only.
-- score: 6 × 6 / 10 = 3.6
-- recommended-slot: low-priority sometime after the
-  cleanup-of-legacy phase
-
 ### Candidate: Second continent — Northern Continent stub
 - signal: `spec.md` 6-month horizon — "Additional world content
   (biomes, continent 2+)". Phase 23's MapEvents engine + Phase 24's
@@ -72,26 +51,48 @@
 - score: 5 × 6 / 10 = 3.0
 - recommended-slot: convenient mid-priority slot after Phase 25
 
-### Candidate: critStyle auto-selection (`double` vs `pierce`)
-- signal: `Knowledge-Gaps.md` Q3 — `CritStyle` type exists but
-  the "whichever deals more" auto-selection is not implemented.
-  Live combat treats every crit as the default. The mechanic is
-  invisible today.
-- scope: At crit time in `Combat/phases/scenario.ts`, compute both
-  `double` and `pierce` damage paths and pick the higher. Add a
-  hermetic test that pins the choice for a stat-set where the two
-  diverge. Update `docs/combat.md` and `docs/effects/README.md`
-  to mark this as LIVE (currently flagged "genuinely open" in the
-  effects README).
-- unblocks: late-game weapon-tuning headroom; `critStyle` becomes
-  a meaningful equipment authoring lever rather than a placeholder.
-- blocked-by: none.
-- score: 5 × 7 / 10 = 3.5
-- recommended-slot: after Phase 25 cleanup; nice combat polish.
-
 ---
 
 ## Promoted
+
+### Phase 33 — Tier 2 / Tier 3 skill content polish
+- promoted: 2026-05-15 (oversight; user pick after critique pass 7)
+- source: `/expand` candidate (pass 2); the 6 mid-late skills in
+  `src/Skills/skill.library.ts` ship placeholder numbers; the Resonance
+  Pairs design from `braindump/BRAINDUMP.md` was never wired into the
+  payloads.
+- summary: Balance + flavour pass on the 6 tier-2 + tier-3 skills.
+  Tier 2 = mixed-stance gates, Tier 3 = mind + philosophical-token
+  gates per braindump Option C. Author 3-4 line flavour text per
+  skill. Update `docs/skills.md`.
+- acceptance: every Tier 2 / Tier 3 skill in `skill.library.ts` has a
+  non-placeholder description, resource costs reflect the Resonance
+  Pairs vision, and `docs/skills.md` documents the progression model.
+
+### Phase 32 — `critStyle` auto-selection (`double` vs `pierce`)
+- promoted: 2026-05-15 (oversight; user pick after critique pass 7)
+- source: `/expand` candidate (pass 2); Knowledge-Gaps Q3 left
+  `CritStyle` invisible — every crit uses the default.
+- summary: Compute both crit paths in
+  `src/Combat/phases/scenario.ts` and pick the higher. Hermetic test
+  pins the choice for a divergent stat-set. Update `docs/combat.md`
+  + `docs/effects/README.md` LIVE flags.
+- acceptance: a stat-set where `double` and `pierce` diverge produces
+  the higher damage; docs no longer flag the mechanic as "genuinely
+  open".
+
+### Phase 31 — CLI mapTab progression fix
+- promoted: 2026-05-15 (oversight; surfaced from CRITIQUE pass-7 HIGH at 4d020f2)
+- source: critique-7 HIGH — Phase 23's `resolveMapEvent` only writes
+  `discoveredNodes`; `mapTab` filters by `availableNodes`, so the
+  player gets stuck at fv-2.
+- summary: Extend `resolveMapEvent` to add post-resolve adjacents to
+  `availableNodes` (drop them from `lockedNodes`). Hermetic e2e walks
+  fv-1..fv-4. Revise the save-load walkthrough to use the now-
+  reachable fv-3 step.
+- acceptance: `availableNodes` includes the next adjacents after each
+  node resolves; the apprentice can reach fv-4 from fv-1 in three
+  moves; save-load.json walks fv-2 → save → fv-3 → load → fv-2.
 
 ### Phase 30 — Runtime skill learning
 - promoted: 2026-05-15 (oversight; surfaced from Spec 06 backfill at 75f250b)
