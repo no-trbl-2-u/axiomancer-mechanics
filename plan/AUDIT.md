@@ -12,7 +12,16 @@
 
 ## Pending
 
-(Empty.)
+### [LOW] Two broken `src/...` references in docs
+- category: docs
+- impact: 5 (docs/story.md is the canonical story-overview entry point; a broken link there sends contributors to a 404)
+- ease: 9 (two one-line edits)
+- score: 4.5
+- source: iterate audit pass (2026-05-15)
+- evidence:
+  - `docs/story.md:5` links to `src/Story/story-overview.md` — file lives at `content/story/story-overview.md` and `src/Story/` does not exist.
+  - `docs/effects/buffs/tier1_body_attack.md:68` references `src/CLI/combat.display.ts` — file was deleted in the previous iterate tick.
+- next: redirect both links / references.
 
 ---
 
