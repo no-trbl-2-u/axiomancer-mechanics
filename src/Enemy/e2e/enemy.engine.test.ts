@@ -16,10 +16,10 @@ import { describe, it, expect, afterEach, vi } from 'vitest';
 import {
     decideEnemyAction, aggressiveLogic, defensiveLogic, balancedLogic,
     strategicLogic, bossLogic, counterStanceOf, weakestStanceOf,
-} from './enemy.logic';
-import { Enemy } from './types';
-import { CombatState } from '../Combat/types';
-import { createEnemy } from './index';
+} from '../enemy.logic';
+import { Enemy } from '../types';
+import { CombatState } from '../../Combat/types';
+import { createEnemy } from '../index';
 
 function makeEnemy(overrides: Partial<Enemy> = {}): Enemy {
     return {
