@@ -14,18 +14,11 @@
 
 ## Pending
 
-### [MED] Phase 26 state-log writer (`src/CLI/io.ts`) has zero hermetic coverage
-- pass: critique-6 (commit 1b56f9c)
-- area: tests
-- observation: Phase 26 unit 4 added `setStateLogPath`, `logState`, and `getStateLogPath` to `src/CLI/io.ts`. These are the load-bearing primitives the agent-graded harness depends on (the harness reads the JSONL file the writer produces and pipes it to Claude for pass/fail). The existing 12-case `src/CLI/e2e/io.engine.test.ts` doesn't exercise them — silent regressions in the record shape (missing tick, wrong field order, file not truncated) would only surface when the agent fails inscrutably.
-- evidence: `grep -n "setStateLogPath\|logState" src/CLI/e2e/io.engine.test.ts` returns 0 hits. `src/CLI/io.ts` exports the three symbols at the bottom of the file with no test coverage.
-- suggested_fix: extend `src/CLI/e2e/io.engine.test.ts` with 3–4 cases — `setStateLogPath(path)` truncates an existing file; `logState` appends one JSONL record with monotonic `tick` + the expected `{ action, before, after, event? }` shape; `logState` is a no-op when path is `null`; setting a new path resets the tick counter. Use `os.tmpdir() + crypto.randomUUID()` for the path (mirrors `node.adapter.test.ts`).
-- source: critique
-
 ---
 
 ## Done
 
+- [x] **[MED] Phase 26 state-log writer (`src/CLI/io.ts`) has zero hermetic coverage** — resolved at commit 404dadd (2026-05-15) by extending `src/CLI/e2e/io.engine.test.ts` with 4 new cases: state log disabled by default (no-op on `logState`), `setStateLogPath` truncates an existing file, `logState` appends JSONL records with monotonic tick + the `{ action, before, after, event? }` shape, `setStateLogPath` resets the tick counter on a fresh session. Suite grows 12 → 16; 425/425 total green.
 - [x] **[HIGH] src/CLI/combat.display.ts is 968 LOC of dead code orphaned by Phase 17** — resolved at commit `0e7e8a9` (2026-05-15) by `git rm src/CLI/combat.display.ts`. Phase 17 deleted `combat.cli.ts` but missed this companion helper file; zero consumers in src/, automation/, or scripts/.
 - [x] **[LOW] Empty committed directory: src/Game/backups/** — closed at commit 8deedeb (2026-05-15) as misdiagnosed. `git ls-files src/Game/backups/` is empty — git does not track empty directories, so the "committed directory" framing in the original finding was wrong. The directory existed only in local working trees and was not in the repository. Deleted the local instance; a fresh clone is unaffected.
 - [x] **[LOW] northern-forest map has placeholder description `'TODO'`** — resolved at commit 7623ffc (2026-05-15) by replacing the literal in `src/World/Continents/Coastal-Village/maps.ts` with a one-line description matching the fishing-village tone: "A pine-thick wood inland from the village; cold springs, low light, and a cave mouth at the far edge."

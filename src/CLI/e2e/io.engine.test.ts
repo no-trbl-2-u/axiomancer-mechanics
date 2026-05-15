@@ -8,21 +8,39 @@
  *   - json-mode `emit` writes one JSON-stringified line per call.
  *   - human-mode `emit` writes the human bullet.
  *   - json-mode `log` routes to stderr (keeps stdout machine-clean).
+ *   - state-log writer round-trips records to disk (Phase 26 unit 4).
  *
  * No TTY interaction; `inquirer` is never invoked.
  */
 
 import { describe, it, expect, afterEach, vi } from 'vitest';
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
+import { randomUUID } from 'crypto';
 import {
     parseArgv, setIoMode, setOutputMode,
     prompt, emit, log,
+    setStateLogPath, logState, getStateLogPath,
     type CliFlags,
 } from '../io';
+
+const tmpFiles: string[] = [];
+function tmpPath(): string {
+    const p = path.join(os.tmpdir(), `axiomancer-statelog-${randomUUID()}.jsonl`);
+    tmpFiles.push(p);
+    return p;
+}
 
 afterEach(() => {
     vi.restoreAllMocks();
     setIoMode({ kind: 'tty' });
     setOutputMode('human');
+    setStateLogPath(null);
+    while (tmpFiles.length > 0) {
+        const p = tmpFiles.pop()!;
+        try { fs.unlinkSync(p); } catch { /* ignore */ }
+    }
 });
 
 describe('parseArgv', () => {
@@ -115,5 +133,66 @@ describe('log', () => {
         const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
         log('hello', 42);
         expect(consoleSpy).toHaveBeenCalledWith('hello', 42);
+    });
+});
+
+describe('state log (Phase 26)', () => {
+    it('is disabled by default — logState is a no-op', () => {
+        expect(getStateLogPath()).toBeNull();
+        // Calling logState without a path set should not throw and
+        // should not create any file.
+        logState('noop', null, null);
+        // Nothing to assert beyond no-throw — path stays null.
+        expect(getStateLogPath()).toBeNull();
+    });
+
+    it('setStateLogPath truncates the file fresh on each session', () => {
+        const p = tmpPath();
+        fs.writeFileSync(p, 'existing junk content\n', 'utf-8');
+        setStateLogPath(p);
+        expect(fs.readFileSync(p, 'utf-8')).toBe('');
+        expect(getStateLogPath()).toBe(p);
+    });
+
+    it('logState appends one JSONL record per call with monotonic tick', () => {
+        const p = tmpPath();
+        setStateLogPath(p);
+
+        logState('bootstrap', { hp: 10 }, { hp: 12 });
+        logState('combatRound', { hp: 12 }, { hp: 8 }, { kind: 'damage' });
+
+        const lines = fs.readFileSync(p, 'utf-8').trim().split('\n');
+        expect(lines).toHaveLength(2);
+
+        const r1 = JSON.parse(lines[0]!);
+        expect(r1.tick).toBe(1);
+        expect(r1.action).toBe('bootstrap');
+        expect(r1.before).toEqual({ hp: 10 });
+        expect(r1.after).toEqual({ hp: 12 });
+        expect(r1.event).toBeUndefined();
+
+        const r2 = JSON.parse(lines[1]!);
+        expect(r2.tick).toBe(2);
+        expect(r2.action).toBe('combatRound');
+        expect(r2.before).toEqual({ hp: 12 });
+        expect(r2.after).toEqual({ hp: 8 });
+        expect(r2.event).toEqual({ kind: 'damage' });
+    });
+
+    it('setStateLogPath resets the tick counter', () => {
+        const p1 = tmpPath();
+        setStateLogPath(p1);
+        logState('first', null, null);
+        logState('second', null, null);
+
+        const p2 = tmpPath();
+        setStateLogPath(p2);
+        logState('after-reset', null, null);
+
+        const lines = fs.readFileSync(p2, 'utf-8').trim().split('\n');
+        expect(lines).toHaveLength(1);
+        const rec = JSON.parse(lines[0]!);
+        expect(rec.tick).toBe(1);
+        expect(rec.action).toBe('after-reset');
     });
 });
