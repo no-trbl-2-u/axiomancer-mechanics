@@ -6,13 +6,79 @@
 > by `/iterate`.
 
 <!-- Metadata (updated by /critique after each pass):
-> Last pass: 2026-05-15 at commit 1b56f9c
-> Pass count: 6
+> Last pass: 2026-05-15 at commit 1f4911b
+> Pass count: 7
 -->
 
 ---
 
 ## Pending
+
+### [HIGH] CLI mapTab can't progress past adjacent-to-start — `availableNodes` is never updated under the Phase 23 dispatcher
+- pass: critique-7 (commit 1f4911b)
+- area: structure
+- observation: `src/CLI/game.cli.ts:100` filters reachable nodes by
+  `state.world.currentMap.availableNodes`. `availableNodes` is seeded once in
+  `createMapState` (`src/World/map.registry.ts:54-66`) with the starting node's
+  adjacents and is mutated only by the legacy `completeCurrentNode` /
+  `unlockNode` reducers. The Phase 23 dispatcher
+  (`src/World/MapEvents/resolve-map-event.ts:117/128/140`) calls
+  `revealAdjacent` after each node resolves, which only updates
+  `discoveredNodes` (`src/World/world.reducer.ts:188-203`). Result: after
+  moving fv-1 → fv-2, fv-3 is in `discoveredNodes` but NOT in
+  `availableNodes`, and mapTab logs "No adjacent nodes are open right now."
+  Verified by the Phase 27 unit 2 (save/load) walkthrough dry-run: the
+  apprentice cannot move past fv-2 from the CLI even though the linear
+  fishing-village runs fv-1..fv-10.
+- evidence: `src/CLI/game.cli.ts:100`, `src/World/MapEvents/resolve-map-event.ts:117/128/140`, `src/World/world.reducer.ts:188-203`. Compare against `src/World/world.reducer.ts:78-99` (`completeCurrentNode`, the old path).
+- suggested_fix: in `resolveMapEvent`, after `markNodeConsumed`, also unlock the just-resolved node's connected nodes into `availableNodes` (or have `mapTab` filter by `discoveredNodes ∩ connectedNodes ∩ ¬consumedNodes`). Add a hermetic e2e in `src/World/MapEvents/e2e/` that walks fv-1 → fv-2 → fv-3 and asserts each transition is reachable from `availableNodes`.
+- source: critique (surfaced during Phase 27 unit 2 — noted in `automation/scripts/walkthroughs/save-load.goal.md`'s diagnostic block)
+
+### [MED] `docs/gameloop.md` tabs section is multi-phase out of date
+- pass: critique-7 (commit 1f4911b)
+- area: docs
+- observation: The CLI tabs table (`docs/gameloop.md:163-169`) lists only the
+  five original tabs (Map / Combat / Journal / Skills / Inventory) and misses
+  the four tabs shipped since: Character (Phase 26 unit 3, d59f817), Debug
+  (Phase 19, 0260ef0), Save and Load (Phase 27 unit 2, 24885d7). The Map row
+  still calls out `PROCESS_NODE` even though Phase 25 (7002642) removed that
+  action and replaced it with `resolveMapEvent`. The run instruction at line
+  171 says `npx tsx src/CLI/game.cli.ts` but the shipped runner is `npm run
+  game` (or `npx ts-node`, per `automation/agent-e2e.mjs`).
+- evidence: `docs/gameloop.md:158-171` vs. the live `pickTab` enum in `src/CLI/game.cli.ts:40` and the `case` labels at lines 391-401.
+- suggested_fix: regenerate the tabs table from `pickTab`'s choices; replace `PROCESS_NODE` with `resolveMapEvent`; replace the `npx tsx` line with `npm run game [-- --script <path>] [--save-file <path>]`.
+- source: critique
+
+### [LOW] Combat reducer carries five aliases that add no behaviour
+- pass: critique-7 (commit 1f4911b)
+- area: dead-code
+- observation: `src/Combat/combat.reducer.ts:66-71` defines five "legacy
+  aliases": `updateCombatPhase`, `addBattleLogEntry`,
+  `endCombatPlayerVictory`, `endCombatPlayerDefeat`,
+  `endCombatWithFriendship`. The last three are literal `= endCombat` —
+  the outcome is computed by `determineCombatEnd(state)` per
+  `docs/combat.md:216`, so the "named" variants are misleading: calling
+  `endCombatPlayerDefeat(state)` does NOT mark a defeat. The first two are
+  not even exported through `src/index.ts` or `src/Combat/index.ts` and have
+  zero in-repo callers (verified via `grep -rn updateCombatPhase\\|addBattleLogEntry src/`).
+- evidence: `src/Combat/combat.reducer.ts:66-71`; barrel surface in `src/index.ts:62-65`.
+- suggested_fix: delete `updateCombatPhase` and `addBattleLogEntry` (zero callers, not on barrel). For the three end-variants on the barrel, either (a) drop them and update `docs/combat.md:216`, or (b) give each a real distinguishing effect (e.g. set a specific `outcome` field). Pick (a) unless an external React-Native consumer is known to depend on them.
+- source: critique
+
+### [LOW] `Items` module has no top-level docs page
+- pass: critique-7 (commit 1f4911b)
+- area: docs
+- observation: Every other significant module under `src/` has a sibling
+  `docs/<module>.md` (character, combat, effects, enemy, skills, world,
+  npcs, plus the cross-cutting equipment.md and gameloop.md). The `Items`
+  module ships `Consumable`, `Material`, `QuestItem`, `Equipment` (delegated
+  to equipment.md), rarity tables, modifier catalogue, and the
+  `dropItem`/`rollModifiers` loot path — but there is no `docs/items.md`
+  index. New contributors have to read `src/Items/index.ts` exports to find
+  the surface.
+- evidence: `ls docs/` shows `equipment.md` but no `items.md`; `src/Items/index.ts` exports 19 symbols spanning four item kinds.
+- suggested_fix: create `docs/items.md` as a short index — one paragraph per item kind, a table of public exports keyed to the existing `equipment.md` for the Equipment chapter. Mirror the structure of `docs/character.md`.
+- source: critique
 
 ---
 
