@@ -112,6 +112,20 @@
 
 ## Promoted
 
+### Phase 27 — Expand walkthrough coverage
+- promoted: 2026-05-15 (oversight; user pick after Phase 26 shipped)
+- source: oversight free-form — "author more Phase 26 walkthroughs"
+- summary: Ship scripted walkthroughs + goal companions for the four
+  remaining named Phase 26 surfaces (skills-in-combat, save/load,
+  item use, debug spawn / boss encounter). RNG-dependent paths use
+  the agent-grading layer's tolerance for variability — the goal
+  files specify what the agent should accept as "the goal happened
+  at least once" rather than pinning exact outcomes.
+- acceptance: `automation/scripts/walkthroughs/` contains 6 paired
+  files (`<surface>.json` + `<surface>.goal.md`) covering all six
+  named surfaces; each walks through `npm run agent-e2e` end-to-end
+  with a meaningful goal definition.
+
 ### Phase 25 — Remove legacy `processNode` + MapEvent types
 - promoted: 2026-05-15 (oversight)
 - source: Phase 24 scope deviation (deferred from Spec 23 Q7)

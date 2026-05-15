@@ -47,6 +47,7 @@ shipped (with commit hash).
 - [x] Phase 24 — MapEvents content (≥1 node per event type, migrate fishing-village + northern-forest into new shape) (4b12e27)
 - [x] Phase 25 — Remove legacy `processNode` + `MapEvent`/`MapEventType` (rewrite the ~10 `processNode` cases in `src/World/e2e/world.engine.test.ts` against `resolveMapEvent`; drop the legacy exports + `nodeEvents` field) (7002642)
 - [x] Phase 26 — Validation CLI + agent-graded automation harness (skills-in-combat / next-map-node / character-sheet / state-log writer; scripted walkthroughs; agent-graded e2e harness that takes a test goal + a state log and decides pass/fail) (d3c8cc5)
+- [ ] Phase 27 — Expand walkthrough coverage: ship scripted walkthroughs + goal companions for the 4 remaining named Phase 26 surfaces (skills-in-combat, save/load, item use, debug-spawn / boss encounter). RNG-dependent paths use the agent's grading to tolerate path-length variability.
 
 > **After phase 26:** the loop transitions to `/iterate` —
 > spec gap filling, test coverage improvements, doc updates,
@@ -273,6 +274,42 @@ The phase is large; expect ≥4-6 ticks to ship end-to-end. Likely commit
 units: (1) skills-in-combat, (2) next-map-node, (3) character sheet,
 (4) state-log writer, (5) walkthroughs + goal files, (6) agent-graded
 harness.
+
+### Phase 27 — Expand walkthrough coverage
+
+**Promoted via `/oversight` 2026-05-15.**
+
+Phase 26 shipped two walkthroughs (`character-sheet`, `map-events`) —
+the two deterministic surfaces. The agent-graded harness, however,
+is designed to tolerate variability in path length and outcome, so
+the RNG-dependent surfaces can ship now and let the agent's
+grading layer judge "did the goal happen at least once."
+
+Scope: ship scripted walkthroughs + goal companions for the
+remaining named Phase 26 surfaces:
+
+1. **skills-in-combat** — pick wanderer, debug-spawn sandbag, body
+   attack to generate tokens, then skill action. Goal: a `combat:round`
+   event with a `SkillPhaseEvent` of kind `damage` lands at least once.
+2. **save/load** — pick apprentice, walk one node, save, mutate state,
+   load, verify the saved snapshot was restored. Goal: post-load
+   state matches the save point.
+3. **item use** — pick wanderer, debug-spawn sandbag, damage the
+   player, use a consumable in combat (action: 'item'). Goal: an
+   `item:used` event lands and player HP rose by the consumable's
+   `healAmount`.
+4. **debug spawn / boss encounter** — pick sage, debug-spawn
+   coastal-tyrant, full combat to completion. Goal: a `combat:ended`
+   event with outcome `victory` or `defeat` (either is a pass — the
+   test verifies the loop closes, not that the player wins).
+
+Likely commit units: one walkthrough + goal pair per unit (4 units
+total). Each pair is small (~15 lines of JSON + ~30 lines of
+markdown), so the whole phase should ship in ≤4 ticks.
+
+The phase is content-only; no engine changes expected. Goal files
+should follow the conventions established in
+`automation/scripts/walkthroughs/character-sheet.goal.md`.
 
 ---
 
