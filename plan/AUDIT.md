@@ -12,19 +12,13 @@
 
 ## Pending
 
-### [MED] docs/world.md + docs/combat.md drifted after Phase 15 + Phase 24
-- category: docs
-- impact: 6 (anyone reading docs to add maps or combat helpers gets a wrong picture; processNode is described as primary when resolveMapEvent is; Phase 15's `phases/` split isn't in the combat doc)
-- ease: 8 (markdown edits; no code churn)
-- score: 4.8
-- source: iterate audit pass (2026-05-15)
-- evidence: `docs/world.md:95-114` leads with `processNode` as the node dispatcher and lists the old 9-kind event taxonomy; lines 226-228 describe Phase 24 in future tense ("Phase 24 will migrate the fishing-village + northern-forest content") — Phase 24 shipped at commit `4b12e27`. `docs/combat.md:9-14` lists `combat.resolver.ts` as the only resolver file; doesn't mention the Phase 15 `phases/` split (`round-start.ts`, `action-restriction.ts`, `advantage.ts`, `stance-effects.ts`, `scenario.ts`, `round-end.ts`).
-- next: rewrite world.md's "Node Event Dispatcher" section to lead with `resolveMapEvent` + 8-kind taxonomy, demote `processNode` to a "legacy back-compat" mention; update the MapEvents subsection to past tense for Phase 24. In combat.md, add the `phases/` files to the overview list.
+(Empty.)
 
 ---
 
 ## Done
 
+- [x] **[MED] docs/world.md + docs/combat.md drifted after Phase 15 + Phase 24** — resolved at commit ac20950 (2026-05-15). docs/world.md "Node Event Dispatcher" section now leads with `resolveMapEvent` + the 8-kind taxonomy; `processNode` demoted to a labelled "legacy / deprecated" subsection that points at the deferred Phase 25 cleanup. The MapEvents section moved Phase 24 to past tense with the commit hash. docs/combat.md overview now lists the six `Combat/phases/` files explicitly. Impact 6 × Ease 8 / 10 = 4.8.
 - [x] **[Z-MED] combat.resolver.ts is 1000 LOC — phase logic unsplit** — closed at commit 8deedeb (2026-05-15) as superseded by Phase 15 (commit `48c56be`, 2026-05-15). Resolver shrunk from 1,012 LOC to 301 LOC; per-phase helpers under `src/Combat/phases/`. The AUDIT row was a tracking placeholder before Phase 15 shipped. Impact 7 × Ease 3 / 10 = 2.1.
 - [x] **[Z-LOW] Hermetic e2e layout is half-adopted across modules** — closed at commit 8deedeb (2026-05-15) as superseded by Phase 16 (commit `bb369c1`, 2026-05-15). Effects / Enemy / World engine tests migrated into `e2e/`; bearings updated to formalize the e2e + sibling-unit convention. The AUDIT row was a tracking placeholder before Phase 16 shipped. Impact 3 × Ease 4 / 10 = 1.2.
 - [x] **[Z-LOW] Empty committed directory: src/Game/backups/** — closed at commit 8deedeb (2026-05-15) as misdiagnosed. Git does not track empty directories; `git ls-files src/Game/backups/` was empty. The dir existed only in local working trees. Deleted the local instance. Impact 2 × Ease 9 / 10 = 1.8.

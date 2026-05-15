@@ -6,7 +6,13 @@ Turn-based combat with rock-paper-scissors mechanics. All combat functions are p
 
 - `Combat/index.ts` — module barrel + small mechanics helpers (advantage, stats, dice, damage, health, effect queries).
 - `Combat/combat.reducer.ts` — small `(state, …args) => newState` mutations on `CombatState`.
-- `Combat/combat.resolver.ts` — `resolveCombatRound`, the single round-resolution entry point. Returns `{ state, combatEvents }` so any UI client (CLI, future React Native UI, automated tester) can drive combat without re-implementing the math.
+- `Combat/combat.resolver.ts` — `resolveCombatRound`, the single round-resolution entry point. Returns `{ state, combatEvents }` so any UI client (CLI, future React Native UI, automated tester) can drive combat without re-implementing the math. The orchestrator delegates to per-phase helpers in `Combat/phases/`:
+  - `phases/round-start.ts` — regen / drain / start-phase DoT.
+  - `phases/action-restriction.ts` — `forcedStance` / `blockedStance` / `skipTurn`.
+  - `phases/advantage.ts` — type-advantage matchup + effect overrides.
+  - `phases/stance-effects.ts` — clear stale Tier 1 buffs; apply this round's Tier 1.
+  - `phases/scenario.ts` — skill / item / attack / defend resolution and stance-token generation (the largest phase).
+  - `phases/round-end.ts` — end-phase DoT and effect expiry.
 
 ## Type System
 

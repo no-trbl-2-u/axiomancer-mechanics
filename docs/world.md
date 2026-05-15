@@ -97,24 +97,41 @@ player-side helpers under `Effects/`:
 
 ## Node Event Dispatcher
 
-`processNode(gameState): ProcessNodeResult`
+The current dispatcher is `resolveMapEvent(state, rng?)` from
+`src/World/MapEvents/resolve-map-event.ts`, shipped in Spec 23 and
+populated with content in Phase 24. It returns `{ state, event }`
+where `event` is a discriminated union over the eight `MapEventKind`
+values:
 
-Looks up `MapEvent` on the player's current node and dispatches:
+| Event kind     | Result shape                                                              |
+|----------------|---------------------------------------------------------------------------|
+| `encounter`    | `{ kind: 'encounter', encounter, isBoss }` — caller invokes `startCombat`. |
+| `interaction`  | `{ kind: 'interaction', npcName, dialogue? }` — branching tree.           |
+| `gathering`    | `{ kind: 'gathering', items }` — items added to inventory.                |
+| `rest`         | `{ kind: 'rest', healed }` — heals by `healFraction × maxHealth`.         |
+| `village`      | `{ kind: 'village', villageName, merchants }` — settlement scene.         |
+| `cutscene`     | `{ kind: 'cutscene', lines }` — narration only.                           |
+| `hazard`       | `{ kind: 'hazard', effects, damage }` — applies effects + damage.         |
+| `loot-cache`   | `{ kind: 'loot-cache', items, currency }` — fixed grant.                  |
+| `none`         | Consumed node (one-shot) or no pool registered.                            |
 
-| Event type        | Result                                                                     |
-|-------------------|----------------------------------------------------------------------------|
-| `encounter`       | `{ kind: 'encounter', encounter, isBoss: false }` — caller invokes `startCombat`. |
-| `boss-encounter`  | `{ kind: 'encounter', encounter, isBoss: true }` — uses authored slug/enemy or boss-tier roll. |
-| `treasure`        | Grants currency/items immediately, returns `{ kind: 'treasure', items, currency }`. |
-| `gather`          | Grants items, returns `{ kind: 'gather', items }`.                         |
-| `quest`           | Discovers + starts the quest, returns `{ kind: 'quest', startedNew }`.     |
-| `npc`             | Returns `{ kind: 'npc', npcName, dialogue }` (branching tree).             |
-| `shop`            | Returns `{ kind: 'shop', npcName }`. Shop UI/data lands in a later spec.   |
-| `event`           | Rest node (Spec 08 Q10A) — heals by `healFraction × maxHealth`.            |
-| `other` / unset   | No-op narration.                                                           |
+The dispatcher reveals adjacent nodes on consumption (fog-of-war) and
+marks the active node consumed so subsequent visits no-op.
 
-Quest auto-progression: every active `reach`-objective targeting the current
-node is advanced. Completing an objective grants the quest reward.
+### Legacy `processNode` (deprecated)
+
+The pre-Spec-23 dispatcher `processNode(gameState): ProcessNodeResult`
+still ships at `src/World/process-node.ts` for back-compat with the
+existing world e2e suite (`src/World/e2e/world.engine.test.ts`). It
+reads `MapEvent` records off `MapDefinition.nodeEvents` and handles
+the old 9-kind taxonomy (including the now-folded `npc` and `shop`
+kinds). The legacy surface will be removed in a follow-up cleanup
+phase (provisional Phase 25 in `plan/PHASE_CANDIDATES.md`); new
+content must author through `MapEventPool` records.
+
+Quest auto-progression: every active `reach`-objective targeting the
+current node is advanced. Completing an objective grants the quest
+reward.
 
 ## Quest Engine (Spec 08 Q7B — per-objective)
 
@@ -223,10 +240,12 @@ to replace the bespoke `processNode` dispatcher in a later phase.
 - **RNG plumbing.** `resolveMapEvent(state, rng?)` accepts a seeded
   RNG (defaults to `getRng().random()`). Tests inject deterministic
   RNGs via `mockSequentialRng` / `mockFixedRng`.
-- **Migration.** Spec 23 ships `resolveMapEvent` alongside the
-  existing `processNode`. Phase 24 will migrate the `fishing-village`
-  + `northern-forest` content into the pool shape and remove
-  `processNode`.
+- **Migration.** Spec 23 shipped `resolveMapEvent` alongside the
+  existing `processNode`. Phase 24 (commit `4b12e27`) migrated the
+  `fishing-village` + `northern-forest` content into per-node pool
+  overrides — see `src/World/MapEvents/content.ts` for the 20-node
+  authoring map. Removing `processNode` is deferred to a follow-up
+  cleanup phase (the existing world e2e suite still pins it).
 
 See `specs/23-map-events.md` for the spec and
 `src/World/MapEvents/e2e/map-events.engine.test.ts` for the hermetic
