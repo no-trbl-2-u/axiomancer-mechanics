@@ -209,6 +209,7 @@ const soritesCascade: Skill = {
     combatEffects: [
         { effectId: 'debuff_bleed', appliedTo: 'opponent', intensity: 2, duration: 4 },
     ],
+    learningRequirement: { level: 10 },
 };
 
 const strawGiant: Skill = {
@@ -228,6 +229,7 @@ const strawGiant: Skill = {
     // Marker today; the engine already produces flat skill damage that does
     // not route through defence. Preserved so a future damage path can branch.
     specialMechanics: [{ kind: 'bypass_defense' }],
+    learningRequirement: { level: 10 },
 };
 
 const bootstrapParadox: Skill = {
@@ -247,6 +249,7 @@ const bootstrapParadox: Skill = {
     // Fallback per spec out-of-scope note: until `RoundEvent` exposes a
     // round-damage total, the heal is a flat heart × 0.5 × 4 → heart × 2.
     scalingMultiplier: 4,
+    learningRequirement: { level: 10 },
 };
 
 // ─── Library Export ──────────────────────────────────────────────────────────

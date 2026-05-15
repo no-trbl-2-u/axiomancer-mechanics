@@ -86,10 +86,41 @@ import {
   generateBasicActionResources, generatePhilosophicalResource,
   canUseSkill, spendResources, calculateSkillDamage, executeSkill,
   philosophicalCategoryFor,
+  // Phase 30 — runtime skill learning
+  getAvailableSkills, learnSkill, meetsLearningRequirement,
   // library (Spec 04b)
   skillLibrary, getSkillById,
 } from 'axiomancer-mechanics';
 ```
+
+### Runtime skill learning (Phase 30)
+
+Skills can be learned at runtime, not just bundled by a preset at
+character creation. Three helpers ship the surface:
+
+- **`meetsLearningRequirement(character, skill)`** — pure boolean.
+  Consults each clause on `skill.learningRequirement` (`level`,
+  optional `statRequirementType` + `statRequirementValue`, optional
+  `prerequisiteSkill`). When a skill omits `learningRequirement`,
+  falls back to a tier-derived level minimum: **T1=1, T2=5, T3=10**.
+  Authors can override per-skill for special unlocks (a stat-gated
+  paradox skill, a "must know X first" chain).
+- **`getAvailableSkills(character)`** — returns every entry in
+  `skillLibrary` that the character does NOT already know AND
+  meets the learning requirement for, preserving library order
+  for stable UI listing.
+- **`learnSkill(character, skillId)`** — pure reducer-style
+  function; appends to `knownSkills` when eligible, no-ops when
+  already known / unknown to the library / requirement-blocked.
+
+The game-store action `LEARN_SKILL` dispatches through `learnSkill`;
+the CLI Character tab surfaces a `rawlist` prompt when
+`getAvailableSkills(player).length > 0` (Phase 30 unit 3).
+
+The `character:levelup` event payload also carries
+`unlockedSkills: string[]` listing skill ids that became eligible
+because the promotion crossed a tier-eligibility threshold — a UI
+consumer can subscribe and animate the unlock without diffing state.
 
 `resolveCombatRound(state, playerAction, enemyAction, lookupSkill)` accepts an
 optional `lookupSkill` callback. When the player picks
@@ -105,6 +136,31 @@ leaves `combatResources` / HP untouched — the player whiffs their turn.
 Lives in [`src/Skills/skill.library.ts`](../src/Skills/skill.library.ts).
 IDs follow **kebab-case** to keep the skill namespace visually distinct from
 the snake_case effect IDs (`tier1_body_attack`, `debuff_bleed`, …).
+
+### Resonance Pairs progression model
+
+Per `braindump/BRAINDUMP.md` (decided / leaning: Option C), the
+twelve-skill library is shaped by a three-band cost progression. Each
+band gates one harder authoring constraint than the last:
+
+| Tier | Cost shape           | Token range       | Gate                                      | Default `learningRequirement` |
+|------|----------------------|-------------------|-------------------------------------------|-------------------------------|
+| 1    | single stance        | 3 tokens          | always available                          | `{ level: 1 }`                |
+| 2    | mixed-stance pair    | 4 tokens (2+2)    | resonance — player must hold both pools   | `{ level: 5 }`                |
+| 3    | stance + philosophical | 3-4 tokens     | requires a Fallacy or Paradox token       | `{ level: 10 }`               |
+
+Tier 2 generates +1 token of its own category. Tier 3 generates the
+**OPPOSING** philosophical type (Fallacy → Paradox, Paradox → Fallacy)
+so the late-combat chain keeps cycling — see
+`philosophicalCategoryFor` in `skill.engine.ts`.
+
+The learning-requirement defaults match the preset roster
+(`apprentice` level 1 / `wanderer` level 8 / `sage` level 15) — every
+shipped library skill carries an explicit `learningRequirement` as of
+Phase 33 (`{ level: 5 }` on the 3 Tier 2 skills, `{ level: 10 }` on
+the 3 Tier 3 skills) so the gating is data-driven, not just inferred
+by `meetsLearningRequirement`'s tier fallback.
+
 
 ### Tier 1 — Single-stance cost (6 skills)
 
