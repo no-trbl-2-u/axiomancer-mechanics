@@ -211,3 +211,50 @@ export function markNodeConsumed(state: MapState, nodeId: NodeId): MapState {
     if (state.consumedNodes.includes(nodeId)) return state;
     return { ...state, consumedNodes: [...state.consumedNodes, nodeId] };
 }
+
+/**
+ * Moves every node adjacent to `nodeId` out of `lockedNodes` and into
+ * `availableNodes` (per Phase 31 — the legacy `completeCurrentNode` path
+ * did this, but Spec 23's `revealAdjacent` only updated `discoveredNodes`,
+ * leaving the player stuck at the first map event). Idempotent. Looks up
+ * the static `MapDefinition` to resolve adjacency.
+ */
+export function unlockAdjacent(state: MapState, nodeId: NodeId): MapState {
+    const def = getMapDefinition(state.continent, state.name);
+    const node = def.nodes.find(n => n.id === nodeId);
+    if (!node) return state;
+    const adjacents = node.connectedNodes;
+    if (adjacents.length === 0) return state;
+
+    const availableSet = new Set<NodeId>(state.availableNodes);
+    const newlyAvailable: NodeId[] = [];
+    const stillLocked: NodeId[] = [];
+
+    for (const id of state.lockedNodes) {
+        if (adjacents.includes(id) && !availableSet.has(id)) {
+            newlyAvailable.push(id);
+        } else {
+            stillLocked.push(id);
+        }
+    }
+    // Also handle the case where an adjacent isn't in lockedNodes but isn't
+    // yet in availableNodes (e.g. a sibling map was authored without
+    // strict locked-list seeding).
+    for (const id of adjacents) {
+        if (!availableSet.has(id) && !newlyAvailable.includes(id)) {
+            // Was it in lockedNodes already? If so it's in newlyAvailable above.
+            // If not, it's neither locked nor available — promote it.
+            if (!state.lockedNodes.includes(id)) {
+                newlyAvailable.push(id);
+            }
+        }
+    }
+
+    if (newlyAvailable.length === 0) return state;
+
+    return {
+        ...state,
+        availableNodes: [...state.availableNodes, ...newlyAvailable],
+        lockedNodes: stillLocked,
+    };
+}

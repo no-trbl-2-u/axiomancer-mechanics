@@ -249,3 +249,86 @@ describe('resolveMapEvent — discovery + one-shot', () => {
         expect(result.state.world.currentMap.consumedNodes).toContain(state.world.currentMap.currentNode);
     });
 });
+
+// ── Phase 31 — resolveMapEvent unlocks adjacents into availableNodes ─────────
+
+describe('resolveMapEvent — Phase 31 traversal fix', () => {
+    it('moves resolved-node adjacents from lockedNodes into availableNodes', () => {
+        mockSequentialRng(0.5);
+        const state = withPool(freshState(), {
+            id: 'pool.cutscene',
+            entries: [{
+                kind: 'cutscene', weight: 1,
+                payload: { kind: 'cutscene', lines: ['…'] },
+            }],
+        });
+        const startId = state.world.currentMap.currentNode;
+        const startNode = state.world.currentMap;
+
+        // Before resolution: fv-1's adjacent (fv-2) is already available,
+        // but fv-3 is locked.
+        expect(startNode.availableNodes).toContain('fv-2');
+        expect(startNode.lockedNodes).toContain('fv-3');
+
+        const afterFv1 = resolveMapEvent(state).state.world.currentMap;
+        expect(afterFv1.consumedNodes).toContain(startId);
+        // fv-2 was already available — still there; no regression.
+        expect(afterFv1.availableNodes).toContain('fv-2');
+        // fv-1's only adjacent IS fv-2 (no new unlock from fv-1 itself).
+        expect(afterFv1.lockedNodes).toContain('fv-3');
+    });
+
+    it('unlocks the next-step adjacent when the player resolves the just-walked node', () => {
+        mockSequentialRng(0.5);
+        // Reach fv-2 by moving (legal — fv-2 is in initial availableNodes).
+        let state = withPool(freshState(), {
+            id: 'pool.cutscene',
+            entries: [{
+                kind: 'cutscene', weight: 1,
+                payload: { kind: 'cutscene', lines: ['…'] },
+            }],
+        });
+        state = { ...state, world: { ...state.world, currentMap: { ...state.world.currentMap, currentNode: 'fv-2' } } };
+
+        // Before resolving fv-2: fv-3 is locked.
+        expect(state.world.currentMap.lockedNodes).toContain('fv-3');
+        expect(state.world.currentMap.availableNodes).not.toContain('fv-3');
+
+        const afterFv2 = resolveMapEvent(state).state.world.currentMap;
+
+        // After resolving fv-2: fv-3 has moved from locked → available.
+        expect(afterFv2.availableNodes).toContain('fv-3');
+        expect(afterFv2.lockedNodes).not.toContain('fv-3');
+    });
+
+    it('idempotent — re-resolving a consumed node does not re-promote unlocked adjacents', () => {
+        mockSequentialRng(0.5);
+        const state = withPool(freshState(), {
+            id: 'pool.cutscene',
+            entries: [{
+                kind: 'cutscene', weight: 1,
+                payload: { kind: 'cutscene', lines: ['…'] },
+            }],
+        });
+        const first = resolveMapEvent(state).state;
+        const second = resolveMapEvent(first).state;
+        expect(second.world.currentMap.availableNodes).toEqual(
+            first.world.currentMap.availableNodes,
+        );
+    });
+
+    it('still unlocks adjacents when no pool is registered for the node', () => {
+        mockSequentialRng(0.5);
+        const state = freshState();
+        _clearMapEventPoolRegistry();
+        // Move to fv-2 first (legal — fv-2 is already available; no pool needed
+        // to move).
+        const atFv2 = { ...state, world: { ...state.world, currentMap: { ...state.world.currentMap, currentNode: 'fv-2' } } };
+        expect(atFv2.world.currentMap.lockedNodes).toContain('fv-3');
+        const result = resolveMapEvent(atFv2);
+        expect(result.event.kind).toBe('none');
+        // Discovery + traversal both advance even without a pool.
+        expect(result.state.world.currentMap.availableNodes).toContain('fv-3');
+        expect(result.state.world.currentMap.lockedNodes).not.toContain('fv-3');
+    });
+});

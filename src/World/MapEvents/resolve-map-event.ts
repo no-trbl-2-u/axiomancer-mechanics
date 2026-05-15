@@ -18,7 +18,7 @@
  */
 
 import type { GameState } from '../../Game/types';
-import { revealAdjacent, markNodeConsumed } from '../world.reducer';
+import { revealAdjacent, markNodeConsumed, unlockAdjacent } from '../world.reducer';
 import { getRng } from '../../Utils/rng';
 import { applyPayload } from './handlers';
 import type {
@@ -112,10 +112,10 @@ export function resolveMapEvent(
     // 2. Find the active pool.
     const pool = lookupPool(map.continent, map.name, nodeId);
     if (!pool) {
-        // No pool registered — reveal adjacents + consume to advance discovery,
-        // but produce no event.
-        const revealed = revealAdjacent(map, nodeId);
-        const consumed = markNodeConsumed(revealed, nodeId);
+        // No pool registered — reveal + unlock adjacents + consume to advance
+        // discovery and traversal, but produce no event.
+        const next = unlockAdjacent(revealAdjacent(map, nodeId), nodeId);
+        const consumed = markNodeConsumed(next, nodeId);
         return {
             state: { ...state, world: { ...state.world, currentMap: consumed } },
             event: { kind: 'none' },
@@ -125,8 +125,8 @@ export function resolveMapEvent(
     // 3. Roll an entry.
     const entry = rollPool(pool, rng);
     if (!entry) {
-        const revealed = revealAdjacent(map, nodeId);
-        const consumed = markNodeConsumed(revealed, nodeId);
+        const next = unlockAdjacent(revealAdjacent(map, nodeId), nodeId);
+        const consumed = markNodeConsumed(next, nodeId);
         return {
             state: { ...state, world: { ...state.world, currentMap: consumed } },
             event: { kind: 'none' },
@@ -136,9 +136,15 @@ export function resolveMapEvent(
     // 4. Apply the matching handler.
     const result = applyPayload(state, entry.payload, rng);
 
-    // 5. Reveal adjacents + mark consumed.
-    const revealed = revealAdjacent(result.state.world.currentMap, nodeId);
-    const consumed = markNodeConsumed(revealed, nodeId);
+    // 5. Reveal + unlock adjacents + mark consumed. Phase 31 — unlock is what
+    // moves the adjacents out of `lockedNodes` into `availableNodes` so the
+    // CLI `mapTab` filter actually offers them as valid moves. The reveal
+    // path (Spec 23) only updates `discoveredNodes`.
+    const next = unlockAdjacent(
+        revealAdjacent(result.state.world.currentMap, nodeId),
+        nodeId,
+    );
+    const consumed = markNodeConsumed(next, nodeId);
     const nextState: GameState = {
         ...result.state,
         world: { ...result.state.world, currentMap: consumed },

@@ -160,7 +160,7 @@ export {
 export {
     changeMap, completeMap, unlockMap,
     completeNode, unlockNode, changeContinent, completeUniqueEvent,
-    revealAdjacent, markNodeConsumed,
+    revealAdjacent, markNodeConsumed, unlockAdjacent,
 } from './World/world.reducer';
 export {
     resolveMapEvent,

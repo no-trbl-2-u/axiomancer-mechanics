@@ -46,7 +46,7 @@ export {
     moveToNode, completeCurrentNode, IllegalMoveError,
     changeMap, completeMap, unlockMap,
     completeNode, unlockNode, changeContinent, completeUniqueEvent,
-    revealAdjacent, markNodeConsumed,
+    revealAdjacent, markNodeConsumed, unlockAdjacent,
 } from './world.reducer';
 
 // Spec 23 — MapEvents engine.
