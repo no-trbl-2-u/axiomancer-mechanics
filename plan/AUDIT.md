@@ -12,23 +12,13 @@
 
 ## Pending
 
-### [MED] Module doc `## Pending` sections list features that have already shipped
-- category: docs
-- impact: 5 (designers + downstream readers see "Phase 2" / "not yet" pointers that contradict the live engine)
-- ease: 8 (line-level edits across three docs)
-- score: 4.0
-- source: iterate audit pass (2026-05-15)
-- evidence:
-  - `docs/effects.md:557-562` Pending section lists `processWorldEffectTick`, skill-driven cleanse/dispel, and equipment passive emission as "scheduled for later specs" — all three shipped pre-loop (Specs 04 / 05 / 08).
-  - `docs/effects.md:267` says "The drain mechanic will be enabled in Phase 2" — `applyDrain` is implemented in `src/Combat/effects.ts:137` and called every round-start.
-  - `docs/character.md:118-120` lists `knownSkills` / `equippedSkills`, equipment slots, and stat modifiers as Pending — all live on `Character` today.
-  - `docs/combat.md:257-261` Pending (Phase 2) section lists log utilities and skill/item resolver actions — log utilities went away with Phase 17 CLI unification; skill/item actions are wired in `Combat/phases/scenario.ts`.
-- next: rewrite the three Pending sections to reflect what's actually still open (mainly the `Character.id` field per Knowledge-Gaps Q12); drop the stray Phase-2 future-tense note in effects.md.
+(Empty.)
 
 ---
 
 ## Done
 
+- [x] **[MED] Module doc `## Pending` sections list features that have already shipped** — resolved at commit 9d0aeb9 (2026-05-15). docs/effects.md, docs/character.md, and docs/combat.md Pending sections rewritten to reflect what's actually still open (only `Character.id` per Knowledge-Gaps Q12 remains genuinely pending). Dropped the stray "drain mechanic will be enabled in Phase 2" note in effects.md (Spec 01 already shipped `applyDrain` and the round-start drain pass). Impact 5 × Ease 8 / 10 = 4.0.
 - [x] **[MED] docs/world.md + docs/combat.md drifted after Phase 15 + Phase 24** — resolved at commit ac20950 (2026-05-15). docs/world.md "Node Event Dispatcher" section now leads with `resolveMapEvent` + the 8-kind taxonomy; `processNode` demoted to a labelled "legacy / deprecated" subsection that points at the deferred Phase 25 cleanup. The MapEvents section moved Phase 24 to past tense with the commit hash. docs/combat.md overview now lists the six `Combat/phases/` files explicitly. Impact 6 × Ease 8 / 10 = 4.8.
 - [x] **[Z-MED] combat.resolver.ts is 1000 LOC — phase logic unsplit** — closed at commit 8deedeb (2026-05-15) as superseded by Phase 15 (commit `48c56be`, 2026-05-15). Resolver shrunk from 1,012 LOC to 301 LOC; per-phase helpers under `src/Combat/phases/`. The AUDIT row was a tracking placeholder before Phase 15 shipped. Impact 7 × Ease 3 / 10 = 2.1.
 - [x] **[Z-LOW] Hermetic e2e layout is half-adopted across modules** — closed at commit 8deedeb (2026-05-15) as superseded by Phase 16 (commit `bb369c1`, 2026-05-15). Effects / Enemy / World engine tests migrated into `e2e/`; bearings updated to formalize the e2e + sibling-unit convention. The AUDIT row was a tracking placeholder before Phase 16 shipped. Impact 3 × Ease 4 / 10 = 1.2.

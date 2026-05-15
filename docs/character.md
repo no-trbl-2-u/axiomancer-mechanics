@@ -115,7 +115,14 @@ them in `characterPresets`.
 
 ## Pending
 
-- `availableStatPoints` — stat points earned per level (Phase 5)
-- `knownSkills` / `equippedSkills` — skill loadout (Phase 3)
-- Equipment slots and stat modifiers (Phase 4)
-- `id` field for multiplayer/effect attribution
+- `id` field for multiplayer / effect attribution (Knowledge-Gaps Q12 —
+  unresolved; Character has no stable id today while Enemy does).
+
+Items previously listed as Pending have shipped:
+- `knownSkills` / `equippedSkills` — Character has both fields; Spec 04
+  + Spec 04b shipped the skill loadout surface.
+- Equipment slots and stat modifiers — Spec 05 shipped; equipment is
+  folded into `derivedStats` via `equipItem` (Spec 05 Q3 option A).
+- Stat-point allocation on level-up — Spec 06 shipped via the
+  reducer-driven `LEVEL_UP` action; no `availableStatPoints` state
+  field is needed (the design landed on reducer-side application).

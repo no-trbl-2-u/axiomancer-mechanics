@@ -254,11 +254,15 @@ round-resolution entry point used by every UI client.
 | `extendRandomBuffDuration(target, amount)` | Extends one random buff |
 | `applyRegen(target)` | Sums and applies all regen effects |
 
-## Pending (Phase 2)
+## Pending
 
-- `createBattleLogEntry` / `formatAllBattleLogs` / `generateCombatResultMessage` — log utilities
-- Skill / item actions in the resolver pipeline — Specs 04 / 05
-- Spec 03 switching reward — currently out of scope; rolls into Spec 04's skill synergy work
+The Spec 02 / 03 / 04 / 05 work this section used to track has
+shipped. Combat is exercised end-to-end via `resolveCombatRound`
+through the six `Combat/phases/` files; skill and item actions live in
+`phases/scenario.ts`; Tier 2/3 procs are in `Combat/combat-effects.ts`.
+The CLI log utilities were dropped when Phase 17 unified the CLI
+surface around `npm run game` — no log strings exist in the engine
+today; consumers render directly from the typed `RoundEvent` stream.
 
 ### Landed in Spec 02
 

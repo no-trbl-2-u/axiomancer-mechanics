@@ -262,9 +262,10 @@ healed = Σ (def.payload.regeneration.healthPerRound × ae.intensity)
 
 Called at the **start of each round** before the player makes a choice. Scales with
 `intensity` — stacking regen effects heal more per round. Negative
-`healthPerRound` values in the data (e.g. `debuff_disease`, `debuff_hp_decay`) are
-**skipped** by the current implementation (`perRound <= 0` check). The drain mechanic
-will be enabled in Phase 2.
+`healthPerRound` values in the data (e.g. `debuff_disease`, `debuff_hp_decay`)
+are routed through `applyDrain` (`src/Combat/effects.ts`) on the same round-start
+pass — drain ticks BEFORE start-of-round DoT and emits its own `round-start:drain`
+event.
 
 ### `tier1_mind_mark` intensity (Exposed Reasoning)
 
@@ -553,9 +554,9 @@ Full per-effect documentation: [`docs/effects/debuffs/`](./effects/debuffs/)
 
 ## Pending
 
-Engine stubs scheduled for later specs:
-
-- `processWorldEffectTick(player)` — DoT / regen / expiry outside combat per map node (Spec 08).
-- Skill-driven cleanse / dispel application — currently the helpers exist but are not invoked
-  by an effect-landing path. Wired in Spec 04.
-- Equipment passive-effect emission (Spec 05).
+The Specs 01 / 04 / 05 / 08 work that this section used to track has
+shipped. The remaining open work for the effects engine is tracked
+in `plan/AUDIT.md` and `plan/CRITIQUE.md`; per-effect doc placeholders
+(the "PENDING (Phase 2)" notes in `docs/effects/buffs/*.md` and
+`debuffs/*.md`) are a separate authoring cleanup that's deferred until
+a polish pass touches the relevant buff/debuff entries.
