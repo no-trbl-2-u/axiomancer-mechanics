@@ -6,13 +6,87 @@
 > by `/iterate`.
 
 <!-- Metadata (updated by /critique after each pass):
-> Last pass: 2026-05-15 at commit 1f4911b
-> Pass count: 7
+> Last pass: 2026-05-15 at commit ef1b486
+> Pass count: 8
 -->
 
 ---
 
 ## Pending
+
+### [MED] `docs/character.md` "Pending" section directly contradicts shipped Phase 29 code
+- pass: critique-8 (commit ef1b486)
+- area: docs
+- observation: `docs/character.md:126-128` reads "Stat-point allocation
+  on level-up — Spec 06 shipped via the reducer-driven `LEVEL_UP`
+  action; no `availableStatPoints` state field is needed (the design
+  landed on reducer-side application)." Phase 29 (9f2e3f6 + 121aea8
+  + db7c26f) shipped exactly the opposite: an `availableStatPoints:
+  number` field on `Character`, a `STAT_POINTS_PER_LEVEL = 3` constant,
+  an `allocateStatPoint(character, stat)` reducer, an
+  `ALLOCATE_STAT_POINT` action, a `store.allocateStatPoint()` method,
+  and a Character-tab prompt loop. The doc claim was true between
+  Spec 06 backfill (75f250b, when Q3 was answered "deferred") and
+  Phase 29 (a few commits later); it's now actively misleading.
+- evidence: `docs/character.md:126-128` vs.
+  `src/Character/types.d.ts:91` (the new field), `src/Character/index.ts`
+  (`allocateStatPoint`), `src/Game/game.reducer.ts:81-95` (the grant),
+  `src/CLI/game.cli.ts` (the prompt loop).
+- suggested_fix: rewrite the Pending entry to point at the shipped
+  surface and the next gap — Phase 30 unit 2 (level-up unlock
+  surfacing) and unit 3 (Character-tab Learn prompt) are the active
+  follow-ups. Add a short "Stat allocation" section near the
+  `nonCombatStats` table that documents the field, the constant, and
+  the `allocateStatPoint` action.
+- source: critique
+
+### [LOW] Spec 06 backfill answers grew stale after Phases 29 + 30 unit 1 shipped
+- pass: critique-8 (commit ef1b486)
+- area: docs
+- observation: Phase 28 unit 2 backfilled Spec 06's 9 open Qs at
+  75f250b. Less than a day later, Phase 29 (Q3 + Q8) and Phase 30
+  unit 1 (Q7) shipped — but the spec answers still describe those
+  three questions as "deferred — not yet implemented". Specifically:
+    - Spec 06 Q3 answer (line 67-72) says "Deferred — not yet
+      implemented. The `Character` interface in `src/Character/types.d.ts`
+      carries no `availableStatPoints` field" — now false; the field
+      ships at line 91.
+    - Spec 06 Q7 answer says "There is no `learnSkill` function in
+      `src/Character/` or `src/Skills/`" — now false; Phase 30 unit
+      1 (1e14a8e) added one to `src/Skills/skill.engine.ts`.
+    - Spec 06 Q8 answer says "Moot today (no allocation flow exists
+      per Q3 + Q7)" — moot is now wrong; both flows exist.
+- evidence: `specs/06-character-progression.md:67-72`, `72-86`, `131-138`
+  vs. shipped code at `src/Character/types.d.ts:91`,
+  `src/Character/index.ts` (`allocateStatPoint`),
+  `src/Skills/skill.engine.ts` (`learnSkill`).
+- suggested_fix: refresh the three answers to point at the now-
+  shipped surfaces (commit hashes 9f2e3f6, 121aea8, db7c26f, 1e14a8e).
+  Each answer can stay short — a one-line "shipped at <hash>" with a
+  pointer to the doc / module. The stale "deferred" framing is what
+  matters to fix.
+- source: critique
+
+### [LOW] Acceptance checklists for Specs 06 + 12 still all `[ ]` despite Phase 28/29 work
+- pass: critique-8 (commit ef1b486)
+- area: docs
+- observation: `specs/06-character-progression.md:181-187` and
+  `specs/12-package-architecture-and-events.md:193-200` carry
+  acceptance checklists. Phase 28 unit 2/4 closed every
+  "All N questions answered" prerequisite; Phase 29 closed Spec 06's
+  "Allocating a stat point updates `derivedStats`" line. Neither
+  spec ticks any box. Future contributors reading the spec see a 0%
+  acceptance bar and assume nothing has shipped.
+- evidence: `specs/06-character-progression.md:181-187`,
+  `specs/12-package-architecture-and-events.md:193-200`. Compare
+  against commit log: 75f250b (Spec 06 answers), bb0d895 (Spec 12
+  answers), db7c26f (Spec 06 acceptance line 4).
+- suggested_fix: tick the now-shipped checkboxes with a commit-hash
+  reference: Spec 06 boxes 1 + 4; Spec 12 box 1. Leave the still-
+  unmet boxes (Spec 06 box 2 — XP visible after combat is wired but
+  the CLI display might still miss the new pool; Spec 12 box 5 —
+  `docs/api.md` is a stub) `[ ]` with a one-line note.
+- source: critique
 
 ### [HIGH] CLI mapTab can't progress past adjacent-to-start — `availableNodes` is never updated under the Phase 23 dispatcher
 - pass: critique-7 (commit 1f4911b)
