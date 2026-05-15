@@ -96,6 +96,22 @@ via `getResistStat()` in `Combat/stats.ts`:
 |----------|-------------|
 | `createCharacter(options)` | Factory — creates a fully derived Character from name, level, and base stats |
 | `getResistStat(target, resistedBy)` | Base stat value for the resisting stance (lives in `Combat/stats.ts`) |
+| `characterPresets` / `getPresetById` / `buildCharacterFromPreset` | Curated progression-tier roster (apprentice / wanderer / sage). The builder lifts a declarative `CharacterPreset` into a `Character` via the canonical `createCharacter` + `dropItem` paths. `npm run game` prompts the player to pick one at boot. |
+
+## Character presets
+
+`src/Character/presets.ts` ships three curated progression tiers:
+
+| Preset       | Level | Base Stats | Equipment                            | Skills                |
+|--------------|-------|------------|--------------------------------------|-----------------------|
+| `apprentice` | 1     | 3 / 2 / 2  | —                                    | 6 Tier-1 known        |
+| `wanderer`   | 8     | 5 / 4 / 4  | iron-blade, hide-vest, leather-cap   | 6 T1 + 3 T2 known     |
+| `sage`       | 15    | 7 / 6 / 6  | steel-blade, chain-mail, chain-coif  | all 12 skills known   |
+
+All preset equipment is rolled at `'common'` rarity so the build is
+deterministic (Common returns an empty rolled-modifier list). Add more
+presets by exporting further `CharacterPreset` records and registering
+them in `characterPresets`.
 
 ## Pending
 

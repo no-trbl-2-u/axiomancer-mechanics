@@ -38,7 +38,7 @@ shipped (with commit hash).
 - [x] Phase 15 — Split `combat.resolver.ts` into per-phase helpers (round-start, action-restriction, advantage, stance-effects, scenario, round-end) (48c56be)
 - [x] Phase 16 — Migrate sibling tests into `src/<Module>/e2e/` for layout consistency (bb369c1)
 - [x] Phase 17 — Unify CLI surface (drop `combat` + `character` + `auto:combat` scripts; single `npm run game` entry) (7595c2e)
-- [ ] Phase 18 — Preset character roster (curated progression tiers selectable at boot)
+- [x] Phase 18 — Preset character roster (curated progression tiers selectable at boot) (9ab6a0b)
 - [ ] Phase 19 — Enemy spawn picker (debug tab to spawn arbitrary enemies into combat)
 - [ ] Phase 20 — Scripted / agent-driven CLI mode (`--script`, `--json-events`, stdin agent control)
 - [ ] Phase 21 — Phase 12 API cleanup (Node adapter leak, partial typed events, unused creators, redundant casts)
