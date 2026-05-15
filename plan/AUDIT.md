@@ -12,7 +12,14 @@
 
 ## Pending
 
-(Empty.)
+### [MED] docs/effects/{buffs,debuffs}/* per-effect "PENDING (Phase 2)" markers are stale
+- category: docs
+- impact: 5 (76 files referencing a non-existent Phase 2 wiring; designers consulting buff docs see "PENDING" markers for behaviour that the engine actually delivers via Specs 01 + 03 and Phases 15 / 23)
+- ease: 7 (single sweep README documents the meta-claim without rewriting 76 files individually)
+- score: 3.5
+- source: iterate audit pass (2026-05-15)
+- evidence: `grep -rln "PENDING (Phase 2)\|pending Phase 2\|Phase 2 wiring" docs/effects/` returns 76 hits. The placeholder predates Spec 01's effects engine landing and was never reconciled. The actual engine wiring (`statModifiers` via `getEffectiveStats`, `defenseModifier` via `getDefenseStat`, `advantageModifier` via `resolveEffectiveAdvantage`, etc.) has been live for many ticks.
+- next: add `docs/effects/README.md` that names the staleness, names which mechanics are live vs still genuinely pending, and points readers at the live engine source. Per-file rewrites stay a follow-up polish task.
 
 ---
 
