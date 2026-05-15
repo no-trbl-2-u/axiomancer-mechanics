@@ -93,6 +93,35 @@
 
 ## Promoted
 
+### Phase 30 — Runtime skill learning
+- promoted: 2026-05-15 (oversight; surfaced from Spec 06 backfill at 75f250b)
+- source: Spec 06 Q7 backfill — discovered there is no `learnSkill`
+  function and skills are only assigned at character-creation time via
+  the preset, even though `learningRequirement` typing already exists
+  in `src/Skills/types.d.ts`.
+- summary: Add `getAvailableSkills(character)` filter +
+  `learnSkill(character, skillId)` reducer respecting
+  `learningRequirement`. Surface unlocks during level-up; CLI Character
+  tab gets a "Learn skill" prompt. No modal blocking — sit-and-spend
+  model parallel to Phase 29.
+- acceptance: hermetic e2e proves eligibility filter, learn-once
+  invariant, and level-up unlock surfacing. Walkthrough confirms the
+  CLI affordance.
+
+### Phase 29 — Stat allocation flow
+- promoted: 2026-05-15 (oversight; surfaced from Spec 06 backfill at 75f250b)
+- source: Spec 06 Q3+Q8 backfill — discovered the proposed
+  `availableStatPoints` field never landed on `Character`, and
+  `applyLevelUps` only touches level / HP / threshold.
+- summary: Add `availableStatPoints` + `STAT_POINTS_PER_LEVEL = 3`,
+  grant points on level promotion, ship an `allocateStatPoint` reducer
+  + Character-tab UI. Deferred allocation per Spec 06 Q8(B) so the
+  scripted-walkthrough harness (Phase 26/27) keeps working.
+- acceptance: hermetic e2e proves the multi-level cascade keeps
+  granting points, allocation decrements + re-derives stats; CLI
+  Character tab surfaces an Allocate prompt only when points are
+  available.
+
 ### Phase 28 — Backfill open-Q answers in shipped specs
 - promoted: 2026-05-15 (oversight; user pick after Phase 27 unit 3 shipped)
 - source: `/expand` candidate; signal from

@@ -48,7 +48,9 @@ shipped (with commit hash).
 - [x] Phase 25 — Remove legacy `processNode` + `MapEvent`/`MapEventType` (rewrite the ~10 `processNode` cases in `src/World/e2e/world.engine.test.ts` against `resolveMapEvent`; drop the legacy exports + `nodeEvents` field) (7002642)
 - [x] Phase 26 — Validation CLI + agent-graded automation harness (skills-in-combat / next-map-node / character-sheet / state-log writer; scripted walkthroughs; agent-graded e2e harness that takes a test goal + a state log and decides pass/fail) (d3c8cc5)
 - [x] Phase 27 — Expand walkthrough coverage: scripted walkthroughs + goal companions for the 4 remaining named Phase 26 surfaces (skills-in-combat, save/load, item use, debug-spawn / boss encounter). All four units shipped at 5e5a5b0, 4d11739, 1b5c717, 24885d7; units 2 and 3 built small inline CLI primitives (Save/Load tabs + `item` action) per oversight 2026-05-15.
-- [ ] Phase 28 — Backfill `> Your answer:` lines in shipped specs (specs 01, 06, 10, 12 — 19 answers across 4 files). Pure docs work; ground-truth lives in the shipped code.
+- [ ] Phase 28 — Backfill `> Your answer:` lines in shipped specs (specs 01, 06, 10, 12 — 19 answers across 4 files). Pure docs work; ground-truth lives in the shipped code. Units 1/2/3 shipped (a1d59fa, 75f250b, 4593b76); only Spec 12's 8 blanks remain.
+- [ ] Phase 29 — Stat allocation flow: add `availableStatPoints` field on `Character`, grant 3 points per level in `applyLevelUps`, ship an `allocateStatPoint` reducer + Character-tab UI per Spec 06 Q3 + Q8. Promoted via `/oversight` 2026-05-15 from a Spec 06 backfill finding.
+- [ ] Phase 30 — Runtime skill learning: implement `learnSkill(character, skillId)` reducer that respects each skill's `learningRequirement`, surface unlocks during level-up + a "learn skill" action on the Character tab per Spec 06 Q7. Promoted via `/oversight` 2026-05-15 from a Spec 06 backfill finding.
 
 > **After phase 26:** the loop transitions to `/iterate` —
 > spec gap filling, test coverage improvements, doc updates,
@@ -349,6 +351,79 @@ Likely commit units (one per spec):
    `src/Game/moral.ts` / store wiring.
 4. Spec 12 (package architecture + events) — answers grounded in
    `src/Game/events.types.ts` + the package barrels.
+
+### Phase 29 — Stat allocation flow
+
+**Promoted via `/oversight` 2026-05-15 from a Spec 06 backfill finding.**
+
+Spec 06 Q3 and Q8 proposed stat-point allocation on level up: 3 points
+per level, no cap until the level cap (none today per Spec 06 Q5),
+deferred allocation via the Character tab. None of this shipped —
+`Character` carries no `availableStatPoints` field, and `applyLevelUps`
+in `src/Game/game.reducer.ts:81-95` only touches `level`, `maxHealth`,
+`health`, and `experienceToNextLevel`. The build plan calls the
+allocation a "Spec 06 follow-up that has not shipped"; this phase ships
+it.
+
+Scope:
+1. **Type changes** — add `availableStatPoints: number` to
+   `Character` in `src/Character/types.d.ts` (default 0; presets
+   default to 0 since they ship pre-allocated). Add the constant
+   `STAT_POINTS_PER_LEVEL = 3` to `src/Game/game-mechanics.constants.ts`.
+2. **Reducer changes** — `applyLevelUps` grants
+   `STAT_POINTS_PER_LEVEL` per level promotion; new `allocateStatPoint`
+   reducer takes `(state, stat: 'heart'|'body'|'mind')`, decrements the
+   pool, increments the chosen base stat, and re-derives
+   `derivedStats` + `maxHealth` (HP rises by the new max delta, not a
+   full refill — the level-up refill already happened).
+3. **Store action** — add `allocateStatPoint(stat)` to `GameStore`.
+4. **CLI surface** — extend the Character tab with an "Allocate stat
+   points" prompt visible only when `availableStatPoints > 0`.
+5. **Tests** — hermetic e2e for the multi-level cascade (Spec 06 Q9
+   cascade still works), the level-1→level-2 grant, allocation
+   decrement, and derivedStats re-derivation.
+
+Likely commit units (3): (1) types + constants + applyLevelUps grant,
+(2) allocateStatPoint reducer + store action + tests, (3) CLI Character
+tab prompt + scripted walkthrough or hermetic UI test.
+
+### Phase 30 — Runtime skill learning
+
+**Promoted via `/oversight` 2026-05-15 from a Spec 06 backfill finding.**
+
+Spec 06 Q7 left runtime skill learning unimplemented: skills are
+populated only at character-creation time via the preset, and there is
+no `learnSkill` function in `src/Character/` or `src/Skills/`. The
+skill library does carry `learningRequirement` typing
+(`src/Skills/types.d.ts:172`), so the gating shape is ready — only
+the runtime path is missing. This phase ships it.
+
+Scope:
+1. **Engine** — add `getAvailableSkills(character)` selector that
+   filters `skill.library` entries by their `learningRequirement`
+   (level / stat / known-skills-prereq). Add a `learnSkill(character,
+   skillId)` reducer that asserts the requirement, appends the id to
+   `knownSkills`, and is a no-op when the skill is already known.
+2. **Store action** — add `learnSkill(skillId)` to `GameStore`.
+3. **Level-up hook** — when `applyLevelUps` promotes the level, the
+   `LEVEL_UP` action emits `character:levelup` with a payload listing
+   the newly-available skill ids (computed from
+   `getAvailableSkills`). CLI surfaces a "you can now learn N skills"
+   line.
+4. **CLI surface** — extend the Character tab (or add a "Learn skill"
+   prompt) that lets the player commit a learn against an eligible
+   skill. Should respect Phase 29's deferred-allocation model — no
+   modal blocking, the unlocks just sit until the player visits the
+   tab.
+5. **Tests** — hermetic e2e for the eligibility filter, the
+   learn-once-only invariant, and the level-up unlock surfacing.
+
+Likely commit units (3): (1) `getAvailableSkills` + `learnSkill`
+reducer + tests, (2) level-up wiring + event payload, (3) CLI Learn
+prompt + walkthrough.
+
+Phase 30 depends on Phase 29 only for the Character-tab affordance
+pattern. The reducer work is independent.
 
 ---
 
