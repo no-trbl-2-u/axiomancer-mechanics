@@ -12,19 +12,13 @@
 
 ## Pending
 
-### [MED] agents.md verify-gate description excludes lint, but Phase 13 put it back
-- category: docs
-- impact: 5 (agents.md is the canonical agent rule book — Claude Code, Cursor, Aider all read it first; saying lint is excluded directs agents to skip a real gate)
-- ease: 9 (one-line edit + a follow-up sentence)
-- score: 4.5
-- source: iterate audit pass (2026-05-15)
-- evidence: `agents.md` Standing Rule 3 documents the verify gate as `type-check && test && build` and says "**Lint is excluded** (known broken — see `plan/bearings.md` Hard Rules)". Phase 13 (commit `4f58f66`, 2026-05-14) repaired the ESLint flat-config and reinstated `lint` in the verify gate; `package.json` `verify` is `type-check && lint && test && build`. Bearings' Hard Rule 6 was rewritten to drop the broken caveat.
-- next: rewrite Rule 3 to include `lint` in the gate; drop the "known broken" parenthetical.
+(Empty.)
 
 ---
 
 ## Done
 
+- [x] **[MED] agents.md verify-gate description excludes lint, but Phase 13 put it back** — resolved at commit 7ede59f (2026-05-15). `agents.md` Standing Rule 3 verify-gate block now includes `npm run lint` (eslint "**/*.ts"; warnings advisory, errors fail) and notes that Phase 13 repaired the flat-config; dropped the "known broken" parenthetical. Impact 5 × Ease 9 / 10 = 4.5.
 - [x] **[LOW] Two engine-style tests at module root violate the e2e/ convention** — resolved at commit 9563a7d (2026-05-15). `git mv src/Skills/skill.engine.test.ts src/Skills/e2e/skill.engine.test.ts` and `git mv src/Game/spec08.e2e.test.ts src/Game/e2e/spec08.engine.test.ts` (also renamed to the `*.engine.test.ts` suffix). Relative imports fixed; suite stays green at 421/421. Impact 4 × Ease 9 / 10 = 3.6.
 - [x] **[LOW] Two broken `src/...` references in docs** — resolved at commit 3bddb0e (2026-05-15). `docs/story.md:5` redirected to `content/story/story-overview.md` (the actual location post-Phase 22 content scaffolding) and gained cross-links to `specs/story/` / `specs/characters/` / `specs/world/`. `docs/effects/buffs/tier1_body_attack.md:67-70` rewrote the "PENDING (Phase 2)" implementation-status block — `statModifiers` are LIVE via `getEffectiveStats` since Spec 01, and the deleted `combat.display.ts` reference is gone. Impact 5 × Ease 9 / 10 = 4.5.
 - [x] **[MED] README has broken doc links and stale Project-layout descriptions** — resolved at commit 00866b3 (2026-05-15). The three broken links (`GAME-ROADMAP.md`, root-level `AUDIT.md`, root-level `BRAINDUMP.md`) replaced with the real paths (`plan/steps/01_build_plan.md`, `plan/AUDIT.md` + `plan/CRITIQUE.md`, `braindump/BRAINDUMP.md`); added `plan/`, `content/`, `docs/api.md`, and `docs/effects/README.md` links. Project layout: `Skills/` description corrected (engine + library, Spec 04 / 04b); the stale "Phase 2 onward" framing replaced with a concrete description of `specs/` structure (numbered specs + `story/` / `world/` / `characters/` subdirs from Phase 22); added `content/` and `plan/` to the tree. Impact 7 × Ease 8 / 10 = 5.6.

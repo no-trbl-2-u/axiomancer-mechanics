@@ -25,13 +25,14 @@ content, or docs.
 
 ```
 npm run type-check    # tsc --noEmit
+npm run lint          # eslint "**/*.ts" (warnings advisory; errors fail)
 npm test              # vitest run (includes hermetic e2e)
 npm run build         # tsc && tsc-alias → dist/
 ```
 
-Every check is a hard gate. **Lint is excluded** (known broken —
-see `plan/bearings.md` Hard Rules). Fix the root cause; never
-`--no-verify`.
+All four are hard gates. Lint was repaired in Phase 13 (commit
+`4f58f66`) and is back in the gate; warnings are advisory but
+errors fail. Fix the root cause; never `--no-verify`.
 
 ### 4. The deploy gate runs **after** every push.
 
