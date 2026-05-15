@@ -1,11 +1,11 @@
 import { afterEach, describe, it, expect, vi } from 'vitest';
-import { applyEffect, clearTier1EffectsForStance, removeEffect, removeEffectsByType } from './index';
+import { applyEffect, clearTier1EffectsForStance, removeEffect, removeEffectsByType } from '../index';
 
 afterEach(() => {
     vi.restoreAllMocks();
 });
-import { ActiveEffect, Effect } from './types';
-import { lookupEffect } from './effects.library';
+import { ActiveEffect, Effect } from '../types';
+import { lookupEffect } from '../effects.library';
 
 const makeEffect = (overrides: Partial<Effect> = {}): Effect => ({
     id: 'test_effect',
