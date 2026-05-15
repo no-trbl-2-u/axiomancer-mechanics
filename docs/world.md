@@ -199,9 +199,43 @@ the boss auto-completes the quest and grants the 25-currency reward.
 - `MAP_REGISTRY`, `getMapDefinition`, `createMapState`.
 - `MapNotFoundError` — thrown when the registry lookup fails.
 
+## MapEvents (Spec 23)
+
+Phase 23 introduces a second node-event surface, **MapEvents**, designed
+to replace the bespoke `processNode` dispatcher in a later phase.
+
+- **Taxonomy.** Eight kinds: `encounter`, `interaction`, `gathering`,
+  `rest`, `village`, `cutscene`, `hazard`, `loot-cache`. The old
+  `npc`/`shop` kinds are folded into `interaction` and `village`.
+- **Pool authoring.** Events are not authored per node; they're rolled
+  from a **weighted pool** at the moment a node is entered. Pools live
+  in `MapEventPool` records registered via `registerMapEventPool` and
+  attached to a map via `setDefaultMapEventPool` (region default) or
+  `setNodeEventPoolOverride` (per-node override).
+- **Discovery (fog-of-war).** `MapState.discoveredNodes` is seeded with
+  the map's starting node; `resolveMapEvent` calls `revealAdjacent`
+  after consuming a node, so the next ring of nodes only becomes
+  visible once the player has cleared the current one.
+- **One-shot consumption.** `MapState.consumedNodes` records every
+  node whose MapEvent has resolved. Re-entering a consumed node
+  returns `{ kind: 'none' }` — the player can still walk through, but
+  the event won't re-fire.
+- **RNG plumbing.** `resolveMapEvent(state, rng?)` accepts a seeded
+  RNG (defaults to `getRng().random()`). Tests inject deterministic
+  RNGs via `mockSequentialRng` / `mockFixedRng`.
+- **Migration.** Spec 23 ships `resolveMapEvent` alongside the
+  existing `processNode`. Phase 24 will migrate the `fishing-village`
+  + `northern-forest` content into the pool shape and remove
+  `processNode`.
+
+See `specs/23-map-events.md` for the spec and
+`src/World/MapEvents/e2e/map-events.engine.test.ts` for the hermetic
+walkthrough covering all eight kinds.
+
 ## See Also
 
 - [`specs/08-world-content-and-hazards.md`](../specs/08-world-content-and-hazards.md)
+- [`specs/23-map-events.md`](../specs/23-map-events.md)
 - [`docs/npcs.md`](./npcs.md) — branching dialogue UI conventions.
 - [`docs/effects.md`](./effects.md) — `processWorldEffectTick` integration with
   the broader effects engine.
