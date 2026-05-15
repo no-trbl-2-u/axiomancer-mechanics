@@ -34,7 +34,7 @@ shipped (with commit hash).
 - [x] Phase 11 — RNG seeding and test harness (seeded RNG, deterministic replays, full test harness) (a6b33f0)
 - [x] Phase 12 — Package architecture and events (event surface, React Native adapter docs, clean barrel) (251dda9)
 - [x] Phase 13 — ESLint fix (repair `eslint.config.mts`, add `@typescript-eslint` plugin correctly) (4f58f66)
-- [ ] Phase 14 — Story content foundation (NPC types + first named NPC with moral dialogue)
+- [x] Phase 14 — Story content foundation (NPC types + first named NPC with moral dialogue) (846f968)
 - [ ] Phase 15 — Split `combat.resolver.ts` into per-phase helpers (round-start, action-restriction, advantage, stance-effects, scenario, round-end)
 - [ ] Phase 16 — Migrate sibling tests into `src/<Module>/e2e/` for layout consistency
 - [ ] Phase 17 — Unify CLI surface (drop `combat` + `character` + `auto:combat` scripts; single `npm run game` entry)
