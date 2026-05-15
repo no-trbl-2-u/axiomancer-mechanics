@@ -64,10 +64,12 @@ So after 3 consecutive Body/Attack rounds, the roll bonus is `+3`. After 5, it i
 Adds `+1` to `physicalAttack`. This is a **flat** additive bonus to the derived stat
 `physicalAttack`.
 
-> **Implementation status — PENDING (Phase 2):** `statModifiers` are defined in the data
-> and visible in combat display (`src/CLI/combat.display.ts`), but are not yet
-> automatically applied to `derivedStats` during combat. The engine does not currently
-> modify the character's computed stats at runtime.
+> **Implementation status — LIVE (since Spec 01):** `statModifiers` are folded into the
+> combat math via `getEffectiveStats()` (`src/Combat/effect-modifiers.ts`), which feeds
+> `getAttackStat` / `getDefenseStat` / `getResistStat` / `getSaveStat`
+> (`src/Combat/stats.ts`) and the scenario phase (`src/Combat/phases/scenario.ts`).
+> The "Phase 2" framing in older buff/debuff docs predates the engine wiring — see
+> `docs/effects/README.md` for the full live-vs-pending table.
 
 ### `payload.rollModifierPerIntensity: 1`
 
