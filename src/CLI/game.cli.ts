@@ -292,7 +292,7 @@ function inventoryTab(store: GameStoreHandle): void {
     }
 }
 
-function characterTab(store: GameStoreHandle): void {
+async function characterTab(store: GameStoreHandle): Promise<void> {
     const state = store.getState();
     const p = state.player;
 
@@ -302,6 +302,9 @@ function characterTab(store: GameStoreHandle): void {
     log(`Health:   ${p.health}/${p.maxHealth}`);
     log(`Currency: ${p.currency}`);
     log(`Moral:    ${state.moralMeter}`);
+    if (p.availableStatPoints > 0) {
+        log(`Points:   ${p.availableStatPoints} available to allocate`);
+    }
 
     log('\nBase stats:');
     log(`  heart ${p.baseStats.heart}   body ${p.baseStats.body}   mind ${p.baseStats.mind}`);
@@ -356,6 +359,29 @@ function characterTab(store: GameStoreHandle): void {
         for (const [cat, count] of grouped) {
             log(`  ${cat}: ${count}`);
         }
+    }
+
+    // Spec 06 Q3 + Q8 — deferred allocation. Prompt only when there are
+    // points to spend; loop until the player either spends them all or
+    // picks "leave them unspent". Each allocation is a dispatch so the
+    // autosave + state-log records reflect the change.
+    while (store.getState().player.availableStatPoints > 0) {
+        const pool = store.getState().player.availableStatPoints;
+        const { stat } = await prompt<{ stat: 'heart' | 'body' | 'mind' | 'skip' }>([{
+            type: 'rawlist', name: 'stat',
+            message: `Allocate stat point (${pool} remaining)?`,
+            choices: [
+                { name: 'heart  — emotion / willpower / charisma', value: 'heart' },
+                { name: 'body   — physical / constitution',         value: 'body'  },
+                { name: 'mind   — intelligence / reflexes',         value: 'mind'  },
+                { name: 'leave them unspent',                       value: 'skip'  },
+            ],
+        }]);
+        if (stat === 'skip') break;
+        const before = store.getState();
+        store.getState().allocateStatPoint(stat);
+        logState('allocateStatPoint', before, store.getState(), { stat });
+        log(`Allocated 1 point to ${stat}.`);
     }
 }
 
@@ -460,7 +486,7 @@ async function main(): Promise<void> {
                 case 'journal':   journalTab(store);                         break;
                 case 'skills':    skillsTab(store);                          break;
                 case 'inventory': inventoryTab(store);                       break;
-                case 'character': characterTab(store);                       break;
+                case 'character': await characterTab(store);                 break;
                 case 'debug':     await debugTab(store);                     break;
                 case 'save':      saveTab(store, snapshotAdapter);           break;
                 case 'load':      loadTab(store, snapshotAdapter);           break;
