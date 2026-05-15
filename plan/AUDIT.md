@@ -12,7 +12,17 @@
 
 ## Pending
 
-(Empty.)
+### [LOW] Stale "(Phase 3)" / "(Phase 4)" / "Spec 12 will" annotations across docs
+- category: docs
+- impact: 4 (small inline annotations contradict shipped reality)
+- ease: 9 (line-level edits across 3 doc files)
+- score: 3.6
+- source: iterate audit pass (2026-05-15)
+- evidence:
+  - `docs/combat.md:45-46` annotates `skill` and `item` `CombatAction` rows as "(Phase 3)" / "(Phase 4)" — both ship via Spec 04 (skill engine) / Spec 04b (skill library) / Spec 05 (equipment) / Spec 05b (consumable library).
+  - `docs/enemy.md:25` annotates `skills?: Skill[]` as "(Phase 3)" — Spec 04 / 04b shipped.
+  - `docs/gameloop.md:131` says "Spec 12 will document a recommended shape" for an RN AsyncStorage adapter — Spec 12 / Phase 12 + Phase 21 shipped; the recommended shape lives in `docs/api.md` "React Native Usage".
+- next: drop or update the three annotations.
 
 ---
 
