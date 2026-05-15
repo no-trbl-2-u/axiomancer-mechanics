@@ -36,7 +36,17 @@ exercises a moral choice.
    - Minor choices: ±1.
    - Major choices: ±5.
    - Defining choices: ±10.
-   > Your answer:
+   > Your answer: Adopted the minor / major bands; defining ±10 hasn't
+   > been authored yet. Shipped deltas across
+   > `src/World/Continents/Coastal-Village/maps.ts` fall in the
+   > ±1..±5 range (e.g. fv-3 shop: kind tip +5, harsh -5; Old Marrow:
+   > offering +2, generous +5, dismissive -4, threat -5). The
+   > friendship-win bonus in `src/Game/game.reducer.ts:230` shifts
+   > exactly +1. The clamp is hard-coded in `shiftMoralMeter` and
+   > `dialogue.runtime.ts:104` at [-100, +100], so a single defining
+   > ±10 choice would move the meter by 10% of full range — appropriate
+   > for the BRAINDUMP-style "escort the child" climax (Q9). Add a
+   > `±10` defining choice when the endgame quest lands.
 
 3. **Visibility.** Is the meter visible to the player, hidden, or
    hinted-at via narrative cues?
