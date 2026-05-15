@@ -116,24 +116,11 @@
   scripted skill round populates the array.
 - source: critique (oversight follow-up)
 
-### [LOW] `Items` module has no top-level docs page
-- pass: critique-7 (commit 1f4911b)
-- area: docs
-- observation: Every other significant module under `src/` has a sibling
-  `docs/<module>.md` (character, combat, effects, enemy, skills, world,
-  npcs, plus the cross-cutting equipment.md and gameloop.md). The `Items`
-  module ships `Consumable`, `Material`, `QuestItem`, `Equipment` (delegated
-  to equipment.md), rarity tables, modifier catalogue, and the
-  `dropItem`/`rollModifiers` loot path — but there is no `docs/items.md`
-  index. New contributors have to read `src/Items/index.ts` exports to find
-  the surface.
-- evidence: `ls docs/` shows `equipment.md` but no `items.md`; `src/Items/index.ts` exports 19 symbols spanning four item kinds.
-- suggested_fix: create `docs/items.md` as a short index — one paragraph per item kind, a table of public exports keyed to the existing `equipment.md` for the Equipment chapter. Mirror the structure of `docs/character.md`.
-- source: critique
-
 ---
 
 ## Done
+
+- [x] **[LOW] `Items` module has no top-level docs page** — resolved at Phase 34 unit 7 (this commit). New `docs/items.md` lands as a one-page index — overview, item-kinds table with type guards + behaviour, rarity model, modifier-catalogue summary, loot-factory API (`dropItem` / `rollModifiers` / `resolveModifiers` / `rarityWeightTable`), inventory reducers, templates / libraries, full API table, and a Pending block for crafting + shop economy. Delegates the Equipment chapter to the existing `docs/equipment.md`. Impact 4 × Ease 8 / 10 = 3.2.
 
 - [x] **[LOW] `automation/scripts/walkthroughs/` has no index — 7 walkthroughs and counting** — resolved at Phase 34 unit 6 (this commit). Added `automation/scripts/walkthroughs/README.md` — one-page index with the requested columns (script / surface / preset / enemy / required flags / exit expectation) covering all 8 walkthroughs (the directory had grown to include `skill-learning` since the critique was filed). README also documents the harness invocation pattern, the hermetic-replay conventions, and how to add a new walkthrough. Impact 4 × Ease 9 / 10 = 3.6.
 
