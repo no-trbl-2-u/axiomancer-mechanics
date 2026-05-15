@@ -12,24 +12,13 @@
 
 ## Pending
 
-### [MED] README has broken doc links and stale Project-layout descriptions
-- category: docs
-- impact: 7 (front-door README; broken links erode trust + send readers to 404s; wrong module descriptions misframe the engine's state)
-- ease: 8 (single-pass edit)
-- score: 5.6
-- source: iterate audit pass (2026-05-15)
-- evidence:
-  - `README.md:127` links to `GAME-ROADMAP.md` — file does not exist.
-  - `README.md:128` links to `AUDIT.md` at the repo root — file lives at `plan/AUDIT.md`.
-  - `README.md:130` links to `BRAINDUMP.md` at the repo root — file lives at `braindump/BRAINDUMP.md`.
-  - `README.md:113` "Skills/ — types only (engine pending)" — Spec 04 + 04b shipped the engine + library long ago.
-  - `README.md:121` "specs/ — planning specs for upcoming work (Phase 2 onward)" — phases are 09–24; "Phase 2" was pre-numbering shorthand.
-- next: fix the three broken links (drop `GAME-ROADMAP.md`, point AUDIT at `plan/AUDIT.md`, point BRAINDUMP at `braindump/`), refresh the Skills line, and drop the "Phase 2 onward" framing.
+(Empty.)
 
 ---
 
 ## Done
 
+- [x] **[MED] README has broken doc links and stale Project-layout descriptions** — resolved at commit 00866b3 (2026-05-15). The three broken links (`GAME-ROADMAP.md`, root-level `AUDIT.md`, root-level `BRAINDUMP.md`) replaced with the real paths (`plan/steps/01_build_plan.md`, `plan/AUDIT.md` + `plan/CRITIQUE.md`, `braindump/BRAINDUMP.md`); added `plan/`, `content/`, `docs/api.md`, and `docs/effects/README.md` links. Project layout: `Skills/` description corrected (engine + library, Spec 04 / 04b); the stale "Phase 2 onward" framing replaced with a concrete description of `specs/` structure (numbered specs + `story/` / `world/` / `characters/` subdirs from Phase 22); added `content/` and `plan/` to the tree. Impact 7 × Ease 8 / 10 = 5.6.
 - [x] **[MED] spec.md + AGENTS.md still describe pre-Phase-17 CLI surface** — resolved at commit 5996991 (2026-05-15). `spec.md:20-22` now lists only `src/CLI/game.cli.ts` / `npm run game` as the demo CLI and mentions the Phase 20 agent-driven flags. `AGENTS.md` Key Commands table replaces the three dropped npm scripts (`combat`, `character`, `combat:auto`) with `game` + the `verify` / `deploy:check` rows; the "CLI apps are interactive" caveat updated to point at the Phase 20 flags instead of the removed Python pexpect harness; the ESLint caveat updated since Phase 13 fixed the config. Impact 7 × Ease 8 / 10 = 5.6.
 - [x] **[LOW] Stale "(Phase 3)" / "(Phase 4)" / "Spec 12 will" annotations across docs** — resolved at commit cf9ffc7 (2026-05-15). `docs/combat.md:45-46` skill/item annotations now point at Spec 04 / 04b / 05 / 05b; `docs/enemy.md:25` `skills?` field annotation references Spec 04 with a note that it's reserved for elite/boss rotations; `docs/gameloop.md:131` RN AsyncStorage future-tense replaced with a cross-link to `docs/api.md` "React Native Usage". Impact 4 × Ease 9 / 10 = 3.6.
 - [x] **[MED] docs/effects/{buffs,debuffs}/* per-effect "PENDING (Phase 2)" markers are stale** — resolved at commit 6361dba (2026-05-15) by adding `docs/effects/README.md` — a single sweep document that names the 12 live mechanics (statModifiers / defenseModifier / rollModifier / reflectDamage / regen / drain / DoT / advantageModifier / actionRestriction / Tier 1 buff application / Tier 2 + 3 procs / Heart-attack specials) and the genuinely open ones (critStyle auto-selection). Per-file rewrites deferred — the README gives every reader the meta-context in one place. Impact 5 × Ease 7 / 10 = 3.5.

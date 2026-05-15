@@ -110,7 +110,7 @@ src/
   Enemy/                   # createEnemy + AI logic + library
   Game/                    # store + persistence + constants + actions + reducer
   Items/                   # inventory reducers + item types
-  Skills/                  # types only (engine pending)
+  Skills/                  # skill engine + library + resource economy (Spec 04 / 04b)
   World/                   # world state, reducers, map and quest libraries
   NPCs/                    # NPC types
   Utils/                   # math, dice, stat derivation, type guards
@@ -118,20 +118,24 @@ src/
 docs/                      # design notes per system
 docs/effects/              # one markdown per buff/debuff
 docs/references/           # source material (fallacies, paradoxes, pantheon, Mörk Borg)
-specs/                     # planning specs for upcoming work (Phase 2 onward)
+specs/                     # implementation specs (numbered 01–24, with story/world/character subdirs from Phase 22)
+content/                   # author's notebook: characters / locations / story (not loaded by engine)
+plan/                      # build plan, phase briefs, AUDIT.md, CRITIQUE.md, PHASE_CANDIDATES.md
 automation/                # standalone walkthrough script + replay fixtures
 ```
 
 ## Documentation
 
-- [`GAME-ROADMAP.md`](./GAME-ROADMAP.md) — phased development plan with progress tracking
-- [`AUDIT.md`](./AUDIT.md) — code audit and quality assessment
+- [`plan/steps/01_build_plan.md`](./plan/steps/01_build_plan.md) — phased development plan with progress tracking
+- [`plan/AUDIT.md`](./plan/AUDIT.md) — code audit and quality findings (drained by `/iterate`)
+- [`plan/CRITIQUE.md`](./plan/CRITIQUE.md) — architecture / quality findings filed by `/critique`
 - [`Knowledge-Gaps.md`](./Knowledge-Gaps.md) — open design and intent questions
-- [`BRAINDUMP.md`](./BRAINDUMP.md) — unorganised idea backlog
+- [`braindump/BRAINDUMP.md`](./braindump/BRAINDUMP.md) — unorganised idea backlog
 - [`docs/testing.md`](./docs/testing.md) — **hermetic e2e testing standard (required for every implementation)**
-- [`specs/`](./specs) — phased planning specs to drive the next round of work (start with `specs/README.md`)
+- [`specs/`](./specs) — implementation specs (`00-how-to-use-specs.md` is the template; `story/` / `world/` / `characters/` hold the Phase 22 narrative specs)
 - [`docs/`](./docs) — per-system references (combat, effects, character, world, etc.)
-- [`docs/effects/`](./docs/effects) — per-effect deep-dives (one file per buff/debuff)
+- [`docs/api.md`](./docs/api.md) — Public API reference (stability levels + RN integration recipe)
+- [`docs/effects/`](./docs/effects) — per-effect deep-dives (one file per buff/debuff; see `docs/effects/README.md` first)
 - [`docs/references/`](./docs/references) — source material (fallacies, paradoxes, pantheon, story)
 
 ## Scripts
