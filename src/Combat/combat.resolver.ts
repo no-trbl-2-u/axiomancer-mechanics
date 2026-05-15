@@ -24,7 +24,7 @@
  */
 
 import { ActiveEffect, Effect, EffectApplicationResult, EffectTier } from '../Effects/types';
-import { processRoundEndEffects } from './effects';
+import { runRoundEndPhase } from './phases/round-end';
 import { CombatAction, CombatState, Stance, Action, Advantage } from './types';
 import {
     ResourceCost, SkillCategory, CombatResources,
@@ -279,15 +279,7 @@ export function resolveCombatRound(
     const friendshipCounter = scenario.friendshipCounter;
 
     // 6. Round-end orchestration.
-    const pEnd = processRoundEndEffects(player);
-    player = pEnd.target;
-    if (pEnd.dotDamage   > 0)   events.push({ phase: 'round-end', kind: 'dot',     actor: 'player', amount: pEnd.dotDamage });
-    if (pEnd.expired.length > 0) events.push({ phase: 'round-end', kind: 'expired', actor: 'player', expired: pEnd.expired });
-
-    const eEnd = processRoundEndEffects(enemy);
-    enemy = eEnd.target;
-    if (eEnd.dotDamage   > 0)   events.push({ phase: 'round-end', kind: 'dot',     actor: 'enemy',  amount: eEnd.dotDamage });
-    if (eEnd.expired.length > 0) events.push({ phase: 'round-end', kind: 'expired', actor: 'enemy',  expired: eEnd.expired });
+    ({ player, enemy } = runRoundEndPhase(player, enemy, events));
 
     const newCombat = {
         ...state,
