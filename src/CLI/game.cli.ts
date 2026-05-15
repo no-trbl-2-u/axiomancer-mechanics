@@ -31,8 +31,9 @@ import { getMapDefinition } from '../World/map.registry';
 import { resolveMapEvent } from '../World';
 import type { ResolvedEvent } from '../World';
 import { isCombatOngoing, determineEnemyAction, resolveCombatRound } from '../Combat';
-import { Stance, CombatState } from '../Combat/types';
+import { Stance, CombatState, CombatAction, Action } from '../Combat/types';
 import { getSkillById } from '../Skills/skill.library';
+import { canUseSkill } from '../Skills/skill.engine';
 import { isConsumable } from '../Items/types';
 import { CombatEndReport } from '../Game/store';
 
@@ -145,6 +146,51 @@ function describeResolvedEvent(event: ResolvedEvent): string {
     }
 }
 
+async function chooseCombatAction(
+    store: GameStoreHandle,
+    combat: CombatState,
+): Promise<CombatAction> {
+    const { stance } = await prompt<{ stance: Stance }>([
+        { type: 'rawlist', name: 'stance', message: 'Stance?',
+          choices: ['heart', 'body', 'mind'] },
+    ]);
+
+    // Only offer the skill option when the player has at least one
+    // equipped skill they can afford. Keeps the prompt clean for the
+    // common case.
+    const player = combat.player;
+    const affordableSkillIds = player.equippedSkills.filter(id => {
+        const def = skillLookup(id);
+        return def !== undefined && canUseSkill(combat.combatResources, def);
+    });
+    const actionChoices: Action[] = ['attack', 'defend'];
+    if (affordableSkillIds.length > 0) actionChoices.push('skill');
+
+    const { action } = await prompt<{ action: Action }>([
+        { type: 'rawlist', name: 'action', message: 'Action?',
+          choices: actionChoices },
+    ]);
+
+    if (action !== 'skill') {
+        return { stance, action };
+    }
+
+    // Pick which equipped skill to fire. Show name + cost so the
+    // player can read the trade-off before committing.
+    const skillChoices = affordableSkillIds.map(id => {
+        const def = skillLookup(id)!;
+        const cost = Object.entries(def.resourceCost ?? {})
+            .filter(([_k, v]) => (v as number) > 0)
+            .map(([k, v]) => `${v} ${k}`)
+            .join(', ') || 'free';
+        return { name: `${def.name}  (${cost})`, value: id };
+    });
+    const { skillId } = await prompt<{ skillId: string }>([
+        { type: 'rawlist', name: 'skillId', message: 'Which skill?', choices: skillChoices },
+    ]);
+    return { stance, action: 'skill', skillId };
+}
+
 async function combatTab(store: GameStoreHandle): Promise<void> {
     let combat = store.getState().combat;
     if (!combat) {
@@ -153,17 +199,11 @@ async function combatTab(store: GameStoreHandle): Promise<void> {
     }
 
     while (combat && isCombatOngoing(combat)) {
-        const { stance, action } = await prompt<{ stance: Stance; action: 'attack' | 'defend' }>([
-            { type: 'rawlist', name: 'stance', message: 'Stance?',
-              choices: ['heart', 'body', 'mind'] },
-            { type: 'rawlist', name: 'action', message: 'Action?',
-              choices: ['attack', 'defend'] },
-        ]);
-
+        const playerAction = await chooseCombatAction(store, combat);
         const enemyAction = determineEnemyAction(combat.enemy, combat);
         const { state: next } = resolveCombatRound(
             combat,
-            { stance, action },
+            playerAction,
             enemyAction,
             skillLookup,
         );
