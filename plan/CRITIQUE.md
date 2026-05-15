@@ -14,18 +14,11 @@
 
 ## Pending
 
-### [HIGH] src/CLI/combat.display.ts is 968 LOC of dead code orphaned by Phase 17
-- pass: critique-4 (commit 5bb73c6)
-- area: dead-code
-- observation: `src/CLI/combat.display.ts` is 968 lines of console-output helpers (ANSI colour codes, battle-log formatters, advantage tables, etc.) authored for the dropped `src/CLI/combat.cli.ts`. Phase 17 deleted `combat.cli.ts` and `character.cli.ts` but missed this companion file. The surviving CLI (`src/CLI/game.cli.ts`) does not import from it; no source, test, or automation script consumes it.
-- evidence: `grep -rn "combat\.display\|from '.\/combat\.display'" src/ automation/ scripts/` returns zero hits. `wc -l src/CLI/combat.display.ts` is 968.
-- suggested_fix: `git rm src/CLI/combat.display.ts`. Run `npm run verify`. The file is excluded from the build (`src/CLI` is excluded by `tsconfig.json`) and has no test coverage, so deletion is mechanical and risk-free.
-- source: critique
-
 ---
 
 ## Done
 
+- [x] **[HIGH] src/CLI/combat.display.ts is 968 LOC of dead code orphaned by Phase 17** — resolved at commit `0e7e8a9` (2026-05-15) by `git rm src/CLI/combat.display.ts`. Phase 17 deleted `combat.cli.ts` but missed this companion helper file; zero consumers in src/, automation/, or scripts/.
 - [x] **[LOW] Empty committed directory: src/Game/backups/** — closed at commit 8deedeb (2026-05-15) as misdiagnosed. `git ls-files src/Game/backups/` is empty — git does not track empty directories, so the "committed directory" framing in the original finding was wrong. The directory existed only in local working trees and was not in the repository. Deleted the local instance; a fresh clone is unaffected.
 - [x] **[LOW] northern-forest map has placeholder description `'TODO'`** — resolved at commit 7623ffc (2026-05-15) by replacing the literal in `src/World/Continents/Coastal-Village/maps.ts` with a one-line description matching the fishing-village tone: "A pine-thick wood inland from the village; cold springs, low light, and a cave mouth at the far edge."
 - [x] **[MED] Game/persistence has zero tests despite owning the save-file format** — resolved at commit `81d6dbe` (2026-05-15) by adding `src/Game/persistence/node.adapter.test.ts` (4 hermetic cases: round-trip save/load, missing file, malformed JSON warns + nulls out, overwrite).
