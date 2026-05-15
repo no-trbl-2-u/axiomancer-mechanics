@@ -26,7 +26,7 @@
 import { Character } from '../Character/types';
 import { Enemy } from '../Enemy/types';
 import { ActiveEffect, Effect, EffectApplicationResult, EffectTier } from '../Effects/types';
-import { applyTier1CombatEffect, clearTier1EffectsForStance } from '../Effects';
+import { runStanceEffectsPhase } from './phases/stance-effects';
 import { lookupEffect } from '../Effects/effects.library';
 import { createDieRoll } from '../Utils';
 import {
@@ -673,53 +673,13 @@ export function resolveCombatRound(
     );
 
     // 4. Clear stale Tier 1 stance buffs and apply new ones for active combatants.
-    const playerClear = clearTier1EffectsForStance(player.effects, playerStance);
-    player = { ...player, effects: playerClear.activeEffects };
-    if (playerClear.cleared.length > 0) {
-        events.push({
-            phase: 'stance-effects', kind: 'cleared', actor: 'player',
-            cleared: playerClear.cleared, newStance: playerStance,
-        });
-    }
-
-    const enemyClear = clearTier1EffectsForStance(enemy.effects, enemyStance);
-    enemy = { ...enemy, effects: enemyClear.activeEffects };
-    if (enemyClear.cleared.length > 0) {
-        events.push({
-            phase: 'stance-effects', kind: 'cleared', actor: 'enemy',
-            cleared: enemyClear.cleared, newStance: enemyStance,
-        });
-    }
-
-    if (playerCanAct && (playerActionFinal === 'attack' || playerActionFinal === 'defend')) {
-        const t1 = applyTier1CombatEffect(
-            player.effects, enemy.effects,
-            { stance: playerStance, action: playerActionFinal }, state.round,
-        );
-        player = { ...player, effects: t1.actorEffects };
-        enemy  = { ...enemy,  effects: t1.opponentEffects };
-        if (t1.effect && t1.message && t1.appliedTo) {
-            events.push({
-                phase: 'stance-effects', kind: 'applied', actor: 'player',
-                effect: t1.effect, message: t1.message, appliedTo: t1.appliedTo,
-            });
-        }
-    }
-    if (enemyCanAct && (enemyActionFinal === 'attack' || enemyActionFinal === 'defend')) {
-        const t1 = applyTier1CombatEffect(
-            enemy.effects, player.effects,
-            { stance: enemyStance, action: enemyActionFinal }, state.round,
-            state.enemy.tier1Overrides,
-        );
-        enemy  = { ...enemy,  effects: t1.actorEffects };
-        player = { ...player, effects: t1.opponentEffects };
-        if (t1.effect && t1.message && t1.appliedTo) {
-            events.push({
-                phase: 'stance-effects', kind: 'applied', actor: 'enemy',
-                effect: t1.effect, message: t1.message, appliedTo: t1.appliedTo,
-            });
-        }
-    }
+    ({ player, enemy } = runStanceEffectsPhase(
+        player, enemy, playerStance, enemyStance,
+        playerActionFinal, enemyActionFinal,
+        playerCanAct, enemyCanAct,
+        state.round, state.enemy.tier1Overrides,
+        events,
+    ));
 
     // 5. Scenario resolution.
     let friendshipCounter = state.friendshipCounter;
