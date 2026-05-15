@@ -87,7 +87,7 @@ function applyFlatAndMult(base: number, flat: number, multBonus: number): number
     return (base + flat) * (1 + multBonus);
 }
 
-function recomputeDerivedStats(
+export function recomputeDerivedStats(
     baseStats: BaseStats,
     mods: AggregatedEquipmentModifiers,
 ): DerivedStats {

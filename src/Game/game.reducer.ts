@@ -30,7 +30,7 @@ import {
     equipItem as equipItemReducer,
     unequipItem as unequipItemReducer,
 } from '../Character/equipment.reducer';
-import { createCharacter } from '../Character';
+import { createCharacter, allocateStatPoint } from '../Character';
 import { createStartingWorld, emptyQuestLog } from '../World';
 import { moveToNode as moveWorld } from '../World/world.reducer';
 import { resolveMapEvent } from '../World';
@@ -268,6 +268,10 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
         case 'LEVEL_UP': {
             return { ...state, player: applyLevelUps(state.player) };
+        }
+
+        case 'ALLOCATE_STAT_POINT': {
+            return { ...state, player: allocateStatPoint(state.player, action.payload.stat) };
         }
 
         case 'SHIFT_MORAL_METER': {

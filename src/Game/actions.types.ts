@@ -28,6 +28,7 @@ export type GameAction =
     | { type: 'EQUIP_ITEM';     payload: { item: Equipment } }
     | { type: 'UNEQUIP_ITEM';   payload: { slot: EquipmentSlot } }
     | { type: 'LEVEL_UP';       payload?: undefined }
+    | { type: 'ALLOCATE_STAT_POINT'; payload: { stat: 'heart' | 'body' | 'mind' } }
     | { type: 'SHIFT_MORAL_METER'; payload: { delta: number; gating?: { min?: number; max?: number } } }
     | { type: 'SAVE_GAME';      payload?: undefined }
     | { type: 'LOAD_GAME';      payload?: undefined };

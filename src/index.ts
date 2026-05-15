@@ -11,6 +11,7 @@
 // ─── Character ────────────────────────────────────────────────────────────────
 export {
     createCharacter,
+    allocateStatPoint,
     equipItem, unequipItem, getEquipmentModifiers,
     characterPresets, getPresetById, buildCharacterFromPreset,
 } from './Character';

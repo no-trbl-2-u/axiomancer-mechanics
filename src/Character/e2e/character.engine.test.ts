@@ -22,7 +22,7 @@
 
 import { describe, it, expect } from 'vitest';
 
-import { createCharacter } from '../index';
+import { createCharacter, allocateStatPoint } from '../index';
 import {
     equipItem,
     unequipItem,
@@ -287,5 +287,49 @@ describe('getEquipmentModifiers', () => {
         });
         expect(agg.statFlat.get('body')).toBe(2);
         expect(agg.statMultBonus.get('body')).toBeCloseTo(0.5);
+    });
+});
+
+// ─── allocateStatPoint — Spec 06 Q3 + Q8 ──────────────────────────────────────
+
+describe('allocateStatPoint', () => {
+    it('decrements the pool, raises baseStat, and re-derives derived/non-combat/maxHealth', () => {
+        const before = buildPlayer({});
+        // Seed available points so the allocation succeeds.
+        const seeded = { ...before, availableStatPoints: 2 };
+        const after = allocateStatPoint(seeded, 'body');
+
+        expect(after.availableStatPoints).toBe(1);
+        expect(after.baseStats.body).toBe(before.baseStats.body + 1);
+        // derived stats follow the body increase via STAT_MULTIPLIERS.DEFENSE = 3.
+        expect(after.derivedStats.physicalDefense).toBe(
+            (before.baseStats.body + 1) * STAT_MULTIPLIERS.DEFENSE,
+        );
+        // non-combat stats also fold body changes (physicalSave = body × SAVE).
+        expect(after.nonCombatStats.physicalSave).toBe(
+            (before.baseStats.body + 1) * STAT_MULTIPLIERS.SAVE,
+        );
+        // maxHealth depends on (body, heart) averages; raising body bumps it.
+        expect(after.maxHealth).toBeGreaterThan(before.maxHealth);
+        // HP grows by exactly the maxHealth delta — not a free heal.
+        const delta = after.maxHealth - before.maxHealth;
+        expect(after.health).toBe(before.health + delta);
+    });
+
+    it('is a no-op when availableStatPoints is zero', () => {
+        const before = buildPlayer({});
+        expect(before.availableStatPoints).toBe(0);
+        const after = allocateStatPoint(before, 'heart');
+        expect(after).toBe(before);
+    });
+
+    it('routes heart / body / mind to the matching base stat', () => {
+        const seeded = { ...buildPlayer({}), availableStatPoints: 3 };
+        const afterHeart = allocateStatPoint(seeded, 'heart');
+        const afterBody  = allocateStatPoint(seeded, 'body');
+        const afterMind  = allocateStatPoint(seeded, 'mind');
+        expect(afterHeart.baseStats.heart).toBe(seeded.baseStats.heart + 1);
+        expect(afterBody.baseStats.body).toBe(seeded.baseStats.body + 1);
+        expect(afterMind.baseStats.mind).toBe(seeded.baseStats.mind + 1);
     });
 });
