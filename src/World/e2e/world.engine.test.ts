@@ -5,20 +5,24 @@
  *   - moveToNode adjacency / completed-lock / locked-node validation.
  *   - processWorldEffectTick + getActiveHazards behaviour over multiple steps.
  *   - Per-objective quest engine (start / progress / complete).
- *   - processNode dispatch for every event type the demo map exercises.
+ *   - resolveMapEvent dispatch for every kind the demo map exercises
+ *     (post-Phase 25 — processNode + the legacy MapEvent surface removed).
  *   - End-to-end flow through fishing-village from start to boss-kill.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 import {
     createStartingWorld, moveToNode, completeCurrentNode, IllegalMoveError,
-    processNode, applyDialogueChoice, getMapDefinition,
+    resolveMapEvent, applyDialogueChoice, getMapDefinition,
     emptyQuestLog, startQuest, progressQuest, isQuestComplete, completeQuest,
 } from '../index';
 import { processWorldEffectTick, getActiveHazards, applyEffect, lookupEffect } from '../../Effects';
 import { createCharacter } from '../../Character';
 import { createNewGameState } from '../../Game/game.reducer';
 import { GameState } from '../../Game/types';
+import { mockSequentialRng } from '../../test-utils/rng';
+
+afterEach(() => vi.restoreAllMocks());
 
 const startingState = (): GameState => createNewGameState();
 
@@ -147,38 +151,43 @@ describe('per-objective quest engine', () => {
     });
 });
 
-// ── processNode dispatcher ─────────────────────────────────────────────────
+// ── resolveMapEvent dispatcher (post-Phase 25) ────────────────────────────
 
-describe('processNode dispatch', () => {
-    it('returns kind=npc with dialogue tree for the NPC node', () => {
+describe('resolveMapEvent dispatch', () => {
+    it('returns kind=interaction with dialogue tree for the NPC node', () => {
+        mockSequentialRng(0.5);
         let state = startingState();
         state = { ...state, world: moveToNode(state.world, 'fv-2') };
-        const result = processNode(state);
-        expect(result.event.kind).toBe('npc');
-        if (result.event.kind === 'npc') {
+        const result = resolveMapEvent(state);
+        expect(result.event.kind).toBe('interaction');
+        if (result.event.kind === 'interaction') {
             expect(result.event.npcName).toBe('Old Marrow');
             expect(result.event.dialogue).toBeDefined();
         }
     });
 
-    it('returns kind=shop for the shop node', () => {
+    it('returns kind=village for the shop node (folded into village)', () => {
+        mockSequentialRng(0.5);
         let state = startingState();
-        // Walk to fv-3 (must complete fv-2 first to unlock).
         state = { ...state, world: moveToNode(state.world, 'fv-2') };
         state = { ...state, world: completeCurrentNode(state.world) };
         state = { ...state, world: moveToNode(state.world, 'fv-3') };
-        const result = processNode(state);
-        expect(result.event.kind).toBe('shop');
+        const result = resolveMapEvent(state);
+        expect(result.event.kind).toBe('village');
+        if (result.event.kind === 'village') {
+            expect(result.event.merchants.length).toBeGreaterThan(0);
+        }
     });
 
     it('returns kind=encounter on encounter nodes', () => {
+        mockSequentialRng(0.5);
         let state = startingState();
         state = { ...state, world: moveToNode(state.world, 'fv-2') };
         state = { ...state, world: completeCurrentNode(state.world) };
         state = { ...state, world: moveToNode(state.world, 'fv-3') };
         state = { ...state, world: completeCurrentNode(state.world) };
         state = { ...state, world: moveToNode(state.world, 'fv-4') };
-        const result = processNode(state);
+        const result = resolveMapEvent(state);
         expect(result.event.kind).toBe('encounter');
         if (result.event.kind === 'encounter') {
             expect(result.event.isBoss).toBe(false);
@@ -186,7 +195,8 @@ describe('processNode dispatch', () => {
         }
     });
 
-    it('grants currency on treasure nodes', () => {
+    it('grants currency on loot-cache nodes (treasure folded into loot-cache)', () => {
+        mockSequentialRng(0.5);
         let state = startingState();
         // Walk fv-1 → fv-5.
         for (const target of ['fv-2', 'fv-3', 'fv-4', 'fv-5'] as const) {
@@ -194,18 +204,22 @@ describe('processNode dispatch', () => {
             if (target !== 'fv-5') state = { ...state, world: completeCurrentNode(state.world) };
         }
         const before = state.player.currency;
-        const result = processNode(state);
-        expect(result.event.kind).toBe('treasure');
-        expect(result.gameState.player.currency).toBe(before + 10);
+        const result = resolveMapEvent(state);
+        expect(result.event.kind).toBe('loot-cache');
+        if (result.event.kind === 'loot-cache') {
+            expect(result.event.currency).toBe(10);
+        }
+        expect(result.state.player.currency).toBe(before + 10);
     });
 
     it('returns kind=encounter with isBoss=true on the boss node', () => {
+        mockSequentialRng(0.5);
         let state = startingState();
         for (const target of ['fv-2', 'fv-3', 'fv-4', 'fv-5', 'fv-6'] as const) {
             state = { ...state, world: moveToNode(state.world, target) };
             if (target !== 'fv-6') state = { ...state, world: completeCurrentNode(state.world) };
         }
-        const result = processNode(state);
+        const result = resolveMapEvent(state);
         expect(result.event.kind).toBe('encounter');
         if (result.event.kind === 'encounter') {
             expect(result.event.isBoss).toBe(true);
@@ -218,17 +232,18 @@ describe('processNode dispatch', () => {
 
 describe('applyDialogueChoice', () => {
     it('starts a quest when a choice carries startQuest', () => {
+        mockSequentialRng(0.5);
         let state = startingState();
         state = { ...state, world: moveToNode(state.world, 'fv-2') };
-        const result = processNode(state);
-        expect(result.event.kind).toBe('npc');
-        if (result.event.kind !== 'npc' || !result.event.dialogue) return;
+        const result = resolveMapEvent(state);
+        expect(result.event.kind).toBe('interaction');
+        if (result.event.kind !== 'interaction' || !result.event.dialogue) return;
         const tree = result.event.dialogue;
         const root = tree.nodes[tree.rootId];
         // Pick "What needs doing?" → leads to 'offer'
         const offerChoice = root.choices!.find(c => c.text.startsWith('What needs'));
         expect(offerChoice).toBeDefined();
-        const step1 = applyDialogueChoice(result.gameState, tree, offerChoice!);
+        const step1 = applyDialogueChoice(result.state, tree, offerChoice!);
         expect(step1.nextNode?.id).toBe('offer');
         // Pick "Consider it done" → starts the quest
         const accept = step1.nextNode!.choices!.find(c => c.effect?.startQuest);
@@ -238,15 +253,18 @@ describe('applyDialogueChoice', () => {
     });
 
     it('grants currency when a choice carries grantCurrency', () => {
+        mockSequentialRng(0.5);
         let state = startingState();
         state = { ...state, world: moveToNode(state.world, 'fv-2') };
-        const result = processNode(state);
-        if (result.event.kind !== 'npc' || !result.event.dialogue) throw new Error('expected npc');
+        const result = resolveMapEvent(state);
+        if (result.event.kind !== 'interaction' || !result.event.dialogue) {
+            throw new Error('expected interaction');
+        }
         const tree = result.event.dialogue;
         const thanksNode = tree.nodes.thanks;
         const choice = thanksNode.choices![0];
-        const before = result.gameState.player.currency;
-        const step = applyDialogueChoice(result.gameState, tree, choice);
+        const before = result.state.player.currency;
+        const step = applyDialogueChoice(result.state, tree, choice);
         expect(step.gameState.player.currency).toBe(before + 25);
     });
 });
