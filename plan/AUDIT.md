@@ -8,6 +8,8 @@
 > Bias: <category> (set via oversight <date>)
 -->
 
+> Bias: tests (set via oversight 2026-05-15) — 1.5× score multiplier on test-category findings until cleared via `/oversight reset`.
+
 ---
 
 ## Pending

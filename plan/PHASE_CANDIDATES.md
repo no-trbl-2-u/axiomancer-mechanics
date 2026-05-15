@@ -13,22 +13,6 @@
 
 ## Pending
 
-### Phase 25 (provisional) — Remove legacy `processNode` + MapEvent types
-- source: Phase 24 scope deviation (deferred from Spec 23 Q7)
-- priority: medium
-- summary: Delete `src/World/process-node.ts`, the `MapEvent` and
-  `MapEventType` types, the `nodeEvents` field on `MapDefinition`,
-  and the `npc` / `shop` kinds. Rewrite the ~10 `processNode`-pinned
-  cases in `src/World/e2e/world.engine.test.ts` to drive
-  `resolveMapEvent` instead. Strip the legacy exports from the world
-  barrel and `src/index.ts`. Mechanical but high-volume; the
-  Phase 24 content is the substitute behaviour.
-- blocking: nothing — Phase 24 already migrated content and the
-  game store / CLI.
-- acceptance: `grep -rn "processNode\|MapEvent\b\|MapEventType" src/`
-  returns zero hits; the world e2e suite is green using only the
-  new dispatcher.
-
 ### Candidate: Tier 2 / Tier 3 skill content polish
 - signal: `spec.md` 6-month horizon — "Additional skill tiers
   (Tier 2+)". The library at `src/Skills/skill.library.ts` already
@@ -127,6 +111,37 @@
 ---
 
 ## Promoted
+
+### Phase 25 — Remove legacy `processNode` + MapEvent types
+- promoted: 2026-05-15 (oversight)
+- source: Phase 24 scope deviation (deferred from Spec 23 Q7)
+- summary: Delete `src/World/process-node.ts`, the `MapEvent` and
+  `MapEventType` types, the `nodeEvents` field on `MapDefinition`,
+  and the `npc` / `shop` kinds. Rewrite the ~10 `processNode`-pinned
+  cases in `src/World/e2e/world.engine.test.ts` to drive
+  `resolveMapEvent` instead. Strip legacy exports from the world
+  barrel and `src/index.ts`.
+- acceptance: `grep -rn "processNode\|MapEvent\b\|MapEventType" src/`
+  returns zero hits; world e2e suite green using only the new dispatcher.
+
+### Phase 26 — Validation CLI + agent-graded automation harness
+- promoted: 2026-05-15 (oversight; user-flagged "most important phase")
+- source: oversight free-form request — "I can't be sure anything is
+  fully implemented [from the CLI alone]. I want to bridge that gap."
+- summary: Expand `src/CLI/game.cli.ts` to cover the full engine
+  surface (skills in combat, one-keypress next-map-node, character
+  sheet view, per-decision state-log writer behind `--state-log <path>`).
+  Rework automation testing: one scripted walkthrough per CLI surface
+  + a companion `*.goal.md`; new `automation/agent-e2e.mjs` runs the
+  walkthrough with `--script + --json-events + --state-log`, captures
+  the log, and pipes (goal, log) to Claude API for a structured
+  pass/fail. Hermetic vitest suite stays as-is; agent-grading is a
+  deliberately non-hermetic layer on top.
+- acceptance: every CLI tab and prompt has a corresponding walkthrough
+  + goal in `automation/scripts/walkthroughs/`; `npm run game --
+  --script <path> --json-events --state-log <path>` produces a JSONL
+  log; `node automation/agent-e2e.mjs <script> <goal>` returns a
+  structured pass/fail decision.
 
 ### Phase 15 — Split combat.resolver.ts into per-phase helpers
 - promoted: 2026-05-14 (oversight)

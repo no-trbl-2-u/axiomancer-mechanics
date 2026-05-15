@@ -45,8 +45,10 @@ shipped (with commit hash).
 - [x] Phase 22 — Story content authoring infrastructure (story-spec / world-spec / character-spec skills + content/ templates) [low priority] (7b540e5)
 - [x] Phase 23 — MapEvents engine + node discovery (resolveMapEvent dispatcher, 8 event types, fog-of-war unlock, one-shot consumption; drops `npc`/`shop` kinds) (fd01029)
 - [x] Phase 24 — MapEvents content (≥1 node per event type, migrate fishing-village + northern-forest into new shape) (4b12e27)
+- [ ] Phase 25 — Remove legacy `processNode` + `MapEvent`/`MapEventType` (rewrite the ~10 `processNode` cases in `src/World/e2e/world.engine.test.ts` against `resolveMapEvent`; drop the legacy exports + `nodeEvents` field)
+- [ ] Phase 26 — Validation CLI + agent-graded automation harness (skills-in-combat / next-map-node / character-sheet / state-log writer; scripted walkthroughs; agent-graded e2e harness that takes a test goal + a state log and decides pass/fail) **[user-promoted via oversight 2026-05-15 as the most important pending phase — closes the UI-isn't-built validation gap]**
 
-> **After phase 24:** the loop transitions to `/iterate` —
+> **After phase 26:** the loop transitions to `/iterate` —
 > spec gap filling, test coverage improvements, doc updates,
 > and ongoing audits. `/march` makes that transition automatic.
 
@@ -199,6 +201,78 @@ With Phase 23's engine landed, populate at least one node of each event
 type and migrate the existing fishing-village and northern-forest world
 content into the new MapEvent shape. Hermetic e2e walks a short
 discovery → resolution chain end-to-end against the live content registry.
+
+### Phase 25 — Legacy MapEvent surface removal
+
+Phase 24 left `src/World/process-node.ts`, the `MapEvent` / `MapEventType`
+types, the `nodeEvents` field on `MapDefinition`, and the `npc` / `shop`
+event kinds in place for back-compat with the existing world e2e suite
+(~10 cases in `src/World/e2e/world.engine.test.ts`). Phase 25 rewrites
+those test cases against `resolveMapEvent` and removes the legacy
+surface. Strips the corresponding exports from the world barrel and
+`src/index.ts`. Mechanical but high-volume; the Phase 24 content already
+provides the substitute behaviour.
+
+### Phase 26 — Validation CLI + agent-graded automation harness
+
+**Promoted via `/oversight` 2026-05-15 — most important pending phase.**
+
+The CLI (`src/CLI/game.cli.ts`) is the engine's only end-to-end
+validation path until the React Native UI ships. Today it covers a
+minimum slice (pick a preset, walk maps, run a basic attack/defend
+round). The user can't be sure anything else is fully implemented from
+the CLI alone. Phase 26 expands the CLI to the full feature surface AND
+reworks automation testing so each surface area has a scripted
+walkthrough whose log is passed back to an agent for goal-graded
+pass/fail.
+
+Scope:
+
+1. **CLI feature expansion:**
+   - **Skills in combat:** combat tab adds a "Use skill" option that
+     prompts for one of the equipped skills, validates affordability
+     via `canUseSkill`, and routes through `resolveCombatRound` with
+     `action: 'skill'`. Today combat is only attack/defend.
+   - **"Next Map Node":** Map tab gains a one-keypress action that
+     auto-picks the first reachable adjacent node and dispatches
+     `PROCESS_NODE`. Makes MapEvent testing fast.
+   - **Character sheet:** new tab displaying the player's full state —
+     baseStats, derivedStats, nonCombatStats, currency, all 7
+     equipment slots, inventory grouped by category, active effects,
+     known + equipped skills, moralMeter, XP-to-next-level. Designed
+     so equipping a piece or using a consumable can be observed in
+     before/after view.
+   - **State-log writer:** every CLI prompt that mutates state appends
+     a JSON record (`{ tick, action, before, after, event? }`) to a
+     per-session log file at `logs/cli-<timestamp>.jsonl`. Configurable
+     via a new `--state-log <path>` flag.
+
+2. **Automation testing rework:**
+   - **Scripted walkthroughs:** one JSON script per CLI surface
+     (`automation/scripts/walkthroughs/<surface>.json`) — skills,
+     map events, character sheet, item use, debug spawn, save/load.
+     Each script is the input sequence that exercises that surface
+     end-to-end via the Phase 20 `--script` flag.
+   - **Per-script test-goal companion:** `<surface>.goal.md` describing
+     what success looks like in human terms.
+   - **Agent-graded e2e harness:** new `automation/agent-e2e.mjs` that
+     takes (a) a walkthrough script, (b) the goal file, runs the CLI
+     with `--script + --json-events + --state-log`, captures the log,
+     and pipes (goal, log) to an agent (Claude API) which returns a
+     structured `pass | fail` decision with reasoning.
+
+3. **Out of scope for the hermetic vitest suite:**
+   The agent-grading layer needs a network call to the Claude API,
+   so it lives outside the hermetic-e2e contract. Hermetic tests
+   continue to drive `resolveCombatRound` / `resolveMapEvent` /
+   `executeSkill` etc. directly. The Phase 26 walkthroughs +
+   agent-grading sit as a deliberately non-hermetic validation layer
+   on top.
+
+The phase is large; expect ≥4-6 ticks to ship end-to-end. Likely commit
+units: (1) skills-in-combat, (2) next-map-node, (3) character sheet,
+(4) state-log writer, (5) walkthroughs + goal files, (6) agent-graded
+harness.
 
 ---
 
