@@ -6,18 +6,21 @@
 > by `/iterate`.
 
 <!-- Metadata (updated by /critique after each pass):
-> Last pass: 2026-05-15 at commit 4fd0632
-> Pass count: 5
-> Pass 5 note: 0 findings filed. Codebase is in steady state after
-> 10 consecutive iterate ticks of doc-currency work. Candidate items
-> surfaced but all scored < 3.0 (test-layout consistency 2.8, types.d.ts
-> vs types.ts naming 2.1, spec files referencing dropped CLIs 2.0).
-> These belong as PHASE_CANDIDATES if oversight wants them addressed.
+> Last pass: 2026-05-15 at commit 1b56f9c
+> Pass count: 6
 -->
 
 ---
 
 ## Pending
+
+### [MED] Phase 26 state-log writer (`src/CLI/io.ts`) has zero hermetic coverage
+- pass: critique-6 (commit 1b56f9c)
+- area: tests
+- observation: Phase 26 unit 4 added `setStateLogPath`, `logState`, and `getStateLogPath` to `src/CLI/io.ts`. These are the load-bearing primitives the agent-graded harness depends on (the harness reads the JSONL file the writer produces and pipes it to Claude for pass/fail). The existing 12-case `src/CLI/e2e/io.engine.test.ts` doesn't exercise them — silent regressions in the record shape (missing tick, wrong field order, file not truncated) would only surface when the agent fails inscrutably.
+- evidence: `grep -n "setStateLogPath\|logState" src/CLI/e2e/io.engine.test.ts` returns 0 hits. `src/CLI/io.ts` exports the three symbols at the bottom of the file with no test coverage.
+- suggested_fix: extend `src/CLI/e2e/io.engine.test.ts` with 3–4 cases — `setStateLogPath(path)` truncates an existing file; `logState` appends one JSONL record with monotonic `tick` + the expected `{ action, before, after, event? }` shape; `logState` is a no-op when path is `null`; setting a new path resets the tick counter. Use `os.tmpdir() + crypto.randomUUID()` for the path (mirrors `node.adapter.test.ts`).
+- source: critique
 
 ---
 
