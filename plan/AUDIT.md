@@ -34,6 +34,7 @@
 - ease: 3 (must preserve event order across the resolver public contract; risky)
 - source: critique (pass-1)
 - score: 2.1
+- next: Phase 15 will close this (promoted via oversight 2026-05-14).
 
 ### [Z-LOW] Empty committed directory: src/Game/backups/
 - category: structure
@@ -48,6 +49,8 @@
 - ease: 4 (policy decision then mechanical migration)
 - source: critique (pass-1)
 - score: 1.2
+- next: Phase 16 will close this — direction is "migrate sibling tests into `e2e/`"
+  (chosen via oversight 2026-05-14, not "broaden bearings").
 
 ---
 

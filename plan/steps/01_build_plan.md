@@ -35,8 +35,14 @@ shipped (with commit hash).
 - [x] Phase 12 — Package architecture and events (event surface, React Native adapter docs, clean barrel) (251dda9)
 - [ ] Phase 13 — ESLint fix (repair `eslint.config.mts`, add `@typescript-eslint` plugin correctly)
 - [ ] Phase 14 — Story content foundation (NPC types + first named NPC with moral dialogue)
+- [ ] Phase 15 — Split `combat.resolver.ts` into per-phase helpers (round-start, action-restriction, advantage, stance-effects, scenario, round-end)
+- [ ] Phase 16 — Migrate sibling tests into `src/<Module>/e2e/` for layout consistency
+- [ ] Phase 17 — Unify CLI surface (drop `combat` + `character` + `auto:combat` scripts; single `npm run game` entry)
+- [ ] Phase 18 — Preset character roster (curated progression tiers selectable at boot)
+- [ ] Phase 19 — Enemy spawn picker (debug tab to spawn arbitrary enemies into combat)
+- [ ] Phase 20 — Scripted / agent-driven CLI mode (`--script`, `--json-events`, stdin agent control)
 
-> **After phase 14:** the loop transitions to `/iterate` —
+> **After phase 20:** the loop transitions to `/iterate` —
 > spec gap filling, test coverage improvements, doc updates,
 > and ongoing audits. `/march` makes that transition automatic.
 
@@ -88,6 +94,57 @@ a known broken item since project start.
 First named NPC with a moral dialogue tree. Implement `NPC` entity with
 branching dialogue that affects the moral/difficulty meter. Tie into
 `processNode` dialogue flow. See `specs/story/` for content direction.
+
+### Phase 15 — Split combat.resolver.ts
+
+Extract per-phase helpers (`resolveRoundStart`, `resolveActionRestriction`,
+`resolveAdvantage`, `resolveStanceEffects`, `resolveScenario`,
+`resolveRoundEnd`) into colocated files. `resolveCombatRound` becomes the
+orchestrator that wires them and produces the `combatEvents` stream. Public
+contract unchanged; existing e2e suite bracketing the change. Drains the
+matching critique-pass-1 finding.
+
+### Phase 16 — e2e layout migration
+
+Migrate sibling `*.test.ts` files in `src/Effects/`, `src/Enemy/`,
+`src/Utils/`, `src/World/`, `src/Character/`, and `src/NPCs/` into
+`src/<Module>/e2e/<feature>.engine.test.ts` per `plan/bearings.md`. Update
+imports; no logic changes. Drains the matching critique-pass-1 finding.
+
+### Phase 17 — Unify CLI surface
+
+Drop `npm run combat`, `npm run character`, and `npm run auto:combat`
+scripts (and delete `automation/combat-test.py`,
+`src/CLI/combat.cli.ts`, `src/CLI/character.cli.ts`). Single entry:
+`npm run game`. Combat reachable through Map encounters and the new
+"Spawn Encounter" debug tab landing in Phase 19. Character creation
+flow folded into `game.cli.ts` boot.
+
+### Phase 18 — Preset character roster
+
+New module `src/Character/preset-roster.ts` exporting ≥4 curated
+progression tiers (e.g. `fresh-L1`, `mid-L5`, `late-L10`, `endgame-L15`)
+with calibrated level, XP, learned/equipped skills, and equipment loadout
+that all resolve against the live libraries. CLI presents a roster picker
+at boot. Hermetic e2e validates each preset is internally consistent
+(referenced skill IDs and item IDs exist; XP matches level).
+
+### Phase 19 — Enemy spawn picker
+
+Add a "Spawn Encounter" debug tab to `game.cli.ts`: list enemies from
+`enemy.library` grouped by difficulty tier, pick one, drop into combat
+against the current preset character. Useful for targeting a specific
+Stance × proc, scenario, or effect interaction during manual testing.
+Hermetic e2e covers a spawn → round-resolve happy path.
+
+### Phase 20 — Scripted / agent-driven CLI mode
+
+`--script <path>` flag accepts a JSON plan `{ seed, preset, enemy,
+actions[] }` for deterministic replay (leverages the Phase 11 seeded RNG).
+`--json-events` flag streams structured `GameEvent` objects on stdout so
+an external LLM agent can parse the transcript and react. stdin-mode:
+accepts one-action-per-line JSON commands for live agent control.
+Hermetic e2e covers a full agent-style scripted run end-to-end.
 
 ---
 
