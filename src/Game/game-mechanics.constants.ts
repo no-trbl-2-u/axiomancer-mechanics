@@ -35,6 +35,12 @@ export const RESOURCE_MULTIPLIERS = {
 
 export const EXPERIENCE_PER_LEVEL = 1000;
 
+// Stat points granted per level promotion (Spec 06 Q3). Spent via
+// `allocateStatPoint` to raise heart / body / mind. Per Spec 06 Q5 there is
+// no level cap today, so the points stream is uncapped — content authors
+// decide where progression naturally stops.
+export const STAT_POINTS_PER_LEVEL = 3;
+
 // ============================================================================
 // COMBAT — DEFENSE MULTIPLIERS
 // ============================================================================

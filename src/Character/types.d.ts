@@ -68,6 +68,11 @@ export interface NonCombatStats {
  * @property effects                - Active status effects on the character.
  * @property knownSkills            - IDs of skills the character has learned.
  * @property equippedSkills         - IDs of skills available in combat (max 4).
+ * @property availableStatPoints    - Unspent stat points awaiting allocation
+ *                                    (Spec 06 Q3 + Q8). Granted on level-up,
+ *                                    spent via `allocateStatPoint`. Defaults
+ *                                    to 0 for preset-built characters since
+ *                                    presets ship pre-allocated.
  */
 export interface Character {
     name: string;
@@ -89,6 +94,7 @@ export interface Character {
     effects: ActiveEffect[];
     knownSkills: string[];
     equippedSkills: string[];
+    availableStatPoints: number;
     /**
      * Per-cell Spec 03 proc unlock caps. Defaults to tier 1 in every cell —
      * basic actors only roll the lowest-tier proc table entries. Skills /

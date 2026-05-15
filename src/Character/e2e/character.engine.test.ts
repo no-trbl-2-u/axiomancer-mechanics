@@ -142,6 +142,8 @@ describe('createCharacter — defaults and option pass-through', () => {
         expect(ch.knownSkills).toEqual([]);
         expect(ch.equippedSkills).toEqual([]);
         expect(ch.procUnlocks).toBeUndefined();
+        // Spec 06 Q3 — points start at zero; level-ups add STAT_POINTS_PER_LEVEL.
+        expect(ch.availableStatPoints).toBe(0);
     });
 
     it('passes through explicit option values verbatim', () => {

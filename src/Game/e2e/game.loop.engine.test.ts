@@ -86,8 +86,14 @@ describe('Game loop — full transcript through gameReducer', () => {
 
         // 4. LEVEL_UP — the seeded XP + enemy reward should clear the threshold.
         const levelBefore = store.getState().player.level;
+        const pointsBefore = store.getState().player.availableStatPoints;
         store.getState().dispatch({ type: 'LEVEL_UP' });
-        expect(store.getState().player.level).toBeGreaterThan(levelBefore);
+        const levelAfter = store.getState().player.level;
+        expect(levelAfter).toBeGreaterThan(levelBefore);
+        // Spec 06 Q3 — every level promotion grants STAT_POINTS_PER_LEVEL.
+        const expectedGrant = (levelAfter - levelBefore) * 3;
+        expect(store.getState().player.availableStatPoints)
+            .toBe(pointsBefore + expectedGrant);
 
         // 5. MOVE_TO_NODE to fv-2 (the adjacent quest-giver node).
         store.getState().dispatch({

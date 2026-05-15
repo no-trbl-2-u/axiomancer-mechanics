@@ -37,7 +37,7 @@ import { resolveMapEvent } from '../World';
 import { applyDialogueChoice as applyDialogueRuntime } from '../World/dialogue.runtime';
 import { killObjectives, progressQuest, findQuest } from '../World/quest.engine';
 import { calculateMaxHealth } from '../Utils';
-import { EXPERIENCE_PER_LEVEL } from './game-mechanics.constants';
+import { EXPERIENCE_PER_LEVEL, STAT_POINTS_PER_LEVEL } from './game-mechanics.constants';
 import { addItemStacking, rollEncounterLoot, totalEncounterXp } from './combat-grants';
 import { getRng } from '../Utils/rng';
 
@@ -89,6 +89,9 @@ function applyLevelUps(player: Character): Character {
             maxHealth,
             health: maxHealth,
             experienceToNextLevel: level * EXPERIENCE_PER_LEVEL,
+            // Spec 06 Q3 — grant STAT_POINTS_PER_LEVEL on every promotion.
+            // Multi-level cascades (Q9) accumulate without merging.
+            availableStatPoints: (next.availableStatPoints ?? 0) + STAT_POINTS_PER_LEVEL,
         };
     }
     return next;

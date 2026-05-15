@@ -57,6 +57,7 @@ export function createCharacter(options: CreateCharacterOptions): Character {
         effects,
         knownSkills,
         equippedSkills,
+        availableStatPoints: 0,
         procUnlocks,
     };
 
