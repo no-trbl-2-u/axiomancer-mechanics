@@ -52,25 +52,6 @@
 - score: 5 × 7 / 10 = 3.5
 - recommended-slot: after the cleanup-and-polish phases land
 
-### Candidate: Backfill open-Q answers in shipped specs
-- signal: `grep -c "> Your answer:$" specs/*.md` returns blanks
-  in five shipped specs — `06-character-progression.md` (9 blanks),
-  `12-package-architecture-and-events.md` (8), `01`, `10`, and the
-  `00-` template. The implementer made decisions but never backfilled
-  them, leaving a paper trail that lies by omission about why each
-  shipped phase chose what it chose.
-- scope: One iterate-style ticket per spec: read the spec's open
-  questions, infer the answer from the shipped code, and write it
-  into the `> Your answer:` line. The five specs need 19 answers
-  total. The template (`00-how-to-use-specs.md`) keeps its blank as
-  intentional.
-- unblocks: durable design record. Reduces the cost of explaining
-  decisions to a future contributor.
-- blocked-by: none — pure docs work, ground-truth lives in code.
-- score: 5 × 5 / 10 = 2.5
-- recommended-slot: low priority; convenient backfill when an
-  iterate tick has nothing else above 3.0.
-
 ### Candidate: `Character.id` field for stable identity
 - signal: `Knowledge-Gaps.md` Q12 — still open. The engine has
   `Enemy.id` but no `Character.id`; `ActiveEffect.sourceId` is
@@ -111,6 +92,23 @@
 ---
 
 ## Promoted
+
+### Phase 28 — Backfill open-Q answers in shipped specs
+- promoted: 2026-05-15 (oversight; user pick after Phase 27 unit 3 shipped)
+- source: `/expand` candidate; signal from
+  `grep -c "> Your answer:$" specs/*.md` showing 19 blanks across four
+  shipped specs (`01`, `06`, `10`, `12`) — decisions made during the
+  build but never written back.
+- summary: One commit per spec (4 commits). For each open question,
+  read the shipped code in the corresponding `src/<module>/` and write
+  a 1-2 sentence answer capturing the actual decision. Pure docs work
+  — no code, no test changes. The template (`00-how-to-use-specs.md`)
+  keeps its blank as intentional.
+- acceptance: `grep -c "> Your answer:$" specs/01-*.md
+  specs/06-*.md specs/10-*.md specs/12-*.md` returns 0 across the four
+  files; the `00-` template still has its instructional blank. Each
+  answer line cites or quotes the relevant code surface so a future
+  reader can verify against ground-truth.
 
 ### Phase 27 — Expand walkthrough coverage
 - promoted: 2026-05-15 (oversight; user pick after Phase 26 shipped)

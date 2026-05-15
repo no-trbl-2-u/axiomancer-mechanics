@@ -47,7 +47,8 @@ shipped (with commit hash).
 - [x] Phase 24 — MapEvents content (≥1 node per event type, migrate fishing-village + northern-forest into new shape) (4b12e27)
 - [x] Phase 25 — Remove legacy `processNode` + `MapEvent`/`MapEventType` (rewrite the ~10 `processNode` cases in `src/World/e2e/world.engine.test.ts` against `resolveMapEvent`; drop the legacy exports + `nodeEvents` field) (7002642)
 - [x] Phase 26 — Validation CLI + agent-graded automation harness (skills-in-combat / next-map-node / character-sheet / state-log writer; scripted walkthroughs; agent-graded e2e harness that takes a test goal + a state log and decides pass/fail) (d3c8cc5)
-- [ ] Phase 27 — Expand walkthrough coverage: ship scripted walkthroughs + goal companions for the 4 remaining named Phase 26 surfaces (skills-in-combat, save/load, item use, debug-spawn / boss encounter). RNG-dependent paths use the agent's grading to tolerate path-length variability.
+- [ ] Phase 27 — Expand walkthrough coverage: ship scripted walkthroughs + goal companions for the 4 remaining named Phase 26 surfaces (skills-in-combat, save/load, item use, debug-spawn / boss encounter). RNG-dependent paths use the agent's grading to tolerate path-length variability. Units 1/3/4 shipped (5e5a5b0, 4d11739, 1b5c717); unit 2 (save/load) still needs a small CLI Save/Load tab built inline before the walkthrough can exercise the persistence surface — confirmed via oversight 2026-05-15.
+- [ ] Phase 28 — Backfill `> Your answer:` lines in shipped specs (specs 01, 06, 10, 12 — 19 answers across 4 files). Pure docs work; ground-truth lives in the shipped code.
 
 > **After phase 26:** the loop transitions to `/iterate` —
 > spec gap filling, test coverage improvements, doc updates,
@@ -307,9 +308,47 @@ Likely commit units: one walkthrough + goal pair per unit (4 units
 total). Each pair is small (~15 lines of JSON + ~30 lines of
 markdown), so the whole phase should ship in ≤4 ticks.
 
-The phase is content-only; no engine changes expected. Goal files
-should follow the conventions established in
+The phase is mostly content-only. Two CLI surfaces were not exposed at
+spec time and need small inline additions during their walkthrough unit:
+unit 3 (item-use) added the `item` action to `chooseCombatAction` in
+`src/CLI/game.cli.ts` (~20 LOC, shipped at 4d11739); unit 2 (save/load)
+needs a Save and Load tab on `pickTab` plus the corresponding store
+calls into the persistence adapter — confirmed via oversight 2026-05-15.
+Goal files should follow the conventions established in
 `automation/scripts/walkthroughs/character-sheet.goal.md`.
+
+### Phase 28 — Backfill open-Q answers in shipped specs
+
+**Promoted via `/oversight` 2026-05-15.**
+
+`grep -c "> Your answer:$" specs/*.md` returns blanks in five shipped
+specs — `01-effects-engine.md`, `06-character-progression.md` (9 blanks),
+`10-moral-difficulty-meter.md`, `12-package-architecture-and-events.md`
+(8), and the `00-` template (the template's blank stays — it's
+intentional). Total of 19 answers to write across the four shipped
+specs. The implementer made decisions during the build but never
+backfilled them, leaving the spec a paper trail that lies by omission
+about why each phase chose what it chose.
+
+Scope: one commit per spec (4 commits). For each spec, walk the open
+questions top-to-bottom. For each `> Your answer:` blank, read the
+relevant shipped code in `src/<module>/` and write a 1-2 sentence
+answer that captures the actual decision made. Don't hedge — the code
+is ground-truth. The answers should let a future contributor reading
+the spec see *why* each shipped phase chose what it chose.
+
+The phase is pure docs work — no code edits, no test changes, no
+verify-gate failures expected. Hermetic tests already cover the
+behavior the answers describe.
+
+Likely commit units (one per spec):
+1. Spec 01 (effects engine) — answers grounded in `src/Effects/`.
+2. Spec 06 (character progression) — answers grounded in
+   `src/Character/character.engine.ts` + `xp.ts`.
+3. Spec 10 (moral/difficulty meter) — answers grounded in
+   `src/Game/moral.ts` / store wiring.
+4. Spec 12 (package architecture + events) — answers grounded in
+   `src/Game/events.types.ts` + the package barrels.
 
 ---
 
