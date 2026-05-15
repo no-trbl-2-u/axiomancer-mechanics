@@ -89,15 +89,31 @@ human at the keyboard:
 | `--script <path>` | Loads a JSON array of answer objects and feeds them to subsequent prompts in order. Each object matches the shape `inquirer.prompt` returns (e.g. `{"presetId": "apprentice"}`, `{"tab": "debug"}`). Exhaustion throws. |
 | `--stdin` | Reads one JSON object per line from stdin and uses each as the next answer. EOF before all prompts complete throws. |
 | `--json-events` | Replaces the human event log with one `JSON.stringify(event)` line per emitted GameEvent on stdout. Human prose is routed to stderr so stdout stays machine-clean. A final `{"type":"cli:exit",...}` line marks the end. |
+| `--state-log <path>` | Appends one JSON-line record per state mutation (`{ tick, action, before, after, event? }`). Used by the agent-graded harness below. (Phase 26) |
 
 Examples:
 
 ```bash
 npm run game -- --script replay.json --json-events
 echo '{"presetId":"apprentice"}' | npm run game -- --stdin --json-events
+npm run game -- --script walkthrough.json --json-events --state-log run.jsonl
 ```
 
 `--script` and `--stdin` are mutually exclusive; if both are passed, `--script` wins.
+
+### Agent-graded e2e (Phase 26)
+
+`automation/agent-e2e.mjs` runs a scripted walkthrough against the CLI, captures the state log + event stream + stderr, and asks the Claude API to decide whether the test goal was achieved. Useful when the UI isn't built yet and you want to verify a CLI surface end-to-end.
+
+```bash
+ANTHROPIC_API_KEY=sk-ant-... \
+npm run agent-e2e -- automation/scripts/walkthroughs/character-sheet.json \
+                     automation/scripts/walkthroughs/character-sheet.goal.md
+```
+
+The harness exits 0 on `pass`, 1 on `fail`. The default grading model is `claude-sonnet-4-6`; override with `AGENT_MODEL`. This layer is deliberately non-hermetic — it phones the Anthropic API. The hermetic vitest suite stays in `src/**/e2e/*.engine.test.ts` and never makes network calls.
+
+Each walkthrough under `automation/scripts/walkthroughs/` has a paired `*.goal.md` describing what success looks like in human terms.
 
 ## Project layout
 

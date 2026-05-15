@@ -21,6 +21,7 @@
     "check": "npm run lint && npm run type-check",
     "clean": "rm -rf dist",
     "game": "ts-node src/CLI/game.cli.ts",
+    "agent-e2e": "node automation/agent-e2e.mjs",
     "dev": "echo Please use check 'package.json' or README.md for available commands...\n ",
     "lint:fix": "eslint \"**/*.ts\" --fix",
     "lint": "eslint \"**/*.ts\"",
