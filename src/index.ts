@@ -157,7 +157,20 @@ export {
 export {
     changeMap, completeMap, unlockMap,
     completeNode, unlockNode, changeContinent, completeUniqueEvent,
+    revealAdjacent, markNodeConsumed,
 } from './World/world.reducer';
+export {
+    resolveMapEvent,
+    registerMapEventPool,
+    setDefaultMapEventPool,
+    setNodeEventPoolOverride,
+} from './World';
+export type {
+    MapEventKind, MapEventPayload, MapEventPool, MapEventPoolEntry,
+    EncounterPayload, InteractionPayload, GatheringPayload, RestPayload,
+    VillagePayload, CutscenePayload, HazardPayload, LootCachePayload,
+    ResolvedEvent, ResolveMapEventResult,
+} from './World';
 export {
     generateEncounter, scaleEnemyToLevel, scaledEncounterLevel,
     DIFFICULTY_LEVEL_BANDS,

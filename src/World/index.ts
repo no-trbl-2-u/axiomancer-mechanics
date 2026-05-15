@@ -46,10 +46,25 @@ export {
     moveToNode, completeCurrentNode, IllegalMoveError,
     changeMap, completeMap, unlockMap,
     completeNode, unlockNode, changeContinent, completeUniqueEvent,
+    revealAdjacent, markNodeConsumed,
 } from './world.reducer';
 
 export { processNode } from './process-node';
 export type { ProcessNodeResult, ProcessedEvent } from './process-node';
+
+// Spec 23 — MapEvents engine.
+export {
+    resolveMapEvent,
+    registerMapEventPool,
+    setDefaultMapEventPool,
+    setNodeEventPoolOverride,
+} from './MapEvents/resolve-map-event';
+export type {
+    MapEventKind, MapEventPayload, MapEventPool, MapEventPoolEntry,
+    EncounterPayload, InteractionPayload, GatheringPayload, RestPayload,
+    VillagePayload, CutscenePayload, HazardPayload, LootCachePayload,
+    ResolvedEvent, ResolveMapEventResult,
+} from './MapEvents/types';
 
 export {
     applyDialogueChoice,

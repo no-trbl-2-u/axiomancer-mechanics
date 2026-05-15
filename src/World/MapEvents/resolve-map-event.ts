@@ -18,7 +18,6 @@
  */
 
 import type { GameState } from '../../Game/types';
-import { getMapDefinition } from '../map.registry';
 import { revealAdjacent, markNodeConsumed } from '../world.reducer';
 import { getRng } from '../../Utils/rng';
 import { applyPayload } from './handlers';

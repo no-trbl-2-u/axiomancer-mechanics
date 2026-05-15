@@ -27,7 +27,7 @@ import { ENEMY_REGISTRY, type EnemySlug } from '../../Enemy/enemy.library';
 import type {
     EncounterPayload, InteractionPayload, GatheringPayload, RestPayload,
     VillagePayload, CutscenePayload, HazardPayload, LootCachePayload,
-    ResolvedEvent, ResolveMapEventResult,
+    ResolveMapEventResult,
 } from './types';
 
 function withPlayer(state: GameState, next: Character): GameState {
