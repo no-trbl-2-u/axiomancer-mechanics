@@ -100,7 +100,16 @@ type GameEventType =
   | 'inventory:changed'
   | 'game:saved' | 'game:loaded';
 
-interface GameEvent { type: GameEventType; payload: unknown }
+// Phase 21 — every emitted event carries the same envelope shape:
+interface EnginePayload {
+  action: GameAction;       // the dispatched action that produced this event
+  state: GameState;         // post-reducer snapshot
+  report?: CombatEndReport; // only on 'combat:ended'
+  unlockedSkills?: string[];// Phase 30 unit 2 — only on 'character:levelup'
+                            // when the promotion crossed an eligibility gate
+}
+
+interface GameEvent { type: GameEventType; payload: EnginePayload }
 
 interface GameEventEmitter {
   on(type, handler): () => void;     // type-scoped subscription
@@ -111,6 +120,32 @@ interface GameEventEmitter {
 
 The emitter is passed into `createGameStore`. It lives **outside** `GameState`
 because handlers and subscription Sets must not serialise to disk.
+
+### Typed narrowing (Phase 21)
+
+Consumers should subscribe through the typed aliases + guards rather
+than casting `payload` by hand. The package exports one per topic:
+
+```ts
+import {
+  TypedLevelUpEvent, TypedCombatRoundEvent, TypedCombatEndedEvent,
+  // ... full set covers all 10 GameEventTypes
+  isLevelUpEvent, isCombatRoundEvent, isCombatEndedEvent,
+  // ... matching is*Event guards exported from events.utils
+} from 'axiomancer-mechanics';
+
+emitter.on('character:levelup', e => {
+  if (!isLevelUpEvent(e)) return;
+  const unlocked = e.payload.unlockedSkills ?? [];   // type-narrowed; no cast
+  if (unlocked.length) showUnlockToast(unlocked);
+});
+```
+
+The `is*Event` guards live in `src/Game/events.utils.ts` and narrow the
+generic `GameEvent` down to the matching `TypedGameEvent<T>`. The
+`unlockedSkills` field is populated by `enrichExtra` in
+`src/Game/store.ts` whenever a `LEVEL_UP` dispatch actually promoted
+the level — empty array / undefined otherwise.
 
 ## Persistence
 
