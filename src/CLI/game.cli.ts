@@ -22,7 +22,7 @@
 import inquirer from 'inquirer';
 
 import { characterPresets, getPresetById, buildCharacterFromPreset } from '../Character';
-import { Disatree_01 } from '../Enemy/enemy.library';
+import { ENEMY_REGISTRY, type EnemySlug } from '../Enemy/enemy.library';
 import { createGameStore } from '../Game/store';
 import { createEventEmitter } from '../Game/events';
 import { nullAdapter } from '../Game/persistence/null.adapter';
@@ -34,7 +34,7 @@ import { getSkillById } from '../Skills/skill.library';
 import { isConsumable } from '../Items/types';
 import { CombatEndReport } from '../Game/store';
 
-type Tab = 'map' | 'combat' | 'journal' | 'skills' | 'inventory' | 'quit';
+type Tab = 'map' | 'combat' | 'journal' | 'skills' | 'inventory' | 'debug' | 'quit';
 
 type GameStoreHandle = ReturnType<typeof createGameStore>;
 
@@ -69,6 +69,7 @@ async function pickTab(canFight: boolean): Promise<Tab> {
         { name: 'Journal    — quests + alignment', value: 'journal' },
         { name: 'Skills     — known + equipped', value: 'skills' },
         { name: 'Inventory  — items in pack', value: 'inventory' },
+        { name: 'Debug      — spawn any enemy into combat', value: 'debug' },
         { name: 'Quit',                                 value: 'quit' },
     ];
     const { tab } = await inquirer.prompt<{ tab: Tab }>([
@@ -197,19 +198,22 @@ function inventoryTab(store: GameStoreHandle): void {
     }
 }
 
+async function debugTab(store: GameStoreHandle): Promise<void> {
+    const slugs = Object.keys(ENEMY_REGISTRY) as EnemySlug[];
+    const { slug } = await inquirer.prompt<{ slug: EnemySlug }>([{
+        type: 'rawlist', name: 'slug',
+        message: 'Spawn which enemy?',
+        choices: slugs.map(s => ({ name: `${s} — ${ENEMY_REGISTRY[s].name}`, value: s })),
+    }]);
+    const enemy = ENEMY_REGISTRY[slug];
+    store.getState().startCombat({ enemies: [enemy] });
+    console.log(`\nSpawned ${enemy.name}. Resolving combat...\n`);
+    await combatTab(store);
+}
+
 async function main(): Promise<void> {
     console.log('Axiomancer — game loop demo.\n');
     const store = await bootstrapStore();
-
-    // If we wanted to demo a fight immediately we'd pre-load combat — leave
-    // that off so the loop starts on the Map tab and the player walks into
-    // the first encounter naturally. Boot a tutorial fight on demand:
-    const { tutorial } = await inquirer.prompt<{ tutorial: boolean }>([
-        { type: 'confirm', name: 'tutorial', message: 'Pre-load a tutorial fight?', default: false },
-    ]);
-    if (tutorial) {
-        store.getState().startCombat({ enemies: [Disatree_01] });
-    }
 
     while (true) {
         const tab = await pickTab(store.getState().combat !== null);
@@ -219,6 +223,7 @@ async function main(): Promise<void> {
             case 'journal':   journalTab(store);         break;
             case 'skills':    skillsTab(store);          break;
             case 'inventory': inventoryTab(store);       break;
+            case 'debug':     await debugTab(store);     break;
             case 'quit':      console.log('Goodbye.');   return;
         }
     }
