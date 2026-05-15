@@ -12,7 +12,18 @@
 
 ## Pending
 
-(Empty.)
+### [MED] README Public API table missing Phase 18 / 21 / 23 / 24 additions
+- category: docs
+- impact: 6 (README is the package's front door; npm consumers read this first)
+- ease: 7 (table-row edits)
+- score: 4.2
+- source: iterate audit pass (2026-05-15)
+- evidence:
+  - Character group (`README.md:60`) omits `characterPresets`, `getPresetById`, `buildCharacterFromPreset` (Phase 18).
+  - Game group (`README.md:68`) lists `createNodeAdapter` as a core-barrel export — Phase 21 (commit `e478bdd`) moved it to the `./node` subpath. Also missing `EnginePayload` + 10 typed event aliases + 10 guards (Phase 21).
+  - World group (`README.md:69`) lists `processNode` as a primary node-traversal export — Phase 24 made it legacy. Missing `resolveMapEvent` + pool registration helpers + `revealAdjacent` / `markNodeConsumed` (Phase 23 / 24).
+  - Combat resolver group (`README.md:64`) omits `SkillPhaseEvent`, `ResourceEvent`, `CombatActor`.
+- next: rewrite the four affected table rows. Mirror the post-Phase-24 surface from `src/index.ts` exactly.
 
 ---
 
