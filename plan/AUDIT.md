@@ -12,6 +12,15 @@
 
 ## Pending
 
+### [HIGH] docs/api.md lists deleted symbols and is missing several phases of additions
+- category: docs
+- impact: 9 (the public API reference is wrong; consumers see names that don't exist and miss real ones from Phases 18 / 23 / 24)
+- ease: 8 (markdown rewrite; no code churn required)
+- score: 7.2
+- source: expand-pass-1 (2026-05-15)
+- evidence: `docs/api.md:29-31` lists `CombatStartedPayload`, `createCombatStartedEvent`, etc. — all deleted in Phase 21 (commit a3f1693). The doc never picked up `characterPresets` / `buildCharacterFromPreset` (Phase 18), `resolveMapEvent` + pool helpers (Phase 23), `EnginePayload` (Phase 21), or the 10 new `is*Event` guards.
+- next: rewrite the Events section to match `EnginePayload` + 10 typed aliases + 10 guards; add Character Presets and MapEvents sections.
+
 ### [LOW] `Knowledge-Gaps.md` contains open design questions not yet spec'd
 - category: spec-gap
 - impact: 4 (answers needed before implementation; doesn't block current phases)
