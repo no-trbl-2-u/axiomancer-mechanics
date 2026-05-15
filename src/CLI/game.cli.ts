@@ -164,39 +164,55 @@ async function chooseCombatAction(
     ]);
 
     // Only offer the skill option when the player has at least one
-    // equipped skill they can afford. Keeps the prompt clean for the
-    // common case.
+    // equipped skill they can afford. Only offer the item option when
+    // the player carries at least one consumable. Keeps the prompt
+    // clean for the common case.
     const player = combat.player;
     const affordableSkillIds = player.equippedSkills.filter(id => {
         const def = skillLookup(id);
         return def !== undefined && canUseSkill(combat.combatResources, def);
     });
+    const consumables = player.inventory.filter(isConsumable);
     const actionChoices: Action[] = ['attack', 'defend'];
     if (affordableSkillIds.length > 0) actionChoices.push('skill');
+    if (consumables.length > 0) actionChoices.push('item');
 
     const { action } = await prompt<{ action: Action }>([
         { type: 'rawlist', name: 'action', message: 'Action?',
           choices: actionChoices },
     ]);
 
-    if (action !== 'skill') {
-        return { stance, action };
+    if (action === 'skill') {
+        // Pick which equipped skill to fire. Show name + cost so the
+        // player can read the trade-off before committing.
+        const skillChoices = affordableSkillIds.map(id => {
+            const def = skillLookup(id)!;
+            const cost = Object.entries(def.resourceCost ?? {})
+                .filter(([_k, v]) => (v as number) > 0)
+                .map(([k, v]) => `${v} ${k}`)
+                .join(', ') || 'free';
+            return { name: `${def.name}  (${cost})`, value: id };
+        });
+        const { skillId } = await prompt<{ skillId: string }>([
+            { type: 'rawlist', name: 'skillId', message: 'Which skill?', choices: skillChoices },
+        ]);
+        return { stance, action: 'skill', skillId };
     }
 
-    // Pick which equipped skill to fire. Show name + cost so the
-    // player can read the trade-off before committing.
-    const skillChoices = affordableSkillIds.map(id => {
-        const def = skillLookup(id)!;
-        const cost = Object.entries(def.resourceCost ?? {})
-            .filter(([_k, v]) => (v as number) > 0)
-            .map(([k, v]) => `${v} ${k}`)
-            .join(', ') || 'free';
-        return { name: `${def.name}  (${cost})`, value: id };
-    });
-    const { skillId } = await prompt<{ skillId: string }>([
-        { type: 'rawlist', name: 'skillId', message: 'Which skill?', choices: skillChoices },
-    ]);
-    return { stance, action: 'skill', skillId };
+    if (action === 'item') {
+        // Pick which consumable to use. Show name + remaining quantity
+        // so the player can budget across the fight.
+        const itemChoices = consumables.map(c => ({
+            name: `${c.name}  ×${c.quantity}`,
+            value: c.id,
+        }));
+        const { itemId } = await prompt<{ itemId: string }>([
+            { type: 'rawlist', name: 'itemId', message: 'Which item?', choices: itemChoices },
+        ]);
+        return { stance, action: 'item', itemId };
+    }
+
+    return { stance, action };
 }
 
 async function combatTab(store: GameStoreHandle): Promise<void> {
