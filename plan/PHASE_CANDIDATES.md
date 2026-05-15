@@ -63,23 +63,6 @@
 - score: 6 × 7 / 10 = 4.2
 - recommended-slot: after Phase 25
 
-### Candidate: Knowledge-Gaps.md reconciliation
-- signal: `plan/AUDIT.md` Pending LOW references
-  `Knowledge-Gaps.md` — but the file does not exist on disk
-  (`ls plan/Knowledge-Gaps.md` errors). Either the file was deleted
-  and the AUDIT row is stale, or the file was always planned but
-  never created.
-- scope: Either (a) create `plan/Knowledge-Gaps.md` from the
-  unresolved open questions across `specs/` and `braindump/` and
-  start filing them as numbered design Qs; or (b) close the AUDIT
-  row as obsolete and trust that braindump/ + specs/ are the
-  durable record. Pick one in oversight.
-- unblocks: removes a phantom reference; clarifies whether
-  Knowledge-Gaps is a live document or historical artifact.
-- blocked-by: none.
-- score: 5 × 8 / 10 = 4.0
-- recommended-slot: after Phase 25
-
 ### Candidate: Tier 2 / Tier 3 skill content polish
 - signal: `spec.md` 6-month horizon — "Additional skill tiers
   (Tier 2+)". The library at `src/Skills/skill.library.ts` already

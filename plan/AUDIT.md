@@ -12,12 +12,6 @@
 
 ## Pending
 
-### [LOW] `Knowledge-Gaps.md` contains open design questions not yet spec'd
-- category: spec-gap
-- impact: 4 (answers needed before implementation; doesn't block current phases)
-- ease: 6 (can be triaged by reading + filing in specs/)
-- score: 2.4
-- next: `/iterate` pass to move resolved items from Knowledge-Gaps into specs.
 
 ### [Z-MED] combat.resolver.ts is 1000 LOC — phase logic unsplit
 - category: structure
@@ -47,6 +41,7 @@
 
 ## Done
 
+- [x] **[LOW] `Knowledge-Gaps.md` contains open design questions not yet spec'd** — resolved at commit 1c6f004 (2026-05-15) by adding an iterate-sweep note to `Knowledge-Gaps.md` naming the 10 questions that were silently answered by Phases 09–24. The file remains a catch-all for genuinely open cross-cutting Qs; the closed Qs are listed in the new header note rather than re-edited inline (which would be a much larger pass). Impact 4 × Ease 6 / 10 = 2.4.
 - [x] **[HIGH] docs/api.md lists deleted symbols and is missing several phases of additions** — resolved at commit `353933f` (2026-05-15) by a rewrite against the live barrel: Events section now reflects `EnginePayload` + 10 typed aliases + 10 guards (Phase 21); Character Presets section added (Phase 18); MapEvents section added (Phase 23 / 24); RN example uses `'axiomancer-mechanics'` for the `PersistenceAdapter` interface. Impact 9 × Ease 8 / 10 = 7.2.
 - [x] **[MED] ESLint config broken — `npm run lint` fails** — resolved at commit `4f58f66` (2026-05-14) by Phase 13. `eslint.config.mts` now registers `@typescript-eslint`, `npm run lint` is green, and `lint` is back in the verify gate. Closed via oversight 2026-05-15. Impact 5 × Ease 7 / 10 = 3.5.
 - [x] **[MED] `docs/gameloop.md` lags two phases behind the live `GameState` shape** — header listed `GAME_STATE_VERSION = 2` (actual: 4), state shape omitted `moralMeter` (Spec 10) and `rngState` (Spec 11), GameAction union missed `SHIFT_MORAL_METER`, the "reducer is pure" claim no longer held for `SAVE_GAME`'s rngState stamp, and the migration ladder advice still told readers to write `migrateV2toV3` (it already exists). Rewrote shape, action list, purity caveat, and migration section. Shipped at commit `d15298f` (2026-05-13). Impact 6 × Ease 7 / 10 = 4.2.

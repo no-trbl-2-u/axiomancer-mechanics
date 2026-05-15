@@ -6,6 +6,19 @@
 > includes the questions it depends on so you can answer them in context. This
 > file is now the catch-all for cross-cutting questions.
 
+> **Iterate sweep 2026-05-15:** several questions below were silently
+> answered by phases 09–24 of the autonomous loop. Where a spec
+> shipped, the relevant question is annotated RESOLVED inline. The
+> following Qs are now closed even where their spec-cross-reference
+> hasn't been re-edited: Q4 (defense asymmetry fixed by Phase 15
+> scenario phase), Q5 (friendship rewards by Phase 10), Q6 (simultaneous
+> action stayed), Q8 (stat modifiers via `getEffectiveStats` in
+> `Combat/effect-modifiers.ts`), Q11 (`processWorldEffectTick`
+> shipped), Q17 (mana replaced by Spec 04 combat resources), Q22
+> (Map vs MapState split, Spec 08), Q23 + Q24 + Q25 (RN + zustand +
+> events all answered by Phase 12 / 21), Q27 (moral choice by
+> Phase 10).
+
 ---
 
 ## Core Combat
