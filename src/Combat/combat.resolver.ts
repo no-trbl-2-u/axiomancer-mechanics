@@ -72,7 +72,7 @@ import {
     processRoundEndEffects,
 } from './effects';
 import { runRoundStartPhase } from './phases/round-start';
-import { canAct } from './effect-modifiers';
+import { runActionRestrictionPhase } from './phases/action-restriction';
 
 // ─── Round Event Types ────────────────────────────────────────────────────────
 
@@ -666,37 +666,8 @@ export function resolveCombatRound(
     }
 
     // 2. Action restriction resolution.
-    const playerCan = canAct(player.effects, playerAction.stance);
-    const enemyCan  = canAct(enemy.effects,  enemyAction.stance);
-    const playerStance = playerCan.resolvedStance ?? playerAction.stance;
-    const enemyStance  = enemyCan.resolvedStance  ?? enemyAction.stance;
-    const playerActionFinal: Action | 'skip' = playerCan.canAct ? playerAction.action : 'skip';
-    const enemyActionFinal:  Action | 'skip' = enemyCan.canAct  ? enemyAction.action  : 'skip';
-
-    if (playerCan.resolvedStance && playerCan.resolvedStance !== playerAction.stance) {
-        events.push({
-            phase: 'action-restriction', kind: 'forced-stance', actor: 'player',
-            requested: playerAction.stance, forced: playerCan.resolvedStance,
-        });
-    }
-    if (enemyCan.resolvedStance && enemyCan.resolvedStance !== enemyAction.stance) {
-        events.push({
-            phase: 'action-restriction', kind: 'forced-stance', actor: 'enemy',
-            requested: enemyAction.stance, forced: enemyCan.resolvedStance,
-        });
-    }
-    if (!playerCan.canAct) {
-        events.push({
-            phase: 'action-restriction', kind: 'turn-skipped', actor: 'player',
-            reason: playerCan.reason as 'skipTurn' | 'blockedStance' | null,
-        });
-    }
-    if (!enemyCan.canAct) {
-        events.push({
-            phase: 'action-restriction', kind: 'turn-skipped', actor: 'enemy',
-            reason: enemyCan.reason as 'skipTurn' | 'blockedStance' | null,
-        });
-    }
+    const restriction = runActionRestrictionPhase(player, enemy, playerAction, enemyAction, events);
+    const { playerStance, enemyStance, playerActionFinal, enemyActionFinal, playerCanAct, enemyCanAct } = restriction;
 
     // 3. Advantage with effect overrides.
     const playerAdvantage = resolveEffectiveAdvantage(
@@ -736,7 +707,7 @@ export function resolveCombatRound(
         });
     }
 
-    if (playerCan.canAct && (playerActionFinal === 'attack' || playerActionFinal === 'defend')) {
+    if (playerCanAct && (playerActionFinal === 'attack' || playerActionFinal === 'defend')) {
         const t1 = applyTier1CombatEffect(
             player.effects, enemy.effects,
             { stance: playerStance, action: playerActionFinal }, state.round,
@@ -750,7 +721,7 @@ export function resolveCombatRound(
             });
         }
     }
-    if (enemyCan.canAct && (enemyActionFinal === 'attack' || enemyActionFinal === 'defend')) {
+    if (enemyCanAct && (enemyActionFinal === 'attack' || enemyActionFinal === 'defend')) {
         const t1 = applyTier1CombatEffect(
             enemy.effects, player.effects,
             { stance: enemyStance, action: enemyActionFinal }, state.round,
