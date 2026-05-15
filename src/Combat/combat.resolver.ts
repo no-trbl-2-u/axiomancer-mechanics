@@ -69,9 +69,9 @@ import {
     getThornsReflect,
     removeRandomBuff,
     extendRandomBuffDuration,
-    processRoundStartEffects,
     processRoundEndEffects,
 } from './effects';
+import { runRoundStartPhase } from './phases/round-start';
 import { canAct } from './effect-modifiers';
 
 // ─── Round Event Types ────────────────────────────────────────────────────────
@@ -653,25 +653,12 @@ export function resolveCombatRound(
     skillLookup?: SkillLookup,
 ): RoundResolution {
     const events: RoundEvent[] = [];
-    let player = state.player;
-    let enemy  = state.enemy;
 
     // 1. Round-start orchestration.
-    const pStart = processRoundStartEffects(player);
-    player = pStart.target;
-    if (pStart.healed    > 0) events.push({ phase: 'round-start', kind: 'regen', actor: 'player', amount: pStart.healed });
-    if (pStart.drained   > 0) events.push({ phase: 'round-start', kind: 'drain', actor: 'player', amount: pStart.drained });
-    if (pStart.dotDamage > 0) events.push({ phase: 'round-start', kind: 'dot',   actor: 'player', amount: pStart.dotDamage });
-
-    const eStart = processRoundStartEffects(enemy);
-    enemy = eStart.target;
-    if (eStart.healed    > 0) events.push({ phase: 'round-start', kind: 'regen', actor: 'enemy', amount: eStart.healed });
-    if (eStart.drained   > 0) events.push({ phase: 'round-start', kind: 'drain', actor: 'enemy', amount: eStart.drained });
-    if (eStart.dotDamage > 0) events.push({ phase: 'round-start', kind: 'dot',   actor: 'enemy', amount: eStart.dotDamage });
-
-    if (player.health <= 0 || enemy.health <= 0) {
-        if (player.health <= 0) events.push({ phase: 'round-start', kind: 'lethal', actor: 'player' });
-        if (enemy.health  <= 0) events.push({ phase: 'round-start', kind: 'lethal', actor: 'enemy'  });
+    const roundStart = runRoundStartPhase(state.player, state.enemy, events);
+    let player = roundStart.player;
+    let enemy  = roundStart.enemy;
+    if (roundStart.lethal) {
         return {
             state: { ...state, player, enemy, round: state.round + 1 },
             combatEvents: events,
