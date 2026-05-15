@@ -141,6 +141,9 @@ Maintain this vocabulary in code comments, effect descriptions, and docs.
   errors fail the verify gate. Was broken until Phase 13.
 - **Hermetic e2e tests:** located at `src/<Module>/e2e/<feature>.engine.test.ts`.
   They run as part of `npm test`. No Playwright; e2e is vitest-based.
+  Every module with public engine logic ships one. Additional sibling
+  `src/<Module>/*.test.ts` files are permitted for unit-level coverage
+  of internal helpers — they run in the same vitest pass.
 - **RNG stubs:** always use `mockAlternatingRng`, `mockFixedRng`,
   `mockSequentialRng` from `src/test-utils/rng.ts`. Never re-roll custom
   `vi.spyOn(Math, 'random')`.
