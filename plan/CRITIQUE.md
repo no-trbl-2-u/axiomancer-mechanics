@@ -14,19 +14,12 @@
 
 ## Pending
 
-### [LOW] Empty committed directory: src/Game/backups/
-- pass: critique-1 (commit dd26ef0)
-- area: structure
-- observation: `src/Game/backups/` is an empty directory tracked in the repo. No source references it; nothing populates or reads from it.
-- evidence: `ls -la src/Game/backups` shows `.` and `..` only; no `.gitkeep`, no in-repo references.
-- suggested_fix: remove the directory, or — if it's a runtime target for the persistence adapter (verify against `src/Game/persistence/`) — add a `.gitkeep` and a one-line README explaining the role.
-- source: critique
-
 
 ---
 
 ## Done
 
+- [x] **[LOW] Empty committed directory: src/Game/backups/** — closed at commit 8deedeb (2026-05-15) as misdiagnosed. `git ls-files src/Game/backups/` is empty — git does not track empty directories, so the "committed directory" framing in the original finding was wrong. The directory existed only in local working trees and was not in the repository. Deleted the local instance; a fresh clone is unaffected.
 - [x] **[LOW] northern-forest map has placeholder description `'TODO'`** — resolved at commit 7623ffc (2026-05-15) by replacing the literal in `src/World/Continents/Coastal-Village/maps.ts` with a one-line description matching the fishing-village tone: "A pine-thick wood inland from the village; cold springs, low light, and a cave mouth at the far edge."
 - [x] **[MED] Game/persistence has zero tests despite owning the save-file format** — resolved at commit `81d6dbe` (2026-05-15) by adding `src/Game/persistence/node.adapter.test.ts` (4 hermetic cases: round-trip save/load, missing file, malformed JSON warns + nulls out, overwrite).
 - [x] **[MED] combat.resolver.ts is 1000 lines — phase logic is unsplit** — resolved at commit `48c56be` (2026-05-15) by extracting `phases/round-start.ts`, `phases/action-restriction.ts`, `phases/advantage.ts`, `phases/stance-effects.ts`, `phases/scenario.ts`, `phases/round-end.ts`; orchestrator shrunk from 1,012 LOC to 301 LOC.

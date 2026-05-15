@@ -12,35 +12,15 @@
 
 ## Pending
 
-
-### [Z-MED] combat.resolver.ts is 1000 LOC — phase logic unsplit
-- category: structure
-- impact: 7 (a single file owns six distinct round phases; refactor pays back in every future combat change)
-- ease: 3 (must preserve event order across the resolver public contract; risky)
-- source: critique (pass-1)
-- score: 2.1
-- next: Phase 15 will close this (promoted via oversight 2026-05-14).
-
-### [Z-LOW] Empty committed directory: src/Game/backups/
-- category: structure
-- impact: 2
-- ease: 9
-- source: critique (pass-1)
-- score: 1.8
-
-### [Z-LOW] Hermetic e2e layout is half-adopted across modules
-- category: structure
-- impact: 3 (consistency only; tests run regardless)
-- ease: 4 (policy decision then mechanical migration)
-- source: critique (pass-1)
-- score: 1.2
-- next: Phase 16 will close this — direction is "migrate sibling tests into `e2e/`"
-  (chosen via oversight 2026-05-14, not "broaden bearings").
+(Empty — all open findings drained as of 2026-05-15.)
 
 ---
 
 ## Done
 
+- [x] **[Z-MED] combat.resolver.ts is 1000 LOC — phase logic unsplit** — closed at commit 8deedeb (2026-05-15) as superseded by Phase 15 (commit `48c56be`, 2026-05-15). Resolver shrunk from 1,012 LOC to 301 LOC; per-phase helpers under `src/Combat/phases/`. The AUDIT row was a tracking placeholder before Phase 15 shipped. Impact 7 × Ease 3 / 10 = 2.1.
+- [x] **[Z-LOW] Hermetic e2e layout is half-adopted across modules** — closed at commit 8deedeb (2026-05-15) as superseded by Phase 16 (commit `bb369c1`, 2026-05-15). Effects / Enemy / World engine tests migrated into `e2e/`; bearings updated to formalize the e2e + sibling-unit convention. The AUDIT row was a tracking placeholder before Phase 16 shipped. Impact 3 × Ease 4 / 10 = 1.2.
+- [x] **[Z-LOW] Empty committed directory: src/Game/backups/** — closed at commit 8deedeb (2026-05-15) as misdiagnosed. Git does not track empty directories; `git ls-files src/Game/backups/` was empty. The dir existed only in local working trees. Deleted the local instance. Impact 2 × Ease 9 / 10 = 1.8.
 - [x] **[LOW] `Knowledge-Gaps.md` contains open design questions not yet spec'd** — resolved at commit 1c6f004 (2026-05-15) by adding an iterate-sweep note to `Knowledge-Gaps.md` naming the 10 questions that were silently answered by Phases 09–24. The file remains a catch-all for genuinely open cross-cutting Qs; the closed Qs are listed in the new header note rather than re-edited inline (which would be a much larger pass). Impact 4 × Ease 6 / 10 = 2.4.
 - [x] **[HIGH] docs/api.md lists deleted symbols and is missing several phases of additions** — resolved at commit `353933f` (2026-05-15) by a rewrite against the live barrel: Events section now reflects `EnginePayload` + 10 typed aliases + 10 guards (Phase 21); Character Presets section added (Phase 18); MapEvents section added (Phase 23 / 24); RN example uses `'axiomancer-mechanics'` for the `PersistenceAdapter` interface. Impact 9 × Ease 8 / 10 = 7.2.
 - [x] **[MED] ESLint config broken — `npm run lint` fails** — resolved at commit `4f58f66` (2026-05-14) by Phase 13. `eslint.config.mts` now registers `@typescript-eslint`, `npm run lint` is green, and `lint` is back in the verify gate. Closed via oversight 2026-05-15. Impact 5 × Ease 7 / 10 = 3.5.
