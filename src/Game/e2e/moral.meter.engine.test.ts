@@ -104,53 +104,53 @@ describe('Moral meter system — complete pipeline', () => {
         
         // Test generous gift (+5)
         const generousChoice = beggarTree.nodes.greet.choices![0];
-        expect(generousChoice.effect?.setFlag).toBe('beggar_generous_gift');
-        
+        expect(generousChoice.effect?.moralDelta).toBe(5);
+
         let result = applyDialogueChoice(gameState, beggarTree, generousChoice);
         expect(result.effects.moralShift).toBe(5);
         expect(result.gameState.moralMeter).toBe(5);
         expect(result.gameState.player.currency).toBe(40); // Lost 10 gold
-        
-        // Test small gift (+1) 
+
+        // Test small gift (+1)
         gameState = createNewGameState();
         gameState.player.currency = 50;
-        
+
         const smallChoice = beggarTree.nodes.greet.choices![1];
-        expect(smallChoice.effect?.setFlag).toBe('beggar_small_gift');
-        
+        expect(smallChoice.effect?.moralDelta).toBe(1);
+
         result = applyDialogueChoice(gameState, beggarTree, smallChoice);
         expect(result.effects.moralShift).toBe(1);
         expect(result.gameState.moralMeter).toBe(1);
         expect(result.gameState.player.currency).toBe(45); // Lost 5 gold
-        
+
         // Test kind gesture (+3)
         gameState = createNewGameState();
         gameState.player.currency = 50;
 
         const kindChoice = beggarTree.nodes.greet.choices![2];
-        expect(kindChoice.effect?.setFlag).toBe('beggar_kind_gesture');
-        
+        expect(kindChoice.effect?.moralDelta).toBe(3);
+
         result = applyDialogueChoice(gameState, beggarTree, kindChoice);
         expect(result.effects.moralShift).toBe(3);
         expect(result.gameState.moralMeter).toBe(3);
         expect(result.gameState.player.currency).toBe(50); // No gold cost
-        
+
         // Test dismissive (-1)
         gameState = createNewGameState();
-        
+
         const dismissChoice = beggarTree.nodes.greet.choices![3];
-        expect(dismissChoice.effect?.setFlag).toBe('beggar_dismissed');
-        
+        expect(dismissChoice.effect?.moralDelta).toBe(-1);
+
         result = applyDialogueChoice(gameState, beggarTree, dismissChoice);
         expect(result.effects.moralShift).toBe(-1);
         expect(result.gameState.moralMeter).toBe(-1);
-        
+
         // Test harsh (-5)
         gameState = createNewGameState();
-        
+
         const harshChoice = beggarTree.nodes.greet.choices![4];
-        expect(harshChoice.effect?.setFlag).toBe('beggar_harsh_words');
-        
+        expect(harshChoice.effect?.moralDelta).toBe(-5);
+
         result = applyDialogueChoice(gameState, beggarTree, harshChoice);
         expect(result.effects.moralShift).toBe(-5);
         expect(result.gameState.moralMeter).toBe(-5);
@@ -158,8 +158,8 @@ describe('Moral meter system — complete pipeline', () => {
 
     it('handles non-moral flags without shifting meter', () => {
         let gameState = createNewGameState();
-        
-        // Apply a dialogue choice that sets a flag not in MORAL_FLAG_EFFECTS
+
+        // Apply a dialogue choice that sets a flag with no accompanying moralDelta
         const fakeTree = {
             rootId: 'test',
             nodes: {

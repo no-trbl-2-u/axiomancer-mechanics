@@ -50,6 +50,7 @@ interface DialogueChoice {
         teachSkill?: string;
         setFlag?: string;
         grantCurrency?: number;
+        moralDelta?: number;        // Phase 14: direct moral-meter shift, clamped [-100, +100]
     };
 }
 ```
@@ -107,17 +108,21 @@ import { applyDialogueChoice } from 'axiomancer-mechanics';
 `applyDialogueChoice` reads the current map's `MapDefinition.quests` to
 resolve a quest by name, then routes the choice's `effect` payload through
 the quest engine (start / progress / complete), the player's `knownSkills`
-(teach), `gameState.flags` (set flag), and `player.currency` (grant currency).
+(teach), `gameState.flags` (set flag), `player.currency` (grant currency),
+and `gameState.moralMeter` (`moralDelta`, clamped to `[-100, +100]`).
 It returns the next dialogue node (or `null` when the conversation ends)
-alongside a flat side-effect summary the UI logs.
+alongside a flat side-effect summary the UI logs (including the cumulative
+`moralShift` if any).
 
 ## Pending
 
 - **Shop reducers** — `NPC.isShopkeeper` is typed but no `openShop` /
   `purchaseItem` reducers exist yet. Spec 08 Q8 added the `currency` counter;
   the shop transaction flow lands with the shops phase.
-- **Moral gating** — Spec 10 will fold a moral-state read into
-  `DialogueContext` so choices can hide based on the player's alignment.
+- **Moral gating (read-side)** — Phase 14 wired the write path
+  (`moralDelta` shifts the meter). Folding `state.moralMeter` into
+  `DialogueContext` so choices can be **hidden** based on alignment is
+  still pending and lands in a later phase.
 - **Dialogue-driven combat triggers** — currently choices can start quests
   and teach skills but cannot directly seed an encounter; a `startEncounter`
   effect is being scoped for a later spec.

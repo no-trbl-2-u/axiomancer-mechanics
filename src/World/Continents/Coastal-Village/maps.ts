@@ -51,8 +51,9 @@ const oldDockmasterTree: DialogueTree = {
                     effect: { startQuest: 'starting-quest' },
                 },
                 {
-                    text: "Maybe later.",
+                    text: "I've got my own dead to bury — maybe later.",
                     nextNodeId: undefined,
+                    effect: { moralDelta: 2 },
                 },
             ],
         },
@@ -65,10 +66,22 @@ const oldDockmasterTree: DialogueTree = {
             text: "\"You did it, then. Take this — gods know I've no use for coin where I'm headed.\"",
             choices: [
                 {
-                    text: "Accept the reward.",
+                    text: "Take it — coin keeps a man fed.",
                     nextNodeId: undefined,
                     requires: { questCompleted: 'starting-quest' },
                     effect: { grantCurrency: 25 },
+                },
+                {
+                    text: "Take only half — your need is greater than mine.",
+                    nextNodeId: undefined,
+                    requires: { questCompleted: 'starting-quest' },
+                    effect: { grantCurrency: 12, moralDelta: 5 },
+                },
+                {
+                    text: "This nearly killed me. Pay double or keep it.",
+                    nextNodeId: undefined,
+                    requires: { questCompleted: 'starting-quest' },
+                    effect: { grantCurrency: 25, moralDelta: -4, setFlag: 'marrow_pressed' },
                 },
             ],
         },
@@ -122,27 +135,27 @@ const beggarTree: DialogueTree = {
                 {
                     text: "Give 10 gold generously. \"Here, take this.\"",
                     nextNodeId: 'grateful_generous',
-                    effect: { grantCurrency: -10, setFlag: 'beggar_generous_gift' },
+                    effect: { grantCurrency: -10, moralDelta: 5 },
                 },
                 {
                     text: "Give 5 gold. \"I can spare a little.\"",
                     nextNodeId: 'grateful_small',
-                    effect: { grantCurrency: -5, setFlag: 'beggar_small_gift' },
+                    effect: { grantCurrency: -5, moralDelta: 1 },
                 },
                 {
                     text: "Offer to share your rations instead.",
                     nextNodeId: 'grateful_kind',
-                    effect: { setFlag: 'beggar_kind_gesture' },
+                    effect: { moralDelta: 3 },
                 },
                 {
                     text: "\"Everyone has their struggles.\" (Walk away)",
                     nextNodeId: 'dismissed',
-                    effect: { setFlag: 'beggar_dismissed' },
+                    effect: { moralDelta: -1 },
                 },
                 {
                     text: "\"Find work like everyone else.\" (Be harsh)",
                     nextNodeId: 'harsh',
-                    effect: { setFlag: 'beggar_harsh_words' },
+                    effect: { moralDelta: -5 },
                 },
             ],
         },

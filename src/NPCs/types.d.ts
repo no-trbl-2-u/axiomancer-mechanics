@@ -53,6 +53,12 @@ export interface DialogueChoice {
         teachSkill?: string;
         setFlag?: string;
         grantCurrency?: number;
+        /**
+         * Direct moral-meter shift applied by `applyDialogueChoice`. Clamped
+         * to [-100, +100] against `gameState.moralMeter`. Positive values
+         * read as "more virtuous"; negative as "more pragmatic / cruel".
+         */
+        moralDelta?: number;
     };
 }
 
