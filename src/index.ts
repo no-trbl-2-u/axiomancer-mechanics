@@ -12,10 +12,12 @@
 export {
     createCharacter,
     equipItem, unequipItem, getEquipmentModifiers,
+    characterPresets, getPresetById, buildCharacterFromPreset,
 } from './Character';
 export type {
     Character, BaseStats, DerivedStats, NonCombatStats,
     CreateCharacterOptions, AggregatedEquipmentModifiers,
+    CharacterPreset, CharacterPresetEquipmentEntry,
 } from './Character';
 
 // ─── Enemy ────────────────────────────────────────────────────────────────────

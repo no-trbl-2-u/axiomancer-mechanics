@@ -74,3 +74,8 @@ export function createCharacter(options: CreateCharacterOptions): Character {
 export type { Character, BaseStats, DerivedStats, NonCombatStats } from './types';
 export { equipItem, unequipItem, getEquipmentModifiers } from './equipment.reducer';
 export type { AggregatedEquipmentModifiers } from './equipment.reducer';
+export {
+    characterPresets, apprenticePreset, wandererPreset, sagePreset,
+    getPresetById, buildCharacterFromPreset,
+} from './presets';
+export type { CharacterPreset, CharacterPresetEquipmentEntry } from './presets';
