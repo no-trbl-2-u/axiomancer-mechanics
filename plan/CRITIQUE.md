@@ -90,33 +90,6 @@
   indexes the package surface.
 - source: critique
 
-### [LOW] Spec 06 backfill answers grew stale after Phases 29 + 30 unit 1 shipped
-- pass: critique-8 (commit ef1b486)
-- area: docs
-- observation: Phase 28 unit 2 backfilled Spec 06's 9 open Qs at
-  75f250b. Less than a day later, Phase 29 (Q3 + Q8) and Phase 30
-  unit 1 (Q7) shipped — but the spec answers still describe those
-  three questions as "deferred — not yet implemented". Specifically:
-    - Spec 06 Q3 answer (line 67-72) says "Deferred — not yet
-      implemented. The `Character` interface in `src/Character/types.d.ts`
-      carries no `availableStatPoints` field" — now false; the field
-      ships at line 91.
-    - Spec 06 Q7 answer says "There is no `learnSkill` function in
-      `src/Character/` or `src/Skills/`" — now false; Phase 30 unit
-      1 (1e14a8e) added one to `src/Skills/skill.engine.ts`.
-    - Spec 06 Q8 answer says "Moot today (no allocation flow exists
-      per Q3 + Q7)" — moot is now wrong; both flows exist.
-- evidence: `specs/06-character-progression.md:67-72`, `72-86`, `131-138`
-  vs. shipped code at `src/Character/types.d.ts:91`,
-  `src/Character/index.ts` (`allocateStatPoint`),
-  `src/Skills/skill.engine.ts` (`learnSkill`).
-- suggested_fix: refresh the three answers to point at the now-
-  shipped surfaces (commit hashes 9f2e3f6, 121aea8, db7c26f, 1e14a8e).
-  Each answer can stay short — a one-line "shipped at <hash>" with a
-  pointer to the doc / module. The stale "deferred" framing is what
-  matters to fix.
-- source: critique
-
 ### [LOW] Acceptance checklists for Specs 06 + 12 still all `[ ]` despite Phase 28/29 work
 - pass: critique-8 (commit ef1b486)
 - area: docs
@@ -202,6 +175,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] Spec 06 backfill answers grew stale after Phases 29 + 30 unit 1 shipped** — resolved at Phase 34 unit 4 (this commit). Q3 rewritten to confirm 3 pts/level adopted (Phase 29 `9f2e3f6` + `121aea8` + `db7c26f`); Q7 rewritten to point at the Phase 30 runtime path (`learnSkill` / `getAvailableSkills` / `meetsLearningRequirement` + `unlockedSkills` event payload); Q8 rewritten to confirm option (B) — deferred allocation via the Character tab — is the shipped shape. Impact 4 × Ease 7 / 10 = 2.8.
 
 - [x] **[LOW] `docs/api.md` stops at Phase 24 — five phases of additions undocumented** — resolved at Phase 34 unit 3 (this commit). Character section gained a "Stat allocation (Phase 29)" bullet documenting `allocateStatPoint`, `STAT_POINTS_PER_LEVEL`, `Character.availableStatPoints`, and the `ALLOCATE_STAT_POINT` action. Skills section gained a "Runtime learning (Phase 30)" bullet for `learnSkill` / `getAvailableSkills` / `meetsLearningRequirement` and the `LEARN_SKILL` action. Events section's `EnginePayload` code block now lists `unlockedSkills?: string[]` with a paragraph explaining the level-up unlock surface. Impact 5 × Ease 7 / 10 = 3.5.
 

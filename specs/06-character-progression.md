@@ -64,15 +64,16 @@ to learn.
 3. **Stat points per level.** How many? Cap per stat? Default proposal:
    - 3 stat points per level.
    - No cap until level cap (TBD per Q5).
-   > Your answer: Deferred — not yet implemented. The `Character`
-   > interface in `src/Character/types.d.ts` carries no
-   > `availableStatPoints` field, and `applyLevelUps` in
-   > `src/Game/game.reducer.ts` only touches `level`, `maxHealth`,
-   > `health`, and `experienceToNextLevel`. Stat allocation is a
-   > deliberate Spec 06 follow-up that has not shipped. When it does, the
-   > 3-points-per-level proposal is the right starting point because
-   > derived stats use multipliers up to 4× (TEST) — a 1-pt/level cadence
-   > would be too slow to feel.
+   > Your answer: Adopted — 3 points per level, no cap. Shipped at
+   > Phase 29 (`9f2e3f6` + `121aea8` + `db7c26f`). `Character` now
+   > carries `availableStatPoints: number` (`src/Character/types.d.ts`),
+   > `applyLevelUps` in `src/Game/game.reducer.ts` grants
+   > `STAT_POINTS_PER_LEVEL = 3` on every promotion (from
+   > `src/Game/game-mechanics.constants.ts`), and `allocateStatPoint`
+   > in `src/Character/index.ts` spends them one at a time. No per-stat
+   > cap was added — the level cap (Q5) is doing the work, and the
+   > derived-stat multipliers (up to 4×) mean a 3-pt cadence is paced
+   > correctly for the linear XP curve.
 
 4. **Resource refill.** On level up, restore HP/MP to new max?
    - (A) Yes, full refill.
@@ -116,30 +117,35 @@ to learn.
 
 7. **Skill learning gate.** Is "level up" the only way to learn a skill,
    or also via shops / quests / NPCs?
-   > Your answer: Neither today. There is no `learnSkill` function in
-   > `src/Character/` or `src/Skills/`; `knownSkills` is populated only
-   > at character-creation time via the preset (see
-   > `src/Character/presets.ts` — apprentice gets T1, wanderer gets
-   > T1+T2, sage gets T1+T2+T3). The skill library does carry
-   > `learningRequirement` typing
-   > (`src/Skills/types.d.ts:172`), so the gating shape is there; the
-   > runtime path is the missing piece. When it ships, levelling should
-   > only unlock skills the player has met the requirement for (read
-   > from the library), with shops / quests / NPCs as alternate routes.
+   > Your answer: Level-up driven today, but the runtime gate is
+   > general enough to bolt shops / quests / NPCs on later without an
+   > engine change. Shipped at Phase 30 (`1e14a8e` engine,
+   > `6097001` level-up event payload, `32dc22c` CLI prompt +
+   > `LEARN_SKILL` action). `meetsLearningRequirement(character, skill)`,
+   > `getAvailableSkills(character)`, and `learnSkill(character,
+   > skillId)` live in `src/Skills/skill.engine.ts`; every
+   > `learningRequirement` on the skill library (now explicit on all
+   > Tier 2 + Tier 3 skills as of Phase 33) is checked at learn time.
+   > Level-up surfaces newly-eligible skills via the `unlockedSkills`
+   > field on the `character:levelup` event payload (Phase 30 unit 2).
+   > Shops / quests / NPCs would invoke the same `learnSkill` reducer
+   > with their own gating logic — pure additive.
 
 8. **Allocation timing.** When the player levels up:
    - (A) Stat points and skill picks must be made immediately (blocks the
      game until done).
    - (B) Earned points sit in `availableStatPoints` and can be spent at any
      time via the character CLI.
-   > Your answer: Moot today (no allocation flow exists per Q3 + Q7),
-   > but when it ships, (B) is the right shape. The game-loop CLI in
-   > `src/CLI/game.cli.ts` is a tab-based loop with no modal-blocking
-   > flows, and adding a forced level-up screen would break the
-   > scripted-walkthrough harness (Phase 26) by inserting a prompt
-   > whose answer can't be pre-known. Deferred allocation via the
-   > Character tab keeps the loop scriptable and lets the player
-   > re-spec across multiple level-ups.
+   > Your answer: (B) Deferred allocation — shipped at Phase 29
+   > (`db7c26f`) and Phase 30 (`32dc22c`). `availableStatPoints` sits
+   > on the `Character` and `knownSkills` grows on demand; the
+   > Character tab in `npm run game` prompts the player to spend
+   > points + learn newly-unlocked skills, but the prompts are
+   > polled from the tab loop rather than fired as a modal interrupt
+   > on level-up. That keeps the loop scriptable (the Phase 26
+   > walkthrough harness drives the same actions through CLI input)
+   > and lets the player re-spec across multiple level-ups before
+   > committing.
 
 9. **Multi-level catch-up.** If a single XP grant pushes through multiple
    level thresholds, do you level up once or repeatedly until XP is below
