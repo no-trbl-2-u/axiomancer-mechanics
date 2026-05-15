@@ -70,34 +70,6 @@
   control.
 - source: critique
 
-### [LOW] `docs/api.md` stops at Phase 24 — five phases of additions undocumented
-- pass: critique-9 (commit 6097001)
-- area: docs
-- observation: `docs/api.md` is the canonical "every public export
-  with its stability level" reference (Spec 12 acceptance line). Its
-  phase trail caps at Phase 24 (MapEvents content); since then five
-  phases have added barrel exports that aren't listed:
-    - Phase 26 — state-log writer (CLI only; not on barrel — skip).
-    - Phase 27 — Save / Load CLI tabs (CLI only — skip).
-    - Phase 29 — `allocateStatPoint`, `STAT_POINTS_PER_LEVEL`,
-      `availableStatPoints` field on `Character`,
-      `ALLOCATE_STAT_POINT` action. All on `src/index.ts` /
-      `src/Game/index.ts`.
-    - Phase 30 unit 1 — `getAvailableSkills`, `learnSkill`,
-      `meetsLearningRequirement`. All on `src/Skills/index.ts` and
-      `src/index.ts`.
-    - Phase 30 unit 2 — `EnginePayload.unlockedSkills` (type
-      extension; affects every `TypedGameEvent<T>` consumer).
-- evidence: `docs/api.md` (last phase mention at line 129); compare
-  against the Phase 21 audit trail at line 80 vs the live barrel
-  exports in `src/index.ts:13-145`.
-- suggested_fix: add a "Phase 29 — Stat allocation" sub-block to
-  the Character section and a "Phase 30 — Skill learning" sub-block
-  to the Skills section. In the Events section, document the
-  `unlockedSkills?` field on `EnginePayload` next to the existing
-  Phase-21 typed-event block.
-- source: critique
-
 ### [LOW] `automation/scripts/walkthroughs/` has no index — 7 walkthroughs and counting
 - pass: critique-9 (commit 6097001)
 - area: docs
@@ -230,6 +202,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] `docs/api.md` stops at Phase 24 — five phases of additions undocumented** — resolved at Phase 34 unit 3 (this commit). Character section gained a "Stat allocation (Phase 29)" bullet documenting `allocateStatPoint`, `STAT_POINTS_PER_LEVEL`, `Character.availableStatPoints`, and the `ALLOCATE_STAT_POINT` action. Skills section gained a "Runtime learning (Phase 30)" bullet for `learnSkill` / `getAvailableSkills` / `meetsLearningRequirement` and the `LEARN_SKILL` action. Events section's `EnginePayload` code block now lists `unlockedSkills?: string[]` with a paragraph explaining the level-up unlock surface. Impact 5 × Ease 7 / 10 = 3.5.
 
 - [x] **[MED] `docs/character.md` "Pending" section directly contradicts shipped Phase 29 code** — resolved at Phase 34 unit 2 (this commit). `docs/character.md` Pending block trimmed to only the genuinely open item (`id` field, Knowledge-Gaps Q12, promoted as Phase 35). New "Stat allocation" section after "Experience" documents `availableStatPoints`, `STAT_POINTS_PER_LEVEL`, `allocateStatPoint`, the `ALLOCATE_STAT_POINT` action, and the Character-tab prompt loop, with commit hashes (`9f2e3f6` + `121aea8` + `db7c26f`). Impact 6 × Ease 8 / 10 = 4.8.
 

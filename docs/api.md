@@ -22,6 +22,13 @@ unchanged, but the absolute semver guarantee starts at 1.0.
 - **Character presets (Phase 18):** `characterPresets`,
   `getPresetById`, `buildCharacterFromPreset` — Stable.
   `CharacterPreset`, `CharacterPresetEquipmentEntry` types — Stable.
+- **Stat allocation (Phase 29):** `allocateStatPoint(character, stat)`
+  — Stable. Spends one `availableStatPoints` to raise the chosen base
+  stat by 1 and re-derive `derivedStats` / `nonCombatStats` /
+  `maxHealth`. Pairs with `STAT_POINTS_PER_LEVEL = 3` (granted on
+  level-up via the game reducer) and the `ALLOCATE_STAT_POINT` action.
+  `Character.availableStatPoints: number` is on the public type. Closes
+  Spec 06 Q3 + Q8.
 
 ### Combat
 
@@ -53,11 +60,17 @@ The engine emits a single uniform envelope on every `GameEvent`:
 
 ```ts
 interface EnginePayload {
-    action: GameAction;       // what triggered the event
-    state: GameState;         // the post-reducer state
-    report?: CombatEndReport; // only on combat:ended
+    action: GameAction;          // what triggered the event
+    state: GameState;            // the post-reducer state
+    report?: CombatEndReport;    // only on combat:ended
+    unlockedSkills?: string[];   // only on character:levelup (Phase 30)
 }
 ```
+
+`unlockedSkills` (Phase 30 unit 2) lists skill ids newly eligible to
+learn after a level promotion crossed a tier-eligibility threshold. An
+empty array means the levelup didn't unlock anything new; the field is
+absent on every other topic.
 
 `TypedGameEvent<T>` narrows the event by topic; `payload` is always
 the engine envelope above. Per-topic aliases ship for all 10
@@ -108,6 +121,11 @@ reality.
 - Skill types (`Skill`, `SkillCategory`, `SkillsStatType`,
   `SkillTier`, `SkillTarget`, `ResourceCost`, `CombatResources`,
   `SkillResolution`, etc.) — Stable.
+- **Runtime learning (Phase 30):** `learnSkill(character, skillId)`,
+  `getAvailableSkills(character)`, `meetsLearningRequirement(character,
+  skill)` — Stable. The `LEARN_SKILL` action wires this through the
+  game reducer; the Character tab in `npm run game` exposes it. Closes
+  Spec 06 Q7.
 
 ### World & Quests
 
