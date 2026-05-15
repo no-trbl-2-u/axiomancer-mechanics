@@ -97,12 +97,14 @@ async function mapTab(store: GameStoreHandle): Promise<void> {
         return;
     }
 
+    const autoTarget = reachable[0];
     const { target } = await prompt<{ target: string }>([
         {
             type: 'rawlist',
             name: 'target',
             message: 'Move to which node?',
             choices: [
+                { name: `Auto-advance: next node (${autoTarget})`, value: autoTarget },
                 ...reachable.map(id => ({ name: id, value: id })),
                 { name: 'Stay put', value: '' },
             ],
