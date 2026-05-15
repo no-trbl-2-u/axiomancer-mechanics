@@ -22,18 +22,12 @@
 - suggested_fix: remove the directory, or — if it's a runtime target for the persistence adapter (verify against `src/Game/persistence/`) — add a `.gitkeep` and a one-line README explaining the role.
 - source: critique
 
-### [LOW] northern-forest map has placeholder description `'TODO'`
-- pass: critique-3 (commit bb987bf)
-- area: docs
-- observation: `src/World/Continents/Coastal-Village/maps.ts:283` declares the `northern-forest` map with `description: 'TODO'`. Phase 14 shipped the story-content foundation and lists the fishing village + first named NPC as in-scope, but the second map's description never got filled in. Phase 24 (MapEvents content) plans to migrate northern-forest into the new event shape — the placeholder is going to be rendered before then if any UI consumer surfaces the description.
-- evidence: `src/World/Continents/Coastal-Village/maps.ts:281-284` (the `northern-forest` `WorldMap` literal).
-- suggested_fix: write a one-paragraph description in-place (the map already has an established tone from `fishing-village`), or fold the rewrite into Phase 24 and gate the placeholder behind a TODO-tracked review note in the phase brief so it's not silently shipped.
-- source: critique
 
 ---
 
 ## Done
 
+- [x] **[LOW] northern-forest map has placeholder description `'TODO'`** — resolved at commit 7623ffc (2026-05-15) by replacing the literal in `src/World/Continents/Coastal-Village/maps.ts` with a one-line description matching the fishing-village tone: "A pine-thick wood inland from the village; cold springs, low light, and a cave mouth at the far edge."
 - [x] **[MED] Game/persistence has zero tests despite owning the save-file format** — resolved at commit `81d6dbe` (2026-05-15) by adding `src/Game/persistence/node.adapter.test.ts` (4 hermetic cases: round-trip save/load, missing file, malformed JSON warns + nulls out, overwrite).
 - [x] **[MED] combat.resolver.ts is 1000 lines — phase logic is unsplit** — resolved at commit `48c56be` (2026-05-15) by extracting `phases/round-start.ts`, `phases/action-restriction.ts`, `phases/advantage.ts`, `phases/stance-effects.ts`, `phases/scenario.ts`, `phases/round-end.ts`; orchestrator shrunk from 1,012 LOC to 301 LOC.
 - [x] **[HIGH] Typed event payloads diverge from runtime shape — guards are fictional** — resolved in Phase 21 at commit `a3f1693` (2026-05-15) by aligning `Typed*Event` payloads to the engine's actual `EnginePayload` envelope (`{ action, state, report? }`); guards in `events.utils.ts` now narrow to a shape the engine actually produces.

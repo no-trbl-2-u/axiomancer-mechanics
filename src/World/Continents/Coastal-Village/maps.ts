@@ -280,7 +280,7 @@ const fishingVillage: MapDefinition = {
 const northernForest: MapDefinition = {
     name: 'northern-forest',
     continent: 'coastal-continent',
-    description: 'TODO',
+    description: 'A pine-thick wood inland from the village; cold springs, low light, and a cave mouth at the far edge.',
     startingNode: {
         id: 'nf-1',
         location: [0, 0],
