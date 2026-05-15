@@ -22,14 +22,6 @@
 - suggested_fix: remove the directory, or — if it's a runtime target for the persistence adapter (verify against `src/Game/persistence/`) — add a `.gitkeep` and a one-line README explaining the role.
 - source: critique
 
-### [MED] Game/persistence has zero tests despite owning the save-file format
-- pass: critique-3 (commit bb987bf)
-- area: tests
-- observation: `src/Game/persistence/` ships `null.adapter.ts`, `node.adapter.ts`, and `types.ts` (the `PersistenceAdapter` interface exposed on the public barrel and the `./node` subpath). No `*.test.ts` exists for either adapter. The Node adapter is the only adapter that actually round-trips a save: it reads/writes a JSON file, catches read errors and falls back to "fresh game", and is invoked on every `dispatch` (autosave). The `game.loop.engine.test.ts` flow exercises `nullAdapter`, not the fs path. A future change that breaks JSON encoding, file-not-found fallback, or partial-write handling has no test that fails — even though the surface is small (32 LOC), it's load-bearing for every consumer that uses the engine in a Node context.
-- evidence: `find src/Game/persistence -name "*.test.ts"` is empty; `src/Game/persistence/node.adapter.ts:1-32` does the fs reads/writes; `src/Game/store.ts:160-183` invokes `adapter.load()` once at construction and `adapter.save(...)` on every dispatch.
-- suggested_fix: add `src/Game/persistence/node.adapter.test.ts` with three hermetic cases — round-trip save/load via a tmpfile path, load returns null when file missing, load returns null and warns when file is malformed JSON. Use `node:fs` directly with `os.tmpdir()` + `crypto.randomUUID()` for the test path; no mocking needed.
-- source: critique
-
 ### [LOW] northern-forest map has placeholder description `'TODO'`
 - pass: critique-3 (commit bb987bf)
 - area: docs
@@ -42,6 +34,7 @@
 
 ## Done
 
+- [x] **[MED] Game/persistence has zero tests despite owning the save-file format** — resolved at commit `81d6dbe` (2026-05-15) by adding `src/Game/persistence/node.adapter.test.ts` (4 hermetic cases: round-trip save/load, missing file, malformed JSON warns + nulls out, overwrite).
 - [x] **[MED] combat.resolver.ts is 1000 lines — phase logic is unsplit** — resolved at commit `48c56be` (2026-05-15) by extracting `phases/round-start.ts`, `phases/action-restriction.ts`, `phases/advantage.ts`, `phases/stance-effects.ts`, `phases/scenario.ts`, `phases/round-end.ts`; orchestrator shrunk from 1,012 LOC to 301 LOC.
 - [x] **[HIGH] Typed event payloads diverge from runtime shape — guards are fictional** — resolved in Phase 21 at commit `a3f1693` (2026-05-15) by aligning `Typed*Event` payloads to the engine's actual `EnginePayload` envelope (`{ action, state, report? }`); guards in `events.utils.ts` now narrow to a shape the engine actually produces.
 - [x] **[MED] Phase 12 left Node adapter duplicate-exported on the core barrel** — resolved at commit `e478bdd` (2026-05-15) by removing `createNodeAdapter` from `src/index.ts` and `src/Game/index.ts`; concrete adapter lives only at `'./node'`, interface (`PersistenceAdapter`) stays on the core barrel for RN consumers.
