@@ -14,14 +14,6 @@
 
 ## Pending
 
-### [MED] combat.resolver.ts is 1000 lines — phase logic is unsplit
-- pass: critique-1 (commit dd26ef0)
-- area: structure
-- observation: `src/Combat/combat.resolver.ts` is 1,000 LOC and conflates round-start tick, action-restriction resolution, advantage computation, stance-effect bookkeeping, scenario damage flow, item phases, and round-end expiry. The file's own header already documents these as discrete phases (`round-start`, `action-restriction`, `advantage`, `stance-effects`, `scenario`, `round-end`). The shape is asking to be split.
-- evidence: `wc -l src/Combat/combat.resolver.ts` reports 1000 lines; comment block at lines 9–17 enumerates six event groups; no sibling files split the responsibilities.
-- suggested_fix: extract per-phase helpers (`resolveRoundStart`, `resolveActionRestriction`, `resolveAdvantage`, `resolveStanceEffects`, `resolveScenario`, `resolveRoundEnd`) into colocated files; keep `resolveCombatRound` as the orchestrator that wires them and produces the `combatEvents` stream. Land behind the existing e2e suite so the public contract is unchanged.
-- source: critique
-
 ### [LOW] Empty committed directory: src/Game/backups/
 - pass: critique-1 (commit dd26ef0)
 - area: structure
@@ -98,6 +90,7 @@
 
 ## Done
 
+- [x] **[MED] combat.resolver.ts is 1000 lines — phase logic is unsplit** — resolved at commit `48c56be` (2026-05-15) by extracting `phases/round-start.ts`, `phases/action-restriction.ts`, `phases/advantage.ts`, `phases/stance-effects.ts`, `phases/scenario.ts`, `phases/round-end.ts`; orchestrator shrunk from 1,012 LOC to 301 LOC.
 - [x] **[HIGH] NPCs — exported dialogue runtime has no tests** — resolved at commit `00cda59` (2026-05-13) by adding `src/NPCs/e2e/dialogue.engine.test.ts` (13 hermetic cases).
 - [x] **[HIGH] Character — zero module-level tests for public API** — resolved at commit `8e20626` (2026-05-13) by adding `src/Character/e2e/character.engine.test.ts` (16 hermetic cases).
 - [x] **[MED] docs/npcs.md is stale** — resolved at commit `1193b19` (2026-05-13) by rewriting `docs/npcs.md` against the live Spec 08 Q9 dialogue surface (helpers, DialogueContext, applyDialogueChoice cross-link, accurate Pending section).
