@@ -13,7 +13,21 @@
 
 ## Pending
 
-(All candidates promoted via oversight 2026-05-15.)
+### Phase 25 (provisional) — Remove legacy `processNode` + MapEvent types
+- source: Phase 24 scope deviation (deferred from Spec 23 Q7)
+- priority: medium
+- summary: Delete `src/World/process-node.ts`, the `MapEvent` and
+  `MapEventType` types, the `nodeEvents` field on `MapDefinition`,
+  and the `npc` / `shop` kinds. Rewrite the ~10 `processNode`-pinned
+  cases in `src/World/e2e/world.engine.test.ts` to drive
+  `resolveMapEvent` instead. Strip the legacy exports from the world
+  barrel and `src/index.ts`. Mechanical but high-volume; the
+  Phase 24 content is the substitute behaviour.
+- blocking: nothing — Phase 24 already migrated content and the
+  game store / CLI.
+- acceptance: `grep -rn "processNode\|MapEvent\b\|MapEventType" src/`
+  returns zero hits; the world e2e suite is green using only the
+  new dispatcher.
 
 ---
 

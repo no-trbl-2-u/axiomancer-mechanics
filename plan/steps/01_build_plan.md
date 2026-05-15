@@ -44,7 +44,7 @@ shipped (with commit hash).
 - [x] Phase 21 — Phase 12 API cleanup (Node adapter leak, partial typed events, unused creators, redundant casts) (a3f1693)
 - [x] Phase 22 — Story content authoring infrastructure (story-spec / world-spec / character-spec skills + content/ templates) [low priority] (7b540e5)
 - [x] Phase 23 — MapEvents engine + node discovery (resolveMapEvent dispatcher, 8 event types, fog-of-war unlock, one-shot consumption; drops `npc`/`shop` kinds) (fd01029)
-- [ ] Phase 24 — MapEvents content (≥1 node per event type, migrate fishing-village + northern-forest into new shape)
+- [x] Phase 24 — MapEvents content (≥1 node per event type, migrate fishing-village + northern-forest into new shape) (4b12e27)
 
 > **After phase 24:** the loop transitions to `/iterate` —
 > spec gap filling, test coverage improvements, doc updates,
