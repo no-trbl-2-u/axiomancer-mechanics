@@ -6,8 +6,8 @@
 > by `/iterate`.
 
 <!-- Metadata (updated by /critique after each pass):
-> Last pass: 2026-05-14 at commit 4c04ae8
-> Pass count: 2
+> Last pass: 2026-05-15 at commit bb987bf
+> Pass count: 3
 -->
 
 ---
@@ -60,6 +60,30 @@
 - observation: Each of the seven `create*Event` helpers constructs an object literal and casts it to the matching Payload interface (e.g. `{ enemy, playerStance } as CombatStartedPayload`). TypeScript already infers the literal shape against the function's return type; the casts strip the structural check and hide future drift between literal and interface. If a payload field is renamed in `events.types.ts`, the literal at the creator site no longer errors.
 - evidence: `src/Game/events.utils.ts:27, 37, 51-58, 64, 76, 83, 94`.
 - suggested_fix: remove the `as Payload` casts. Let TypeScript enforce the literal against the return type. If a literal is incomplete the function fails to compile — which is the desired feedback.
+- source: critique
+
+### [HIGH] Typed event payloads diverge from runtime shape — guards are fictional
+- pass: critique-3 (commit bb987bf)
+- area: api
+- observation: Phase 12 declared seven `Typed*Event` interfaces (e.g. `TypedInventoryChangedEvent.payload: InventoryChangedPayload` with `{ action, item, xpGained? }`). The actual engine emits a uniform shape via `eventForAction` in `src/Game/store.ts:122-144`: every event payload is `{ action, state, ...(extra ?? {}) }`, regardless of `type`. Inventory/combat sub-emit sites are the same (e.g. `emitter.emit({ type: 'inventory:changed', payload: { state: get() } })`, `emitter.emit({ type: 'combat:round', payload: { state: next } })`). Consumer code calling `isInventoryChangedEvent(e)` then reading `e.payload.action` gets `undefined` at runtime — the type guard narrows on `event.type` only and asserts a payload shape the engine never produces. Same for the other six guards. This deepens the existing MED finding above: it's not "creators aren't internally used", it's "the typed surface is fictional — there is no shape contract".
+- evidence: `src/Game/store.ts:143` (uniform `{ action, state, ...extra }`); `src/Game/store.ts:203-206, 254, 261, 272, 293`; `src/Game/events.types.ts:9-64`; `src/Game/events.utils.ts:101-127`.
+- suggested_fix: pick one direction in a single phase: (a) widen the typed payloads to a shared `{ action, state, ...extra }` shape that mirrors the engine, and remove the per-event payload subfields that the engine never emits; or (b) rewrite `eventForAction` + the explicit `emit` sites in `store.ts` to actually produce the declared shapes (using the existing `create*Event` helpers), and update consumers/tests accordingly. Phase 21 is already queued for the Phase 12 cleanup — extend its scope to resolve this contract before any consumer takes a hard dependency on the guards.
+- source: critique
+
+### [MED] Game/persistence has zero tests despite owning the save-file format
+- pass: critique-3 (commit bb987bf)
+- area: tests
+- observation: `src/Game/persistence/` ships `null.adapter.ts`, `node.adapter.ts`, and `types.ts` (the `PersistenceAdapter` interface exposed on the public barrel and the `./node` subpath). No `*.test.ts` exists for either adapter. The Node adapter is the only adapter that actually round-trips a save: it reads/writes a JSON file, catches read errors and falls back to "fresh game", and is invoked on every `dispatch` (autosave). The `game.loop.engine.test.ts` flow exercises `nullAdapter`, not the fs path. A future change that breaks JSON encoding, file-not-found fallback, or partial-write handling has no test that fails — even though the surface is small (32 LOC), it's load-bearing for every consumer that uses the engine in a Node context.
+- evidence: `find src/Game/persistence -name "*.test.ts"` is empty; `src/Game/persistence/node.adapter.ts:1-32` does the fs reads/writes; `src/Game/store.ts:160-183` invokes `adapter.load()` once at construction and `adapter.save(...)` on every dispatch.
+- suggested_fix: add `src/Game/persistence/node.adapter.test.ts` with three hermetic cases — round-trip save/load via a tmpfile path, load returns null when file missing, load returns null and warns when file is malformed JSON. Use `node:fs` directly with `os.tmpdir()` + `crypto.randomUUID()` for the test path; no mocking needed.
+- source: critique
+
+### [LOW] northern-forest map has placeholder description `'TODO'`
+- pass: critique-3 (commit bb987bf)
+- area: docs
+- observation: `src/World/Continents/Coastal-Village/maps.ts:283` declares the `northern-forest` map with `description: 'TODO'`. Phase 14 shipped the story-content foundation and lists the fishing village + first named NPC as in-scope, but the second map's description never got filled in. Phase 24 (MapEvents content) plans to migrate northern-forest into the new event shape — the placeholder is going to be rendered before then if any UI consumer surfaces the description.
+- evidence: `src/World/Continents/Coastal-Village/maps.ts:281-284` (the `northern-forest` `WorldMap` literal).
+- suggested_fix: write a one-paragraph description in-place (the map already has an established tone from `fishing-village`), or fold the rewrite into Phase 24 and gate the placeholder behind a TODO-tracked review note in the phase brief so it's not silently shipped.
 - source: critique
 
 ### [LOW] Hermetic e2e layout is half-adopted across modules
