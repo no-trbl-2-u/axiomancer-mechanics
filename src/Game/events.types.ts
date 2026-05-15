@@ -1,110 +1,50 @@
 /**
- * Extended event payloads for rich UI consumption.
- * These extend the existing GameEvent system with detailed typed payloads.
+ * Typed event surface (post-Phase-21).
+ *
+ * The engine emits one uniform envelope from `eventForAction` in
+ * `src/Game/store.ts`:
+ *
+ *   { type, payload: { action, state, report? } }
+ *
+ * `TypedGameEvent<T>` narrows the `type` field for consumers; the
+ * `payload` shape is the same for every topic. Per-topic aliases
+ * (`TypedCombatStartedEvent`, ...) cover all 10 `GameEventType`
+ * values so the narrowed type is concrete at every guard call site.
+ *
+ * Pre-Phase-21 also shipped seven per-topic Payload interfaces
+ * (`CombatStartedPayload`, etc.) and corresponding `create*Event`
+ * factories. The interfaces were aspirational — the engine never
+ * produced them — and the factories had zero internal callers, so
+ * they were removed. A future phase can introduce richer per-topic
+ * payloads via a deliberate engine-side rewrite if the UI surface
+ * needs them.
  */
 
-import { GameEvent } from './events';
+import type { GameEvent, GameEventType } from './events';
+import type { GameState } from './types';
+import type { GameAction } from './actions.types';
+import type { CombatEndReport } from './store';
 
-// Combat event payloads
-export interface CombatStartedPayload {
-    enemy: string; // enemy name
-    playerStance: string;
+/** The shape every emitted event carries today. */
+export interface EnginePayload {
+    action: GameAction;
+    state: GameState;
+    report?: CombatEndReport;
 }
 
-export interface CombatEndedPayload {
-    result: 'victory' | 'defeat' | 'friendship';
-    xpGained?: number;
+/** GameEvent narrowed by `type`. Payload is always the engine envelope. */
+export interface TypedGameEvent<T extends GameEventType = GameEventType> extends GameEvent {
+    type: T;
+    payload: EnginePayload;
 }
 
-export interface CombatRoundPayload {
-    round: number;
-    playerAction: string;
-    enemyAction: string;
-    playerDamage: number;
-    enemyDamage: number;
-    events: CombatSubEvent[];
-}
-
-// Sub-events within a combat round
-export interface CombatSubEvent {
-    type: 'damage-dealt' | 'healed' | 'critical-hit' | 'effect-applied';
-    target: 'player' | 'enemy';
-    amount?: number;
-    isCritical?: boolean;
-    effectId?: string;
-}
-
-// Progression event payloads
-export interface LevelUpPayload {
-    newLevel: number;
-    statGains: Record<string, number>;
-}
-
-export interface InventoryChangedPayload {
-    action: 'added' | 'removed' | 'used' | 'equipped' | 'unequipped';
-    item: {
-        id: string;
-        name: string;
-        type: string;
-    };
-    xpGained?: number; // For item usage that grants XP
-}
-
-// World event payloads
-export interface WorldMovedPayload {
-    fromNode?: string;
-    toNode: string;
-    mapName: string;
-}
-
-export interface WorldProcessedPayload {
-    nodeId: string;
-    nodeType: 'combat' | 'event' | 'shop' | 'rest';
-    outcome?: 'success' | 'failure' | 'neutral';
-}
-
-// Typed event interfaces for consumer convenience
-export interface TypedCombatStartedEvent extends GameEvent {
-    type: 'combat:started';
-    payload: CombatStartedPayload;
-}
-
-export interface TypedCombatRoundEvent extends GameEvent {
-    type: 'combat:round';
-    payload: CombatRoundPayload;
-}
-
-export interface TypedCombatEndedEvent extends GameEvent {
-    type: 'combat:ended';
-    payload: CombatEndedPayload;
-}
-
-export interface TypedLevelUpEvent extends GameEvent {
-    type: 'character:levelup';
-    payload: LevelUpPayload;
-}
-
-export interface TypedInventoryChangedEvent extends GameEvent {
-    type: 'inventory:changed';
-    payload: InventoryChangedPayload;
-}
-
-export interface TypedWorldMovedEvent extends GameEvent {
-    type: 'world:moved';
-    payload: WorldMovedPayload;
-}
-
-export interface TypedWorldProcessedEvent extends GameEvent {
-    type: 'world:processed';
-    payload: WorldProcessedPayload;
-}
-
-// Union of all typed events
-export type TypedGameEvent = 
-    | TypedCombatStartedEvent 
-    | TypedCombatRoundEvent
-    | TypedCombatEndedEvent
-    | TypedLevelUpEvent
-    | TypedInventoryChangedEvent
-    | TypedWorldMovedEvent
-    | TypedWorldProcessedEvent;
+export type TypedCombatStartedEvent     = TypedGameEvent<'combat:started'>;
+export type TypedCombatRoundEvent       = TypedGameEvent<'combat:round'>;
+export type TypedCombatEndedEvent       = TypedGameEvent<'combat:ended'>;
+export type TypedWorldMovedEvent        = TypedGameEvent<'world:moved'>;
+export type TypedWorldProcessedEvent    = TypedGameEvent<'world:processed'>;
+export type TypedLevelUpEvent           = TypedGameEvent<'character:levelup'>;
+export type TypedInventoryChangedEvent  = TypedGameEvent<'inventory:changed'>;
+export type TypedDialogueAppliedEvent   = TypedGameEvent<'dialogue:applied'>;
+export type TypedGameSavedEvent         = TypedGameEvent<'game:saved'>;
+export type TypedGameLoadedEvent        = TypedGameEvent<'game:loaded'>;

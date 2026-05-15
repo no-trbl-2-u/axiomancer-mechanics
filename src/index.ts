@@ -191,16 +191,16 @@ export type { Image } from './Utils/types';
 
 // ── Events ─────────────────────────────────────────────────────────────────
 export type {
-    CombatStartedPayload, CombatEndedPayload, CombatRoundPayload,
-    LevelUpPayload, InventoryChangedPayload, WorldMovedPayload, WorldProcessedPayload,
-    TypedCombatStartedEvent, TypedCombatEndedEvent, TypedCombatRoundEvent,
-    TypedLevelUpEvent, TypedInventoryChangedEvent, TypedWorldMovedEvent, TypedWorldProcessedEvent,
-    TypedGameEvent, CombatSubEvent,
+    EnginePayload, TypedGameEvent,
+    TypedCombatStartedEvent, TypedCombatRoundEvent, TypedCombatEndedEvent,
+    TypedWorldMovedEvent, TypedWorldProcessedEvent,
+    TypedLevelUpEvent, TypedInventoryChangedEvent,
+    TypedDialogueAppliedEvent, TypedGameSavedEvent, TypedGameLoadedEvent,
 } from './Game/events.types';
 
 export {
-    createCombatStartedEvent, createCombatEndedEvent, createCombatRoundEvent,
-    createLevelUpEvent, createInventoryChangedEvent, createWorldMovedEvent, createWorldProcessedEvent,
-    isCombatStartedEvent, isCombatEndedEvent, isCombatRoundEvent,
-    isLevelUpEvent, isInventoryChangedEvent, isWorldMovedEvent, isWorldProcessedEvent,
+    isCombatStartedEvent, isCombatRoundEvent, isCombatEndedEvent,
+    isWorldMovedEvent, isWorldProcessedEvent,
+    isLevelUpEvent, isInventoryChangedEvent,
+    isDialogueAppliedEvent, isGameSavedEvent, isGameLoadedEvent,
 } from './Game/events.utils';
