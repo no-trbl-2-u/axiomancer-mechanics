@@ -162,10 +162,18 @@ all math lives in the resolvers/reducers. Tabs:
 
 | Tab        | What it does                                                     |
 |------------|------------------------------------------------------------------|
-| Map        | Lists adjacent open nodes, dispatches `MOVE_TO_NODE` + `PROCESS_NODE`. Auto-pivots into Combat when the node spawns an encounter. |
-| Combat     | Resumes any active fight. Drives `resolveCombatRound` round by round. |
+| Map        | Lists reachable adjacents, dispatches `MOVE_TO_NODE`, then resolves the destination node's `MapEvent` via `resolveMapEvent` (Spec 23). Auto-pivots into Combat when the resolved event is an `encounter`. |
+| Combat     | Resumes any active fight. Drives `resolveCombatRound` round by round; offers `attack` / `defend` / `skill` / `item` actions when affordable. |
 | Journal    | Read-only: active / completed quests + flags + alignment stub.   |
 | Skills     | Read-only: known + equipped skills.                              |
 | Inventory  | Read-only listing of carried items.                              |
+| Character  | Full stats + equipment + effects sheet (Phase 26 unit 3). When `availableStatPoints > 0`, prompts the player to spend points into heart / body / mind via `allocateStatPoint` (Phase 29). |
+| Debug      | Spawns any enemy from `ENEMY_REGISTRY` directly into combat (Phase 19). |
+| Save       | Writes the current state to the `--save-file` snapshot slot via a dedicated `PersistenceAdapter` (Phase 27 unit 2). Decoupled from dispatch-time autosave so Load is a real rollback. |
+| Load       | Restores the snapshot via `setState`. Emits `game:loaded`. |
+| Quit       | Emits `cli:exit` with reason `'quit'` and returns. |
 
-Run via `npx tsx src/CLI/game.cli.ts` (or wire `npm run game` to it).
+Run via `npm run game` (which invokes `npx ts-node src/CLI/game.cli.ts`).
+Flags: `--script <path>` for scripted answers (Phase 20), `--json-events`
+for machine-clean stdout, `--state-log <path>` for the Phase 26 state
+log, `--save-file <path>` for the Phase 27 Save / Load slot.
