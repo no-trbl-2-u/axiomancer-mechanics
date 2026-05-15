@@ -108,21 +108,6 @@
 - suggested_fix: in `resolveMapEvent`, after `markNodeConsumed`, also unlock the just-resolved node's connected nodes into `availableNodes` (or have `mapTab` filter by `discoveredNodes ∩ connectedNodes ∩ ¬consumedNodes`). Add a hermetic e2e in `src/World/MapEvents/e2e/` that walks fv-1 → fv-2 → fv-3 and asserts each transition is reachable from `availableNodes`.
 - source: critique (surfaced during Phase 27 unit 2 — noted in `automation/scripts/walkthroughs/save-load.goal.md`'s diagnostic block)
 
-### [MED] `docs/gameloop.md` tabs section is multi-phase out of date
-- pass: critique-7 (commit 1f4911b)
-- area: docs
-- observation: The CLI tabs table (`docs/gameloop.md:163-169`) lists only the
-  five original tabs (Map / Combat / Journal / Skills / Inventory) and misses
-  the four tabs shipped since: Character (Phase 26 unit 3, d59f817), Debug
-  (Phase 19, 0260ef0), Save and Load (Phase 27 unit 2, 24885d7). The Map row
-  still calls out `PROCESS_NODE` even though Phase 25 (7002642) removed that
-  action and replaced it with `resolveMapEvent`. The run instruction at line
-  171 says `npx tsx src/CLI/game.cli.ts` but the shipped runner is `npm run
-  game` (or `npx ts-node`, per `automation/agent-e2e.mjs`).
-- evidence: `docs/gameloop.md:158-171` vs. the live `pickTab` enum in `src/CLI/game.cli.ts:40` and the `case` labels at lines 391-401.
-- suggested_fix: regenerate the tabs table from `pickTab`'s choices; replace `PROCESS_NODE` with `resolveMapEvent`; replace the `npx tsx` line with `npm run game [-- --script <path>] [--save-file <path>]`.
-- source: critique
-
 ### [LOW] Combat reducer carries five aliases that add no behaviour
 - pass: critique-7 (commit 1f4911b)
 - area: dead-code
@@ -188,6 +173,7 @@
 
 ## Done
 
+- [x] **[MED] `docs/gameloop.md` tabs section is multi-phase out of date** — resolved at commit 7a34055 (2026-05-15) by rewriting the `game.cli.ts` section: tabs table now lists all 10 live tabs (Map / Combat / Journal / Skills / Inventory / Character / Debug / Save / Load / Quit) with phase-correct verb references (`resolveMapEvent` replaces `PROCESS_NODE`, the four Phase-26/27/29 affordances are surfaced). Run instruction replaces `npx tsx` with `npm run game` and enumerates the four shipped flags (--script, --json-events, --state-log, --save-file). Impact 6 × Ease 9 / 10 = 5.4.
 - [x] **[MED] Phase 26 state-log writer (`src/CLI/io.ts`) has zero hermetic coverage** — resolved at commit 404dadd (2026-05-15) by extending `src/CLI/e2e/io.engine.test.ts` with 4 new cases: state log disabled by default (no-op on `logState`), `setStateLogPath` truncates an existing file, `logState` appends JSONL records with monotonic tick + the `{ action, before, after, event? }` shape, `setStateLogPath` resets the tick counter on a fresh session. Suite grows 12 → 16; 425/425 total green.
 - [x] **[HIGH] src/CLI/combat.display.ts is 968 LOC of dead code orphaned by Phase 17** — resolved at commit `0e7e8a9` (2026-05-15) by `git rm src/CLI/combat.display.ts`. Phase 17 deleted `combat.cli.ts` but missed this companion helper file; zero consumers in src/, automation/, or scripts/.
 - [x] **[LOW] Empty committed directory: src/Game/backups/** — closed at commit 8deedeb (2026-05-15) as misdiagnosed. `git ls-files src/Game/backups/` is empty — git does not track empty directories, so the "committed directory" framing in the original finding was wrong. The directory existed only in local working trees and was not in the repository. Deleted the local instance; a fresh clone is unaffected.
