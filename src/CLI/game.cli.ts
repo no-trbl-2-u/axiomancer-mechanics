@@ -37,7 +37,7 @@ import { canUseSkill } from '../Skills/skill.engine';
 import { isConsumable } from '../Items/types';
 import { CombatEndReport } from '../Game/store';
 
-type Tab = 'map' | 'combat' | 'journal' | 'skills' | 'inventory' | 'debug' | 'quit';
+type Tab = 'map' | 'combat' | 'journal' | 'skills' | 'inventory' | 'character' | 'debug' | 'quit';
 
 type GameStoreHandle = ReturnType<typeof createGameStore>;
 
@@ -72,6 +72,7 @@ async function pickTab(canFight: boolean): Promise<Tab> {
         { name: 'Journal    — quests + alignment', value: 'journal' },
         { name: 'Skills     — known + equipped', value: 'skills' },
         { name: 'Inventory  — items in pack', value: 'inventory' },
+        { name: 'Character  — full stats + equipment + effects sheet', value: 'character' },
         { name: 'Debug      — spawn any enemy into combat', value: 'debug' },
         { name: 'Quit',                                 value: 'quit' },
     ];
@@ -256,6 +257,73 @@ function inventoryTab(store: GameStoreHandle): void {
     }
 }
 
+function characterTab(store: GameStoreHandle): void {
+    const state = store.getState();
+    const p = state.player;
+
+    log('\n— Character Sheet —');
+    log(`Name:     ${p.name}`);
+    log(`Level:    ${p.level}  (XP ${p.experience}/${p.experienceToNextLevel})`);
+    log(`Health:   ${p.health}/${p.maxHealth}`);
+    log(`Currency: ${p.currency}`);
+    log(`Moral:    ${state.moralMeter}`);
+
+    log('\nBase stats:');
+    log(`  heart ${p.baseStats.heart}   body ${p.baseStats.body}   mind ${p.baseStats.mind}`);
+
+    log('\nDerived stats:');
+    const ds = p.derivedStats;
+    log(`  physical  attack ${ds.physicalAttack}    skill ${ds.physicalSkill}    defense ${ds.physicalDefense}`);
+    log(`  mental    attack ${ds.mentalAttack}      skill ${ds.mentalSkill}      defense ${ds.mentalDefense}`);
+    log(`  emotional attack ${ds.emotionalAttack}   skill ${ds.emotionalSkill}   defense ${ds.emotionalDefense}`);
+    log(`  luck      ${ds.luck}`);
+
+    log('\nNon-combat stats:');
+    const nc = p.nonCombatStats;
+    log(`  physical  save ${nc.physicalSave}    test ${nc.physicalTest}`);
+    log(`  mental    save ${nc.mentalSave}      test ${nc.mentalTest}`);
+    log(`  emotional save ${nc.emotionalSave}   test ${nc.emotionalTest}`);
+
+    log('\nEquipment:');
+    const slots = ['weapon', 'armor', 'accessory', 'head', 'body', 'hands', 'feet'] as const;
+    for (const slot of slots) {
+        const eq = p.equipment[slot];
+        if (!eq) {
+            log(`  ${slot.padEnd(10)} (empty)`);
+        } else {
+            const rarity = eq.rarity ? ` [${eq.rarity}]` : '';
+            log(`  ${slot.padEnd(10)} ${eq.name}${rarity}`);
+        }
+    }
+
+    log('\nActive effects:');
+    if (p.effects.length === 0) {
+        log('  (none)');
+    } else {
+        for (const e of p.effects) {
+            log(`  • ${e.effectId}  intensity ${e.intensity}  remaining ${e.remainingDuration}`);
+        }
+    }
+
+    log('\nSkills:');
+    log(`  Known:    ${p.knownSkills.length > 0 ? p.knownSkills.join(', ') : '(none)'}`);
+    log(`  Equipped: ${p.equippedSkills.length > 0 ? p.equippedSkills.join(', ') : '(none)'}`);
+
+    log('\nInventory summary:');
+    const grouped = new Map<string, number>();
+    for (const item of p.inventory) {
+        const qty = isConsumable(item) ? item.quantity : 1;
+        grouped.set(item.category, (grouped.get(item.category) ?? 0) + qty);
+    }
+    if (grouped.size === 0) {
+        log('  (empty)');
+    } else {
+        for (const [cat, count] of grouped) {
+            log(`  ${cat}: ${count}`);
+        }
+    }
+}
+
 async function debugTab(store: GameStoreHandle): Promise<void> {
     const slugs = Object.keys(ENEMY_REGISTRY) as EnemySlug[];
     const { slug } = await prompt<{ slug: EnemySlug }>([{
@@ -295,6 +363,7 @@ async function main(): Promise<void> {
                 case 'journal':   journalTab(store);         break;
                 case 'skills':    skillsTab(store);          break;
                 case 'inventory': inventoryTab(store);       break;
+                case 'character': characterTab(store);       break;
                 case 'debug':     await debugTab(store);     break;
                 case 'quit':
                     log('Goodbye.');
