@@ -122,6 +122,7 @@ export type {
 export {
     generateBasicActionResources, generatePhilosophicalResource,
     canUseSkill, spendResources, calculateSkillDamage, executeSkill,
+    meetsLearningRequirement, getAvailableSkills, learnSkill,
 } from './Skills';
 
 // ─── Game (state, store, persistence, constants) ──────────────────────────────

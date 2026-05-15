@@ -18,6 +18,7 @@ export {
     generateBasicActionResources, generatePhilosophicalResource,
     canUseSkill, spendResources, calculateSkillDamage, executeSkill,
     philosophicalCategoryFor,
+    meetsLearningRequirement, getAvailableSkills, learnSkill,
 } from './skill.engine';
 
 export type {

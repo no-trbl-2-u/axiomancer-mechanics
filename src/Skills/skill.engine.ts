@@ -29,8 +29,9 @@ import { Equipment, EquipmentSlot } from '../Items/types';
 import { applyEquipmentGenerationBonus } from '../Items/equipment.engine';
 import {
     CombatResources, ResourceCost, Skill, SkillCategory, SkillCombatEffects,
-    SkillSpecialMechanic,
+    SkillSpecialMechanic, SkillTier,
 } from './types';
+import { skillLibrary, getSkillById } from './skill.library';
 
 // ─── Resource Generation ─────────────────────────────────────────────────────
 
@@ -153,6 +154,73 @@ export function philosophicalCategoryFor(skill: Skill): SkillCategory {
         return skill.category === 'fallacy' ? 'paradox' : 'fallacy';
     }
     return skill.category;
+}
+
+// ─── Skill Learning (Spec 06 Q7 / Phase 30) ──────────────────────────────────
+
+/**
+ * Default minimum character level for a skill that didn't author an explicit
+ * `learningRequirement`. Mirrors the preset progression: T1 skills come for
+ * free, T2 unlocks around mid-game, T3 deep into late-game.
+ */
+function defaultLevelForTier(tier: SkillTier): number {
+    return tier === 1 ? 1 : tier === 2 ? 5 : 10;
+}
+
+/**
+ * True iff `character` meets every clause on `skill.learningRequirement`
+ * (level minimum, optional stat threshold, optional prerequisite skill).
+ * When the skill has no explicit requirement, falls back to a tier-derived
+ * level minimum per `defaultLevelForTier`.
+ */
+export function meetsLearningRequirement(
+    character: Pick<Character, 'level' | 'baseStats' | 'knownSkills'>,
+    skill: Skill,
+): boolean {
+    const req = skill.learningRequirement ?? { level: defaultLevelForTier(skill.tier) };
+    if (character.level < req.level) return false;
+    if (req.statRequirementType && req.statRequirementValue !== undefined) {
+        if (character.baseStats[req.statRequirementType] < req.statRequirementValue) {
+            return false;
+        }
+    }
+    if (req.prerequisiteSkill && !character.knownSkills.includes(req.prerequisiteSkill)) {
+        return false;
+    }
+    return true;
+}
+
+/**
+ * Returns every entry in `skillLibrary` that the character has not already
+ * learned AND meets the learning requirement for. Order matches the library
+ * order so the UI can show a stable list across calls.
+ */
+export function getAvailableSkills(
+    character: Pick<Character, 'level' | 'baseStats' | 'knownSkills'>,
+): Skill[] {
+    return skillLibrary.filter(s =>
+        !character.knownSkills.includes(s.id)
+        && meetsLearningRequirement(character, s),
+    );
+}
+
+/**
+ * Appends `skillId` to `character.knownSkills` when the skill exists, is not
+ * already known, and the character meets its learning requirement. Pure;
+ * returns the unchanged character (same reference) on any guard miss.
+ */
+export function learnSkill(
+    character: Character,
+    skillId: string,
+): Character {
+    if (character.knownSkills.includes(skillId)) return character;
+    const skill = getSkillById(skillId);
+    if (!skill) return character;
+    if (!meetsLearningRequirement(character, skill)) return character;
+    return {
+        ...character,
+        knownSkills: [...character.knownSkills, skillId],
+    };
 }
 
 // ─── Skill Execution ─────────────────────────────────────────────────────────
