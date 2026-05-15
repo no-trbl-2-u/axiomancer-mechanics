@@ -12,7 +12,14 @@
 
 ## Pending
 
-(Empty.)
+### [MED] agents.md verify-gate description excludes lint, but Phase 13 put it back
+- category: docs
+- impact: 5 (agents.md is the canonical agent rule book — Claude Code, Cursor, Aider all read it first; saying lint is excluded directs agents to skip a real gate)
+- ease: 9 (one-line edit + a follow-up sentence)
+- score: 4.5
+- source: iterate audit pass (2026-05-15)
+- evidence: `agents.md` Standing Rule 3 documents the verify gate as `type-check && test && build` and says "**Lint is excluded** (known broken — see `plan/bearings.md` Hard Rules)". Phase 13 (commit `4f58f66`, 2026-05-14) repaired the ESLint flat-config and reinstated `lint` in the verify gate; `package.json` `verify` is `type-check && lint && test && build`. Bearings' Hard Rule 6 was rewritten to drop the broken caveat.
+- next: rewrite Rule 3 to include `lint` in the gate; drop the "known broken" parenthetical.
 
 ---
 
