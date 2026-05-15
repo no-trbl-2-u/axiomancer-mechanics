@@ -12,7 +12,18 @@
 
 ## Pending
 
-(Empty.)
+### [MED] spec.md + AGENTS.md still describe pre-Phase-17 CLI surface
+- category: docs
+- impact: 7 (spec.md is the project's authoritative product doc; AGENTS.md drives Cursor Cloud agents into the codebase — both will hand a fresh contributor or AI a wrong picture of the surviving CLIs)
+- ease: 8 (line-level edits in two top-level docs)
+- score: 5.6
+- source: iterate audit pass (2026-05-15)
+- evidence:
+  - `spec.md:20-21` lists "the in-repo CLIs (`combat.cli.ts`, `character.cli.ts`, `game.cli.ts`)" — Phase 17 (commit `7595c2e`) deleted the first two. Only `game.cli.ts` survives.
+  - `AGENTS.md:20` lists `npm run combat` as a "Combat CLI" key command; Phase 17 dropped that npm script.
+  - `AGENTS.md:22` lists `npm run combat:auto` as the automated test; Phase 17 dropped the script and Python harness.
+  - `AGENTS.md:49` says "Both `combat` and `character` CLIs use `inquirer` prompts" — both CLIs are gone.
+- next: rewrite the two doc lines to mention only `game.cli.ts` / `npm run game`; drop the `pexpect`-harness lines; mention the agent-driven CLI flags (Phase 20: `--script` / `--stdin` / `--json-events`) as the new automation path.
 
 ---
 
