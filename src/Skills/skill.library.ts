@@ -146,6 +146,7 @@ const mobAppeal: Skill = {
     basePower: 10,
     scalingStat: 'body',
     specialMechanics: [{ kind: 'secondary_heal_self', stat: 'heart', multiplier: 1 }],
+    learningRequirement: { level: 5 },
 };
 
 const undistributedMiddle: Skill = {
@@ -165,6 +166,7 @@ const undistributedMiddle: Skill = {
     combatEffects: [
         { effectId: 'tier1_mind_mark', appliedTo: 'opponent', intensity: 3, duration: 3 },
     ],
+    learningRequirement: { level: 5 },
 };
 
 const eternalRegress: Skill = {
@@ -185,6 +187,7 @@ const eternalRegress: Skill = {
         { effectId: 'debuff_confusion', appliedTo: 'opponent' },
         { effectId: 'debuff_slow',      appliedTo: 'opponent' },
     ],
+    learningRequirement: { level: 5 },
 };
 
 // ─── Tier 3 — Philosophical Resource Required (3 skills) ─────────────────────
