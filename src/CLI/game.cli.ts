@@ -36,7 +36,7 @@ import type { ResolvedEvent } from '../World';
 import { isCombatOngoing, determineEnemyAction, resolveCombatRound } from '../Combat';
 import { Stance, CombatState, CombatAction, Action } from '../Combat/types';
 import { getSkillById } from '../Skills/skill.library';
-import { canUseSkill } from '../Skills/skill.engine';
+import { canUseSkill, getAvailableSkills } from '../Skills/skill.engine';
 import { isConsumable } from '../Items/types';
 import { CombatEndReport } from '../Game/store';
 
@@ -392,6 +392,35 @@ async function characterTab(store: GameStoreHandle): Promise<void> {
         store.getState().allocateStatPoint(stat);
         logState('allocateStatPoint', before, store.getState(), { stat });
         log(`Allocated 1 point to ${stat}.`);
+    }
+
+    // Spec 06 Q7 — runtime skill learning (Phase 30 unit 3). Prompt loop
+    // mirrors the Allocate flow: visible only when there's something eligible
+    // to learn, scriptable via a "skip" exit. Each learn dispatches so the
+    // autosave + state log records the change.
+    let learnable = getAvailableSkills(store.getState().player);
+    while (learnable.length > 0) {
+        const choices = learnable.map(s => {
+            const blurb = s.description.length > 60
+                ? `${s.description.slice(0, 57)}…`
+                : s.description;
+            return {
+                name: `${s.name}  (tier ${s.tier}, ${s.category})  — ${blurb}`,
+                value: s.id,
+            };
+        });
+        choices.push({ name: 'leave them unlearned', value: 'skip' });
+        const { skillId } = await prompt<{ skillId: string }>([{
+            type: 'rawlist', name: 'skillId',
+            message: `Learn a skill? (${learnable.length} available)`,
+            choices,
+        }]);
+        if (skillId === 'skip') break;
+        const before = store.getState();
+        store.getState().learnSkill(skillId);
+        logState('learnSkill', before, store.getState(), { skillId });
+        log(`Learned ${skillId}.`);
+        learnable = getAvailableSkills(store.getState().player);
     }
 }
 

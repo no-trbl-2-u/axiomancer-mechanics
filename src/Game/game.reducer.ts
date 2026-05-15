@@ -31,6 +31,7 @@ import {
     unequipItem as unequipItemReducer,
 } from '../Character/equipment.reducer';
 import { createCharacter, allocateStatPoint } from '../Character';
+import { learnSkill } from '../Skills';
 import { createStartingWorld, emptyQuestLog } from '../World';
 import { moveToNode as moveWorld } from '../World/world.reducer';
 import { resolveMapEvent } from '../World';
@@ -272,6 +273,10 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
         case 'ALLOCATE_STAT_POINT': {
             return { ...state, player: allocateStatPoint(state.player, action.payload.stat) };
+        }
+
+        case 'LEARN_SKILL': {
+            return { ...state, player: learnSkill(state.player, action.payload.skillId) };
         }
 
         case 'SHIFT_MORAL_METER': {

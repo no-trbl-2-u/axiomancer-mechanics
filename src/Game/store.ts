@@ -109,6 +109,7 @@ export interface GameActions {
     // ── Progression / persistence ────────────────────────────────────────────
     levelUp: () => void;
     allocateStatPoint: (stat: 'heart' | 'body' | 'mind') => void;
+    learnSkill: (skillId: string) => void;
     save: () => void;
     // ── Morality ─────────────────────────────────────────────────────────────
     shiftMoralMeter: (delta: number, gating?: { min?: number; max?: number }) => void;
@@ -312,6 +313,10 @@ export function createGameStore(
 
             allocateStatPoint(stat) {
                 dispatch({ type: 'ALLOCATE_STAT_POINT', payload: { stat } });
+            },
+
+            learnSkill(skillId) {
+                dispatch({ type: 'LEARN_SKILL', payload: { skillId } });
             },
 
             save() {
