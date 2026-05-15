@@ -21,6 +21,7 @@ npm-debug.log*
 
 # Runtime state
 game-state.json
+.claude/scheduled_tasks.lock
 
 # Environment
 .env
