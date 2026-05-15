@@ -315,10 +315,9 @@ export const EchoOfPyrrhonia = createEnemy({
 // ─── Test fixture (legacy, NOT counted toward Spec 07's 15) ───────────────────
 
 /**
- * Punching-bag enemy used by Spec 04b's e2e suite and the
- * `auto:combat` / manual CLI testers that need a long-lived combat encounter.
- * Kept separate from the spec-07 library so the encounter generator never
- * selects it. CLI clients can opt in via `COMBAT_ENEMY=sandbag`.
+ * Punching-bag enemy used by Spec 04b's e2e suite and hermetic tests that
+ * need a long-lived combat encounter. Kept separate from the spec-07
+ * library so the encounter generator never selects it.
  */
 export const Sandbag_01 = createEnemy({
     id: 'sandbag-01',
@@ -368,9 +367,9 @@ export const EnemiesByMap = {
 } as const;
 
 /**
- * CLI-friendly slugs to enemy fixtures. Used by `combat.cli.ts` and
- * `auto:combat` to let testers pick the opponent at the command line.
- * Spec 07 keeps the `disatree` and `sandbag` aliases stable for back-compat.
+ * Slug-keyed registry of enemy fixtures. Useful for hermetic tests or
+ * debug entry points that want to look up an enemy by short name. Spec 07
+ * keeps the `disatree` and `sandbag` aliases stable for back-compat.
  */
 export const ENEMY_REGISTRY = {
     // Legacy aliases.

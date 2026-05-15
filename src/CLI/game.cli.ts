@@ -8,7 +8,7 @@
  *
  *   • Map        — list adjacent nodes, dispatch MOVE_TO_NODE, then
  *                  PROCESS_NODE to trigger the node's authored event.
- *   • Combat     — re-uses combat.cli's resolver-driven loop on the active
+ *   • Combat     — drives `resolveCombatRound` against the active
  *                  encounter. Skipped when no combat is in progress.
  *   • Journal    — read-only: active / completed quests + alignment stub.
  *   • Skills     — read-only: known + equipped skills.
@@ -16,8 +16,7 @@
  *
  * Logic stays in the store / reducer. This file only formats and dispatches.
  *
- * Run with: `npx ts-node src/CLI/game.cli.ts` (or via the package's
- * `npm run game` script when it lands).
+ * Run with: `npm run game` (which invokes `ts-node src/CLI/game.cli.ts`).
  */
 
 import inquirer from 'inquirer';

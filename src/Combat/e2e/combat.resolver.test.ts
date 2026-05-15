@@ -20,10 +20,11 @@
  *     the nullAdapter, confirming zero disk access.
  *
  * What CANNOT be tested hermetically (called out in `docs/testing.md`):
- *   • The interactive CLI layer (combat.cli.ts / character.cli.ts) — these
- *     own display and need TTY prompts via inquirer. Use the pexpect-based
- *     `npm run combat:auto` harness for those, and keep all engine logic
- *     in `combat.resolver.ts` so it stays testable here.
+ *   • The interactive demo CLI (`src/CLI/game.cli.ts`, run via `npm run
+ *     game`) — it owns display and needs TTY prompts via inquirer. The
+ *     engine modules it dispatches into are the durable contract; keep
+ *     all combat logic in `combat.resolver.ts` and its `phases/` so it
+ *     stays testable here.
  *
  * RNG convention used by `mockAlternatingRng`:
  *   Alternating 0.9 / 0.1 → `randomInt(1, 20)` yields 19 then 3. For a
