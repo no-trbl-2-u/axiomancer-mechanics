@@ -51,10 +51,7 @@ import { useConsumable as useInventoryConsumable } from '../Items/item.reducer';
 import { lookupEffect as lookupEffectById } from '../Effects/effects.library';
 import { dumpEffectState } from './debug';
 import { getRng } from '../Utils/rng';
-import {
-    determineAdvantage,
-    resolveEffectiveAdvantage,
-} from './advantage';
+import { runAdvantagePhase } from './phases/advantage';
 import {
     getAttackStat,
     getBaseStat,
@@ -670,23 +667,10 @@ export function resolveCombatRound(
     const { playerStance, enemyStance, playerActionFinal, enemyActionFinal, playerCanAct, enemyCanAct } = restriction;
 
     // 3. Advantage with effect overrides.
-    const playerAdvantage = resolveEffectiveAdvantage(
-        determineAdvantage(playerStance, enemyStance), player.effects, playerStance,
+    const { playerAdvantage, enemyAdvantage } = runAdvantagePhase(
+        player, enemy, playerStance, enemyStance,
+        playerActionFinal, enemyActionFinal, events,
     );
-    const enemyAdvantage = resolveEffectiveAdvantage(
-        determineAdvantage(enemyStance, playerStance), enemy.effects, enemyStance,
-    );
-
-    events.push({
-        phase: 'advantage', kind: 'actions',
-        playerStance, playerAction: playerActionFinal,
-        enemyStance,  enemyAction:  enemyActionFinal,
-    });
-    events.push({
-        phase: 'advantage', kind: 'matchup',
-        playerStance, enemyStance,
-        playerAdvantage, enemyAdvantage,
-    });
 
     // 4. Clear stale Tier 1 stance buffs and apply new ones for active combatants.
     const playerClear = clearTier1EffectsForStance(player.effects, playerStance);
