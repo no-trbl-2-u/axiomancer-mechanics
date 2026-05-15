@@ -17,9 +17,11 @@ event-observable game loop.
 
 - **Primary consumer:** the Axiomancer React Native app (separate repo,
   separate team — currently the same developer).
-- **Secondary consumer:** the in-repo CLIs (`combat.cli.ts`,
-  `character.cli.ts`, `game.cli.ts`) used for hands-on testing during
-  development.
+- **Secondary consumer:** the in-repo demo CLI (`src/CLI/game.cli.ts`,
+  invoked via `npm run game`) used for hands-on testing during
+  development. Supports scripted / JSON-event / stdin-driven modes
+  via the Phase 20 flags (`--script`, `--json-events`, `--stdin`)
+  for external agents.
 - **Tertiary:** future potential open-sourcing as an indie-RPG engine library.
 
 ## V1 scope (in-scope)

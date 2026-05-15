@@ -17,9 +17,14 @@ All commands are in `package.json`:
 | Test | `npm test` (vitest) |
 | Lint | `npm run lint` |
 | Lint + type-check | `npm run check` |
-| Combat CLI | `npm run combat` |
-| Character CLI | `npm run character` |
-| Automated combat test | `npm run combat:auto` (requires `pexpect`: `pip3 install pexpect`) |
+| Demo CLI | `npm run game` (tabbed map / combat / journal / skills / inventory / debug loop) |
+| Verify gate | `npm run verify` (type-check + lint + test + build) |
+| Deploy gate | `npm run deploy:check` (`npm pack --dry-run`) |
+
+For automated / agent-driven CLI runs, the Phase 20 flags expose
+scripted and JSON-event modes:
+`npm run game -- --script <path>` / `--stdin` / `--json-events`. See
+`README.md` "Agent-driven CLI mode" for examples.
 
 ### Committing during spec implementations
 
@@ -45,11 +50,19 @@ Never squash or amend after pushing unless explicitly asked.
 
 ### Caveats
 
-- **ESLint config has a pre-existing issue**: `npm run lint` fails with `A configuration object specifies rule "@typescript-eslint/no-explicit-any", but could not find plugin "@typescript-eslint"` because `eslint.config.mts` declares the rule without registering the plugin in the same config object. `npm run type-check` works and is the reliable static analysis check.
-- **CLI apps are interactive**: Both `combat` and `character` CLIs use `inquirer` prompts. Set `COMBAT_NO_DELAY=1` to skip animation delays in combat. For automated testing, use the Python automation script (`npm run combat:auto`) or drive prompts via `pexpect`/tmux `send-keys`.
-- **Test runner**: `npm test` runs vitest. Use alongside `npm run type-check` and `npm run build` for correctness checks.
-- **State file**: The combat CLI writes a `game-state.json` in the project root. This file is gitignored and ephemeral.
-- **Spec update**: If using a spec file to implement a change, update the spec as you walk through the steps
+- **ESLint**: `npm run lint` is part of `npm run verify`. The flat config
+  registers `@typescript-eslint` correctly (Phase 13 fix). Warnings are
+  advisory; only errors fail the gate.
+- **Demo CLI is interactive**: `npm run game` uses `inquirer` prompts. For
+  hermetic automation, prefer the Phase 20 flags (`--script` / `--stdin` /
+  `--json-events`) over `pexpect` / tmux `send-keys`. The Python harness
+  was removed in Phase 17 — hermetic e2e tests are the durable path.
+- **Test runner**: `npm test` runs vitest. Use alongside `npm run type-check`,
+  `npm run lint`, and `npm run build` (all four chained by `npm run verify`).
+- **State file**: The Node persistence adapter writes `game-state.json` in
+  the project root when used. This file is gitignored and ephemeral.
+- **Spec update**: If using a spec file to implement a change, update the
+  spec as you walk through the steps.
 
 ### Hermetic E2E testing — REQUIRED
 

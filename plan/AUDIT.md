@@ -12,23 +12,13 @@
 
 ## Pending
 
-### [MED] spec.md + AGENTS.md still describe pre-Phase-17 CLI surface
-- category: docs
-- impact: 7 (spec.md is the project's authoritative product doc; AGENTS.md drives Cursor Cloud agents into the codebase — both will hand a fresh contributor or AI a wrong picture of the surviving CLIs)
-- ease: 8 (line-level edits in two top-level docs)
-- score: 5.6
-- source: iterate audit pass (2026-05-15)
-- evidence:
-  - `spec.md:20-21` lists "the in-repo CLIs (`combat.cli.ts`, `character.cli.ts`, `game.cli.ts`)" — Phase 17 (commit `7595c2e`) deleted the first two. Only `game.cli.ts` survives.
-  - `AGENTS.md:20` lists `npm run combat` as a "Combat CLI" key command; Phase 17 dropped that npm script.
-  - `AGENTS.md:22` lists `npm run combat:auto` as the automated test; Phase 17 dropped the script and Python harness.
-  - `AGENTS.md:49` says "Both `combat` and `character` CLIs use `inquirer` prompts" — both CLIs are gone.
-- next: rewrite the two doc lines to mention only `game.cli.ts` / `npm run game`; drop the `pexpect`-harness lines; mention the agent-driven CLI flags (Phase 20: `--script` / `--stdin` / `--json-events`) as the new automation path.
+(Empty.)
 
 ---
 
 ## Done
 
+- [x] **[MED] spec.md + AGENTS.md still describe pre-Phase-17 CLI surface** — resolved at commit 5996991 (2026-05-15). `spec.md:20-22` now lists only `src/CLI/game.cli.ts` / `npm run game` as the demo CLI and mentions the Phase 20 agent-driven flags. `AGENTS.md` Key Commands table replaces the three dropped npm scripts (`combat`, `character`, `combat:auto`) with `game` + the `verify` / `deploy:check` rows; the "CLI apps are interactive" caveat updated to point at the Phase 20 flags instead of the removed Python pexpect harness; the ESLint caveat updated since Phase 13 fixed the config. Impact 7 × Ease 8 / 10 = 5.6.
 - [x] **[LOW] Stale "(Phase 3)" / "(Phase 4)" / "Spec 12 will" annotations across docs** — resolved at commit cf9ffc7 (2026-05-15). `docs/combat.md:45-46` skill/item annotations now point at Spec 04 / 04b / 05 / 05b; `docs/enemy.md:25` `skills?` field annotation references Spec 04 with a note that it's reserved for elite/boss rotations; `docs/gameloop.md:131` RN AsyncStorage future-tense replaced with a cross-link to `docs/api.md` "React Native Usage". Impact 4 × Ease 9 / 10 = 3.6.
 - [x] **[MED] docs/effects/{buffs,debuffs}/* per-effect "PENDING (Phase 2)" markers are stale** — resolved at commit 6361dba (2026-05-15) by adding `docs/effects/README.md` — a single sweep document that names the 12 live mechanics (statModifiers / defenseModifier / rollModifier / reflectDamage / regen / drain / DoT / advantageModifier / actionRestriction / Tier 1 buff application / Tier 2 + 3 procs / Heart-attack specials) and the genuinely open ones (critStyle auto-selection). Per-file rewrites deferred — the README gives every reader the meta-context in one place. Impact 5 × Ease 7 / 10 = 3.5.
 - [x] **[MED] README Public API table missing Phase 18 / 21 / 23 / 24 additions** — resolved at commit 2a8a9ae (2026-05-15). Character row gained presets API (`characterPresets`, `getPresetById`, `buildCharacterFromPreset`, `CharacterPreset`). Game row demoted `createNodeAdapter` to a "lives on `'/node'` subpath" parenthetical and added the Phase 21 typed event surface (`EnginePayload` + 10 typed aliases + 10 `is*Event` guards). World row gained the MapEvents engine block (`resolveMapEvent`, pool registration helpers, `revealAdjacent`, `markNodeConsumed`, types); `processNode` demoted to "legacy / deprecated". Combat resolver row added `SkillPhaseEvent`, `ResourceEvent`, `CombatActor` and a `Combat/phases/` reference. Impact 6 × Ease 7 / 10 = 4.2.
