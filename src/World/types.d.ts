@@ -1,5 +1,5 @@
 import { Item } from '../Items/types';
-import { Enemy, EnemySlug } from '../Enemy/types';
+import { Enemy } from '../Enemy/types';
 import { Image } from '../Utils/types';
 import { ContinentName, MapName } from './map.library';
 import { QuestName } from './quest.library';
@@ -34,20 +34,6 @@ export interface Encounter {
     rewards?: Reward[];
     origin?: string;
 }
-
-/**
- * Type of event that can occur on a map node.
- */
-export type MapEventType =
-    | 'encounter'
-    | 'boss-encounter'
-    | 'event'
-    | 'treasure'
-    | 'gather'
-    | 'quest'
-    | 'shop'
-    | 'npc'
-    | 'other';
 
 // ─── Quests (Spec 08 Q7B) ─────────────────────────────────────────────────────
 
@@ -102,38 +88,11 @@ export interface QuestLog {
     completed: QuestName[];
 }
 
-/**
- * An event that can occur on a map node. Discriminated by `type`.
- *
- * Encounter / boss-encounter generate via `generateEncounter` when consumed,
- * unless the authored event ships a fixed `enemy` (e.g. unique boss).
- * Treasure / gather grant items.
- * Quest references a quest by `questName` — the engine handles start/progress.
- * Shop / npc reference an NPC name on the current map.
- * Event represents a rest / scripted narration.
- */
-export interface MapEvent {
-    type: MapEventType;
-    description: string;
-    enemy?: Enemy;
-    enemySlug?: EnemySlug;
-    reward?: Reward;
-    /** Quest this node hands out or advances. */
-    questName?: QuestName;
-    /** Name of an NPC defined on the owning map. */
-    npcName?: string;
-    /** For `gather` / `treasure`: items to grant. */
-    items?: Item[];
-    /** For `event` (rest): healing fraction of maxHealth (0..1). Default 1.0. */
-    healFraction?: number;
-    /** Hazard effect ids to apply on arrival (mapped via the effects library). */
-    hazardEffectIds?: string[];
-}
-
 /** An event that can only occur once per save. */
 export interface UniqueEvent {
     id: string;
-    type: MapEventType;
+    /** Free-form tag; the engine doesn't dispatch on this any more. */
+    type: string;
     description: string;
     nodeLocation: [number, number];
     completed: boolean;
@@ -155,11 +114,14 @@ export interface MapNode {
  * Static, frozen template for a map. Lives in the map registry; never mutated.
  *
  * @property nodes        - Every traversable node (including the starting one).
- * @property nodeEvents   - Per-node fixed events (encounter, treasure, shop, …).
  * @property npcs         - NPCs that can be referenced by node events.
- * @property availableEvents - Random / wandering events (kept for back-compat).
  * @property uniqueEvents - Event templates that fire at most once per save.
  * @property quests       - Quests this map can hand out.
+ *
+ * Node events are no longer authored on the definition. Spec 23
+ * shifted to weighted pools registered via `registerMapEventPool` /
+ * `setDefaultMapEventPool` / `setNodeEventPoolOverride`; see
+ * `src/World/MapEvents/content.ts` for the authored content.
  */
 export interface MapDefinition {
     readonly name: MapName;
@@ -167,10 +129,8 @@ export interface MapDefinition {
     readonly description: string;
     readonly startingNode: MapNode;
     readonly nodes: readonly MapNode[];
-    readonly nodeEvents?: Readonly<Partial<Record<NodeId, MapEvent>>>;
     readonly npcs?: readonly NPC[];
     readonly enemies?: readonly Enemy[];
-    readonly availableEvents?: readonly MapEvent[];
     readonly uniqueEvents?: readonly UniqueEvent[];
     readonly quests?: readonly Quest[];
     readonly images?: { mapImage: Image; combatImage: Image };

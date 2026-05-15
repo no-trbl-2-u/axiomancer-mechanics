@@ -10,7 +10,7 @@
  *                → fv-5 (treasure) → fv-6 (boss-encounter).
  */
 
-import { MapDefinition, MapEvent, NodeId, Quest } from '../../types';
+import { MapDefinition, Quest } from '../../types';
 import { NPC, DialogueTree } from '../../../NPCs/types';
 
 /**
@@ -208,41 +208,12 @@ const startingQuest: Quest = {
     reward: { kind: 'currency', amount: 25 },
 };
 
-// ─── Node events ──────────────────────────────────────────────────────────────
-
-const fishingVillageEvents: Partial<Record<NodeId, MapEvent>> = {
-    'fv-2': {
-        type: 'npc',
-        description: 'Old Marrow tends his nets by the docks.',
-        npcName: 'Old Marrow',
-    },
-    'fv-3': {
-        type: 'shop',
-        description: 'A stall stacked with salt-cured wares.',
-        npcName: 'Tide-Shopkeeper',
-    },
-    'fv-4': {
-        type: 'encounter',
-        description: 'A wet-hound bristles between the shacks.',
-    },
-    'fv-5': {
-        type: 'treasure',
-        description: 'A salt-stiff satchel half-buried in the sand.',
-        reward: { kind: 'currency', amount: 10 },
-    },
-    'fv-6': {
-        type: 'boss-encounter',
-        description: 'The Coastal Tyrant rises from the breakwater.',
-        enemySlug: 'coastal-tyrant',
-    },
-    'fv-7': {
-        type: 'npc',
-        description: 'A beggar sits by the weathered wall, bowl at their feet.',
-        npcName: 'Coastal Beggar',
-    },
-};
-
 // ─── Map definitions ──────────────────────────────────────────────────────────
+//
+// Per Spec 23 / Phase 24, node events are no longer authored on the
+// MapDefinition. The legacy `nodeEvents` block was removed in Phase 25;
+// see `src/World/MapEvents/content.ts` for the per-node pool overrides
+// that drive `resolveMapEvent` against fishing-village + northern-forest.
 
 const fishingVillage: MapDefinition = {
     name: 'fishing-village',
@@ -265,10 +236,8 @@ const fishingVillage: MapDefinition = {
         { id: 'fv-9',  location: [8, 0], connectedNodes: ['fv-10'] },
         { id: 'fv-10', location: [9, 0], connectedNodes: [] },
     ],
-    nodeEvents: fishingVillageEvents,
     npcs: [oldMarrow, tideShopkeeper, coastalBeggar],
     enemies: [],
-    availableEvents: [],
     uniqueEvents: [],
     quests: [startingQuest],
     images: {
@@ -298,16 +267,8 @@ const northernForest: MapDefinition = {
         { id: 'nf-9',  location: [6, 0], connectedNodes: ['nf-10'] },
         { id: 'nf-10', location: [7, 0], connectedNodes: [] },
     ],
-    nodeEvents: {
-        'nf-4': {
-            type: 'event',
-            description: 'A clearing with a cold spring. You catch your breath.',
-            healFraction: 1.0,
-        },
-    },
     npcs: [],
     enemies: [],
-    availableEvents: [],
     uniqueEvents: [],
     quests: [],
     images: {

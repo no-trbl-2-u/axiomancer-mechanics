@@ -23,7 +23,7 @@ export {
 } from './map.registry';
 
 export type {
-    WorldState, WorldMap, Continent, Quest, MapEvent, MapEventType, UniqueEvent,
+    WorldState, WorldMap, Continent, Quest, UniqueEvent,
     Reward, MapNode, NodeId, Encounter,
     MapDefinition, MapState, QuestObjective, QuestObjectiveType, QuestStatus, QuestLog,
 } from './types';
@@ -48,9 +48,6 @@ export {
     completeNode, unlockNode, changeContinent, completeUniqueEvent,
     revealAdjacent, markNodeConsumed,
 } from './world.reducer';
-
-export { processNode } from './process-node';
-export type { ProcessNodeResult, ProcessedEvent } from './process-node';
 
 // Spec 23 — MapEvents engine.
 // Importing `./MapEvents/content` for its side effect registers the

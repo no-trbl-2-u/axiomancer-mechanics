@@ -129,7 +129,7 @@ export function discoverQuest(log: QuestLog, quest: Quest): QuestLog {
 
 /**
  * Returns active-quest objectives that fire on `reach`-type completion for
- * `nodeId`. Used by `processNode` to auto-advance "reach the X" objectives
+ * `nodeId`. Used by `resolveMapEvent` to auto-advance "reach the X" objectives
  * the moment a player arrives.
  */
 export function reachableObjectives(log: QuestLog, nodeId: NodeId): Array<{

@@ -1,10 +1,13 @@
 # World
 
-> **Status:** Spec 08 landed — `moveToNode`, `processNode`, branching dialogue,
-> a per-objective quest engine, the continent-keyed map registry, and the
-> hazard tick on movement are all live. Fishing-village ships with a demo
-> chain (NPC quest-giver → shop → encounter → treasure → boss) that
-> exercises the loop end-to-end.
+> **Status:** Spec 08 + Spec 23 + Phase 25 landed — `moveToNode`,
+> `resolveMapEvent`, branching dialogue, a per-objective quest engine, the
+> continent-keyed map registry, and the hazard tick on movement are all
+> live. Fishing-village ships with a demo chain (NPC quest-giver → village →
+> encounter → loot-cache → boss) that exercises the loop end-to-end. The
+> legacy `processNode` + `MapEvent`/`MapEventType` surface was removed in
+> Phase 25; node events are now authored via weighted pools (see
+> `src/World/MapEvents/content.ts`).
 
 ## State Shape
 
@@ -16,8 +19,7 @@ interface MapDefinition {
   name; continent; description;
   startingNode: MapNode;
   nodes: readonly MapNode[];
-  nodeEvents?: Partial<Record<NodeId, MapEvent>>;
-  npcs?; enemies?; availableEvents?; uniqueEvents?;
+  npcs?; enemies?; uniqueEvents?;
   quests?: readonly Quest[];
 }
 
@@ -118,20 +120,20 @@ values:
 The dispatcher reveals adjacent nodes on consumption (fog-of-war) and
 marks the active node consumed so subsequent visits no-op.
 
-### Legacy `processNode` (deprecated)
+### Legacy `processNode` (removed in Phase 25)
 
-The pre-Spec-23 dispatcher `processNode(gameState): ProcessNodeResult`
-still ships at `src/World/process-node.ts` for back-compat with the
-existing world e2e suite (`src/World/e2e/world.engine.test.ts`). It
-reads `MapEvent` records off `MapDefinition.nodeEvents` and handles
-the old 9-kind taxonomy (including the now-folded `npc` and `shop`
-kinds). The legacy surface will be removed in a follow-up cleanup
-phase (provisional Phase 25 in `plan/PHASE_CANDIDATES.md`); new
-content must author through `MapEventPool` records.
+The pre-Spec-23 dispatcher and its 9-kind taxonomy
+(`MapEvent` / `MapEventType` / the `nodeEvents` field on
+`MapDefinition`) were removed in Phase 25 (commit reference in
+`plan/AUDIT.md` Done block). All node events now flow through
+`resolveMapEvent` + the per-node pool overrides registered in
+`src/World/MapEvents/content.ts`. The folded `npc` / `shop` kinds
+map to `interaction` / `village` in the new taxonomy.
 
-Quest auto-progression: every active `reach`-objective targeting the
-current node is advanced. Completing an objective grants the quest
-reward.
+Quest auto-progression: `reachableObjectives(log, nodeId)` is
+available for any future dispatcher that wants to auto-advance
+`reach`-type objectives on arrival; `resolveMapEvent` does not call
+it today (it's a noted follow-up — track in `plan/AUDIT.md`).
 
 ## Quest Engine (Spec 08 Q7B — per-objective)
 
@@ -218,8 +220,9 @@ the boss auto-completes the quest and grants the 25-currency reward.
 
 ## MapEvents (Spec 23)
 
-Phase 23 introduces a second node-event surface, **MapEvents**, designed
-to replace the bespoke `processNode` dispatcher in a later phase.
+Phase 23 introduced the **MapEvents** node-event surface. Phase 25
+removed the bespoke `processNode` predecessor; MapEvents is now the
+only node-event dispatcher.
 
 - **Taxonomy.** Eight kinds: `encounter`, `interaction`, `gathering`,
   `rest`, `village`, `cutscene`, `hazard`, `loot-cache`. The old
@@ -244,8 +247,9 @@ to replace the bespoke `processNode` dispatcher in a later phase.
   existing `processNode`. Phase 24 (commit `4b12e27`) migrated the
   `fishing-village` + `northern-forest` content into per-node pool
   overrides — see `src/World/MapEvents/content.ts` for the 20-node
-  authoring map. Removing `processNode` is deferred to a follow-up
-  cleanup phase (the existing world e2e suite still pins it).
+  authoring map. Phase 25 removed the legacy `processNode` surface,
+  the `MapEvent` / `MapEventType` types, and the `nodeEvents` /
+  `availableEvents` fields on `MapDefinition`.
 
 See `specs/23-map-events.md` for the spec and
 `src/World/MapEvents/e2e/map-events.engine.test.ts` for the hermetic

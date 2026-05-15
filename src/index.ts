@@ -149,7 +149,7 @@ export {
     createStartingWorld, getCoastalMap, MapNotFoundError,
     MAP_REGISTRY, getMapDefinition, createMapState,
     moveToNode, completeCurrentNode, IllegalMoveError,
-    processNode, applyDialogueChoice,
+    applyDialogueChoice,
     emptyQuestLog, isQuestComplete, findActiveQuest, findQuest,
     startQuest, progressQuest, completeQuest, discoverQuest,
     reachableObjectives, killObjectives,
@@ -176,12 +176,12 @@ export {
     DIFFICULTY_LEVEL_BANDS,
 } from './World';
 export type {
-    WorldState, WorldMap, Continent, Quest, MapEvent, MapEventType, UniqueEvent,
+    WorldState, WorldMap, Continent, Quest, UniqueEvent,
     Reward, MapNode, NodeId, Encounter,
     MapName, ContinentName, QuestName,
     MapDefinition, MapState, QuestObjective, QuestObjectiveType, QuestStatus, QuestLog,
     GenerateEncounterOptions,
-    ProcessNodeResult, ProcessedEvent, ApplyDialogueChoiceResult,
+    ApplyDialogueChoiceResult,
 } from './World';
 
 // ─── NPCs (types + dialogue helpers) ──────────────────────────────────────────

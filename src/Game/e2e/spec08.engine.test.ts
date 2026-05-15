@@ -10,7 +10,7 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import { createGameStore } from '../store';
 import { nullAdapter } from '../persistence/null.adapter';
 import {
-    moveToNode, completeCurrentNode, processNode, applyDialogueChoice,
+    moveToNode, completeCurrentNode, resolveMapEvent, applyDialogueChoice,
     getMapDefinition,
 } from '../../World';
 import { Player } from '../../Character/characters.mock';
@@ -44,10 +44,10 @@ describe('Spec 08 e2e — fishing-village exploration loop', () => {
         // 1. Talk to Old Marrow on fv-2 and accept the quest.
         const moved2 = moveToNode(state.world, 'fv-2');
         store.setState({ world: moved2 });
-        let result = processNode(store.getState());
-        store.setState(result.gameState);
-        expect(result.event.kind).toBe('npc');
-        if (result.event.kind === 'npc' && result.event.dialogue) {
+        let result = resolveMapEvent(store.getState());
+        store.setState(result.state);
+        expect(result.event.kind).toBe('interaction');
+        if (result.event.kind === 'interaction' && result.event.dialogue) {
             const tree = result.event.dialogue;
             const root = tree.nodes[tree.rootId];
             const offer = root.choices!.find(c => c.nextNodeId === 'offer')!;
@@ -60,17 +60,17 @@ describe('Spec 08 e2e — fishing-village exploration loop', () => {
         }
         store.setState({ world: completeCurrentNode(store.getState().world) });
 
-        // 2. Pass the shop (fv-3) without buying.
+        // 2. Pass the shop (fv-3) — folded into the village kind post-Phase 24.
         store.setState({ world: moveToNode(store.getState().world, 'fv-3') });
-        const shopRes = processNode(store.getState());
-        store.setState(shopRes.gameState);
-        expect(shopRes.event.kind).toBe('shop');
+        const shopRes = resolveMapEvent(store.getState());
+        store.setState(shopRes.state);
+        expect(shopRes.event.kind).toBe('village');
         store.setState({ world: completeCurrentNode(store.getState().world) });
 
         // 3. Encounter node fv-4 → fight + win.
         store.setState({ world: moveToNode(store.getState().world, 'fv-4') });
-        const encRes = processNode(store.getState());
-        store.setState(encRes.gameState);
+        const encRes = resolveMapEvent(store.getState());
+        store.setState(encRes.state);
         expect(encRes.event.kind).toBe('encounter');
         if (encRes.event.kind === 'encounter') {
             store.getState().startCombat(encRes.event.encounter);
@@ -82,19 +82,19 @@ describe('Spec 08 e2e — fishing-village exploration loop', () => {
         }
         store.setState({ world: completeCurrentNode(store.getState().world) });
 
-        // 4. Treasure node fv-5 → currency reward.
+        // 4. Loot-cache node fv-5 → currency reward (treasure folded into loot-cache).
         store.setState({ world: moveToNode(store.getState().world, 'fv-5') });
         const treasureBefore = store.getState().player.currency;
-        const treasureRes = processNode(store.getState());
-        store.setState(treasureRes.gameState);
-        expect(treasureRes.event.kind).toBe('treasure');
+        const treasureRes = resolveMapEvent(store.getState());
+        store.setState(treasureRes.state);
+        expect(treasureRes.event.kind).toBe('loot-cache');
         expect(store.getState().player.currency).toBe(treasureBefore + 10);
         store.setState({ world: completeCurrentNode(store.getState().world) });
 
         // 5. Boss encounter fv-6 → fight, win, quest auto-completes.
         store.setState({ world: moveToNode(store.getState().world, 'fv-6') });
-        const bossRes = processNode(store.getState());
-        store.setState(bossRes.gameState);
+        const bossRes = resolveMapEvent(store.getState());
+        store.setState(bossRes.state);
         expect(bossRes.event.kind).toBe('encounter');
         if (bossRes.event.kind !== 'encounter') throw new Error('expected encounter');
         expect(bossRes.event.isBoss).toBe(true);
@@ -140,12 +140,11 @@ describe('Spec 08 e2e — fishing-village exploration loop', () => {
 
 // Compile-time sanity for the demo map's authored content.
 describe('fishing-village authoring sanity', () => {
-    it('has the demo NPC, shop, quest, and boss', () => {
+    it('has the demo NPC, shop, and quest registered', () => {
         const def = getMapDefinition('coastal-continent', 'fishing-village');
         expect(def.npcs?.some(n => n.name === 'Old Marrow')).toBe(true);
         expect(def.npcs?.some(n => n.isShopkeeper)).toBe(true);
         expect(def.quests?.some(q => q.name === 'starting-quest')).toBe(true);
-        expect(def.nodeEvents?.['fv-6']?.type).toBe('boss-encounter');
         // Player reference unused.
         void Player;
     });
