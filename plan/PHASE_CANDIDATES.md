@@ -5,8 +5,8 @@
 > `## Promoted` or `## Rejected`.
 
 <!-- Metadata (updated by /expand after each pass):
-> Last pass: never (candidates below were seeded via /oversight 2026-05-14)
-> Pass count: 0
+> Last pass: 2026-05-15 at commit 06c5446
+> Pass count: 1
 -->
 
 ---
@@ -28,6 +28,96 @@
 - acceptance: `grep -rn "processNode\|MapEvent\b\|MapEventType" src/`
   returns zero hits; the world e2e suite is green using only the
   new dispatcher.
+
+### Candidate: docs/api.md refresh post-Phase 21
+- signal: `docs/api.md:28-31` still lists `CombatStartedPayload`,
+  `createCombatStartedEvent`, etc. as Beta exports — but Phase 21
+  deleted the payload interfaces and the seven `create*Event`
+  factories. Anyone reading the public API doc today gets a list
+  of names that no longer exist in the package.
+- scope: Rewrite the "Events (Beta)" section to match the
+  post-Phase-21 surface (`EnginePayload`, the 10 `Typed*Event`
+  aliases, the 10 `is*Event` guards). Sweep the rest of the doc
+  for similar drift (Phase 17 dropped commander; Phase 18 added
+  the preset roster; Phase 23 added the MapEvents engine and
+  pool registration helpers; Phase 24 added pool content).
+- unblocks: trustworthy public-API doc that consumers can rely on
+  when integrating against the package.
+- blocked-by: none.
+- score: 9 × 8 / 10 = 7.2
+- recommended-slot: next (highest-priority pending candidate)
+
+### Candidate: Persistence adapter hermetic tests
+- signal: `plan/CRITIQUE.md` Pending MED — "Game/persistence has
+  zero tests despite owning the save-file format". The Node adapter
+  does fs reads/writes and is invoked on every dispatch (autosave);
+  malformed-JSON fallback and file-not-found behaviour are entirely
+  untested.
+- scope: Add `src/Game/persistence/node.adapter.test.ts` with three
+  hermetic cases — round-trip save/load via a tmpfile path, load
+  returns null when file missing, load returns null and warns when
+  file is malformed JSON. Move the CRITIQUE finding to Done.
+- unblocks: confidence in the save-file path before any consumer
+  takes a hard dependency on it.
+- blocked-by: none.
+- score: 6 × 7 / 10 = 4.2
+- recommended-slot: after Phase 25
+
+### Candidate: Knowledge-Gaps.md reconciliation
+- signal: `plan/AUDIT.md` Pending LOW references
+  `Knowledge-Gaps.md` — but the file does not exist on disk
+  (`ls plan/Knowledge-Gaps.md` errors). Either the file was deleted
+  and the AUDIT row is stale, or the file was always planned but
+  never created.
+- scope: Either (a) create `plan/Knowledge-Gaps.md` from the
+  unresolved open questions across `specs/` and `braindump/` and
+  start filing them as numbered design Qs; or (b) close the AUDIT
+  row as obsolete and trust that braindump/ + specs/ are the
+  durable record. Pick one in oversight.
+- unblocks: removes a phantom reference; clarifies whether
+  Knowledge-Gaps is a live document or historical artifact.
+- blocked-by: none.
+- score: 5 × 8 / 10 = 4.0
+- recommended-slot: after Phase 25
+
+### Candidate: Tier 2 / Tier 3 skill content polish
+- signal: `spec.md` 6-month horizon — "Additional skill tiers
+  (Tier 2+)". The library at `src/Skills/skill.library.ts` already
+  ships 3 tier-2 + 3 tier-3 entries, but they're placeholder
+  numbers; the Resonance Pairs design in
+  `braindump/BRAINDUMP.md` ("Decided / leaning: Option C") never
+  got wired into the actual skill payloads. The 12 skills exist;
+  the *flavor* and *balance* of the higher tiers does not.
+- scope: Run a balance pass over the 6 tier-2 + tier-3 skills;
+  refine resource costs to match the Resonance Pairs vision (Tier
+  2 = mixed-stance gates, Tier 3 = mind + philosophical-token
+  gates). Author 3-4 line flavour text per skill. Update
+  `docs/skills.md` to document the resource progression model.
+- unblocks: a more readable mid-to-late-game skill library; the
+  philosophical-resource economy from braindump becomes legible
+  in code.
+- blocked-by: none — content-only.
+- score: 6 × 6 / 10 = 3.6
+- recommended-slot: low-priority sometime after the
+  cleanup-of-legacy phase
+
+### Candidate: Second continent — Northern Continent stub
+- signal: `spec.md` 6-month horizon — "Additional world content
+  (biomes, continent 2+)". Phase 23's MapEvents engine + Phase 24's
+  pool content authoring pattern have unblocked content scale.
+  `content/story/story-overview.md` already sketches the Northern
+  Continent (Northern City + Island Village).
+- scope: Stand up `src/World/Continents/Northern-Continent/` with
+  one or two starter maps (e.g. `northern-city`, `island-village`),
+  each wired into a registered MapEventPool covering at least 5
+  of the 8 kinds. Add to `MAP_REGISTRY`. Hermetic e2e walks the
+  new continent's nodes. Establishes the pattern for continent 3+.
+- unblocks: actual story breadth; the existing coastal continent
+  becomes an act-1 region rather than the whole game.
+- blocked-by: none. Phase 22's `world-spec` and `character-spec`
+  skills are ready to use for authoring.
+- score: 5 × 7 / 10 = 3.5
+- recommended-slot: after the cleanup-and-polish phases land
 
 ---
 
