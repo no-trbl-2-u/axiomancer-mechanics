@@ -53,6 +53,10 @@ export { processNode } from './process-node';
 export type { ProcessNodeResult, ProcessedEvent } from './process-node';
 
 // Spec 23 — MapEvents engine.
+// Importing `./MapEvents/content` for its side effect registers the
+// Phase 24 pools (fishing-village + northern-forest) on module load.
+import './MapEvents/content';
+
 export {
     resolveMapEvent,
     registerMapEventPool,
