@@ -12,15 +12,6 @@
 
 ## Pending
 
-### [HIGH] docs/api.md lists deleted symbols and is missing several phases of additions
-- category: docs
-- impact: 9 (the public API reference is wrong; consumers see names that don't exist and miss real ones from Phases 18 / 23 / 24)
-- ease: 8 (markdown rewrite; no code churn required)
-- score: 7.2
-- source: expand-pass-1 (2026-05-15)
-- evidence: `docs/api.md:29-31` lists `CombatStartedPayload`, `createCombatStartedEvent`, etc. — all deleted in Phase 21 (commit a3f1693). The doc never picked up `characterPresets` / `buildCharacterFromPreset` (Phase 18), `resolveMapEvent` + pool helpers (Phase 23), `EnginePayload` (Phase 21), or the 10 new `is*Event` guards.
-- next: rewrite the Events section to match `EnginePayload` + 10 typed aliases + 10 guards; add Character Presets and MapEvents sections.
-
 ### [LOW] `Knowledge-Gaps.md` contains open design questions not yet spec'd
 - category: spec-gap
 - impact: 4 (answers needed before implementation; doesn't block current phases)
@@ -56,6 +47,7 @@
 
 ## Done
 
+- [x] **[HIGH] docs/api.md lists deleted symbols and is missing several phases of additions** — resolved at commit `353933f` (2026-05-15) by a rewrite against the live barrel: Events section now reflects `EnginePayload` + 10 typed aliases + 10 guards (Phase 21); Character Presets section added (Phase 18); MapEvents section added (Phase 23 / 24); RN example uses `'axiomancer-mechanics'` for the `PersistenceAdapter` interface. Impact 9 × Ease 8 / 10 = 7.2.
 - [x] **[MED] ESLint config broken — `npm run lint` fails** — resolved at commit `4f58f66` (2026-05-14) by Phase 13. `eslint.config.mts` now registers `@typescript-eslint`, `npm run lint` is green, and `lint` is back in the verify gate. Closed via oversight 2026-05-15. Impact 5 × Ease 7 / 10 = 3.5.
 - [x] **[MED] `docs/gameloop.md` lags two phases behind the live `GameState` shape** — header listed `GAME_STATE_VERSION = 2` (actual: 4), state shape omitted `moralMeter` (Spec 10) and `rngState` (Spec 11), GameAction union missed `SHIFT_MORAL_METER`, the "reducer is pure" claim no longer held for `SAVE_GAME`'s rngState stamp, and the migration ladder advice still told readers to write `migrateV2toV3` (it already exists). Rewrote shape, action list, purity caveat, and migration section. Shipped at commit `d15298f` (2026-05-13). Impact 6 × Ease 7 / 10 = 4.2.
 - [x] **[MED] Stale "Spec 11 / seedable RNG" references in docs and source headers** — Phase 11 shipped the seedable RNG singleton, but `docs/testing.md`, `docs/combat.md`, `docs/skills.md`, `src/Combat/combat.resolver.ts`, `src/Combat/e2e/combat.resolver.test.ts`, and `src/Enemy/enemy.logic.ts` still framed it as future tense. Rewrote each to acknowledge the live `getRng()` pipeline and how the Math-backed test harness now controls it end-to-end. Shipped at commit `0c2ce22` (2026-05-13). Impact 5 × Ease 8 / 10 = 4.0.
