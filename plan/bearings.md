@@ -97,6 +97,13 @@ axiomancer-mechanics/
 ├── src/CLI/                # interactive CLIs (not exported)
 ├── src/test-utils/         # rng stubs, mock helpers
 ├── specs/                  # implementation specs (conversation-loop format)
+│   ├── story/              # authored via `/story-spec` (S-NN-*.md)
+│   ├── world/              # authored via `/world-spec` (W-NN-*.md)
+│   └── characters/         # authored via `/character-spec` (C-NN-*.md)
+├── content/                # author's notebook (not loaded by engine)
+│   ├── characters/         # per-character bios + visuals + vo (when needed)
+│   ├── locations/          # per-location atmosphere + mechanics + lore
+│   └── story/              # high-level story-overview prose
 ├── docs/                   # per-system reference docs
 ├── braindump/              # unorganised idea backlog
 ├── plan/                   # build plan, phase briefs, audit findings
@@ -104,7 +111,7 @@ axiomancer-mechanics/
 ├── .claude/
 │   ├── commands/           # terse slash-command pointers
 │   ├── agents/             # sub-agent definitions
-│   └── skills/             # project-specific skills (brainstorm-mechanics, story-spec)
+│   └── skills/             # project-specific skills (brainstorm-mechanics, story-spec, world-spec, character-spec)
 └── scripts/                # deploy-check.mjs + loop-issue.mjs (best-effort)
 ```
 
