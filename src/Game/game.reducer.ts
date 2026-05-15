@@ -37,7 +37,7 @@ import { processNode as processWorldNode } from '../World/process-node';
 import { applyDialogueChoice as applyDialogueRuntime } from '../World/dialogue.runtime';
 import { killObjectives, progressQuest, findQuest } from '../World/quest.engine';
 import { calculateMaxHealth } from '../Utils';
-import { EXPERIENCE_PER_LEVEL, FRIENDSHIP_COUNTER_MAX } from './game-mechanics.constants';
+import { EXPERIENCE_PER_LEVEL } from './game-mechanics.constants';
 import { addItemStacking, rollEncounterLoot, totalEncounterXp } from './combat-grants';
 import { getRng } from '../Utils/rng';
 

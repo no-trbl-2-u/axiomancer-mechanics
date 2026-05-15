@@ -20,7 +20,7 @@
  */
 
 import { Equipment, EquipmentProcTrigger, EquipmentSlot, Consumable } from './types';
-import { ActiveEffect, Effect } from '../Effects/types';
+import { Effect } from '../Effects/types';
 import { applyEffect } from '../Effects';
 import { heal } from '../Combat/health';
 import { CombatResources } from '../Skills/types';

@@ -114,11 +114,6 @@ export interface GameActions {
 /** Full store type — state + actions. */
 export type GameStore = GameState & GameActions;
 
-/** Type-guard for the `Enemy | Encounter` overload. */
-function isEncounter(target: Enemy | Encounter): target is Encounter {
-    return Array.isArray((target as Encounter).enemies);
-}
-
 /**
  * Map a `GameAction` to the corresponding `GameEvent` (or null if the action
  * shouldn't broadcast). The reducer is pure, so the store is the right place

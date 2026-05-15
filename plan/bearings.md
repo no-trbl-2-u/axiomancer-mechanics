@@ -38,9 +38,9 @@ code-quality audit, not a live-site observer pass.
 | Language | TypeScript strict | Existing codebase, type safety for game state |
 | Package manager | npm | Existing; do not switch to pnpm |
 | Build | `tsc && tsc-alias` | Path-alias resolution for clean module imports |
-| Type-check | `tsc --noEmit` | Reliable static analysis (lint is currently broken) |
+| Type-check | `tsc --noEmit` | Reliable static analysis |
 | Test runner | Vitest | Fast, ESM-compatible, hermetic e2e pattern established |
-| Lint | ESLint (currently broken — see Hard Rules) | Existing; fix scheduled |
+| Lint | ESLint flat config + `@typescript-eslint` plugin | Repaired in Phase 13 |
 | Structured data | `none` | Pure library — no records, no DB |
 | Hosting | none | Library; no deployment target yet |
 | State management | Zustand vanilla store | Consumer-facing store for the React Native app |
@@ -130,13 +130,15 @@ Maintain this vocabulary in code comments, effect descriptions, and docs.
 ## Decisions standing for the autonomous loop
 
 - **Package manager:** npm. Never pnpm. All commands use `npm run`.
-- **Verify gate:** `npm run type-check && npm test && npm run build`
-  (lint excluded — broken; tracked separately).
+- **Verify gate:** `npm run type-check && npm run lint && npm test && npm run build`.
 - **Deploy gate:** `npm run deploy:check` → `npm pack --dry-run`
   (confirms the package is publishable; no actual publish).
-- **ESLint state:** currently broken (`@typescript-eslint` plugin not
-  registered). Do NOT run `npm run lint` in the verify gate until a fix
-  phase ships. Use `npm run type-check` as the static analysis gate.
+- **ESLint state:** flat-config (`eslint.config.mts`) with the
+  `@typescript-eslint` plugin registered and a deliberately narrow rule set
+  (`no-unused-vars` via the TS plugin, `no-redeclare` via the TS plugin to
+  respect function overloads, `no-explicit-any` at `warn`). `src/CLI/`,
+  `automation/`, and `scripts/` are ignored. Warnings are advisory; only
+  errors fail the verify gate. Was broken until Phase 13.
 - **Hermetic e2e tests:** located at `src/<Module>/e2e/<feature>.engine.test.ts`.
   They run as part of `npm test`. No Playwright; e2e is vitest-based.
 - **RNG stubs:** always use `mockAlternatingRng`, `mockFixedRng`,
@@ -163,13 +165,12 @@ Maintain this vocabulary in code comments, effect descriptions, and docs.
 2. **No `Co-Authored-By:` trailers, no emojis.**
 3. **No `--no-verify`, no force-push, no destructive resets.**
 4. **The verify gate is non-negotiable:**
-   `npm run type-check && npm test && npm run build`
+   `npm run type-check && npm run lint && npm test && npm run build`
 5. **Tests alongside code — never "add tests later".**
    Every implementation lands with at least one hermetic e2e test
    driving the change through the module's highest-level public entry.
 6. **Never skip lint by removing it from verify** — fix the underlying
-   ESLint config issue instead. Until that fix ships, the gate is
-   `type-check + test + build` (lint excluded and documented).
+   ESLint config issue instead.
 7. **`src/index.ts` contract is locked** — no removals or renames without
    a semver major phase.
 8. **CLI files (`src/CLI/`) contain UI only** — logic goes in resolver/
@@ -182,11 +183,12 @@ Maintain this vocabulary in code comments, effect descriptions, and docs.
 
 ```
 npm run type-check     # tsc --noEmit
+npm run lint           # eslint "**/*.ts" (warnings advisory; errors fail)
 npm test               # vitest run (includes hermetic e2e)
 npm run build          # tsc && tsc-alias → dist/
 ```
 
-All three are hard gates. Iterate up to 3 times on the same root cause
+All four are hard gates. Iterate up to 3 times on the same root cause
 before stopping per skill failure modes. **Hermetic e2e is the unit tests
 at `src/**/*.engine.test.ts`** — they exercise the full module through its
 public entry point with stubbed RNG. A red `npm test` is a blocked push.

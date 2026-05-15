@@ -3,7 +3,7 @@
  * makes sense (locking/unlocking, completing).
  */
 
-import { WorldState, WorldMap, MapState, MapNode, NodeId } from './types';
+import { WorldState, MapState, MapNode, NodeId } from './types';
 import { MapName, ContinentName } from './map.library';
 import { getMapDefinition } from './map.registry';
 

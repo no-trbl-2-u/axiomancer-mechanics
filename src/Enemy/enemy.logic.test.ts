@@ -12,7 +12,7 @@
  *     phase script. These are deterministic.
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 import {
     decideEnemyAction, aggressiveLogic, defensiveLogic, balancedLogic,
     strategicLogic, bossLogic, counterStanceOf, weakestStanceOf,

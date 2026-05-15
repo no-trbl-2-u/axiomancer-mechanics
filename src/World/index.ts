@@ -1,6 +1,6 @@
 import { WorldState } from './types';
 import { MapName } from './map.library';
-import { createMapState, getMapDefinition, getCoastalMap, MapNotFoundError, MAP_REGISTRY } from './map.registry';
+import { createMapState, getMapDefinition } from './map.registry';
 
 /** Builds the initial WorldState for a new save. */
 export function createStartingWorld(): WorldState {

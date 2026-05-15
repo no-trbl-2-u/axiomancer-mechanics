@@ -9,6 +9,9 @@ const config: Config[] = defineConfig([
       "dist/**",
       "node_modules/**",
       "docs/**",
+      "src/CLI/**",
+      "automation/**",
+      "scripts/**",
       "*.reference.ts",
       "**/*.reference.ts",
     ]
@@ -18,23 +21,27 @@ const config: Config[] = defineConfig([
     plugins: { js },
     extends: ["js/recommended"],
     languageOptions: {
-      globals: globals.browser,
-      parserOptions: {
-        project: "./tsconfig.json"
-      }
+      globals: { ...globals.browser, ...globals.node },
     }
   },
   {
     files: ["**/*.ts", "**/*.mts", "**/*.cts"],
+    plugins: {
+      "@typescript-eslint": tseslint.plugin,
+    },
     languageOptions: {
       parser: tseslint.parser,
-      parserOptions: {
-        project: "./tsconfig.json",
-        tsconfigRootDir: import.meta.dirname,
-        projectService: true
-      }
+      globals: { ...globals.browser, ...globals.node },
     },
     rules: {
+      "no-unused-vars": "off",
+      "no-redeclare": "off",
+      "@typescript-eslint/no-redeclare": "error",
+      "@typescript-eslint/no-unused-vars": ["error", {
+        argsIgnorePattern: "^_",
+        varsIgnorePattern: "^_",
+        caughtErrorsIgnorePattern: "^_",
+      }],
       "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/explicit-function-return-type": "off",
     }

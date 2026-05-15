@@ -27,7 +27,7 @@
 import { GameState } from '../Game/types';
 import { Character } from '../Character/types';
 import { Item } from '../Items/types';
-import { MapEvent, MapDefinition, Encounter, Quest, Reward } from './types';
+import { MapEvent, MapDefinition, Encounter, Reward } from './types';
 import { getMapDefinition } from './map.registry';
 import { generateEncounter } from './encounter';
 import { discoverQuest, startQuest, progressQuest, reachableObjectives } from './quest.engine';

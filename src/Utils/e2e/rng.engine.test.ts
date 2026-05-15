@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { setRng, getRng, setSeed } from '../rng';
+import { getRng, setSeed } from '../rng';
 import { randomInt } from '../index';
 
 describe('RNG engine', () => {

@@ -20,7 +20,7 @@
 import { decideEnemyAction } from '../Enemy/enemy.logic';
 import { Enemy } from '../Enemy/types';
 import { FRIENDSHIP_COUNTER_MAX } from '../Game/game-mechanics.constants';
-import { Stance, Action, CombatAction, CombatState } from './types';
+import { CombatAction, CombatState } from './types';
 
 export type {
     Stance, Action, Advantage, CritStyle, CombatAction, PlayerCombatAction,

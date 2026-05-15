@@ -2,13 +2,10 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { createGameStore } from '../store';
 import { nullAdapter } from '../persistence/null.adapter';
 import { createEventEmitter } from '../events';
-import { createCharacter } from '../../Character';
-import { createEnemy } from '../../Enemy';
-import { 
+import { Disatree_01, TidepoolCrab } from '../../Enemy/enemy.library';
+import {
     isCombatStartedEvent,
     isCombatEndedEvent,
-    isLevelUpEvent,
-    isInventoryChangedEvent 
 } from '../events.utils';
 
 describe('Events engine', () => {
@@ -27,10 +24,9 @@ describe('Events engine', () => {
 
     it('emits combat events in correct sequence', () => {
         const store = createGameStore(nullAdapter, undefined, events);
-        const enemy = createEnemy({ name: 'Test Enemy', difficulty: 'easy' });
 
         // Start combat
-        store.startCombat(enemy);
+        store.getState().startCombat(Disatree_01);
 
         // Should emit combat:started event
         expect(capturedEvents).toHaveLength(1);
@@ -39,8 +35,8 @@ describe('Events engine', () => {
 
         capturedEvents.length = 0; // Clear events
 
-        // End combat  
-        const result = store.endCombat();
+        // End combat
+        store.getState().endCombat();
 
         // Should emit combat:ended event
         expect(capturedEvents.length).toBeGreaterThan(0);
@@ -51,9 +47,8 @@ describe('Events engine', () => {
 
     it('provides typed event payloads with rich data', () => {
         const store = createGameStore(nullAdapter, undefined, events);
-        const enemy = createEnemy({ name: 'Sophist', difficulty: 'easy' });
 
-        store.startCombat(enemy);
+        store.getState().startCombat(Disatree_01);
 
         const startEvent = capturedEvents.find(e => e.type === 'combat:started');
         expect(startEvent).toBeDefined();
@@ -74,8 +69,7 @@ describe('Events engine', () => {
         events.on('combat:started', (event) => combatEvents.push(event));
         events.onAny((event) => allEvents.push(event));
 
-        const enemy = createEnemy({ name: 'Test Enemy', difficulty: 'easy' });
-        store.startCombat(enemy);
+        store.getState().startCombat(Disatree_01);
 
         expect(combatEvents).toHaveLength(1);
         expect(allEvents.length).toBeGreaterThan(0);
@@ -88,27 +82,24 @@ describe('Events engine', () => {
         const testEvents: any[] = [];
         const unsubscribe = events.on('combat:started', (event) => testEvents.push(event));
 
-        const enemy = createEnemy({ name: 'Test Enemy', difficulty: 'easy' });
-        store.startCombat(enemy);
+        store.getState().startCombat(Disatree_01);
         expect(testEvents).toHaveLength(1);
 
         unsubscribe();
         testEvents.length = 0;
 
         // Start another combat - should not receive event
-        const enemy2 = createEnemy({ name: 'Test Enemy 2', difficulty: 'easy' });
-        store.startCombat(enemy2);
+        store.getState().startCombat(TidepoolCrab);
         expect(testEvents).toHaveLength(0);
     });
 
     it('works with game store without event emitter', () => {
         // Should not crash when no emitter provided
         const store = createGameStore(nullAdapter);
-        const enemy = createEnemy({ name: 'Test Enemy', difficulty: 'easy' });
 
         expect(() => {
-            store.startCombat(enemy);
-            store.endCombat();
+            store.getState().startCombat(Disatree_01);
+            store.getState().endCombat();
         }).not.toThrow();
     });
 });

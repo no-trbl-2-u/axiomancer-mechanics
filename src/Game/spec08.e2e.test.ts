@@ -42,7 +42,6 @@ describe('Spec 08 e2e — fishing-village exploration loop', () => {
         let state = store.getState();
 
         // 1. Talk to Old Marrow on fv-2 and accept the quest.
-        state.updateCombat = state.updateCombat; // touch
         const moved2 = moveToNode(state.world, 'fv-2');
         store.setState({ world: moved2 });
         let result = processNode(store.getState());
