@@ -6,13 +6,37 @@
 > by `/iterate`.
 
 <!-- Metadata (updated by /critique after each pass):
-> Last pass: 2026-05-15 at commit 938016b
-> Pass count: 10
+> Last pass: 2026-05-15 at commit ced226a
+> Pass count: 11
 -->
 
 ---
 
 ## Pending
+
+### [LOW] `WorldMap` type alias is `@deprecated` but still on the public barrel with no in-repo callers
+- pass: critique-11 (commit ced226a)
+- area: dead-code
+- observation: `src/World/types.d.ts:166-174` declares two `@deprecated` aliases: `WorldMap = MapState` and `Map = MapState`. `Map` is NOT re-exported through `src/World/index.ts` or `src/index.ts` — it's effectively dead and can be deleted from the types file. `WorldMap` IS exported from both barrels (`src/World/index.ts:26`, `src/index.ts:182`) but has zero in-repo callers (verified by grepping `WorldMap` across `src/`). The JSDoc reads "alias retained so older imports continue to compile" — that's a hypothetical external-consumer concern; given the package's pre-1.0 version (`0.7.0`), the kept-for-compat framing is generous. The standing rule "the barrel is locked" was set when the project shipped a stable API; this row flags the alias for confirmation, not for autonomous removal.
+- evidence: `grep -rn 'WorldMap' src/` returns the type declaration, the two barrel re-exports, and nothing else. Same for `Map` (declaration only — the World barrel does NOT re-export it).
+- suggested_fix: delete the `Map` alias outright (declaration-only, no callers, no barrel export). For `WorldMap`, ask in the next `/oversight` whether a `0.7.0` library can drop a deprecated alias from the barrel; if yes, remove from `src/World/types.d.ts` + the two `index.ts` re-exports. If no, leave a note in `docs/world.md` so external consumers know the alias is scheduled for removal at the next major bump.
+- source: critique
+
+### [LOW] `src/Combat/combat-effects.ts` declares three magic-number constants inline
+- pass: critique-11 (commit ced226a)
+- area: structure
+- observation: `src/Combat/combat-effects.ts:83-89` declares `STAT_PROC_BONUS_PER_POINT = 0.02`, `STATUS_CHANCE_BUFF_BONUS = 0.05`, and `CRIT_INTENSITY_BONUS = 1` directly in the module body. Every other module with this kind of tuning constant centralizes them in a `constants.ts` (e.g. `src/Game/game-mechanics.constants.ts` ships `HEALTH_PER_STAT`, `EXPERIENCE_PER_LEVEL`, `STAT_POINTS_PER_LEVEL`, etc.). The build-plan style block at the top of `01_build_plan.md` reads "No hardcoded magic numbers — constants in a `constants.ts` per module" — the rule is one I keep finding violated in Combat specifically.
+- evidence: `src/Combat/combat-effects.ts:83-89`; compare `find src -name 'constants.ts'` returns only `src/Game/game-mechanics.constants.ts` and `src/Game/actions.constants.ts`. Combat has none.
+- suggested_fix: extract a `src/Combat/combat.constants.ts` and move the three constants out (plus any others that turn up during a sweep of `src/Combat/`). Keep the export names; update the one import site. Mirrors the Game module's pattern.
+- source: critique
+
+### [LOW] `Coastal-Village/maps.ts` header comment names dropped MapEventKinds (`npc`, `shop`)
+- pass: critique-11 (commit ced226a)
+- area: docs
+- observation: The header comment at `src/World/Continents/Coastal-Village/maps.ts:8-10` describes the fishing-village chain as: `fv-1 (start) → fv-2 (npc — quest giver) → fv-3 (shop) → fv-4 (encounter) → fv-5 (treasure) → fv-6 (boss-encounter)`. Phase 23 (`fd01029`) dropped the `npc` and `shop` MapEventKinds in favour of `interaction` and `village`; Phase 24 (`4b12e27`) migrated the actual pool config. The runtime pools at the bottom of the file use the new kinds correctly, but the header comment is stale — a new contributor reading the file would assume `npc` / `shop` are still live event kinds.
+- evidence: `src/World/Continents/Coastal-Village/maps.ts:8-10` (header) vs. the Phase 23/24 `MapEventKind` union: `'encounter' | 'interaction' | 'gathering' | 'rest' | 'village' | 'cutscene' | 'hazard' | 'loot-cache'`.
+- suggested_fix: rewrite the chain example to use the current kinds — `fv-2 (interaction — quest giver) → fv-3 (village — shop)`. One-line fix; the actual pool registration code is already correct.
+- source: critique
 
 ### [LOW] Combat reducer carries five aliases that add no behaviour
 - pass: critique-7 (commit 1f4911b)
