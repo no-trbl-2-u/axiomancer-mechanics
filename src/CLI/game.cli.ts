@@ -20,7 +20,7 @@
  */
 
 import fs from 'fs';
-import { parseArgv, prompt, emit, log, setIoMode, setOutputMode } from './io';
+import { parseArgv, prompt, emit, log, logState, setIoMode, setOutputMode, setStateLogPath } from './io';
 
 import { characterPresets, getPresetById, buildCharacterFromPreset } from '../Character';
 import { ENEMY_REGISTRY, type EnemySlug } from '../Enemy/enemy.library';
@@ -62,7 +62,9 @@ async function bootstrapStore(): Promise<GameStoreHandle> {
     const player = buildCharacterFromPreset(preset);
     log(`\nSelected: ${preset.name} (level ${preset.level}).\n`);
 
-    return createGameStore(nullAdapter, { player }, events);
+    const store = createGameStore(nullAdapter, { player }, events);
+    logState('bootstrap', null, store.getState(), { presetId: preset.id });
+    return store;
 }
 
 async function pickTab(canFight: boolean): Promise<Tab> {
@@ -113,8 +115,10 @@ async function mapTab(store: GameStoreHandle): Promise<void> {
     ]);
     if (!target) return;
 
+    const beforeMove = store.getState();
     store.getState().moveToNode(target);
     log(`Moved to ${target}.`);
+    logState('moveToNode', beforeMove, store.getState(), { target });
 
     // Spec 23 — resolve the node's MapEvent from the registered pools.
     const before = store.getState();
@@ -125,6 +129,7 @@ async function mapTab(store: GameStoreHandle): Promise<void> {
         quests: result.state.quests,
         flags:  result.state.flags,
     });
+    logState('resolveMapEvent', before, store.getState(), result.event);
     log(describeResolvedEvent(result.event));
 
     if (result.event.kind === 'encounter') {
@@ -204,13 +209,17 @@ async function combatTab(store: GameStoreHandle): Promise<void> {
     while (combat && isCombatOngoing(combat)) {
         const playerAction = await chooseCombatAction(store, combat);
         const enemyAction = determineEnemyAction(combat.enemy, combat);
-        const { state: next } = resolveCombatRound(
+        const before = store.getState();
+        const { state: next, combatEvents } = resolveCombatRound(
             combat,
             playerAction,
             enemyAction,
             skillLookup,
         );
         store.getState().updateCombat(next);
+        logState('combatRound', before, store.getState(), {
+            playerAction, enemyAction, eventCount: combatEvents.length,
+        });
         combat = store.getState().combat;
         log(
             `  player HP ${combat?.player.health}/${combat?.player.maxHealth}` +
@@ -218,9 +227,15 @@ async function combatTab(store: GameStoreHandle): Promise<void> {
         );
     }
 
+    const beforeEnd = store.getState();
     const report: CombatEndReport = store.getState().endCombat();
+    logState('endCombat', beforeEnd, store.getState(), report);
     log(`\nCombat ended: ${report.outcome}  ·  XP +${report.xpGained}  ·  loot ×${report.loot.length}`);
-    if (report.outcome === 'victory') store.getState().levelUp();
+    if (report.outcome === 'victory') {
+        const beforeLevel = store.getState();
+        store.getState().levelUp();
+        logState('levelUp', beforeLevel, store.getState());
+    }
 }
 
 function journalTab(store: GameStoreHandle): void {
@@ -332,7 +347,9 @@ async function debugTab(store: GameStoreHandle): Promise<void> {
         choices: slugs.map(s => ({ name: `${s} — ${ENEMY_REGISTRY[s].name}`, value: s })),
     }]);
     const enemy = ENEMY_REGISTRY[slug];
+    const before = store.getState();
     store.getState().startCombat({ enemies: [enemy] });
+    logState('debugSpawn', before, store.getState(), { slug, enemyName: enemy.name });
     log(`\nSpawned ${enemy.name}. Resolving combat...\n`);
     await combatTab(store);
 }
@@ -349,6 +366,9 @@ async function main(): Promise<void> {
         setIoMode({ kind: 'script', answers });
     } else if (flags.stdin) {
         setIoMode({ kind: 'stdin' });
+    }
+    if (flags.stateLogPath) {
+        setStateLogPath(flags.stateLogPath);
     }
 
     log('Axiomancer — game loop demo.\n');

@@ -23,6 +23,10 @@ npm-debug.log*
 game-state.json
 .claude/scheduled_tasks.lock
 
+# Phase 26 CLI state-logs (--state-log <path>)
+logs/
+*.jsonl
+
 # Environment
 .env
 .env.local

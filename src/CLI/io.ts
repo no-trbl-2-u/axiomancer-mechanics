@@ -13,6 +13,7 @@
 
 import inquirer from 'inquirer';
 import readline from 'readline';
+import fs from 'fs';
 
 // ─── Flag parsing ─────────────────────────────────────────────────────────────
 
@@ -20,6 +21,8 @@ export interface CliFlags {
     scriptPath?: string;
     stdin: boolean;
     jsonEvents: boolean;
+    /** Path to a `.jsonl` file where per-decision state records are appended. */
+    stateLogPath?: string;
 }
 
 export function parseArgv(args: string[]): CliFlags {
@@ -43,10 +46,20 @@ export function parseArgv(args: string[]): CliFlags {
             }
             flags.scriptPath = next;
             i += 2;
+        } else if (arg.startsWith('--state-log=')) {
+            flags.stateLogPath = arg.slice('--state-log='.length);
+            i++;
+        } else if (arg === '--state-log') {
+            const next = args[i + 1];
+            if (!next || next.startsWith('--')) {
+                throw new Error('--state-log requires a file path argument.');
+            }
+            flags.stateLogPath = next;
+            i += 2;
         } else {
             throw new Error(
                 `Unknown CLI flag: '${arg}'.\n` +
-                `Usage: npm run game -- [--script <path>] [--stdin] [--json-events]`,
+                `Usage: npm run game -- [--script <path>] [--stdin] [--json-events] [--state-log <path>]`,
             );
         }
     }
@@ -150,4 +163,49 @@ export function log(...args: unknown[]): void {
         // eslint-disable-next-line no-console
         console.log(...args);
     }
+}
+
+// ─── State log (Phase 26) ─────────────────────────────────────────────────────
+
+let stateLogPath: string | null = null;
+let stateLogTick = 0;
+
+/**
+ * Open a JSON-lines state log at `path`. Truncates the file if it exists.
+ * Pass `null` to disable logging (the default).
+ */
+export function setStateLogPath(path: string | null): void {
+    stateLogPath = path;
+    stateLogTick = 0;
+    if (path !== null) {
+        // Truncate / create so each session starts fresh.
+        fs.writeFileSync(path, '', 'utf-8');
+    }
+}
+
+/**
+ * Append one JSON-line record describing a state mutation. No-op when
+ * the path is null. `before` / `after` should be plain JSON-serialisable
+ * snapshots (typically `GameState` or a relevant slice). `event` is
+ * optional metadata.
+ */
+export function logState(
+    action: string,
+    before: unknown,
+    after: unknown,
+    event?: unknown,
+): void {
+    if (stateLogPath === null) return;
+    const record = {
+        tick: ++stateLogTick,
+        action,
+        before,
+        after,
+        ...(event !== undefined ? { event } : {}),
+    };
+    fs.appendFileSync(stateLogPath, JSON.stringify(record) + '\n', 'utf-8');
+}
+
+export function getStateLogPath(): string | null {
+    return stateLogPath;
 }
