@@ -12,7 +12,19 @@
 
 ## Pending
 
-(Empty.)
+### [MED] README has broken doc links and stale Project-layout descriptions
+- category: docs
+- impact: 7 (front-door README; broken links erode trust + send readers to 404s; wrong module descriptions misframe the engine's state)
+- ease: 8 (single-pass edit)
+- score: 5.6
+- source: iterate audit pass (2026-05-15)
+- evidence:
+  - `README.md:127` links to `GAME-ROADMAP.md` — file does not exist.
+  - `README.md:128` links to `AUDIT.md` at the repo root — file lives at `plan/AUDIT.md`.
+  - `README.md:130` links to `BRAINDUMP.md` at the repo root — file lives at `braindump/BRAINDUMP.md`.
+  - `README.md:113` "Skills/ — types only (engine pending)" — Spec 04 + 04b shipped the engine + library long ago.
+  - `README.md:121` "specs/ — planning specs for upcoming work (Phase 2 onward)" — phases are 09–24; "Phase 2" was pre-numbering shorthand.
+- next: fix the three broken links (drop `GAME-ROADMAP.md`, point AUDIT at `plan/AUDIT.md`, point BRAINDUMP at `braindump/`), refresh the Skills line, and drop the "Phase 2 onward" framing.
 
 ---
 
