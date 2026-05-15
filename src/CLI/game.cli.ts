@@ -19,7 +19,8 @@
  * Run with: `npm run game` (which invokes `ts-node src/CLI/game.cli.ts`).
  */
 
-import inquirer from 'inquirer';
+import fs from 'fs';
+import { parseArgv, prompt, emit, log, setIoMode, setOutputMode } from './io';
 
 import { characterPresets, getPresetById, buildCharacterFromPreset } from '../Character';
 import { ENEMY_REGISTRY, type EnemySlug } from '../Enemy/enemy.library';
@@ -42,9 +43,9 @@ const skillLookup = (id: string) => getSkillById(id);
 
 async function bootstrapStore(): Promise<GameStoreHandle> {
     const events = createEventEmitter();
-    events.onAny(ev => console.log(`  [event] ${ev.type}`));
+    events.onAny(emit);
 
-    const { presetId } = await inquirer.prompt<{ presetId: string }>([{
+    const { presetId } = await prompt<{ presetId: string }>([{
         type: 'rawlist', name: 'presetId',
         message: 'Pick a character preset:',
         choices: characterPresets.map(p => ({
@@ -57,7 +58,7 @@ async function bootstrapStore(): Promise<GameStoreHandle> {
     if (!preset) throw new Error(`Unknown preset: ${presetId}`);
 
     const player = buildCharacterFromPreset(preset);
-    console.log(`\nSelected: ${preset.name} (level ${preset.level}).\n`);
+    log(`\nSelected: ${preset.name} (level ${preset.level}).\n`);
 
     return createGameStore(nullAdapter, { player }, events);
 }
@@ -72,7 +73,7 @@ async function pickTab(canFight: boolean): Promise<Tab> {
         { name: 'Debug      — spawn any enemy into combat', value: 'debug' },
         { name: 'Quit',                                 value: 'quit' },
     ];
-    const { tab } = await inquirer.prompt<{ tab: Tab }>([
+    const { tab } = await prompt<{ tab: Tab }>([
         { type: 'rawlist', name: 'tab', message: 'Where to?', choices: tabs },
     ]);
     return tab;
@@ -84,17 +85,17 @@ async function mapTab(store: GameStoreHandle): Promise<void> {
     const def     = getMapDefinition(state.world.currentMap.continent, state.world.currentMap.name);
     const node    = def.nodes.find(n => n.id === current);
 
-    console.log(`\n— Map: ${def.name} —`);
-    console.log(`You are at ${current}.`);
+    log(`\n— Map: ${def.name} —`);
+    log(`You are at ${current}.`);
 
     const available = state.world.currentMap.availableNodes;
     const reachable = (node?.connectedNodes ?? []).filter(id => available.includes(id));
     if (reachable.length === 0) {
-        console.log('No adjacent nodes are open right now.');
+        log('No adjacent nodes are open right now.');
         return;
     }
 
-    const { target } = await inquirer.prompt<{ target: string }>([
+    const { target } = await prompt<{ target: string }>([
         {
             type: 'rawlist',
             name: 'target',
@@ -108,7 +109,7 @@ async function mapTab(store: GameStoreHandle): Promise<void> {
     if (!target) return;
 
     store.getState().moveToNode(target);
-    console.log(`Moved to ${target}.`);
+    log(`Moved to ${target}.`);
 
     // PROCESS_NODE — let the authored event for the new node resolve.
     const before = store.getState();
@@ -119,7 +120,7 @@ async function mapTab(store: GameStoreHandle): Promise<void> {
         quests: result.gameState.quests,
         flags:  result.gameState.flags,
     });
-    console.log(result.message);
+    log(result.message);
 
     if (result.event.kind === 'encounter') {
         // The CLI consumer is responsible for pushing the encounter into
@@ -132,12 +133,12 @@ async function mapTab(store: GameStoreHandle): Promise<void> {
 async function combatTab(store: GameStoreHandle): Promise<void> {
     let combat = store.getState().combat;
     if (!combat) {
-        console.log('No combat in progress — pick the Map tab to trigger an encounter.');
+        log('No combat in progress — pick the Map tab to trigger an encounter.');
         return;
     }
 
     while (combat && isCombatOngoing(combat)) {
-        const { stance, action } = await inquirer.prompt<{ stance: Stance; action: 'attack' | 'defend' }>([
+        const { stance, action } = await prompt<{ stance: Stance; action: 'attack' | 'defend' }>([
             { type: 'rawlist', name: 'stance', message: 'Stance?',
               choices: ['heart', 'body', 'mind'] },
             { type: 'rawlist', name: 'action', message: 'Action?',
@@ -153,79 +154,100 @@ async function combatTab(store: GameStoreHandle): Promise<void> {
         );
         store.getState().updateCombat(next);
         combat = store.getState().combat;
-        console.log(
+        log(
             `  player HP ${combat?.player.health}/${combat?.player.maxHealth}` +
             `  ·  enemy HP ${combat?.enemy.health}/${combat?.enemy.maxHealth}`,
         );
     }
 
     const report: CombatEndReport = store.getState().endCombat();
-    console.log(`\nCombat ended: ${report.outcome}  ·  XP +${report.xpGained}  ·  loot ×${report.loot.length}`);
+    log(`\nCombat ended: ${report.outcome}  ·  XP +${report.xpGained}  ·  loot ×${report.loot.length}`);
     if (report.outcome === 'victory') store.getState().levelUp();
 }
 
 function journalTab(store: GameStoreHandle): void {
     const { quests, flags } = store.getState();
-    console.log('\n— Journal —');
-    console.log(`Active quests   : ${quests.active.map(q => q.name).join(', ') || '(none)'}`);
-    console.log(`Completed quests: ${quests.completed.join(', ') || '(none)'}`);
-    console.log(`World flags     : ${flags.join(', ') || '(none)'}`);
+    log('\n— Journal —');
+    log(`Active quests   : ${quests.active.map(q => q.name).join(', ') || '(none)'}`);
+    log(`Completed quests: ${quests.completed.join(', ') || '(none)'}`);
+    log(`World flags     : ${flags.join(', ') || '(none)'}`);
     // Alignment / philosophy meter is the Phase 10 hook — print a placeholder
     // so the tab is reachable today.
-    console.log('Alignment       : neutral (Spec 10 will compute this)');
+    log('Alignment       : neutral (Spec 10 will compute this)');
 }
 
 function skillsTab(store: GameStoreHandle): void {
     const { player } = store.getState();
-    console.log('\n— Skills —');
-    console.log('Known skills:');
+    log('\n— Skills —');
+    log('Known skills:');
     for (const id of player.knownSkills) {
         const s = getSkillById(id);
-        console.log(`  • ${s?.name ?? id}${player.equippedSkills.includes(id) ? '  (equipped)' : ''}`);
+        log(`  • ${s?.name ?? id}${player.equippedSkills.includes(id) ? '  (equipped)' : ''}`);
     }
 }
 
 function inventoryTab(store: GameStoreHandle): void {
     const { inventory } = store.getState().player;
-    console.log('\n— Inventory —');
+    log('\n— Inventory —');
     if (inventory.length === 0) {
-        console.log('(empty)');
+        log('(empty)');
         return;
     }
     for (const item of inventory) {
         const qty = isConsumable(item) ? `  ×${item.quantity}` : '';
-        console.log(`  • ${item.name}${qty}  — ${item.description}`);
+        log(`  • ${item.name}${qty}  — ${item.description}`);
     }
 }
 
 async function debugTab(store: GameStoreHandle): Promise<void> {
     const slugs = Object.keys(ENEMY_REGISTRY) as EnemySlug[];
-    const { slug } = await inquirer.prompt<{ slug: EnemySlug }>([{
+    const { slug } = await prompt<{ slug: EnemySlug }>([{
         type: 'rawlist', name: 'slug',
         message: 'Spawn which enemy?',
         choices: slugs.map(s => ({ name: `${s} — ${ENEMY_REGISTRY[s].name}`, value: s })),
     }]);
     const enemy = ENEMY_REGISTRY[slug];
     store.getState().startCombat({ enemies: [enemy] });
-    console.log(`\nSpawned ${enemy.name}. Resolving combat...\n`);
+    log(`\nSpawned ${enemy.name}. Resolving combat...\n`);
     await combatTab(store);
 }
 
 async function main(): Promise<void> {
-    console.log('Axiomancer — game loop demo.\n');
+    const flags = parseArgv(process.argv.slice(2));
+    if (flags.jsonEvents) setOutputMode('json');
+    if (flags.scriptPath) {
+        const raw = fs.readFileSync(flags.scriptPath, 'utf-8');
+        const answers = JSON.parse(raw);
+        if (!Array.isArray(answers)) {
+            throw new Error('--script JSON must be a top-level array of answer objects.');
+        }
+        setIoMode({ kind: 'script', answers });
+    } else if (flags.stdin) {
+        setIoMode({ kind: 'stdin' });
+    }
+
+    log('Axiomancer — game loop demo.\n');
     const store = await bootstrapStore();
 
-    while (true) {
-        const tab = await pickTab(store.getState().combat !== null);
-        switch (tab) {
-            case 'map':       await mapTab(store);       break;
-            case 'combat':    await combatTab(store);    break;
-            case 'journal':   journalTab(store);         break;
-            case 'skills':    skillsTab(store);          break;
-            case 'inventory': inventoryTab(store);       break;
-            case 'debug':     await debugTab(store);     break;
-            case 'quit':      console.log('Goodbye.');   return;
+    try {
+        while (true) {
+            const tab = await pickTab(store.getState().combat !== null);
+            switch (tab) {
+                case 'map':       await mapTab(store);       break;
+                case 'combat':    await combatTab(store);    break;
+                case 'journal':   journalTab(store);         break;
+                case 'skills':    skillsTab(store);          break;
+                case 'inventory': inventoryTab(store);       break;
+                case 'debug':     await debugTab(store);     break;
+                case 'quit':
+                    log('Goodbye.');
+                    emit({ type: 'cli:exit', payload: { reason: 'quit' } });
+                    return;
+            }
         }
+    } catch (err) {
+        emit({ type: 'cli:exit', payload: { reason: 'error', message: String(err) } });
+        throw err;
     }
 }
 
