@@ -79,6 +79,26 @@ The repo also ships a hands-on demo CLI. It is NOT part of the published package
 | ---------------- | ----------------------------------------------------------------------------- |
 | `npm run game`   | Interactive demo — tabbed map / combat / journal / skills / inventory loop.   |
 
+### Agent-driven CLI mode
+
+`npm run game` accepts three flags so the demo loop can be driven without a
+human at the keyboard:
+
+| Flag | What it does |
+| ---- | ------------ |
+| `--script <path>` | Loads a JSON array of answer objects and feeds them to subsequent prompts in order. Each object matches the shape `inquirer.prompt` returns (e.g. `{"presetId": "apprentice"}`, `{"tab": "debug"}`). Exhaustion throws. |
+| `--stdin` | Reads one JSON object per line from stdin and uses each as the next answer. EOF before all prompts complete throws. |
+| `--json-events` | Replaces the human event log with one `JSON.stringify(event)` line per emitted GameEvent on stdout. Human prose is routed to stderr so stdout stays machine-clean. A final `{"type":"cli:exit",...}` line marks the end. |
+
+Examples:
+
+```bash
+npm run game -- --script replay.json --json-events
+echo '{"presetId":"apprentice"}' | npm run game -- --stdin --json-events
+```
+
+`--script` and `--stdin` are mutually exclusive; if both are passed, `--script` wins.
+
 ## Project layout
 
 ```
