@@ -1,10 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { createCharacter } from '../Character';
-import { createEnemy } from '../Enemy';
-import { initializeCombat } from '../Combat/combat.reducer';
-import { resolveCombatRound } from '../Combat/combat.resolver';
-import { mockSequentialRng } from '../test-utils';
+import { createCharacter } from '../../Character';
+import { createEnemy } from '../../Enemy';
+import { initializeCombat } from '../../Combat/combat.reducer';
+import { resolveCombatRound } from '../../Combat/combat.resolver';
+import { mockSequentialRng } from '../../test-utils';
 import {
     canUseSkill,
     spendResources,
@@ -12,9 +12,9 @@ import {
     executeSkill,
     generateBasicActionResources,
     generatePhilosophicalResource,
-} from './skill.engine';
-import { CombatResources, Skill } from './types';
-import { CombatState } from '../Combat/types';
+} from '../skill.engine';
+import { CombatResources, Skill } from '../types';
+import { CombatState } from '../../Combat/types';
 
 afterEach(() => vi.restoreAllMocks());
 

@@ -12,19 +12,13 @@
 
 ## Pending
 
-### [LOW] Two engine-style tests at module root violate the e2e/ convention
-- category: structure
-- impact: 4 (consistency only; bearings blesses both layouts but engine tests should live in e2e/ per the Phase 16 convention)
-- ease: 9 (two `git mv` + path fixes)
-- score: 3.6
-- source: iterate audit pass (2026-05-15)
-- evidence: `src/Skills/skill.engine.test.ts` (308 LOC) is engine-style — drives `resolveCombatRound` + `executeSkill` via `mockSequentialRng` — but lives at the Skills module root rather than `src/Skills/e2e/`. Similarly `src/Game/spec08.e2e.test.ts` (152 LOC) is a full exploration loop e2e but lives at the Game module root rather than `src/Game/e2e/`. Both pre-date Phase 16 and were the original convention exceptions the Phase 16 brief explicitly deferred.
-- next: `git mv` both into the matching `e2e/` dir, fix the relative imports, rename `spec08.e2e.test.ts` → `spec08.engine.test.ts` for consistency with the `*.engine.test.ts` suffix. Suite stays green.
+(Empty.)
 
 ---
 
 ## Done
 
+- [x] **[LOW] Two engine-style tests at module root violate the e2e/ convention** — resolved at commit 9563a7d (2026-05-15). `git mv src/Skills/skill.engine.test.ts src/Skills/e2e/skill.engine.test.ts` and `git mv src/Game/spec08.e2e.test.ts src/Game/e2e/spec08.engine.test.ts` (also renamed to the `*.engine.test.ts` suffix). Relative imports fixed; suite stays green at 421/421. Impact 4 × Ease 9 / 10 = 3.6.
 - [x] **[LOW] Two broken `src/...` references in docs** — resolved at commit 3bddb0e (2026-05-15). `docs/story.md:5` redirected to `content/story/story-overview.md` (the actual location post-Phase 22 content scaffolding) and gained cross-links to `specs/story/` / `specs/characters/` / `specs/world/`. `docs/effects/buffs/tier1_body_attack.md:67-70` rewrote the "PENDING (Phase 2)" implementation-status block — `statModifiers` are LIVE via `getEffectiveStats` since Spec 01, and the deleted `combat.display.ts` reference is gone. Impact 5 × Ease 9 / 10 = 4.5.
 - [x] **[MED] README has broken doc links and stale Project-layout descriptions** — resolved at commit 00866b3 (2026-05-15). The three broken links (`GAME-ROADMAP.md`, root-level `AUDIT.md`, root-level `BRAINDUMP.md`) replaced with the real paths (`plan/steps/01_build_plan.md`, `plan/AUDIT.md` + `plan/CRITIQUE.md`, `braindump/BRAINDUMP.md`); added `plan/`, `content/`, `docs/api.md`, and `docs/effects/README.md` links. Project layout: `Skills/` description corrected (engine + library, Spec 04 / 04b); the stale "Phase 2 onward" framing replaced with a concrete description of `specs/` structure (numbered specs + `story/` / `world/` / `characters/` subdirs from Phase 22); added `content/` and `plan/` to the tree. Impact 7 × Ease 8 / 10 = 5.6.
 - [x] **[MED] spec.md + AGENTS.md still describe pre-Phase-17 CLI surface** — resolved at commit 5996991 (2026-05-15). `spec.md:20-22` now lists only `src/CLI/game.cli.ts` / `npm run game` as the demo CLI and mentions the Phase 20 agent-driven flags. `AGENTS.md` Key Commands table replaces the three dropped npm scripts (`combat`, `character`, `combat:auto`) with `game` + the `verify` / `deploy:check` rows; the "CLI apps are interactive" caveat updated to point at the Phase 20 flags instead of the removed Python pexpect harness; the ESLint caveat updated since Phase 13 fixed the config. Impact 7 × Ease 8 / 10 = 5.6.

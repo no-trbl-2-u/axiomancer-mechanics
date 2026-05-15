@@ -7,17 +7,17 @@
  */
 
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { createGameStore } from './store';
-import { nullAdapter } from './persistence/null.adapter';
+import { createGameStore } from '../store';
+import { nullAdapter } from '../persistence/null.adapter';
 import {
     moveToNode, completeCurrentNode, processNode, applyDialogueChoice,
     getMapDefinition,
-} from '../World';
-import { Player } from '../Character/characters.mock';
-import { createCharacter } from '../Character';
-import { GameState } from './types';
-import { applyEffect, lookupEffect, processWorldEffectTick } from '../Effects';
-import { mockSequentialRng } from '../test-utils/rng';
+} from '../../World';
+import { Player } from '../../Character/characters.mock';
+import { createCharacter } from '../../Character';
+import { GameState } from '../types';
+import { applyEffect, lookupEffect, processWorldEffectTick } from '../../Effects';
+import { mockSequentialRng } from '../../test-utils/rng';
 
 afterEach(() => vi.restoreAllMocks());
 
