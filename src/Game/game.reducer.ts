@@ -33,7 +33,7 @@ import {
 import { createCharacter } from '../Character';
 import { createStartingWorld, emptyQuestLog } from '../World';
 import { moveToNode as moveWorld } from '../World/world.reducer';
-import { processNode as processWorldNode } from '../World/process-node';
+import { resolveMapEvent } from '../World';
 import { applyDialogueChoice as applyDialogueRuntime } from '../World/dialogue.runtime';
 import { killObjectives, progressQuest, findQuest } from '../World/quest.engine';
 import { calculateMaxHealth } from '../Utils';
@@ -239,7 +239,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         }
 
         case 'PROCESS_NODE': {
-            return processWorldNode(state).gameState;
+            return resolveMapEvent(state).state;
         }
 
         case 'APPLY_DIALOGUE': {
