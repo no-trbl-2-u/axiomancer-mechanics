@@ -118,32 +118,6 @@
   indexes the package surface.
 - source: critique
 
-### [MED] `docs/character.md` "Pending" section directly contradicts shipped Phase 29 code
-- pass: critique-8 (commit ef1b486)
-- area: docs
-- observation: `docs/character.md:126-128` reads "Stat-point allocation
-  on level-up — Spec 06 shipped via the reducer-driven `LEVEL_UP`
-  action; no `availableStatPoints` state field is needed (the design
-  landed on reducer-side application)." Phase 29 (9f2e3f6 + 121aea8
-  + db7c26f) shipped exactly the opposite: an `availableStatPoints:
-  number` field on `Character`, a `STAT_POINTS_PER_LEVEL = 3` constant,
-  an `allocateStatPoint(character, stat)` reducer, an
-  `ALLOCATE_STAT_POINT` action, a `store.allocateStatPoint()` method,
-  and a Character-tab prompt loop. The doc claim was true between
-  Spec 06 backfill (75f250b, when Q3 was answered "deferred") and
-  Phase 29 (a few commits later); it's now actively misleading.
-- evidence: `docs/character.md:126-128` vs.
-  `src/Character/types.d.ts:91` (the new field), `src/Character/index.ts`
-  (`allocateStatPoint`), `src/Game/game.reducer.ts:81-95` (the grant),
-  `src/CLI/game.cli.ts` (the prompt loop).
-- suggested_fix: rewrite the Pending entry to point at the shipped
-  surface and the next gap — Phase 30 unit 2 (level-up unlock
-  surfacing) and unit 3 (Character-tab Learn prompt) are the active
-  follow-ups. Add a short "Stat allocation" section near the
-  `nonCombatStats` table that documents the field, the constant, and
-  the `allocateStatPoint` action.
-- source: critique
-
 ### [LOW] Spec 06 backfill answers grew stale after Phases 29 + 30 unit 1 shipped
 - pass: critique-8 (commit ef1b486)
 - area: docs
@@ -256,6 +230,8 @@
 ---
 
 ## Done
+
+- [x] **[MED] `docs/character.md` "Pending" section directly contradicts shipped Phase 29 code** — resolved at Phase 34 unit 2 (this commit). `docs/character.md` Pending block trimmed to only the genuinely open item (`id` field, Knowledge-Gaps Q12, promoted as Phase 35). New "Stat allocation" section after "Experience" documents `availableStatPoints`, `STAT_POINTS_PER_LEVEL`, `allocateStatPoint`, the `ALLOCATE_STAT_POINT` action, and the Character-tab prompt loop, with commit hashes (`9f2e3f6` + `121aea8` + `db7c26f`). Impact 6 × Ease 8 / 10 = 4.8.
 
 - [x] **[MED] `docs/gameloop.md` GameEvent surface section is pre-Phase-21** — resolved at commit e9d267d (2026-05-15, Phase 34 unit 1) by rewriting the Event-surface block. The pre-Phase-21 `payload: unknown` shape replaced with the live `EnginePayload` (action / state / report? / unlockedSkills?); added a "Typed narrowing (Phase 21)" subsection with a working `isLevelUpEvent` consumer snippet that surfaces `unlockedSkills` (Phase 30 unit 2). Impact 6 × Ease 9 / 10 = 5.4.
 - [x] **[HIGH] CLI mapTab can't progress past adjacent-to-start — `availableNodes` is never updated under the Phase 23 dispatcher** — resolved at commits 711b49e (engine fix + 4 hermetic cases in `src/World/MapEvents/e2e/map-events.engine.test.ts` under "Phase 31 traversal fix") and 3ee7b81 (save-load walkthrough rewrite exercising fv-1 → fv-2 → fv-3 → load). Phase 31 added `unlockAdjacent(map, nodeId)` next to `revealAdjacent` and threaded it through every `resolveMapEvent` exit path. Impact 9 × Ease 5 / 10 = 4.5.

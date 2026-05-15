@@ -75,6 +75,25 @@ experience            = (level - 1) × EXPERIENCE_PER_LEVEL (1000)
 experienceToNextLevel = level × EXPERIENCE_PER_LEVEL       (1000)
 ```
 
+## Stat allocation
+
+`character.availableStatPoints: number` holds unspent points awaiting
+allocation. `applyLevelUps` (in `Game/game.reducer.ts`) grants
+`STAT_POINTS_PER_LEVEL = 3` on every level-up. The player spends them one
+at a time via:
+
+```ts
+allocateStatPoint(character, stat)   // 'body' | 'mind' | 'heart'
+```
+
+The helper raises the chosen base stat by 1, decrements
+`availableStatPoints`, and re-derives `derivedStats`, `nonCombatStats`, and
+`maxHealth` so the change is immediately visible. The Game reducer exposes
+this as the `ALLOCATE_STAT_POINT` action; the Character tab in
+`npm run game` walks the player through allocation while points are
+available. Shipped by Phase 29 (`9f2e3f6` + `121aea8` + `db7c26f`); closes
+`specs/06-character-progression.md` Q3 + Q8.
+
 ## Active Effects
 
 `effects: ActiveEffect[]` — effects currently applied to this character. Managed by the effect engine (`Effects/index.ts`). Never mutate directly; use `applyEffect`.
@@ -117,12 +136,4 @@ them in `characterPresets`.
 
 - `id` field for multiplayer / effect attribution (Knowledge-Gaps Q12 —
   unresolved; Character has no stable id today while Enemy does).
-
-Items previously listed as Pending have shipped:
-- `knownSkills` / `equippedSkills` — Character has both fields; Spec 04
-  + Spec 04b shipped the skill loadout surface.
-- Equipment slots and stat modifiers — Spec 05 shipped; equipment is
-  folded into `derivedStats` via `equipItem` (Spec 05 Q3 option A).
-- Stat-point allocation on level-up — Spec 06 shipped via the
-  reducer-driven `LEVEL_UP` action; no `availableStatPoints` state
-  field is needed (the design landed on reducer-side application).
+  Promoted as Phase 35 via `/oversight` 2026-05-15.
