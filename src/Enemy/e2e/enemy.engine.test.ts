@@ -20,6 +20,7 @@ import {
 import { Enemy } from '../types';
 import { CombatState } from '../../Combat/types';
 import { createEnemy } from '../index';
+import { ENEMY_REGISTRY } from '../enemy.library';
 
 function makeEnemy(overrides: Partial<Enemy> = {}): Enemy {
     return {
@@ -264,5 +265,21 @@ describe('bossLogic — robust to missing state', () => {
         const enemy = makeEnemy({ logic: 'boss' });
         const choice = bossLogic(enemy);
         expect(choice).toEqual({ stance: 'body', action: 'defend' });
+    });
+});
+
+describe('ENEMY_REGISTRY', () => {
+    it('contains every published enemy with a stable shape', () => {
+        const entries = Object.entries(ENEMY_REGISTRY);
+        expect(entries.length).toBeGreaterThan(0);
+        for (const [slug, enemy] of entries) {
+            expect(enemy.id).toBeTruthy();
+            expect(enemy.name).toBeTruthy();
+            expect(enemy.maxHealth).toBeGreaterThan(0);
+            expect(enemy.health).toBe(enemy.maxHealth);
+            expect(enemy.baseStats).toBeDefined();
+            // Slug stability: the slug must round-trip back to the same fixture.
+            expect(ENEMY_REGISTRY[slug as keyof typeof ENEMY_REGISTRY]).toBe(enemy);
+        }
     });
 });
