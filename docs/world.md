@@ -236,6 +236,14 @@ only node-event dispatcher.
   the map's starting node; `resolveMapEvent` calls `revealAdjacent`
   after consuming a node, so the next ring of nodes only becomes
   visible once the player has cleared the current one.
+- **Unlocked traversal.** After Phase 31 (`711b49e`), `resolveMapEvent`
+  also calls `unlockAdjacent` — the reducer that moves
+  `connectedNodes` from `MapState.lockedNodes` into
+  `MapState.availableNodes`. Discovery shifts the fog; unlocking is
+  what lets the CLI's Map tab actually offer the next ring as
+  navigable targets. The two pass-through reducers are composed at
+  every `resolveMapEvent` exit path
+  (`src/World/MapEvents/resolve-map-event.ts`).
 - **One-shot consumption.** `MapState.consumedNodes` records every
   node whose MapEvent has resolved. Re-entering a consumed node
   returns `{ kind: 'none' }` — the player can still walk through, but

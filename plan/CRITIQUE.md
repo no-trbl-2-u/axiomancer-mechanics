@@ -14,33 +14,6 @@
 
 ## Pending
 
-### [LOW] `docs/world.md` "Discovery (fog-of-war)" section misses Phase 31's `unlockAdjacent`
-- pass: critique-10 (commit 938016b)
-- area: docs
-- observation: `docs/world.md:235-238` describes Phase 23's
-  `revealAdjacent` as the only function that fires when a node
-  resolves: "`resolveMapEvent` calls `revealAdjacent` after consuming
-  a node, so the next ring of nodes only becomes visible once the
-  player has cleared the current one." After Phase 31 (`711b49e`),
-  `resolveMapEvent` ALSO calls `unlockAdjacent` — the companion
-  reducer that moves adjacents from `lockedNodes` into
-  `availableNodes` so the CLI mapTab can actually offer them as
-  targets. The doc reads as if only the fog-of-war shifts, which
-  understates traversal state and would mislead a new contributor
-  reading the section.
-- evidence: `docs/world.md:235-238` vs.
-  `src/World/MapEvents/resolve-map-event.ts:117/128/140-142` (the
-  three exit paths now thread `unlockAdjacent(revealAdjacent(map,
-  nodeId), nodeId)`).
-- suggested_fix: add an "Unlocked traversal" sub-bullet alongside
-  the "Discovery (fog-of-war)" bullet — name `unlockAdjacent`, note
-  that it moves `connectedNodes` from `lockedNodes` to
-  `availableNodes`, and link to Phase 31 (`711b49e`). The `MapState`
-  shape table at line 30 already lists `availableNodes` + `lockedNodes`
-  so the doc has the vocabulary; only the discovery section needs
-  the update.
-- source: critique
-
 ### [LOW] Phase 32 critStyle wiring lacks a resolver-path integration test
 - pass: critique-10 (commit 938016b)
 - area: tests
@@ -119,6 +92,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] `docs/world.md` "Discovery (fog-of-war)" section misses Phase 31's `unlockAdjacent`** — resolved at Phase 34 unit 8 (this commit). Added an "Unlocked traversal" sub-bullet alongside "Discovery (fog-of-war)" that names `unlockAdjacent`, notes that it moves `connectedNodes` from `MapState.lockedNodes` into `MapState.availableNodes`, and links to Phase 31 (`711b49e`) — the fix that made the CLI Map tab actually offer the next ring as navigable targets. Impact 4 × Ease 9 / 10 = 3.6.
 
 - [x] **[LOW] `Items` module has no top-level docs page** — resolved at Phase 34 unit 7 (this commit). New `docs/items.md` lands as a one-page index — overview, item-kinds table with type guards + behaviour, rarity model, modifier-catalogue summary, loot-factory API (`dropItem` / `rollModifiers` / `resolveModifiers` / `rarityWeightTable`), inventory reducers, templates / libraries, full API table, and a Pending block for crafting + shop economy. Delegates the Equipment chapter to the existing `docs/equipment.md`. Impact 4 × Ease 8 / 10 = 3.2.
 
