@@ -7,14 +7,15 @@
  * consumes for rendering. The resolver itself never logs.
  *
  * Events are organised by combat phase (Q6) so a UI can render them in fixed
- * sections:
- *   `round-start`        — regen / drain / start-phase DoT.
- *   `action-restriction` — forced-stance / blocked / skipTurn outcomes.
- *   `advantage`          — declared actions + per-side advantage labels.
- *   `stance-effects`     — Tier 1 stance buffs cleared and applied.
- *   `scenario`           — attack contests, damage rolls, applied damage,
- *                          thorns, heart specials, both-defending tick.
- *   `round-end`          — end-phase DoT and effect expiry.
+ * sections. Per-phase logic lives in `phases/<phase>.ts`; this file owns the
+ * `RoundEvent` discriminated union and the top-level orchestrator:
+ *   `round-start`        — `phases/round-start.ts` — regen / drain / start-phase DoT.
+ *   `action-restriction` — `phases/action-restriction.ts` — forced-stance / blocked / skipTurn.
+ *   `advantage`          — `phases/advantage.ts` — declared actions + per-side advantage labels.
+ *   `stance-effects`     — `phases/stance-effects.ts` — Tier 1 stance buffs cleared and applied.
+ *   `scenario`           — `phases/scenario.ts` — skill / item / attack / defend resolution and
+ *                          stance-token generation (the largest phase).
+ *   `round-end`          — `phases/round-end.ts` — end-phase DoT and effect expiry.
  *
  * Determinism: all rolls — dice in `createDieRoll`, buff selectors in
  * `effects.ts`, the resist pipeline — go through the seedable `getRng()`
