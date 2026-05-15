@@ -16,7 +16,8 @@
  * so callers don't have to rewrite imports; each is now sugar over `dispatch`.
  *
  * ── Usage (Node.js) ──────────────────────────────────────────────────────────
- *   import { createGameStore, createNodeAdapter, createEventEmitter } from 'axiomancer-mechanics';
+ *   import { createGameStore, createEventEmitter } from 'axiomancer-mechanics';
+ *   import { createNodeAdapter } from 'axiomancer-mechanics/node';
  *
  *   const events = createEventEmitter();
  *   const store  = createGameStore(createNodeAdapter(), undefined, events);

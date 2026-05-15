@@ -31,4 +31,3 @@ export {
 
 export type { PersistenceAdapter } from './persistence/types';
 export { nullAdapter } from './persistence/null.adapter';
-export { createNodeAdapter } from './persistence/node.adapter';

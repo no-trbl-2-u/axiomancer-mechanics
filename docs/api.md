@@ -70,7 +70,7 @@ The core package exports work in React Native without modification. For persiste
 
 ```typescript
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { PersistenceAdapter } from 'axiomancer-mechanics/node'; // Types only
+import { PersistenceAdapter } from 'axiomancer-mechanics'; // Interface on the core barrel
 
 const asyncStorageAdapter: PersistenceAdapter = {
   load(): GameState | null {

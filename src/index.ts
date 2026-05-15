@@ -129,7 +129,7 @@ export {
     gameReducer, migrate, createEventEmitter,
     selectPlayer, selectCombat, selectCombatState, selectIsInCombat,
     selectInventory, selectVersion, selectMoralMeter,
-    nullAdapter, createNodeAdapter,
+    nullAdapter,
     STAT_MULTIPLIERS, RESOURCE_MULTIPLIERS, EXPERIENCE_PER_LEVEL,
     DEFENSE_MULTIPLIERS, PASSIVE_DEFENSE_MULTIPLIER,
     MAX_EFFECT_INTENSITY, MAX_EFFECT_DURATION, FRIENDSHIP_COUNTER_MAX,
