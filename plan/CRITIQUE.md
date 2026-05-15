@@ -70,32 +70,6 @@
   control.
 - source: critique
 
-### [MED] `docs/gameloop.md` GameEvent surface section is pre-Phase-21
-- pass: critique-9 (commit 6097001)
-- area: docs
-- observation: `docs/gameloop.md:95-110` describes the GameEvent surface
-  as `interface GameEvent { type: GameEventType; payload: unknown }`.
-  That was true at the doc's last `GameEvent`-section rewrite, but Phase
-  21 (a3f1693) introduced `EnginePayload = { action, state, report?
-  }` and per-topic `TypedGameEvent<T>` narrowing aliases; Phase 30 unit
-  2 (6097001) extended the envelope with `unlockedSkills?: string[]`
-  for `character:levelup`. The doc still says `payload: unknown` — a
-  new consumer following it will write loose `any` casts instead of
-  using the typed surface (`TypedLevelUpEvent`, `isLevelUpEvent`,
-  etc.) that the package now exports.
-- evidence: `docs/gameloop.md:103` (`payload: unknown`) vs.
-  `src/Game/events.types.ts:29-39` (the real `EnginePayload` + 10
-  `TypedGameEvent<T>` aliases) and `src/Game/events.utils.ts` (the
-  `is*Event` guards exported on the public barrel).
-- suggested_fix: rewrite the GameEvent section to describe the
-  Phase-21 envelope (action / state / report / unlockedSkills),
-  point at `TypedGameEvent<T>` + per-topic aliases, and mention the
-  `is*Event` guards from `events.utils.ts`. Include a one-block
-  example showing the typed-narrowing pattern (the CLI's
-  `events.on('character:levelup', ...)` at `game.cli.ts:55` is a
-  ready-made template).
-- source: critique
-
 ### [LOW] `docs/api.md` stops at Phase 24 — five phases of additions undocumented
 - pass: critique-9 (commit 6097001)
 - area: docs
@@ -283,6 +257,7 @@
 
 ## Done
 
+- [x] **[MED] `docs/gameloop.md` GameEvent surface section is pre-Phase-21** — resolved at commit e9d267d (2026-05-15, Phase 34 unit 1) by rewriting the Event-surface block. The pre-Phase-21 `payload: unknown` shape replaced with the live `EnginePayload` (action / state / report? / unlockedSkills?); added a "Typed narrowing (Phase 21)" subsection with a working `isLevelUpEvent` consumer snippet that surfaces `unlockedSkills` (Phase 30 unit 2). Impact 6 × Ease 9 / 10 = 5.4.
 - [x] **[HIGH] CLI mapTab can't progress past adjacent-to-start — `availableNodes` is never updated under the Phase 23 dispatcher** — resolved at commits 711b49e (engine fix + 4 hermetic cases in `src/World/MapEvents/e2e/map-events.engine.test.ts` under "Phase 31 traversal fix") and 3ee7b81 (save-load walkthrough rewrite exercising fv-1 → fv-2 → fv-3 → load). Phase 31 added `unlockAdjacent(map, nodeId)` next to `revealAdjacent` and threaded it through every `resolveMapEvent` exit path. Impact 9 × Ease 5 / 10 = 4.5.
 - [x] **[MED] `docs/gameloop.md` tabs section is multi-phase out of date** — resolved at commit 7a34055 (2026-05-15) by rewriting the `game.cli.ts` section: tabs table now lists all 10 live tabs (Map / Combat / Journal / Skills / Inventory / Character / Debug / Save / Load / Quit) with phase-correct verb references (`resolveMapEvent` replaces `PROCESS_NODE`, the four Phase-26/27/29 affordances are surfaced). Run instruction replaces `npx tsx` with `npm run game` and enumerates the four shipped flags (--script, --json-events, --state-log, --save-file). Impact 6 × Ease 9 / 10 = 5.4.
 - [x] **[MED] Phase 26 state-log writer (`src/CLI/io.ts`) has zero hermetic coverage** — resolved at commit 404dadd (2026-05-15) by extending `src/CLI/e2e/io.engine.test.ts` with 4 new cases: state log disabled by default (no-op on `logState`), `setStateLogPath` truncates an existing file, `logState` appends JSONL records with monotonic tick + the `{ action, before, after, event? }` shape, `setStateLogPath` resets the tick counter on a fresh session. Suite grows 12 → 16; 425/425 total green.
