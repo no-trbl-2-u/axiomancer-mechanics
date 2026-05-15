@@ -12,7 +12,18 @@
 
 ## Pending
 
-(Empty.)
+### [MED] Module doc `## Pending` sections list features that have already shipped
+- category: docs
+- impact: 5 (designers + downstream readers see "Phase 2" / "not yet" pointers that contradict the live engine)
+- ease: 8 (line-level edits across three docs)
+- score: 4.0
+- source: iterate audit pass (2026-05-15)
+- evidence:
+  - `docs/effects.md:557-562` Pending section lists `processWorldEffectTick`, skill-driven cleanse/dispel, and equipment passive emission as "scheduled for later specs" — all three shipped pre-loop (Specs 04 / 05 / 08).
+  - `docs/effects.md:267` says "The drain mechanic will be enabled in Phase 2" — `applyDrain` is implemented in `src/Combat/effects.ts:137` and called every round-start.
+  - `docs/character.md:118-120` lists `knownSkills` / `equippedSkills`, equipment slots, and stat modifiers as Pending — all live on `Character` today.
+  - `docs/combat.md:257-261` Pending (Phase 2) section lists log utilities and skill/item resolver actions — log utilities went away with Phase 17 CLI unification; skill/item actions are wired in `Combat/phases/scenario.ts`.
+- next: rewrite the three Pending sections to reflect what's actually still open (mainly the `Character.id` field per Knowledge-Gaps Q12); drop the stray Phase-2 future-tense note in effects.md.
 
 ---
 
