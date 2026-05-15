@@ -48,6 +48,7 @@ import { GameEventEmitter, GameEvent, GameEventType } from './events';
 import { PersistenceAdapter } from './persistence/types';
 import { rollEncounterLoot, totalEncounterXp } from './combat-grants';
 import { getRng } from '../Utils/rng';
+import { getAvailableSkills } from '../Skills';
 import {
     addItem as addItemReducer,
     removeItem as removeItemReducer,
@@ -121,10 +122,30 @@ export type GameStore = GameState & GameActions;
  * shouldn't broadcast). The reducer is pure, so the store is the right place
  * for these side-effecting notifications.
  */
+/**
+ * Compute the extra envelope fields that depend on the prev→next diff.
+ * Today this is only the Phase 30 `unlockedSkills` bag for level-ups —
+ * the list of skill ids that became eligible because the promotion
+ * crossed a learning-requirement threshold.
+ */
+function enrichExtra(
+    action: GameAction,
+    prev: GameState,
+    next: GameState,
+    extra?: { report?: CombatEndReport },
+): { report?: CombatEndReport; unlockedSkills?: string[] } | undefined {
+    if (action.type !== 'LEVEL_UP') return extra;
+    if (next.player.level === prev.player.level) return extra; // No promotion → no diff.
+    const before = new Set(getAvailableSkills(prev.player).map(s => s.id));
+    const after = getAvailableSkills(next.player).map(s => s.id);
+    const unlockedSkills = after.filter(id => !before.has(id));
+    return { ...(extra ?? {}), unlockedSkills };
+}
+
 function eventForAction(
     action: GameAction,
     nextState: GameState,
-    extra?: { report?: CombatEndReport },
+    extra?: { report?: CombatEndReport; unlockedSkills?: string[] },
 ): GameEvent | null {
     const map: Partial<Record<GameAction['type'], GameEventType>> = {
         START_COMBAT:   'combat:started',
@@ -177,7 +198,8 @@ export function createGameStore(
             const prev = get();
             const next = gameReducer(prev, action);
             set(next);
-            const event = eventForAction(action, next, extra);
+            const enriched = enrichExtra(action, prev, next, extra);
+            const event = eventForAction(action, next, enriched);
             if (event && emitter) emitter.emit(event);
             // Save excludes transient currentEncounter — encounters re-roll on
             // load (Spec 07).

@@ -29,6 +29,7 @@ import { createEventEmitter } from '../Game/events';
 import { nullAdapter } from '../Game/persistence/null.adapter';
 import { createNodeAdapter } from '../Game/persistence/node.adapter';
 import type { PersistenceAdapter } from '../Game/persistence/types';
+import type { TypedLevelUpEvent } from '../Game/events.types';
 import { getMapDefinition } from '../World/map.registry';
 import { resolveMapEvent } from '../World';
 import type { ResolvedEvent } from '../World';
@@ -48,6 +49,15 @@ const skillLookup = (id: string) => getSkillById(id);
 async function bootstrapStore(adapter: PersistenceAdapter): Promise<GameStoreHandle> {
     const events = createEventEmitter();
     events.onAny(emit);
+    // Phase 30 unit 2 — surface newly-eligible skills after a level-up.
+    // The store's dispatch enriches the payload with `unlockedSkills`; the
+    // CLI just renders the message.
+    events.on('character:levelup', evt => {
+        const unlocked = (evt as TypedLevelUpEvent).payload.unlockedSkills ?? [];
+        if (unlocked.length > 0) {
+            log(`You can now learn ${unlocked.length} new skill${unlocked.length === 1 ? '' : 's'}: ${unlocked.join(', ')}`);
+        }
+    });
 
     const { presetId } = await prompt<{ presetId: string }>([{
         type: 'rawlist', name: 'presetId',
