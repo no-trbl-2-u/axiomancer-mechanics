@@ -177,3 +177,37 @@ export function completeUniqueEvent(state: WorldState, eventId: string): WorldSt
         },
     };
 }
+
+// ── Spec 23: fog-of-war discovery + one-shot consumption ────────────────────
+
+/**
+ * Reveals every node adjacent to `nodeId` on the current map. Idempotent —
+ * nodes already in `discoveredNodes` are left in place. Looks up the
+ * static `MapDefinition` to resolve adjacency.
+ */
+export function revealAdjacent(state: MapState, nodeId: NodeId): MapState {
+    const def = getMapDefinition(state.continent, state.name);
+    const node = def.nodes.find(n => n.id === nodeId);
+    if (!node) return state;
+    const already = new Set<NodeId>(state.discoveredNodes);
+    let changed = false;
+    const next = [...state.discoveredNodes];
+    for (const adj of node.connectedNodes) {
+        if (!already.has(adj)) {
+            next.push(adj);
+            already.add(adj);
+            changed = true;
+        }
+    }
+    return changed ? { ...state, discoveredNodes: next } : state;
+}
+
+/**
+ * Marks a node as consumed. Idempotent — re-marking is a no-op. Used by
+ * `resolveMapEvent` to enforce the one-shot contract: a consumed node's
+ * MapEvent never resolves again.
+ */
+export function markNodeConsumed(state: MapState, nodeId: NodeId): MapState {
+    if (state.consumedNodes.includes(nodeId)) return state;
+    return { ...state, consumedNodes: [...state.consumedNodes, nodeId] };
+}

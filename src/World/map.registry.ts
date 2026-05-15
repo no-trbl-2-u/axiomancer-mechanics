@@ -66,6 +66,9 @@ export function createMapState(def: MapDefinition): MapState {
         availableNodes: available,
         lockedNodes: locked,
         uniqueEvents: (def.uniqueEvents ?? []).map(ue => ({ ...ue }) as UniqueEvent),
+        // Spec 23 — fog-of-war seeded with the starting node; nothing consumed yet.
+        discoveredNodes: [startId],
+        consumedNodes: [],
     };
 }
 

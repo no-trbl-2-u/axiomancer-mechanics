@@ -184,6 +184,12 @@ export interface MapDefinition {
  * @property availableNodes - Nodes currently traversable from the player's progress.
  * @property lockedNodes    - Nodes not yet unlocked.
  * @property uniqueEvents   - Mutable runtime copy of the definition's unique events.
+ * @property discoveredNodes - Spec 23: nodes the player has revealed via the
+ *                             fog-of-war discovery mechanic. Seeded with the
+ *                             map's `startingNode` by `createMapState`.
+ * @property consumedNodes   - Spec 23: nodes whose MapEvent has been resolved.
+ *                             One-shot: a consumed node returns `{ kind: 'none' }`
+ *                             from `resolveMapEvent`.
  */
 export interface MapState {
     name: MapName;
@@ -193,6 +199,8 @@ export interface MapState {
     availableNodes: NodeId[];
     lockedNodes: NodeId[];
     uniqueEvents: UniqueEvent[];
+    discoveredNodes: NodeId[];
+    consumedNodes: NodeId[];
 }
 
 /**
