@@ -13,53 +13,7 @@
 
 ## Pending
 
-### Story content organization workflow
-- filed: 2026-05-15 (oversight, user request)
-- priority: low (user explicitly noted)
-- summary: The user is mapping out the main story in `src/Story/story-overview.md`
-  (currently a brain-dump of places/characters/plot). They want a workflow for
-  organizing Story / Character synopsis / Dialogue.
-- prior art in repo: `skills/story-spec.md` already exists; `specs/story/`
-  contains `00-story-spec-template.md`; Phase 14 shipped first named NPC
-  (Old Marrow) with moralDelta dialogue.
-- open scoping questions for the user:
-  1. Should `src/Story/story-overview.md` move to `specs/story/00-overview.md`
-     (.md files don't belong inside `src/`)?
-  2. Does the workflow want separate templates for **character synopsis**
-     (vs. NPC content spec) and **location synopsis**, or fold both into the
-     existing story-spec template?
-  3. Should `/story-spec` skill be extended to handle character-only and
-     location-only flows, or is a new `/character-spec` skill preferred?
-  4. Dialogue: keep authored inline in the NPC TS module (current pattern,
-     see `src/NPCs/named/old-marrow.ts`), or extract to a dialogue catalogue
-     (JSON/TS) with the runtime loading by NPC ID?
-
-### MapEvents implementation
-- filed: 2026-05-15 (oversight, user request)
-- priority: medium (user wants implementation to begin)
-- summary: Implement MapEvents — node-level events that fire when the player
-  enters/interacts with a map node. Examples cited: **encounter,
-  interaction, gathering, rest**. story-overview.md also implies "Gather
-  Events / Map Nodes" as an introduction-of-mechanics moment.
-- prior art in repo: `src/World/` has nodes and `processNode`; `src/Game/`
-  has the reducer and event surface (Phase 12). Combat already wired through
-  encounters. No unified MapEvent abstraction yet.
-- open scoping questions for the user:
-  1. Event taxonomy: confirm the full list (**encounter, interaction,
-     gathering, rest**, anything else? cutscene, hazard, dialogue-spawn,
-     loot-cache?).
-  2. Resolution model: do MapEvents stack on top of `processNode` (existing
-     world entry-point) or replace it with a single `resolveMapEvent` that
-     dispatches by type?
-  3. Authoring surface: are MapEvents data-defined per node (a `events: []`
-     field on WorldNode) or globally registered handlers picked by tag?
-  4. Player agency: which events are auto-trigger on entry, which prompt a
-     menu, which are repeatable, which are one-shot?
-  5. Story integration: should `gathering` events feed inventory directly,
-     or emit a story flag the dialogue tree (Phase 14 style) can read?
-- recommended phase shape: one engine spec (`specs/13-map-events.md`),
-  one engine phase (taxonomy + resolver + e2e), one content phase
-  (≥1 of each event type on existing nodes).
+(All candidates promoted via oversight 2026-05-15.)
 
 ---
 
@@ -128,6 +82,79 @@
   4. Strip redundant `as Payload` casts from the seven creators in
      `src/Game/events.utils.ts` so TypeScript enforces literals against
      the return type.
+
+### Phase 22 — Story content authoring infrastructure
+- promoted: 2026-05-15 (oversight, user request)
+- source: oversight (story content workflow)
+- priority: low (user explicitly noted)
+- summary: Three-skill authoring surface, separate concerns, each writing
+  into the existing `content/` tree (user already moved overview into
+  `content/story/` and seeded `content/locations/<name>/` folders).
+  - Extend `skills/story-spec.md` to be story-building-only — plot beats,
+    quest arcs, "Order of Events"-style sequences. Outputs into
+    `content/story/<beat-or-arc>.md`.
+  - Add `skills/world-spec.md` — world / location / region / faction /
+    lore. Outputs into `content/locations/<location>/<aspect>.md` (e.g.
+    `content/locations/northern-forest/overview.md`).
+  - Add `skills/character-spec.md` — character synopsis, backstory, voice,
+    relationships, moral arc. Outputs into
+    `content/characters/<character>.md`.
+  - All three skills run in **dual mode**: socratic Q&A live in chat
+    when invoked AND a structured spec form the user can answer offline.
+    Mirror the live + spec pattern already used by `skills/story-spec.md`.
+  - Add `content/templates/{character,location,story}.md` skeletons each
+    skill writes from.
+- design decisions captured:
+  - location: `/content/` (user-moved, commit 84afc5c/ca75dcb).
+  - separate templates per concern (decided).
+  - separate skills per concern (decided); full creative control on shape.
+  - dialogue authoring: keep inline in NPC TS modules (Old Marrow
+    pattern in `src/NPCs/named/old-marrow.ts`); revisit if the catalogue
+    surface grows beyond a handful of named NPCs.
+
+### Phase 23 — MapEvents engine + node discovery
+- promoted: 2026-05-15 (oversight, user request)
+- source: oversight (MapEvents implementation)
+- priority: medium (user wants implementation to begin)
+- summary: New spec `specs/13-map-events.md`; replace `processNode` with a
+  single `resolveMapEvent(node, state): { state, event }` dispatcher; add
+  node-discovery / fog-of-war mechanic.
+- taxonomy (final, per user decision):
+  - **encounter** — combat
+  - **interaction** — dialogue / story trigger (folds old `npc` kind)
+  - **gathering** — resource collection (writes inventory directly)
+  - **rest** — recovery / heal
+  - **village** — settlement scene; merchants / shopkeepers folded under
+    village interactions (folds old `shop` kind)
+  - **cutscene** — non-interactive story beat
+  - **hazard** — environmental damage / status trigger
+  - **loot-cache** — fixed-pool inventory grant
+- migration: drop `kind: 'npc'` and `kind: 'shop'` from
+  `src/World/process-node.ts:45-46` and rewrite `src/World/spec08.test.ts`
+  assertions accordingly.
+- node discovery (central mechanic):
+  - Nodes start locked / blacked out.
+  - A node becomes revealable only when an adjacent node has been
+    completed (entered + its MapEvent resolved).
+  - The MapEvent type is **rolled from a weighted pool at unlock time**,
+    not authored per-node. Author surface is a per-region (or per-tag)
+    event-pool definition.
+  - All MapEvents are **one-shot** — consumed once resolved; the node
+    remains traversable but produces no further events.
+- additional event types worth exploring in the spec (not committed):
+  shrine (save point / minor stat boon), puzzle (skill check), monument
+  (lore reveal / story flag).
+- e2e: hermetic test covers discover → unlock → roll → resolve →
+  one-shot exhaustion across at least three event types.
+
+### Phase 24 — MapEvents content
+- promoted: 2026-05-15 (oversight, user request)
+- source: oversight (MapEvents implementation)
+- summary: With the Phase 23 engine in place, populate at least one node
+  of each MapEvent type and migrate the existing fishing-village and
+  northern-forest world content into the new shape. Hermetic e2e walks a
+  short discovery → resolution chain end-to-end against the live content
+  registry.
 
 ---
 

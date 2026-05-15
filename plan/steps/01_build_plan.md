@@ -42,14 +42,13 @@ shipped (with commit hash).
 - [ ] Phase 19 — Enemy spawn picker (debug tab to spawn arbitrary enemies into combat)
 - [ ] Phase 20 — Scripted / agent-driven CLI mode (`--script`, `--json-events`, stdin agent control)
 - [ ] Phase 21 — Phase 12 API cleanup (Node adapter leak, partial typed events, unused creators, redundant casts)
+- [ ] Phase 22 — Story content authoring infrastructure (story-spec / world-spec / character-spec skills + content/ templates) [low priority]
+- [ ] Phase 23 — MapEvents engine + node discovery (resolveMapEvent dispatcher, 8 event types, fog-of-war unlock, one-shot consumption; drops `npc`/`shop` kinds)
+- [ ] Phase 24 — MapEvents content (≥1 node per event type, migrate fishing-village + northern-forest into new shape)
 
-> **After phase 21:** the loop transitions to `/iterate` —
+> **After phase 24:** the loop transitions to `/iterate` —
 > spec gap filling, test coverage improvements, doc updates,
 > and ongoing audits. `/march` makes that transition automatic.
-
-> **Open candidates pending user scoping (filed via oversight 2026-05-15):**
-> story-content-organization workflow (low priority), MapEvents implementation
-> (medium priority). See `plan/PHASE_CANDIDATES.md` Pending section.
 
 > **Deploy gate note:** `npm run deploy:check` runs `npm pack --dry-run`.
 > This requires `dist/` (from `npm run build`). Always run `verify` first.
@@ -164,6 +163,42 @@ through the seven `create*Event` helpers so engine payloads match the typed
 shape, or downgrade them from Beta to "consumer convenience" in
 `docs/api.md`. (4) Strip redundant `as Payload` casts from the seven
 creators in `src/Game/events.utils.ts`. See `plan/CRITIQUE.md` Pending.
+
+### Phase 22 — Story content authoring infrastructure
+
+Three-skill authoring surface writing into the existing `content/` tree.
+Extend `skills/story-spec.md` to be story-building-only (plot beats, arcs;
+output `content/story/`). Add `skills/world-spec.md` for world / location /
+faction work (output `content/locations/<location>/`). Add
+`skills/character-spec.md` for character synopsis / voice / arc (output
+`content/characters/`). Each skill supports **dual mode**: live socratic
+Q&A in chat AND a structured spec form for offline answers. Drop templates
+in `content/templates/{character,location,story}.md`. Dialogue authoring
+stays inline in NPC TS modules (Old Marrow pattern). Low priority —
+authoring infrastructure, no engine impact.
+
+### Phase 23 — MapEvents engine + node discovery
+
+New spec `specs/13-map-events.md`. Replace `processNode` with a
+`resolveMapEvent(node, state)` dispatcher covering 8 event kinds:
+**encounter, interaction, gathering, rest, village, cutscene, hazard,
+loot-cache**. Migrate away from the old `npc` / `shop` kinds in
+`src/World/process-node.ts` and `src/World/spec08.test.ts` (NPCs fold into
+`interaction`; shops fold into `village`). Add **node discovery**: nodes
+start blacked-out and become revealable only when adjacent to a completed
+node; the event type is rolled from a weighted pool at unlock time, not
+authored per-node — so the authoring surface is a per-region (or per-tag)
+event-pool. All events are one-shot (consumed once resolved). Gathering
+events write directly to inventory. Hermetic e2e covers
+discover → unlock → roll → resolve → exhaustion across ≥3 event types.
+Spec should also propose shrine / puzzle / monument as candidate additions.
+
+### Phase 24 — MapEvents content
+
+With Phase 23's engine landed, populate at least one node of each event
+type and migrate the existing fishing-village and northern-forest world
+content into the new MapEvent shape. Hermetic e2e walks a short
+discovery → resolution chain end-to-end against the live content registry.
 
 ---
 
