@@ -30,7 +30,7 @@ export type {
 export { determineAdvantage, hasAdvantage, getAdvantageModifier, resolveEffectiveAdvantage } from './advantage';
 export { getBaseStat, getAttackStat, getDefenseStat, getSaveStat, getResistStat } from './stats';
 export { rollSkillCheck, isCriticalHit, isCriticalMiss } from './dice';
-export { applyCriticalMultiplier, calculateFinalDamage, isAttackSuccessful } from './damage';
+export { applyCriticalMultiplier, calculateFinalDamage, selectCritDamage, isAttackSuccessful } from './damage';
 export { applyDamage, heal, isAlive, isDefeated, getHealthPercentage } from './health';
 export {
     MIND_MARK_ID,

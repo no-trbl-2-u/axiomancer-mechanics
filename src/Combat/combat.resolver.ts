@@ -85,7 +85,11 @@ export type ScenarioEvent =
         attackStatValue: number; damageRoll: number; damageBonus: number;
         baseDefense: number; defenseMultiplier: number;
         finalDamage: number; hpBefore: number; hpAfter: number;
-        defenderActed: boolean }
+        defenderActed: boolean;
+        /** Phase 32 — true when the attacker rolled nat 20. */
+        isCritical?: boolean;
+        /** Phase 32 — auto-selected crit style (`double` or `pierce`), present only on crits. */
+        critStyle?: 'double' | 'pierce' }
     | { phase: 'scenario'; kind: 'thorns';
         attacker: CombatActor; thorns: number; hpBefore: number; hpAfter: number }
     | { phase: 'scenario'; kind: 'heart-buff-removed';

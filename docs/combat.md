@@ -243,7 +243,8 @@ round-resolution entry point used by every UI client.
 | `getSaveStat(entity, stance)` | Save stat for a stance (enemies fall back to defense) |
 | `getResistStat(entity, resistedBy)` | Base stat used when resisting an effect |
 | `rollSkillCheck(baseStat, advantage)` | d20 + modifier with advantage/disadvantage |
-| `calculateFinalDamage(base, reduction, crit, bonus)` | Damage after reductions |
+| `calculateFinalDamage(base, reduction, crit, bonus)` | Damage after reductions. On crit, picks the higher of `double` (2× base − defence) vs `pierce` (base, defence ignored) — Phase 32 auto-selection. |
+| `selectCritDamage(base, reduction, bonus)` | Phase 32 — returns `{ style, damage }` for the crit auto-selection in isolation, useful for tests / future damage previews. |
 | `applyDamage(entity, damage)` | Reduces HP (clamps to 0) |
 | `heal(entity, amount)` (alias `healCharacter`) | Restores HP (clamps to max) |
 | `resolveEffectApplication(target, effect, type, heart, equip)` | Full tier-based resist logic |

@@ -39,13 +39,19 @@ What's actually live as of 2026-05-15:
 
 What's genuinely not yet wired (so the "PENDING" marker is honest):
 
-- `critStyle` auto-selection (`double` vs `pierce` "whichever deals
-  more") — the type exists but the auto-selection logic is unimplemented
-  (Knowledge-Gaps Q3 → tracked in `specs/05-equipment-engine.md`).
 - A few cross-effect interactions documented in individual files that
   call out specific edge cases — read the file's `## Pending` or
   `## Known caveats` section for what's still genuinely open per
   effect.
+
+What recently moved from PENDING to LIVE:
+
+- `critStyle` auto-selection (`double` vs `pierce` "whichever deals
+  more") — Phase 32 wired this in `src/Combat/damage.ts`
+  (`selectCritDamage` helper) and `src/Combat/phases/scenario.ts`
+  (the scenario phase now fires `isCriticalHit(rawAttackRoll)` on
+  the attack roll and emits `isCritical` + `critStyle` fields on the
+  `damage-applied` event when a crit lands).
 
 ## When updating an individual buff/debuff doc
 

@@ -56,7 +56,8 @@ import {
     getDefenseStat,
 } from '../stats';
 import { getEffectiveStats } from '../effect-modifiers';
-import { calculateFinalDamage } from '../damage';
+import { calculateFinalDamage, selectCritDamage } from '../damage';
+import { isCriticalHit } from '../dice';
 import { applyDamage } from '../health';
 import {
     getActiveRollModifier,
@@ -446,7 +447,20 @@ function resolveAttackHit(
     const damageRaw  = rng();
     const damageRoll = damageRaw + rollPlusStatMod;
     const studyBonus = attacker.stance === 'mind' ? getStudyMarkIntensity(defender.combatant) : 0;
-    const finalDamage = calculateFinalDamage(damageRoll, baseDefense * defenseMultiplier, false, studyBonus);
+
+    // Phase 32 — crit fires when the raw attack roll was nat 20. Auto-select
+    // between `double` (2× base − defense) and `pierce` (base, defense
+    // ignored) and pick the higher. Non-crit hits stay on the linear path.
+    const isCritical = isCriticalHit(rawAttackRoll);
+    let finalDamage: number;
+    let critStyle: 'double' | 'pierce' | undefined;
+    if (isCritical) {
+        const picked = selectCritDamage(damageRoll, baseDefense * defenseMultiplier, studyBonus);
+        finalDamage = picked.damage;
+        critStyle = picked.style;
+    } else {
+        finalDamage = calculateFinalDamage(damageRoll, baseDefense * defenseMultiplier, false, studyBonus);
+    }
 
     events.push({
         phase: 'scenario', kind: 'damage-roll', actor: attacker.actor,
@@ -467,6 +481,7 @@ function resolveAttackHit(
         baseDefense, defenseMultiplier,
         finalDamage, hpBefore, hpAfter: updatedDefender.health,
         defenderActed: !defenderIsPassive,
+        ...(isCritical ? { isCritical: true, critStyle } : {}),
     });
 
     // Heart/attack specials — strip a buff from the defender, extend a buff on the attacker.

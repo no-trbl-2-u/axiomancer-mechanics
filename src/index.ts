@@ -44,7 +44,7 @@ export {
     determineAdvantage, getAdvantageModifier, hasAdvantage,
     getBaseStat, getAttackStat, getDefenseStat, getSaveStat, getResistStat,
     rollSkillCheck, isCriticalHit, isCriticalMiss,
-    applyCriticalMultiplier, calculateFinalDamage, isAttackSuccessful,
+    applyCriticalMultiplier, calculateFinalDamage, selectCritDamage, isAttackSuccessful,
     applyDamage, heal, isAlive, isDefeated, getHealthPercentage,
     getStudyMarkIntensity, getActiveRollModifier, getThornsReflect,
     updateEffectDuration, tickAllEffects,
