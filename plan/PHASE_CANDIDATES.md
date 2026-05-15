@@ -5,8 +5,8 @@
 > `## Promoted` or `## Rejected`.
 
 <!-- Metadata (updated by /expand after each pass):
-> Last pass: 2026-05-15 at commit 06c5446
-> Pass count: 1
+> Last pass: 2026-05-15 at commit adc47cc
+> Pass count: 2
 -->
 
 ---
@@ -28,40 +28,6 @@
 - acceptance: `grep -rn "processNode\|MapEvent\b\|MapEventType" src/`
   returns zero hits; the world e2e suite is green using only the
   new dispatcher.
-
-### Candidate: docs/api.md refresh post-Phase 21
-- signal: `docs/api.md:28-31` still lists `CombatStartedPayload`,
-  `createCombatStartedEvent`, etc. as Beta exports — but Phase 21
-  deleted the payload interfaces and the seven `create*Event`
-  factories. Anyone reading the public API doc today gets a list
-  of names that no longer exist in the package.
-- scope: Rewrite the "Events (Beta)" section to match the
-  post-Phase-21 surface (`EnginePayload`, the 10 `Typed*Event`
-  aliases, the 10 `is*Event` guards). Sweep the rest of the doc
-  for similar drift (Phase 17 dropped commander; Phase 18 added
-  the preset roster; Phase 23 added the MapEvents engine and
-  pool registration helpers; Phase 24 added pool content).
-- unblocks: trustworthy public-API doc that consumers can rely on
-  when integrating against the package.
-- blocked-by: none.
-- score: 9 × 8 / 10 = 7.2
-- recommended-slot: next (highest-priority pending candidate)
-
-### Candidate: Persistence adapter hermetic tests
-- signal: `plan/CRITIQUE.md` Pending MED — "Game/persistence has
-  zero tests despite owning the save-file format". The Node adapter
-  does fs reads/writes and is invoked on every dispatch (autosave);
-  malformed-JSON fallback and file-not-found behaviour are entirely
-  untested.
-- scope: Add `src/Game/persistence/node.adapter.test.ts` with three
-  hermetic cases — round-trip save/load via a tmpfile path, load
-  returns null when file missing, load returns null and warns when
-  file is malformed JSON. Move the CRITIQUE finding to Done.
-- unblocks: confidence in the save-file path before any consumer
-  takes a hard dependency on it.
-- blocked-by: none.
-- score: 6 × 7 / 10 = 4.2
-- recommended-slot: after Phase 25
 
 ### Candidate: Tier 2 / Tier 3 skill content polish
 - signal: `spec.md` 6-month horizon — "Additional skill tiers
@@ -101,6 +67,62 @@
   skills are ready to use for authoring.
 - score: 5 × 7 / 10 = 3.5
 - recommended-slot: after the cleanup-and-polish phases land
+
+### Candidate: Backfill open-Q answers in shipped specs
+- signal: `grep -c "> Your answer:$" specs/*.md` returns blanks
+  in five shipped specs — `06-character-progression.md` (9 blanks),
+  `12-package-architecture-and-events.md` (8), `01`, `10`, and the
+  `00-` template. The implementer made decisions but never backfilled
+  them, leaving a paper trail that lies by omission about why each
+  shipped phase chose what it chose.
+- scope: One iterate-style ticket per spec: read the spec's open
+  questions, infer the answer from the shipped code, and write it
+  into the `> Your answer:` line. The five specs need 19 answers
+  total. The template (`00-how-to-use-specs.md`) keeps its blank as
+  intentional.
+- unblocks: durable design record. Reduces the cost of explaining
+  decisions to a future contributor.
+- blocked-by: none — pure docs work, ground-truth lives in code.
+- score: 5 × 5 / 10 = 2.5
+- recommended-slot: low priority; convenient backfill when an
+  iterate tick has nothing else above 3.0.
+
+### Candidate: `Character.id` field for stable identity
+- signal: `Knowledge-Gaps.md` Q12 — still open. The engine has
+  `Enemy.id` but no `Character.id`; `ActiveEffect.sourceId` is
+  loosely typed and can't unambiguously point at the player.
+  Spec 23's MapEvents and the typed event surface (Phase 21) both
+  rely on `state.player` being the singleton character, which works
+  today but breaks if multi-character parties land.
+- scope: Add `id: string` to `Character`, propagate through
+  `createCharacter` (auto-generate via `randomUUID()` unless caller
+  provides), `buildCharacterFromPreset`, and `characters.mock.ts`.
+  Audit `ActiveEffect.sourceId` call sites — when applied by the
+  player, set it to the character's id. Update hermetic tests that
+  rely on stable identity.
+- unblocks: multi-character parties, save-game integrity across
+  reincarnation arcs (multiple Nameless-Ones), and effect
+  attribution in event logs.
+- blocked-by: none. Pure additive.
+- score: 5 × 6 / 10 = 3.0
+- recommended-slot: convenient mid-priority slot after Phase 25
+
+### Candidate: critStyle auto-selection (`double` vs `pierce`)
+- signal: `Knowledge-Gaps.md` Q3 — `CritStyle` type exists but
+  the "whichever deals more" auto-selection is not implemented.
+  Live combat treats every crit as the default. The mechanic is
+  invisible today.
+- scope: At crit time in `Combat/phases/scenario.ts`, compute both
+  `double` and `pierce` damage paths and pick the higher. Add a
+  hermetic test that pins the choice for a stat-set where the two
+  diverge. Update `docs/combat.md` and `docs/effects/README.md`
+  to mark this as LIVE (currently flagged "genuinely open" in the
+  effects README).
+- unblocks: late-game weapon-tuning headroom; `critStyle` becomes
+  a meaningful equipment authoring lever rather than a placeholder.
+- blocked-by: none.
+- score: 5 × 7 / 10 = 3.5
+- recommended-slot: after Phase 25 cleanup; nice combat polish.
 
 ---
 
