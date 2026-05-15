@@ -42,8 +42,8 @@ Advantage modifier (flat roll bonus/penalty from `getAdvantageModifier()`):
 |--------|-------------|
 | `attack` | Offensive — deals damage |
 | `defend` | Defensive — reduces incoming damage |
-| `skill` | Use an equipped skill (Phase 3) |
-| `item` | Use an inventory item (Phase 4) |
+| `skill` | Use an equipped skill (Spec 04 / 04b) |
+| `item` | Use an inventory consumable (Spec 05 / 05b) |
 | `flee` | Attempt to escape |
 
 ## Combat Phases

@@ -128,7 +128,8 @@ Two adapters ship with the package:
 
 The React Native consumer is responsible for an `AsyncStorage` adapter that
 implements the same interface (Spec 09 Q5 — kept in the consumer to preserve
-separation of responsibilities). Spec 12 will document a recommended shape.
+separation of responsibilities). The recommended shape lives in
+[`docs/api.md`](./api.md) under "React Native Usage" (post-Phase 21).
 
 ### Save versioning + migration
 

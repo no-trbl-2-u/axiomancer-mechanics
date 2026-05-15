@@ -22,7 +22,7 @@ Defined in [`src/Enemy/types.d.ts`](../src/Enemy/types.d.ts).
 | `tier1Overrides?` | `Tier1EffectOverrides` | Per-stance Tier 1 effect ID overrides. |
 | `procUnlocks?` | `ProcUnlocks` | Spec 03 — per-cell tier cap (default 1). Elites bump to 2, bosses to 3. |
 | `procOverrides?` | `ProcOverrides` | Spec 03 — per-cell custom proc tables. |
-| `skills?` | `Skill[]` | Optional skill list (Phase 3). |
+| `skills?` | `Skill[]` | Optional skill list (Spec 04 / 04b — currently unused on shipped enemies; reserved for elite/boss skill rotations). |
 | `loot?` | `LootTableEntry[]` | Weighted drop table (Spec 07 Q7B). |
 | `xpReward?` | `number` | Flat XP awarded on kill. Defaults to `level × DEFAULT_XP_BY_DIFFICULTY[difficulty]`. |
 | `effects` | `ActiveEffect[]` | Live status effects. |

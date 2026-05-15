@@ -12,22 +12,13 @@
 
 ## Pending
 
-### [LOW] Stale "(Phase 3)" / "(Phase 4)" / "Spec 12 will" annotations across docs
-- category: docs
-- impact: 4 (small inline annotations contradict shipped reality)
-- ease: 9 (line-level edits across 3 doc files)
-- score: 3.6
-- source: iterate audit pass (2026-05-15)
-- evidence:
-  - `docs/combat.md:45-46` annotates `skill` and `item` `CombatAction` rows as "(Phase 3)" / "(Phase 4)" — both ship via Spec 04 (skill engine) / Spec 04b (skill library) / Spec 05 (equipment) / Spec 05b (consumable library).
-  - `docs/enemy.md:25` annotates `skills?: Skill[]` as "(Phase 3)" — Spec 04 / 04b shipped.
-  - `docs/gameloop.md:131` says "Spec 12 will document a recommended shape" for an RN AsyncStorage adapter — Spec 12 / Phase 12 + Phase 21 shipped; the recommended shape lives in `docs/api.md` "React Native Usage".
-- next: drop or update the three annotations.
+(Empty.)
 
 ---
 
 ## Done
 
+- [x] **[LOW] Stale "(Phase 3)" / "(Phase 4)" / "Spec 12 will" annotations across docs** — resolved at commit cf9ffc7 (2026-05-15). `docs/combat.md:45-46` skill/item annotations now point at Spec 04 / 04b / 05 / 05b; `docs/enemy.md:25` `skills?` field annotation references Spec 04 with a note that it's reserved for elite/boss rotations; `docs/gameloop.md:131` RN AsyncStorage future-tense replaced with a cross-link to `docs/api.md` "React Native Usage". Impact 4 × Ease 9 / 10 = 3.6.
 - [x] **[MED] docs/effects/{buffs,debuffs}/* per-effect "PENDING (Phase 2)" markers are stale** — resolved at commit 6361dba (2026-05-15) by adding `docs/effects/README.md` — a single sweep document that names the 12 live mechanics (statModifiers / defenseModifier / rollModifier / reflectDamage / regen / drain / DoT / advantageModifier / actionRestriction / Tier 1 buff application / Tier 2 + 3 procs / Heart-attack specials) and the genuinely open ones (critStyle auto-selection). Per-file rewrites deferred — the README gives every reader the meta-context in one place. Impact 5 × Ease 7 / 10 = 3.5.
 - [x] **[MED] README Public API table missing Phase 18 / 21 / 23 / 24 additions** — resolved at commit 2a8a9ae (2026-05-15). Character row gained presets API (`characterPresets`, `getPresetById`, `buildCharacterFromPreset`, `CharacterPreset`). Game row demoted `createNodeAdapter` to a "lives on `'/node'` subpath" parenthetical and added the Phase 21 typed event surface (`EnginePayload` + 10 typed aliases + 10 `is*Event` guards). World row gained the MapEvents engine block (`resolveMapEvent`, pool registration helpers, `revealAdjacent`, `markNodeConsumed`, types); `processNode` demoted to "legacy / deprecated". Combat resolver row added `SkillPhaseEvent`, `ResourceEvent`, `CombatActor` and a `Combat/phases/` reference. Impact 6 × Ease 7 / 10 = 4.2.
 - [x] **[MED] Module doc `## Pending` sections list features that have already shipped** — resolved at commit 9d0aeb9 (2026-05-15). docs/effects.md, docs/character.md, and docs/combat.md Pending sections rewritten to reflect what's actually still open (only `Character.id` per Knowledge-Gaps Q12 remains genuinely pending). Dropped the stray "drain mechanic will be enabled in Phase 2" note in effects.md (Spec 01 already shipped `applyDrain` and the round-start drain pass). Impact 5 × Ease 8 / 10 = 4.0.
