@@ -14,35 +14,6 @@
 
 ## Pending
 
-### [LOW] Phase 32 critStyle wiring lacks a resolver-path integration test
-- pass: critique-10 (commit 938016b)
-- area: tests
-- observation: Phase 32 (`e456322`) wired `isCriticalHit(rawAttackRoll)`
-  into `src/Combat/phases/scenario.ts:resolveAttackHit` and now emits
-  `isCritical` + `critStyle` on the `damage-applied` event. The damage
-  math is well covered by the 4 new unit tests in
-  `src/Combat/index.test.ts` (low / high defence, bonus rides both
-  paths, bonus flips the pick). But the wiring itself — the actual
-  call site in scenario.ts and the optional fields on the event — has
-  no hermetic test. The Phase 32 commit body called this out
-  explicitly as a decision, noting "a future iterate pass can add
-  round-driven coverage if the auto-selection regresses in playtest."
-  Filing the finding so /iterate picks it up; the wiring is one
-  function call, so the test would also be small.
-- evidence: `src/Combat/phases/scenario.ts:449-465` (the new
-  `isCritical` branch + event-field spread); `src/Combat/index.test.ts`
-  covers only the pure damage helpers.
-- suggested_fix: extend `src/Combat/combat.resolver.test.ts` (or
-  `src/Combat/phases/e2e/scenario.engine.test.ts` if a phases-tier
-  e2e folder is preferred) with one case that seeds a nat-20 attack
-  roll via `mockSequentialRng(0.96)` (or equivalent — the d20 raw
-  roll path uses `getRng().random()` indirectly), drives a single
-  combat round through `resolveCombatRound`, and asserts the
-  emitted `damage-applied` event carries `isCritical: true` and a
-  `critStyle` value. Pair with a non-crit assertion as the
-  control.
-- source: critique
-
 ### [LOW] Combat reducer carries five aliases that add no behaviour
 - pass: critique-7 (commit 1f4911b)
 - area: dead-code
@@ -92,6 +63,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] Phase 32 critStyle wiring lacks a resolver-path integration test** — resolved at Phase 34 unit 9 (this commit). Added a "Crit wiring (Phase 32)" describe block to `src/Combat/e2e/combat.resolver.test.ts` with two cases: (1) `mockSequentialRng(0.99)` forces every d20 to roll 20 (`isCriticalHit(20) === true`), drives one round through `resolveCombatRound`, finds the player's `damage-applied` event, and asserts `isCritical: true` plus `critStyle` is `'double'` or `'pierce'`; (2) `mockSequentialRng(0.5)` is the control — every d20 rolls 11, no crit, no fields. 459/459 tests (was 457). Impact 3 × Ease 7 / 10 = 2.1.
 
 - [x] **[LOW] `docs/world.md` "Discovery (fog-of-war)" section misses Phase 31's `unlockAdjacent`** — resolved at Phase 34 unit 8 (this commit). Added an "Unlocked traversal" sub-bullet alongside "Discovery (fog-of-war)" that names `unlockAdjacent`, notes that it moves `connectedNodes` from `MapState.lockedNodes` into `MapState.availableNodes`, and links to Phase 31 (`711b49e`) — the fix that made the CLI Map tab actually offer the next ring as navigable targets. Impact 4 × Ease 9 / 10 = 3.6.
 

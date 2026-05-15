@@ -39,7 +39,7 @@ import { Disatree_01 } from '../../Enemy/enemy.library';
 import { createGameStore } from '../../Game/store';
 import { nullAdapter } from '../../Game/persistence/null.adapter';
 import { FRIENDSHIP_COUNTER_MAX } from '../../Game/game-mechanics.constants';
-import { mockAlternatingRng } from '../../test-utils/rng';
+import { mockAlternatingRng, mockSequentialRng } from '../../test-utils/rng';
 import { isCombatOngoing, determineCombatEnd } from '../index';
 import { initializeCombat } from '../combat.reducer';
 import { resolveCombatRound } from '../combat.resolver';
@@ -142,6 +142,60 @@ describe('Win condition: player KO', () => {
         expect(determineCombatEnd(state)).toBe('ko');
         expect(state.player.health).toBe(0);
         expect(rounds).toBe(3);
+    });
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// CRIT WIRING (Phase 32 — resolver-path integration)
+//
+// The damage helpers `selectCritDamage` / `calculateFinalDamage` are unit-
+// tested in `src/Combat/index.test.ts`; this block pins the wiring through
+// `resolveCombatRound` → `scenario.ts` → `damage-applied` event. With
+// `mockSequentialRng(0.99)` every d20 rolls 20, so `isCriticalHit(20)` fires
+// and the player's `damage-applied` event must carry `isCritical: true` +
+// a `critStyle`. The control case uses `mockSequentialRng(0.5)` so every
+// d20 rolls 11 — no crit, no fields.
+// ────────────────────────────────────────────────────────────────────────────
+
+describe('Crit wiring (Phase 32)', () => {
+    it('emits isCritical + critStyle on damage-applied when the attacker rolls nat 20', () => {
+        mockSequentialRng(0.99);
+
+        const state = initializeCombat(Player, Disatree_01);
+        const { combatEvents } = resolveCombatRound(
+            state,
+            { stance: 'mind', action: 'attack' },
+            { stance: 'heart', action: 'attack' },
+        );
+
+        const playerHit = combatEvents.find(
+            (ev): ev is Extract<typeof ev, { kind: 'damage-applied' }> =>
+                ev.phase === 'scenario' && ev.kind === 'damage-applied' && ev.attacker === 'player',
+        );
+
+        expect(playerHit).toBeDefined();
+        expect(playerHit?.isCritical).toBe(true);
+        expect(playerHit?.critStyle === 'double' || playerHit?.critStyle === 'pierce').toBe(true);
+    });
+
+    it('omits isCritical on a non-crit hit', () => {
+        mockSequentialRng(0.5);
+
+        const state = initializeCombat(Player, Disatree_01);
+        const { combatEvents } = resolveCombatRound(
+            state,
+            { stance: 'mind', action: 'attack' },
+            { stance: 'heart', action: 'attack' },
+        );
+
+        const playerHit = combatEvents.find(
+            (ev): ev is Extract<typeof ev, { kind: 'damage-applied' }> =>
+                ev.phase === 'scenario' && ev.kind === 'damage-applied' && ev.attacker === 'player',
+        );
+
+        expect(playerHit).toBeDefined();
+        expect(playerHit?.isCritical).toBeUndefined();
+        expect(playerHit?.critStyle).toBeUndefined();
     });
 });
 
