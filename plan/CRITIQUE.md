@@ -6,13 +6,87 @@
 > by `/iterate`.
 
 <!-- Metadata (updated by /critique after each pass):
-> Last pass: 2026-05-15 at commit ef1b486
-> Pass count: 8
+> Last pass: 2026-05-15 at commit 6097001
+> Pass count: 9
 -->
 
 ---
 
 ## Pending
+
+### [MED] `docs/gameloop.md` GameEvent surface section is pre-Phase-21
+- pass: critique-9 (commit 6097001)
+- area: docs
+- observation: `docs/gameloop.md:95-110` describes the GameEvent surface
+  as `interface GameEvent { type: GameEventType; payload: unknown }`.
+  That was true at the doc's last `GameEvent`-section rewrite, but Phase
+  21 (a3f1693) introduced `EnginePayload = { action, state, report?
+  }` and per-topic `TypedGameEvent<T>` narrowing aliases; Phase 30 unit
+  2 (6097001) extended the envelope with `unlockedSkills?: string[]`
+  for `character:levelup`. The doc still says `payload: unknown` — a
+  new consumer following it will write loose `any` casts instead of
+  using the typed surface (`TypedLevelUpEvent`, `isLevelUpEvent`,
+  etc.) that the package now exports.
+- evidence: `docs/gameloop.md:103` (`payload: unknown`) vs.
+  `src/Game/events.types.ts:29-39` (the real `EnginePayload` + 10
+  `TypedGameEvent<T>` aliases) and `src/Game/events.utils.ts` (the
+  `is*Event` guards exported on the public barrel).
+- suggested_fix: rewrite the GameEvent section to describe the
+  Phase-21 envelope (action / state / report / unlockedSkills),
+  point at `TypedGameEvent<T>` + per-topic aliases, and mention the
+  `is*Event` guards from `events.utils.ts`. Include a one-block
+  example showing the typed-narrowing pattern (the CLI's
+  `events.on('character:levelup', ...)` at `game.cli.ts:55` is a
+  ready-made template).
+- source: critique
+
+### [LOW] `docs/api.md` stops at Phase 24 — five phases of additions undocumented
+- pass: critique-9 (commit 6097001)
+- area: docs
+- observation: `docs/api.md` is the canonical "every public export
+  with its stability level" reference (Spec 12 acceptance line). Its
+  phase trail caps at Phase 24 (MapEvents content); since then five
+  phases have added barrel exports that aren't listed:
+    - Phase 26 — state-log writer (CLI only; not on barrel — skip).
+    - Phase 27 — Save / Load CLI tabs (CLI only — skip).
+    - Phase 29 — `allocateStatPoint`, `STAT_POINTS_PER_LEVEL`,
+      `availableStatPoints` field on `Character`,
+      `ALLOCATE_STAT_POINT` action. All on `src/index.ts` /
+      `src/Game/index.ts`.
+    - Phase 30 unit 1 — `getAvailableSkills`, `learnSkill`,
+      `meetsLearningRequirement`. All on `src/Skills/index.ts` and
+      `src/index.ts`.
+    - Phase 30 unit 2 — `EnginePayload.unlockedSkills` (type
+      extension; affects every `TypedGameEvent<T>` consumer).
+- evidence: `docs/api.md` (last phase mention at line 129); compare
+  against the Phase 21 audit trail at line 80 vs the live barrel
+  exports in `src/index.ts:13-145`.
+- suggested_fix: add a "Phase 29 — Stat allocation" sub-block to
+  the Character section and a "Phase 30 — Skill learning" sub-block
+  to the Skills section. In the Events section, document the
+  `unlockedSkills?` field on `EnginePayload` next to the existing
+  Phase-21 typed-event block.
+- source: critique
+
+### [LOW] `automation/scripts/walkthroughs/` has no index — 7 walkthroughs and counting
+- pass: critique-9 (commit 6097001)
+- area: docs
+- observation: The directory now ships 7 walkthroughs (`character-
+  sheet`, `map-events`, `skills-in-combat`, `item-use`,
+  `boss-encounter`, `save-load`, `stat-allocation`) but has no
+  README. New contributors have to grep each pair to learn what
+  exists, what each surface tests, what flags it needs (`--save-file`
+  is required by save-load only), and which preset / enemy is
+  expected. The pattern is stable enough that the index would
+  protect against the directory growing into a junk drawer.
+- evidence: `ls automation/scripts/walkthroughs/` lists 14 files
+  (7 `.json` + 7 `.goal.md`), no `README*`.
+- suggested_fix: add `automation/scripts/walkthroughs/README.md` —
+  one row per walkthrough with columns `script | surface under
+  test | preset | enemy / encounter | required flags | exit
+  expectation`. Cap at a single page. Mirrors how `docs/api.md`
+  indexes the package surface.
+- source: critique
 
 ### [MED] `docs/character.md` "Pending" section directly contradicts shipped Phase 29 code
 - pass: critique-8 (commit ef1b486)
