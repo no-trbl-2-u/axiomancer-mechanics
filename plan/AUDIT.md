@@ -8,7 +8,9 @@
 > Bias: <category> (set via oversight <date>)
 -->
 
-<!-- Bias cleared via oversight 2026-05-15 after one full lifecycle (set 2026-05-15, cleared 2026-05-15). The bias did its job — Phase 25 follow-up was the only finding it weighted, and that one LOW remains without needing the multiplier. -->
+> Bias: gameplay (set via oversight 2026-05-15)
+
+<!-- Bias cleared via oversight 2026-05-15 after one full lifecycle (set 2026-05-15, cleared 2026-05-15). The bias did its job — Phase 25 follow-up was the only finding it weighted, and that one LOW remains without needing the multiplier. Re-set to "gameplay" via oversight 2026-05-15 to push /iterate toward mechanic findings rather than the doc/test queue (Phase 34 is draining most of the docs backlog directly). -->
 
 ---
 

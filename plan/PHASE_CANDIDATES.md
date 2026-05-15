@@ -31,29 +31,25 @@
 - score: 5 × 7 / 10 = 3.5
 - recommended-slot: after the cleanup-and-polish phases land
 
-### Candidate: `Character.id` field for stable identity
-- signal: `Knowledge-Gaps.md` Q12 — still open. The engine has
-  `Enemy.id` but no `Character.id`; `ActiveEffect.sourceId` is
-  loosely typed and can't unambiguously point at the player.
-  Spec 23's MapEvents and the typed event surface (Phase 21) both
-  rely on `state.player` being the singleton character, which works
-  today but breaks if multi-character parties land.
-- scope: Add `id: string` to `Character`, propagate through
-  `createCharacter` (auto-generate via `randomUUID()` unless caller
-  provides), `buildCharacterFromPreset`, and `characters.mock.ts`.
-  Audit `ActiveEffect.sourceId` call sites — when applied by the
-  player, set it to the character's id. Update hermetic tests that
-  rely on stable identity.
-- unblocks: multi-character parties, save-game integrity across
-  reincarnation arcs (multiple Nameless-Ones), and effect
-  attribution in event logs.
-- blocked-by: none. Pure additive.
-- score: 5 × 6 / 10 = 3.0
-- recommended-slot: convenient mid-priority slot after Phase 25
-
 ---
 
 ## Promoted
+
+### Phase 35 — `Character.id` field for stable identity
+- promoted: 2026-05-15 (oversight; user pick after Phase 34 promotion)
+- source: `/expand` candidate; Knowledge-Gaps Q12. The engine has
+  `Enemy.id` but no `Character.id`; `ActiveEffect.sourceId` is
+  loosely typed and can't unambiguously point at the player.
+- summary: Add `id: string` to `Character` (auto-generate via
+  `randomUUID()` unless caller provides) and propagate through
+  `createCharacter`, `buildCharacterFromPreset`, and
+  `characters.mock.ts`. Audit `ActiveEffect.sourceId` call sites —
+  when the player applies an effect, set it to the character's id.
+- acceptance: every `Character` instance constructed by the engine
+  carries a non-empty `id`; `ActiveEffect.sourceId` is the player's
+  id for player-applied effects; hermetic tests pin stable identity
+  across save/load. Closes Knowledge-Gaps Q12.
+- score: 5 × 6 / 10 = 3.0
 
 ### Phase 34 — Docs sweep
 - promoted: 2026-05-15 (oversight; user pick after critique pass 9)
