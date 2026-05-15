@@ -21,7 +21,7 @@
 
 import inquirer from 'inquirer';
 
-import { Player } from '../Character/characters.mock';
+import { characterPresets, getPresetById, buildCharacterFromPreset } from '../Character';
 import { Disatree_01 } from '../Enemy/enemy.library';
 import { createGameStore } from '../Game/store';
 import { createEventEmitter } from '../Game/events';
@@ -30,28 +30,36 @@ import { getMapDefinition } from '../World/map.registry';
 import { processNode } from '../World/process-node';
 import { isCombatOngoing, determineEnemyAction, resolveCombatRound } from '../Combat';
 import { Stance, CombatState } from '../Combat/types';
-import { getSkillById, skillLibrary } from '../Skills/skill.library';
-import { consumableLibrary } from '../Items/consumable.library';
-import { Item, isConsumable } from '../Items/types';
+import { getSkillById } from '../Skills/skill.library';
+import { isConsumable } from '../Items/types';
 import { CombatEndReport } from '../Game/store';
 
 type Tab = 'map' | 'combat' | 'journal' | 'skills' | 'inventory' | 'quit';
 
+type GameStoreHandle = ReturnType<typeof createGameStore>;
+
 const skillLookup = (id: string) => getSkillById(id);
 
-function bootstrapStore() {
+async function bootstrapStore(): Promise<GameStoreHandle> {
     const events = createEventEmitter();
     events.onAny(ev => console.log(`  [event] ${ev.type}`));
 
-    const demoConsumables: Item[] = consumableLibrary.map(c => ({ ...c })) as Item[];
-    const seededPlayer = {
-        ...Player,
-        knownSkills:    skillLibrary.map(s => s.id),
-        equippedSkills: skillLibrary.slice(0, 4).map(s => s.id),
-        inventory:      [...Player.inventory, ...demoConsumables],
-    };
+    const { presetId } = await inquirer.prompt<{ presetId: string }>([{
+        type: 'rawlist', name: 'presetId',
+        message: 'Pick a character preset:',
+        choices: characterPresets.map(p => ({
+            name: `${p.name} (lvl ${p.level}) — ${p.summary}`,
+            value: p.id,
+        })),
+    }]);
 
-    return createGameStore(nullAdapter, { player: seededPlayer }, events);
+    const preset = getPresetById(presetId);
+    if (!preset) throw new Error(`Unknown preset: ${presetId}`);
+
+    const player = buildCharacterFromPreset(preset);
+    console.log(`\nSelected: ${preset.name} (level ${preset.level}).\n`);
+
+    return createGameStore(nullAdapter, { player }, events);
 }
 
 async function pickTab(canFight: boolean): Promise<Tab> {
@@ -69,7 +77,7 @@ async function pickTab(canFight: boolean): Promise<Tab> {
     return tab;
 }
 
-async function mapTab(store: ReturnType<typeof bootstrapStore>): Promise<void> {
+async function mapTab(store: GameStoreHandle): Promise<void> {
     const state   = store.getState();
     const current = state.world.currentMap.currentNode;
     const def     = getMapDefinition(state.world.currentMap.continent, state.world.currentMap.name);
@@ -120,7 +128,7 @@ async function mapTab(store: ReturnType<typeof bootstrapStore>): Promise<void> {
     }
 }
 
-async function combatTab(store: ReturnType<typeof bootstrapStore>): Promise<void> {
+async function combatTab(store: GameStoreHandle): Promise<void> {
     let combat = store.getState().combat;
     if (!combat) {
         console.log('No combat in progress — pick the Map tab to trigger an encounter.');
@@ -155,7 +163,7 @@ async function combatTab(store: ReturnType<typeof bootstrapStore>): Promise<void
     if (report.outcome === 'victory') store.getState().levelUp();
 }
 
-function journalTab(store: ReturnType<typeof bootstrapStore>): void {
+function journalTab(store: GameStoreHandle): void {
     const { quests, flags } = store.getState();
     console.log('\n— Journal —');
     console.log(`Active quests   : ${quests.active.map(q => q.name).join(', ') || '(none)'}`);
@@ -166,7 +174,7 @@ function journalTab(store: ReturnType<typeof bootstrapStore>): void {
     console.log('Alignment       : neutral (Spec 10 will compute this)');
 }
 
-function skillsTab(store: ReturnType<typeof bootstrapStore>): void {
+function skillsTab(store: GameStoreHandle): void {
     const { player } = store.getState();
     console.log('\n— Skills —');
     console.log('Known skills:');
@@ -176,7 +184,7 @@ function skillsTab(store: ReturnType<typeof bootstrapStore>): void {
     }
 }
 
-function inventoryTab(store: ReturnType<typeof bootstrapStore>): void {
+function inventoryTab(store: GameStoreHandle): void {
     const { inventory } = store.getState().player;
     console.log('\n— Inventory —');
     if (inventory.length === 0) {
@@ -190,8 +198,8 @@ function inventoryTab(store: ReturnType<typeof bootstrapStore>): void {
 }
 
 async function main(): Promise<void> {
-    const store = bootstrapStore();
     console.log('Axiomancer — game loop demo.\n');
+    const store = await bootstrapStore();
 
     // If we wanted to demo a fight immediately we'd pre-load combat — leave
     // that off so the loop starts on the Map tab and the player walks into
