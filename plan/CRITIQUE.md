@@ -162,26 +162,6 @@
   `docs/api.md` is a stub) `[ ]` with a one-line note.
 - source: critique
 
-### [HIGH] CLI mapTab can't progress past adjacent-to-start — `availableNodes` is never updated under the Phase 23 dispatcher
-- pass: critique-7 (commit 1f4911b)
-- area: structure
-- observation: `src/CLI/game.cli.ts:100` filters reachable nodes by
-  `state.world.currentMap.availableNodes`. `availableNodes` is seeded once in
-  `createMapState` (`src/World/map.registry.ts:54-66`) with the starting node's
-  adjacents and is mutated only by the legacy `completeCurrentNode` /
-  `unlockNode` reducers. The Phase 23 dispatcher
-  (`src/World/MapEvents/resolve-map-event.ts:117/128/140`) calls
-  `revealAdjacent` after each node resolves, which only updates
-  `discoveredNodes` (`src/World/world.reducer.ts:188-203`). Result: after
-  moving fv-1 → fv-2, fv-3 is in `discoveredNodes` but NOT in
-  `availableNodes`, and mapTab logs "No adjacent nodes are open right now."
-  Verified by the Phase 27 unit 2 (save/load) walkthrough dry-run: the
-  apprentice cannot move past fv-2 from the CLI even though the linear
-  fishing-village runs fv-1..fv-10.
-- evidence: `src/CLI/game.cli.ts:100`, `src/World/MapEvents/resolve-map-event.ts:117/128/140`, `src/World/world.reducer.ts:188-203`. Compare against `src/World/world.reducer.ts:78-99` (`completeCurrentNode`, the old path).
-- suggested_fix: in `resolveMapEvent`, after `markNodeConsumed`, also unlock the just-resolved node's connected nodes into `availableNodes` (or have `mapTab` filter by `discoveredNodes ∩ connectedNodes ∩ ¬consumedNodes`). Add a hermetic e2e in `src/World/MapEvents/e2e/` that walks fv-1 → fv-2 → fv-3 and asserts each transition is reachable from `availableNodes`.
-- source: critique (surfaced during Phase 27 unit 2 — noted in `automation/scripts/walkthroughs/save-load.goal.md`'s diagnostic block)
-
 ### [LOW] Combat reducer carries five aliases that add no behaviour
 - pass: critique-7 (commit 1f4911b)
 - area: dead-code
@@ -247,6 +227,7 @@
 
 ## Done
 
+- [x] **[HIGH] CLI mapTab can't progress past adjacent-to-start — `availableNodes` is never updated under the Phase 23 dispatcher** — resolved at commits 711b49e (engine fix + 4 hermetic cases in `src/World/MapEvents/e2e/map-events.engine.test.ts` under "Phase 31 traversal fix") and 3ee7b81 (save-load walkthrough rewrite exercising fv-1 → fv-2 → fv-3 → load). Phase 31 added `unlockAdjacent(map, nodeId)` next to `revealAdjacent` and threaded it through every `resolveMapEvent` exit path. Impact 9 × Ease 5 / 10 = 4.5.
 - [x] **[MED] `docs/gameloop.md` tabs section is multi-phase out of date** — resolved at commit 7a34055 (2026-05-15) by rewriting the `game.cli.ts` section: tabs table now lists all 10 live tabs (Map / Combat / Journal / Skills / Inventory / Character / Debug / Save / Load / Quit) with phase-correct verb references (`resolveMapEvent` replaces `PROCESS_NODE`, the four Phase-26/27/29 affordances are surfaced). Run instruction replaces `npx tsx` with `npm run game` and enumerates the four shipped flags (--script, --json-events, --state-log, --save-file). Impact 6 × Ease 9 / 10 = 5.4.
 - [x] **[MED] Phase 26 state-log writer (`src/CLI/io.ts`) has zero hermetic coverage** — resolved at commit 404dadd (2026-05-15) by extending `src/CLI/e2e/io.engine.test.ts` with 4 new cases: state log disabled by default (no-op on `logState`), `setStateLogPath` truncates an existing file, `logState` appends JSONL records with monotonic tick + the `{ action, before, after, event? }` shape, `setStateLogPath` resets the tick counter on a fresh session. Suite grows 12 → 16; 425/425 total green.
 - [x] **[HIGH] src/CLI/combat.display.ts is 968 LOC of dead code orphaned by Phase 17** — resolved at commit `0e7e8a9` (2026-05-15) by `git rm src/CLI/combat.display.ts`. Phase 17 deleted `combat.cli.ts` but missed this companion helper file; zero consumers in src/, automation/, or scripts/.
