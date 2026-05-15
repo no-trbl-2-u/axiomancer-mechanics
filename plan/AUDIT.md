@@ -12,7 +12,14 @@
 
 ## Pending
 
-(Empty.)
+### [LOW] Two engine-style tests at module root violate the e2e/ convention
+- category: structure
+- impact: 4 (consistency only; bearings blesses both layouts but engine tests should live in e2e/ per the Phase 16 convention)
+- ease: 9 (two `git mv` + path fixes)
+- score: 3.6
+- source: iterate audit pass (2026-05-15)
+- evidence: `src/Skills/skill.engine.test.ts` (308 LOC) is engine-style — drives `resolveCombatRound` + `executeSkill` via `mockSequentialRng` — but lives at the Skills module root rather than `src/Skills/e2e/`. Similarly `src/Game/spec08.e2e.test.ts` (152 LOC) is a full exploration loop e2e but lives at the Game module root rather than `src/Game/e2e/`. Both pre-date Phase 16 and were the original convention exceptions the Phase 16 brief explicitly deferred.
+- next: `git mv` both into the matching `e2e/` dir, fix the relative imports, rename `spec08.e2e.test.ts` → `spec08.engine.test.ts` for consistency with the `*.engine.test.ts` suffix. Suite stays green.
 
 ---
 
