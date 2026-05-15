@@ -41,10 +41,15 @@ shipped (with commit hash).
 - [ ] Phase 18 — Preset character roster (curated progression tiers selectable at boot)
 - [ ] Phase 19 — Enemy spawn picker (debug tab to spawn arbitrary enemies into combat)
 - [ ] Phase 20 — Scripted / agent-driven CLI mode (`--script`, `--json-events`, stdin agent control)
+- [ ] Phase 21 — Phase 12 API cleanup (Node adapter leak, partial typed events, unused creators, redundant casts)
 
-> **After phase 20:** the loop transitions to `/iterate` —
+> **After phase 21:** the loop transitions to `/iterate` —
 > spec gap filling, test coverage improvements, doc updates,
 > and ongoing audits. `/march` makes that transition automatic.
+
+> **Open candidates pending user scoping (filed via oversight 2026-05-15):**
+> story-content-organization workflow (low priority), MapEvents implementation
+> (medium priority). See `plan/PHASE_CANDIDATES.md` Pending section.
 
 > **Deploy gate note:** `npm run deploy:check` runs `npm pack --dry-run`.
 > This requires `dist/` (from `npm run build`). Always run `verify` first.
@@ -145,6 +150,20 @@ actions[] }` for deterministic replay (leverages the Phase 11 seeded RNG).
 an external LLM agent can parse the transcript and react. stdin-mode:
 accepts one-action-per-line JSON commands for live agent control.
 Hermetic e2e covers a full agent-style scripted run end-to-end.
+
+### Phase 21 — Phase 12 API cleanup
+
+Drain the four critique-pass-2 findings against Phase 12's public surface so
+the package API stabilizes in one pass: (1) remove `createNodeAdapter`
+re-export from the core barrel; keep `PersistenceAdapter` interface there
+for RN consumers and document the split in `docs/api.md`. (2) Extend the
+typed event surface to cover `dialogue:applied`, `game:saved`, `game:loaded`
+(payload type + creator + guard each), or rename `TypedGameEvent` to make
+partial coverage explicit. (3) Either retrofit engine emit sites to route
+through the seven `create*Event` helpers so engine payloads match the typed
+shape, or downgrade them from Beta to "consumer convenience" in
+`docs/api.md`. (4) Strip redundant `as Payload` casts from the seven
+creators in `src/Game/events.utils.ts`. See `plan/CRITIQUE.md` Pending.
 
 ---
 

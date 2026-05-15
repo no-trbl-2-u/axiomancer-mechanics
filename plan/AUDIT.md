@@ -12,15 +12,6 @@
 
 ## Pending
 
-### [MED] ESLint config broken — `npm run lint` fails
-- category: test-quality
-- impact: 5 (silent static-analysis gap; type-check covers most cases)
-- ease: 7 (one-line fix in `eslint.config.mts` to register the plugin)
-- score: 3.5
-- next: Phase 13 will fix this; `/iterate` can address earlier if no phases pending.
-- notes: `@typescript-eslint/no-explicit-any` referenced without plugin
-  registration. See `AGENTS.md` Caveats and `plan/bearings.md` Hard Rules.
-
 ### [LOW] `Knowledge-Gaps.md` contains open design questions not yet spec'd
 - category: spec-gap
 - impact: 4 (answers needed before implementation; doesn't block current phases)
@@ -56,6 +47,7 @@
 
 ## Done
 
+- [x] **[MED] ESLint config broken — `npm run lint` fails** — resolved at commit `4f58f66` (2026-05-14) by Phase 13. `eslint.config.mts` now registers `@typescript-eslint`, `npm run lint` is green, and `lint` is back in the verify gate. Closed via oversight 2026-05-15. Impact 5 × Ease 7 / 10 = 3.5.
 - [x] **[MED] `docs/gameloop.md` lags two phases behind the live `GameState` shape** — header listed `GAME_STATE_VERSION = 2` (actual: 4), state shape omitted `moralMeter` (Spec 10) and `rngState` (Spec 11), GameAction union missed `SHIFT_MORAL_METER`, the "reducer is pure" claim no longer held for `SAVE_GAME`'s rngState stamp, and the migration ladder advice still told readers to write `migrateV2toV3` (it already exists). Rewrote shape, action list, purity caveat, and migration section. Shipped at commit `d15298f` (2026-05-13). Impact 6 × Ease 7 / 10 = 4.2.
 - [x] **[MED] Stale "Spec 11 / seedable RNG" references in docs and source headers** — Phase 11 shipped the seedable RNG singleton, but `docs/testing.md`, `docs/combat.md`, `docs/skills.md`, `src/Combat/combat.resolver.ts`, `src/Combat/e2e/combat.resolver.test.ts`, and `src/Enemy/enemy.logic.ts` still framed it as future tense. Rewrote each to acknowledge the live `getRng()` pipeline and how the Math-backed test harness now controls it end-to-end. Shipped at commit `0c2ce22` (2026-05-13). Impact 5 × Ease 8 / 10 = 4.0.
 - [x] **[MED] README Public API table out of sync with `src/index.ts`** — table omitted entire groups (Skills, NPCs, Combat resolver, RNG) and lagged on Items/Game/World/Enemy/Effects expansions. Rewrote against the live barrel (`src/index.ts`) at commit `69c2cb0` (2026-05-13). Impact 6 × Ease 7 / 10 = 4.2.
