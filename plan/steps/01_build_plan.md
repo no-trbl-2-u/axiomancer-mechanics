@@ -39,7 +39,7 @@ shipped (with commit hash).
 - [x] Phase 16 — Migrate sibling tests into `src/<Module>/e2e/` for layout consistency (bb369c1)
 - [x] Phase 17 — Unify CLI surface (drop `combat` + `character` + `auto:combat` scripts; single `npm run game` entry) (7595c2e)
 - [x] Phase 18 — Preset character roster (curated progression tiers selectable at boot) (9ab6a0b)
-- [ ] Phase 19 — Enemy spawn picker (debug tab to spawn arbitrary enemies into combat)
+- [x] Phase 19 — Enemy spawn picker (debug tab to spawn arbitrary enemies into combat) (0260ef0)
 - [ ] Phase 20 — Scripted / agent-driven CLI mode (`--script`, `--json-events`, stdin agent control)
 - [ ] Phase 21 — Phase 12 API cleanup (Node adapter leak, partial typed events, unused creators, redundant casts)
 - [ ] Phase 22 — Story content authoring infrastructure (story-spec / world-spec / character-spec skills + content/ templates) [low priority]
