@@ -23,6 +23,12 @@ export interface CliFlags {
     jsonEvents: boolean;
     /** Path to a `.jsonl` file where per-decision state records are appended. */
     stateLogPath?: string;
+    /**
+     * Path to a save file (JSON). When set, the CLI uses `createNodeAdapter`
+     * backed by this path instead of the null adapter — making Save / Load
+     * tabs durable across sessions.
+     */
+    saveFile?: string;
 }
 
 export function parseArgv(args: string[]): CliFlags {
@@ -56,10 +62,20 @@ export function parseArgv(args: string[]): CliFlags {
             }
             flags.stateLogPath = next;
             i += 2;
+        } else if (arg.startsWith('--save-file=')) {
+            flags.saveFile = arg.slice('--save-file='.length);
+            i++;
+        } else if (arg === '--save-file') {
+            const next = args[i + 1];
+            if (!next || next.startsWith('--')) {
+                throw new Error('--save-file requires a file path argument.');
+            }
+            flags.saveFile = next;
+            i += 2;
         } else {
             throw new Error(
                 `Unknown CLI flag: '${arg}'.\n` +
-                `Usage: npm run game -- [--script <path>] [--stdin] [--json-events] [--state-log <path>]`,
+                `Usage: npm run game -- [--script <path>] [--stdin] [--json-events] [--state-log <path>] [--save-file <path>]`,
             );
         }
     }

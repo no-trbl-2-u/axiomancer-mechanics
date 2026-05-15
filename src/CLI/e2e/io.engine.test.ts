@@ -77,6 +77,20 @@ describe('parseArgv', () => {
     it('throws on unknown flags', () => {
         expect(() => parseArgv(['--foo'])).toThrow(/Unknown CLI flag/);
     });
+
+    it('parses --save-file with separate value and = form', () => {
+        expect(parseArgv(['--save-file', 'save.json'])).toEqual({
+            stdin: false, jsonEvents: false, saveFile: 'save.json',
+        });
+        expect(parseArgv(['--save-file=save.json'])).toEqual({
+            stdin: false, jsonEvents: false, saveFile: 'save.json',
+        });
+    });
+
+    it('throws when --save-file has no value', () => {
+        expect(() => parseArgv(['--save-file'])).toThrow(/requires a file path/);
+        expect(() => parseArgv(['--save-file', '--stdin'])).toThrow(/requires a file path/);
+    });
 });
 
 describe('prompt in script mode', () => {

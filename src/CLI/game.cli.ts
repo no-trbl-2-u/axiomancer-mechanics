@@ -27,6 +27,8 @@ import { ENEMY_REGISTRY, type EnemySlug } from '../Enemy/enemy.library';
 import { createGameStore } from '../Game/store';
 import { createEventEmitter } from '../Game/events';
 import { nullAdapter } from '../Game/persistence/null.adapter';
+import { createNodeAdapter } from '../Game/persistence/node.adapter';
+import type { PersistenceAdapter } from '../Game/persistence/types';
 import { getMapDefinition } from '../World/map.registry';
 import { resolveMapEvent } from '../World';
 import type { ResolvedEvent } from '../World';
@@ -37,13 +39,13 @@ import { canUseSkill } from '../Skills/skill.engine';
 import { isConsumable } from '../Items/types';
 import { CombatEndReport } from '../Game/store';
 
-type Tab = 'map' | 'combat' | 'journal' | 'skills' | 'inventory' | 'character' | 'debug' | 'quit';
+type Tab = 'map' | 'combat' | 'journal' | 'skills' | 'inventory' | 'character' | 'debug' | 'save' | 'load' | 'quit';
 
 type GameStoreHandle = ReturnType<typeof createGameStore>;
 
 const skillLookup = (id: string) => getSkillById(id);
 
-async function bootstrapStore(): Promise<GameStoreHandle> {
+async function bootstrapStore(adapter: PersistenceAdapter): Promise<GameStoreHandle> {
     const events = createEventEmitter();
     events.onAny(emit);
 
@@ -62,7 +64,7 @@ async function bootstrapStore(): Promise<GameStoreHandle> {
     const player = buildCharacterFromPreset(preset);
     log(`\nSelected: ${preset.name} (level ${preset.level}).\n`);
 
-    const store = createGameStore(nullAdapter, { player }, events);
+    const store = createGameStore(adapter, { player }, events);
     logState('bootstrap', null, store.getState(), { presetId: preset.id });
     return store;
 }
@@ -76,6 +78,8 @@ async function pickTab(canFight: boolean): Promise<Tab> {
         { name: 'Inventory  — items in pack', value: 'inventory' },
         { name: 'Character  — full stats + equipment + effects sheet', value: 'character' },
         { name: 'Debug      — spawn any enemy into combat', value: 'debug' },
+        { name: 'Save       — write the current state to the save file', value: 'save' },
+        { name: 'Load       — restore state from the save file', value: 'load' },
         { name: 'Quit',                                 value: 'quit' },
     ];
     const { tab } = await prompt<{ tab: Tab }>([
@@ -355,6 +359,53 @@ function characterTab(store: GameStoreHandle): void {
     }
 }
 
+function saveTab(store: GameStoreHandle, snapshotAdapter: PersistenceAdapter | null): void {
+    // The Save tab writes the current state to the snapshot slot
+    // (a separate adapter from any autosave path). This keeps explicit
+    // save / load decoupled from the dispatch-time autosave, so a Load
+    // can roll the player back to a labelled checkpoint even after
+    // subsequent dispatches have written newer autosave state.
+    if (!snapshotAdapter) {
+        log('\nNo save slot — pass --save-file <path> to enable Save / Load.');
+        logState('save', store.getState(), store.getState(), { result: 'no-slot' });
+        return;
+    }
+    const before = store.getState();
+    const { currentEncounter: _drop, ...persistable } = before;
+    snapshotAdapter.save(persistable);
+    logState('save', before, store.getState());
+    emit({ type: 'game:saved', payload: { state: store.getState() } });
+    log('\nGame saved.');
+}
+
+function loadTab(store: GameStoreHandle, snapshotAdapter: PersistenceAdapter | null): void {
+    if (!snapshotAdapter) {
+        log('\nNo save slot — pass --save-file <path> to enable Save / Load.');
+        logState('load', store.getState(), store.getState(), { result: 'no-slot' });
+        return;
+    }
+    const saved = snapshotAdapter.load();
+    if (!saved) {
+        log('\nNo save file to load — Save first.');
+        logState('load', store.getState(), store.getState(), { result: 'no-save' });
+        return;
+    }
+    const before = store.getState();
+    store.setState({
+        version:    saved.version,
+        player:     saved.player,
+        world:      saved.world,
+        combat:     saved.combat,
+        quests:     saved.quests,
+        flags:      saved.flags,
+        moralMeter: saved.moralMeter,
+        rngState:   saved.rngState,
+    });
+    logState('load', before, store.getState());
+    emit({ type: 'game:loaded', payload: { state: store.getState() } });
+    log('\nGame loaded.');
+}
+
 async function debugTab(store: GameStoreHandle): Promise<void> {
     const slugs = Object.keys(ENEMY_REGISTRY) as EnemySlug[];
     const { slug } = await prompt<{ slug: EnemySlug }>([{
@@ -388,19 +439,31 @@ async function main(): Promise<void> {
     }
 
     log('Axiomancer — game loop demo.\n');
-    const store = await bootstrapStore();
+
+    // The Save / Load tabs use a dedicated snapshot adapter pointed at
+    // the user-supplied --save-file path. The store itself uses
+    // nullAdapter so dispatch-time autosaves don't overwrite an explicit
+    // snapshot between Save and Load tabs (this is what makes Load a
+    // meaningful rollback rather than a re-read of the latest dispatch).
+    const snapshotAdapter: PersistenceAdapter | null = flags.saveFile
+        ? createNodeAdapter(flags.saveFile)
+        : null;
+
+    const store = await bootstrapStore(nullAdapter);
 
     try {
         while (true) {
             const tab = await pickTab(store.getState().combat !== null);
             switch (tab) {
-                case 'map':       await mapTab(store);       break;
-                case 'combat':    await combatTab(store);    break;
-                case 'journal':   journalTab(store);         break;
-                case 'skills':    skillsTab(store);          break;
-                case 'inventory': inventoryTab(store);       break;
-                case 'character': characterTab(store);       break;
-                case 'debug':     await debugTab(store);     break;
+                case 'map':       await mapTab(store);                       break;
+                case 'combat':    await combatTab(store);                    break;
+                case 'journal':   journalTab(store);                         break;
+                case 'skills':    skillsTab(store);                          break;
+                case 'inventory': inventoryTab(store);                       break;
+                case 'character': characterTab(store);                       break;
+                case 'debug':     await debugTab(store);                     break;
+                case 'save':      saveTab(store, snapshotAdapter);           break;
+                case 'load':      loadTab(store, snapshotAdapter);           break;
                 case 'quit':
                     log('Goodbye.');
                     emit({ type: 'cli:exit', payload: { reason: 'quit' } });

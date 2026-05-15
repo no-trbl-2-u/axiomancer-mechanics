@@ -51,6 +51,10 @@ const model = process.env.AGENT_MODEL || DEFAULT_MODEL;
 
 const goalText = fs.readFileSync(goalPath, 'utf-8');
 const stateLogPath = path.join(os.tmpdir(), `agent-e2e-${randomUUID()}.jsonl`);
+// A scratch snapshot slot the CLI's Save / Load tabs can write to.
+// Harmless for walkthroughs that don't touch Save / Load; required
+// for the ones that do (Phase 27 unit 2's save-load walkthrough).
+const saveFilePath = path.join(os.tmpdir(), `agent-e2e-${randomUUID()}.save.json`);
 
 // Run the CLI under test with --script + --json-events + --state-log.
 // Note: `npm run game -- ...` forwards flags through npm's argument
@@ -61,6 +65,7 @@ const tsNodeArgs = [
     '--script', scriptPath,
     '--json-events',
     '--state-log', stateLogPath,
+    '--save-file', saveFilePath,
 ];
 
 const child = spawn('npx', tsNodeArgs, { stdio: ['ignore', 'pipe', 'pipe'] });
@@ -74,6 +79,7 @@ child.on('close', async exitCode => {
     let stateLogContent = '';
     try { stateLogContent = fs.readFileSync(stateLogPath, 'utf-8'); } catch { /* may not exist */ }
     try { fs.unlinkSync(stateLogPath); } catch { /* ignore */ }
+    try { fs.unlinkSync(saveFilePath); } catch { /* ignore — may not have been written */ }
 
     const verdict = await gradeWithClaude({
         goal: goalText,
