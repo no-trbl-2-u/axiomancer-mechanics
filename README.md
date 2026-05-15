@@ -73,13 +73,11 @@ The barrel exports are organised by domain:
 
 ## CLIs
 
-The repo also ships two CLIs for hands-on testing. They are NOT part of the published package surface (`src/CLI` is excluded from the build):
+The repo also ships a hands-on demo CLI. It is NOT part of the published package surface (`src/CLI` is excluded from the build):
 
-| Command            | What it does                                            |
-| ------------------ | ------------------------------------------------------- |
-| `npm run combat`   | Interactive combat against the sample `Disatree` enemy. |
-| `npm run character`| Interactive character builder.                          |
-| `npm run combat:auto` | `pexpect`-driven smoke test of the combat CLI.       |
+| Command          | What it does                                                                  |
+| ---------------- | ----------------------------------------------------------------------------- |
+| `npm run game`   | Interactive demo — tabbed map / combat / journal / skills / inventory loop.   |
 
 ## Project layout
 
@@ -101,7 +99,7 @@ docs/                      # design notes per system
 docs/effects/              # one markdown per buff/debuff
 docs/references/           # source material (fallacies, paradoxes, pantheon, Mörk Borg)
 specs/                     # planning specs for upcoming work (Phase 2 onward)
-automation/                # python combat-CLI test harness
+automation/                # standalone walkthrough script + replay fixtures
 ```
 
 ## Documentation
@@ -124,6 +122,6 @@ automation/                # python combat-CLI test harness
 | `npm run type-check`  | Type-check only                    |
 | `npm test`            | Run the vitest suite               |
 | `npm run test:watch`  | Vitest in watch mode               |
-| `npm run lint`        | Run ESLint (currently broken — see [`AUDIT.md`](./AUDIT.md) Concern 7) |
+| `npm run lint`        | Run ESLint                         |
 | `npm run check`       | Lint + type-check                  |
-| `npm run combat:auto` | Python harness driving the combat CLI N times |
+| `npm run game`        | Interactive demo CLI (tabbed loop) |
