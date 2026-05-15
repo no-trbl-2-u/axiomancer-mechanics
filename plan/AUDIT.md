@@ -14,7 +14,14 @@
 
 ## Pending
 
-(Empty.)
+### [LOW] `resolveMapEvent` no longer auto-advances `reach`-type quest objectives
+- category: tests
+- impact: 4 (latent feature gap; the old `processNode` dispatched `reachableObjectives` on every arrival and progressed quests; the new dispatcher doesn't — no current test catches it because the demo `starting-quest` is a `kill` objective)
+- ease: 6 (small handler addition + hermetic test for a reach objective)
+- score: 2.4 (× 1.5 tests-bias = 3.6)
+- source: Phase 25 follow-up (2026-05-15)
+- evidence: `src/World/MapEvents/resolve-map-event.ts` calls `revealAdjacent` + `markNodeConsumed` but never `reachableObjectives` / `progressQuest`. The old `src/World/process-node.ts` did. Search the deleted file in git history for the `for (const r of reaches)` block.
+- next: add a `reach`-objective advance in `resolveMapEvent` after the handler runs (or as a pre-handler step); hermetic test pins a `reach`-objective quest against fv-2 and asserts it auto-completes when the node fires.
 
 ---
 
