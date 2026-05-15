@@ -64,7 +64,7 @@ healed += amount;
 updated = healCharacter(updated, amount);  // clamped to maxHealth
 ```
 
-Called at the **start of each round** in `combat.cli.ts`, before the player's action.
+Called at the **start of each round** in `src/Combat/phases/scenario.ts`, before the player's action.
 
 **Status: LIVE** — fully implemented.
 
@@ -127,7 +127,7 @@ old effect is still present at heal time and is only removed in step 2).
 ### 1. Verify it applies on Heart/Defend
 
 ```
-Run: npm run combat
+Run: npm run game
 Action: Heart + Defend
 
 Expected:
@@ -138,7 +138,7 @@ Expected:
 ### 2. Verify healing occurs at round start
 
 ```
-Run: npm run combat
+Run: npm run game
   Round 1: Take some damage (any action where enemy hits)
   Round 2: Heart + Defend → Vital Empathy applied (intensity 1)
   Round 3: Heart + Defend → Vital Empathy intensified (intensity 2)
@@ -176,7 +176,7 @@ Automated:
 ### 5. Verify stance switch clears it
 
 ```
-Run: npm run combat
+Run: npm run game
   Round 1: Heart + Defend → Vital Empathy applied
   Round 2: Body + Attack  → Vital Empathy cleared
            Effects panel: Vital Empathy no longer listed.

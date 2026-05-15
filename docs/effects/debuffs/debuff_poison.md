@@ -43,7 +43,7 @@ Deals 3 damage per round, classified as `body` type. Intended to scale with inte
 in the full DoT implementation.
 
 > **PENDING (Phase 2):** `damageOverTime` is not yet consumed in the combat engine.
-> There is no DoT processing loop in `combat.cli.ts` or `Combat/index.ts`. When
+> There is no DoT processing loop in `src/Combat/phases/scenario.ts` or `Combat/index.ts`. When
 > implemented, `processDamageOverTime` should:
 > ```typescript
 > const dotDamage = damagePerRound * (ae.intensity ?? 1);
@@ -65,7 +65,7 @@ deal damage.
 ### 1. Effect applies and is tracked
 
 ```
-Run: npm run combat
+Run: npm run game
 Observe: poison applied to target → "Curry's Corruption applied" in combat log
 Enemy effects panel: Curry's Corruption listed with duration/intensity
 ```

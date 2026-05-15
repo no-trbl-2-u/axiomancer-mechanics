@@ -81,7 +81,7 @@ const perIntensity = (def?.payload.rollModifierPerIntensity ?? 0) * (ae.intensit
 return total + flat + perIntensity;
 ```
 
-This total is added to attack and damage rolls in `combat.cli.ts`.
+This total is added to attack and damage rolls in `src/Combat/phases/scenario.ts`.
 
 ---
 
@@ -139,7 +139,7 @@ The effect is applied to the **actor** (self), not the opponent.
 ### 1. Verify it auto-applies on Body/Attack
 
 ```
-Run: npm run combat
+Run: npm run game
 Choose: Any character vs any enemy
 Action: Body + Attack
 
@@ -175,7 +175,7 @@ Automated unit test approach:
 ### 3. Verify it clears on stance switch
 
 ```
-Run: npm run combat
+Run: npm run game
   Round 1: Body + Attack  → expect Ad Baculum applied (intensity 1)
   Round 2: Body + Attack  → expect Ad Baculum intensified (intensity 2)
   Round 3: Mind + Attack  → expect combat log: "Ad Baculum cleared" (or similar)
@@ -185,7 +185,7 @@ Run: npm run combat
 ### 4. Verify natural expiry
 
 ```
-Run: npm run combat
+Run: npm run game
   Round 1: Body + Attack  → Ad Baculum applied (duration 2)
   Round 2: Heart + Attack → Ad Baculum cleared by stance switch
   -- OR --

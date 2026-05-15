@@ -41,7 +41,7 @@ Above-average difficulty — action denial is valuable.
 
 The target should skip their next action (both attack and defend).
 
-> **PENDING (Phase 2):** `skipTurn` is not yet enforced in `combat.cli.ts`. When
+> **PENDING (Phase 2):** `skipTurn` is not yet enforced in `src/Combat/phases/scenario.ts`. When
 > implemented, before a combatant's action is processed, check:
 > ```typescript
 > const canAct = !activeEffects.some(ae =>

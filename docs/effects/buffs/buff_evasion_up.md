@@ -51,7 +51,7 @@ All incoming attacks have disadvantage against the bearer. This is the most powe
 aspect of the effect — forcing attackers to roll with disadvantage across all stance
 types.
 
-> **PENDING (Phase 2):** Not yet wired into roll resolution in `combat.cli.ts`.
+> **PENDING (Phase 2):** Not yet wired into roll resolution in `src/Combat/phases/scenario.ts`.
 > When implemented, attackers against a bearer of this effect should have their roll
 > penalised by the disadvantage modifier (`getAdvantageModifier('disadvantage') = -2`),
 > or roll twice and take the lower value depending on the final advantage system design.

@@ -166,10 +166,9 @@ and resolved by `executeSkill` after damage and after effect application.
   `SkillTestPlayer` (stable hermetic character).
 - [`src/Enemy/enemy.library.ts`](../src/Enemy/enemy.library.ts) → `Sandbag_01`,
   a `level: 10` / `baseStats: 1/1/1` punching-bag with `maxHealth = 100`. Use
-  it for long combats that need many rounds of skill / effect exercise:
-  - CLI: `COMBAT_ENEMY=sandbag npm run combat` (or `--enemy=sandbag`).
-  - Auto-tester: `python3 automation/combat-test.py 10 2 1 sandbag` (always
-    Body Attack vs. Sandbag).
+  it for long combats that need many rounds of skill / effect exercise.
+  Drive it through `resolveCombatRound` in a hermetic test (see
+  `src/Skills/e2e/skill-resource-system.engine.test.ts` for the pattern).
 
 ## Out of Scope (here)
 

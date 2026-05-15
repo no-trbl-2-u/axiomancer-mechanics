@@ -53,11 +53,11 @@ the hermetic-e2e requirement on their own.
 
 ## What CANNOT be tested hermetically (today)
 
-- **The interactive CLIs** (`combat.cli.ts`, `character.cli.ts`). They own
-  display logic and need TTY prompts via `inquirer`. They are exercised by
-  the `pexpect`-based Python harness (`npm run combat:auto`) — that is *not*
-  hermetic, and is a smoke test, not a substitute for the engine-level
-  hermetic e2e tests.
+- **The interactive demo CLI** (`src/CLI/game.cli.ts`, run via
+  `npm run game`). It owns display logic and needs TTY prompts via
+  `inquirer`; it is intentionally NOT covered by the test suite — the
+  engine modules it dispatches into are, and that is the durable
+  contract.
 - Tests that require **real Date / wall-clock time** or **real network /
   filesystem** — they fall outside the hermetic contract by definition.
   Use a `nullAdapter`, fake clock, or extract the dependency.
@@ -154,8 +154,7 @@ Before opening a PR, confirm:
 - [ ] No file I/O, network, or subprocess in the test path.
 - [ ] `vi.restoreAllMocks()` (or equivalent) runs in `afterEach`.
 - [ ] If the change is CLI-only, the underlying engine logic was extracted
-      and tested hermetically; the CLI test was added to the `combat:auto`
-      harness if appropriate.
+      and tested hermetically through its module's `e2e/*.engine.test.ts`.
 - [ ] `npm run type-check` and `npm test` are clean.
 
 If you cannot satisfy this list, write a one-paragraph "Hermetic-test debt"

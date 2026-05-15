@@ -70,15 +70,15 @@ intensity 5 (+5), the net roll modifier is 0.
 
 ---
 
-## On-Hit Specials (Not in payload — driven by combat.cli.ts)
+## On-Hit Specials (Not in payload — driven by src/Combat/phases/scenario.ts)
 
-The two Heart/Attack on-hit effects are implemented directly in `combat.cli.ts`, not
+The two Heart/Attack on-hit effects are implemented directly in `src/Combat/phases/scenario.ts`, not
 via payload fields. They fire only when the Heart/Attack **hits** (attack resolves
 successfully):
 
 ### 1. `removeRandomBuff(enemy)` — Strip enemy buff
 
-Called from `combat.cli.ts` after a successful Heart/Attack hit on the enemy.
+Called from `src/Combat/phases/scenario.ts` after a successful Heart/Attack hit on the enemy.
 
 ```typescript
 // src/Combat/index.ts
@@ -98,7 +98,7 @@ If the enemy has no buffs, the call returns `{ removed: null }` gracefully.
 
 ### 2. `extendRandomBuffDuration(player, 1)` — Extend player buff
 
-Called from `combat.cli.ts` after a successful Heart/Attack hit.
+Called from `src/Combat/phases/scenario.ts` after a successful Heart/Attack hit.
 
 ```typescript
 // src/Combat/index.ts
@@ -172,7 +172,7 @@ Heart, the Ad Baculum buff is **cleared immediately** by `clearTier1EffectsForSt
 ### 1. Verify -5 roll modifier is applied
 
 ```
-Run: npm run combat
+Run: npm run game
   Action: Heart + Attack
   Expected:
     - Effects panel: Fleeting Kindness, rollModifier -5
@@ -183,7 +183,7 @@ Run: npm run combat
 ### 2. Verify buff strip fires on hit
 
 ```
-Run: npm run combat
+Run: npm run game
   Setup: Enemy has a buff active (e.g., enemy uses Body/Defend → Briar Stance)
   Action: Heart + Attack (must hit)
   Expected:
@@ -196,7 +196,7 @@ Run: npm run combat
 ### 3. Verify buff extension fires on hit
 
 ```
-Run: npm run combat
+Run: npm run game
   Setup: Player has any buff active
   Action: Heart + Attack (must hit)
   Expected:
@@ -209,7 +209,7 @@ Run: npm run combat
 ### 4. Verify specials do NOT fire on miss
 
 ```
-Run: npm run combat
+Run: npm run game
   Action: Heart + Attack that misses (watch for "Miss!" in combat log)
   Expected: no buff strip, no buff extension messages.
 ```

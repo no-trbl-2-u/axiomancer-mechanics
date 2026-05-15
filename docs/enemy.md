@@ -124,15 +124,10 @@ picks it.
 ## CLI usage
 
 ```sh
-npm run combat                           # disatree (default demo opponent)
-COMBAT_ENEMY=hush-wraith npm run combat  # explicit enemy slug
-COMBAT_ENCOUNTER=1 npm run combat        # generated encounter for fv-1
+npm run game   # tabbed demo loop; pick the Combat tab to engage
+               # an active encounter generated from the current map node
 ```
 
-Victory grants are printed after `printCombatEnd`:
-
-```
-You gained 20 XP.
-Loot:
-  • Minor Healing Potion
-```
+Victory grants are surfaced inside the Combat tab after each encounter
+resolves; the hermetic e2e suite (`src/**/e2e/*.engine.test.ts`) is the
+durable way to exercise specific enemy fixtures.
