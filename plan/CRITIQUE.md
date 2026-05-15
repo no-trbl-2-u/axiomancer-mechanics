@@ -6,14 +6,21 @@
 > by `/iterate`.
 
 <!-- Metadata (updated by /critique after each pass):
-> Last pass: 2026-05-15 at commit bb987bf
-> Pass count: 3
+> Last pass: 2026-05-15 at commit 5bb73c6
+> Pass count: 4
 -->
 
 ---
 
 ## Pending
 
+### [HIGH] src/CLI/combat.display.ts is 968 LOC of dead code orphaned by Phase 17
+- pass: critique-4 (commit 5bb73c6)
+- area: dead-code
+- observation: `src/CLI/combat.display.ts` is 968 lines of console-output helpers (ANSI colour codes, battle-log formatters, advantage tables, etc.) authored for the dropped `src/CLI/combat.cli.ts`. Phase 17 deleted `combat.cli.ts` and `character.cli.ts` but missed this companion file. The surviving CLI (`src/CLI/game.cli.ts`) does not import from it; no source, test, or automation script consumes it.
+- evidence: `grep -rn "combat\.display\|from '.\/combat\.display'" src/ automation/ scripts/` returns zero hits. `wc -l src/CLI/combat.display.ts` is 968.
+- suggested_fix: `git rm src/CLI/combat.display.ts`. Run `npm run verify`. The file is excluded from the build (`src/CLI` is excluded by `tsconfig.json`) and has no test coverage, so deletion is mechanical and risk-free.
+- source: critique
 
 ---
 
