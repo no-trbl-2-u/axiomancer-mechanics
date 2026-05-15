@@ -12,19 +12,13 @@
 
 ## Pending
 
-### [MED] docs/effects/{buffs,debuffs}/* per-effect "PENDING (Phase 2)" markers are stale
-- category: docs
-- impact: 5 (76 files referencing a non-existent Phase 2 wiring; designers consulting buff docs see "PENDING" markers for behaviour that the engine actually delivers via Specs 01 + 03 and Phases 15 / 23)
-- ease: 7 (single sweep README documents the meta-claim without rewriting 76 files individually)
-- score: 3.5
-- source: iterate audit pass (2026-05-15)
-- evidence: `grep -rln "PENDING (Phase 2)\|pending Phase 2\|Phase 2 wiring" docs/effects/` returns 76 hits. The placeholder predates Spec 01's effects engine landing and was never reconciled. The actual engine wiring (`statModifiers` via `getEffectiveStats`, `defenseModifier` via `getDefenseStat`, `advantageModifier` via `resolveEffectiveAdvantage`, etc.) has been live for many ticks.
-- next: add `docs/effects/README.md` that names the staleness, names which mechanics are live vs still genuinely pending, and points readers at the live engine source. Per-file rewrites stay a follow-up polish task.
+(Empty.)
 
 ---
 
 ## Done
 
+- [x] **[MED] docs/effects/{buffs,debuffs}/* per-effect "PENDING (Phase 2)" markers are stale** — resolved at commit 6361dba (2026-05-15) by adding `docs/effects/README.md` — a single sweep document that names the 12 live mechanics (statModifiers / defenseModifier / rollModifier / reflectDamage / regen / drain / DoT / advantageModifier / actionRestriction / Tier 1 buff application / Tier 2 + 3 procs / Heart-attack specials) and the genuinely open ones (critStyle auto-selection). Per-file rewrites deferred — the README gives every reader the meta-context in one place. Impact 5 × Ease 7 / 10 = 3.5.
 - [x] **[MED] README Public API table missing Phase 18 / 21 / 23 / 24 additions** — resolved at commit 2a8a9ae (2026-05-15). Character row gained presets API (`characterPresets`, `getPresetById`, `buildCharacterFromPreset`, `CharacterPreset`). Game row demoted `createNodeAdapter` to a "lives on `'/node'` subpath" parenthetical and added the Phase 21 typed event surface (`EnginePayload` + 10 typed aliases + 10 `is*Event` guards). World row gained the MapEvents engine block (`resolveMapEvent`, pool registration helpers, `revealAdjacent`, `markNodeConsumed`, types); `processNode` demoted to "legacy / deprecated". Combat resolver row added `SkillPhaseEvent`, `ResourceEvent`, `CombatActor` and a `Combat/phases/` reference. Impact 6 × Ease 7 / 10 = 4.2.
 - [x] **[MED] Module doc `## Pending` sections list features that have already shipped** — resolved at commit 9d0aeb9 (2026-05-15). docs/effects.md, docs/character.md, and docs/combat.md Pending sections rewritten to reflect what's actually still open (only `Character.id` per Knowledge-Gaps Q12 remains genuinely pending). Dropped the stray "drain mechanic will be enabled in Phase 2" note in effects.md (Spec 01 already shipped `applyDrain` and the round-start drain pass). Impact 5 × Ease 8 / 10 = 4.0.
 - [x] **[MED] docs/world.md + docs/combat.md drifted after Phase 15 + Phase 24** — resolved at commit ac20950 (2026-05-15). docs/world.md "Node Event Dispatcher" section now leads with `resolveMapEvent` + the 8-kind taxonomy; `processNode` demoted to a labelled "legacy / deprecated" subsection that points at the deferred Phase 25 cleanup. The MapEvents section moved Phase 24 to past tense with the commit hash. docs/combat.md overview now lists the six `Combat/phases/` files explicitly. Impact 6 × Ease 8 / 10 = 4.8.
