@@ -14,11 +14,11 @@ import {
     createStartingWorld, moveToNode, completeCurrentNode, IllegalMoveError,
     processNode, applyDialogueChoice, getMapDefinition,
     emptyQuestLog, startQuest, progressQuest, isQuestComplete, completeQuest,
-} from './index';
-import { processWorldEffectTick, getActiveHazards, applyEffect, lookupEffect } from '../Effects';
-import { createCharacter } from '../Character';
-import { createNewGameState } from '../Game/game.reducer';
-import { GameState } from '../Game/types';
+} from '../index';
+import { processWorldEffectTick, getActiveHazards, applyEffect, lookupEffect } from '../../Effects';
+import { createCharacter } from '../../Character';
+import { createNewGameState } from '../../Game/game.reducer';
+import { GameState } from '../../Game/types';
 
 const startingState = (): GameState => createNewGameState();
 
