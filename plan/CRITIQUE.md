@@ -70,26 +70,6 @@
   control.
 - source: critique
 
-### [LOW] `automation/scripts/walkthroughs/` has no index — 7 walkthroughs and counting
-- pass: critique-9 (commit 6097001)
-- area: docs
-- observation: The directory now ships 7 walkthroughs (`character-
-  sheet`, `map-events`, `skills-in-combat`, `item-use`,
-  `boss-encounter`, `save-load`, `stat-allocation`) but has no
-  README. New contributors have to grep each pair to learn what
-  exists, what each surface tests, what flags it needs (`--save-file`
-  is required by save-load only), and which preset / enemy is
-  expected. The pattern is stable enough that the index would
-  protect against the directory growing into a junk drawer.
-- evidence: `ls automation/scripts/walkthroughs/` lists 14 files
-  (7 `.json` + 7 `.goal.md`), no `README*`.
-- suggested_fix: add `automation/scripts/walkthroughs/README.md` —
-  one row per walkthrough with columns `script | surface under
-  test | preset | enemy / encounter | required flags | exit
-  expectation`. Cap at a single page. Mirrors how `docs/api.md`
-  indexes the package surface.
-- source: critique
-
 ### [LOW] Combat reducer carries five aliases that add no behaviour
 - pass: critique-7 (commit 1f4911b)
 - area: dead-code
@@ -154,6 +134,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] `automation/scripts/walkthroughs/` has no index — 7 walkthroughs and counting** — resolved at Phase 34 unit 6 (this commit). Added `automation/scripts/walkthroughs/README.md` — one-page index with the requested columns (script / surface / preset / enemy / required flags / exit expectation) covering all 8 walkthroughs (the directory had grown to include `skill-learning` since the critique was filed). README also documents the harness invocation pattern, the hermetic-replay conventions, and how to add a new walkthrough. Impact 4 × Ease 9 / 10 = 3.6.
 
 - [x] **[LOW] Acceptance checklists for Specs 06 + 12 still all `[ ]` despite Phase 28/29 work** — resolved at Phase 34 unit 5 (this commit). Spec 06 acceptance: boxes 1 (all Qs answered), 3 (level-up flow per Q8), 4 (stat allocation updates derivedStats), 5 (docs/character.md Pending drained) ticked with commit hashes; box 2 (XP visible in CLI transcript) left open with a note pointing at /iterate. Spec 12 acceptance: boxes 1, 2, 3, 5, 6 ticked; box 4 (pre-refactor transcript comparison) left open with a note that the window for that one-shot comparison has passed, and the Phase 26 walkthroughs are the standing equivalent. Impact 4 × Ease 8 / 10 = 3.2.
 
