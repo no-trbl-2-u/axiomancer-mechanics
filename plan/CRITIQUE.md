@@ -6,13 +6,69 @@
 > by `/iterate`.
 
 <!-- Metadata (updated by /critique after each pass):
-> Last pass: 2026-05-15 at commit 6097001
-> Pass count: 9
+> Last pass: 2026-05-15 at commit 938016b
+> Pass count: 10
 -->
 
 ---
 
 ## Pending
+
+### [LOW] `docs/world.md` "Discovery (fog-of-war)" section misses Phase 31's `unlockAdjacent`
+- pass: critique-10 (commit 938016b)
+- area: docs
+- observation: `docs/world.md:235-238` describes Phase 23's
+  `revealAdjacent` as the only function that fires when a node
+  resolves: "`resolveMapEvent` calls `revealAdjacent` after consuming
+  a node, so the next ring of nodes only becomes visible once the
+  player has cleared the current one." After Phase 31 (`711b49e`),
+  `resolveMapEvent` ALSO calls `unlockAdjacent` — the companion
+  reducer that moves adjacents from `lockedNodes` into
+  `availableNodes` so the CLI mapTab can actually offer them as
+  targets. The doc reads as if only the fog-of-war shifts, which
+  understates traversal state and would mislead a new contributor
+  reading the section.
+- evidence: `docs/world.md:235-238` vs.
+  `src/World/MapEvents/resolve-map-event.ts:117/128/140-142` (the
+  three exit paths now thread `unlockAdjacent(revealAdjacent(map,
+  nodeId), nodeId)`).
+- suggested_fix: add an "Unlocked traversal" sub-bullet alongside
+  the "Discovery (fog-of-war)" bullet — name `unlockAdjacent`, note
+  that it moves `connectedNodes` from `lockedNodes` to
+  `availableNodes`, and link to Phase 31 (`711b49e`). The `MapState`
+  shape table at line 30 already lists `availableNodes` + `lockedNodes`
+  so the doc has the vocabulary; only the discovery section needs
+  the update.
+- source: critique
+
+### [LOW] Phase 32 critStyle wiring lacks a resolver-path integration test
+- pass: critique-10 (commit 938016b)
+- area: tests
+- observation: Phase 32 (`e456322`) wired `isCriticalHit(rawAttackRoll)`
+  into `src/Combat/phases/scenario.ts:resolveAttackHit` and now emits
+  `isCritical` + `critStyle` on the `damage-applied` event. The damage
+  math is well covered by the 4 new unit tests in
+  `src/Combat/index.test.ts` (low / high defence, bonus rides both
+  paths, bonus flips the pick). But the wiring itself — the actual
+  call site in scenario.ts and the optional fields on the event — has
+  no hermetic test. The Phase 32 commit body called this out
+  explicitly as a decision, noting "a future iterate pass can add
+  round-driven coverage if the auto-selection regresses in playtest."
+  Filing the finding so /iterate picks it up; the wiring is one
+  function call, so the test would also be small.
+- evidence: `src/Combat/phases/scenario.ts:449-465` (the new
+  `isCritical` branch + event-field spread); `src/Combat/index.test.ts`
+  covers only the pure damage helpers.
+- suggested_fix: extend `src/Combat/combat.resolver.test.ts` (or
+  `src/Combat/phases/e2e/scenario.engine.test.ts` if a phases-tier
+  e2e folder is preferred) with one case that seeds a nat-20 attack
+  roll via `mockSequentialRng(0.96)` (or equivalent — the d20 raw
+  roll path uses `getRng().random()` indirectly), drives a single
+  combat round through `resolveCombatRound`, and asserts the
+  emitted `damage-applied` event carries `isCritical: true` and a
+  `critStyle` value. Pair with a non-crit assertion as the
+  control.
+- source: critique
 
 ### [MED] `docs/gameloop.md` GameEvent surface section is pre-Phase-21
 - pass: critique-9 (commit 6097001)
