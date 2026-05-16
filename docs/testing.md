@@ -83,6 +83,34 @@ the canonical correctness signal stays in `src/**/e2e/*.engine.test.ts`.
 See `automation/scripts/walkthroughs/README.md` for the inventory and
 how to add a new walkthrough.
 
+### Agent-friendly report — `npm run verify:agent` (Phase 39)
+
+`npm run verify:agent` runs the same gates as `npm run verify`
+(`type-check`, `lint`, the hermetic vitest suite, `build`) but swaps the
+default Vitest reporter for `automation/agent-vitest-reporter.mjs`. Two
+artefacts land at the end of the run:
+
+- **`automation/last-verify-report.json`** — structured rollup
+  (`{ total, passed, failed, skipped, reason, unhandledErrors,
+  slowest5 }`) plus per-file (`path`, `status`, `durationMs`) and
+  per-test entries (`name`, `status`, `durationMs`, optional
+  `failure: { message, diff, actual, expected, location }`). The file
+  is gitignored — it's a fresh snapshot every run.
+- **Delimited markdown block on stdout** — between literal
+  `## Verify summary` and `## End summary` lines. Lists totals, failed
+  tests as `file:line:col — <name>: <message>`, and the slowest five
+  passing tests. Agents can extract reliably with the regex
+  `/## Verify summary\n([\s\S]*?)\n## End summary/`.
+
+Use this script when an LLM agent (or a human eyeballing the terminal)
+needs to answer "what was tested, how long it took, and what failed"
+without scraping Vitest's default reporter. The default
+`npm run verify` is unchanged so the deploy gate's expectations stay
+stable.
+
+Schema details and design decisions live in
+[`plan/phases/phase_39_agent_verify_report.md`](../plan/phases/phase_39_agent_verify_report.md).
+
 ---
 
 ## File and naming conventions

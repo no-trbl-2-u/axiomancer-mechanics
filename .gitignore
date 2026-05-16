@@ -27,6 +27,9 @@ game-state.json
 logs/
 *.jsonl
 
+# Phase 39 agent verify reporter output
+/automation/last-verify-report.json
+
 # Environment
 .env
 .env.local
