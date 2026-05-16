@@ -62,6 +62,7 @@ shipped (with commit hash).
 - [x] Phase 39 — Agent-friendly hermetic e2e report: shipped at 602da33. Custom Vitest reporter `automation/agent-vitest-reporter.mjs` emits `automation/last-verify-report.json` (rollup + per-file + per-test with durations, failure `{message, diff, actual, expected, location}`, slowest 5) and a `## Verify summary` … `## End summary` markdown block on stdout. New additive `npm run verify:agent` script; default `verify` untouched. Hermetic e2e at `src/test-utils/e2e/agent-vitest-reporter.engine.test.ts` drives the reporter with synthetic Vitest events (golden 2-file/3-test path, stackless-error case, empty run). Decisions: `.mjs` over `.ts` to match `agent-e2e.mjs`; slowest-5 picked as first call-out heuristic over "added since last report" (no prior-run diff plumbing needed); failure message picks `errors[0]` since later entries are cascade noise. 472/472 tests (+3 new). Schema + decisions in `plan/phases/phase_39_agent_verify_report.md`.
 - [x] Phase 40 — Prior-run diff in agent verify report: shipped at 87bab8c. `automation/agent-vitest-reporter.mjs` gained two new JSON fields and one markdown section. Top-level `failures: [{file, name, message, location}]` flat list (absorbed the bundled AUDIT MED 5.4 row). `rollup.diff: { addedTests, removedTests, flippedToFail, flippedToPass, durationDeltaSlowest5 } | null` compared against the prior `automation/last-verify-report.json` on disk; sequence in `onTestRunEnd` is build → read prior → compute diff → write new. Tests keyed by `${file}::${name}`; duration deltas ranked by absolute `|currMs - prevMs|`. Markdown gains a `### Changes since last run` section (only when diff has content) with five nested `####` subsections matching the diff arrays. Degrades gracefully: missing prior file → silent `diff: null`; parse failure or shape mismatch → one stderr warning line prefixed `[agent-vitest-reporter]`. Hermetic coverage: 4 new e2e cases in `src/test-utils/e2e/agent-vitest-reporter.engine.test.ts` (failures[] populated + empty; diff against fabricated prior covers add/remove/flip/delta + markdown render; no-prior-file silent; incompatible-schema warns once with "shape mismatch"). The existing empty-run test was tightened to assert the new shape. 498/498 tests (+4 net). `docs/testing.md` Agent-friendly subsection lists both new fields + the markdown delimiter convention; `plan/phases/phase_39_agent_verify_report.md` Follow-ups marks the prior-run-diff item shipped; AUDIT MED 5.4 row moved to Done. Smoke `npm run verify:agent` against the live suite correctly identified the 26 tests added since the prior on-disk report. Promoted via `/oversight` 2026-05-16.
 - [x] Phase 41 — Specs + Knowledge-Gaps acceptance sweep: shipped across units 1-4 (commits b5c4d0b, 3b1fd88, 518b5dd, 74e7389). Unit 1 ticked all 10 Spec 04 acceptance boxes with shipping references (engine shape pre-loop; combat CLI Skills surface cited via Phase 09 `e6ce034` + Phase 17 `7595c2e` + Phase 26 `d3c8cc5`; docs/skills.md update via Phase 33 `011ac2d`). Unit 2 ticked all 4 Spec 10 boxes (moralMeter on GameState via Phase 10 `a6085c4`; save/load round-trip via Phase 11 `a6b33f0`; `shiftMoralMeter` reducer pre-loop; `docs/morality.md` cross-linked from Phase 36 / `7306111`). Unit 3 ticked all 11 Spec 23 boxes + added a 12th for the Phase 37 shop extension, and extended the two pre-Phase-37 `village` type sketches (`:95`, `:138`) with `shop?: ShopInventory`; drained the critique-15 LOW Spec 23 row. Unit 4 retired stale Knowledge-Gaps Qs 15 / 17 / 18 / 19 / 20 with the same "Resolved at <spec>" treatment Q5 / Q12 already had — Q13 / Q14 / Q16 stay open as the surviving combat-tuning trio. 502/502 tests unchanged; pure docs. Promoted via `/oversight` 2026-05-16.
+- [ ] Phase 42 — Philosophical alignment engine (3-axis Logic/Outlook/Scope cube): ship the 27-cell alignment system from `PhilosAxiosDoc.pdf`. New `GameState.philosophicalAlignment: { epistemology, outlook, scope }` (-100..+100 per axis, default 0/0/0), `shiftPhilosophicalAlignment` reducer + store action mirroring `shiftMoralMeter`, `bucketAxis` + `getAlignmentCell` selectors, full 27-entry `philosophicalAlignment.library` (philosopher + literary character + 3 fallacies per cell), save migration v4→v5, CLI Character-tab cell render, new `docs/philosophy.md`. Engine + content only; alignment-shifting authoring on existing map events / dialogue is a follow-up. `moralMeter` stays alongside as an orthogonal compassion axis (Spec 10 Q1 follow-up; PDF axes don't collapse onto compassion ↔ ruthlessness). See `plan/phases/phase_42_philosophical_alignment.md`.
 
 > **After phase 26:** the loop transitions to `/iterate` —
 > spec gap filling, test coverage improvements, doc updates,
@@ -510,6 +511,40 @@ document the resource progression model.
 
 Likely commit units (2): (1) Tier 2 polish (3 skills + tests), (2)
 Tier 3 polish (3 skills + tests + docs update).
+
+### Phase 42 — Philosophical alignment engine
+
+**Promoted via `/oversight` 2026-05-16 — derived from the
+`PhilosAxiosDoc.pdf` committed at the repo root (12-page document
+laying out a 3×3×3 alignment cube: epistemology × outlook × scope,
+27 cells total, each carrying a representative philosopher, literary
+character, and three signature logical fallacies).**
+
+Ships the engine primitives + full content registry for a multi-axis
+alignment system. Each axis is an integer in `[-100, +100]` (mirrors
+the `moralMeter` shape from Phase 10); the current `(low|mid|high)`
+triple at thresholds ±34 indexes the 27-cell `philosophicalAlignment.library`.
+Save migration v4→v5 defaults the new field. CLI Character tab
+renders the current cell + philosopher + literary character. Three
+fallacies per cell ship as data but are not yet wired to gameplay —
+they're reserved as content fuel for a follow-up
+skill/effect/spell phase per the PDF's closing note.
+
+`moralMeter` is NOT retired: Spec 10 Q4 keeps the meter narrative-
+only, and the PDF axes don't map onto the compassion ↔ ruthlessness
+dimension `moralMeter` already tracks. Long-term unification is an
+explicit Follow-up.
+
+Likely commit units (3):
+1. Engine primitives — types + reducer + selector + library scaffold
+   + action wiring + save migration + hermetic e2e.
+2. 27-cell content registry — `alignment.library.ts` authored
+   verbatim from the PDF + exhaustiveness + PDF-spot-check tests.
+3. CLI surface + docs — Character-tab render block + `docs/philosophy.md`
+   + `docs/api.md` Philosophy group + plan tick.
+
+See `plan/phases/phase_42_philosophical_alignment.md` for the full
+brief.
 
 ### Phase 34 — Docs sweep
 
