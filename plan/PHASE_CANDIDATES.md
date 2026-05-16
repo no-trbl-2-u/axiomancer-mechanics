@@ -5,13 +5,95 @@
 > `## Promoted` or `## Rejected`.
 
 <!-- Metadata (updated by /expand after each pass):
-> Last pass: 2026-05-15 at commit adc47cc
-> Pass count: 2
+> Last pass: 2026-05-15 at commit e90aa22
+> Pass count: 3
 -->
 
 ---
 
 ## Pending
+
+### Candidate: Shop economy — `village` MapEventKind buy/sell loop
+- signal: `Character.currency` ships (Spec 08 Q8) but no shop reducer
+  exists; `docs/items.md` Pending block lists it; Phase 23's `village`
+  MapEventKind is the anchor that's been waiting for a transactional
+  partner. `spec.md` 6-month horizon names "shops" explicitly. AUDIT
+  bias is currently `gameplay` (per `/oversight` 2026-05-15).
+- scope: New `src/Items/shop.reducer.ts` (or `src/World/shops.ts`)
+  exporting `buyItem(character, inventory, itemId, price)` and
+  `sellItem(character, item, price)` — pure reducers that decrement /
+  increment `currency` and add / remove items, returning the updated
+  character. Wire into the `village` MapEventHandler so resolving a
+  `village` node opens a shop UI in the Map tab (item list + buy/sell
+  prompts). Author 1-2 starter shop inventories on `fv-3` and the
+  Northern City stub once it lands; otherwise reuse `consumableLibrary`
+  for the demo pool. Hermetic e2e: buying decrements currency and adds
+  the item; selling does the reverse; insufficient currency returns the
+  character unchanged.
+- unblocks: the curreny / consumable / equipment economy actually
+  closes the loop. `Character.currency` becomes meaningful. The
+  Northern Continent stub gains a natural use for `village` nodes. Quest
+  rewards that grant currency become spendable.
+- blocked-by: none. `village` MapEventKind already ships; `currency` is
+  on `Character`; `consumableLibrary` is a stable source pool.
+- score: 6 × 7 / 10 = 4.2
+- recommended-slot: next after the Northern Continent stub (or before,
+  if the user wants the shops to land alongside fv-3 content)
+
+### Candidate: Combat sub-event surfacing in agent-e2e state log
+- signal: `plan/CRITIQUE.md` MED Pending row — "agent-e2e grader is
+  blind to fine-grained combat sub-events". The grader sees
+  `{ playerAction, enemyAction, eventCount }` but not the
+  `combatEvents: RoundEvent[]` array, so walkthroughs like `item-use`
+  have to infer skill / item / effect outcomes from inventory + HP
+  deltas instead of reading the actual `phase:skill / kind:item-used /
+  kind:effect-application` sub-events. The finding has been on the
+  queue since pass 7-follow-up and is the only MED pending after Phase
+  34 drained the docs queue.
+- scope: extend the `combatRound` `logState` payload in
+  `src/CLI/game.cli.ts` to include the full `combatEvents` array (or a
+  JSON-safe projection — strip closures, keep all primitives). Mirror
+  on the `combat:round` GameEvent payload so React Native consumers
+  can subscribe to round-by-round detail. New hermetic test in
+  `src/CLI/e2e/io.engine.test.ts` asserting a scripted skill round
+  populates the array. State log budget: ~12 KB for 50 rounds at ~50
+  bytes/event — well inside the existing budget.
+- unblocks: every existing walkthrough's goal file can read what the
+  skill / item / effect actually did, not just the action name. Future
+  walkthroughs gain richer grading signal without changes to the grader
+  itself. The `combat:round` event surface becomes useful for an RN
+  combat-log UI.
+- blocked-by: none. The events are already produced by the resolver;
+  this is plumbing through the log writer + event payload.
+- score: 6 × 7 / 10 = 4.2
+- recommended-slot: convenient mid-priority slot; no content
+  dependency, ships in one or two units
+
+### Candidate: Friendship victory reward (XP + narrative tag)
+- signal: Knowledge-Gaps Q5 (friendship rewards/narrative outcome) is
+  still open. Spec 06 Q2 backfill confirmed friendship-counter exits
+  currently report as `'flee'` and grant 0 XP — the deliberate 50%
+  bonus from the proposed formula was NOT implemented. Phase 32 closed
+  the crit half of Q3 but left friendship outcomes untouched. Gameplay
+  bias on AUDIT.md points toward mechanics findings like this.
+- scope: route the friendship-counter exit through a `'friendship'`
+  outcome in `determineCombatEnd` (today it reports `'flee'`); have
+  `endCombat` grant `floor(enemy.xpReward * 0.5)` XP on that path; add a
+  `combat:ended` event field `outcome: 'victory' | 'ko' | 'flee' |
+  'friendship'` (currently the four-value union but `'friendship'` is
+  never set). Hermetic e2e: the existing friendship-counter test in
+  `combat.resolver.test.ts:60-78` extends to assert the new outcome
+  string and the XP grant. CLI surface: when `npm run game` reports
+  combat end, distinguish "befriended" from "fled" in the transcript.
+- unblocks: friendship becomes a real mechanical choice with a
+  scoreable outcome, not just a stalemate exit. Moral-meter consumers
+  (Spec 10) can react to friendship resolutions distinctly. The Q5
+  / Q2 Knowledge-Gaps rows close.
+- blocked-by: none. Pure additive — every change is on the existing
+  combat-end resolution path.
+- score: 5 × 7 / 10 = 3.5
+
+---
 
 ### Candidate: Second continent — Northern Continent stub
 - signal: `spec.md` 6-month horizon — "Additional world content
