@@ -122,7 +122,7 @@ export default class AgentVitestReporter {
                 const entry = {
                     name: testCase.fullName,
                     status,
-                    durationMs: diag?.duration ?? 0,
+                    durationMs: Math.round(diag?.duration ?? 0),
                     location: sourceLocation,
                 };
                 if (status === 'failed' && Array.isArray(result?.errors) && result.errors.length > 0) {
@@ -161,7 +161,7 @@ export default class AgentVitestReporter {
             files.push({
                 path: filePath,
                 status: moduleStatus(mod),
-                durationMs: modDiag?.duration ?? 0,
+                durationMs: Math.round(modDiag?.duration ?? 0),
                 tests,
             });
         }

@@ -181,6 +181,54 @@ describe('AgentVitestReporter — golden path', () => {
     });
 });
 
+describe('AgentVitestReporter — durationMs precision (iterate AUDIT row)', () => {
+    it('rounds fractional Vitest durations to integer milliseconds in JSON', async () => {
+        const rootDir = process.cwd();
+        const jsonPath = tmpPath();
+        const stream = makeStream();
+
+        const fileD = path.join(rootDir, 'src/D/e2e/d.engine.test.ts');
+
+        // Stub a TestCase whose diagnostic returns a non-integer duration
+        // (Vitest emits raw floats like `66.41922499999987`).
+        const fractionalCase: StubCase = {
+            fullName: 'Delta > fractional duration',
+            result: () => ({ state: 'passed', errors: [] }),
+            diagnostic: () => ({ duration: 66.41922499999987 }),
+        };
+
+        const modules: StubModule[] = [
+            makeModule({
+                absPath: fileD,
+                durationMs: 12.7,   // module-level fractional too
+                ok: true,
+                state: 'passed',
+                cases: [fractionalCase],
+            }),
+        ];
+
+        const reporter = new AgentVitestReporter({
+            jsonOutputPath: jsonPath,
+            markdownStream: stream,
+            rootDir,
+        });
+        await reporter.onTestRunEnd(modules, [], 'passed');
+
+        const parsed = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
+
+        // Test-level durationMs is rounded.
+        expect(parsed.files[0].tests[0].durationMs).toBe(66);
+        // File-level durationMs is rounded.
+        expect(parsed.files[0].durationMs).toBe(13);
+        // slowest5 inherits the rounded test entry.
+        expect(parsed.rollup.slowest5[0].durationMs).toBe(66);
+        // Every emitted durationMs is an integer (no float noise leaks).
+        expect(Number.isInteger(parsed.files[0].tests[0].durationMs)).toBe(true);
+        expect(Number.isInteger(parsed.files[0].durationMs)).toBe(true);
+        expect(Number.isInteger(parsed.rollup.slowest5[0].durationMs)).toBe(true);
+    });
+});
+
 describe('AgentVitestReporter — failure block details', () => {
     it('omits the location field when the error has no stack', async () => {
         const rootDir = process.cwd();
