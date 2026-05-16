@@ -171,7 +171,19 @@ Resist stat: `target.baseStats[resistedBy]` (via `getResistStat()` in `Combat/st
 ## Friendship Path
 
 Both combatants defending on the same round increments `friendshipCounter`.
-Reaching `FRIENDSHIP_COUNTER_MAX` (3) ends combat with the `friendship` outcome.
+Reaching `FRIENDSHIP_COUNTER_MAX` (3) ends combat with the `friendship`
+outcome.
+
+When the Game store's `endCombat()` resolves a friendship exit (Phase 36),
+the returned `CombatEndReport` carries:
+
+- `outcome: 'friendship'` (distinct from `'flee'`)
+- `xpGained: floor(totalEncounterXp * 0.5)` — half the kill-win XP
+- `loot: rollEncounterLoot(encounter)` — the full loot table
+
+The reducer side (Phase 10) also shifts the moral meter `+1` (see
+`docs/morality.md` § "Combat: Friendship Victories") and routes the player
+through `applyLevelUps` if the half-XP crossed a threshold.
 
 ## Combat End Conditions
 
