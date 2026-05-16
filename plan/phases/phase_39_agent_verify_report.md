@@ -194,7 +194,12 @@ Decisions:
 
 ## Follow-ups (out of scope)
 
-- "Added since last report" call-out (needs prior-run diff).
+- ~~"Added since last report" call-out (needs prior-run diff).~~
+  **Shipped as Phase 40 (commit 87bab8c)** — `rollup.diff` carries
+  added / removed / flipped / duration-delta arrays compared against
+  the prior `last-verify-report.json`. The MED 5.4 AUDIT row for
+  `failures[]` was bundled into the same phase so the JSON schema
+  settled in one pass.
 - Slow-test thresholding tied to Vitest's `slowTestThreshold`.
 - Optional `--reporter-output <path>` CLI passthrough (none yet).
 - A reporter for the agent-e2e harness — separate concern from the

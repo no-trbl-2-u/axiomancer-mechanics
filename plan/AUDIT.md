@@ -16,14 +16,6 @@
 
 ## Pending
 
-### [MED] Phase 39 reporter — JSON lacks a top-level `failures[]` flat list
-- category: agent-ux / reporter
-- impact: 6 (single biggest UX gap in the just-shipped agent report — every LLM consumer asking "what failed?" has to walk `files[].tests[]` and filter by `status === 'failed'`; precomputing a `failures: [{file, name, message, location}]` array on the rollup or alongside it removes that step for every reader)
-- ease: 9 (single-pass aggregation already happens in `buildReport()` — push to a parallel `failures` array while iterating; extend the hermetic test to assert the new field; ~12 LOC + 1 test case)
-- score: 5.4
-- source: oversight self-critique of Phase 39 implementation (2026-05-16); shipped at `602da33`
-- next: extend `automation/agent-vitest-reporter.mjs` `buildReport()` to populate `report.failures = [{file, name, message, location}]` (flat list across all files); update the JSON schema in `plan/phases/phase_39_agent_verify_report.md` and the "Agent-friendly report" subsection in `docs/testing.md`; add a hermetic case to `src/test-utils/e2e/agent-vitest-reporter.engine.test.ts` asserting the field is populated on the golden-path failing test and is `[]` on the empty / all-passing run.
-
 ### [LOW] Phase 39 reporter — top-level `callouts[]` heuristics not computed
 - category: agent-ux / reporter
 - impact: 5 (markdown surfaces "Failed tests" and "Slowest 5" as section headings, but the JSON has no equivalent — an LLM reading just the JSON has to derive notability itself; a precomputed `callouts: string[]` like `"1 test failed in src/Combat"`, `"3 tests exceeded 50ms"`, `"0 new tests since last report"` short-circuits the work)
@@ -75,6 +67,8 @@
 ---
 
 ## Done
+
+- [x] **[MED] Phase 39 reporter — JSON lacks a top-level `failures[]` flat list** — absorbed into Phase 40 and shipped at commit `87bab8c` (2026-05-16). `automation/agent-vitest-reporter.mjs#buildReport` now populates `report.failures = [{file, name, message, location}]` in the same single-pass walk that builds `files[].tests[]`; new hermetic test in `src/test-utils/e2e/agent-vitest-reporter.engine.test.ts` pins the populated case and the empty case. `docs/testing.md` Agent-friendly report subsection lists the new field; the existing empty-run test was tightened to assert `failures: []`. Impact 6 × Ease 9 / 10 = 5.4. Bundled with Phase 40 so the JSON schema settled in one pass rather than churning across multiple /iterate ticks.
 
 - [x] **[LOW] `plan/bearings.md` Public API quick reference still lists removed `WorldMap`** — resolved at iterate (this commit). `plan/bearings.md:66` World row read "createStartingWorld, world reducer, WorldState, WorldMap" but `WorldMap` was removed from the public barrel at iterate `a707316` (oversight-authorised). Replaced with `MapState, MapDefinition` — the canonical replacement types per `docs/world.md` State Shape. One-line fix; the bearings file is the quick-reference plan-side mirror of the public surface, so keeping it in sync matters for autonomous-loop dispatchers. Impact 2 × Ease 9 / 10 = 1.8.
 

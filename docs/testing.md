@@ -92,8 +92,10 @@ artefacts land at the end of the run:
 
 - **`automation/last-verify-report.json`** — structured rollup
   (`{ total, passed, failed, skipped, reason, unhandledErrors,
-  slowest5 }`) plus per-file (`path`, `status`, `durationMs`) and
-  per-test entries (`name`, `status`, `durationMs`, optional
+  slowest5, diff }`) plus a top-level
+  `failures: [{file, name, message, location}]` flat list (Phase 40),
+  per-file entries (`path`, `status`, `durationMs`), and per-test
+  entries (`name`, `status`, `durationMs`, optional
   `failure: { message, diff, actual, expected, location }`). The file
   is gitignored — it's a fresh snapshot every run.
 - **Delimited markdown block on stdout** — between literal
@@ -108,8 +110,36 @@ without scraping Vitest's default reporter. The default
 `npm run verify` is unchanged so the deploy gate's expectations stay
 stable.
 
+### Run-to-run diff (Phase 40)
+
+`rollup.diff` carries a comparison against the prior
+`last-verify-report.json` on disk:
+
+```jsonc
+{
+  "addedTests":    string[],                       // keys "<file>::<name>" not in prior
+  "removedTests":  string[],                       // keys in prior not in current
+  "flippedToFail": [{file, name, prevStatus, currStatus}],
+  "flippedToPass": [{file, name, prevStatus, currStatus}],
+  "durationDeltaSlowest5": [{file, name, prevMs, currMs, deltaMs}]
+}
+```
+
+`diff` is `null` on a fresh repo (no prior file) or when the prior
+file fails schema validation. Shape mismatches emit a one-line
+warning to stderr prefixed `[agent-vitest-reporter]` so the
+markdown stdout block stays agent-pluckable.
+
+When the diff has content, the markdown block gains a
+`### Changes since last run` subsection with five nested `####`
+blocks matching the diff arrays (`#### Added tests`,
+`#### Removed tests`, `#### Flipped to fail`, `#### Flipped to
+pass`, `#### Largest duration deltas`).
+
 Schema details and design decisions live in
-[`plan/phases/phase_39_agent_verify_report.md`](../plan/phases/phase_39_agent_verify_report.md).
+[`plan/phases/phase_39_agent_verify_report.md`](../plan/phases/phase_39_agent_verify_report.md)
+and
+[`plan/phases/phase_40_prior_run_diff.md`](../plan/phases/phase_40_prior_run_diff.md).
 
 ---
 
