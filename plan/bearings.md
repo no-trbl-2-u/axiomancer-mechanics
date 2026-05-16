@@ -63,7 +63,7 @@ Effects:    applyEffect, applyTier1CombatEffect, clearTier1EffectsForStance,
             lookupEffect, Effect, ActiveEffect, EffectTier
 Items:      addItem, removeItem, useConsumable, stackItem, Item (and variants)
 Game:       createGameStore, GameState, nullAdapter, persistence adapters
-World:      createStartingWorld, world reducer, WorldState, WorldMap
+World:      createStartingWorld, world reducer, WorldState, MapState, MapDefinition
 Utils:      clamp, randomInt, deepClone, deriveStats, calculateMaxHealth,
             createDieRoll, isCharacter, isEnemy
 ```
