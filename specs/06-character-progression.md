@@ -50,16 +50,16 @@ to learn.
    What's the formula? Suggested default: `level × difficultyMultiplier`,
    where simple=10, normal=20, elite=50, boss=200, unique=500. Friendship
    wins grant 50% XP.
-   > Your answer: Adopted verbatim for the kill-win case.
-   > `DEFAULT_XP_BY_DIFFICULTY` in `src/Enemy/index.ts` is exactly
+   > Your answer: Adopted verbatim. `DEFAULT_XP_BY_DIFFICULTY` in
+   > `src/Enemy/index.ts` is exactly
    > `{ simple: 10, normal: 20, elite: 50, boss: 200, unique: 500 }`, and
    > `createEnemy` falls back to `level × DEFAULT_XP_BY_DIFFICULTY[difficulty]`
    > when an enemy author doesn't override `xpReward`. The friendship-win
-   > 50% bonus was NOT implemented: `endCombat` in `src/Game/store.ts`
-   > only grants XP when `outcome === 'victory'`, and a friendship-counter
-   > exit currently reports as `'flee'` (so 0 XP). Re-route that path
-   > through a `friendship` outcome with a 0.5× multiplier when it
-   > matters; until then friendship is its own reward.
+   > 50% bonus shipped at Phase 36: `CombatEndReport.outcome` gained a
+   > `'friendship'` value, `store.endCombat()` detects the
+   > friendship-counter cap and grants `floor(totalEncounterXp * 0.5)` XP
+   > + full loot table. The reducer side (Phase 10) was already
+   > friendship-aware; the store-side mismatch is what Phase 36 closed.
 
 3. **Stat points per level.** How many? Cap per stat? Default proposal:
    - 3 stat points per level.

@@ -264,8 +264,14 @@ async function combatTab(store: GameStoreHandle): Promise<void> {
     const beforeEnd = store.getState();
     const report: CombatEndReport = store.getState().endCombat();
     logState('endCombat', beforeEnd, store.getState(), report);
-    log(`\nCombat ended: ${report.outcome}  ·  XP +${report.xpGained}  ·  loot ×${report.loot.length}`);
-    if (report.outcome === 'victory') {
+    const outcomeLabel =
+        report.outcome === 'friendship' ? 'befriended'
+        : report.outcome === 'victory' ? 'victory'
+        : report.outcome === 'defeat' ? 'defeat'
+        : 'fled';
+    log(`\nCombat ended: ${outcomeLabel}  ·  XP +${report.xpGained}  ·  loot ×${report.loot.length}`);
+    // Friendship grants XP too (Phase 36), so cascade the level-ups if any.
+    if (report.outcome === 'victory' || report.outcome === 'friendship') {
         const beforeLevel = store.getState();
         store.getState().levelUp();
         logState('levelUp', beforeLevel, store.getState());

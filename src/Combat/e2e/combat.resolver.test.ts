@@ -76,6 +76,44 @@ describe('Win condition: friendship victory', () => {
         // Each round increments by 1, so rounds == counter
         expect(rounds).toBe(FRIENDSHIP_COUNTER_MAX);
     });
+
+    // Phase 36 — store.endCombat() reports outcome='friendship' (not 'flee')
+    // when the friendship-counter capped, grants 0.5x kill-win XP, and rolls
+    // the loot table. The reducer side has shipped this since Phase 10 (full
+    // XP via grantedXp fallback); the store was always reporting 'flee' and
+    // zeroing the XP. Closes Knowledge-Gaps Q5 + Spec 06 Q2 follow-up.
+    it('store endCombat() reports friendship outcome with half-XP grant', async () => {
+        const { createGameStore: makeStore } = await import('../../Game/store');
+        const { TidepoolCrab } = await import('../../Enemy/enemy.library');
+
+        const store = makeStore(nullAdapter, { player: Player });
+        const encounter = { enemies: [TidepoolCrab] };
+        store.getState().startCombat(encounter);
+
+        // Drive heart/defend rounds until the friendship counter caps.
+        let combat = store.getState().combat;
+        const playerXpBefore = store.getState().player.experience;
+        let safety = 0;
+        while (combat && isCombatOngoing(combat) && safety < 20) {
+            const next = resolveCombatRound(
+                combat,
+                { stance: 'heart', action: 'defend' },
+                { stance: 'heart', action: 'defend' },
+            ).state;
+            store.getState().updateCombat(next);
+            combat = store.getState().combat;
+            safety++;
+        }
+        expect(combat?.friendshipCounter).toBe(FRIENDSHIP_COUNTER_MAX);
+
+        const expectedXp = Math.floor((TidepoolCrab.xpReward ?? 0) * 0.5);
+        const report = store.getState().endCombat();
+
+        expect(report.outcome).toBe('friendship');
+        expect(report.xpGained).toBe(expectedXp);
+        // Player's experience reflects the granted XP (cascade through reducer).
+        expect(store.getState().player.experience).toBe(playerXpBefore + expectedXp);
+    });
 });
 
 // ────────────────────────────────────────────────────────────────────────────

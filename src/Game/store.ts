@@ -48,6 +48,7 @@ import { gameReducer, createNewGameState } from './game.reducer';
 import { GameEventEmitter, GameEvent, GameEventType } from './events';
 import { PersistenceAdapter } from './persistence/types';
 import { rollEncounterLoot, totalEncounterXp } from './combat-grants';
+import { FRIENDSHIP_COUNTER_MAX } from './game-mechanics.constants';
 import { getRng } from '../Utils/rng';
 import { getAvailableSkills } from '../Skills';
 import {
@@ -63,14 +64,18 @@ import {
  * report.
  *
  * - `outcome` — `'victory'` when the player killed the enemy, `'defeat'`
- *   when the player went down first, `'flee'` when combat ended without
- *   either combatant being KO'd (covers the friendship-counter exit).
+ *   when the player went down first, `'friendship'` when the
+ *   friendship-counter capped (Phase 36 — half XP and a moral-meter shift),
+ *   `'flee'` when combat ended without any of the above (manual escape).
  * - `xpGained` — flat XP added to `player.experience` this turn (enemy XP
  *   only; quest reward XP is folded directly into `player.experience`).
- * - `loot` — items added to `player.inventory` (pre stack-merge).
+ *   Half-XP on `'friendship'`; full XP on `'victory'`; zero on `'defeat'` /
+ *   `'flee'`.
+ * - `loot` — items added to `player.inventory` (pre stack-merge). Granted
+ *   on victory and friendship; empty on defeat / flee.
  */
 export interface CombatEndReport {
-    outcome: 'victory' | 'defeat' | 'flee';
+    outcome: 'victory' | 'defeat' | 'friendship' | 'flee';
     xpGained: number;
     loot: Item[];
 }
@@ -252,12 +257,19 @@ export function createGameStore(
                 const outcome: CombatEndReport['outcome'] =
                     pre.combat.enemy.health <= 0 ? 'victory'
                     : pre.combat.player.health <= 0 ? 'defeat'
+                    : pre.combat.friendshipCounter >= FRIENDSHIP_COUNTER_MAX ? 'friendship'
                     : 'flee';
 
                 let xpGained = 0;
                 let loot: Item[] = [];
                 if (outcome === 'victory' && pre.currentEncounter) {
                     xpGained = totalEncounterXp(pre.currentEncounter);
+                    loot = rollEncounterLoot(pre.currentEncounter);
+                } else if (outcome === 'friendship' && pre.currentEncounter) {
+                    // Phase 36 — friendship grants half the kill-win XP and the
+                    // full loot table (consistent with the reducer treating
+                    // friendship as a peaceful resolution rather than a flee).
+                    xpGained = Math.floor(totalEncounterXp(pre.currentEncounter) * 0.5);
                     loot = rollEncounterLoot(pre.currentEncounter);
                 }
 
