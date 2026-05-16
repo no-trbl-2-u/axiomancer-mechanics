@@ -5,13 +5,95 @@
 > `## Promoted` or `## Rejected`.
 
 <!-- Metadata (updated by /expand after each pass):
-> Last pass: 2026-05-15 at commit e90aa22
-> Pass count: 3
+> Last pass: 2026-05-16 at commit 7306111
+> Pass count: 4
 -->
 
 ---
 
 ## Pending
+
+### Candidate: Befriendable-enemy content arc
+- signal: Phase 36 (`276eecb`) shipped the friendship-victory mechanics
+  half (outcome string, half-XP grant, full loot, +1 moral meter), but
+  Knowledge-Gaps Q5 explicitly flagged a second half that's still open:
+  "What determines the rewards/narrative outcome of a friendship
+  victory vs a combat victory? Are there enemies that *should* be
+  befriended rather than defeated?" The mechanics now reward
+  friendship, but no enemy in the library currently *invites* the path
+  — the demo `Disatree_01` is mechanically befriendable but
+  narratively just a stalemate exit.
+- scope: Pick 2-3 enemies from `src/Enemy/enemy.library.ts` and author
+  per-enemy friendship narrative — a `friendshipReward?: Reward` (or
+  similar) field on `Enemy`, optional dialogue lines surfaced via a
+  new `combat:befriended` MapEvent / dialogue hook, and quest entries
+  that branch on `outcome === 'friendship'` vs `'victory'` for at
+  least one quest. Example targets: `MournfulGull` (befriend → unique
+  passive), `HollowEyedBeggar` (befriend → moral arc tie-in via
+  beggar quest), one boss-tier enemy where the choice is genuinely
+  costly. Hermetic e2e drives one befriend run end-to-end and asserts
+  the per-enemy reward + the quest branch.
+- unblocks: Knowledge-Gaps Q5 closes fully. Friendship becomes a real
+  player choice with content stakes, not just a mechanical exit.
+  Establishes the pattern other enemies can opt into.
+- blocked-by: none. Phase 36 wired the mechanics; this is content.
+- score: 5 × 6 / 10 = 3.0
+- recommended-slot: after the Northern Continent stub (the Northern
+  Continent could ship one befriendable enemy as its anchor narrative)
+
+### Candidate: `ActiveEffect.sourceId` wiring for player-applied effects
+- signal: Phase 35 (`cb47a38`) added `Character.id`; the row noted that
+  no combat / skill path currently sets `ActiveEffect.sourceId` to the
+  player's id when the player applies an effect. The audit found one
+  in-repo setter (equipment passives, correctly using item.id). The
+  attribution gap is now filed as a clear follow-up rather than
+  active work.
+- scope: Audit every `applyEffect` call site on the combat / skill
+  path: `src/Skills/skill.engine.ts:447` (rebound effects),
+  `src/Combat/resist.ts:57/82/94` (crit, rebound, overwhelmed
+  effects), `src/Combat/effects.ts:113` (extended buffs),
+  `src/World/MapEvents/handlers.ts:163` (map-event effects). Add a
+  `sourceId` to each ActiveEffect creation, drawn from the attacker's
+  `id` (player) or `enemy.id`. Extend `ApplyEffectOptions` with
+  `sourceId?: string` so callers don't have to spread it manually.
+  Hermetic e2e pins that a player-applied DoT carries `sourceId ===
+  state.player.id` through save / load.
+- unblocks: effect attribution becomes unambiguous — UI / dialogue can
+  ask "who applied this debuff?" and get a real answer. Multi-character
+  parties (a hypothetical future) inherit the wiring for free.
+- blocked-by: none. Phase 35 shipped the prerequisite (`Character.id`).
+- score: 4 × 6 / 10 = 2.4
+- recommended-slot: convenient mid-priority slot; no content
+  dependency, ~3 commit units
+
+### Candidate: Autosave throttling per Spec 09 Q4
+- signal: `src/Game/store.ts:203` + `src/Game/game.reducer.ts:138`
+  carry standing `TODO(spec-09)` comments: "autosave currently fires
+  on every action in the store. If brutal — Spec 09 Q4 deliberately
+  leaves this dial open." The dial has stayed open across every phase
+  since 09; saves are cheap today (nullAdapter is a no-op; node.adapter
+  writes a single JSON file), but the React Native consumer (per
+  spec.md Primary consumer) will eventually hit AsyncStorage with
+  every action. The TODO has been "deliberate" for ~26 phases and
+  ought to either land or be removed.
+- scope: Two options to explore as commit units. (A) Throttle by
+  time — `debounce(adapter.save, 500ms)` on a per-store basis so a
+  burst of actions collapses into one write; risks losing the last
+  ~500ms on a crash, but cheap to implement. (B) Restrict by action
+  type — only autosave on a curated set (`COMBAT_ROUND`, `LEVEL_UP`,
+  `END_COMBAT`, `MOVE_TO_NODE`, `APPLY_DIALOGUE`, `SAVE_GAME`); UI-tier
+  actions like prompt navigation never trigger writes. Recommend (B)
+  — it's a deterministic policy a reader can audit, and the action
+  list maps to durable game-state changes anyway. Hermetic e2e drives
+  the store through a series of actions and counts `adapter.save`
+  invocations.
+- unblocks: pre-emptive readiness for the React Native AsyncStorage
+  backend (Spec 12 noted that adapter is the throttle dial). Drains
+  two standing TODO comments. Closes Spec 09 Q4.
+- blocked-by: none. Pure store-layer change.
+- score: 4 × 6 / 10 = 2.4
+
+---
 
 ### Candidate: Shop economy — `village` MapEventKind buy/sell loop
 - signal: `Character.currency` ships (Spec 08 Q8) but no shop reducer
