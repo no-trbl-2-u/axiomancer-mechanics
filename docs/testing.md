@@ -92,7 +92,7 @@ artefacts land at the end of the run:
 
 - **`automation/last-verify-report.json`** — structured rollup
   (`{ total, passed, failed, skipped, reason, unhandledErrors,
-  slowest5, diff }`) plus a top-level
+  slowest5, slowestFailures, diff }`) plus a top-level
   `failures: [{file, name, message, location}]` flat list (Phase 40),
   per-file entries (`path`, `status`, `durationMs`), and per-test
   entries (`name`, `status`, `durationMs`, optional
@@ -100,8 +100,10 @@ artefacts land at the end of the run:
   is gitignored — it's a fresh snapshot every run.
 - **Delimited markdown block on stdout** — between literal
   `## Verify summary` and `## End summary` lines. Lists totals, failed
-  tests as `file:line:col — <name>: <message>`, and the slowest five
-  passing tests. Agents can extract reliably with the regex
+  tests as `file:line:col — <name>: <message>`, the slowest five
+  passing tests, and (when any are present) a `### Slowest 5
+  (failed / skipped)` block so timed-out / hanging tests stay visible.
+  Agents can extract reliably with the regex
   `/## Verify summary\n([\s\S]*?)\n## End summary/`.
 
 Use this script when an LLM agent (or a human eyeballing the terminal)

@@ -229,6 +229,7 @@ describe('AgentVitestReporter — empty run', () => {
             reason: 'passed',
             unhandledErrors: 0,
             slowest5: [],
+            slowestFailures: [],
             diff: null,
         });
         expect(parsed.files).toEqual([]);
@@ -238,8 +239,73 @@ describe('AgentVitestReporter — empty run', () => {
         expect(stream.written).toContain('- total: 0');
         expect(stream.written).not.toContain('### Failed tests');
         expect(stream.written).not.toContain('### Slowest 5 (passed)');
+        expect(stream.written).not.toContain('### Slowest 5 (failed / skipped)');
         expect(stream.written).not.toContain('### Changes since last run');
         expect(stream.written).toContain('## End summary');
+    });
+});
+
+describe('AgentVitestReporter — slowestFailures (iterate, Phase 39 self-critique)', () => {
+    it('surfaces failing / skipped tests in a parallel slowest-5 list with status preserved', async () => {
+        const rootDir = process.cwd();
+        const jsonPath = tmpPath();
+        const stream = makeStream();
+        const fileA = path.join(rootDir, 'src/A/e2e/a.engine.test.ts');
+        const fileB = path.join(rootDir, 'src/B/e2e/b.engine.test.ts');
+
+        // A passing-and-fast test (should NOT appear in slowestFailures),
+        // a failing-and-slow test (should be first), a skipped-but-mid test.
+        const slowFail: StubCase = {
+            fullName: 'Bravo > timed out',
+            result: () => ({ state: 'failed', errors: [{ message: 'timeout', stacks: [{ method: '', file: fileB, line: 1, column: 1 }] }] }),
+            diagnostic: () => ({ duration: 250 }),
+        };
+        const skipped: StubCase = {
+            fullName: 'Bravo > skipped for now',
+            result: () => ({ state: 'skipped' }),
+            diagnostic: () => ({ duration: 30 }),
+        };
+
+        const reporter = new AgentVitestReporter({
+            jsonOutputPath: jsonPath, markdownStream: stream, rootDir,
+        });
+        await reporter.onTestRunEnd([
+            makeModule({
+                absPath: fileA, durationMs: 5, ok: true, state: 'passed',
+                cases: [passingCase('Alpha > snappy', 3)],
+            }),
+            makeModule({
+                absPath: fileB, durationMs: 280, ok: false, state: 'failed',
+                cases: [slowFail, skipped],
+            }),
+        ], [], 'failed');
+
+        const parsed = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
+
+        // slowest5 only carries the passing entry (existing behaviour).
+        expect(parsed.rollup.slowest5).toHaveLength(1);
+        expect(parsed.rollup.slowest5[0].name).toBe('Alpha > snappy');
+
+        // slowestFailures carries the failed + skipped, sorted slowest-first,
+        // status preserved on each entry.
+        expect(parsed.rollup.slowestFailures).toHaveLength(2);
+        expect(parsed.rollup.slowestFailures[0]).toEqual({
+            name: 'Bravo > timed out',
+            file: 'src/B/e2e/b.engine.test.ts',
+            durationMs: 250,
+            status: 'failed',
+        });
+        expect(parsed.rollup.slowestFailures[1]).toEqual({
+            name: 'Bravo > skipped for now',
+            file: 'src/B/e2e/b.engine.test.ts',
+            durationMs: 30,
+            status: 'skipped',
+        });
+
+        // Markdown renders the new subsection with the status badge.
+        expect(stream.written).toContain('### Slowest 5 (failed / skipped)');
+        expect(stream.written).toContain('250ms (failed) — src/B/e2e/b.engine.test.ts: Bravo > timed out');
+        expect(stream.written).toContain('30ms (skipped) — src/B/e2e/b.engine.test.ts: Bravo > skipped for now');
     });
 });
 

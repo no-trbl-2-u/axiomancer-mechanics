@@ -123,6 +123,17 @@ export default class AgentVitestReporter {
             .slice(0, SLOWEST_LIMIT)
             .map(t => ({ name: t.name, file: t.file, durationMs: t.durationMs }));
 
+        // Phase 39 self-critique row (LOW, agent-ux / reporter): slow tests
+        // that *failed* (often a timeout / hang) were invisible because
+        // slowest5 filters to passed-only. Surface them as a parallel
+        // top-5 — same shape, different filter, with status included so
+        // consumers can tell which terminal state caused the slowness.
+        const slowestFailures = [...allTests]
+            .filter(t => t.status === 'failed' || t.status === 'skipped')
+            .sort((a, b) => b.durationMs - a.durationMs)
+            .slice(0, SLOWEST_LIMIT)
+            .map(t => ({ name: t.name, file: t.file, durationMs: t.durationMs, status: t.status }));
+
         return {
             rollup: {
                 total,
@@ -132,6 +143,7 @@ export default class AgentVitestReporter {
                 reason,
                 unhandledErrors: unhandledErrors.length,
                 slowest5,
+                slowestFailures,
                 diff: null,
             },
             failures,
@@ -186,6 +198,14 @@ export default class AgentVitestReporter {
             lines.push('### Slowest 5 (passed)');
             for (const slow of r.slowest5) {
                 lines.push(`- ${slow.durationMs.toFixed(0)}ms — ${slow.file}: ${slow.name}`);
+            }
+        }
+
+        if (r.slowestFailures && r.slowestFailures.length > 0) {
+            lines.push('');
+            lines.push('### Slowest 5 (failed / skipped)');
+            for (const slow of r.slowestFailures) {
+                lines.push(`- ${slow.durationMs.toFixed(0)}ms (${slow.status}) — ${slow.file}: ${slow.name}`);
             }
         }
 
