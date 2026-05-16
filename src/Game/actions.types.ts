@@ -16,6 +16,7 @@ import { Encounter } from '../World/types';
 import { Action, Stance } from '../Combat/types';
 import { Equipment, EquipmentSlot, Item } from '../Items/types';
 import { DialogueTree, DialogueChoice } from '../NPCs/types';
+import { PhilosophicalAlignment } from '../Philosophy/types';
 
 export type GameAction =
     | { type: 'START_COMBAT';   payload: { target: Enemy | Encounter } }
@@ -31,6 +32,7 @@ export type GameAction =
     | { type: 'ALLOCATE_STAT_POINT'; payload: { stat: 'heart' | 'body' | 'mind' } }
     | { type: 'LEARN_SKILL';    payload: { skillId: string } }
     | { type: 'SHIFT_MORAL_METER'; payload: { delta: number; gating?: { min?: number; max?: number } } }
+    | { type: 'SHIFT_PHILOSOPHICAL_ALIGNMENT'; payload: { delta: Partial<PhilosophicalAlignment> } }
     | { type: 'SAVE_GAME';      payload?: undefined }
     | { type: 'LOAD_GAME';      payload?: undefined };
 

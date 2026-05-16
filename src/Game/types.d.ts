@@ -1,6 +1,7 @@
 import { CombatState } from '../Combat/types';
 import { WorldState, QuestLog, Encounter } from '../World/types';
 import { Character } from '../Character/types';
+import { PhilosophicalAlignment } from '../Philosophy/types';
 
 /**
  * Top-level game state. The root object that aggregates the player,
@@ -28,6 +29,11 @@ import { Character } from '../Character/types';
  * @property rngState         - Current RNG seed state for deterministic replays.
  *                              Persisted and restored to maintain reproducible
  *                              random sequences across save/load cycles.
+ * @property philosophicalAlignment - Three-axis alignment cube (Phase 42):
+ *                              epistemology / outlook / scope, each integer
+ *                              in [-100, +100], defaults 0/0/0. Buckets to
+ *                              one of 27 cells in `philosophicalAlignmentLibrary`.
+ *                              Orthogonal to `moralMeter` — see docs/philosophy.md.
  */
 export interface GameState {
     version: number;
@@ -39,4 +45,5 @@ export interface GameState {
     flags: string[];
     moralMeter: number;
     rngState: number;
+    philosophicalAlignment: PhilosophicalAlignment;
 }

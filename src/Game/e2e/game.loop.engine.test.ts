@@ -112,6 +112,7 @@ describe('Game loop — full transcript through gameReducer', () => {
             flags:      store.getState().flags,
             moralMeter: store.getState().moralMeter,
             rngState:   store.getState().rngState,
+            philosophicalAlignment: store.getState().philosophicalAlignment,
         }));
 
         // 7. SAVE_GAME (autosave already fired through the dispatch chain).

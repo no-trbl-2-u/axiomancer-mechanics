@@ -41,12 +41,13 @@ import { calculateMaxHealth } from '../Utils';
 import { EXPERIENCE_PER_LEVEL, STAT_POINTS_PER_LEVEL } from './game-mechanics.constants';
 import { addItemStacking, rollEncounterLoot, totalEncounterXp } from './combat-grants';
 import { getRng } from '../Utils/rng';
+import { applyAlignmentDelta, defaultAlignment } from '../Philosophy';
 
 /**
  * Increment when GameState's shape changes. Save loaders branch on this so
  * old saves can be migrated rather than corrupted.
  */
-export const GAME_STATE_VERSION = 4;
+export const GAME_STATE_VERSION = 5;
 
 /** Builds a brand-new GameState with default player and world. */
 export function createNewGameState(): GameState {
@@ -63,6 +64,7 @@ export function createNewGameState(): GameState {
         flags: [],
         moralMeter: 0,
         rngState: getRng().getState(),
+        philosophicalAlignment: defaultAlignment(),
     };
 }
 
@@ -281,6 +283,16 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
         case 'SHIFT_MORAL_METER': {
             return shiftMoralMeter(state, action.payload.delta, action.payload.gating);
+        }
+
+        case 'SHIFT_PHILOSOPHICAL_ALIGNMENT': {
+            return {
+                ...state,
+                philosophicalAlignment: applyAlignmentDelta(
+                    state.philosophicalAlignment,
+                    action.payload.delta,
+                ),
+            };
         }
 
         case 'SAVE_GAME': {

@@ -189,6 +189,17 @@ export type {
     ApplyDialogueChoiceResult,
 } from './World';
 
+// ─── Philosophy (Phase 42 — 3-axis alignment cube + 27-cell registry) ────────
+export {
+    bucketAxis, getAlignmentCell, applyAlignmentDelta, defaultAlignment,
+    AXIS_HIGH_THRESHOLD, AXIS_LOW_THRESHOLD,
+    philosophicalAlignmentLibrary,
+} from './Philosophy';
+export type {
+    AxisBucket, PhilosophicalAlignment, AlignmentFallacy,
+    PhilosophicalAlignmentCell,
+} from './Philosophy';
+
 // ─── NPCs (types + dialogue helpers) ──────────────────────────────────────────
 export type {
     NPC, DialogueMap, DialogueTree, DialogueNode, DialogueChoice, DialogueContext,

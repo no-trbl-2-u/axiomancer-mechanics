@@ -42,6 +42,7 @@ import {
     Item, Equipment, EquipmentSlot,
 } from '../Items/types';
 import { DialogueTree, DialogueChoice } from '../NPCs/types';
+import { PhilosophicalAlignment } from '../Philosophy/types';
 import { GameState } from './types';
 import { GameAction } from './actions.types';
 import { gameReducer, createNewGameState } from './game.reducer';
@@ -126,6 +127,8 @@ export interface GameActions {
     save: () => void;
     // ── Morality ─────────────────────────────────────────────────────────────
     shiftMoralMeter: (delta: number, gating?: { min?: number; max?: number }) => void;
+    // ── Philosophical alignment ──────────────────────────────────────────────
+    shiftPhilosophicalAlignment: (delta: Partial<PhilosophicalAlignment>) => void;
 }
 
 /** Full store type — state + actions. */
@@ -217,8 +220,14 @@ export function createGameStore(
             if (event && emitter) emitter.emit(event);
             // Save excludes transient currentEncounter — encounters re-roll on
             // load (Spec 07).
-            const { currentEncounter: _drop, version, player, world, combat, quests, flags, moralMeter, rngState } = next;
-            adapter.save({ version, player, world, combat, quests, flags, moralMeter, rngState });
+            const {
+                currentEncounter: _drop, version, player, world, combat, quests, flags,
+                moralMeter, rngState, philosophicalAlignment,
+            } = next;
+            adapter.save({
+                version, player, world, combat, quests, flags,
+                moralMeter, rngState, philosophicalAlignment,
+            });
             return next;
         }
 
@@ -245,8 +254,14 @@ export function createGameStore(
                         ...(combatEvents !== undefined ? { combatEvents } : {}),
                     },
                 });
-                const { currentEncounter: _drop, version, player, world, combat: cb, quests, flags, moralMeter, rngState } = next;
-                adapter.save({ version, player, world, combat: cb, quests, flags, moralMeter, rngState });
+                const {
+                    currentEncounter: _drop, version, player, world, combat: cb, quests, flags,
+                    moralMeter, rngState, philosophicalAlignment,
+                } = next;
+                adapter.save({
+                    version, player, world, combat: cb, quests, flags,
+                    moralMeter, rngState, philosophicalAlignment,
+                });
             },
 
             endCombat() {
@@ -344,14 +359,25 @@ export function createGameStore(
 
             save() {
                 const next = get();
-                const { currentEncounter: _drop, version, player, world, combat, quests, flags, moralMeter, rngState } = next;
-                adapter.save({ version, player, world, combat, quests, flags, moralMeter, rngState });
+                const {
+                    currentEncounter: _drop, version, player, world, combat, quests, flags,
+                    moralMeter, rngState, philosophicalAlignment,
+                } = next;
+                adapter.save({
+                    version, player, world, combat, quests, flags,
+                    moralMeter, rngState, philosophicalAlignment,
+                });
                 if (emitter) emitter.emit({ type: 'game:saved', payload: { state: next } });
             },
 
             // ── Morality ──────────────────────────────────────────────────────
             shiftMoralMeter(delta: number, gating?: { min?: number; max?: number }) {
                 dispatch({ type: 'SHIFT_MORAL_METER', payload: { delta, gating } });
+            },
+
+            // ── Philosophical alignment ──────────────────────────────────────
+            shiftPhilosophicalAlignment(delta: Partial<PhilosophicalAlignment>) {
+                dispatch({ type: 'SHIFT_PHILOSOPHICAL_ALIGNMENT', payload: { delta } });
             },
         };
     });
