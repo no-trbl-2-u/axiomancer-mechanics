@@ -92,13 +92,16 @@ event → resolve → consumed-noop` across all eight kinds.
        | { kind: 'interaction'; npcName: string; dialogue?: DialogueTree }
        | { kind: 'gathering'; items: Item[] }
        | { kind: 'rest'; healed: number }
-       | { kind: 'village'; villageName: string; merchants: NPC[] }
+       | { kind: 'village'; villageName: string; merchants: NPC[]; shop?: ShopInventory }
        | { kind: 'cutscene'; lines: readonly string[] }
        | { kind: 'hazard'; effects: ActiveEffect[]; damage: number }
        | { kind: 'loot-cache'; items: Item[]; currency: number }
        | { kind: 'none' };
    ```
-   > Locked.
+   > Locked. The `village` variant gained the optional `shop?:
+   > ShopInventory` field at Phase 37 (`f9c18f0`); type lives in
+   > `src/Items/shop.types.ts` and rides on the village payload
+   > without affecting any other variant.
 
 10. **Pool entry shape.**
     ```ts
@@ -135,7 +138,7 @@ export type ResolvedEvent =
     | { kind: 'interaction'; npcName: string; dialogue?: DialogueTree }
     | { kind: 'gathering';   items: Item[] }
     | { kind: 'rest';        healed: number }
-    | { kind: 'village';     villageName: string; merchants: NPC[] }
+    | { kind: 'village';     villageName: string; merchants: NPC[]; shop?: ShopInventory }
     | { kind: 'cutscene';    lines: readonly string[] }
     | { kind: 'hazard';      effects: ActiveEffect[]; damage: number }
     | { kind: 'loot-cache';  items: Item[]; currency: number }
@@ -169,20 +172,44 @@ export function markNodeConsumed(state: MapState, nodeId: NodeId): MapState;
 
 ## Acceptance checklist
 
-- [ ] All open questions are locked above.
-- [ ] `src/World/MapEvents/types.ts` exports the 8-kind taxonomy and
-      every type listed in §Public API additions.
-- [ ] `src/World/MapEvents/handlers/<kind>.ts` exists for all 8 kinds
-      and is unit-tested via the integration hermetic e2e.
-- [ ] `src/World/MapEvents/resolve-map-event.ts` exports the
-      dispatcher and is hermetic e2e tested.
-- [ ] `MapState` has `discoveredNodes` and `consumedNodes`.
-- [ ] `createMapState` seeds `discoveredNodes` with `startingNode`.
-- [ ] `revealAdjacent` and `markNodeConsumed` reducers exist.
-- [ ] `processNode` and the old `MapEvent`/`MapEventType` types are
-      untouched (Phase 24 removes them).
-- [ ] `npm test` and `npm run type-check` are clean.
-- [ ] `npm run verify` exits 0.
+- [x] All open questions are locked above. — Phase 23 `fd01029` shipped
+      with every Q resolved; Phase 37 `f9c18f0` added Q on village shop
+      attachment (folded into the existing Q9 `village` variant).
+- [x] `src/World/MapEvents/types.ts` exports the 8-kind taxonomy and
+      every type listed in §Public API additions. — Phase 23 `fd01029`;
+      Phase 37 `f9c18f0` added `ShopInventory` re-import +
+      `VillagePayload.shop?` field.
+- [x] `src/World/MapEvents/handlers/<kind>.ts` exists for all 8 kinds
+      and is unit-tested via the integration hermetic e2e. — Phase 23
+      `fd01029`; collapsed to a single `handlers.ts` file per the brief
+      decision noted at the top of that file (each handler stays short;
+      the dispatch table at `handlers.ts:209` keeps the contract).
+      Coverage via `src/World/MapEvents/e2e/map-events.engine.test.ts`.
+- [x] `src/World/MapEvents/resolve-map-event.ts` exports the
+      dispatcher and is hermetic e2e tested. — Phase 23 `fd01029`;
+      Phase 31 `711b49e` extended with `unlockAdjacent` traversal fix.
+- [x] `MapState` has `discoveredNodes` and `consumedNodes`. — Phase 23
+      `fd01029`; `availableNodes` + `lockedNodes` added at Phase 31
+      `711b49e`.
+- [x] `createMapState` seeds `discoveredNodes` with `startingNode`. —
+      Phase 23 `fd01029`; pinned by
+      `src/World/world.reducer.test.ts`.
+- [x] `revealAdjacent` and `markNodeConsumed` reducers exist. —
+      Phase 23 `fd01029`; `unlockAdjacent` added at Phase 31 `711b49e`.
+- [x] `processNode` and the old `MapEvent`/`MapEventType` types are
+      untouched (Phase 24 removes them). — Phase 25 `7002642` removed
+      them per the original deferral; world e2e suite rewritten against
+      the new dispatcher (`grep -rn "processNode" src/` returns zero).
+- [x] `npm test` and `npm run type-check` are clean. — Standing
+      invariant; verify gate green throughout the loop.
+- [x] `npm run verify` exits 0. — Standing invariant; pinned by the
+      `npm run deploy:check` post-push gate every tick.
+- [x] **Phase 37 shop extension.** `VillagePayload.shop?:
+      ShopInventory` (+ resolved-event `shop?` mirror), forwarded by
+      `resolveVillage`, authored on `fv-3` Fishing Village Stalls and
+      `nf-8` Glen Market. — Phase 37 `f9c18f0`; content-drift assertion
+      in `src/World/MapEvents/e2e/content.engine.test.ts`
+      ("Phase 37 shop content").
 
 ## Out of scope
 
