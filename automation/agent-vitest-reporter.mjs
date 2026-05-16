@@ -107,10 +107,17 @@ export default class AgentVitestReporter {
                     };
                     // Phase 40 — flat top-level failures[] so consumers don't
                     // have to walk files[].tests[] to answer "what failed?".
+                    // iterate (critique-16) — carry diff/actual/expected
+                    // through so the flat list is self-sufficient for the
+                    // snapshot-diff use case (no cross-reference back to
+                    // files[].tests[] required).
                     failures.push({
                         file:     filePath,
                         name:     testCase.fullName,
                         message:  entry.failure.message,
+                        diff:     entry.failure.diff,
+                        actual:   entry.failure.actual,
+                        expected: entry.failure.expected,
                         location: entry.failure.location,
                     });
                 }

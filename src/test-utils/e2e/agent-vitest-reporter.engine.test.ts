@@ -75,11 +75,16 @@ function passingCase(name: string, durationMs: number): StubCase {
     };
 }
 
-function failingCase(name: string, message: string, location?: { file: string; line: number; column: number }): StubCase {
+function failingCase(
+    name: string,
+    message: string,
+    location?: { file: string; line: number; column: number },
+    snapshotDiff?: { diff?: string; actual?: string; expected?: string },
+): StubCase {
     const stacks = location ? [{ method: '', ...location }] : undefined;
     return {
         fullName: name,
-        result: () => ({ state: 'failed', errors: [{ message, stacks }] }),
+        result: () => ({ state: 'failed', errors: [{ message, stacks, ...snapshotDiff }] }),
         diagnostic: () => ({ duration: 5 }),
     };
 }
@@ -448,6 +453,9 @@ describe('AgentVitestReporter — Phase 40 failures[] flat list', () => {
             file: 'src/B/e2e/b.engine.test.ts',
             name: 'Beta > nope',
             message: 'boom',
+            // iterate (critique-16) — diff/actual/expected carried through.
+            // The synthetic stub doesn't set them, so they round-trip as
+            // undefined (omitted on JSON.stringify).
             location: `${fileB}:11:7`,
         });
 
@@ -464,6 +472,45 @@ describe('AgentVitestReporter — Phase 40 failures[] flat list', () => {
 
         const passingParsed = JSON.parse(fs.readFileSync(passingPath, 'utf-8'));
         expect(passingParsed.failures).toEqual([]);
+    });
+});
+
+describe('AgentVitestReporter — failures[] carries diff/actual/expected (iterate, critique-16)', () => {
+    it('top-level failures[] entries surface snapshot-diff fields when the error has them', async () => {
+        const rootDir = process.cwd();
+        const jsonPath = tmpPath();
+        const stream = makeStream();
+        const fileSnap = path.join(rootDir, 'src/Snap/e2e/snap.engine.test.ts');
+
+        const reporter = new AgentVitestReporter({
+            jsonOutputPath: jsonPath, markdownStream: stream, rootDir,
+        });
+        await reporter.onTestRunEnd([
+            makeModule({
+                absPath: fileSnap, durationMs: 9, ok: false, state: 'failed',
+                cases: [failingCase(
+                    'Snap > diffs',
+                    'expected snapshot to match',
+                    { file: fileSnap, line: 42, column: 5 },
+                    {
+                        diff: '- old\n+ new',
+                        actual: '{"v":2}',
+                        expected: '{"v":1}',
+                    },
+                )],
+            }),
+        ], [], 'failed');
+
+        const parsed = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
+        expect(parsed.failures).toHaveLength(1);
+        const f = parsed.failures[0];
+        expect(f.file).toBe('src/Snap/e2e/snap.engine.test.ts');
+        expect(f.name).toBe('Snap > diffs');
+        expect(f.message).toBe('expected snapshot to match');
+        expect(f.diff).toBe('- old\n+ new');
+        expect(f.actual).toBe('{"v":2}');
+        expect(f.expected).toBe('{"v":1}');
+        expect(f.location).toBe(`${fileSnap}:42:5`);
     });
 });
 

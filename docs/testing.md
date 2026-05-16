@@ -93,7 +93,8 @@ artefacts land at the end of the run:
 - **`automation/last-verify-report.json`** — structured rollup
   (`{ total, passed, failed, skipped, reason, unhandledErrors,
   slowest5, slowestFailures, diff, callouts }`) plus a top-level
-  `failures: [{file, name, message, location}]` flat list (Phase 40),
+  `failures: [{file, name, message, diff?, actual?, expected?, location}]`
+  flat list (Phase 40 + iterate critique-16 schema-symmetry extension),
   per-file entries (`path`, `status`, `durationMs`), and per-test
   entries (`name`, `status`, `durationMs`, optional
   `location: "<file>:<line>:<col>"` for the `it()` block — sourced
