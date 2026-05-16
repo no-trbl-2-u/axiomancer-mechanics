@@ -6,13 +6,54 @@
 > by `/iterate`.
 
 <!-- Metadata (updated by /critique after each pass):
-> Last pass: 2026-05-16 at commit cee2614
-> Pass count: 15
+> Last pass: 2026-05-16 at commit df2fde9
+> Pass count: 16
 -->
 
 ---
 
 ## Pending
+
+### [LOW] `experimental_getRunnerTask` static import in the agent reporter doesn't degrade at module-load time
+- pass: critique-16 (commit df2fde9)
+- area: reliability / reporter
+- observation: `automation/agent-vitest-reporter.mjs:11` does a static ESM import `import { experimental_getRunnerTask } from 'vitest/node';`. The runtime helper `locationFromRunner` wraps the call in try/catch + `typeof === 'function'` to degrade gracefully, but ESM static imports throw at module-load time when a named export is missing. If a future Vitest minor / patch renames or removes the experimental export (which the `experimental_*` prefix explicitly invites), `npm run verify:agent` fails before any test runs — the whole reporter file fails to load. The runtime guard the JSDoc claims is bypassed because evaluation never reaches the helper. Iterate commit `8fe314b` documented "degrade gracefully" as the design intent; the static import doesn't honour it at the load boundary.
+- evidence: `automation/agent-vitest-reporter.mjs:11` (static import); `automation/agent-vitest-reporter.mjs:198-210` (`locationFromRunner` with `typeof === 'function'` guard that never gets to fire on load). Node's ESM resolver throws `SyntaxError: The requested module 'vitest/node' does not provide an export named 'experimental_getRunnerTask'` if removed.
+- suggested_fix: switch to lazy dynamic import inside the helper, cache the resolved function, and let the existing try/catch swallow the load failure:
+  ```js
+  let cachedGetRunnerTask;
+  let getRunnerTaskResolved = false;
+  async function resolveGetRunnerTask() {
+      if (getRunnerTaskResolved) return cachedGetRunnerTask;
+      try {
+          const mod = await import('vitest/node');
+          cachedGetRunnerTask = mod.experimental_getRunnerTask;
+      } catch { /* keep undefined */ }
+      getRunnerTaskResolved = true;
+      return cachedGetRunnerTask;
+  }
+  ```
+  Make `locationFromRunner` `async` or resolve once in `onTestRunEnd` and pass the function down. ~15 LOC + a hermetic case that mocks the dynamic import to throw and asserts `tests[].location` stays undefined without crashing.
+- source: critique
+
+### [LOW] Top-level `failures[]` flat list omits `diff` / `actual` / `expected` from each entry
+- pass: critique-16 (commit df2fde9)
+- area: agent-ux / reporter / schema-symmetry
+- observation: Phase 40 added top-level `failures: [{file, name, message, location}]` so an LLM doesn't have to walk `files[].tests[]` to answer "what failed?". But the per-test `failure` block (still in `files[].tests[]`) carries `{message, diff, actual, expected, location}` — the snapshot-diff trio is dropped from the flat list. A consumer asking "show me the diff for the second failure" still has to cross-reference back to `files[].tests[]` by `(file, name)` key. The information is in the report twice, but neither location is self-sufficient.
+- evidence: `automation/agent-vitest-reporter.mjs:90-110` builds `entry.failure` with diff/actual/expected; lines `82-87` build `failures.push({ file, name, message, location })` and omit them. Documented schema in `docs/testing.md:96` shows `failures: [{file, name, message, location}]` as the contract.
+- suggested_fix: extend the flat `failures[]` entry shape to `{file, name, message, diff, actual, expected, location}`. Existing per-test `failure` block stays as-is (it's the durable per-tree position). Update the schema sketch in `docs/testing.md` + the brief at `plan/phases/phase_40_prior_run_diff.md`. The hermetic test for `failures[]` populated case asserts the four new fields surface through (undefined when the assertion didn't produce a diff). ~10 LOC + 1 test extension.
+- source: critique
+
+### [LOW] `automation/agent-vitest-reporter.mjs` is now 455 LOC of untyped JavaScript with no JSDoc type hints
+- pass: critique-16 (commit df2fde9)
+- area: types / maintainability / reporter
+- observation: The reporter file grew from ~195 LOC (Phase 39 ship) to 455 LOC across Phase 40 + four iterate ticks (slowestFailures, callouts, chain default reporter, file:line). It's plain `.mjs` with no type annotations — neither `// @ts-check` nor JSDoc `@param`/`@returns` on the helper functions (`buildReport`, `computeDiff`, `computeCallouts`, `topFailureFile`, `countSlowTests`, `indexTestsByKey`, `locationFromRunner`, `readPriorReport`). Future polish (Phase 41 bundle, durationMs precision, follow-on diff heuristics) will keep adding; a single misspelled property name on the synthetic stub or the rollup shape would land as a runtime undefined rather than a tsc error. The brief decision to use `.mjs` over `.ts` ("matches `automation/agent-e2e.mjs`") was right at 195 LOC; at 455 LOC the calculus shifts.
+- evidence: `wc -l automation/agent-vitest-reporter.mjs` → 455. `grep -c "@param\|@returns\|@type" automation/agent-vitest-reporter.mjs` → 0. The file header JSDoc covers the top-level class but not the helpers.
+- suggested_fix: pick one of two paths in /iterate:
+  (a) Add `// @ts-check` at the top of the file + JSDoc `@param`/`@returns` on every helper function (8 helpers, ~30 LOC of annotations). Catches edit-time typos without converting the file. Lowest-risk path.
+  (b) Convert to `.ts` and update `package.json` `verify:agent` script + `vitest.config.ts` reporter path; let tsc cover the surface fully. Larger change; needs a build step or `tsx` runtime.
+  Decide in /iterate. (a) is the cheap win; (b) is the durable answer.
+- source: critique
 
 ### [LOW] Phase 37 CLI `shopLoop` sell-price floor (`Math.max(1, …)`) enables a small infinite-money exploit for any ware at price ≤ 2
 - pass: critique-15 (commit cee2614)
