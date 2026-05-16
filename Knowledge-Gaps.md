@@ -57,21 +57,21 @@
 
 ## Skills
 
-15. **Skill damage formula**: Skills have a `damageCalculation` string field and a vague `effect` string. What's the intended model? Should skills have `basePower × scalingStat` like a traditional RPG, or something more unique? *(Tracked in `specs/04-skills-engine.md`.)*
+15. **Skill damage formula**: Skills have a `damageCalculation` string field and a vague `effect` string. What's the intended model? Should skills have `basePower × scalingStat` like a traditional RPG, or something more unique? *(Tracked in `specs/04-skills-engine.md`.)* **Resolved at Spec 04 + 04b (pre-loop).** The shipped model is `basePower × scalingStat`; `damageCalculation`/`effect` strings replaced by `combatEffects: SkillCombatEffectPayload[]` + `calculateSkillDamage` (`src/Skills/skill.engine.ts:134`). Per-skill resource costs land via `ResourceCost`; Tier 2 / 3 procs ride the `resolveEffectApplication` resist pipeline.
 
 16. **Skill slots**: The roadmap mentions `equippedSkills` vs `knownSkills`. How many skill slots? Can skills be swapped mid-combat or only between fights? *(Tracked in `specs/04-skills-engine.md`.)*
 
-17. **Mana economy**: Mana exists on both Character and Enemy but isn't consumed anywhere. How fast should mana regenerate? Is there a "basic attack doesn't cost mana, skills do" model? *(Tracked in `specs/04-skills-engine.md`.)*
+17. **Mana economy**: Mana exists on both Character and Enemy but isn't consumed anywhere. How fast should mana regenerate? Is there a "basic attack doesn't cost mana, skills do" model? *(Tracked in `specs/04-skills-engine.md`.)* **Resolved at Spec 04 (pre-loop).** Mana removed entirely; replaced with the `CombatResources` system (`{ heart, body, mind, fallacy, paradox }`). Basic actions GENERATE resources (miss=1, hit=3, defend=5 per Spec 04 Q on basic-action grants); skills SPEND them via `canUseSkill` + `spendResources` and generate exactly 1 philosophical token per cast. `Character.mana` / `Character.maxMana` / `Skill.manaCost` all removed from the type surface.
 
 ## Items & Equipment
 
-18. **Equipment stat modifiers**: Equipment types exist but have no `statModifiers` yet. Should equipment modify base stats, derived stats, or both? Should equipment have stance alignment (heart/body/mind)? *(Tracked in `specs/05-equipment-engine.md`.)*
+18. **Equipment stat modifiers**: Equipment types exist but have no `statModifiers` yet. Should equipment modify base stats, derived stats, or both? Should equipment have stance alignment (heart/body/mind)? *(Tracked in `specs/05-equipment-engine.md`.)* **Resolved at Spec 05 (pre-loop).** `Equipment.statModifiers: StatModifier[]` ships per Spec 05 Q3 option A — modifiers fold into derived stats at equip time via `getEquipmentModifiers` + `recomputeDerivedStats` (`src/Character/equipment.reducer.ts`). Equipment does not carry stance alignment as a top-level field; stance affinity lives in `passiveEffects` / `onHitEffects` payloads instead. Spec 05 acceptance ticked at `5fb8b0a` era.
 
-19. **Consumable effect system**: Consumables have an `effect: string` field. What's the mapping? Should they reference effect IDs from the effects library, or have their own effect definitions? *(Tracked in `specs/05-equipment-engine.md`.)*
+19. **Consumable effect system**: Consumables have an `effect: string` field. What's the mapping? Should they reference effect IDs from the effects library, or have their own effect definitions? *(Tracked in `specs/05-equipment-engine.md`.)* **Resolved at Spec 05 + 05b (pre-loop).** Consumables carry `effectId?: string` (lookup into the effects library) plus optional `healAmount` and `resourceGrant`; `useConsumableEffect` (`src/Items/equipment.engine.ts:135`) resolves them in-combat. The `consumableLibrary` (12 entries) is the canonical content surface; Phase 37 added shop economy on top.
 
 ## World & Content
 
-20. **Map node system**: `MapNode` has `id`, `location`, and `connectedNodes`, but there's no pathfinding or traversal logic. Is movement meant to be linear (node-to-node), or should there be branching paths with player choice? *(Tracked in `specs/08-world-content-and-hazards.md`.)*
+20. **Map node system**: `MapNode` has `id`, `location`, and `connectedNodes`, but there's no pathfinding or traversal logic. Is movement meant to be linear (node-to-node), or should there be branching paths with player choice? *(Tracked in `specs/08-world-content-and-hazards.md`.)* **Resolved across Phases 23 / 24 / 25 / 31.** Branching is the model: nodes carry `connectedNodes: NodeId[]`; `moveToNode` enforces "must be in availableNodes"; the Phase 23 MapEvents engine fires a weighted-pool roll at unlock time per node; Phase 31 `unlockAdjacent` moves connected nodes from `lockedNodes` to `availableNodes` after a node resolves. The CLI Map tab walks the live `availableNodes` set; pathfinding is one-hop per dispatch (no shortest-path solver because every move is a deliberate player choice).
 
 21. ~~**Starting world inconsistency**: `northern-forest` appears in both `availableMaps` and `lockedMaps`.~~ **RESOLVED** — `createStartingWorld` now puts `northern-forest` only in `lockedMaps`; verified by `world.reducer.test.ts`.
 
