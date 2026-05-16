@@ -46,18 +46,22 @@ Examples of e2e entry points by module:
 | `World`          | World reducer chained through map → node → continent transitions                      |
 | `Items`          | Item reducer chained through `addItem` → `useConsumable` → `removeItem`               |
 | `Character`      | `createCharacter` → `deriveStats` → `calculateMaxHealth` round-trip                   |
-| `Skills` (TBD)   | Once Spec 04 lands: skill resolver invoked through the combat engine                  |
+| `Skills`         | `executeSkill` driving a SkillLookup against the live `skillLibrary`; `learnSkill` / `getAvailableSkills` for the Phase 30 runtime path |
+| `NPCs`           | `getDialogueNode` + `visibleChoices` walking a `DialogueTree`; `applyDialogueChoice` through the Game store |
+| `CLI`            | `parseArgv`, `logState`, `setStateLogPath`, `prompt` (script mode) in `src/CLI/e2e/io.engine.test.ts` — covers the Phase 20 scripted surface |
 
 Unit tests for individual helpers are still welcome, but they do not satisfy
 the hermetic-e2e requirement on their own.
 
 ## What CANNOT be tested hermetically (today)
 
-- **The interactive demo CLI** (`src/CLI/game.cli.ts`, run via
-  `npm run game`). It owns display logic and needs TTY prompts via
-  `inquirer`; it is intentionally NOT covered by the test suite — the
-  engine modules it dispatches into are, and that is the durable
-  contract.
+- **The interactive demo CLI in its TTY-driven path** (`src/CLI/game.cli.ts`
+  run via `npm run game`). It owns display logic and uses `inquirer`
+  prompts; that path is not in the hermetic suite — the engine modules it
+  dispatches into are, and that is the durable contract. The Phase 20
+  `--script` / `--stdin` flags drive the same code path through the
+  scripted CLI primitives in `src/CLI/io.ts`, which **are** covered
+  hermetically by `src/CLI/e2e/io.engine.test.ts`.
 - Tests that require **real Date / wall-clock time** or **real network /
   filesystem** — they fall outside the hermetic contract by definition.
   Use a `nullAdapter`, fake clock, or extract the dependency.
@@ -66,6 +70,18 @@ If your change touches the CLI layer, the hermetic e2e test must target the
 underlying engine function (e.g. `resolveCombatRound`) and the CLI must
 delegate to that function. Inline math in a CLI file is a code-smell that
 blocks hermetic testing — extract it.
+
+### Adjacent layer — agent-graded e2e (Phase 26)
+
+The repo also ships an **explicitly non-hermetic** layer for end-to-end
+walkthroughs: `automation/agent-e2e.mjs` drives the CLI through a scripted
+JSON sequence (`automation/scripts/walkthroughs/<name>.json`) and hands
+the resulting state log to an LLM grader against a per-walkthrough
+goal file. It calls the Anthropic API; the vitest suite does not. Treat
+it as a smoke-grade integration test, not a unit-of-correctness test —
+the canonical correctness signal stays in `src/**/e2e/*.engine.test.ts`.
+See `automation/scripts/walkthroughs/README.md` for the inventory and
+how to add a new walkthrough.
 
 ---
 
