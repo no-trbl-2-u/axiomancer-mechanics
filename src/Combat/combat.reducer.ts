@@ -63,9 +63,13 @@ export function endCombat(state: CombatState): CombatState {
     return { ...state, active: false, phase: 'ended' };
 }
 
-// Legacy aliases kept so older imports continue to resolve.
-export const updateCombatPhase = setPhase;
-export const addBattleLogEntry = appendLog;
+// Legacy aliases retained on the barrel (`src/index.ts`) for backwards
+// compatibility with external consumers. The three end-variants all dispatch
+// to `endCombat` — the actual outcome is computed by `determineCombatEnd(state)`,
+// so calling `endCombatPlayerDefeat(state)` does NOT mark a defeat; treat the
+// names as historical noise and prefer `endCombat` in new code. The two
+// non-barrel aliases (`updateCombatPhase`, `addBattleLogEntry`) had zero
+// in-repo callers and were dropped at the Phase 35 follow-up iterate pass.
 export const endCombatPlayerVictory = endCombat;
 export const endCombatPlayerDefeat = endCombat;
 export const endCombatWithFriendship = endCombat;

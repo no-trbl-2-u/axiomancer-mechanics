@@ -186,7 +186,7 @@ Reaching `FRIENDSHIP_COUNTER_MAX` (3) ends combat with the `friendship` outcome.
 
 ## Battle Log
 
-Each resolved round can append a `BattleLogEntry` via `addBattleLogEntry()`:
+Each resolved round can append a `BattleLogEntry` via `appendLog()`:
 
 ```typescript
 {
@@ -208,10 +208,10 @@ listed where they exist for backwards compatibility.
 | Function | Alias(es) | Description |
 |----------|-----------|-------------|
 | `initializeCombat(player, enemy)` | — | Creates fresh CombatState with deep-cloned combatants |
-| `setPhase(state, phase)` | `updateCombatPhase` | Transitions to a new combat phase |
+| `setPhase(state, phase)` | — | Transitions to a new combat phase |
 | `setPlayerStance(state, stance)` | — | Sets the player's stance choice |
 | `setPlayerAction(state, action)` | — | Sets the player's action choice |
-| `appendLog(state, entry)` | `addBattleLogEntry` | Appends a battle log entry |
+| `appendLog(state, entry)` | — | Appends a battle log entry |
 | `incrementFriendship(state)` | — | Increments the friendship counter |
 | `endCombat(state)` | `endCombatPlayerVictory`, `endCombatPlayerDefeat`, `endCombatWithFriendship` | Marks combat as ended; the reason is encoded in `determineCombatEnd(state)` |
 

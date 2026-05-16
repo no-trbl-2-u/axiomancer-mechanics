@@ -38,22 +38,6 @@
 - suggested_fix: rewrite the chain example to use the current kinds — `fv-2 (interaction — quest giver) → fv-3 (village — shop)`. One-line fix; the actual pool registration code is already correct.
 - source: critique
 
-### [LOW] Combat reducer carries five aliases that add no behaviour
-- pass: critique-7 (commit 1f4911b)
-- area: dead-code
-- observation: `src/Combat/combat.reducer.ts:66-71` defines five "legacy
-  aliases": `updateCombatPhase`, `addBattleLogEntry`,
-  `endCombatPlayerVictory`, `endCombatPlayerDefeat`,
-  `endCombatWithFriendship`. The last three are literal `= endCombat` —
-  the outcome is computed by `determineCombatEnd(state)` per
-  `docs/combat.md:216`, so the "named" variants are misleading: calling
-  `endCombatPlayerDefeat(state)` does NOT mark a defeat. The first two are
-  not even exported through `src/index.ts` or `src/Combat/index.ts` and have
-  zero in-repo callers (verified via `grep -rn updateCombatPhase\\|addBattleLogEntry src/`).
-- evidence: `src/Combat/combat.reducer.ts:66-71`; barrel surface in `src/index.ts:62-65`.
-- suggested_fix: delete `updateCombatPhase` and `addBattleLogEntry` (zero callers, not on barrel). For the three end-variants on the barrel, either (a) drop them and update `docs/combat.md:216`, or (b) give each a real distinguishing effect (e.g. set a specific `outcome` field). Pick (a) unless an external React-Native consumer is known to depend on them.
-- source: critique
-
 ### [MED] agent-e2e grader is blind to fine-grained combat sub-events
 - pass: critique-7-follow-up (commit at oversight 2026-05-15)
 - area: tests
@@ -87,6 +71,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] Combat reducer carries five aliases that add no behaviour** — partially resolved at iterate (this commit). Dropped the two non-barrel aliases `updateCombatPhase` and `addBattleLogEntry` from `src/Combat/combat.reducer.ts` (zero in-repo callers, not on `src/index.ts`). Updated `docs/combat.md` reducer API table — the alias columns for `setPhase` + `appendLog` are now `—`, and the Battle Log paragraph now names `appendLog()` directly. The three barrel-exported end-variants (`endCombatPlayerVictory` / `endCombatPlayerDefeat` / `endCombatWithFriendship`) stayed in place — `ship-a-phase.md` Hard Rule 9 locks `src/index.ts` against removals, and dropping them is a barrel-surface call that needs `/oversight` confirmation. Inline comment in `combat.reducer.ts` records the rationale for future readers. Impact 4 × Ease 7 / 10 = 2.8.
 
 - [x] **[LOW] Phase 32 critStyle wiring lacks a resolver-path integration test** — resolved at Phase 34 unit 9 (this commit). Added a "Crit wiring (Phase 32)" describe block to `src/Combat/e2e/combat.resolver.test.ts` with two cases: (1) `mockSequentialRng(0.99)` forces every d20 to roll 20 (`isCriticalHit(20) === true`), drives one round through `resolveCombatRound`, finds the player's `damage-applied` event, and asserts `isCritical: true` plus `critStyle` is `'double'` or `'pierce'`; (2) `mockSequentialRng(0.5)` is the control — every d20 rolls 11, no crit, no fields. 459/459 tests (was 457). Impact 3 × Ease 7 / 10 = 2.1.
 
