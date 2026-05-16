@@ -14,7 +14,13 @@
 
 ## Pending
 
-_No open findings — drain to /iterate or /expand as new ones arrive._
+### [LOW] `getCoastalMap` barrel export — authorized for removal by oversight
+- category: dead-code
+- impact: 3 (zero in-repo callers; `@deprecated` per JSDoc since Phase 23 era; pre-1.0 permits breaking changes in minor bumps; replacement `getMapDefinition('coastal-continent', mapName)` + `createMapState` already exists)
+- ease: 8 (drop three lines: declaration in `src/World/map.registry.ts:75-84`, re-export in `src/World/index.ts:22`, re-export in `src/index.ts:152`; refresh any remaining mentions in docs)
+- score: 2.4
+- source: oversight authorization (2026-05-16) of the `[LOW] getCoastalMap` row in CRITIQUE pass 13
+- next: remove `getCoastalMap` from `src/index.ts`, `src/World/index.ts`, and `src/World/map.registry.ts`. Check `docs/api.md` and `docs/world.md` for residual mentions; replace with the `getMapDefinition` + `createMapState` two-call pattern. Verify gate. Hard Rule 9 unlock granted by `/oversight` 2026-05-16; mirrors the WorldMap removal at `a707316`.
 
 ---
 

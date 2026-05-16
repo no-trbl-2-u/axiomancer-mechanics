@@ -93,34 +93,6 @@
 - blocked-by: none. Pure store-layer change.
 - score: 4 × 6 / 10 = 2.4
 
----
-
-### Candidate: Shop economy — `village` MapEventKind buy/sell loop
-- signal: `Character.currency` ships (Spec 08 Q8) but no shop reducer
-  exists; `docs/items.md` Pending block lists it; Phase 23's `village`
-  MapEventKind is the anchor that's been waiting for a transactional
-  partner. `spec.md` 6-month horizon names "shops" explicitly. AUDIT
-  bias is currently `gameplay` (per `/oversight` 2026-05-15).
-- scope: New `src/Items/shop.reducer.ts` (or `src/World/shops.ts`)
-  exporting `buyItem(character, inventory, itemId, price)` and
-  `sellItem(character, item, price)` — pure reducers that decrement /
-  increment `currency` and add / remove items, returning the updated
-  character. Wire into the `village` MapEventHandler so resolving a
-  `village` node opens a shop UI in the Map tab (item list + buy/sell
-  prompts). Author 1-2 starter shop inventories on `fv-3` and the
-  Northern City stub once it lands; otherwise reuse `consumableLibrary`
-  for the demo pool. Hermetic e2e: buying decrements currency and adds
-  the item; selling does the reverse; insufficient currency returns the
-  character unchanged.
-- unblocks: the curreny / consumable / equipment economy actually
-  closes the loop. `Character.currency` becomes meaningful. The
-  Northern Continent stub gains a natural use for `village` nodes. Quest
-  rewards that grant currency become spendable.
-- blocked-by: none. `village` MapEventKind already ships; `currency` is
-  on `Character`; `consumableLibrary` is a stable source pool.
-- score: 6 × 7 / 10 = 4.2
-- recommended-slot: next after the Northern Continent stub (or before,
-  if the user wants the shops to land alongside fv-3 content)
 
 ### Candidate: Second continent — Northern Continent stub
 - signal: `spec.md` 6-month horizon — "Additional world content
@@ -143,6 +115,24 @@
 ---
 
 ## Promoted
+
+### Phase 37 — Shop economy via `village` MapEventKind
+- promoted: 2026-05-16 (oversight; user pick from expand pass 3 — top score)
+- source: `/expand` candidate (pass 3); `docs/items.md` Pending lists shop
+  economy; `spec.md` 6-month horizon names "shops" explicitly; Phase 23's
+  `village` MapEventKind has been waiting for a transactional partner.
+- summary: `buyItem(character, inventory, itemId, price)` +
+  `sellItem(character, item, price)` reducers (pure — decrement / increment
+  `Character.currency`, add / remove items). Wire into the `village`
+  MapEventHandler so resolving a `village` node opens a shop UI in the
+  Map tab. Author 1-2 starter shop inventories (reuse `consumableLibrary`
+  for the demo pool). Hermetic e2e covers buy / sell / insufficient-funds.
+- acceptance: `Character.currency` becomes a meaningful resource — quest
+  rewards that grant currency are spendable; `village` nodes are no
+  longer flavour-only. New tests assert buy decrements currency + adds
+  item, sell does the reverse, insufficient currency returns the
+  character unchanged.
+- score: 6 × 7 / 10 = 4.2
 
 ### Phase 36 — Friendship victory reward (XP + narrative tag)
 - promoted: 2026-05-15 (oversight; user pick from expand pass 3 — gameplay bias)
