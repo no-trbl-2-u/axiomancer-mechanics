@@ -132,6 +132,13 @@ reality.
   `QuestItem`, `ItemCategory`, `EquipmentSlot`, `ItemRarity`,
   `RolledModifier`, etc.) — Stable.
 - `consumableLibrary`, `getConsumableById` — Stable.
+- **Shop economy (Phase 37):** `buyItem(character, item, price)`,
+  `sellItem(character, itemId, price)` — Stable. Pure `Character →
+  Character` reducers; bad input (negative price, insufficient funds,
+  missing item) returns the input unchanged. `ShopWare` and
+  `ShopInventory` types ride on `VillagePayload.shop?` and the
+  resolved village event's `shop?` field. See `docs/items.md`
+  "Shop economy" for the schema and the authored shop tables.
 
 ### Skills
 

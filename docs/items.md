@@ -97,7 +97,44 @@ reducer.
 | `useConsumableEffect(state, consumableId)` | Combat-tier consumable use (resolves effects + emits events). |
 | `aggregateCombatStartTokens(equipment)` | Combat-start token aggregation (e.g. `lock-aim`). |
 | `getEquipmentProcTriggers(equipment)` | List the proc-trigger metadata on an Equipment. |
+| `buyItem(character, item, price)` / `sellItem(character, itemId, price)` | Phase 37 shop reducers — pure `Character → Character`. |
 | `isEquipment` / `isConsumable` / `isMaterial` / `isQuestItem` | Type guards on `Item`. |
+
+## Shop economy (Phase 37)
+
+`Character.currency` (Spec 08 Q8) is spent and earned through two pure
+reducers in `src/Items/shop.reducer.ts`:
+
+- `buyItem(character, item, price)` — deep-clones `item`, appends it to
+  the inventory, decrements `currency` by `price`. Returns the input
+  character unchanged on negative price or insufficient funds (no
+  exceptions across the library boundary).
+- `sellItem(character, itemId, price)` — removes the first matching
+  inventory entry and increments `currency` by `price`. Returns the
+  input character unchanged on negative price or missing item.
+
+Both reducers ride on the `village` MapEventKind. A `VillagePayload`
+declares a `shop?: ShopInventory` field carrying `wares: { itemId,
+price }[]`; `resolveVillage` forwards it onto the resolved event so a
+UI consumer (or the CLI Map tab) can render a buy / sell loop. The
+engine does not enforce a "shops buy at half" policy — that's an
+authoring / UI concern. The CLI affordance lives in `src/CLI/game.cli.ts`
+(`shopLoop`); it quotes a default sell price of `floor(ware.price / 2)`
+when the player offers something the shop also sells.
+
+Two authored starter shops ship in `src/World/MapEvents/content.ts`:
+
+| Node | Name | Wares (itemId → price) |
+|---|---|---|
+| `fv-3` | Fishing Village Stalls | `healing-potion` (25), `minor-healing-potion` (12), `antidote` (30), `heart-draught` (22) |
+| `nf-8` | Glen Market | `minor-healing-potion` (12), `philosopher-tea` (35), `void-essence` (40), `clarity-serum` (28) |
+
+Types live alongside the reducer (`src/Items/shop.types.ts`):
+
+```ts
+interface ShopWare { readonly itemId: string; readonly price: number }
+interface ShopInventory { readonly wares: ReadonlyArray<ShopWare> }
+```
 
 ## Pending
 
@@ -105,6 +142,7 @@ reducer.
   `craftItem(materials, recipe)` reducer exists yet. Recipe authoring
   + a `recipes.library.ts` would unlock the crafting CLI surface
   sketched in Spec 05.
-- Shop economy — `Character.currency` is tracked (Spec 08 Q8) but no
-  shop reducer ships yet; the MapEvents `village` kind is the
-  expected anchor when shops land.
+- Per-ware stock + refresh policy (Phase 37 follow-up).
+- Agent-graded shop walkthrough at
+  `automation/scripts/walkthroughs/shop.{json,goal.md}` (Phase 37
+  follow-up).
