@@ -102,12 +102,25 @@ exercises a moral choice.
 
 ## Acceptance checklist
 
-- [ ] All 9 questions answered.
-- [ ] `moralMeter` persists across save/load.
-- [ ] Sample event in the demo content shifts the meter; choosing
-      differently gives a different outcome.
-- [ ] `BRAINDUMP.md`'s "Difficulty System" section graduates into a section
-      of `docs/world.md` (or a new `docs/morality.md`).
+- [x] All 9 questions answered. — Spec 10 (pre-loop).
+- [x] `moralMeter` persists across save/load. — Phase 10 `a6085c4`
+      shipped `moralMeter: number` on `GameState`
+      (`src/Game/types.d.ts:40`); Phase 11 `a6b33f0` pinned save/load
+      round-trip in `src/Game/e2e/game.loop.engine.test.ts` ("new
+      game → combat → victory → level up → move → save → load
+      round-trips identically"). Pinned by
+      `src/Game/e2e/moral.meter.engine.test.ts`.
+- [x] Sample event in the demo content shifts the meter; choosing
+      differently gives a different outcome. — Spec 10 (pre-loop)
+      shipped `shiftMoralMeter` (`src/Game/game.reducer.ts:108`); the
+      friendship-counter exit (Phase 10 + 36) shifts +1 on befriend,
+      0 on the alternative path. Pinned by
+      `src/Game/e2e/moral.meter.engine.test.ts`.
+- [x] `BRAINDUMP.md`'s "Difficulty System" section graduates into a
+      section of `docs/world.md` (or a new `docs/morality.md`). —
+      Shipped as `docs/morality.md` (pre-loop); cross-linked from
+      `docs/combat.md` Friendship Path (Phase 36 / iterate
+      `7306111`).
 
 ## Out of scope
 
