@@ -16,18 +16,14 @@
 
 ## Pending
 
-### [LOW] `resolveMapEvent` no longer auto-advances `reach`-type quest objectives
-- category: tests
-- impact: 4 (latent feature gap; the old `processNode` dispatched `reachableObjectives` on every arrival and progressed quests; the new dispatcher doesn't — no current test catches it because the demo `starting-quest` is a `kill` objective)
-- ease: 6 (small handler addition + hermetic test for a reach objective)
-- score: 2.4 (× 1.5 tests-bias = 3.6)
-- source: Phase 25 follow-up (2026-05-15)
-- evidence: `src/World/MapEvents/resolve-map-event.ts` calls `revealAdjacent` + `markNodeConsumed` but never `reachableObjectives` / `progressQuest`. The old `src/World/process-node.ts` did. Search the deleted file in git history for the `for (const r of reaches)` block.
-- next: add a `reach`-objective advance in `resolveMapEvent` after the handler runs (or as a pre-handler step); hermetic test pins a `reach`-objective quest against fv-2 and asserts it auto-completes when the node fires.
+_No open findings — drain to /iterate or /expand as new ones arrive._
 
 ---
 
 ## Done
+
+- [x] **[LOW] `resolveMapEvent` no longer auto-advances `reach`-type quest objectives** — resolved at iterate (this commit). `resolve-map-event.ts` now invokes a private `advanceReachObjectives(quests, nodeId)` helper before the pool roll that walks `reachableObjectives(log, nodeId)` and runs each through `progressQuest`. Re-entering a consumed node is still a no-op (early return preserves Spec 23 idempotency); the reach progress fires on the first non-consumed pass, which matches typical `requiredCount=1` reach semantics. Three new hermetic tests in `src/World/MapEvents/e2e/map-events.engine.test.ts`: completion via the no-pool path, completion alongside a pool-driven `rest` event, and a no-op assertion when the active reach targets a different node. Impact 4 × Ease 6 / 10 = 2.4.
+
 
 - [x] **[MED] agents.md verify-gate description excludes lint, but Phase 13 put it back** — resolved at commit 7ede59f (2026-05-15). `agents.md` Standing Rule 3 verify-gate block now includes `npm run lint` (eslint "**/*.ts"; warnings advisory, errors fail) and notes that Phase 13 repaired the flat-config; dropped the "known broken" parenthetical. Impact 5 × Ease 9 / 10 = 4.5.
 - [x] **[LOW] Two engine-style tests at module root violate the e2e/ convention** — resolved at commit 9563a7d (2026-05-15). `git mv src/Skills/skill.engine.test.ts src/Skills/e2e/skill.engine.test.ts` and `git mv src/Game/spec08.e2e.test.ts src/Game/e2e/spec08.engine.test.ts` (also renamed to the `*.engine.test.ts` suffix). Relative imports fixed; suite stays green at 421/421. Impact 4 × Ease 9 / 10 = 3.6.

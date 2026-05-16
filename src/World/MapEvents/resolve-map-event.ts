@@ -21,9 +21,27 @@ import type { GameState } from '../../Game/types';
 import { revealAdjacent, markNodeConsumed, unlockAdjacent } from '../world.reducer';
 import { getRng } from '../../Utils/rng';
 import { applyPayload } from './handlers';
+import { reachableObjectives, progressQuest } from '../quest.engine';
+import type { QuestLog, NodeId } from '../types';
 import type {
     MapEventPool, MapEventPoolEntry, ResolveMapEventResult, ResolvedEvent,
 } from './types';
+
+/**
+ * Advances any active `reach`-type quest objectives that target `nodeId`.
+ * Restores the auto-advance behaviour the deleted `process-node.ts` provided
+ * before Phase 25. Pure — re-entering a node whose reach objective already
+ * completed is a silent no-op via `reachableObjectives`' `currentCount <
+ * requiredCount` filter.
+ */
+function advanceReachObjectives(quests: QuestLog, nodeId: NodeId): QuestLog {
+    const reaches = reachableObjectives(quests, nodeId);
+    let log = quests;
+    for (const r of reaches) {
+        log = progressQuest(log, r.questName, r.objectiveId).log;
+    }
+    return log;
+}
 
 /**
  * Map-level extension surface for Phase 23. We attach pools via a side
@@ -109,6 +127,14 @@ export function resolveMapEvent(
         return { state, event: none };
     }
 
+    // Restore the pre-Phase-25 reach-objective auto-advance — any active
+    // `reach: target=nodeId` quest objective ticks on arrival, before the
+    // pool roll. Pure no-op for non-reach quests or fully-completed reaches.
+    const questsAfterReach = advanceReachObjectives(state.quests, nodeId);
+    const stateAfterReach: GameState = questsAfterReach === state.quests
+        ? state
+        : { ...state, quests: questsAfterReach };
+
     // 2. Find the active pool.
     const pool = lookupPool(map.continent, map.name, nodeId);
     if (!pool) {
@@ -117,7 +143,7 @@ export function resolveMapEvent(
         const next = unlockAdjacent(revealAdjacent(map, nodeId), nodeId);
         const consumed = markNodeConsumed(next, nodeId);
         return {
-            state: { ...state, world: { ...state.world, currentMap: consumed } },
+            state: { ...stateAfterReach, world: { ...stateAfterReach.world, currentMap: consumed } },
             event: { kind: 'none' },
         };
     }
@@ -128,13 +154,13 @@ export function resolveMapEvent(
         const next = unlockAdjacent(revealAdjacent(map, nodeId), nodeId);
         const consumed = markNodeConsumed(next, nodeId);
         return {
-            state: { ...state, world: { ...state.world, currentMap: consumed } },
+            state: { ...stateAfterReach, world: { ...stateAfterReach.world, currentMap: consumed } },
             event: { kind: 'none' },
         };
     }
 
     // 4. Apply the matching handler.
-    const result = applyPayload(state, entry.payload, rng);
+    const result = applyPayload(stateAfterReach, entry.payload, rng);
 
     // 5. Reveal + unlock adjacents + mark consumed. Phase 31 — unlock is what
     // moves the adjacents out of `lockedNodes` into `availableNodes` so the

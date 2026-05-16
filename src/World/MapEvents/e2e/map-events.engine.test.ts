@@ -332,3 +332,74 @@ describe('resolveMapEvent — Phase 31 traversal fix', () => {
         expect(result.state.world.currentMap.lockedNodes).not.toContain('fv-3');
     });
 });
+
+// ── Phase 25 follow-up — `reach`-objective auto-advance via resolveMapEvent ──
+//
+// Restores the auto-advance behaviour the deleted process-node.ts shipped
+// before Phase 25. Filed as a LOW AUDIT finding (score 2.4) drained in this
+// iterate pass.
+
+describe('resolveMapEvent — reach-objective auto-advance', () => {
+    function seedReachQuest(state: GameState, targetNodeId: string): GameState {
+        const reachQuest = {
+            name: 'reach-fv2',
+            description: 'Arrive at fv-2.',
+            mapName: state.world.currentMap.name,
+            objectives: [{
+                id: 'arrive',
+                type: 'reach' as const,
+                description: 'Reach the target node.',
+                target: targetNodeId,
+                requiredCount: 1,
+                currentCount: 0,
+            }],
+            reward: { kind: 'currency' as const, amount: 0 },
+            status: 'active' as const,
+        };
+        return {
+            ...state,
+            quests: { ...state.quests, active: [...state.quests.active, reachQuest] },
+        };
+    }
+
+    it('completes a reach quest when the player resolves the target node (no pool)', () => {
+        const base = freshState();
+        const atFv2 = { ...base, world: { ...base.world, currentMap: { ...base.world.currentMap, currentNode: 'fv-2' } } };
+        const state = seedReachQuest(atFv2, 'fv-2');
+
+        const result = resolveMapEvent(state);
+        expect(result.event.kind).toBe('none');
+        // Reach completed → quest moves from active to completed (single-objective).
+        expect(result.state.quests.active.some(q => q.name === 'reach-fv2')).toBe(false);
+        expect(result.state.quests.completed).toContain('reach-fv2');
+    });
+
+    it('completes a reach quest alongside the pool-driven event handler', () => {
+        mockSequentialRng(0.5);
+        const base = withPool(freshState(), {
+            id: 'pool.reach-test',
+            entries: [{
+                kind: 'rest',
+                weight: 1,
+                payload: { kind: 'rest', restoreFraction: 0.5 },
+            }],
+        });
+        const atFv2 = { ...base, world: { ...base.world, currentMap: { ...base.world.currentMap, currentNode: 'fv-2' } } };
+        const state = seedReachQuest(atFv2, 'fv-2');
+
+        const result = resolveMapEvent(state);
+        expect(result.event.kind).toBe('rest');
+        expect(result.state.quests.completed).toContain('reach-fv2');
+    });
+
+    it('is a silent no-op when no active reach objective targets this node', () => {
+        const base = freshState();
+        const atFv2 = { ...base, world: { ...base.world, currentMap: { ...base.world.currentMap, currentNode: 'fv-2' } } };
+        const state = seedReachQuest(atFv2, 'fv-5'); // targets a different node
+
+        const result = resolveMapEvent(state);
+        // Quest stays active — fv-5 wasn't reached.
+        expect(result.state.quests.active.some(q => q.name === 'reach-fv2')).toBe(true);
+        expect(result.state.quests.completed).not.toContain('reach-fv2');
+    });
+});
