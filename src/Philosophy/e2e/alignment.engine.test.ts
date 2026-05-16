@@ -17,7 +17,8 @@ import {
     AXIS_HIGH_THRESHOLD,
     AXIS_LOW_THRESHOLD,
 } from '../alignment.engine';
-import type { PhilosophicalAlignment } from '../types';
+import type { PhilosophicalAlignment, AxisBucket } from '../types';
+import { philosophicalAlignmentLibrary } from '../alignment.library';
 import { createNewGameState, gameReducer, GAME_STATE_VERSION } from '../../Game/game.reducer';
 import { createGameStore } from '../../Game/store';
 import { nullAdapter } from '../../Game/persistence/null.adapter';
@@ -62,7 +63,7 @@ describe('Philosophy — applyAlignmentDelta', () => {
 });
 
 describe('Philosophy — getAlignmentCell', () => {
-    it('returns the placeholder cell for the high-high-low triple (Logic-Optimistic-Individual)', () => {
+    it('returns the high-high-low cell (Logic-Optimistic-Individual)', () => {
         const cell = getAlignmentCell({ epistemology: 80, outlook: 80, scope: -80 });
         expect(cell.id).toBe('logic-optimistic-individual');
         expect(cell.epistemology).toBe('high');
@@ -71,9 +72,12 @@ describe('Philosophy — getAlignmentCell', () => {
         expect(cell.philosopher).toContain('Nietzsche');
     });
 
-    it('throws on an unauthored triple before Unit 2 lands the full library', () => {
-        // Mid-mid-mid is not in the Unit 1 placeholder library.
-        expect(() => getAlignmentCell({ epistemology: 0, outlook: 0, scope: 0 })).toThrow(/no cell for triple/);
+    it('returns the mid-mid-mid cell (Agnostic-Neutral-Relational / Buber)', () => {
+        // With the full library in place, every triple — including the
+        // dead-centre neutral — resolves cleanly.
+        const cell = getAlignmentCell({ epistemology: 0, outlook: 0, scope: 0 });
+        expect(cell.id).toBe('mid-mid-relational');
+        expect(cell.philosopher).toContain('Buber');
     });
 });
 
@@ -135,6 +139,72 @@ describe('Philosophy — v4 → v5 save migrator', () => {
             epistemology: 0, outlook: 0, scope: 0,
         });
         expect(migrated.moralMeter).toBe(7); // pre-existing field survives
+    });
+});
+
+describe('Philosophy — library exhaustiveness', () => {
+    it('contains exactly 27 entries', () => {
+        expect(philosophicalAlignmentLibrary.length).toBe(27);
+    });
+
+    it('has 27 unique ids — no duplicate cells', () => {
+        const ids = new Set(philosophicalAlignmentLibrary.map(c => c.id));
+        expect(ids.size).toBe(27);
+    });
+
+    it('covers every (low|mid|high)^3 triple — no holes', () => {
+        const buckets: AxisBucket[] = ['low', 'mid', 'high'];
+        for (const e of buckets) {
+            for (const o of buckets) {
+                for (const s of buckets) {
+                    // Pick a representative integer for each bucket.
+                    const v = (b: AxisBucket): number => (b === 'low' ? -80 : b === 'high' ? 80 : 0);
+                    const cell = getAlignmentCell({
+                        epistemology: v(e), outlook: v(o), scope: v(s),
+                    });
+                    expect(cell.epistemology).toBe(e);
+                    expect(cell.outlook).toBe(o);
+                    expect(cell.scope).toBe(s);
+                }
+            }
+        }
+    });
+
+    it('every cell carries exactly 3 fallacies, each with name/example/rationale', () => {
+        for (const cell of philosophicalAlignmentLibrary) {
+            expect(cell.fallacies.length).toBe(3);
+            for (const f of cell.fallacies) {
+                expect(f.name.length).toBeGreaterThan(0);
+                expect(f.example.length).toBeGreaterThan(0);
+                expect(f.rationale.length).toBeGreaterThan(0);
+            }
+        }
+    });
+});
+
+describe('Philosophy — PDF cross-check (cells 1 / 12 / 27)', () => {
+    it('cell 1 — Logic-Optimistic-Individual matches the PDF', () => {
+        const cell = getAlignmentCell({ epistemology: 80, outlook: 80, scope: -80 });
+        expect(cell.philosopher).toContain('Nietzsche');
+        expect(cell.literaryCharacter.name).toBe('Prometheus');
+        expect(cell.literaryCharacter.work).toContain('Prometheus Unbound');
+        expect(cell.fallacies[0].name).toBe('Appeal to Consequences');
+    });
+
+    it('cell 12 — Agnostic-Optimistic-Transcendent matches the PDF', () => {
+        const cell = getAlignmentCell({ epistemology: 0, outlook: 80, scope: 80 });
+        expect(cell.philosopher).toContain('William James');
+        expect(cell.literaryCharacter.name).toBe('Pi Patel');
+        expect(cell.literaryCharacter.work).toContain('Life of Pi');
+        expect(cell.fallacies[0].name).toContain("Pascal's Wager");
+    });
+
+    it('cell 27 — Faith-Pessimistic-Transcendent matches the PDF', () => {
+        const cell = getAlignmentCell({ epistemology: -80, outlook: -80, scope: 80 });
+        expect(cell.philosopher).toContain('Marcion');
+        expect(cell.literaryCharacter.name).toBe('The Grand Inquisitor');
+        expect(cell.literaryCharacter.work).toContain('Brothers Karamazov');
+        expect(cell.fallacies[0].name).toBe('No True Scotsman');
     });
 });
 
