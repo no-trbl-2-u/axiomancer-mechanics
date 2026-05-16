@@ -16,14 +16,6 @@
 
 ## Pending
 
-### [LOW] Phase 39 reporter — `durationMs` precision is inconsistent between JSON and markdown
-- category: agent-ux / reporter / cleanup
-- impact: 2 (JSON emits raw floats like `66.41922499999987`; markdown rounds via `.toFixed(0)`; a strict JSON consumer either has to round downstream or live with float noise — minor but inconsistent)
-- ease: 10 (single `Math.round` call in `buildReport()` per test entry and on `files[].durationMs`; 1-2 lines + a hermetic-test tightening)
-- score: 2.0
-- source: oversight self-critique of Phase 39 implementation (2026-05-16); shipped at `602da33`
-- next: in `buildReport()`, wrap `diag?.duration ?? 0` with `Math.round(...)` everywhere it lands in the JSON; update the existing hermetic-test assertions to use integer `durationMs` values; verify gate.
-
 ### [LOW] `getCoastalMap` barrel export — authorized for removal by oversight
 - category: dead-code
 - impact: 3 (zero in-repo callers; `@deprecated` per JSDoc since Phase 23 era; pre-1.0 permits breaking changes in minor bumps; replacement `getMapDefinition('coastal-continent', mapName)` + `createMapState` already exists)
@@ -35,6 +27,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] Phase 39 reporter — `durationMs` precision is inconsistent between JSON and markdown** — resolved at iterate commit `5401de4` (2026-05-16). `automation/agent-vitest-reporter.mjs#buildReport` wraps both `diag?.duration ?? 0` (per-test) and `modDiag?.duration ?? 0` (per-file) with `Math.round(...)`, so the JSON emits integer milliseconds throughout. `slowest5` / `slowestFailures` / `files[].tests[].durationMs` / `files[].durationMs` all inherit the rounded values; `deltaMs` in `computeDiff` is integer-by-construction (int − int). New hermetic case in `src/test-utils/e2e/agent-vitest-reporter.engine.test.ts` drives a fractional Vitest duration (`66.41922499999987`) through the reporter and asserts the rounded test-level + file-level + slowest5-inherited durationMs with `Number.isInteger()`. The existing 13 cases passed integer durations so they round-trip identically — no fixture updates. 524/524 tests (+1 net); verify clean. Impact 2 × Ease 10 / 10 = 2.0 (× 1.5 reporter bias = 3.0).
 
 - [x] **[LOW] Phase 39 reporter — per-test file:line locations missing** — resolved at iterate commit `8fe314b` (2026-05-16). `vitest.config.ts` opts into `includeTaskLocation: true`; `automation/agent-vitest-reporter.mjs` static-imports `experimental_getRunnerTask` from `vitest/node` and a new `locationFromRunner(testCase, filePath)` helper stamps `tests[].location = "<file>:<line>:<col>"` per entry. Try/catch + typeof guard means the reporter degrades gracefully if Vitest renames the experimental export — location simply stays undefined. Smoke ran via `npm run verify:agent`: all 501/501 live tests now carry a populated `location`. New hermetic case pins the fallback path (synthetic stub testCases yield `location === undefined`). Impact 5 × Ease 6 / 10 = 3.0 (× 1.5 reporter bias = 4.5).
 
