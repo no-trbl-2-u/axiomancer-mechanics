@@ -22,11 +22,16 @@ import { MAX_EFFECT_INTENSITY, MAX_EFFECT_DURATION } from '../Game/game-mechanic
  * @property durationMode   - `reset` resets duration to effect.duration (default).
  *                            `additive` adds `durationDelta` to remaining duration.
  * @property durationDelta  - Used when `durationMode === 'additive'`. Defaults to `intensityDelta`.
+ * @property sourceId       - Phase 38. Optional combatant / item id stamped onto
+ *   the resulting `ActiveEffect.sourceId` so consumers can answer "who applied
+ *   this?". On stacking, last-writer-wins: a supplied `sourceId` overrides the
+ *   prior; an omitted one preserves it.
  */
 export interface ApplyEffectOptions {
     intensityDelta?: number;
     durationMode?: 'reset' | 'additive';
     durationDelta?: number;
+    sourceId?: string;
 }
 
 /**
@@ -77,6 +82,7 @@ export function applyEffect(
             tier:              effect.tier,
             resistedBy:        effect.resistedBy,
             resistDR:          effect.resistDR,
+            sourceId:          options?.sourceId,
         };
         return {
             activeEffects: [...activeEffects, newEffect],
@@ -103,6 +109,7 @@ export function applyEffect(
                 ...existing,
                 intensity:         newIntensity,
                 remainingDuration: newDuration,
+                sourceId:          options?.sourceId ?? existing.sourceId,
             };
             return {
                 activeEffects: activeEffects.map(e => e.effectId === effect.id ? stacked : e),
@@ -124,6 +131,7 @@ export function applyEffect(
                     existing.remainingDuration + effect.duration,
                     MAX_EFFECT_DURATION,
                 ),
+                sourceId: options?.sourceId ?? existing.sourceId,
             };
             return {
                 activeEffects: activeEffects.map(e => e.effectId === effect.id ? extended : e),

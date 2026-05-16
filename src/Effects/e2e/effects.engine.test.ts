@@ -62,6 +62,40 @@ describe('applyEffect', () => {
         expect(second[0].remainingDuration).toBe(4);
         expect(second[0].intensity).toBe(2);
     });
+
+    // Phase 38 — sourceId attribution.
+    describe('sourceId (Phase 38)', () => {
+        it('stamps sourceId on a fresh application', () => {
+            const { activeEffects } = applyEffect([], makeEffect(), 1, { sourceId: 'char-player' });
+            expect(activeEffects[0].sourceId).toBe('char-player');
+        });
+
+        it('leaves sourceId undefined when the option is omitted', () => {
+            const { activeEffects } = applyEffect([], makeEffect(), 1);
+            expect(activeEffects[0].sourceId).toBeUndefined();
+        });
+
+        it('overrides the existing sourceId on intensity-stack (last writer wins)', () => {
+            const effect = makeEffect();
+            const { activeEffects: first } = applyEffect([], effect, 1, { sourceId: 'enemy-a' });
+            const { activeEffects: second } = applyEffect(first, effect, 2, { sourceId: 'enemy-b' });
+            expect(second[0].sourceId).toBe('enemy-b');
+        });
+
+        it('preserves the existing sourceId when no new one is supplied on stack', () => {
+            const effect = makeEffect();
+            const { activeEffects: first } = applyEffect([], effect, 1, { sourceId: 'enemy-a' });
+            const { activeEffects: second } = applyEffect(first, effect, 2);
+            expect(second[0].sourceId).toBe('enemy-a');
+        });
+
+        it('overrides the existing sourceId on duration-stack', () => {
+            const effect = makeEffect({ stacking: 'duration' });
+            const { activeEffects: first } = applyEffect([], effect, 1, { sourceId: 'enemy-a' });
+            const { activeEffects: second } = applyEffect(first, effect, 2, { sourceId: 'enemy-b' });
+            expect(second[0].sourceId).toBe('enemy-b');
+        });
+    });
 });
 
 describe('clearTier1EffectsForStance', () => {
