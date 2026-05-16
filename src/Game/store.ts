@@ -36,6 +36,7 @@ import { createStore, StoreApi } from 'zustand/vanilla';
 import { Character } from '../Character/types';
 import { Enemy } from '../Enemy/types';
 import { CombatState } from '../Combat/types';
+import type { RoundEvent } from '../Combat/combat.resolver';
 import { Encounter } from '../World/types';
 import {
     Item, Equipment, EquipmentSlot,
@@ -87,8 +88,15 @@ export interface GameActions {
 
     // ── Combat ───────────────────────────────────────────────────────────────
     startCombat: (target: Enemy | Encounter) => void;
-    /** Replaces the in-progress combat snapshot (UI driver path). */
-    updateCombat: (combat: CombatState) => void;
+    /**
+     * Replaces the in-progress combat snapshot (UI driver path). Pass the
+     * `RoundEvent[]` from `resolveCombatRound` as the second argument to
+     * surface the per-round sub-event stream on the emitted `combat:round`
+     * event — the agent-e2e grader and any RN consumer needs it to inspect
+     * what skills / items / effects actually did. Omit if the caller is
+     * only mutating combat state for non-round reasons.
+     */
+    updateCombat: (combat: CombatState, combatEvents?: readonly RoundEvent[]) => void;
     endCombat: () => CombatEndReport;
 
     // ── World / dialogue ─────────────────────────────────────────────────────
@@ -219,7 +227,7 @@ export function createGameStore(
                 dispatch({ type: 'START_COMBAT', payload: { target } });
             },
 
-            updateCombat(combat) {
+            updateCombat(combat, combatEvents) {
                 // Direct state edit — the existing combat CLI loop relies on
                 // mutating the snapshot between rounds (it calls
                 // resolveCombatRound itself). Run autosave + event for parity.
@@ -227,7 +235,10 @@ export function createGameStore(
                 const next = get();
                 if (emitter) emitter.emit({
                     type: 'combat:round',
-                    payload: { state: next },
+                    payload: {
+                        state: next,
+                        ...(combatEvents !== undefined ? { combatEvents } : {}),
+                    },
                 });
                 const { currentEncounter: _drop, version, player, world, combat: cb, quests, flags, moralMeter, rngState } = next;
                 adapter.save({ version, player, world, combat: cb, quests, flags, moralMeter, rngState });

@@ -246,9 +246,13 @@ async function combatTab(store: GameStoreHandle): Promise<void> {
             enemyAction,
             skillLookup,
         );
-        store.getState().updateCombat(next);
+        store.getState().updateCombat(next, combatEvents);
         logState('combatRound', before, store.getState(), {
             playerAction, enemyAction, eventCount: combatEvents.length,
+            // Surface the per-round sub-event stream so the agent-e2e grader
+            // can inspect effect applications, resists, crits, item / skill
+            // outcomes — see the iterate finding drained alongside this commit.
+            combatEvents,
         });
         combat = store.getState().combat;
         log(

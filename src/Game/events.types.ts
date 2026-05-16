@@ -24,6 +24,7 @@ import type { GameEvent, GameEventType } from './events';
 import type { GameState } from './types';
 import type { GameAction } from './actions.types';
 import type { CombatEndReport } from './store';
+import type { RoundEvent } from '../Combat/combat.resolver';
 
 /** The shape every emitted event carries today. */
 export interface EnginePayload {
@@ -38,6 +39,16 @@ export interface EnginePayload {
      * other topic.
      */
     unlockedSkills?: string[];
+    /**
+     * The per-round `RoundEvent` stream that `resolveCombatRound` produced
+     * (basic actions, skill phases, effect applications, damage / heal /
+     * resist sub-events, friendship-counter ticks, etc.). Populated only on
+     * `combat:round` after the CLI hands its locally-computed events into
+     * `store.updateCombat(next, events)`. Absent on every other topic, and
+     * absent on `combat:round` events emitted before the CLI had this wiring
+     * (back-compat for any pre-iterate consumer).
+     */
+    combatEvents?: readonly RoundEvent[];
 }
 
 /** GameEvent narrowed by `type`. Payload is always the engine envelope. */

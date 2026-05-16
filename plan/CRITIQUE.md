@@ -38,39 +38,11 @@
 - suggested_fix: rewrite the chain example to use the current kinds — `fv-2 (interaction — quest giver) → fv-3 (village — shop)`. One-line fix; the actual pool registration code is already correct.
 - source: critique
 
-### [MED] agent-e2e grader is blind to fine-grained combat sub-events
-- pass: critique-7-follow-up (commit at oversight 2026-05-15)
-- area: tests
-- observation: `src/CLI/game.cli.ts:235-237` logs a `combatRound`
-  state-log entry whose `event` field only carries
-  `{ playerAction, enemyAction, eventCount }` — the actual
-  `combatEvents: RoundEvent[]` array (with `phase: 'item' | 'skill' |
-  'effect-application' | …, kind, hpBefore/hpAfter, healed,
-  appliedEffectId, …`) is dropped. The `combat:round` GameEvent
-  payload also doesn't include them. Result: the agent-e2e grader
-  reading the state log can verify HP/inventory diffs and the action
-  taken, but cannot inspect *what the skill did* (effects applied,
-  resists, crits, friendship-counter ticks) — those are the most
-  semantically interesting per-round signals. Surfaced by the
-  user during oversight 2026-05-15 ("Does the e2e testing workflow
-  have enough logging information to determine if a goal is met?").
-- evidence: `src/CLI/game.cli.ts:220-222`, `src/Combat/combat.resolver.ts`
-  (`RoundEvent` union), `automation/scripts/walkthroughs/item-use.goal.md`
-  (already notes the agent has to infer item-use from the inventory
-  decrement because the `item:used` sub-event isn't in the log).
-- suggested_fix: extend the `combatRound` `logState` payload with the
-  full `combatEvents` array (or a JSON-safe projection of it). For
-  size: typical rounds emit 1-5 sub-events at ~50 bytes each, so 50
-  rounds is ~12 KB — well inside the state log's budget. The
-  `combat:round` GameEvent payload should likely mirror this so a
-  React Native UI can subscribe to round-by-round detail too. Add a
-  hermetic test in `src/CLI/e2e/io.engine.test.ts` that asserts a
-  scripted skill round populates the array.
-- source: critique (oversight follow-up)
-
 ---
 
 ## Done
+
+- [x] **[MED] agent-e2e grader is blind to fine-grained combat sub-events** — resolved at iterate (this commit). `EnginePayload` gained an optional `combatEvents?: readonly RoundEvent[]` field; `store.updateCombat(combat, events?)` now accepts the round event stream and forwards it on the emitted `combat:round` event (the array is omitted when callers don't supply one — back-compat for any pre-iterate consumer). CLI driver path threads `combatEvents` from `resolveCombatRound` through `store.updateCombat(next, combatEvents)` AND surfaces them on the `combatRound` state-log payload, so the agent-e2e grader reading the log can now inspect every sub-event (skills, items, effect applications, resists, crits, friendship-counter ticks). Two new hermetic tests in `src/Game/e2e/events.engine.test.ts` pin the wire: payload carries the array when supplied, and is `undefined` when not. Phase candidate `Combat sub-event surfacing` (filed at expand pass 3) is now redundant — oversight should reject it next pass. Impact 6 × Ease 7 / 10 = 4.2.
 
 - [x] **[LOW] Combat reducer carries five aliases that add no behaviour** — partially resolved at iterate (this commit). Dropped the two non-barrel aliases `updateCombatPhase` and `addBattleLogEntry` from `src/Combat/combat.reducer.ts` (zero in-repo callers, not on `src/index.ts`). Updated `docs/combat.md` reducer API table — the alias columns for `setPhase` + `appendLog` are now `—`, and the Battle Log paragraph now names `appendLog()` directly. The three barrel-exported end-variants (`endCombatPlayerVictory` / `endCombatPlayerDefeat` / `endCombatWithFriendship`) stayed in place — `ship-a-phase.md` Hard Rule 9 locks `src/index.ts` against removals, and dropping them is a barrel-surface call that needs `/oversight` confirmation. Inline comment in `combat.reducer.ts` records the rationale for future readers. Impact 4 × Ease 7 / 10 = 2.8.
 
