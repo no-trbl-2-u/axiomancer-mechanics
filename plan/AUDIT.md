@@ -16,14 +16,6 @@
 
 ## Pending
 
-### [LOW] Phase 39 reporter — top-level `callouts[]` heuristics not computed
-- category: agent-ux / reporter
-- impact: 5 (markdown surfaces "Failed tests" and "Slowest 5" as section headings, but the JSON has no equivalent — an LLM reading just the JSON has to derive notability itself; a precomputed `callouts: string[]` like `"1 test failed in src/Combat"`, `"3 tests exceeded 50ms"`, `"0 new tests since last report"` short-circuits the work)
-- ease: 7 (heuristic logic + 3-4 specific call-out cases + hermetic test; some heuristics depend on the prior-run diff phase landing first, but failure-count + slow-count heuristics are independent)
-- score: 3.5
-- source: oversight self-critique of Phase 39 implementation (2026-05-16); shipped at `602da33`
-- next: in `buildReport()`, compute a `callouts: string[]` from {failureCount > 0, slowTestCount where durationMs > 50, unhandledErrors > 0, skipped > 0}. Drop the field on the rollup. Add hermetic cases pinning at least one populated callout and the empty-run zero-callouts case. Defer the "added since last report" call-out to the prior-run-diff phase candidate.
-
 ### [LOW] Phase 39 reporter — per-test file:line locations missing
 - category: agent-ux / reporter
 - impact: 5 (test entries carry `name` and `status` but no source location, so "what was tested" is opaque without manually opening the file; Vitest's `experimental_getRunnerTask(testCase).location` exposes `file` + `line` for each `it()` block, which would let consumers jump straight to the assertion)
@@ -59,6 +51,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] Phase 39 reporter — top-level `callouts[]` heuristics not computed** — resolved at iterate commit `886b862` (2026-05-16). `automation/agent-vitest-reporter.mjs#onTestRunEnd` now invokes `computeCallouts(report)` and stamps `rollup.callouts: string[]`. Heuristics fired: failure count + top-contributing file, unhandled errors, skipped count, tests above the 50ms threshold, plus four diff-aware lines when Phase 40's `rollup.diff !== null` (added / removed / flipped-to-fail / flipped-to-pass). Markdown gains a `### Call-outs` block above the `### Changes since last run` block (only when non-empty); empty-run + Phase 40 tests updated to assert `callouts: []` and the absence of the new markdown. Two new hermetic cases (populated + empty). Impact 5 × Ease 7 / 10 = 3.5 (× 1.5 reporter bias = 5.25).
 
 - [x] **[LOW] Phase 39 reporter — slow failing tests are invisible** — resolved at iterate commit `1dbce81` (2026-05-16). `automation/agent-vitest-reporter.mjs#buildReport` now emits `rollup.slowestFailures: [{name, file, durationMs, status}]` (top 5 across `failed` + `skipped`) alongside the existing `slowest5` (passed-only). Picked the parallel-field approach over dropping the filter so consumers that pinned `slowest5` semantics stay stable; status preserved on each entry so consumers can distinguish "timeout / hang" from "long skip". Markdown gains a `### Slowest 5 (failed / skipped)` block under the existing slowest5 block. New hermetic case + Phase 40 empty-run / shape tests updated. Impact 5 × Ease 8 / 10 = 4.0 (× 1.5 reporter bias = 6.0).
 
