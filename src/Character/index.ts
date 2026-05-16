@@ -3,13 +3,33 @@ import { ActiveEffect } from '../Effects/types';
 import { ProcUnlocks } from '../Combat/combat-effects';
 import { Equipment, EquipmentSlot, Item } from '../Items/types';
 import { deriveStats, deriveNonCombatStats, calculateMaxHealth } from '../Utils';
+import { getRng } from '../Utils/rng';
 import { EXPERIENCE_PER_LEVEL } from '../Game/game-mechanics.constants';
 import { equipItem, getEquipmentModifiers, recomputeDerivedStats } from './equipment.reducer';
+
+/**
+ * Phase 35 — produce a stable character id drawn from `getRng()`. Seeded
+ * tests inherit determinism; production gets a non-colliding 8-char base36
+ * suffix that's good enough for in-process attribution. Not a true UUID
+ * because the package ships into React Native and we don't want a
+ * Node-only `crypto` import on the core barrel.
+ */
+function generateCharacterId(): string {
+    const r = getRng().random();
+    const suffix = Math.floor(r * 36 ** 8).toString(36).padStart(8, '0');
+    return `char-${suffix}`;
+}
 
 /**
  * Inputs required to create a new Character.
  */
 export interface CreateCharacterOptions {
+    /**
+     * Stable identifier. Auto-generated via `getRng()` when omitted so every
+     * Character ships with a non-empty `id`. Supply explicitly when you need
+     * a deterministic id (e.g. fixtures that pin `ActiveEffect.sourceId`).
+     */
+    id?: string;
     name: string;
     level: number;
     baseStats: BaseStats;
@@ -35,13 +55,14 @@ export interface CreateCharacterOptions {
  */
 export function createCharacter(options: CreateCharacterOptions): Character {
     const {
-        name, level, baseStats, inventory = [], currency = 0, equipment = {}, effects = [],
+        id, name, level, baseStats, inventory = [], currency = 0, equipment = {}, effects = [],
         knownSkills = [], equippedSkills = [], procUnlocks,
     } = options;
 
     const maxHealth = calculateMaxHealth(level, baseStats);
 
     const baseChar: Character = {
+        id: id ?? generateCharacterId(),
         name,
         level,
         experience: (level - 1) * EXPERIENCE_PER_LEVEL,
