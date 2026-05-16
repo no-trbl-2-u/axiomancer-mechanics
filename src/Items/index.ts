@@ -33,3 +33,5 @@ export {
     dropItem, rollModifiers, resolveModifiers, rarityWeightTable,
 } from './item.factory';
 export { consumableLibrary, getConsumableById } from './consumable.library';
+export { buyItem, sellItem } from './shop.reducer';
+export type { ShopWare, ShopInventory } from './shop.types';

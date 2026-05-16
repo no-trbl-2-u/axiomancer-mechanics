@@ -103,6 +103,7 @@ export {
     uniqueTemplates, getUniqueTemplate,
     dropItem, rollModifiers, resolveModifiers, rarityWeightTable,
     consumableLibrary, getConsumableById,
+    buyItem, sellItem,
 } from './Items';
 export type {
     Item, Equipment, Consumable, Material, QuestItem,
@@ -110,6 +111,7 @@ export type {
     EquipmentProcTrigger, ResourceInteraction, ResourceGenerationBonus,
     ItemRarity, RolledModifier, EquipmentTemplate, UniqueItemTemplate,
     ConsumableUseResult,
+    ShopWare, ShopInventory,
 } from './Items';
 
 // ─── Skills ───────────────────────────────────────────────────────────────────
