@@ -41,31 +41,6 @@
 - recommended-slot: after the Northern Continent stub (the Northern
   Continent could ship one befriendable enemy as its anchor narrative)
 
-### Candidate: `ActiveEffect.sourceId` wiring for player-applied effects
-- signal: Phase 35 (`cb47a38`) added `Character.id`; the row noted that
-  no combat / skill path currently sets `ActiveEffect.sourceId` to the
-  player's id when the player applies an effect. The audit found one
-  in-repo setter (equipment passives, correctly using item.id). The
-  attribution gap is now filed as a clear follow-up rather than
-  active work.
-- scope: Audit every `applyEffect` call site on the combat / skill
-  path: `src/Skills/skill.engine.ts:447` (rebound effects),
-  `src/Combat/resist.ts:57/82/94` (crit, rebound, overwhelmed
-  effects), `src/Combat/effects.ts:113` (extended buffs),
-  `src/World/MapEvents/handlers.ts:163` (map-event effects). Add a
-  `sourceId` to each ActiveEffect creation, drawn from the attacker's
-  `id` (player) or `enemy.id`. Extend `ApplyEffectOptions` with
-  `sourceId?: string` so callers don't have to spread it manually.
-  Hermetic e2e pins that a player-applied DoT carries `sourceId ===
-  state.player.id` through save / load.
-- unblocks: effect attribution becomes unambiguous — UI / dialogue can
-  ask "who applied this debuff?" and get a real answer. Multi-character
-  parties (a hypothetical future) inherit the wiring for free.
-- blocked-by: none. Phase 35 shipped the prerequisite (`Character.id`).
-- score: 4 × 6 / 10 = 2.4
-- recommended-slot: convenient mid-priority slot; no content
-  dependency, ~3 commit units
-
 ### Candidate: Autosave throttling per Spec 09 Q4
 - signal: `src/Game/store.ts:203` + `src/Game/game.reducer.ts:138`
   carry standing `TODO(spec-09)` comments: "autosave currently fires
@@ -115,6 +90,30 @@
 ---
 
 ## Promoted
+
+### Phase 38 — `ActiveEffect.sourceId` wiring for player-applied effects
+- promoted: 2026-05-16 (oversight; user pick from expand pass 4)
+- source: `/expand` candidate (pass 4); Phase 35 follow-up. The Phase 35
+  row noted that no combat / skill path currently sets
+  `ActiveEffect.sourceId` to the player's id when the player applies an
+  effect; the only in-repo setter is `equipment.reducer.ts` using
+  `item.id` correctly. With `Character.id` now stable (Phase 35), the
+  attribution wiring becomes mechanical.
+- summary: Audit every `applyEffect` call site on the combat / skill
+  path — `src/Skills/skill.engine.ts:447` (rebound effects),
+  `src/Combat/resist.ts:57/82/94` (crit / rebound / overwhelmed),
+  `src/Combat/effects.ts:113` (extended buffs),
+  `src/World/MapEvents/handlers.ts:163` (map-event effects). Thread
+  `sourceId` from the attacker's `id` (player) or `enemy.id` into each
+  ActiveEffect creation. Extend `ApplyEffectOptions` with
+  `sourceId?: string` so callers don't have to spread it manually.
+  Hermetic e2e pins that a player-applied DoT carries
+  `sourceId === state.player.id` through save / load.
+- acceptance: every ActiveEffect produced on the combat / skill path
+  carries a non-empty `sourceId`; new hermetic test asserts
+  player-applied DoT round-trips its `sourceId` through save / load;
+  no behaviour change for existing tests.
+- score: 4 × 6 / 10 = 2.4
 
 ### Phase 37 — Shop economy via `village` MapEventKind
 - promoted: 2026-05-16 (oversight; user pick from expand pass 3 — top score)
