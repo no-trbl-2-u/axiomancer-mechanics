@@ -29,14 +29,15 @@
 
 import fs from 'fs';
 import path from 'path';
-// iterate (Phase 39 self-critique) — `experimental_getRunnerTask` exposes
-// the underlying runner task object, which carries `location: { line,
-// column }` when vitest is run with `includeTaskLocation: true`
-// (set in vitest.config.ts). The `experimental_*` prefix means signature
-// drift is possible; the reporter degrades gracefully — if the export
-// is renamed or the call throws, location stays undefined and no other
-// behaviour breaks.
-import { experimental_getRunnerTask } from 'vitest/node';
+// iterate (Phase 39 self-critique → critique-16) —
+// `experimental_getRunnerTask` exposes the underlying runner task
+// object, which carries `location: { line, column }` when vitest is
+// run with `includeTaskLocation: true` (set in vitest.config.ts).
+// The `experimental_*` prefix means signature drift is possible.
+// Loaded via lazy `await import()` so a Vitest minor that renames
+// or removes the export degrades at runtime (location stays
+// undefined) rather than crashing at module-load — a static import
+// would throw `SyntaxError: missing export` before any test runs.
 
 const DEFAULT_JSON_PATH = 'automation/last-verify-report.json';
 const MARKDOWN_START = '## Verify summary';
@@ -55,6 +56,7 @@ export default class AgentVitestReporter {
     }
 
     async onTestRunEnd(testModules, unhandledErrors, reason) {
+        await resolveGetRunnerTask();
         const report = this.buildReport(testModules ?? [], unhandledErrors ?? [], reason ?? 'passed');
         // Phase 40 — diff against the prior report BEFORE writing the new
         // one, otherwise we'd be diffing against our own freshly-written
@@ -449,10 +451,29 @@ function locationFromError(err) {
     return `${first.file}:${first.line}:${first.column}`;
 }
 
+let cachedGetRunnerTask;
+let getRunnerTaskResolved = false;
+
+async function resolveGetRunnerTask() {
+    if (getRunnerTaskResolved) return cachedGetRunnerTask;
+    try {
+        const mod = await import('vitest/node');
+        cachedGetRunnerTask = mod?.experimental_getRunnerTask;
+    } catch {
+        // Vitest renamed / removed the export, or `vitest/node` no longer
+        // exists — degrade silently. The reporter shouldn't crash the
+        // entire test run because a single optional field can't be
+        // populated.
+        cachedGetRunnerTask = undefined;
+    }
+    getRunnerTaskResolved = true;
+    return cachedGetRunnerTask;
+}
+
 function locationFromRunner(testCase, filePath) {
     try {
-        if (typeof experimental_getRunnerTask !== 'function') return undefined;
-        const runnerTask = experimental_getRunnerTask(testCase);
+        if (typeof cachedGetRunnerTask !== 'function') return undefined;
+        const runnerTask = cachedGetRunnerTask(testCase);
         const loc = runnerTask?.location;
         if (!loc) return undefined;
         return `${filePath}:${loc.line}:${loc.column}`;
