@@ -207,6 +207,29 @@ hermetic walkthrough.
   `ActiveEffect`, `StatModifier`, `DamageOverTime`,
   `RegenerationConfig`, `ActionRestriction`, etc.) — Stable.
 
+### Philosophy (Phase 42) — Beta
+
+3-axis alignment cube indexing a 27-cell content registry. See
+[docs/philosophy.md](./philosophy.md) for the full table.
+
+- Types (`PhilosophicalAlignment`, `AxisBucket`, `AlignmentFallacy`,
+  `PhilosophicalAlignmentCell`) — Beta.
+- Engine (`bucketAxis`, `getAlignmentCell`, `applyAlignmentDelta`,
+  `defaultAlignment`) — Beta.
+- Constants (`AXIS_HIGH_THRESHOLD`, `AXIS_LOW_THRESHOLD`) — Beta.
+- Library (`philosophicalAlignmentLibrary`) — Beta. Frozen array
+  of 27 cells; each carries philosopher, literary character + work,
+  and 3 signature fallacies.
+- State field `GameState.philosophicalAlignment` — Beta. Persists
+  across save/load (`GAME_STATE_VERSION` is now `5`; v4 saves
+  migrate cleanly via `migrateV4toV5`).
+- Action `SHIFT_PHILOSOPHICAL_ALIGNMENT` + store action
+  `shiftPhilosophicalAlignment(delta: Partial<PhilosophicalAlignment>)` — Beta.
+
+Orthogonal to `moralMeter` — both fields persist independently. The
+three fallacies per cell are reserved as content fuel for future
+skill/effect/spell authoring; they are not yet wired to gameplay.
+
 ### NPCs & Dialogue
 
 - NPC types (`NPC`, `DialogueMap`, `DialogueTree`, `DialogueNode`,

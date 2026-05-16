@@ -40,6 +40,7 @@ import { canUseSkill, getAvailableSkills } from '../Skills/skill.engine';
 import { isConsumable } from '../Items/types';
 import { buyItem, sellItem } from '../Items/shop.reducer';
 import { getConsumableById } from '../Items/consumable.library';
+import { bucketAxis, getAlignmentCell } from '../Philosophy';
 import { CombatEndReport } from '../Game/store';
 
 type Tab = 'map' | 'combat' | 'journal' | 'skills' | 'inventory' | 'character' | 'debug' | 'save' | 'load' | 'quit';
@@ -409,6 +410,17 @@ async function characterTab(store: GameStoreHandle): Promise<void> {
     if (p.availableStatPoints > 0) {
         log(`Points:   ${p.availableStatPoints} available to allocate`);
     }
+
+    // Philosophical alignment block (Phase 42).
+    const a = state.philosophicalAlignment;
+    const cell = getAlignmentCell(a);
+    log('\nPhilosophical alignment:');
+    log(`  Cell:         ${cell.label}`);
+    log(`  Philosopher:  ${cell.philosopher}`);
+    log(`  Character:    ${cell.literaryCharacter.name} — ${cell.literaryCharacter.work}`);
+    log(`  Epistemology: ${bucketAxis(a.epistemology)} (${a.epistemology})`);
+    log(`  Outlook:      ${bucketAxis(a.outlook)} (${a.outlook})`);
+    log(`  Scope:        ${bucketAxis(a.scope)} (${a.scope})`);
 
     log('\nBase stats:');
     log(`  heart ${p.baseStats.heart}   body ${p.baseStats.body}   mind ${p.baseStats.mind}`);
