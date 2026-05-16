@@ -16,7 +16,7 @@
  *   - Empty run produces a valid report with all-zero rollup.
  */
 
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
@@ -229,13 +229,193 @@ describe('AgentVitestReporter — empty run', () => {
             reason: 'passed',
             unhandledErrors: 0,
             slowest5: [],
+            diff: null,
         });
         expect(parsed.files).toEqual([]);
+        expect(parsed.failures).toEqual([]);
 
         expect(stream.written).toContain('## Verify summary');
         expect(stream.written).toContain('- total: 0');
         expect(stream.written).not.toContain('### Failed tests');
         expect(stream.written).not.toContain('### Slowest 5 (passed)');
+        expect(stream.written).not.toContain('### Changes since last run');
         expect(stream.written).toContain('## End summary');
+    });
+});
+
+// ─── Phase 40 — failures[] + prior-run diff ───────────────────────────────────
+
+describe('AgentVitestReporter — Phase 40 failures[] flat list', () => {
+    it('populates a top-level failures[] entry per failed test (and is [] when all pass)', async () => {
+        const rootDir = process.cwd();
+        const stream = makeStream();
+        const fileA = path.join(rootDir, 'src/A/e2e/a.engine.test.ts');
+        const fileB = path.join(rootDir, 'src/B/e2e/b.engine.test.ts');
+
+        const failingPath = tmpPath();
+        const failingReporter = new AgentVitestReporter({
+            jsonOutputPath: failingPath, markdownStream: stream, rootDir,
+        });
+        await failingReporter.onTestRunEnd([
+            makeModule({
+                absPath: fileA, durationMs: 5, ok: true, state: 'passed',
+                cases: [passingCase('Alpha > ok', 3)],
+            }),
+            makeModule({
+                absPath: fileB, durationMs: 7, ok: false, state: 'failed',
+                cases: [failingCase('Beta > nope', 'boom', { file: fileB, line: 11, column: 7 })],
+            }),
+        ], [], 'failed');
+
+        const failingParsed = JSON.parse(fs.readFileSync(failingPath, 'utf-8'));
+        expect(failingParsed.failures).toHaveLength(1);
+        expect(failingParsed.failures[0]).toEqual({
+            file: 'src/B/e2e/b.engine.test.ts',
+            name: 'Beta > nope',
+            message: 'boom',
+            location: `${fileB}:11:7`,
+        });
+
+        const passingPath = tmpPath();
+        const passingReporter = new AgentVitestReporter({
+            jsonOutputPath: passingPath, markdownStream: makeStream(), rootDir,
+        });
+        await passingReporter.onTestRunEnd([
+            makeModule({
+                absPath: fileA, durationMs: 5, ok: true, state: 'passed',
+                cases: [passingCase('Alpha > ok', 3)],
+            }),
+        ], [], 'passed');
+
+        const passingParsed = JSON.parse(fs.readFileSync(passingPath, 'utf-8'));
+        expect(passingParsed.failures).toEqual([]);
+    });
+});
+
+describe('AgentVitestReporter — Phase 40 diff against a fabricated prior', () => {
+    it('detects added, removed, flipped, and duration-delta tests; renders markdown subsection', async () => {
+        const rootDir = process.cwd();
+        const jsonPath = tmpPath();
+        const stream = makeStream();
+        const fileX = path.join(rootDir, 'src/X/e2e/x.engine.test.ts');
+        const fileY = path.join(rootDir, 'src/Y/e2e/y.engine.test.ts');
+
+        // Fabricate a prior report at the same path the reporter will write to.
+        const prior = {
+            rollup: { total: 4, passed: 3, failed: 1, skipped: 0, reason: 'failed', unhandledErrors: 0, slowest5: [] },
+            failures: [],
+            files: [
+                {
+                    path: 'src/X/e2e/x.engine.test.ts',
+                    status: 'passed',
+                    durationMs: 10,
+                    tests: [
+                        { name: 'Xeno > steady', status: 'passed', durationMs: 5 },
+                        { name: 'Xeno > was failing', status: 'failed', durationMs: 4 },
+                        { name: 'Xeno > to be removed', status: 'passed', durationMs: 2 },
+                    ],
+                },
+                {
+                    path: 'src/Y/e2e/y.engine.test.ts',
+                    status: 'passed',
+                    durationMs: 8,
+                    tests: [
+                        { name: 'Yodel > slowing down', status: 'passed', durationMs: 20 },
+                    ],
+                },
+            ],
+        };
+        fs.writeFileSync(jsonPath, JSON.stringify(prior, null, 2));
+
+        // Current run: Xeno>steady same status (different duration), Xeno>was
+        // failing flips to passed, Xeno>to be removed is gone, Yodel>slowing
+        // down still passes but jumped from 20→90ms, plus a brand-new
+        // Xeno>newly-added test that just got introduced.
+        const reporter = new AgentVitestReporter({
+            jsonOutputPath: jsonPath, markdownStream: stream, rootDir,
+        });
+        await reporter.onTestRunEnd([
+            makeModule({
+                absPath: fileX, durationMs: 12, ok: false, state: 'failed',
+                cases: [
+                    passingCase('Xeno > steady', 7),
+                    passingCase('Xeno > was failing', 4),
+                    failingCase('Xeno > newly-added', 'fresh fail', { file: fileX, line: 4, column: 1 }),
+                ],
+            }),
+            makeModule({
+                absPath: fileY, durationMs: 95, ok: true, state: 'passed',
+                cases: [passingCase('Yodel > slowing down', 90)],
+            }),
+        ], [], 'failed');
+
+        const parsed = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
+        expect(parsed.rollup.diff).not.toBeNull();
+        const d = parsed.rollup.diff;
+        expect(d.addedTests).toEqual(['src/X/e2e/x.engine.test.ts::Xeno > newly-added']);
+        expect(d.removedTests).toEqual(['src/X/e2e/x.engine.test.ts::Xeno > to be removed']);
+        expect(d.flippedToPass).toHaveLength(1);
+        expect(d.flippedToPass[0].name).toBe('Xeno > was failing');
+        expect(d.flippedToFail).toEqual([]);
+        expect(d.durationDeltaSlowest5.length).toBeGreaterThan(0);
+        // The Yodel test went 20→90 = +70ms; that should be the top entry.
+        expect(d.durationDeltaSlowest5[0].name).toBe('Yodel > slowing down');
+        expect(d.durationDeltaSlowest5[0].deltaMs).toBe(70);
+
+        // Markdown subsection renders.
+        expect(stream.written).toContain('### Changes since last run');
+        expect(stream.written).toContain('#### Added tests');
+        expect(stream.written).toContain('#### Removed tests');
+        expect(stream.written).toContain('#### Flipped to pass');
+        expect(stream.written).toContain('#### Largest duration deltas');
+        expect(stream.written).toContain('Δ +70ms');
+    });
+});
+
+describe('AgentVitestReporter — Phase 40 no prior file (fresh-repo path)', () => {
+    it('writes the new report with diff: null and emits no stderr warning', async () => {
+        const rootDir = process.cwd();
+        const jsonPath = tmpPath();
+        // Ensure no file is at jsonPath — tmpPath returns an unused path.
+        const stream = makeStream();
+        const stderrSpy = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
+
+        const reporter = new AgentVitestReporter({
+            jsonOutputPath: jsonPath, markdownStream: stream, rootDir,
+        });
+        await reporter.onTestRunEnd([], [], 'passed');
+
+        const parsed = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
+        expect(parsed.rollup.diff).toBeNull();
+        // No `[agent-vitest-reporter]` warning lines.
+        const calls = stderrSpy.mock.calls.map(c => String(c[0]));
+        expect(calls.some(s => s.includes('[agent-vitest-reporter]'))).toBe(false);
+        stderrSpy.mockRestore();
+    });
+});
+
+describe('AgentVitestReporter — Phase 40 incompatible-schema prior', () => {
+    it('logs one stderr warning, sets diff: null, still writes the new report', async () => {
+        const rootDir = process.cwd();
+        const jsonPath = tmpPath();
+        // Write junk JSON to the path.
+        fs.writeFileSync(jsonPath, JSON.stringify({ hello: 'world' }, null, 2));
+        const stream = makeStream();
+        const stderrSpy = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
+
+        const reporter = new AgentVitestReporter({
+            jsonOutputPath: jsonPath, markdownStream: stream, rootDir,
+        });
+        await reporter.onTestRunEnd([], [], 'passed');
+
+        const parsed = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
+        expect(parsed.rollup.diff).toBeNull();
+        // Exactly one warning line containing the prefix + the "shape mismatch" reason.
+        const warnings = stderrSpy.mock.calls
+            .map(c => String(c[0]))
+            .filter(s => s.includes('[agent-vitest-reporter]'));
+        expect(warnings).toHaveLength(1);
+        expect(warnings[0]).toContain('shape mismatch');
+        stderrSpy.mockRestore();
     });
 });

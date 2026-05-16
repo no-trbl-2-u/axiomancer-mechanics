@@ -1,14 +1,20 @@
 /**
- * automation/agent-vitest-reporter.mjs — Phase 39.
+ * automation/agent-vitest-reporter.mjs — Phase 39 (+ Phase 40 diff).
  *
  * Custom Vitest reporter that emits two artefacts at the end of a run:
  *
- *   1. JSON file at `automation/last-verify-report.json` — structured
- *      rollup + per-file + per-test entries with durations + failure
- *      messages. Stable schema for LLM-agent consumers.
+ *   1. JSON file at `automation/last-verify-report.json`:
+ *      - `failures: [{file, name, message, location}]` — flat list
+ *        across every failed test (Phase 40).
+ *      - `rollup`: totals, slowest5, plus `diff: { addedTests,
+ *        removedTests, flippedToFail, flippedToPass,
+ *        durationDeltaSlowest5 } | null` (Phase 40 — compares
+ *        against the prior report on disk).
+ *      - `files[].tests[]`: per-test details.
  *   2. Delimited markdown block on stdout (between `## Verify summary`
  *      and `## End summary`) listing totals, failed tests with
- *      `file:line — message`, and the slowest five passing tests.
+ *      `file:line — message`, slowest 5, and a "Changes since last
+ *      run" section when the diff is non-empty.
  *
  * Wire via `npm run verify:agent` (which passes
  * `--reporter=./automation/agent-vitest-reporter.mjs` to `vitest run`).
@@ -17,7 +23,8 @@
  * additive surface so the deploy gate's expectations stay stable.
  *
  * Schema details and design decisions live in
- * `plan/phases/phase_39_agent_verify_report.md`.
+ * `plan/phases/phase_39_agent_verify_report.md` and
+ * `plan/phases/phase_40_prior_run_diff.md`.
  */
 
 import fs from 'fs';
@@ -41,17 +48,31 @@ export default class AgentVitestReporter {
 
     async onTestRunEnd(testModules, unhandledErrors, reason) {
         const report = this.buildReport(testModules ?? [], unhandledErrors ?? [], reason ?? 'passed');
-        await this.writeJson(report);
+        // Phase 40 — diff against the prior report BEFORE writing the new
+        // one, otherwise we'd be diffing against our own freshly-written
+        // output on the next run.
+        const target = this.resolveOutputPath();
+        const prior = await readPriorReport(target);
+        report.rollup.diff = prior ? computeDiff(report, prior) : null;
+        await this.writeJson(report, target);
         this.writeMarkdown(report);
+    }
+
+    resolveOutputPath() {
+        return path.isAbsolute(this.jsonOutputPath)
+            ? this.jsonOutputPath
+            : path.join(this.rootDir, this.jsonOutputPath);
     }
 
     buildReport(testModules, unhandledErrors, reason) {
         const files = [];
         const allTests = [];
+        const failures = [];
         let total = 0, passed = 0, failed = 0, skipped = 0;
 
         for (const mod of testModules) {
             const tests = [];
+            const filePath = this.relativize(mod.moduleId);
             const cases = collectTestCases(mod);
             for (const testCase of cases) {
                 const result = testCase.result();
@@ -71,9 +92,17 @@ export default class AgentVitestReporter {
                         expected: err?.expected,
                         location: locationFromError(err),
                     };
+                    // Phase 40 — flat top-level failures[] so consumers don't
+                    // have to walk files[].tests[] to answer "what failed?".
+                    failures.push({
+                        file:     filePath,
+                        name:     testCase.fullName,
+                        message:  entry.failure.message,
+                        location: entry.failure.location,
+                    });
                 }
                 tests.push(entry);
-                allTests.push({ ...entry, file: this.relativize(mod.moduleId) });
+                allTests.push({ ...entry, file: filePath });
                 total += 1;
                 if (status === 'passed') passed += 1;
                 else if (status === 'failed') failed += 1;
@@ -81,7 +110,7 @@ export default class AgentVitestReporter {
             }
             const modDiag = safeDiagnostic(mod);
             files.push({
-                path: this.relativize(mod.moduleId),
+                path: filePath,
                 status: moduleStatus(mod),
                 durationMs: modDiag?.duration ?? 0,
                 tests,
@@ -103,7 +132,9 @@ export default class AgentVitestReporter {
                 reason,
                 unhandledErrors: unhandledErrors.length,
                 slowest5,
+                diff: null,
             },
+            failures,
             files,
         };
     }
@@ -118,12 +149,10 @@ export default class AgentVitestReporter {
         }
     }
 
-    async writeJson(report) {
-        const target = path.isAbsolute(this.jsonOutputPath)
-            ? this.jsonOutputPath
-            : path.join(this.rootDir, this.jsonOutputPath);
-        await fs.promises.mkdir(path.dirname(target), { recursive: true });
-        await fs.promises.writeFile(target, JSON.stringify(report, null, 2) + '\n');
+    async writeJson(report, target) {
+        const resolved = target ?? this.resolveOutputPath();
+        await fs.promises.mkdir(path.dirname(resolved), { recursive: true });
+        await fs.promises.writeFile(resolved, JSON.stringify(report, null, 2) + '\n');
     }
 
     writeMarkdown(report) {
@@ -160,11 +189,127 @@ export default class AgentVitestReporter {
             }
         }
 
+        if (r.diff && diffHasContent(r.diff)) {
+            lines.push('');
+            lines.push('### Changes since last run');
+            if (r.diff.addedTests.length > 0) {
+                lines.push('');
+                lines.push('#### Added tests');
+                for (const key of r.diff.addedTests) lines.push(`- ${key}`);
+            }
+            if (r.diff.removedTests.length > 0) {
+                lines.push('');
+                lines.push('#### Removed tests');
+                for (const key of r.diff.removedTests) lines.push(`- ${key}`);
+            }
+            if (r.diff.flippedToFail.length > 0) {
+                lines.push('');
+                lines.push('#### Flipped to fail');
+                for (const f of r.diff.flippedToFail) lines.push(`- ${f.file}: ${f.name}`);
+            }
+            if (r.diff.flippedToPass.length > 0) {
+                lines.push('');
+                lines.push('#### Flipped to pass');
+                for (const f of r.diff.flippedToPass) lines.push(`- ${f.file}: ${f.name}`);
+            }
+            if (r.diff.durationDeltaSlowest5.length > 0) {
+                lines.push('');
+                lines.push('#### Largest duration deltas');
+                for (const d of r.diff.durationDeltaSlowest5) {
+                    const sign = d.deltaMs >= 0 ? '+' : '';
+                    lines.push(`- ${d.file}: ${d.name} — ${d.prevMs.toFixed(0)}ms → ${d.currMs.toFixed(0)}ms (Δ ${sign}${d.deltaMs.toFixed(0)}ms)`);
+                }
+            }
+        }
+
         lines.push('');
         lines.push(MARKDOWN_END);
         lines.push('');
         this.markdownStream.write(lines.join('\n'));
     }
+}
+
+async function readPriorReport(absPath) {
+    let raw;
+    try {
+        raw = await fs.promises.readFile(absPath, 'utf-8');
+    } catch (err) {
+        // ENOENT (fresh-repo / first-run) is silent — no warning.
+        if (err && err.code === 'ENOENT') return null;
+        process.stderr.write(`[agent-vitest-reporter] prior report ignored: read failed (${err?.message ?? err})\n`);
+        return null;
+    }
+    let parsed;
+    try {
+        parsed = JSON.parse(raw);
+    } catch (err) {
+        process.stderr.write(`[agent-vitest-reporter] prior report ignored: JSON parse failed (${err?.message ?? err})\n`);
+        return null;
+    }
+    if (!parsed || typeof parsed.rollup !== 'object' || parsed.rollup === null || !Array.isArray(parsed.files)) {
+        process.stderr.write(`[agent-vitest-reporter] prior report ignored: shape mismatch (missing rollup or files)\n`);
+        return null;
+    }
+    return parsed;
+}
+
+function indexTestsByKey(report) {
+    const index = new Map();
+    if (!Array.isArray(report?.files)) return index;
+    for (const file of report.files) {
+        if (!file || !Array.isArray(file.tests)) continue;
+        for (const test of file.tests) {
+            const key = `${file.path}::${test.name}`;
+            index.set(key, { file: file.path, name: test.name, status: test.status, durationMs: test.durationMs ?? 0 });
+        }
+    }
+    return index;
+}
+
+function computeDiff(current, prior) {
+    const currIndex = indexTestsByKey(current);
+    const priorIndex = indexTestsByKey(prior);
+
+    const addedTests = [];
+    const removedTests = [];
+    const flippedToFail = [];
+    const flippedToPass = [];
+    const deltas = [];
+
+    for (const [key, curr] of currIndex) {
+        const prev = priorIndex.get(key);
+        if (!prev) { addedTests.push(key); continue; }
+        if (prev.status === 'passed' && curr.status === 'failed') {
+            flippedToFail.push({ file: curr.file, name: curr.name, prevStatus: prev.status, currStatus: curr.status });
+        } else if (prev.status === 'failed' && curr.status === 'passed') {
+            flippedToPass.push({ file: curr.file, name: curr.name, prevStatus: prev.status, currStatus: curr.status });
+        }
+        const deltaMs = curr.durationMs - prev.durationMs;
+        deltas.push({
+            file:    curr.file,
+            name:    curr.name,
+            prevMs:  prev.durationMs,
+            currMs:  curr.durationMs,
+            deltaMs,
+        });
+    }
+    for (const key of priorIndex.keys()) {
+        if (!currIndex.has(key)) removedTests.push(key);
+    }
+
+    const durationDeltaSlowest5 = deltas
+        .sort((a, b) => Math.abs(b.deltaMs) - Math.abs(a.deltaMs) || b.currMs - a.currMs)
+        .slice(0, SLOWEST_LIMIT);
+
+    return { addedTests, removedTests, flippedToFail, flippedToPass, durationDeltaSlowest5 };
+}
+
+function diffHasContent(diff) {
+    return diff.addedTests.length > 0
+        || diff.removedTests.length > 0
+        || diff.flippedToFail.length > 0
+        || diff.flippedToPass.length > 0
+        || diff.durationDeltaSlowest5.length > 0;
 }
 
 function collectTestCases(testModule) {
