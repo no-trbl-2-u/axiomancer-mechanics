@@ -5,13 +5,37 @@
 > `## Promoted` or `## Rejected`.
 
 <!-- Metadata (updated by /expand after each pass):
-> Last pass: 2026-05-16 at commit 59db1d2
-> Pass count: 5
+> Last pass: 2026-05-16 at commit bdfda00
+> Pass count: 6
 -->
 
 ---
 
 ## Pending
+
+### Candidate: Alignment-shifting authoring sweep on existing MapEvent + dialogue content
+- signal: Phase 42 (`bdfda00`) shipped the `philosophicalAlignment` engine + 27-cell library + `SHIFT_PHILOSOPHICAL_ALIGNMENT` action but explicitly deferred wiring the new axes into any existing choice payload. The brief Follow-ups names this as the #1 deferred item ("authoring content that actually shifts the new axes — including a sweep of `src/World/Continents/` map content"). Without it, the alignment cube is invisible during play — the CLI Character tab renders the cell, but the cell never moves. The shape mirrors how Phase 10 left `shiftMoralMeter` callable and a content sweep later wired authored `±1..±5` deltas across `Coastal-Village/maps.ts` and Old Marrow dialogue.
+- scope: Three units. Unit 1 — type-extend the MapEvent + dialogue choice payload shapes with `alignmentDelta?: Partial<PhilosophicalAlignment>` and thread it through `resolveMapEvent` + `applyDialogueChoice` (mirrors the existing `moralDelta` path). Unit 2 — author first-pass alignment deltas across `src/World/Continents/Coastal-Village/maps.ts` and the Old Marrow / Fishing Village dialogue trees. Calibrate magnitudes to the same `±1..±5` band moralMeter uses; defining `±10` choices reserved for endgame. Unit 3 — hermetic e2e drives a fishing-village walk through a known-alignment-shifting choice and asserts the cell moves; refresh `docs/philosophy.md` with a "Authoring deltas" subsection.
+- unblocks: Makes the alignment cube observable in actual play. Sets the authoring vocabulary for every future map / dialogue beat that wants to shift philosophical position. The cell-change observability is what the agent-graded harness can grade against in future walkthrough goals.
+- blocked-by: None. Phase 42 (`bdfda00`) shipped every engine prerequisite. Independent of the existing reporter-polish, befriendable-enemy, and continent-2 candidates.
+- score: 6 × 7 / 10 = 4.2
+- recommended-slot: First Phase 42 follow-up. Content/authoring work after the engine is in place.
+
+### Candidate: Fallacies-as-spells / abilities — Phase 42 content payoff
+- signal: `PhilosAxiosDoc.pdf` closes with "This complete system gives you 27 distinct philosophical positions, each with a representative philosopher, literary character, and three characteristic logical fallacies that could serve as 'spells' or abilities in your RPG system." Phase 42 shipped the 27 cells with all 81 fallacies stored as `AlignmentFallacy[3]` per cell, but explicitly stored-not-surfaced — the brief Follow-ups names "Fallacies as spells / abilities" as a separate phase. The `bearings.md` tonal commitment ("Enemies are embodiments of logical fallacies. Effect names reference philosophical paradoxes") already pre-existed; the content fuel now does too. There are 81 named fallacies (e.g. "Appeal to Consequences", "No True Scotsman", "Nirvana Fallacy", "Pascal's Wager") sitting unused.
+- scope: Pick a small N (e.g. 6-8 marquee fallacies — one or two per axis-pair) and ship them as the first batch of philosophical skills + effects. Each fallacy becomes either a Tier 3 skill payload (`src/Skills/skill.library.ts`) or a status-effect payload (`src/Effects/effect.library.ts`), with a cross-link to the originating `philosophicalAlignmentCell` it was sourced from (new `sourcedFromCell?: string` field on `Skill` / `Effect`). Spec author note: only fallacies whose mechanics map cleanly to existing combat primitives ship in this phase; the more abstract ones (e.g. "Begging the Question") defer to follow-ups. Hermetic e2e drives one such skill through `resolveCombatRound`; one such effect through `applyEffect`. Update `docs/skills.md` + `docs/effects.md` with a "Philosophical fallacy payloads" subsection.
+- unblocks: Closes the loop from `PhilosAxiosDoc.pdf` to live combat. Future enemy authoring can pick fallacies per-cell to express philosophical archetypes. The `sourcedFromCell` field also gives the alignment-gated-skill candidate (a future phase) a free cross-link.
+- blocked-by: Phase 42 (`bdfda00`) shipped the cells + fallacies. The fallacies-as-content-fuel framing has been formal since Phase 42. No code-level blockers.
+- score: 7 × 5 / 10 = 3.5
+- recommended-slot: After the alignment-shifting authoring sweep above. Authoring → mechanics: deltas make the cube observable first, then fallacies give the cube combat depth. Pairs naturally with the Enemy-skill-caster path candidate (that one ships the caster-agnostic `executeSkill`; this one ships the philosophical payload library that flows through it).
+
+### Candidate: Enemies-by-alignment AI tuning
+- signal: `plan/bearings.md` Visual & tonal defaults: "Enemies are embodiments of logical fallacies. Effect names reference philosophical paradoxes." Phase 42 (`bdfda00`) made philosophical alignment a first-class state field but Enemy carries no equivalent. The tonal commitment is rhetorical, not mechanical. Phase 42 brief Follow-ups names this explicitly ("'enemies are embodiments of logical fallacies' tonal commitment in `bearings.md` becomes mechanically real once enemies carry a `philosophicalAlignment` field and AI skews behaviour by cell"). The Spec 07 elite/boss progression also feels mechanically thin (every enemy resolves on the same attack/defend verbs); pinning each enemy to a cell unlocks per-archetype behaviour without a full AI rewrite.
+- scope: Two units. Unit 1 — add `philosophicalAlignment?: PhilosophicalAlignment` (optional) to `Enemy`; backfill every authored enemy in `src/Enemy/enemy.library.ts` with a cell pin (e.g. Coastal Tyrant = `faith-pessimistic-transcendent` / Grand Inquisitor archetype; Tidepool Crab = `mid-mid-individual`). Unit 2 — `decideEnemyAction` accepts an optional alignment-tuner that biases the basic-action choice by outlook (Pessimistic → bias defend / friendship-stall; Optimistic → bias attack). Hermetic e2e pins the bias delta against `mockSequentialRng`. Update `docs/enemy.md` with the alignment field + cell taxonomy.
+- unblocks: Makes the alignment cube readable from the *enemy* side too. Pairs with the Fallacies-as-spells candidate (which gives the player philosophical payloads) so the philosophical layer cuts both ways. Per-archetype enemy behaviour without the larger AI-overhaul-by-tier candidate.
+- blocked-by: Phase 42 (`bdfda00`). Independent of the Enemy-skill-caster-path candidate (orthogonal — that one refactors the caster signature; this one stays inside `decideEnemyAction`'s existing `attack | defend` decision and biases probabilities).
+- score: 5 × 6 / 10 = 3.0
+- recommended-slot: After the fallacies-as-spells candidate. Player-side payloads → enemy-side alignment biases gives the cube symmetry. Could also pair with the enemy-skill-caster path candidate as a combined "enemy mechanical depth" phase.
 
 ### Candidate: Agent verify reporter polish bundle (was named "Phase 41" pre-promotion; renamed at oversight 2026-05-16 after Phase 41 went to the acceptance sweep)
 - signal: After Phase 40 closed the MED 5.4 row (commit `87bab8c`),
