@@ -38,6 +38,8 @@ import { Stance, CombatState, CombatAction, Action } from '../Combat/types';
 import { getSkillById } from '../Skills/skill.library';
 import { canUseSkill, getAvailableSkills } from '../Skills/skill.engine';
 import { isConsumable } from '../Items/types';
+import { buyItem, sellItem } from '../Items/shop.reducer';
+import { getConsumableById } from '../Items/consumable.library';
 import { CombatEndReport } from '../Game/store';
 
 type Tab = 'map' | 'combat' | 'journal' | 'skills' | 'inventory' | 'character' | 'debug' | 'save' | 'load' | 'quit';
@@ -152,6 +154,13 @@ async function mapTab(store: GameStoreHandle): Promise<void> {
         store.getState().startCombat(result.event.encounter);
         await combatTab(store);
     }
+
+    // Phase 37 — village with a shop opens a buy/sell loop. Logic stays in
+    // the reducers (`buyItem` / `sellItem`); this block only prompts and
+    // dispatches.
+    if (result.event.kind === 'village' && result.event.shop && result.event.shop.wares.length > 0) {
+        await shopLoop(store, result.event.shop);
+    }
 }
 
 function describeResolvedEvent(event: ResolvedEvent): string {
@@ -160,11 +169,86 @@ function describeResolvedEvent(event: ResolvedEvent): string {
         case 'interaction': return `You meet ${event.npcName}.`;
         case 'gathering':   return `You gather ${event.items.map(i => i.name).join(', ')}.`;
         case 'rest':        return `You rest. (+${event.healed} HP)`;
-        case 'village':     return `Village: ${event.villageName} (${event.merchants.length} merchant${event.merchants.length === 1 ? '' : 's'}).`;
+        case 'village': {
+            const wareCount = event.shop?.wares.length ?? 0;
+            const shopSuffix = wareCount > 0 ? ` — ${wareCount} ware${wareCount === 1 ? '' : 's'} for sale` : '';
+            return `Village: ${event.villageName} (${event.merchants.length} merchant${event.merchants.length === 1 ? '' : 's'})${shopSuffix}.`;
+        }
         case 'cutscene':    return event.lines.join(' ');
         case 'hazard':      return `Hazard! (-${event.damage} HP${event.effects.length > 0 ? `, ${event.effects.length} effect${event.effects.length === 1 ? '' : 's'}` : ''})`;
         case 'loot-cache':  return `Loot cache: ${event.items.length} item${event.items.length === 1 ? '' : 's'}, ${event.currency} currency.`;
         case 'none':        return 'Nothing of note happens.';
+    }
+}
+
+async function shopLoop(store: GameStoreHandle, shop: { wares: ReadonlyArray<{ itemId: string; price: number }> }): Promise<void> {
+    while (true) {
+        const player = store.getState().player;
+        log(`\n— Shop — currency: ${player.currency}`);
+        const { action } = await prompt<{ action: 'buy' | 'sell' | 'leave' }>([{
+            type: 'rawlist', name: 'action', message: 'Shop:',
+            choices: [
+                { name: 'buy   — browse wares', value: 'buy' },
+                { name: 'sell  — list inventory', value: 'sell' },
+                { name: 'leave — close the shop', value: 'leave' },
+            ],
+        }]);
+        if (action === 'leave') return;
+
+        if (action === 'buy') {
+            const choices = shop.wares.map(w => {
+                const item = getConsumableById(w.itemId);
+                const label = item ? `${item.name} — ${w.price}` : `${w.itemId} — ${w.price} (unknown)`;
+                return { name: label, value: w.itemId };
+            });
+            choices.push({ name: 'back', value: '' });
+            const { wareId } = await prompt<{ wareId: string }>([{
+                type: 'rawlist', name: 'wareId', message: 'Buy what?', choices,
+            }]);
+            if (!wareId) continue;
+            const ware = shop.wares.find(w => w.itemId === wareId)!;
+            const item = getConsumableById(ware.itemId);
+            if (!item) { log(`Unknown item: ${ware.itemId}`); continue; }
+            const before = store.getState();
+            const next = buyItem(before.player, item, ware.price);
+            if (next === before.player) {
+                log(`You can't afford ${item.name} (need ${ware.price}, have ${before.player.currency}).`);
+            } else {
+                store.setState({ player: next });
+                log(`Bought ${item.name} for ${ware.price}.`);
+                logState('buyItem', before, store.getState(), { itemId: ware.itemId, price: ware.price });
+            }
+            continue;
+        }
+
+        // sell
+        const inv = store.getState().player.inventory;
+        if (inv.length === 0) { log('Nothing to sell.'); continue; }
+        const choices = inv.map((i, idx) => {
+            // Use the shop's posted price if the item is also one of the wares; else half the first ware's price as a floor.
+            const matching = shop.wares.find(w => w.itemId === i.id);
+            const sellPrice = matching ? Math.max(1, Math.floor(matching.price / 2)) : 1;
+            return { name: `${i.name} — sell for ${sellPrice}`, value: `${idx}:${sellPrice}` };
+        });
+        choices.push({ name: 'back', value: '' });
+        const { sellChoice } = await prompt<{ sellChoice: string }>([{
+            type: 'rawlist', name: 'sellChoice', message: 'Sell what?', choices,
+        }]);
+        if (!sellChoice) continue;
+        const [idxStr, priceStr] = sellChoice.split(':');
+        const idx = Number(idxStr);
+        const price = Number(priceStr);
+        const target = store.getState().player.inventory[idx];
+        if (!target) { log('Item slot vanished.'); continue; }
+        const before = store.getState();
+        const next = sellItem(before.player, target.id, price);
+        if (next === before.player) {
+            log(`Couldn't sell ${target.name}.`);
+        } else {
+            store.setState({ player: next });
+            log(`Sold ${target.name} for ${price}. Currency: ${next.currency}.`);
+            logState('sellItem', before, store.getState(), { itemId: target.id, price });
+        }
     }
 }
 
