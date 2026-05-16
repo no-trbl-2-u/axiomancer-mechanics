@@ -14,14 +14,6 @@
 
 ## Pending
 
-### [LOW] `healCharacter` const in `src/Combat/health.ts` duplicates the index.ts re-export
-- pass: critique-13 (commit a707316)
-- area: dead-code
-- observation: `src/Combat/health.ts:32-38` declares `export const healCharacter` as a typed `as unknown as` cast over `heal` — a "backwards-compat alias used in older callers". `src/Combat/index.ts:112` ALSO does `export { heal as healCharacter } from './health'`. Public-barrel consumers (`src/index.ts:54`) import through the Combat barrel, so they get the re-export at `index.ts:112` (which is the cleaner pattern — `heal` is already generic over `Combatant`, so no cast needed). The const inside `health.ts:32-38` is reachable only via direct `import { healCharacter } from './Combat/health'`, and `grep -rn "healCharacter" src/` shows zero in-repo callers using that path. The const + the `as unknown as` cast are duplicate weight.
-- evidence: `src/Combat/health.ts:32-38` (the const + double cast); `src/Combat/index.ts:112` (the canonical re-export); `grep -rn "healCharacter" src/` returns only the four declaration / re-export sites and no consumer doing the direct import.
-- suggested_fix: delete the `healCharacter` const at `src/Combat/health.ts:32-38`. The public barrel surface is unchanged — the `heal as healCharacter` re-export at `Combat/index.ts:112` continues to serve external consumers. Iterate-safe: not removing a barrel symbol, just removing the duplicate inner declaration.
-- source: critique
-
 ### [LOW] `getCoastalMap` is `@deprecated` on the public barrel with zero in-repo callers
 - pass: critique-13 (commit a707316)
 - area: dead-code
@@ -33,6 +25,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] `healCharacter` const in `src/Combat/health.ts` duplicates the index.ts re-export** — resolved at iterate (this commit). Deleted the `healCharacter` const + the `as unknown as` double cast at `src/Combat/health.ts:32-38`. The public-barrel surface is unchanged — the `heal as healCharacter` re-export at `src/Combat/index.ts:112` continues to serve external consumers (and is the canonical pattern, since `heal` is already generic over `Combatant`). Trimmed two unused imports (`Character`, `Enemy`) from `health.ts` and added a one-line header note pointing readers at the `index.ts` re-export. Impact 3 × Ease 8 / 10 = 2.4.
 
 - [x] **[LOW] README Public API table lags Phases 29 / 30 / 32 / 35 + the iterate `combatEvents` extension** — resolved at iterate (this commit). Refreshed five rows of the table: (1) Character — added `Character.id` auto-gen note (Phase 35) and Phase 29 stat-allocation surface; (2) Combat reducer — dropped the deleted `addBattleLogEntry` alias, noted the three end-variants stay for back-compat; (3) Skills — added Phase 30 runtime learning (`learnSkill`, `getAvailableSkills`, `meetsLearningRequirement`) + Phase 33 `learningRequirement` field note; (4) Game — added `ALLOCATE_STAT_POINT` + `LEARN_SKILL` actions and `EnginePayload.unlockedSkills` + `EnginePayload.combatEvents` optional fields; (5) World — added Phase 31 `unlockAdjacent`, the iterate-shipped reach-objective auto-advance, and a deprecation marker on `WorldMap` pointing at `docs/world.md`. Impact 5 × Ease 7 / 10 = 3.5.
 

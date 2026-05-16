@@ -1,10 +1,11 @@
 /**
  * Health helpers shared by Character and Enemy. All functions are pure and
  * preserve the input combatant's discriminant (Character vs Enemy).
+ *
+ * The `healCharacter` back-compat alias is re-exported by `src/Combat/index.ts`
+ * via `export { heal as healCharacter }` — no separate declaration here.
  */
 
-import { Character } from '../Character/types';
-import { Enemy } from '../Enemy/types';
 import { Combatant } from './types';
 
 /** Returns a copy of the combatant with `damage` subtracted from health (clamped at 0). */
@@ -27,12 +28,3 @@ export function isDefeated(combatant: Combatant): boolean { return combatant.hea
 export function getHealthPercentage(combatant: Combatant): number {
     return (combatant.health / combatant.maxHealth) * 100;
 }
-
-// Backwards-compat alias used in older callers.
-export const healCharacter: {
-    (c: Character, amount: number): Character;
-    (c: Enemy, amount: number): Enemy;
-} = heal as unknown as {
-    (c: Character, amount: number): Character;
-    (c: Enemy, amount: number): Enemy;
-};
