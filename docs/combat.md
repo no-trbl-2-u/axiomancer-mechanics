@@ -186,7 +186,9 @@ Reaching `FRIENDSHIP_COUNTER_MAX` (3) ends combat with the `friendship` outcome.
 
 ## Battle Log
 
-Each resolved round can append a `BattleLogEntry` via `appendLog()`:
+`CombatState.log: BattleLogEntry[]` is an opt-in coarse summary slot from
+the pre-Phase-9 combat design. `appendLog(state, entry)` is the reducer
+that pushes one row:
 
 ```typescript
 {
@@ -198,6 +200,15 @@ Each resolved round can append a `BattleLogEntry` via `appendLog()`:
   result
 }
 ```
+
+The live per-round signal that consumers actually subscribe to is the
+`RoundEvent[]` stream returned by `resolveCombatRound` — it carries every
+phase / kind / sub-event (attack-roll, damage-applied, effect-application,
+heal, resist, friendship-counter ticks, ...). The CLI threads that
+stream onto the `combat:round` event payload and the agent-e2e state log
+via `store.updateCombat(next, combatEvents)`. `appendLog` remains on the
+public barrel for any consumer that wants the summary shape; the combat
+resolver itself never populates it.
 
 ## Combat Reducer API
 
