@@ -105,6 +105,38 @@ describe('northern-forest content (Phase 24)', () => {
     });
 });
 
+describe('Phase 37 shop content', () => {
+    it('both authored village payloads carry shop inventories with consumable IDs that resolve', async () => {
+        mockSequentialRng(0.5);
+        const { getConsumableById } = await import('../../../Items/consumable.library');
+        for (const map of ['fishing-village', 'northern-forest'] as const) {
+            const state = freshWorldAt(map);
+            const def = getMapDefinition('coastal-continent', map);
+            const villageNode = def.nodes.find(n =>
+                (map === 'fishing-village' && n.id === 'fv-3') ||
+                (map === 'northern-forest'  && n.id === 'nf-8'),
+            );
+            expect(villageNode, `${map} must have an authored village node`).toBeDefined();
+            const r = visit(state, villageNode!.id);
+            expect(r.kind).toBe('village');
+            // Re-resolve to inspect the shop field on the event payload.
+            const next: GameState = {
+                ...state,
+                world: { ...state.world, currentMap: { ...state.world.currentMap, currentNode: villageNode!.id } },
+            };
+            const result = resolveMapEvent(next);
+            expect(result.event.kind).toBe('village');
+            if (result.event.kind !== 'village') return; // type narrowing
+            expect(result.event.shop, `${map} village should carry a shop`).toBeDefined();
+            expect(result.event.shop!.wares.length).toBeGreaterThan(0);
+            for (const ware of result.event.shop!.wares) {
+                expect(getConsumableById(ware.itemId), `ware ${ware.itemId} must resolve in consumableLibrary`).toBeDefined();
+                expect(ware.price).toBeGreaterThanOrEqual(0);
+            }
+        }
+    });
+});
+
 describe('all 8 MapEventKind values are covered by Phase 24 content', () => {
     it('each kind appears at least once across the two maps', () => {
         mockSequentialRng(0.5);

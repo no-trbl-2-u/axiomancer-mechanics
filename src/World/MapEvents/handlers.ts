@@ -131,6 +131,7 @@ export function resolveVillage(
             kind: 'village',
             villageName: payload.villageName,
             merchants,
+            shop: payload.shop,
         },
     };
 }

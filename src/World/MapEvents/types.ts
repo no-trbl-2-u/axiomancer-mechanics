@@ -9,6 +9,7 @@
 import type { ActiveEffect } from '../../Effects/types';
 import type { GameState } from '../../Game/types';
 import type { Item } from '../../Items/types';
+import type { ShopInventory } from '../../Items/shop.types';
 import type { NPC, DialogueTree } from '../../NPCs/types';
 import type { EnemySlug } from '../../Enemy/enemy.library';
 import type { Encounter, NodeId } from '../types';
@@ -61,6 +62,12 @@ export interface VillagePayload {
     villageName: string;
     /** Shopkeepers / merchants present in the scene. */
     merchants?: readonly NPC[];
+    /**
+     * Transactional shop attached to this village (Phase 37). Authoring
+     * is optional — a village can carry merchants for dialogue without
+     * a shop, or a shop without named merchants.
+     */
+    shop?: ShopInventory;
     description?: string;
 }
 
@@ -120,7 +127,7 @@ export type ResolvedEvent =
     | { kind: 'interaction'; npcName: string; dialogue?: DialogueTree }
     | { kind: 'gathering';   items: Item[] }
     | { kind: 'rest';        healed: number }
-    | { kind: 'village';     villageName: string; merchants: NPC[] }
+    | { kind: 'village';     villageName: string; merchants: NPC[]; shop?: ShopInventory }
     | { kind: 'cutscene';    lines: readonly string[] }
     | { kind: 'hazard';      effects: ActiveEffect[]; damage: number }
     | { kind: 'loot-cache';  items: Item[]; currency: number }

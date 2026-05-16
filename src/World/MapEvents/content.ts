@@ -54,6 +54,14 @@ const fvShop: MapEventPool = {
             kind: 'village',
             villageName: 'Fishing Village Stalls',
             merchants: [{ name: 'Tide-Shopkeeper', isShopkeeper: true }],
+            shop: {
+                wares: [
+                    { itemId: 'healing-potion',       price: 25 },
+                    { itemId: 'minor-healing-potion', price: 12 },
+                    { itemId: 'antidote',             price: 30 },
+                    { itemId: 'heart-draught',        price: 22 },
+                ],
+            },
             description: 'A stall stacked with salt-cured wares.',
         },
     }],
@@ -252,6 +260,14 @@ const nfForestMarket: MapEventPool = {
             kind: 'village',
             villageName: 'Glen Market',
             merchants: [{ name: 'Glen Marketeer', isShopkeeper: true }],
+            shop: {
+                wares: [
+                    { itemId: 'minor-healing-potion', price: 12 },
+                    { itemId: 'philosopher-tea',      price: 35 },
+                    { itemId: 'void-essence',         price: 40 },
+                    { itemId: 'clarity-serum',        price: 28 },
+                ],
+            },
             description: 'A small forest market keeps trade alive on the path.',
         },
     }],
