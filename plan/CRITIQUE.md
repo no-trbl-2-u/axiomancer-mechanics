@@ -6,13 +6,37 @@
 > by `/iterate`.
 
 <!-- Metadata (updated by /critique after each pass):
-> Last pass: 2026-05-16 at commit a707316
-> Pass count: 13
+> Last pass: 2026-05-16 at commit 1180f51
+> Pass count: 14
 -->
 
 ---
 
 ## Pending
+
+### [LOW] `automation/spec05_smoke.ts` is a Phase-17-orphaned standalone script with no surviving caller
+- pass: critique-14 (commit 1180f51)
+- area: dead-code
+- observation: `automation/spec05_smoke.ts` (126 LOC) is an executable smoke walkthrough for Spec 05 (equipment + consumables) that the Phase 17 brief explicitly deferred ("`automation/spec05_smoke.ts` stays. Independent script, out of scope" — `plan/phases/phase_17_unify_cli_surface.md:185`). The Phase 17 CLI unification removed every other ad-hoc CLI surface; this file is the lone leftover. `grep -rn "spec05_smoke"` returns hits only in `plan/phases/phase_17_unify_cli_surface.md` and `specs/`. No `package.json` script invokes it; no walkthrough references it; no documentation page surfaces it. The Spec 05 surface it exercises is fully covered hermetically by `src/Items/e2e/equipment.engine.test.ts` (per its own header comment).
+- evidence: `automation/spec05_smoke.ts:1-9` (its own JSDoc points at the replacement); `grep -rn "spec05_smoke" --include="*.ts" --include="*.mjs" --include="*.json"` outside `plan/`/`specs/` returns zero hits; Phase 17 brief at lines 30, 103, 185, 236 acknowledges the punt as a follow-up.
+- suggested_fix: `git rm automation/spec05_smoke.ts`. No replacement needed — `src/Items/e2e/equipment.engine.test.ts` is the canonical Spec 05 coverage. Verify gate. Pre-1.0 (0.7.0), `automation/` is not on the public barrel, no consumer migration required.
+- source: critique
+
+### [LOW] Three Phase-11 walkthrough JSONs in `automation/scripts/` feed the deleted `npm run auto:combat` Python harness
+- pass: critique-14 (commit 1180f51)
+- area: dead-code
+- observation: `automation/scripts/{ad-baculum-clear,heart-buff-strip,mind-mark-stack}.json` (33 LOC total) were authored in Phase 11 (`plan/phases/phase_11_rng_seeding_and_test_harness.md:428,444,462`) as scripted walkthroughs for the `npm run auto:combat` Python pexpect harness. Phase 17 deleted that harness — `git log --all -- automation/combat-test.py` returns the removal commit, and `package.json` no longer carries the `auto:combat` script. The three JSONs are now orphaned: they reference a CLI shape (pre-Phase-17 `combat.cli.ts` flow) that no longer exists, and the Phase 20+ scripted walkthroughs all live under `automation/scripts/walkthroughs/` instead.
+- evidence: `automation/scripts/{ad-baculum-clear,heart-buff-strip,mind-mark-stack}.json` are tracked (`git ls-files automation/scripts/*.json`); `grep -rn` outside `plan/phases/phase_11_*.md` and `specs/11-*.md` returns zero callers; `automation/scripts/walkthroughs/README.md` is the live inventory and does not list them.
+- suggested_fix: `git rm automation/scripts/ad-baculum-clear.json automation/scripts/heart-buff-strip.json automation/scripts/mind-mark-stack.json`. Same-pass-as the `spec05_smoke.ts` row would be efficient (single dead-code commit). Verify gate.
+- source: critique
+
+### [LOW] `automation/` lacks a top-level README inventorying the directory after Phase 39 added a second tool
+- pass: critique-14 (commit 1180f51)
+- area: docs
+- observation: `automation/` now contains two top-level executable tools (`agent-e2e.mjs` Phase 26, `agent-vitest-reporter.mjs` Phase 39), one orphaned smoke script (`spec05_smoke.ts`), and a `scripts/` subdir with `walkthroughs/` (which DOES have its own `README.md`). A new contributor or returning agent has no index for the directory — they have to read each file's JSDoc to learn what's there and which entry point feeds which workflow. Phase 26 was a single tool so it didn't need a directory README; Phase 39's addition tipped the surface into "multiple tools, no map." `docs/testing.md` Phase 39 subsection points at `agent-vitest-reporter.mjs` by full path but doesn't introduce the directory; `automation/scripts/walkthroughs/README.md` only covers the walkthroughs subtree.
+- evidence: `ls automation/` shows `agent-e2e.mjs`, `agent-vitest-reporter.mjs`, `last-verify-report.json` (gitignored), `scripts/`, `spec05_smoke.ts`, `testing-logs/` (gitignored); no `automation/README.md` exists; `docs/testing.md` "Agent-friendly report" subsection (lines added at Phase 39, commit `602da33`) doesn't link to any `automation/` index.
+- suggested_fix: Add `automation/README.md` as a one-page directory index — purpose of `automation/` (non-hermetic + tooling surface that complements the hermetic vitest suite), a table of the two `.mjs` tools (entry point, npm-script wrapper, what it consumes / produces, where its tests live if any), a one-line note on `scripts/walkthroughs/` (and that the smoke / Phase-11 JSONs are dead pending the dead-code rows above). Cross-link from `docs/testing.md` Phase 39 subsection. ~40-line file, no code change.
+- source: critique
 
 ### [LOW] `getCoastalMap` is `@deprecated` on the public barrel with zero in-repo callers
 - pass: critique-13 (commit a707316)
