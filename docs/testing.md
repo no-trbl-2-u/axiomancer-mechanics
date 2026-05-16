@@ -92,7 +92,7 @@ artefacts land at the end of the run:
 
 - **`automation/last-verify-report.json`** — structured rollup
   (`{ total, passed, failed, skipped, reason, unhandledErrors,
-  slowest5, slowestFailures, diff }`) plus a top-level
+  slowest5, slowestFailures, diff, callouts }`) plus a top-level
   `failures: [{file, name, message, location}]` flat list (Phase 40),
   per-file entries (`path`, `status`, `durationMs`), and per-test
   entries (`name`, `status`, `durationMs`, optional
@@ -137,6 +137,27 @@ When the diff has content, the markdown block gains a
 blocks matching the diff arrays (`#### Added tests`,
 `#### Removed tests`, `#### Flipped to fail`, `#### Flipped to
 pass`, `#### Largest duration deltas`).
+
+### Call-outs (`rollup.callouts: string[]`)
+
+Pre-computed notable patterns from the run so an LLM consumer reading
+the JSON doesn't have to derive them from rollup totals and diff
+arrays. Each entry is a one-line string. Heuristics that fire:
+
+- `N tests failed (top file: <path>)` — when `rollup.failed > 0`,
+  names the file with the most failures.
+- `N unhandled errors` — when `rollup.unhandledErrors > 0`.
+- `N tests skipped` — when `rollup.skipped > 0`.
+- `N tests exceeded 50ms` — count of per-test `durationMs` above the
+  threshold.
+- Diff-aware (only when `rollup.diff !== null`):
+  - `N tests added since last report`.
+  - `N tests removed since last report`.
+  - `N tests flipped pass → fail`.
+  - `N tests flipped fail → pass`.
+
+`callouts` is `[]` when nothing is notable; the markdown block omits
+the `### Call-outs` section entirely in that case.
 
 Schema details and design decisions live in
 [`plan/phases/phase_39_agent_verify_report.md`](../plan/phases/phase_39_agent_verify_report.md)

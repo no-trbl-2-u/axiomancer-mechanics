@@ -231,6 +231,7 @@ describe('AgentVitestReporter — empty run', () => {
             slowest5: [],
             slowestFailures: [],
             diff: null,
+            callouts: [],
         });
         expect(parsed.files).toEqual([]);
         expect(parsed.failures).toEqual([]);
@@ -241,7 +242,85 @@ describe('AgentVitestReporter — empty run', () => {
         expect(stream.written).not.toContain('### Slowest 5 (passed)');
         expect(stream.written).not.toContain('### Slowest 5 (failed / skipped)');
         expect(stream.written).not.toContain('### Changes since last run');
+        expect(stream.written).not.toContain('### Call-outs');
         expect(stream.written).toContain('## End summary');
+    });
+});
+
+describe('AgentVitestReporter — callouts[] heuristics (iterate, Phase 39 self-critique)', () => {
+    it('precomputes failure-count, skipped-count, slow-test and diff-aware call-outs', async () => {
+        const rootDir = process.cwd();
+        const jsonPath = tmpPath();
+        const stream = makeStream();
+        const fileA = path.join(rootDir, 'src/A/e2e/a.engine.test.ts');
+        const fileB = path.join(rootDir, 'src/B/e2e/b.engine.test.ts');
+
+        // Plant a prior report so the diff-aware callouts fire too.
+        const prior = {
+            rollup: { total: 1, passed: 1, failed: 0, skipped: 0, reason: 'passed', unhandledErrors: 0, slowest5: [] },
+            failures: [],
+            files: [{
+                path: 'src/A/e2e/a.engine.test.ts',
+                status: 'passed',
+                durationMs: 1,
+                tests: [{ name: 'Alpha > steady', status: 'passed', durationMs: 1 }],
+            }],
+        };
+        fs.writeFileSync(jsonPath, JSON.stringify(prior, null, 2));
+
+        const reporter = new AgentVitestReporter({
+            jsonOutputPath: jsonPath, markdownStream: stream, rootDir,
+        });
+        await reporter.onTestRunEnd([
+            makeModule({
+                absPath: fileA, durationMs: 80, ok: false, state: 'failed',
+                cases: [
+                    passingCase('Alpha > steady', 1),
+                    failingCase('Alpha > broken now', 'fresh fail', { file: fileA, line: 9, column: 1 }),
+                    passingCase('Alpha > slow', 75),
+                ],
+            }),
+            makeModule({
+                absPath: fileB, durationMs: 5, ok: true, state: 'skipped',
+                cases: [{
+                    fullName: 'Bravo > paused',
+                    result: () => ({ state: 'skipped' }),
+                    diagnostic: () => ({ duration: 0 }),
+                }],
+            }),
+        ], [], 'failed');
+
+        const parsed = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
+        const c = parsed.rollup.callouts;
+        expect(c).toContain('1 test failed (top file: src/A/e2e/a.engine.test.ts)');
+        expect(c).toContain('1 test skipped');
+        expect(c).toContain('1 test exceeded 50ms');
+        // diff-aware: Alpha > broken now and Alpha > slow + Bravo > paused are new vs prior.
+        expect(c.some((s: string) => /\d+ tests? added since last report/.test(s))).toBe(true);
+        // markdown subsection renders.
+        expect(stream.written).toContain('### Call-outs');
+        expect(stream.written).toContain('- 1 test failed (top file: src/A/e2e/a.engine.test.ts)');
+    });
+
+    it('emits an empty callouts list when nothing is notable', async () => {
+        const rootDir = process.cwd();
+        const jsonPath = tmpPath();
+        const stream = makeStream();
+        const fileA = path.join(rootDir, 'src/A/e2e/a.engine.test.ts');
+
+        const reporter = new AgentVitestReporter({
+            jsonOutputPath: jsonPath, markdownStream: stream, rootDir,
+        });
+        await reporter.onTestRunEnd([
+            makeModule({
+                absPath: fileA, durationMs: 5, ok: true, state: 'passed',
+                cases: [passingCase('Alpha > ok', 3)],
+            }),
+        ], [], 'passed');
+
+        const parsed = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
+        expect(parsed.rollup.callouts).toEqual([]);
+        expect(stream.written).not.toContain('### Call-outs');
     });
 });
 

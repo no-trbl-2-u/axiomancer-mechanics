@@ -54,6 +54,9 @@ export default class AgentVitestReporter {
         const target = this.resolveOutputPath();
         const prior = await readPriorReport(target);
         report.rollup.diff = prior ? computeDiff(report, prior) : null;
+        // iterate (Phase 39 self-critique) — precompute notable patterns so an
+        // LLM consumer reading just the JSON doesn't have to derive them.
+        report.rollup.callouts = computeCallouts(report);
         await this.writeJson(report, target);
         this.writeMarkdown(report);
     }
@@ -145,6 +148,7 @@ export default class AgentVitestReporter {
                 slowest5,
                 slowestFailures,
                 diff: null,
+                callouts: [],
             },
             failures,
             files,
@@ -207,6 +211,12 @@ export default class AgentVitestReporter {
             for (const slow of r.slowestFailures) {
                 lines.push(`- ${slow.durationMs.toFixed(0)}ms (${slow.status}) — ${slow.file}: ${slow.name}`);
             }
+        }
+
+        if (r.callouts && r.callouts.length > 0) {
+            lines.push('');
+            lines.push('### Call-outs');
+            for (const c of r.callouts) lines.push(`- ${c}`);
         }
 
         if (r.diff && diffHasContent(r.diff)) {
@@ -322,6 +332,70 @@ function computeDiff(current, prior) {
         .slice(0, SLOWEST_LIMIT);
 
     return { addedTests, removedTests, flippedToFail, flippedToPass, durationDeltaSlowest5 };
+}
+
+const SLOW_TEST_THRESHOLD_MS = 50;
+
+function computeCallouts(report) {
+    const out = [];
+    const r = report.rollup;
+
+    if (r.failed > 0) {
+        const topFile = topFailureFile(report.failures);
+        out.push(topFile
+            ? `${r.failed} test${r.failed === 1 ? '' : 's'} failed (top file: ${topFile})`
+            : `${r.failed} test${r.failed === 1 ? '' : 's'} failed`);
+    }
+    if (r.unhandledErrors > 0) {
+        out.push(`${r.unhandledErrors} unhandled error${r.unhandledErrors === 1 ? '' : 's'}`);
+    }
+    if (r.skipped > 0) {
+        out.push(`${r.skipped} test${r.skipped === 1 ? '' : 's'} skipped`);
+    }
+    const slowCount = countSlowTests(report.files, SLOW_TEST_THRESHOLD_MS);
+    if (slowCount > 0) {
+        out.push(`${slowCount} test${slowCount === 1 ? '' : 's'} exceeded ${SLOW_TEST_THRESHOLD_MS}ms`);
+    }
+
+    // Phase 40 diff-aware callouts (only when a prior report was readable).
+    if (r.diff) {
+        if (r.diff.addedTests.length > 0) {
+            out.push(`${r.diff.addedTests.length} test${r.diff.addedTests.length === 1 ? '' : 's'} added since last report`);
+        }
+        if (r.diff.removedTests.length > 0) {
+            out.push(`${r.diff.removedTests.length} test${r.diff.removedTests.length === 1 ? '' : 's'} removed since last report`);
+        }
+        if (r.diff.flippedToFail.length > 0) {
+            out.push(`${r.diff.flippedToFail.length} test${r.diff.flippedToFail.length === 1 ? '' : 's'} flipped pass → fail`);
+        }
+        if (r.diff.flippedToPass.length > 0) {
+            out.push(`${r.diff.flippedToPass.length} test${r.diff.flippedToPass.length === 1 ? '' : 's'} flipped fail → pass`);
+        }
+    }
+
+    return out;
+}
+
+function topFailureFile(failures) {
+    if (!Array.isArray(failures) || failures.length === 0) return null;
+    const counts = new Map();
+    for (const f of failures) counts.set(f.file, (counts.get(f.file) ?? 0) + 1);
+    let topFile = null;
+    let topCount = 0;
+    for (const [file, count] of counts) {
+        if (count > topCount) { topFile = file; topCount = count; }
+    }
+    return topFile;
+}
+
+function countSlowTests(files, thresholdMs) {
+    let n = 0;
+    if (!Array.isArray(files)) return n;
+    for (const file of files) {
+        if (!file || !Array.isArray(file.tests)) continue;
+        for (const t of file.tests) if ((t.durationMs ?? 0) > thresholdMs) n += 1;
+    }
+    return n;
 }
 
 function diffHasContent(diff) {
