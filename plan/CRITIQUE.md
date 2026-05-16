@@ -6,13 +6,29 @@
 > by `/iterate`.
 
 <!-- Metadata (updated by /critique after each pass):
-> Last pass: 2026-05-15 at commit e1e1b1e
-> Pass count: 12
+> Last pass: 2026-05-16 at commit a707316
+> Pass count: 13
 -->
 
 ---
 
 ## Pending
+
+### [LOW] `healCharacter` const in `src/Combat/health.ts` duplicates the index.ts re-export
+- pass: critique-13 (commit a707316)
+- area: dead-code
+- observation: `src/Combat/health.ts:32-38` declares `export const healCharacter` as a typed `as unknown as` cast over `heal` — a "backwards-compat alias used in older callers". `src/Combat/index.ts:112` ALSO does `export { heal as healCharacter } from './health'`. Public-barrel consumers (`src/index.ts:54`) import through the Combat barrel, so they get the re-export at `index.ts:112` (which is the cleaner pattern — `heal` is already generic over `Combatant`, so no cast needed). The const inside `health.ts:32-38` is reachable only via direct `import { healCharacter } from './Combat/health'`, and `grep -rn "healCharacter" src/` shows zero in-repo callers using that path. The const + the `as unknown as` cast are duplicate weight.
+- evidence: `src/Combat/health.ts:32-38` (the const + double cast); `src/Combat/index.ts:112` (the canonical re-export); `grep -rn "healCharacter" src/` returns only the four declaration / re-export sites and no consumer doing the direct import.
+- suggested_fix: delete the `healCharacter` const at `src/Combat/health.ts:32-38`. The public barrel surface is unchanged — the `heal as healCharacter` re-export at `Combat/index.ts:112` continues to serve external consumers. Iterate-safe: not removing a barrel symbol, just removing the duplicate inner declaration.
+- source: critique
+
+### [LOW] `getCoastalMap` is `@deprecated` on the public barrel with zero in-repo callers
+- pass: critique-13 (commit a707316)
+- area: dead-code
+- observation: `src/World/map.registry.ts:75-84` defines `getCoastalMap(mapName)` as a "backwards-compatible resolver" — `@deprecated` per the JSDoc, with `getMapDefinition('coastal-continent', mapName)` + `createMapState` as the replacement. It re-exports from `src/World/index.ts:22` and `src/index.ts:152`. `grep -rn "getCoastalMap" src/` shows zero in-repo callers beyond the three barrel / declaration sites. Same pattern as the `WorldMap` finding `/oversight` just authorised for removal at commit `a707316`.
+- evidence: `src/World/map.registry.ts:75-84` (declaration + JSDoc); `src/World/index.ts:22`, `src/index.ts:152` (re-exports); `grep -rn "getCoastalMap" src/` returns only the four sites and no consumer.
+- suggested_fix: ask `/oversight` to authorise the barrel removal (Hard Rule 9 blocks autonomous removal). When approved: drop the function declaration in `map.registry.ts`, the re-export in `src/World/index.ts:22`, and the re-export in `src/index.ts:152`. Update any docs that mention `getCoastalMap` (README Public API table doesn't currently list it; check `docs/api.md`). Pre-1.0 (0.7.0) permits breaking changes in minor bumps.
+- source: critique
 
 ---
 
