@@ -24,14 +24,6 @@
 - source: oversight self-critique of Phase 39 implementation (2026-05-16); shipped at `602da33`
 - next: in `buildReport()`, compute a `callouts: string[]` from {failureCount > 0, slowTestCount where durationMs > 50, unhandledErrors > 0, skipped > 0}. Drop the field on the rollup. Add hermetic cases pinning at least one populated callout and the empty-run zero-callouts case. Defer the "added since last report" call-out to the prior-run-diff phase candidate.
 
-### [LOW] Phase 39 reporter — slow failing tests are invisible
-- category: agent-ux / reporter
-- impact: 5 (`slowest5` filters by `status === 'passed'`, so a test that timed out or hung but failed never appears in the slow list; for an agent debugging a slow regression, this is exactly the test you'd want surfaced)
-- ease: 8 (two-line filter change + one new hermetic case pinning a slow failing test appears in `slowest5`)
-- score: 4.0
-- source: oversight self-critique of Phase 39 implementation (2026-05-16); shipped at `602da33`
-- next: in `automation/agent-vitest-reporter.mjs` `buildReport()`, drop the `filter(t => t.status === 'passed')` on the slowest-5 computation OR (preferred) keep `slowest5` as passed-only and add a parallel `slowestFailures: [{name, file, durationMs, status}]` (top 5 across failed + skipped). Decide in /iterate. Add hermetic case.
-
 ### [LOW] Phase 39 reporter — per-test file:line locations missing
 - category: agent-ux / reporter
 - impact: 5 (test entries carry `name` and `status` but no source location, so "what was tested" is opaque without manually opening the file; Vitest's `experimental_getRunnerTask(testCase).location` exposes `file` + `line` for each `it()` block, which would let consumers jump straight to the assertion)
@@ -67,6 +59,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] Phase 39 reporter — slow failing tests are invisible** — resolved at iterate commit `1dbce81` (2026-05-16). `automation/agent-vitest-reporter.mjs#buildReport` now emits `rollup.slowestFailures: [{name, file, durationMs, status}]` (top 5 across `failed` + `skipped`) alongside the existing `slowest5` (passed-only). Picked the parallel-field approach over dropping the filter so consumers that pinned `slowest5` semantics stay stable; status preserved on each entry so consumers can distinguish "timeout / hang" from "long skip". Markdown gains a `### Slowest 5 (failed / skipped)` block under the existing slowest5 block. New hermetic case + Phase 40 empty-run / shape tests updated. Impact 5 × Ease 8 / 10 = 4.0 (× 1.5 reporter bias = 6.0).
 
 - [x] **[MED] Phase 39 reporter — JSON lacks a top-level `failures[]` flat list** — absorbed into Phase 40 and shipped at commit `87bab8c` (2026-05-16). `automation/agent-vitest-reporter.mjs#buildReport` now populates `report.failures = [{file, name, message, location}]` in the same single-pass walk that builds `files[].tests[]`; new hermetic test in `src/test-utils/e2e/agent-vitest-reporter.engine.test.ts` pins the populated case and the empty case. `docs/testing.md` Agent-friendly report subsection lists the new field; the existing empty-run test was tightened to assert `failures: []`. Impact 6 × Ease 9 / 10 = 5.4. Bundled with Phase 40 so the JSON schema settled in one pass rather than churning across multiple /iterate ticks.
 
