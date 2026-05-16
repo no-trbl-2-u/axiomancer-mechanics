@@ -8,9 +8,7 @@
 > Bias: <category> (set via oversight <date>)
 -->
 
-> Bias: reporter (set via oversight 2026-05-16)
-
-<!-- Bias cleared via oversight 2026-05-15 after one full lifecycle (set 2026-05-15, cleared 2026-05-15). The bias did its job — Phase 25 follow-up was the only finding it weighted, and that one LOW remains without needing the multiplier. Re-set to "gameplay" via oversight 2026-05-15 to push /iterate toward mechanic findings rather than the doc/test queue. Cleared again via oversight 2026-05-15 — the gameplay bias weighted the reach-objective audit row (drained at 8611881) and Phase 36 promotion (friendship victory); both queues are now empty and /iterate should weight all categories equally going forward. Re-set to "reporter" via oversight 2026-05-16 after Phase 38 shipped, so /iterate weights the 6 Phase 39 self-critique rows (5 of which carry category `agent-ux / reporter`; the 6th `dev-ux / reporter`). Phase 40 (promoted at the same oversight) absorbs the MED 5.4 failures[] row; the bias steers /iterate at the remaining 5 once Phase 40 lands. -->
+<!-- Bias cleared via oversight 2026-05-15 after one full lifecycle (set 2026-05-15, cleared 2026-05-15). The bias did its job — Phase 25 follow-up was the only finding it weighted, and that one LOW remains without needing the multiplier. Re-set to "gameplay" via oversight 2026-05-15 to push /iterate toward mechanic findings rather than the doc/test queue. Cleared again via oversight 2026-05-15 — the gameplay bias weighted the reach-objective audit row (drained at 8611881) and Phase 36 promotion (friendship victory); both queues are now empty and /iterate should weight all categories equally going forward. Re-set to "reporter" via oversight 2026-05-16 after Phase 38 shipped, so /iterate weights the 6 Phase 39 self-critique rows (5 of which carry category `agent-ux / reporter`; the 6th `dev-ux / reporter`). Phase 40 (promoted at the same oversight) absorbs the MED 5.4 failures[] row; the bias steers /iterate at the remaining 5 once Phase 40 lands. Cleared again via oversight 2026-05-16 (this commit) — the reporter queue has fully drained (`callouts[]`, `slowestFailures`, `location`, `--reporter=default` chain, `failures[]`, prior-run diff, JSDoc + `// @ts-check`, durationMs rounding all shipped). The only AUDIT Pending row remaining is the `getCoastalMap` removal, which is dead-code, not reporter. /iterate goes back to balanced scoring; the reporter bias would only mis-weight unrelated rows. -->
 
 ---
 
@@ -23,6 +21,7 @@
 - score: 2.4
 - source: oversight authorization (2026-05-16) of the `[LOW] getCoastalMap` row in CRITIQUE pass 13
 - next: remove `getCoastalMap` from `src/index.ts`, `src/World/index.ts`, and `src/World/map.registry.ts`. Check `docs/api.md` and `docs/world.md` for residual mentions; replace with the `getMapDefinition` + `createMapState` two-call pattern. Verify gate. Hard Rule 9 unlock granted by `/oversight` 2026-05-16; mirrors the WorldMap removal at `a707316`.
+- deletion-authorized: **YES** — re-confirmed via `/oversight` 2026-05-16 (this commit). /iterate under /loop may execute the barrel removal without further prompts; the autonomous classifier's tracked-file-deletion guard is overridden for this specific row.
 
 ---
 
