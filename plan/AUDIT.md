@@ -24,14 +24,6 @@
 - source: oversight self-critique of Phase 39 implementation (2026-05-16); shipped at `602da33`
 - next: import `experimental_getRunnerTask` (or the stable equivalent if 4.x stabilises it before this lands), call it on each `testCase` in `buildReport()`, populate `test.location = "<file>:<line>"` per entry; update the hermetic test stubs to expose a `location` field that the reporter reads through. Document the experimental dependency in `plan/phases/phase_39_agent_verify_report.md` Follow-ups.
 
-### [LOW] Phase 39 reporter — verify:agent drops the default progress reporter
-- category: dev-ux / reporter
-- impact: 3 (running `npm run verify:agent` manually shows no progress output for ~5 seconds — Vitest's default per-file tick is replaced wholesale by the agent reporter; a long failing suite is silent until the end)
-- ease: 10 (one package.json edit: `vitest run --reporter=default --reporter=./automation/agent-vitest-reporter.mjs` — Vitest 4 supports multiple `--reporter` flags)
-- score: 3.0
-- source: oversight self-critique of Phase 39 implementation (2026-05-16); shipped at `602da33`
-- next: update the `verify:agent` script in `package.json` to chain `--reporter=default --reporter=./automation/agent-vitest-reporter.mjs`. Smoke-test that both the default progress output and the agent summary appear. No new tests required (config-only change), but verify gate must pass.
-
 ### [LOW] Phase 39 reporter — `durationMs` precision is inconsistent between JSON and markdown
 - category: agent-ux / reporter / cleanup
 - impact: 2 (JSON emits raw floats like `66.41922499999987`; markdown rounds via `.toFixed(0)`; a strict JSON consumer either has to round downstream or live with float noise — minor but inconsistent)
@@ -51,6 +43,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] Phase 39 reporter — verify:agent drops the default progress reporter** — resolved at iterate commit `934cee6` (2026-05-16). One-line `package.json` edit chained `--reporter=default` alongside the custom reporter, so manual runs now see per-file progress ticks during the run AND the agent `## Verify summary` markdown block at the end. Smoke confirmed both outputs appear via `npm run verify:agent`. No new tests — config-only change; existing hermetic reporter tests still pin agent behaviour. Impact 3 × Ease 10 / 10 = 3.0 (× 1.5 reporter bias = 4.5).
 
 - [x] **[LOW] Phase 39 reporter — top-level `callouts[]` heuristics not computed** — resolved at iterate commit `886b862` (2026-05-16). `automation/agent-vitest-reporter.mjs#onTestRunEnd` now invokes `computeCallouts(report)` and stamps `rollup.callouts: string[]`. Heuristics fired: failure count + top-contributing file, unhandled errors, skipped count, tests above the 50ms threshold, plus four diff-aware lines when Phase 40's `rollup.diff !== null` (added / removed / flipped-to-fail / flipped-to-pass). Markdown gains a `### Call-outs` block above the `### Changes since last run` block (only when non-empty); empty-run + Phase 40 tests updated to assert `callouts: []` and the absence of the new markdown. Two new hermetic cases (populated + empty). Impact 5 × Ease 7 / 10 = 3.5 (× 1.5 reporter bias = 5.25).
 
