@@ -206,9 +206,36 @@ combatant:
   tier:              1 | 2 | 3;
   resistedBy?:       Stance;            // copied from Effect for fast resist lookup
   resistDR?:         number;            // copied from Effect for fast resist lookup
-  sourceId?:         string;            // ID of who applied it (optional attribution)
+  sourceId?:         string;            // ID of who applied it (Phase 38 attribution)
 }
 ```
+
+### Attribution — `sourceId` (Phase 38)
+
+Every `applyEffect` call on the combat / skill path stamps the new
+`ActiveEffect` with a `sourceId` so consumers can answer "who applied
+this?" without inferring from context. The convention:
+
+| Surface | sourceId | Set by |
+|---|---|---|
+| Skill engine (skill caster on opponent or self) | `player.id` | `src/Skills/skill.engine.ts` |
+| Combat proc (primary application) | `actor.id` | `src/Combat/combat-effects.ts` |
+| Combat proc (rebound onto attacker) | `actor.id` (original attacker) | `src/Combat/combat-effects.ts` |
+| Combat fumble (self-application) | `actor.id` | `src/Combat/phases/scenario.ts` (passes `actor.id` to `applyFumbleOutcome`) |
+| Equipment passive | `item.id` | `src/Character/equipment.reducer.ts` |
+| Environmental hazard (MapEvents) | _undefined_ | `src/World/MapEvents/handlers.ts` (no combatant source — deliberate) |
+
+When an existing effect stacks (`intensity` or `duration`),
+`applyEffect` uses **last-writer-wins**: a fresh `applyEffect` call
+with a `sourceId` replaces the prior; an omitted `sourceId` preserves
+the existing one. Rationale: if enemy A stuns the player and enemy B
+re-stuns before the stun expires, the live attribution should be B
+(the most recent applier).
+
+`sourceId` round-trips through `JSON.stringify` / `JSON.parse`
+unchanged — pinned by
+`src/Effects/e2e/source-id.engine.test.ts` so a future state-shape
+migration cannot silently strip it.
 
 `remainingDuration` special values:
 
