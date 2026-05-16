@@ -134,6 +134,6 @@ them in `characterPresets`.
 
 ## Pending
 
-- `id` field for multiplayer / effect attribution (Knowledge-Gaps Q12 —
-  unresolved; Character has no stable id today while Enemy does).
-  Promoted as Phase 35 via `/oversight` 2026-05-15.
+_No open items — `id` field shipped at Phase 35 (Knowledge-Gaps Q12);
+see the `id` JSDoc on `Character` in `src/Character/types.d.ts` and the
+auto-gen path in `createCharacter`._

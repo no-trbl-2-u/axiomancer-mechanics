@@ -49,7 +49,7 @@
 
 ## Character & Progression
 
-12. **Character has no `id` field** but `Enemy` does. `ActiveEffect.sourceId` references the applier. Should Character get an `id`? If the game only has one player character, is `sourceId` even needed for player-applied effects? *(Tracked in `specs/06-character-progression.md`.)*
+12. **Character has no `id` field** but `Enemy` does. `ActiveEffect.sourceId` references the applier. Should Character get an `id`? If the game only has one player character, is `sourceId` even needed for player-applied effects? *(Tracked in `specs/06-character-progression.md`.)* **Resolved at Phase 35 (`cb47a38`).** `Character.id` is now required; `createCharacter` auto-generates a `char-<base36>` id from `getRng()` when not supplied. `ActiveEffect.sourceId` audit found one in-repo setter (equipment passives via `equipment.reducer.ts` using the item id, which is correct); no combat / skill path currently sets `sourceId` for player-applied effects, so attribution is now possible via the player's `id` whenever those sites are wired.
 
 13. **Experience formula**: Currently `experienceToNextLevel = level × EXPERIENCE_PER_LEVEL` (linear). Is this the intended curve, or should it be exponential/polynomial? What should each enemy tier reward in XP? *(Tracked in `specs/06-character-progression.md`.)*
 

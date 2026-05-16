@@ -333,3 +333,40 @@ describe('allocateStatPoint', () => {
         expect(afterMind.baseStats.mind).toBe(seeded.baseStats.mind + 1);
     });
 });
+
+// ────────────────────────────────────────────────────────────────────────────
+// Phase 35 — Character.id stability
+//
+// Pins that every Character ships with a non-empty `id`, that callers can
+// override the auto-gen by supplying `id` explicitly (mirrors how fixtures
+// will want to pin ActiveEffect.sourceId), and that two auto-generated ids
+// don't collide across back-to-back createCharacter calls. Closes
+// Knowledge-Gaps Q12.
+// ────────────────────────────────────────────────────────────────────────────
+
+describe('createCharacter — id field (Phase 35)', () => {
+    it('auto-generates a non-empty id when none is supplied', () => {
+        const p = buildPlayer({});
+        expect(typeof p.id).toBe('string');
+        expect(p.id.length).toBeGreaterThan(0);
+        expect(p.id).toMatch(/^char-/);
+    });
+
+    it('respects an explicit id when supplied', () => {
+        const p = buildPlayer({ id: 'fixture-player' });
+        expect(p.id).toBe('fixture-player');
+    });
+
+    it('produces distinct auto-generated ids for back-to-back creations', () => {
+        const a = buildPlayer({});
+        const b = buildPlayer({});
+        const c = buildPlayer({});
+        expect(new Set([a.id, b.id, c.id]).size).toBe(3);
+    });
+
+    it('round-trips through structured clone unchanged', () => {
+        const original = buildPlayer({ id: 'reincarnate-1' });
+        const roundTripped = JSON.parse(JSON.stringify(original)) as typeof original;
+        expect(roundTripped.id).toBe('reincarnate-1');
+    });
+});
