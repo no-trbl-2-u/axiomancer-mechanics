@@ -13,7 +13,7 @@
 
 ## Pending
 
-### Candidate: Phase 41 — Agent verify reporter polish bundle
+### Candidate: Agent verify reporter polish bundle (was named "Phase 41" pre-promotion; renamed at oversight 2026-05-16 after Phase 41 went to the acceptance sweep)
 - signal: After Phase 40 closed the MED 5.4 row (commit `87bab8c`),
   five Phase 39 self-critique AUDIT rows remain, all carrying the
   `reporter` category — exactly the queue the oversight-set iterate
@@ -52,36 +52,6 @@
 - recommended-slot: as the next phase. Pairs with the standing
   reporter bias; once shipped the bias can be cleared at the
   following oversight.
-
-### Candidate: Specs + Knowledge-Gaps acceptance sweep (Spec 04 / 10 / 23 + stale-Q retirement)
-- signal: Critique pass 15 (commit `1772f30`) flagged Spec 23 with 11
-  unchecked acceptance boxes despite Phases 23 / 24 / 25 / 31 / 37
-  shipping the surface. Walking the rest of the spec tree turns up
-  the same pattern at Spec 04 (skills engine — every box still `[ ]`
-  despite Phase 09 + Spec 04 + 04b shipping) and Spec 10 (moral
-  meter — every box still `[ ]` despite Phase 10 shipping with
-  `moralMeter` on `GameState`). Separately, `Knowledge-Gaps.md` Qs
-  15 / 17 / 18 / 19 / 20 are now stale — answered by shipped specs
-  (Spec 04 + 04b for Q15/Q17, Spec 05 / 05b for Q18/Q19, MapEvents
-  engine for Q20) but never marked closed.
-- scope: One commit per spec (3 commits) — tick every acceptance box
-  with the commit hash that shipped it (mirror the Phase 34 unit 5
-  pattern at `specs/06-*.md`). Update Spec 23's type sketches with
-  the Phase 37 `shop?: ShopInventory` field. One additional commit
-  retires Qs 15 / 17 / 18 / 19 / 20 in `Knowledge-Gaps.md` with the
-  same "resolved at <phase>" treatment Q5 / Q12 / Q22 already got.
-  Pure docs; no code touched.
-- unblocks: Closes the Spec 23 critique-15 row, plus drains the
-  acceptance drift for the next two largest specs. Knowledge-Gaps
-  becomes a smaller, accurate inventory of genuinely-open design
-  questions (Q13 / Q14 / Q16 will be the surviving combat-tuning
-  trio worth their own phase later).
-- blocked-by: None.
-- score: 5 × 8 / 10 = 4.0
-- recommended-slot: After Phase 41. Pure docs phase pairs well with
-  a one-tick `/iterate` after the reporter bundle, so the loop
-  alternates "code phase → docs phase" while the bias decays
-  naturally.
 
 ### Candidate: Enemy-skill caster path (combat depth)
 - signal: Phase 38 brief explicitly named this as the next direction:
@@ -195,6 +165,29 @@
 ---
 
 ## Promoted
+
+### Phase 41 — Specs + Knowledge-Gaps acceptance sweep
+- promoted: 2026-05-16 (oversight; top-scoring candidate)
+- source: critique pass 15 (commit `1772f30`) Spec 23 row, plus walk
+  of the rest of the spec tree turning up the same drift at Spec 04
+  (skills engine) and Spec 10 (moral meter) — every acceptance box
+  in those three specs is still `[ ]` despite the surfaces having
+  shipped (Phase 09 + Spec 04 + 04b; Phase 10; Phases 23 / 24 / 25 /
+  31 / 37). `Knowledge-Gaps.md` Qs 15 / 17 / 18 / 19 / 20 are
+  stale-resolved.
+- summary: One commit per spec (3 commits) — tick every acceptance
+  box with the commit hash that shipped it (mirror Phase 34 unit 5
+  at `specs/06-*.md`). Update Spec 23's type sketches (`:95`, `:138`)
+  with the Phase 37 `shop?: ShopInventory` field + a 12th acceptance
+  line for the shop extension. One additional commit retires
+  Qs 15 / 17 / 18 / 19 / 20 in `Knowledge-Gaps.md` with the same
+  "resolved at <phase>" treatment Q5 / Q12 already got. Pure docs;
+  no code touched.
+- acceptance: every acceptance box in Specs 04 / 10 / 23 is `[x]`
+  with a commit hash; Knowledge-Gaps.md Qs 15 / 17 / 18 / 19 / 20
+  carry a resolution annotation; the critique-15 Spec 23 row moves
+  from Pending to Done.
+- score: 5 × 8 / 10 = 4.0
 
 ### Phase 40 — Prior-run diff in agent verify report
 - promoted: 2026-05-16 (oversight; recommended-slot pairing)
