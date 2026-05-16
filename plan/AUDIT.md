@@ -8,7 +8,9 @@
 > Bias: <category> (set via oversight <date>)
 -->
 
-<!-- Bias cleared via oversight 2026-05-15 after one full lifecycle (set 2026-05-15, cleared 2026-05-15). The bias did its job — Phase 25 follow-up was the only finding it weighted, and that one LOW remains without needing the multiplier. Re-set to "gameplay" via oversight 2026-05-15 to push /iterate toward mechanic findings rather than the doc/test queue. Cleared again via oversight 2026-05-15 — the gameplay bias weighted the reach-objective audit row (drained at 8611881) and Phase 36 promotion (friendship victory); both queues are now empty and /iterate should weight all categories equally going forward. -->
+> Bias: reporter (set via oversight 2026-05-16)
+
+<!-- Bias cleared via oversight 2026-05-15 after one full lifecycle (set 2026-05-15, cleared 2026-05-15). The bias did its job — Phase 25 follow-up was the only finding it weighted, and that one LOW remains without needing the multiplier. Re-set to "gameplay" via oversight 2026-05-15 to push /iterate toward mechanic findings rather than the doc/test queue. Cleared again via oversight 2026-05-15 — the gameplay bias weighted the reach-objective audit row (drained at 8611881) and Phase 36 promotion (friendship victory); both queues are now empty and /iterate should weight all categories equally going forward. Re-set to "reporter" via oversight 2026-05-16 after Phase 38 shipped, so /iterate weights the 6 Phase 39 self-critique rows (5 of which carry category `agent-ux / reporter`; the 6th `dev-ux / reporter`). Phase 40 (promoted at the same oversight) absorbs the MED 5.4 failures[] row; the bias steers /iterate at the remaining 5 once Phase 40 lands. -->
 
 ---
 

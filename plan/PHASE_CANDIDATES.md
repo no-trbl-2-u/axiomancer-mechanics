@@ -13,42 +13,6 @@
 
 ## Pending
 
-### Candidate: Phase 39 follow-up — prior-run diff in agent verify report
-- signal: oversight self-critique of Phase 39 (2026-05-16, shipped at
-  `602da33`) flagged that the report-to-report delta is the single most
-  valuable signal an agent could read — "tests added since last run",
-  "tests that flipped pass → fail", "tests that flipped fail → pass" —
-  and the prior JSON is already on disk at
-  `automation/last-verify-report.json`. The Phase 39 brief deferred this
-  as an out-of-scope follow-up; the data + plumbing now exist to do it
-  cheaply.
-- scope: Before writing the new report in
-  `automation/agent-vitest-reporter.mjs#writeJson`, read the prior
-  report at the same path (if present + schema-compatible). Compute
-  `diff: { addedTests: string[], removedTests: string[],
-  flippedToFail: [{file, name, prev: 'passed', curr: 'failed'}],
-  flippedToPass: [{file, name, prev: 'failed', curr: 'passed'}],
-  durationDeltaSlowest5: [{name, file, prevMs, currMs, deltaMs}] }`.
-  Surface a short "Changes since last run" section in the markdown
-  block, only when the diff is non-empty. Hermetic e2e fakes a "prior"
-  JSON on disk + drives the reporter, asserting each diff field; a
-  second case asserts the no-prior-file path emits the report cleanly
-  with `diff: null`; a third asserts an incompatible-schema prior
-  file degrades gracefully (logs a warning, sets `diff: null`).
-- unblocks: closes the Phase 39 brief's #1 deferred follow-up. Once
-  the diff is in the JSON, the `callouts[]` AUDIT row (Phase 39
-  self-critique item E) can include `"3 new tests since last report"`
-  / `"2 tests flipped pass → fail in src/Combat"` heuristics — those
-  are explicit dependencies, so ship this before that callouts row.
-- blocked-by: none. Phase 39 (`602da33`) shipped the prerequisite.
-  Independent of Phases 37, 38, and the other Phase 39 self-critique
-  rows.
-- score: 6 × 6 / 10 = 3.6
-- recommended-slot: as soon as one of Phase 37 / 38 lands — a clean
-  mid-priority slot. Pair with the Phase 39 self-critique row
-  "Top-level `failures[]` flat list in JSON" (AUDIT MED, score 5.4) so
-  the JSON schema settles in one pass rather than churning.
-
 ### Candidate: Befriendable-enemy content arc
 - signal: Phase 36 (`276eecb`) shipped the friendship-victory mechanics
   half (outcome string, half-XP grant, full loot, +1 moral meter), but
@@ -126,6 +90,41 @@
 ---
 
 ## Promoted
+
+### Phase 40 — Prior-run diff in agent verify report
+- promoted: 2026-05-16 (oversight; recommended-slot pairing)
+- source: oversight self-critique of Phase 39 (2026-05-16, shipped at
+  `602da33`); the report-to-report delta is the single most valuable
+  signal an agent could read, and the prior JSON is already on disk
+  at `automation/last-verify-report.json`. The Phase 39 brief deferred
+  this as out-of-scope; Phase 40 closes that gap.
+- summary: Before writing the new report in
+  `automation/agent-vitest-reporter.mjs#writeJson`, read the prior
+  report at the same path (if present + schema-compatible). Compute a
+  `diff: { addedTests, removedTests, flippedToFail, flippedToPass,
+  durationDeltaSlowest5 }` field on the rollup. Surface a "Changes
+  since last run" section in the markdown block when the diff is
+  non-empty. Bundle the Phase 39 self-critique AUDIT MED 5.4 row
+  ("top-level `failures[]` flat list in JSON") into this phase so the
+  agent-verify JSON schema settles in one pass rather than churning
+  across multiple iterate ticks.
+- acceptance:
+  - Reporter reads the prior `last-verify-report.json` if present
+    and schema-compatible; degrades gracefully (`diff: null`) on
+    missing file or incompatible schema.
+  - Rollup carries `diff: { addedTests, removedTests, flippedToFail,
+    flippedToPass, durationDeltaSlowest5 } | null`.
+  - Rollup also carries `failures: [{file, name, message, location}]`
+    (the bundled AUDIT MED row).
+  - Markdown block includes a `### Changes since last run` section
+    when the diff is non-empty; nothing rendered when `diff: null`.
+  - Hermetic e2e covers: fresh diff against a fabricated prior, no
+    prior file (writes report, `diff: null`), and incompatible-schema
+    prior (logs warning, `diff: null`).
+  - `docs/testing.md` Phase-39 subsection extended with the diff
+    schema; `plan/phases/phase_39_agent_verify_report.md` Follow-ups
+    block updated to mark the prior-run-diff item shipped.
+- score: 6 × 6 / 10 = 3.6
 
 ### Phase 39 — Agent-friendly hermetic e2e report
 - promoted: 2026-05-16 (oversight; user-flagged "I want a brief overview
