@@ -14,17 +14,11 @@
 
 ## Pending
 
-### [LOW] `WorldMap` type alias is `@deprecated` but still on the public barrel with no in-repo callers
-- pass: critique-11 (commit ced226a)
-- area: dead-code
-- observation: `src/World/types.d.ts:166-174` declares two `@deprecated` aliases: `WorldMap = MapState` and `Map = MapState`. `Map` is NOT re-exported through `src/World/index.ts` or `src/index.ts` — it's effectively dead and can be deleted from the types file. `WorldMap` IS exported from both barrels (`src/World/index.ts:26`, `src/index.ts:182`) but has zero in-repo callers (verified by grepping `WorldMap` across `src/`). The JSDoc reads "alias retained so older imports continue to compile" — that's a hypothetical external-consumer concern; given the package's pre-1.0 version (`0.7.0`), the kept-for-compat framing is generous. The standing rule "the barrel is locked" was set when the project shipped a stable API; this row flags the alias for confirmation, not for autonomous removal.
-- evidence: `grep -rn 'WorldMap' src/` returns the type declaration, the two barrel re-exports, and nothing else. Same for `Map` (declaration only — the World barrel does NOT re-export it).
-- suggested_fix: delete the `Map` alias outright (declaration-only, no callers, no barrel export). For `WorldMap`, ask in the next `/oversight` whether a `0.7.0` library can drop a deprecated alias from the barrel; if yes, remove from `src/World/types.d.ts` + the two `index.ts` re-exports. If no, leave a note in `docs/world.md` so external consumers know the alias is scheduled for removal at the next major bump.
-- source: critique
-
 ---
 
 ## Done
+
+- [x] **[LOW] `WorldMap` type alias is `@deprecated` but still on the public barrel with no in-repo callers** — partially resolved at iterate (this commit). Took the iterate-safe slice the critique row recommended: (1) deleted the internal-only `Map` alias from `src/World/types.d.ts` — declaration-only, not on any barrel, zero callers; (2) rewrote the `WorldMap` JSDoc to make the removal plan explicit (scheduled for the next major version bump; the project is pre-1.0 so external consumers should migrate now); (3) added a "Deprecated aliases" subsection to `docs/world.md` so external consumers learn about the schedule from the canonical world doc. The barrel surface itself is unchanged — Hard Rule 9 (locked barrel) requires `/oversight` to authorize the removal of `WorldMap` from `src/index.ts` + `src/World/index.ts`. Impact 3 × Ease 7 / 10 = 2.1.
 
 - [x] **[LOW] `Coastal-Village/maps.ts` header comment names dropped MapEventKinds (`npc`, `shop`)** — resolved at iterate (this commit). Rewrote the header chain example in post-Phase-23 terms: `fv-2 (interaction — quest giver) → fv-3 (village — shop) → fv-4 (encounter) → fv-5 (loot-cache) → fv-6 (encounter — boss)`. Notes inline that `npc` and `shop` were folded into `interaction` and `village`, so the next reader doesn't go looking for the dropped kinds. Impact 2 × Ease 9 / 10 = 1.8.
 
