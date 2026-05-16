@@ -91,6 +91,50 @@
 
 ## Promoted
 
+### Phase 39 — Agent-friendly hermetic e2e report
+- promoted: 2026-05-16 (oversight; user-flagged "I want a brief overview
+  of the findings whenever an agent runs the hermetic e2e")
+- source: oversight free-form request. Today an LLM agent running
+  `npm run verify` has to scrape Vitest's default reporter output to
+  understand what was tested and what failed. A structured report makes
+  agent-driven verification (and human eyeballing) self-service.
+- summary: Custom Vitest reporter that emits a structured agent-readable
+  report after every run. Two outputs from one reporter:
+  - JSON file at `automation/last-verify-report.json` —
+    `{ rollup: { total, passed, failed, skipped, durationMs, slowest5,
+    newFailures }, files: [{ path, status, durationMs,
+    tests: [{ name, status, durationMs, failure? }] }] }`.
+  - Markdown summary on stdout at end of run — totals, per-file rollup,
+    failed-assertion list (file:line + message), slowest 5 tests.
+  - New `npm run verify:agent` script (additive — `verify` stays
+    unchanged per Hard Rule 9 conservatism); reporter lives at
+    `automation/agent-vitest-reporter.ts` (TS, run via `tsx`).
+- acceptance:
+  - `npm run verify:agent` returns the same exit code as `npm run verify`.
+  - `automation/last-verify-report.json` exists post-run with the schema
+    above; a hermetic unit test pins the shape against synthetic Vitest
+    Reporter events.
+  - Stdout includes a clearly-delimited markdown summary block (e.g.
+    `## Verify summary` … `## End summary`).
+  - Markdown lists every failed test (`file:line — message`) and the
+    slowest five passing tests.
+  - At least one call-out heuristic implemented (e.g. "tests added since
+    last report" or "files with no tests" — pick one in /plan-a-phase).
+- design decisions captured upfront:
+  - audience: both — JSON file + markdown stdout (user pick).
+  - hook point: custom Vitest reporter (user pick — Vitest's Reporter
+    API provides onTestFileResult / onFinished cleanly).
+  - additive script: new `verify:agent`, do not modify the existing
+    `verify` to avoid breaking the deploy gate's expectations.
+- open in /plan-a-phase:
+  - exact JSON schema (field names, optional vs. required).
+  - which call-out heuristic ships first (added-tests-since-last-run
+    requires diffing against a previous report file; "longest test in
+    each file" is simpler).
+  - markdown delimiter convention so agents can pluck the block out
+    of stdout reliably.
+- score: 5 × 7 / 10 = 3.5
+
 ### Phase 38 — `ActiveEffect.sourceId` wiring for player-applied effects
 - promoted: 2026-05-16 (oversight; user pick from expand pass 4)
 - source: `/expand` candidate (pass 4); Phase 35 follow-up. The Phase 35
