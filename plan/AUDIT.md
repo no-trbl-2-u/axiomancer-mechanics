@@ -14,6 +14,54 @@
 
 ## Pending
 
+### [MED] Phase 39 reporter — JSON lacks a top-level `failures[]` flat list
+- category: agent-ux / reporter
+- impact: 6 (single biggest UX gap in the just-shipped agent report — every LLM consumer asking "what failed?" has to walk `files[].tests[]` and filter by `status === 'failed'`; precomputing a `failures: [{file, name, message, location}]` array on the rollup or alongside it removes that step for every reader)
+- ease: 9 (single-pass aggregation already happens in `buildReport()` — push to a parallel `failures` array while iterating; extend the hermetic test to assert the new field; ~12 LOC + 1 test case)
+- score: 5.4
+- source: oversight self-critique of Phase 39 implementation (2026-05-16); shipped at `602da33`
+- next: extend `automation/agent-vitest-reporter.mjs` `buildReport()` to populate `report.failures = [{file, name, message, location}]` (flat list across all files); update the JSON schema in `plan/phases/phase_39_agent_verify_report.md` and the "Agent-friendly report" subsection in `docs/testing.md`; add a hermetic case to `src/test-utils/e2e/agent-vitest-reporter.engine.test.ts` asserting the field is populated on the golden-path failing test and is `[]` on the empty / all-passing run.
+
+### [LOW] Phase 39 reporter — top-level `callouts[]` heuristics not computed
+- category: agent-ux / reporter
+- impact: 5 (markdown surfaces "Failed tests" and "Slowest 5" as section headings, but the JSON has no equivalent — an LLM reading just the JSON has to derive notability itself; a precomputed `callouts: string[]` like `"1 test failed in src/Combat"`, `"3 tests exceeded 50ms"`, `"0 new tests since last report"` short-circuits the work)
+- ease: 7 (heuristic logic + 3-4 specific call-out cases + hermetic test; some heuristics depend on the prior-run diff phase landing first, but failure-count + slow-count heuristics are independent)
+- score: 3.5
+- source: oversight self-critique of Phase 39 implementation (2026-05-16); shipped at `602da33`
+- next: in `buildReport()`, compute a `callouts: string[]` from {failureCount > 0, slowTestCount where durationMs > 50, unhandledErrors > 0, skipped > 0}. Drop the field on the rollup. Add hermetic cases pinning at least one populated callout and the empty-run zero-callouts case. Defer the "added since last report" call-out to the prior-run-diff phase candidate.
+
+### [LOW] Phase 39 reporter — slow failing tests are invisible
+- category: agent-ux / reporter
+- impact: 5 (`slowest5` filters by `status === 'passed'`, so a test that timed out or hung but failed never appears in the slow list; for an agent debugging a slow regression, this is exactly the test you'd want surfaced)
+- ease: 8 (two-line filter change + one new hermetic case pinning a slow failing test appears in `slowest5`)
+- score: 4.0
+- source: oversight self-critique of Phase 39 implementation (2026-05-16); shipped at `602da33`
+- next: in `automation/agent-vitest-reporter.mjs` `buildReport()`, drop the `filter(t => t.status === 'passed')` on the slowest-5 computation OR (preferred) keep `slowest5` as passed-only and add a parallel `slowestFailures: [{name, file, durationMs, status}]` (top 5 across failed + skipped). Decide in /iterate. Add hermetic case.
+
+### [LOW] Phase 39 reporter — per-test file:line locations missing
+- category: agent-ux / reporter
+- impact: 5 (test entries carry `name` and `status` but no source location, so "what was tested" is opaque without manually opening the file; Vitest's `experimental_getRunnerTask(testCase).location` exposes `file` + `line` for each `it()` block, which would let consumers jump straight to the assertion)
+- ease: 6 (the API is `experimental_*` so signature drift is a risk; need to import from `vitest/node` or `vitest/dist/...`, test against the synthetic stub, and document the experimental dependency in the brief follow-ups; ~15 LOC + test)
+- score: 3.0
+- source: oversight self-critique of Phase 39 implementation (2026-05-16); shipped at `602da33`
+- next: import `experimental_getRunnerTask` (or the stable equivalent if 4.x stabilises it before this lands), call it on each `testCase` in `buildReport()`, populate `test.location = "<file>:<line>"` per entry; update the hermetic test stubs to expose a `location` field that the reporter reads through. Document the experimental dependency in `plan/phases/phase_39_agent_verify_report.md` Follow-ups.
+
+### [LOW] Phase 39 reporter — verify:agent drops the default progress reporter
+- category: dev-ux / reporter
+- impact: 3 (running `npm run verify:agent` manually shows no progress output for ~5 seconds — Vitest's default per-file tick is replaced wholesale by the agent reporter; a long failing suite is silent until the end)
+- ease: 10 (one package.json edit: `vitest run --reporter=default --reporter=./automation/agent-vitest-reporter.mjs` — Vitest 4 supports multiple `--reporter` flags)
+- score: 3.0
+- source: oversight self-critique of Phase 39 implementation (2026-05-16); shipped at `602da33`
+- next: update the `verify:agent` script in `package.json` to chain `--reporter=default --reporter=./automation/agent-vitest-reporter.mjs`. Smoke-test that both the default progress output and the agent summary appear. No new tests required (config-only change), but verify gate must pass.
+
+### [LOW] Phase 39 reporter — `durationMs` precision is inconsistent between JSON and markdown
+- category: agent-ux / reporter / cleanup
+- impact: 2 (JSON emits raw floats like `66.41922499999987`; markdown rounds via `.toFixed(0)`; a strict JSON consumer either has to round downstream or live with float noise — minor but inconsistent)
+- ease: 10 (single `Math.round` call in `buildReport()` per test entry and on `files[].durationMs`; 1-2 lines + a hermetic-test tightening)
+- score: 2.0
+- source: oversight self-critique of Phase 39 implementation (2026-05-16); shipped at `602da33`
+- next: in `buildReport()`, wrap `diag?.duration ?? 0` with `Math.round(...)` everywhere it lands in the JSON; update the existing hermetic-test assertions to use integer `durationMs` values; verify gate.
+
 ### [LOW] `getCoastalMap` barrel export — authorized for removal by oversight
 - category: dead-code
 - impact: 3 (zero in-repo callers; `@deprecated` per JSDoc since Phase 23 era; pre-1.0 permits breaking changes in minor bumps; replacement `getMapDefinition('coastal-continent', mapName)` + `createMapState` already exists)
