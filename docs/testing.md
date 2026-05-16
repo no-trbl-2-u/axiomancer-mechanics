@@ -96,8 +96,12 @@ artefacts land at the end of the run:
   `failures: [{file, name, message, location}]` flat list (Phase 40),
   per-file entries (`path`, `status`, `durationMs`), and per-test
   entries (`name`, `status`, `durationMs`, optional
-  `failure: { message, diff, actual, expected, location }`). The file
-  is gitignored — it's a fresh snapshot every run.
+  `location: "<file>:<line>:<col>"` for the `it()` block — sourced
+  via Vitest's experimental `experimental_getRunnerTask` API; requires
+  `includeTaskLocation: true` in `vitest.config.ts`, which is set —
+  and optional `failure: { message, diff, actual, expected, location }`
+  for the assertion site). The file is gitignored — it's a fresh
+  snapshot every run.
 - **Delimited markdown block on stdout** — between literal
   `## Verify summary` and `## End summary` lines. Lists totals, failed
   tests as `file:line:col — <name>: <message>`, the slowest five

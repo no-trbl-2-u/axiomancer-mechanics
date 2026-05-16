@@ -29,6 +29,14 @@
 
 import fs from 'fs';
 import path from 'path';
+// iterate (Phase 39 self-critique) — `experimental_getRunnerTask` exposes
+// the underlying runner task object, which carries `location: { line,
+// column }` when vitest is run with `includeTaskLocation: true`
+// (set in vitest.config.ts). The `experimental_*` prefix means signature
+// drift is possible; the reporter degrades gracefully — if the export
+// is renamed or the call throws, location stays undefined and no other
+// behaviour breaks.
+import { experimental_getRunnerTask } from 'vitest/node';
 
 const DEFAULT_JSON_PATH = 'automation/last-verify-report.json';
 const MARKDOWN_START = '## Verify summary';
@@ -81,10 +89,12 @@ export default class AgentVitestReporter {
                 const result = testCase.result();
                 const diag = safeDiagnostic(testCase);
                 const status = result?.state ?? 'pending';
+                const sourceLocation = locationFromRunner(testCase, filePath);
                 const entry = {
                     name: testCase.fullName,
                     status,
                     durationMs: diag?.duration ?? 0,
+                    location: sourceLocation,
                 };
                 if (status === 'failed' && Array.isArray(result?.errors) && result.errors.length > 0) {
                     const err = result.errors[0];
@@ -430,4 +440,16 @@ function locationFromError(err) {
     const first = err?.stacks?.[0];
     if (!first) return undefined;
     return `${first.file}:${first.line}:${first.column}`;
+}
+
+function locationFromRunner(testCase, filePath) {
+    try {
+        if (typeof experimental_getRunnerTask !== 'function') return undefined;
+        const runnerTask = experimental_getRunnerTask(testCase);
+        const loc = runnerTask?.location;
+        if (!loc) return undefined;
+        return `${filePath}:${loc.line}:${loc.column}`;
+    } catch {
+        return undefined;
+    }
 }

@@ -247,6 +247,36 @@ describe('AgentVitestReporter — empty run', () => {
     });
 });
 
+describe('AgentVitestReporter — per-test source location (iterate, Phase 39 self-critique)', () => {
+    it('stamps `tests[].location` undefined when the testCase is a synthetic stub (runner returns nothing)', async () => {
+        // The reporter wires experimental_getRunnerTask + the
+        // includeTaskLocation: true config flag (vitest.config.ts) so live
+        // runs populate `tests[].location` with `file:line:col`. Synthetic
+        // stubs in this file don't expose runner tasks; the helper
+        // try/catches and yields undefined. Pin that fallback.
+        const rootDir = process.cwd();
+        const jsonPath = tmpPath();
+        const stream = makeStream();
+        const fileA = path.join(rootDir, 'src/A/e2e/a.engine.test.ts');
+
+        const reporter = new AgentVitestReporter({
+            jsonOutputPath: jsonPath, markdownStream: stream, rootDir,
+        });
+        await reporter.onTestRunEnd([
+            makeModule({
+                absPath: fileA, durationMs: 5, ok: true, state: 'passed',
+                cases: [passingCase('Alpha > ok', 3)],
+            }),
+        ], [], 'passed');
+
+        const parsed = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
+        expect(parsed.files[0].tests[0].location).toBeUndefined();
+        // The presence of the key itself is fine (it's serialised) — the
+        // value is what consumers check. Reporter never crashes when the
+        // runner-task lookup throws for a non-vitest test object.
+    });
+});
+
 describe('AgentVitestReporter — callouts[] heuristics (iterate, Phase 39 self-critique)', () => {
     it('precomputes failure-count, skipped-count, slow-test and diff-aware call-outs', async () => {
         const rootDir = process.cwd();

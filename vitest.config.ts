@@ -19,5 +19,11 @@ export default defineConfig({
   test: {
     include: ['src/**/*.test.ts'],
     exclude: ['node_modules/**'],
+    // Populate `Task.location` on each test so the agent reporter
+    // (automation/agent-vitest-reporter.mjs) can surface `file:line`
+    // per test entry via `experimental_getRunnerTask(testCase).location`.
+    // Negligible cost: vitest computes by `new Error()` + stack-parse
+    // at collection time.
+    includeTaskLocation: true,
   },
 });
