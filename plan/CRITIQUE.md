@@ -6,13 +6,37 @@
 > by `/iterate`.
 
 <!-- Metadata (updated by /critique after each pass):
-> Last pass: 2026-05-16 at commit 1180f51
-> Pass count: 14
+> Last pass: 2026-05-16 at commit cee2614
+> Pass count: 15
 -->
 
 ---
 
 ## Pending
+
+### [LOW] Phase 37 CLI `shopLoop` sell-price floor (`Math.max(1, …)`) enables a small infinite-money exploit for any ware at price ≤ 2
+- pass: critique-15 (commit cee2614)
+- area: gameplay / cli / exploit
+- observation: `src/CLI/game.cli.ts` `shopLoop` computes the displayed sell price as `Math.max(1, Math.floor(matching.price / 2))`. For any ware whose `price` is 1 or 2 the formula yields a sell price ≥ the buy price (price-1 → floor(0.5) = 0, max-1 → 1; price-2 → floor(1) = 1 — equal to buy price). The player can then buy → sell → buy → sell at zero net cost, or at +1 currency per cycle if a future ware lands at price 0 in the catalogue. No live exploit today (cheapest authored ware is `minor-healing-potion` at 12 → sells for 6, comfortably profitable for the shop), but the heuristic is fragile against future content authoring.
+- evidence: `src/CLI/game.cli.ts:228` — `const sellPrice = matching ? Math.max(1, Math.floor(matching.price / 2)) : 1;`. The engine reducer `sellItem` (`src/Items/shop.reducer.ts:34`) accepts any non-negative price; the CLI is the only place enforcing a policy, and the policy is silently broken at the low end.
+- suggested_fix: drop the `Math.max(1, …)` floor and accept `Math.floor(ware.price / 2)` as-is (a price-1 ware sells for 0; a price-2 ware sells for 1 — both correctly net-negative for the player). Or move the heuristic into a `defaultSellPrice(ware: ShopWare): number` helper in `src/Items/shop.reducer.ts` so the policy is engine-tier + unit-testable; the CLI imports + uses it. Either approach plus a Phase 37 e2e case asserting "buy then sell nets ≤ 0 currency for the player on every authored ware" prevents regression.
+- source: critique
+
+### [LOW] Spec 23 acceptance checklist has 11 unchecked boxes despite Phases 23 / 24 / 25 / 31 / 37 shipping every surface listed
+- pass: critique-15 (commit cee2614)
+- area: docs / spec-drift
+- observation: `specs/23-map-events.md:170-185` lists 11 acceptance items, all still `[ ]`. Each one shipped: the 8-kind taxonomy (Phase 23 `fd01029`), the per-kind handlers (Phase 23), the `resolve-map-event.ts` dispatcher (Phase 23), `discoveredNodes` + `consumedNodes` on `MapState` (Phase 23), `revealAdjacent` + `markNodeConsumed` reducers (Phase 23), `processNode` and the old types removed (Phase 25 `7002642`), and the verify gate has been green throughout. Additionally, the `village` type sketch at `specs/23-map-events.md:95` and `:138` is now stale — Phase 37 added `shop?: ShopInventory` to `VillagePayload` and to the resolved-event variant, but the spec sketch only shows `merchants: NPC[]`. Same pattern as Phase 34 unit 5 (Spec 06 + 12 acceptance ticks) — the acceptance section is the durable promise; it should be ticked when the surface ships.
+- evidence: `specs/23-map-events.md:170-185` (all 11 boxes unchecked); `:95` + `:138` (pre-Phase-37 `village` type sketches missing `shop?`); commit log confirms each item shipped (`fd01029`, `7002642`, `4b12e27`, `711b49e`, `f9c18f0`).
+- suggested_fix: tick all 11 acceptance boxes with their commit hashes (mirror the format used at `specs/06-*.md` Phase 34 unit 5). Extend the two type sketches with the Phase 37 `shop?: ShopInventory` field and add a 12th acceptance line for the shop extension. Pure docs commit; no code touched.
+- source: critique
+
+### [LOW] Shop economy has no agent-graded walkthrough at `automation/scripts/walkthroughs/shop.{json,goal.md}`
+- pass: critique-15 (commit cee2614)
+- area: tests / agent-coverage
+- observation: Every other Phase 26+ CLI surface has a paired `automation/scripts/walkthroughs/<surface>.json` + `<surface>.goal.md` for the agent-graded harness (boss-encounter, character-sheet, item-use, map-events, save-load, skill-learning, skills-in-combat, stat-allocation — eight files indexed in `automation/scripts/walkthroughs/README.md`). Phase 37 shipped the `shopLoop` CLI affordance but did not author the walkthrough pair; the Phase 37 brief Follow-ups punted it and `docs/items.md` Pending lists it, but neither AUDIT.md nor CRITIQUE.md carried a row so /iterate had nothing to pick up. The CLI shop surface is now the only post-Phase-37 affordance without agent-graded coverage.
+- evidence: `ls automation/scripts/walkthroughs/` returns 8 walkthroughs, none shop-related; `plan/phases/phase_37_shop_economy.md` Follow-ups section names the gap; `docs/items.md` Pending block lists it.
+- suggested_fix: author `automation/scripts/walkthroughs/shop.json` (boots an `apprentice` preset, moves to `fv-3`, exercises the buy / sell loop, exits) and `shop.goal.md` (asserts the buy decrements currency + adds the item, the sell-back decrements inventory + increments currency). Update `automation/scripts/walkthroughs/README.md` to list the new walkthrough. Mirrors the pattern at e.g. `stat-allocation.{json,goal.md}` (Phase 29).
+- source: critique
 
 ### [LOW] `automation/spec05_smoke.ts` is a Phase-17-orphaned standalone script with no surviving caller
 - pass: critique-14 (commit 1180f51)
