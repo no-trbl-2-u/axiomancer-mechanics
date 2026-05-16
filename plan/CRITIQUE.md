@@ -22,17 +22,11 @@
 - suggested_fix: delete the `Map` alias outright (declaration-only, no callers, no barrel export). For `WorldMap`, ask in the next `/oversight` whether a `0.7.0` library can drop a deprecated alias from the barrel; if yes, remove from `src/World/types.d.ts` + the two `index.ts` re-exports. If no, leave a note in `docs/world.md` so external consumers know the alias is scheduled for removal at the next major bump.
 - source: critique
 
-### [LOW] `Coastal-Village/maps.ts` header comment names dropped MapEventKinds (`npc`, `shop`)
-- pass: critique-11 (commit ced226a)
-- area: docs
-- observation: The header comment at `src/World/Continents/Coastal-Village/maps.ts:8-10` describes the fishing-village chain as: `fv-1 (start) → fv-2 (npc — quest giver) → fv-3 (shop) → fv-4 (encounter) → fv-5 (treasure) → fv-6 (boss-encounter)`. Phase 23 (`fd01029`) dropped the `npc` and `shop` MapEventKinds in favour of `interaction` and `village`; Phase 24 (`4b12e27`) migrated the actual pool config. The runtime pools at the bottom of the file use the new kinds correctly, but the header comment is stale — a new contributor reading the file would assume `npc` / `shop` are still live event kinds.
-- evidence: `src/World/Continents/Coastal-Village/maps.ts:8-10` (header) vs. the Phase 23/24 `MapEventKind` union: `'encounter' | 'interaction' | 'gathering' | 'rest' | 'village' | 'cutscene' | 'hazard' | 'loot-cache'`.
-- suggested_fix: rewrite the chain example to use the current kinds — `fv-2 (interaction — quest giver) → fv-3 (village — shop)`. One-line fix; the actual pool registration code is already correct.
-- source: critique
-
 ---
 
 ## Done
+
+- [x] **[LOW] `Coastal-Village/maps.ts` header comment names dropped MapEventKinds (`npc`, `shop`)** — resolved at iterate (this commit). Rewrote the header chain example in post-Phase-23 terms: `fv-2 (interaction — quest giver) → fv-3 (village — shop) → fv-4 (encounter) → fv-5 (loot-cache) → fv-6 (encounter — boss)`. Notes inline that `npc` and `shop` were folded into `interaction` and `village`, so the next reader doesn't go looking for the dropped kinds. Impact 2 × Ease 9 / 10 = 1.8.
 
 - [x] **[LOW] `src/Combat/combat-effects.ts` declares magic-number constants inline** — resolved at iterate (this commit). Extracted `src/Combat/combat.constants.ts` and moved all five Combat-private tuning constants out of `combat-effects.ts`: `STAT_PROC_BONUS_PER_POINT`, `STATUS_CHANCE_BUFF_BONUS`, `STATUS_CHANCE_EFFECT_ID`, `CRIT_INTENSITY_BONUS`, `CRIT_DURATION_BONUS`. Each carries its original JSDoc. The new file's header points readers at `Game/game-mechanics.constants.ts` for cross-cutting numbers; combat-effects.ts re-imports the five at the top of the file. Mirrors the Game module's pattern; future combat-tuning has one place to land. Impact 3 × Ease 8 / 10 = 2.4.
 

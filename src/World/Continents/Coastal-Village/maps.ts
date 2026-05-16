@@ -5,9 +5,11 @@
  * `MapState`, built via `createMapState(definition)` and stored under
  * `WorldState.currentMap`.
  *
- * The `fishing-village` chain demos the full Spec 08 exploration loop:
- *   fv-1 (start) → fv-2 (npc — quest giver) → fv-3 (shop) → fv-4 (encounter)
- *                → fv-5 (treasure) → fv-6 (boss-encounter).
+ * The `fishing-village` chain demos the full Spec 08 exploration loop in
+ * post-Phase-23 MapEventKind terms (`npc` and `shop` were folded into
+ * `interaction` and `village`):
+ *   fv-1 (start) → fv-2 (interaction — quest giver) → fv-3 (village — shop)
+ *                → fv-4 (encounter) → fv-5 (loot-cache) → fv-6 (encounter — boss).
  */
 
 import { MapDefinition, Quest } from '../../types';
