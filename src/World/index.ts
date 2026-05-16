@@ -23,7 +23,7 @@ export {
 } from './map.registry';
 
 export type {
-    WorldState, WorldMap, Continent, Quest, UniqueEvent,
+    WorldState, Continent, Quest, UniqueEvent,
     Reward, MapNode, NodeId, Encounter,
     MapDefinition, MapState, QuestObjective, QuestObjectiveType, QuestStatus, QuestLog,
 } from './types';

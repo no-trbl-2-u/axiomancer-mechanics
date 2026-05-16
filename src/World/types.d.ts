@@ -163,17 +163,6 @@ export interface MapState {
     consumedNodes: NodeId[];
 }
 
-/**
- * @deprecated Use `MapState` for runtime progress and `MapDefinition` for the
- * static template (lookup via `getMapDefinition`). `WorldMap` remains on the
- * public barrel as a `MapState` alias for backwards compatibility; scheduled
- * for removal at the next major version bump (the project is pre-1.0).
- * Internal callers should drop this alias immediately — `grep -rn 'WorldMap'
- * src/` reports zero in-repo uses as of the iterate pass that authored this
- * note.
- */
-export type WorldMap = MapState;
-
 /** A region containing several maps. */
 export interface Continent {
     name: ContinentName;

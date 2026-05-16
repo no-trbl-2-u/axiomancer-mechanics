@@ -42,14 +42,15 @@ interface WorldState {
 }
 ```
 
-### Deprecated aliases
+### Removed aliases (historical)
 
-`src/World/types.d.ts` ships two `@deprecated` type aliases that resolve to
-`MapState`: `WorldMap` (still re-exported from the core barrel for backwards
-compatibility) and `Map` (internal-only — not on the barrel). New code should
-use `MapState` (runtime) and `MapDefinition` (static template) directly. The
-`WorldMap` alias is scheduled for removal at the next major version bump; the
-project is pre-1.0, so external consumers should migrate now.
+`WorldMap` and `Map` were `@deprecated` type aliases for `MapState`.
+The internal-only `Map` alias was dropped at iterate `63bfbbe`; the
+public-barrel `WorldMap` alias was authorized for removal by oversight
+on 2026-05-15 and dropped at the iterate pass that authored this
+update — see `plan/AUDIT.md` Done. Migrate to `MapState` (runtime
+progress) and `MapDefinition` (static template lookup via
+`getMapDefinition`).
 
 `GameState` is the root for the whole save, and carries the quest log and
 world flags so dialogue / quest progression can persist:

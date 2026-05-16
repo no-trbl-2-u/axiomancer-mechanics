@@ -14,17 +14,13 @@
 
 ## Pending
 
-### [LOW] `WorldMap` barrel export — authorized for removal by oversight
-- category: dead-code
-- impact: 3 (zero in-repo callers; deprecated since `63bfbbe`; the pre-1.0 version means breaking changes can land in minor bumps; external RN consumer should migrate to `MapState` per `docs/world.md`)
-- ease: 8 (drop three lines: declaration in `src/World/types.d.ts`, re-export in `src/World/index.ts:26`, re-export in `src/index.ts:182`; refresh the `WorldMap` mention in README Public API table and any remaining docs)
-- score: 2.4
-- source: oversight authorization (2026-05-15) of the partial-resolve note on `[LOW] WorldMap type alias` (CRITIQUE pass 11)
-- next: remove `WorldMap` from `src/index.ts`, `src/World/index.ts`, and `src/World/types.d.ts`. Update the README Public API World row (currently says "WorldMap is a `@deprecated` alias of MapState..."). Update `docs/world.md` Deprecated aliases subsection to past-tense ("Removed at iterate ..."). Verify gate. Hard Rule 9 unlock granted by `/oversight` 2026-05-15.
+_No open findings — drain to /iterate or /expand as new ones arrive._
 
 ---
 
 ## Done
+
+- [x] **[LOW] `WorldMap` barrel export — authorized for removal by oversight** — resolved at iterate (this commit). Dropped `WorldMap` from `src/index.ts:182`, `src/World/index.ts:26`, and the type declaration + JSDoc at `src/World/types.d.ts:166-175`. Updated the README Public API World row to drop the deprecated-alias parenthetical, and rewrote the `docs/world.md` "Deprecated aliases" subsection to past-tense "Removed aliases (historical)". Hard Rule 9 unlock was granted by `/oversight` 2026-05-15; the pre-1.0 version allows breaking changes in minor bumps. Verify: 469/469 tests; tsc + tsc-alias clean. Impact 3 × Ease 8 / 10 = 2.4.
 
 - [x] **[LOW] `plan/CURRENT-STATE.md` reads as current but is frozen at 2026-05-13** — resolved at iterate (this commit). The file's intent (per `plan/README.md`) is "Baseline assessment written at nexus adoption" — a historical snapshot, not live state. But the file header just said `# Current state — 2026-05-13` and the Known broken / What's missing sections list issues that all subsequently shipped (Phase 09 / 11 / 12 / 13 / 17 / 21 / 26 / 27 / 29 / 30 / 34 / 35). A reader landing on the file without reading `plan/README.md` first would treat it as authoritative and be misled. Added a short "frozen baseline" callout under the header that names the file's role, lists the phases that have shipped since, and redirects readers to `plan/steps/01_build_plan.md` for the live picture. Impact 3 × Ease 9 / 10 = 2.7.
 

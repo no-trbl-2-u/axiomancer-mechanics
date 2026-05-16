@@ -179,7 +179,7 @@ export {
     DIFFICULTY_LEVEL_BANDS,
 } from './World';
 export type {
-    WorldState, WorldMap, Continent, Quest, UniqueEvent,
+    WorldState, Continent, Quest, UniqueEvent,
     Reward, MapNode, NodeId, Encounter,
     MapName, ContinentName, QuestName,
     MapDefinition, MapState, QuestObjective, QuestObjectiveType, QuestStatus, QuestLog,
