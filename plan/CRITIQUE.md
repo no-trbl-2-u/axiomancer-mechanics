@@ -14,22 +14,11 @@
 
 ## Pending
 
-### [LOW] README Public API table lags Phases 29 / 30 / 32 / 35 + the iterate `combatEvents` extension
-- pass: critique-12 (commit e1e1b1e)
-- area: docs
-- observation: `README.md:62-72` is the "Public API at a glance" table, last meaningfully refreshed at `2a8a9ae` (Phase 18 / 21 / 23 / 24 additions). Since then five phases plus an iterate extension shipped on the barrel without making it back to the README. Specifically missing:
-    - **Character row (line 63):** `allocateStatPoint`, `STAT_POINTS_PER_LEVEL`, `availableStatPoints` on `Character` (Phase 29); `Character.id` field + auto-gen (Phase 35); the `LEARN_SKILL` and `ALLOCATE_STAT_POINT` actions on the GameAction union.
-    - **Skills row (line 67):** `learnSkill`, `getAvailableSkills`, `meetsLearningRequirement` (Phase 30); the new `learningRequirement` field on Tier 2 / Tier 3 entries (Phase 33).
-    - **Game row (line 68):** `EnginePayload.unlockedSkills` (Phase 30 unit 2) and `EnginePayload.combatEvents` (iterate `5ac6caa`).
-    - **World row (line 69):** `unlockAdjacent` reducer (Phase 31); `WorldMap` listed alongside non-deprecated types with no marker — but the iterate pass at `63bfbbe` documented `WorldMap` as `@deprecated` scheduled for next major version bump.
-  `docs/api.md` is current (Phase 34 unit 3 refreshed it at `18f0038`), so the canonical reference is fine; only the README's at-a-glance table drifted again.
-- evidence: `grep -n 'allocateStatPoint\|learnSkill\|getAvailableSkills\|unlockedSkills\|combatEvents\|Character.id' README.md` returns no matches; `docs/api.md` covers all six.
-- suggested_fix: append the missing surface to each module row in the README's Public API table. For `WorldMap`, either drop it or annotate "(deprecated — scheduled for removal at next major version bump; see `docs/world.md`)". One commit; the table is the only thing changing.
-- source: critique
-
 ---
 
 ## Done
+
+- [x] **[LOW] README Public API table lags Phases 29 / 30 / 32 / 35 + the iterate `combatEvents` extension** — resolved at iterate (this commit). Refreshed five rows of the table: (1) Character — added `Character.id` auto-gen note (Phase 35) and Phase 29 stat-allocation surface; (2) Combat reducer — dropped the deleted `addBattleLogEntry` alias, noted the three end-variants stay for back-compat; (3) Skills — added Phase 30 runtime learning (`learnSkill`, `getAvailableSkills`, `meetsLearningRequirement`) + Phase 33 `learningRequirement` field note; (4) Game — added `ALLOCATE_STAT_POINT` + `LEARN_SKILL` actions and `EnginePayload.unlockedSkills` + `EnginePayload.combatEvents` optional fields; (5) World — added Phase 31 `unlockAdjacent`, the iterate-shipped reach-objective auto-advance, and a deprecation marker on `WorldMap` pointing at `docs/world.md`. Impact 5 × Ease 7 / 10 = 3.5.
 
 - [x] **[LOW] `WorldMap` type alias is `@deprecated` but still on the public barrel with no in-repo callers** — partially resolved at iterate (this commit). Took the iterate-safe slice the critique row recommended: (1) deleted the internal-only `Map` alias from `src/World/types.d.ts` — declaration-only, not on any barrel, zero callers; (2) rewrote the `WorldMap` JSDoc to make the removal plan explicit (scheduled for the next major version bump; the project is pre-1.0 so external consumers should migrate now); (3) added a "Deprecated aliases" subsection to `docs/world.md` so external consumers learn about the schedule from the canonical world doc. The barrel surface itself is unchanged — Hard Rule 9 (locked barrel) requires `/oversight` to authorize the removal of `WorldMap` from `src/index.ts` + `src/World/index.ts`. Impact 3 × Ease 7 / 10 = 2.1.
 
