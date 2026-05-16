@@ -5,13 +5,118 @@
 > `## Promoted` or `## Rejected`.
 
 <!-- Metadata (updated by /expand after each pass):
-> Last pass: 2026-05-16 at commit 7306111
-> Pass count: 4
+> Last pass: 2026-05-16 at commit 59db1d2
+> Pass count: 5
 -->
 
 ---
 
 ## Pending
+
+### Candidate: Phase 41 — Agent verify reporter polish bundle
+- signal: After Phase 40 closed the MED 5.4 row (commit `87bab8c`),
+  five Phase 39 self-critique AUDIT rows remain, all carrying the
+  `reporter` category — exactly the queue the oversight-set iterate
+  bias (`> Bias: reporter`, plan/AUDIT.md) is steering. Letting
+  /iterate drain them one tick at a time costs ~5 commit cycles + 5
+  briefings of the same module; bundling them as a single phase
+  matches the Phase 34 (docs sweep) and Phase 40 (failures[] bundled
+  with prior-run-diff) pattern — fewer briefings, one verify gate,
+  schema settles in one pass.
+- scope: Land five focused changes to
+  `automation/agent-vitest-reporter.mjs` in one phase:
+  1. `rollup.callouts: string[]` heuristic strings ("3 tests > 50ms",
+     "1 test failed in src/Combat", "0 new tests since last report"
+     reads off `rollup.diff` already shipping at Phase 40).
+  2. Slow-failed-tests surface — either drop the `passed`-only filter
+     on `slowest5` or add `slowestFailures: [{name, file, durationMs,
+     status}]` (decide in brief; bundle the existing AUDIT row's
+     trade-off note).
+  3. Per-test `location` via Vitest's `experimental_getRunnerTask`
+     (file:line for each `it()`). Document the experimental dep in
+     the brief Follow-ups.
+  4. Chain `--reporter=default --reporter=./automation/...` in the
+     `verify:agent` script so manual runs keep progress output.
+  5. Round `durationMs` to integer milliseconds in JSON for
+     consistency with the markdown's `.toFixed(0)`.
+  Hermetic test extensions for each behaviour; verify gate + smoke
+  `npm run verify:agent` after.
+- unblocks: Drains five AUDIT rows in one phase (combined score 15.5).
+  Settles the reporter schema; the polish queue goes empty and the
+  bias can be cleared (oversight). The next reporter-touching work
+  is a feature add, not a polish item.
+- blocked-by: None; Phase 40 (`87bab8c`) shipped every prerequisite
+  (failures[], diff, JSON shape). Independent of remaining pending
+  candidates (befriendable-enemy, Northern Continent, autosave).
+- score: 5 × 7 / 10 = 3.5
+- recommended-slot: as the next phase. Pairs with the standing
+  reporter bias; once shipped the bias can be cleared at the
+  following oversight.
+
+### Candidate: Specs + Knowledge-Gaps acceptance sweep (Spec 04 / 10 / 23 + stale-Q retirement)
+- signal: Critique pass 15 (commit `1772f30`) flagged Spec 23 with 11
+  unchecked acceptance boxes despite Phases 23 / 24 / 25 / 31 / 37
+  shipping the surface. Walking the rest of the spec tree turns up
+  the same pattern at Spec 04 (skills engine — every box still `[ ]`
+  despite Phase 09 + Spec 04 + 04b shipping) and Spec 10 (moral
+  meter — every box still `[ ]` despite Phase 10 shipping with
+  `moralMeter` on `GameState`). Separately, `Knowledge-Gaps.md` Qs
+  15 / 17 / 18 / 19 / 20 are now stale — answered by shipped specs
+  (Spec 04 + 04b for Q15/Q17, Spec 05 / 05b for Q18/Q19, MapEvents
+  engine for Q20) but never marked closed.
+- scope: One commit per spec (3 commits) — tick every acceptance box
+  with the commit hash that shipped it (mirror the Phase 34 unit 5
+  pattern at `specs/06-*.md`). Update Spec 23's type sketches with
+  the Phase 37 `shop?: ShopInventory` field. One additional commit
+  retires Qs 15 / 17 / 18 / 19 / 20 in `Knowledge-Gaps.md` with the
+  same "resolved at <phase>" treatment Q5 / Q12 / Q22 already got.
+  Pure docs; no code touched.
+- unblocks: Closes the Spec 23 critique-15 row, plus drains the
+  acceptance drift for the next two largest specs. Knowledge-Gaps
+  becomes a smaller, accurate inventory of genuinely-open design
+  questions (Q13 / Q14 / Q16 will be the surviving combat-tuning
+  trio worth their own phase later).
+- blocked-by: None.
+- score: 5 × 8 / 10 = 4.0
+- recommended-slot: After Phase 41. Pure docs phase pairs well with
+  a one-tick `/iterate` after the reporter bundle, so the loop
+  alternates "code phase → docs phase" while the bias decays
+  naturally.
+
+### Candidate: Enemy-skill caster path (combat depth)
+- signal: Phase 38 brief explicitly named this as the next direction:
+  "the skill caster is always the player in this codebase
+  (`skill.engine.ts` takes a `player: Character` param; there is no
+  `executeSkill(caster: …)`). Future enemy-skill work would change
+  this, but it's not a Phase 38 concern." Spec 07 acceptance says
+  the enemy AI dispatches between `attack` / `defend`; today's
+  `decideEnemyAction` does exactly that and ignores any
+  `skills?: string[]` on Enemy. Elite + boss enemies feel
+  mechanically thin because every fight resolves on the same two
+  verbs. The `learnSkill` + `getAvailableSkills` surface from
+  Phase 30 already exists; this is the symmetric application path.
+- scope: Three units. Unit 1 — refactor `executeSkill` to take a
+  `caster: Combatant` and `target: Combatant` (today: `player +
+  enemy` positional args + `targetType: 'self' | 'enemy'` flag).
+  Unit 2 — extend `decideEnemyAction` to optionally pick a skill
+  from the enemy's `equippedSkills` when affordable; route through
+  the (now agnostic) `executeSkill`. Author 1-2 elite / boss
+  enemies with a skill rotation (e.g. Coastal Tyrant gets
+  `argument-from-authority` per spec 04b). Unit 3 — hermetic e2e
+  drives an enemy-skill-fired round through `resolveCombatRound`;
+  `combat:round` event carries the per-skill `SkillPhaseEvent` for
+  the enemy actor. Update `docs/enemy.md` + `docs/skills.md`.
+- unblocks: Combat depth lever. Spec 07 elite / boss progression
+  becomes mechanically distinct. The `ActiveEffect.sourceId` wiring
+  from Phase 38 starts paying off (enemy debuffs now have a real
+  caster). Future feature: per-enemy skill libraries by tier.
+- blocked-by: None — every prerequisite (Phase 30 learnSkill, Phase
+  35 Character.id, Phase 38 sourceId wiring) has shipped.
+- score: 6 × 4 / 10 = 2.4 (high value; medium effort because the
+  refactor touches the executeSkill signature + every call site in
+  the resolver path).
+- recommended-slot: After the polish bundle + docs sweep. Combat
+  feature work after the tooling settles.
 
 ### Candidate: Befriendable-enemy content arc
 - signal: Phase 36 (`276eecb`) shipped the friendship-victory mechanics
