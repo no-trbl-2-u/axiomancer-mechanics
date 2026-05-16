@@ -27,6 +27,14 @@
  * `plan/phases/phase_40_prior_run_diff.md`.
  */
 
+// @ts-check
+//
+// iterate (critique-16 path a) — `// @ts-check` enables IDE-time
+// TypeScript checking on this `.mjs` file. The verify gate is
+// unaffected because `tsconfig.json` `rootDir: ./src` excludes
+// `automation/` from `tsc --noEmit`. JSDoc `@param`/`@returns`
+// annotations on the helpers below give editors enough signal to
+// catch typos and shape drift at edit time.
 import fs from 'fs';
 import path from 'path';
 // iterate (Phase 39 self-critique → critique-16) —
@@ -77,6 +85,25 @@ export default class AgentVitestReporter {
             : path.join(this.rootDir, this.jsonOutputPath);
     }
 
+    /**
+     * Aggregate one Vitest run into the JSON report shape.
+     *
+     * @param {ReadonlyArray<*>} testModules - Vitest test-module objects emitted by `onTestRunEnd`.
+     * @param {ReadonlyArray<*>} unhandledErrors - Errors not attributable to any test.
+     * @param {string} reason - Run termination reason ('passed' / 'failed' / 'interrupted').
+     * @returns {{
+     *   rollup: {
+     *     total: number, passed: number, failed: number, skipped: number,
+     *     reason: string, unhandledErrors: number,
+     *     slowest5: Array<{name: string, file: string, durationMs: number}>,
+     *     slowestFailures: Array<{name: string, file: string, durationMs: number, status: string}>,
+     *     diff: object | null,
+     *     callouts: string[],
+     *   },
+     *   failures: Array<{file: string, name: string, message: string, diff?: *, actual?: *, expected?: *, location?: string}>,
+     *   files: Array<{path: string, status: string, durationMs: number, tests: Array<*>}>,
+     * }}
+     */
     buildReport(testModules, unhandledErrors, reason) {
         const files = [];
         const allTests = [];
@@ -278,6 +305,13 @@ export default class AgentVitestReporter {
     }
 }
 
+/**
+ * Read the prior `last-verify-report.json` for run-to-run diffing.
+ * Silent on ENOENT (fresh-repo); warns once on stderr otherwise.
+ *
+ * @param {string} absPath - Absolute path to the prior report.
+ * @returns {Promise<object | null>} Parsed prior report, or `null` on missing / malformed / shape-mismatch.
+ */
 async function readPriorReport(absPath) {
     let raw;
     try {
@@ -302,6 +336,13 @@ async function readPriorReport(absPath) {
     return parsed;
 }
 
+/**
+ * Build a `<file>::<name>` keyed map of every test in a report,
+ * used by `computeDiff` for set-comparison across runs.
+ *
+ * @param {*} report - Either current or prior report.
+ * @returns {Map<string, {file: string, name: string, status: string, durationMs: number}>}
+ */
 function indexTestsByKey(report) {
     const index = new Map();
     if (!Array.isArray(report?.files)) return index;
@@ -315,6 +356,19 @@ function indexTestsByKey(report) {
     return index;
 }
 
+/**
+ * Compare current run against the prior on-disk report.
+ *
+ * @param {*} current - The just-built current run report.
+ * @param {*} prior - The prior report read from disk.
+ * @returns {{
+ *   addedTests: string[],
+ *   removedTests: string[],
+ *   flippedToFail: Array<{file: string, name: string, prevStatus: string, currStatus: string}>,
+ *   flippedToPass: Array<{file: string, name: string, prevStatus: string, currStatus: string}>,
+ *   durationDeltaSlowest5: Array<{file: string, name: string, prevMs: number, currMs: number, deltaMs: number}>,
+ * }}
+ */
 function computeDiff(current, prior) {
     const currIndex = indexTestsByKey(current);
     const priorIndex = indexTestsByKey(prior);
@@ -355,6 +409,13 @@ function computeDiff(current, prior) {
 
 const SLOW_TEST_THRESHOLD_MS = 50;
 
+/**
+ * Precompute notable-pattern strings the consumer would otherwise have
+ * to derive from `rollup.diff` / `failures` / `files`.
+ *
+ * @param {*} report - The fully-built current report (after `diff` is set).
+ * @returns {string[]} Human-readable call-out lines (e.g. "3 tests > 50ms").
+ */
 function computeCallouts(report) {
     const out = [];
     const r = report.rollup;
@@ -395,6 +456,13 @@ function computeCallouts(report) {
     return out;
 }
 
+/**
+ * Pick the file that contributed the most failures (for the
+ * "1 test failed in src/Combat" call-out).
+ *
+ * @param {Array<{file: string}>} failures - The top-level flat failures list.
+ * @returns {string | null} Path of the file with the most failures, or `null`.
+ */
 function topFailureFile(failures) {
     if (!Array.isArray(failures) || failures.length === 0) return null;
     const counts = new Map();
@@ -407,6 +475,13 @@ function topFailureFile(failures) {
     return topFile;
 }
 
+/**
+ * Count tests across all files whose `durationMs` exceeds `thresholdMs`.
+ *
+ * @param {Array<{tests?: Array<{durationMs?: number}>}>} files - `files[]` block from the report.
+ * @param {number} thresholdMs - Inclusive lower bound (e.g. `50`).
+ * @returns {number} Number of tests above the threshold.
+ */
 function countSlowTests(files, thresholdMs) {
     let n = 0;
     if (!Array.isArray(files)) return n;
@@ -417,6 +492,12 @@ function countSlowTests(files, thresholdMs) {
     return n;
 }
 
+/**
+ * Returns true if any of the diff arrays carries at least one entry.
+ *
+ * @param {{addedTests: Array<*>, removedTests: Array<*>, flippedToFail: Array<*>, flippedToPass: Array<*>, durationDeltaSlowest5: Array<*>}} diff
+ * @returns {boolean}
+ */
 function diffHasContent(diff) {
     return diff.addedTests.length > 0
         || diff.removedTests.length > 0
@@ -425,6 +506,12 @@ function diffHasContent(diff) {
         || diff.durationDeltaSlowest5.length > 0;
 }
 
+/**
+ * Walk a Vitest `TestModule`'s child collection and flatten to test cases.
+ *
+ * @param {*} testModule - A Vitest TestModule (carries `.children.allTests()`).
+ * @returns {Array<*>} Flat list of TestCase objects.
+ */
 function collectTestCases(testModule) {
     const out = [];
     const collection = testModule?.children;
@@ -433,11 +520,24 @@ function collectTestCases(testModule) {
     return out;
 }
 
+/**
+ * Defensive wrapper around the Vitest `target.diagnostic()` method.
+ *
+ * @param {*} target - Either a `TestCase` or a `TestModule`.
+ * @returns {*} The diagnostic object, or `undefined` on missing / throw.
+ */
 function safeDiagnostic(target) {
     if (!target || typeof target.diagnostic !== 'function') return undefined;
     try { return target.diagnostic(); } catch { return undefined; }
 }
 
+/**
+ * Resolve a Vitest `TestModule`'s terminal status, with fallback for
+ * older Vitest APIs that expose `mod.ok()` instead of `mod.state()`.
+ *
+ * @param {*} mod - The TestModule object.
+ * @returns {string} `'passed'` / `'failed'` / etc.
+ */
 function moduleStatus(mod) {
     if (typeof mod?.state === 'function') {
         try { return mod.state(); } catch { /* fall through */ }
@@ -445,6 +545,13 @@ function moduleStatus(mod) {
     return typeof mod?.ok === 'function' && mod.ok() ? 'passed' : 'failed';
 }
 
+/**
+ * Extract `<file>:<line>:<column>` from the first frame of a Vitest
+ * error's `stacks` array (when available).
+ *
+ * @param {*} err - The Vitest error object.
+ * @returns {string | undefined} Source location string, or undefined.
+ */
 function locationFromError(err) {
     const first = err?.stacks?.[0];
     if (!first) return undefined;
@@ -454,6 +561,13 @@ function locationFromError(err) {
 let cachedGetRunnerTask;
 let getRunnerTaskResolved = false;
 
+/**
+ * Lazily resolve Vitest's `experimental_getRunnerTask` helper via
+ * dynamic import. Caches once per process. Degrades silently if the
+ * export is renamed / removed in a future Vitest minor.
+ *
+ * @returns {Promise<((tc: *) => *) | undefined>} The cached helper, or undefined.
+ */
 async function resolveGetRunnerTask() {
     if (getRunnerTaskResolved) return cachedGetRunnerTask;
     try {
@@ -470,6 +584,15 @@ async function resolveGetRunnerTask() {
     return cachedGetRunnerTask;
 }
 
+/**
+ * Stamp `<file>:<line>:<column>` on a TestCase using the resolved
+ * `experimental_getRunnerTask` helper. Falls back to undefined if the
+ * helper or its `location` field is unavailable.
+ *
+ * @param {*} testCase - A Vitest TestCase.
+ * @param {string} filePath - Project-relative file path for the prefix.
+ * @returns {string | undefined}
+ */
 function locationFromRunner(testCase, filePath) {
     try {
         if (typeof cachedGetRunnerTask !== 'function') return undefined;
