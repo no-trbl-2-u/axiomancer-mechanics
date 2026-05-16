@@ -40,61 +40,6 @@
 - recommended-slot: next after the Northern Continent stub (or before,
   if the user wants the shops to land alongside fv-3 content)
 
-### Candidate: Combat sub-event surfacing in agent-e2e state log
-- signal: `plan/CRITIQUE.md` MED Pending row — "agent-e2e grader is
-  blind to fine-grained combat sub-events". The grader sees
-  `{ playerAction, enemyAction, eventCount }` but not the
-  `combatEvents: RoundEvent[]` array, so walkthroughs like `item-use`
-  have to infer skill / item / effect outcomes from inventory + HP
-  deltas instead of reading the actual `phase:skill / kind:item-used /
-  kind:effect-application` sub-events. The finding has been on the
-  queue since pass 7-follow-up and is the only MED pending after Phase
-  34 drained the docs queue.
-- scope: extend the `combatRound` `logState` payload in
-  `src/CLI/game.cli.ts` to include the full `combatEvents` array (or a
-  JSON-safe projection — strip closures, keep all primitives). Mirror
-  on the `combat:round` GameEvent payload so React Native consumers
-  can subscribe to round-by-round detail. New hermetic test in
-  `src/CLI/e2e/io.engine.test.ts` asserting a scripted skill round
-  populates the array. State log budget: ~12 KB for 50 rounds at ~50
-  bytes/event — well inside the existing budget.
-- unblocks: every existing walkthrough's goal file can read what the
-  skill / item / effect actually did, not just the action name. Future
-  walkthroughs gain richer grading signal without changes to the grader
-  itself. The `combat:round` event surface becomes useful for an RN
-  combat-log UI.
-- blocked-by: none. The events are already produced by the resolver;
-  this is plumbing through the log writer + event payload.
-- score: 6 × 7 / 10 = 4.2
-- recommended-slot: convenient mid-priority slot; no content
-  dependency, ships in one or two units
-
-### Candidate: Friendship victory reward (XP + narrative tag)
-- signal: Knowledge-Gaps Q5 (friendship rewards/narrative outcome) is
-  still open. Spec 06 Q2 backfill confirmed friendship-counter exits
-  currently report as `'flee'` and grant 0 XP — the deliberate 50%
-  bonus from the proposed formula was NOT implemented. Phase 32 closed
-  the crit half of Q3 but left friendship outcomes untouched. Gameplay
-  bias on AUDIT.md points toward mechanics findings like this.
-- scope: route the friendship-counter exit through a `'friendship'`
-  outcome in `determineCombatEnd` (today it reports `'flee'`); have
-  `endCombat` grant `floor(enemy.xpReward * 0.5)` XP on that path; add a
-  `combat:ended` event field `outcome: 'victory' | 'ko' | 'flee' |
-  'friendship'` (currently the four-value union but `'friendship'` is
-  never set). Hermetic e2e: the existing friendship-counter test in
-  `combat.resolver.test.ts:60-78` extends to assert the new outcome
-  string and the XP grant. CLI surface: when `npm run game` reports
-  combat end, distinguish "befriended" from "fled" in the transcript.
-- unblocks: friendship becomes a real mechanical choice with a
-  scoreable outcome, not just a stalemate exit. Moral-meter consumers
-  (Spec 10) can react to friendship resolutions distinctly. The Q5
-  / Q2 Knowledge-Gaps rows close.
-- blocked-by: none. Pure additive — every change is on the existing
-  combat-end resolution path.
-- score: 5 × 7 / 10 = 3.5
-
----
-
 ### Candidate: Second continent — Northern Continent stub
 - signal: `spec.md` 6-month horizon — "Additional world content
   (biomes, continent 2+)". Phase 23's MapEvents engine + Phase 24's
@@ -116,6 +61,23 @@
 ---
 
 ## Promoted
+
+### Phase 36 — Friendship victory reward (XP + narrative tag)
+- promoted: 2026-05-15 (oversight; user pick from expand pass 3 — gameplay bias)
+- source: `/expand` candidate (pass 3); Knowledge-Gaps Q5; Spec 06 Q2
+  backfill confirmed friendship-counter exits report as `'flee'` and
+  grant 0 XP today.
+- summary: Route the friendship-counter exit through a `'friendship'`
+  outcome in `determineCombatEnd` (currently reports `'flee'`); have
+  `endCombat` grant `floor(enemy.xpReward * 0.5)` XP on that path;
+  surface `outcome: 'friendship'` on the `combat:ended` event payload.
+  CLI transcript distinguishes "befriended" from "fled".
+- acceptance: the friendship test in `combat.resolver.test.ts:60-78`
+  asserts `determineCombatEnd` returns `'friendship'` (the resolver
+  already supports the literal) and `endCombat` grants `xpReward * 0.5`;
+  CLI report differentiates befriend vs flee. Knowledge-Gaps Q5 and the
+  Spec 06 Q2 follow-up close.
+- score: 5 × 7 / 10 = 3.5
 
 ### Phase 35 — `Character.id` field for stable identity
 - promoted: 2026-05-15 (oversight; user pick after Phase 34 promotion)
@@ -419,4 +381,13 @@
 
 ## Rejected
 
-(Empty.)
+### Candidate: Combat sub-event surfacing in agent-e2e state log
+- rejected: 2026-05-15 (oversight; redundant after iterate)
+- reason: /iterate at `5ac6caa` drained the underlying MED critique row
+  by extending `EnginePayload` with optional `combatEvents?: readonly
+  RoundEvent[]`, threading the array through `store.updateCombat(combat,
+  combatEvents)` onto the `combat:round` event payload, and surfacing
+  it on the `combatRound` state-log entry from `src/CLI/game.cli.ts`.
+  Two hermetic tests in `src/Game/e2e/events.engine.test.ts` pin the
+  wire. The candidate scope was a strict subset of what shipped — no
+  follow-on phase needed.
