@@ -40,24 +40,27 @@ on load (Spec 11). Every top-level transition is expressed as a `GameAction`:
 
 ```ts
 type GameAction =
-  | { type: 'START_COMBAT';   payload: { target: Enemy | Encounter } }
-  | { type: 'COMBAT_ROUND';   payload: { playerAction: Action; playerStance: Stance;
-                                         skillId?: string; itemId?: string } }
-  | { type: 'END_COMBAT';     payload?: { grantedLoot?: Item[]; grantedXp?: number } }
-  | { type: 'MOVE_TO_NODE';   payload: { nodeId: string } }
+  | { type: 'START_COMBAT';        payload: { target: Enemy | Encounter } }
+  | { type: 'COMBAT_ROUND';        payload: { playerAction: Action; playerStance: Stance;
+                                              skillId?: string; itemId?: string } }
+  | { type: 'END_COMBAT';          payload?: { grantedLoot?: Item[]; grantedXp?: number } }
+  | { type: 'MOVE_TO_NODE';        payload: { nodeId: string } }
   | { type: 'PROCESS_NODE'  }
-  | { type: 'APPLY_DIALOGUE'; payload: { tree: DialogueTree; choice: DialogueChoice } }
-  | { type: 'USE_ITEM';       payload: { itemId: string } }
-  | { type: 'EQUIP_ITEM';     payload: { item: Equipment } }
-  | { type: 'UNEQUIP_ITEM';   payload: { slot: EquipmentSlot } }
+  | { type: 'APPLY_DIALOGUE';      payload: { tree: DialogueTree; choice: DialogueChoice } }
+  | { type: 'USE_ITEM';            payload: { itemId: string } }
+  | { type: 'EQUIP_ITEM';          payload: { item: Equipment } }
+  | { type: 'UNEQUIP_ITEM';        payload: { slot: EquipmentSlot } }
   | { type: 'LEVEL_UP'      }
-  | { type: 'SHIFT_MORAL_METER'; payload: { delta: number; gating?: { min?: number; max?: number } } }
+  | { type: 'ALLOCATE_STAT_POINT'; payload: { stat: 'body' | 'mind' | 'heart' } }  // Phase 29
+  | { type: 'LEARN_SKILL';         payload: { skillId: string } }                  // Phase 30
+  | { type: 'SHIFT_MORAL_METER';   payload: { delta: number; gating?: { min?: number; max?: number } } }
   | { type: 'SAVE_GAME'     }   // reducer stamps `rngState`; store handles I/O
   | { type: 'LOAD_GAME'     };  // reducer no-op — store handles I/O
 ```
 
 Each branch delegates to an existing module-level reducer
-(`Combat/combat.reducer`, `World/world.reducer`, `World/process-node`,
+(`Combat/combat.reducer`, `World/world.reducer`,
+`World/MapEvents/resolve-map-event` for `PROCESS_NODE` since Phase 25,
 `World/dialogue.runtime`, `Items/item.reducer`, etc.). The reducer never
 re-implements game math.
 
