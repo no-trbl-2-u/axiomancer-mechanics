@@ -33,6 +33,13 @@ import { Enemy } from '../Enemy/types';
 import { ActiveEffect, Effect, EffectApplicationResult, EffectTier } from '../Effects/types';
 import { lookupEffect } from '../Effects/effects.library';
 import { resolveEffectApplication } from './resist';
+import {
+    STAT_PROC_BONUS_PER_POINT,
+    STATUS_CHANCE_BUFF_BONUS,
+    STATUS_CHANCE_EFFECT_ID,
+    CRIT_INTENSITY_BONUS,
+    CRIT_DURATION_BONUS,
+} from './combat.constants';
 import { applyEffect } from '../Effects';
 import { getBaseStat } from './stats';
 import { EquipmentProcTrigger } from '../Items/types';
@@ -78,16 +85,6 @@ export type ProcOverrides =
 
 const TRIGGER_TABLE: readonly CombatEffectTrigger[] =
     triggersLibrary.triggers as CombatEffectTrigger[];
-
-/** 2% per relevant stance base-stat point — caps proc inflation at reasonable values. */
-const STAT_PROC_BONUS_PER_POINT = 0.02;
-/** 5% per intensity stack of `buff_status_chance_up`. */
-const STATUS_CHANCE_BUFF_BONUS = 0.05;
-const STATUS_CHANCE_EFFECT_ID = 'buff_status_chance_up';
-
-/** Bonus intensity / duration granted on a crit-guaranteed proc. */
-const CRIT_INTENSITY_BONUS = 1;
-const CRIT_DURATION_BONUS  = 1;
 
 /** True on a natural 1 attack roll; mirrors `Combat/dice.ts` for clarity. */
 function isFumble(rawRoll: number): boolean { return rawRoll === 1; }

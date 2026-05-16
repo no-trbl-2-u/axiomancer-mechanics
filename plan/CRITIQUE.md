@@ -22,14 +22,6 @@
 - suggested_fix: delete the `Map` alias outright (declaration-only, no callers, no barrel export). For `WorldMap`, ask in the next `/oversight` whether a `0.7.0` library can drop a deprecated alias from the barrel; if yes, remove from `src/World/types.d.ts` + the two `index.ts` re-exports. If no, leave a note in `docs/world.md` so external consumers know the alias is scheduled for removal at the next major bump.
 - source: critique
 
-### [LOW] `src/Combat/combat-effects.ts` declares three magic-number constants inline
-- pass: critique-11 (commit ced226a)
-- area: structure
-- observation: `src/Combat/combat-effects.ts:83-89` declares `STAT_PROC_BONUS_PER_POINT = 0.02`, `STATUS_CHANCE_BUFF_BONUS = 0.05`, and `CRIT_INTENSITY_BONUS = 1` directly in the module body. Every other module with this kind of tuning constant centralizes them in a `constants.ts` (e.g. `src/Game/game-mechanics.constants.ts` ships `HEALTH_PER_STAT`, `EXPERIENCE_PER_LEVEL`, `STAT_POINTS_PER_LEVEL`, etc.). The build-plan style block at the top of `01_build_plan.md` reads "No hardcoded magic numbers — constants in a `constants.ts` per module" — the rule is one I keep finding violated in Combat specifically.
-- evidence: `src/Combat/combat-effects.ts:83-89`; compare `find src -name 'constants.ts'` returns only `src/Game/game-mechanics.constants.ts` and `src/Game/actions.constants.ts`. Combat has none.
-- suggested_fix: extract a `src/Combat/combat.constants.ts` and move the three constants out (plus any others that turn up during a sweep of `src/Combat/`). Keep the export names; update the one import site. Mirrors the Game module's pattern.
-- source: critique
-
 ### [LOW] `Coastal-Village/maps.ts` header comment names dropped MapEventKinds (`npc`, `shop`)
 - pass: critique-11 (commit ced226a)
 - area: docs
@@ -41,6 +33,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] `src/Combat/combat-effects.ts` declares magic-number constants inline** — resolved at iterate (this commit). Extracted `src/Combat/combat.constants.ts` and moved all five Combat-private tuning constants out of `combat-effects.ts`: `STAT_PROC_BONUS_PER_POINT`, `STATUS_CHANCE_BUFF_BONUS`, `STATUS_CHANCE_EFFECT_ID`, `CRIT_INTENSITY_BONUS`, `CRIT_DURATION_BONUS`. Each carries its original JSDoc. The new file's header points readers at `Game/game-mechanics.constants.ts` for cross-cutting numbers; combat-effects.ts re-imports the five at the top of the file. Mirrors the Game module's pattern; future combat-tuning has one place to land. Impact 3 × Ease 8 / 10 = 2.4.
 
 - [x] **[MED] agent-e2e grader is blind to fine-grained combat sub-events** — resolved at iterate (this commit). `EnginePayload` gained an optional `combatEvents?: readonly RoundEvent[]` field; `store.updateCombat(combat, events?)` now accepts the round event stream and forwards it on the emitted `combat:round` event (the array is omitted when callers don't supply one — back-compat for any pre-iterate consumer). CLI driver path threads `combatEvents` from `resolveCombatRound` through `store.updateCombat(next, combatEvents)` AND surfaces them on the `combatRound` state-log payload, so the agent-e2e grader reading the log can now inspect every sub-event (skills, items, effect applications, resists, crits, friendship-counter ticks). Two new hermetic tests in `src/Game/e2e/events.engine.test.ts` pin the wire: payload carries the array when supplied, and is `undefined` when not. Phase candidate `Combat sub-event surfacing` (filed at expand pass 3) is now redundant — oversight should reject it next pass. Impact 6 × Ease 7 / 10 = 4.2.
 
