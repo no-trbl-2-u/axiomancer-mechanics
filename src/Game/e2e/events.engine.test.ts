@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { createGameStore } from '../store';
 import { nullAdapter } from '../persistence/null.adapter';
 import { createEventEmitter } from '../events';
+import type { GameEvent } from '../events';
 import { Disatree_01, TidepoolCrab } from '../../Enemy/enemy.library';
 import {
     isCombatStartedEvent,
@@ -10,7 +11,7 @@ import {
 
 describe('Events engine', () => {
     let events: ReturnType<typeof createEventEmitter>;
-    let capturedEvents: any[];
+    let capturedEvents: GameEvent[];
 
     beforeEach(() => {
         events = createEventEmitter();
@@ -63,8 +64,8 @@ describe('Events engine', () => {
     it('allows multiple event subscribers', () => {
         const store = createGameStore(nullAdapter, undefined, events);
         
-        const combatEvents: any[] = [];
-        const allEvents: any[] = [];
+        const combatEvents: GameEvent[] = [];
+        const allEvents: GameEvent[] = [];
 
         events.on('combat:started', (event) => combatEvents.push(event));
         events.onAny((event) => allEvents.push(event));
@@ -79,7 +80,7 @@ describe('Events engine', () => {
     it('supports unsubscribing from events', () => {
         const store = createGameStore(nullAdapter, undefined, events);
         
-        const testEvents: any[] = [];
+        const testEvents: GameEvent[] = [];
         const unsubscribe = events.on('combat:started', (event) => testEvents.push(event));
 
         store.getState().startCombat(Disatree_01);

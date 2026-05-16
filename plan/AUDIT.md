@@ -22,6 +22,8 @@ _No open findings — drain to /iterate or /expand as new ones arrive._
 
 ## Done
 
+- [x] **[LOW] 4 `any[]` declarations in `src/Game/e2e/events.engine.test.ts`** — resolved at iterate (this commit). Audit pass surfaced 4 `@typescript-eslint/no-explicit-any` warnings in the events e2e test (lines 13, 66, 67, 82). Replaced all four with `GameEvent[]` (typed event arrays); added the `type GameEvent` import alongside the existing event-utils imports. `npm run lint` now exits clean — zero errors, zero warnings. 468/468 tests stay green. Impact 3 × Ease 9 / 10 = 2.7.
+
 - [x] **[LOW] `resolveMapEvent` no longer auto-advances `reach`-type quest objectives** — resolved at iterate (this commit). `resolve-map-event.ts` now invokes a private `advanceReachObjectives(quests, nodeId)` helper before the pool roll that walks `reachableObjectives(log, nodeId)` and runs each through `progressQuest`. Re-entering a consumed node is still a no-op (early return preserves Spec 23 idempotency); the reach progress fires on the first non-consumed pass, which matches typical `requiredCount=1` reach semantics. Three new hermetic tests in `src/World/MapEvents/e2e/map-events.engine.test.ts`: completion via the no-pool path, completion alongside a pool-driven `rest` event, and a no-op assertion when the active reach targets a different node. Impact 4 × Ease 6 / 10 = 2.4.
 
 
