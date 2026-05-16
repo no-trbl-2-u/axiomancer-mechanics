@@ -34,7 +34,7 @@
     "test": "vitest run",
     "type-check": "tsc --noEmit",
     "verify": "npm run type-check && npm run lint && npm test && npm run build",
-    "verify:agent": "npm run type-check && npm run lint && vitest run --reporter=./automation/agent-vitest-reporter.mjs && npm run build",
+    "verify:agent": "npm run type-check && npm run lint && vitest run --reporter=default --reporter=./automation/agent-vitest-reporter.mjs && npm run build",
     "deploy:check": "node scripts/deploy-check.mjs"
   },
   "keywords": [
