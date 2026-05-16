@@ -29,6 +29,13 @@ unchanged, but the absolute semver guarantee starts at 1.0.
   level-up via the game reducer) and the `ALLOCATE_STAT_POINT` action.
   `Character.availableStatPoints: number` is on the public type. Closes
   Spec 06 Q3 + Q8.
+- **Stable identity (Phase 35):** `Character.id: string` is now a
+  required field on the public type. `createCharacter()` auto-generates
+  a `char-<base36>` id from `getRng()` when the caller doesn't supply
+  one (RN-bundler-safe — no Node `crypto` import). Pass
+  `CreateCharacterOptions.id` explicitly to pin a deterministic id for
+  fixtures or `ActiveEffect.sourceId` attribution. Closes
+  Knowledge-Gaps Q12.
 
 ### Combat
 
@@ -60,10 +67,11 @@ The engine emits a single uniform envelope on every `GameEvent`:
 
 ```ts
 interface EnginePayload {
-    action: GameAction;          // what triggered the event
-    state: GameState;            // the post-reducer state
-    report?: CombatEndReport;    // only on combat:ended
-    unlockedSkills?: string[];   // only on character:levelup (Phase 30)
+    action: GameAction;                  // what triggered the event
+    state: GameState;                    // the post-reducer state
+    report?: CombatEndReport;            // only on combat:ended
+    unlockedSkills?: string[];           // only on character:levelup (Phase 30)
+    combatEvents?: readonly RoundEvent[]; // only on combat:round (iterate 5ac6caa)
 }
 ```
 
@@ -71,6 +79,18 @@ interface EnginePayload {
 learn after a level promotion crossed a tier-eligibility threshold. An
 empty array means the levelup didn't unlock anything new; the field is
 absent on every other topic.
+
+`combatEvents` (iterate `5ac6caa`) carries the full `RoundEvent[]` stream
+that `resolveCombatRound` produced (attack-roll, damage-applied,
+effect-application, skill phases, item-used, friendship-counter ticks,
+etc.). Populated only on `combat:round` when the CLI / driver threads
+the array through `store.updateCombat(combat, combatEvents)`; absent
+otherwise.
+
+`CombatEndReport.outcome` is `'victory' | 'defeat' | 'friendship' |
+'flee'`. Phase 36 added `'friendship'` for the friendship-counter exit
+— half XP grant + full loot + `+1` moral meter. See `docs/combat.md`
+"Friendship Path".
 
 `TypedGameEvent<T>` narrows the event by topic; `payload` is always
 the engine envelope above. Per-topic aliases ship for all 10
