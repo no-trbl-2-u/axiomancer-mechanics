@@ -6,13 +6,45 @@
 > by `/iterate`.
 
 <!-- Metadata (updated by /critique after each pass):
-> Last pass: 2026-05-16 at commit df2fde9
-> Pass count: 16
+> Last pass: 2026-05-16 at commit d1ebd7f
+> Pass count: 17
 -->
 
 ---
 
 ## Pending
+
+### [LOW] Spec 03 (Tier 2 / 3 effect procs) — all 5 acceptance boxes unchecked despite shipping pre-loop
+- pass: critique-17 (commit d1ebd7f)
+- area: docs
+- observation: `specs/03-tier2-tier3-effect-procs.md:112-118` lists 5 acceptance boxes — all 7 questions answered, proc-table cell coverage, unit-test crit/fumble paths, 50-run distribution sanity, `docs/combat.md` "Effect-Based Combat Specials" extension — and none are ticked. The shipping engine work landed pre-loop (per `plan/steps/01_build_plan.md:20` "Spec 03 — Tier 2/3 effect procs (Stance × action tables) (pre-loop)"), so each box is satisfiable today by reading the matching shipped code. Same pattern Phase 41 just drained for Specs 04 / 10 / 23 (commits b5c4d0b / 3b1fd88 / 518b5dd / 74e7389): walk each `[ ]`, locate the shipping reference, flip to `[x]` with the cite. The "Tier 2 + 3 procs" entry in `docs/effects/README.md` already affirms the engine is live, so the docs-side evidence is in hand.
+- evidence: `grep -c "^- \[ \]" specs/03-tier2-tier3-effect-procs.md` returns `5`; `grep -c "^- \[x\]" specs/03-tier2-tier3-effect-procs.md` returns `0`. `src/Combat/combat-effects.ts` + `src/Combat/phases/scenario.ts` ship the proc tables; `src/Combat/e2e/combat.resolver.test.ts` carries the crit/fumble cases.
+- suggested_fix: one /iterate commit — walk all 5 acceptance boxes, cite the shipping reference (engine module, hermetic test file, doc update), flip to `[x]`. Mirrors the Phase 41 unit-1 / unit-2 pattern (`b5c4d0b` for Spec 04 is the cleanest model). Impact 3 × Ease 8 / 10 = 2.4.
+- source: critique
+
+### [LOW] Spec 05e (Set items) — all 8 acceptance boxes unchecked despite shipping pre-loop
+- pass: critique-17 (commit d1ebd7f)
+- area: docs
+- observation: `specs/05e-set-items.md:161-168` lists 8 acceptance boxes covering `SetBonus`/`ItemSet` exports, `getActiveSetBonuses`, `initializeCombat` token stacking, `generateBasicActionResources` set-bonus generation, passive-effect lifecycle, the 3 initial sets, hermetic coverage, and a `docs/equipment.md` "Set Items" section. None are ticked. Per `plan/steps/01_build_plan.md:26` Spec 05e shipped pre-loop, so every box is satisfiable today. `src/Items/set.engine.ts`, `src/Items/set.library.ts`, the `docs/equipment.md` Set Items section, and the hermetic coverage in `src/Items/e2e/equipment.engine.test.ts` are all in place — the spec just never got the receipts.
+- evidence: `grep -c "^- \[ \]" specs/05e-set-items.md` returns `8`. `git ls-files src/Items/set.*` shows `set.engine.ts`, `set.library.ts`, and `set.types.ts`; `grep -n "Set Items" docs/equipment.md` returns the section header. Same lacuna kind Phase 41 drained for Specs 04/10/23.
+- suggested_fix: one /iterate commit — walk all 8 boxes, cite the shipping reference, flip to `[x]`. Engine ↔ test ↔ doc trio is well-mapped; this is mechanical. Impact 3 × Ease 8 / 10 = 2.4.
+- source: critique
+
+### [LOW] `PhilosAxiosDoc.pdf` is loose at the repo root with no folder home
+- pass: critique-17 (commit d1ebd7f)
+- area: structure
+- observation: `PhilosAxiosDoc.pdf` (12 pages, 324KB, committed at `d0e9f90`) is the source-of-truth content for the Phase 42 alignment library, but it sits at the repo root next to `spec.md` / `README.md` / `agents.md` / `AGENTS.md`. Every other long-form design artefact lives under a discoverable folder — numbered conversation-loop specs in `specs/`, raw idea capture in `braindump/`, per-character / per-location prose in `content/`, per-system reference in `docs/`. A new contributor or returning agent who runs `ls` at the root sees the PDF but has no breadcrumb explaining what authoring system owns it. `MEMORY.md` carries no pointer to it; `spec.md` doesn't mention it; `specs/README.md` doesn't list it.
+- evidence: `ls *.pdf` returns just `PhilosAxiosDoc.pdf`. Phase 42 brief (`plan/phases/phase_42_philosophical_alignment.md:48`) references the file as "committed at the repo root" — i.e. the brief leans on the placement without proposing a better home. `git log --all -- 'braindump/*.pdf' 'content/*.pdf' 'specs/*.pdf'` returns no historical PDFs in those folders, so there is no prior convention to lean on.
+- suggested_fix: pick one — (a) `git mv PhilosAxiosDoc.pdf content/philosophy/PhilosAxiosDoc.pdf` (content-folder fits since the PDF is content fuel for skill/effect authoring per the doc's closing line); (b) `git mv PhilosAxiosDoc.pdf braindump/PhilosAxiosDoc.pdf` (matches "raw idea capture before it has a folder home"); (c) `git mv PhilosAxiosDoc.pdf specs/philosophy/PhilosAxiosDoc.pdf` alongside an eventual `specs/NN-philosophical-alignment.md` spec file. Update the Phase 42 brief Source-spec section + the new `docs/philosophy.md` (Phase 42 Unit 3) with the new path. /iterate-safe if done before Phase 42 ships; if Phase 42 ships first, the doc cross-link survives the rename. Impact 2 × Ease 9 / 10 = 1.8.
+- source: critique
+
+### [LOW] `TODO(spec-09)` autosave-on-every-action note duplicated in `game.reducer.ts:138` + `store.ts:208` with no carrying issue
+- pass: critique-17 (commit d1ebd7f)
+- area: structure / dead-code
+- observation: Two production source files carry the same Spec-09 deferred-throttle comment word-for-word: `src/Game/game.reducer.ts:138` ("TODO(spec-09): autosave currently fires on every action in the store. If profiling shows...") and `src/Game/store.ts:208` ("TODO(spec-09): autosave fires on every action. Throttle (or restrict..."). Neither carries a tracker issue, a Knowledge-Gaps row, or an AUDIT/CRITIQUE finding pointing at the actual throttle work — so /iterate has no signal to act on. Two copies also means future profiling work has to land twice or risk drift. Spec 09 itself is `[x]` shipped per `plan/steps/01_build_plan.md:32`, so the lingering TODOs are technically resolved-but-deferred without a forward pointer.
+- evidence: `grep -n "TODO(spec-09)" src/Game/game.reducer.ts src/Game/store.ts` returns both lines. `grep -rn "autosave.*throttle\|throttle.*autosave" plan/ Knowledge-Gaps.md` returns no matches — there is no plan-side row that captures the deferral.
+- suggested_fix: one of two paths in /iterate — (a) collapse the comment into one canonical site (`store.ts:208` — that's the file that actually does the autosave) and replace the reducer-side comment with a one-line cross-reference (`// Autosave policy: see store.ts:208`); (b) promote the deferral to an AUDIT.md row so /iterate has a real signal ("throttle autosave: 50ms debounce around `persistence.save`, or restrict to a named subset of actions; benchmark with 1k-action e2e run"). Either resolves the dangling-TODO smell; (b) gives the loop a follow-up. Impact 2 × Ease 8 / 10 = 1.6.
+- source: critique
 
 ### [LOW] `experimental_getRunnerTask` static import in the agent reporter doesn't degrade at module-load time
 - pass: critique-16 (commit df2fde9)
