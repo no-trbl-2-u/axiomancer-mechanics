@@ -36,14 +36,6 @@
   Make `locationFromRunner` `async` or resolve once in `onTestRunEnd` and pass the function down. ~15 LOC + a hermetic case that mocks the dynamic import to throw and asserts `tests[].location` stays undefined without crashing.
 - source: critique
 
-### [LOW] Top-level `failures[]` flat list omits `diff` / `actual` / `expected` from each entry
-- pass: critique-16 (commit df2fde9)
-- area: agent-ux / reporter / schema-symmetry
-- observation: Phase 40 added top-level `failures: [{file, name, message, location}]` so an LLM doesn't have to walk `files[].tests[]` to answer "what failed?". But the per-test `failure` block (still in `files[].tests[]`) carries `{message, diff, actual, expected, location}` — the snapshot-diff trio is dropped from the flat list. A consumer asking "show me the diff for the second failure" still has to cross-reference back to `files[].tests[]` by `(file, name)` key. The information is in the report twice, but neither location is self-sufficient.
-- evidence: `automation/agent-vitest-reporter.mjs:90-110` builds `entry.failure` with diff/actual/expected; lines `82-87` build `failures.push({ file, name, message, location })` and omit them. Documented schema in `docs/testing.md:96` shows `failures: [{file, name, message, location}]` as the contract.
-- suggested_fix: extend the flat `failures[]` entry shape to `{file, name, message, diff, actual, expected, location}`. Existing per-test `failure` block stays as-is (it's the durable per-tree position). Update the schema sketch in `docs/testing.md` + the brief at `plan/phases/phase_40_prior_run_diff.md`. The hermetic test for `failures[]` populated case asserts the four new fields surface through (undefined when the assertion didn't produce a diff). ~10 LOC + 1 test extension.
-- source: critique
-
 ### [LOW] `automation/agent-vitest-reporter.mjs` is now 455 LOC of untyped JavaScript with no JSDoc type hints
 - pass: critique-16 (commit df2fde9)
 - area: types / maintainability / reporter
@@ -106,6 +98,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] Top-level `failures[]` flat list omits `diff` / `actual` / `expected` from each entry** — resolved at iterate commit `88d9c04` (2026-05-16). Reporter `buildReport` now pushes the full snapshot-diff triplet through onto each `failures[]` entry: `{ file, name, message, diff, actual, expected, location }`. Undefined values round-trip as omitted keys via JSON.stringify, so the empty-shape case is unchanged. The `failingCase` test helper gained an optional `snapshotDiff` parameter; new hermetic case asserts all three fields surface end-to-end. `docs/testing.md` schema sketch updated. Impact 4 × Ease 9 / 10 = 3.6 (× 1.5 reporter bias = 5.4).
 
 - [x] **[LOW] Spec 23 acceptance checklist has 11 unchecked boxes despite Phases 23 / 24 / 25 / 31 / 37 shipping every surface listed** — resolved at Phase 41 unit 3 (this commit). All 11 boxes ticked with shipping references; the two pre-Phase-37 `village` type sketches at `:95` and `:138` extended with `shop?: ShopInventory`; a 12th acceptance line added documenting the Phase 37 shop extension with the content-drift test that pins it. Impact 4 × Ease 8 / 10 = 3.2.
 
