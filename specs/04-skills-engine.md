@@ -209,19 +209,41 @@ No cap on token accumulation for now; revisit after playtesting.
 
 ## Acceptance checklist
 
-- [ ] All 14 questions answered (done above).
-- [ ] `Skill` type has no `manaCost`; has `resourceCost`, `tier`, `basePower`,
-      `scalingStat`, `targetType`.
-- [ ] `Character` type has no `mana`/`maxMana`; has `knownSkills` /
-      `equippedSkills`.
-- [ ] `CombatState` has `combatResources`; resets to
-      `{ heart: 0, body: 0, mind: 0, fallacy: 0, paradox: 0 }` on `initializeCombat`.
-- [ ] Basic actions generate the correct resource quantities (miss=1, hit=3, defend=5).
-- [ ] `canUseSkill` correctly blocks skills when any resource key is insufficient.
-- [ ] `executeSkill` spends resources and generates exactly 1 philosophical token.
-- [ ] Combat CLI shows a Skills sub-prompt listing equipped skill names.
-- [ ] `npm test` and `npm run type-check` are clean.
-- [ ] `docs/skills.md` updated to reflect the new type shape and resource economy.
+- [x] All 14 questions answered (done above). — Spec 04 (pre-loop).
+- [x] `Skill` type has no `manaCost`; has `resourceCost`, `tier`,
+      `basePower`, `scalingStat`, `targetType`. — Spec 04 (pre-loop);
+      see `src/Skills/types.d.ts`.
+- [x] `Character` type has no `mana`/`maxMana`; has `knownSkills` /
+      `equippedSkills`. — Spec 04 (pre-loop); see
+      `src/Character/types.d.ts`.
+- [x] `CombatState` has `combatResources`; resets to
+      `{ heart: 0, body: 0, mind: 0, fallacy: 0, paradox: 0 }` on
+      `initializeCombat`. — Spec 04 (pre-loop); pinned by
+      `src/Combat/e2e/combat.resolver.test.ts`.
+- [x] Basic actions generate the correct resource quantities
+      (miss=1, hit=3, defend=5). — Spec 04 (pre-loop); pinned by
+      `src/Skills/e2e/skill-resource-system.engine.test.ts`
+      ("Scenario 1 — Happy path: build Body resources").
+- [x] `canUseSkill` correctly blocks skills when any resource key is
+      insufficient. — Spec 04 (pre-loop); pinned by
+      `src/Skills/e2e/skill.engine.test.ts` ("executeSkill — guards >
+      throws when resources are insufficient").
+- [x] `executeSkill` spends resources and generates exactly 1
+      philosophical token. — Spec 04 (pre-loop); pinned by
+      `src/Skills/e2e/skill.engine.test.ts` ("resolveCombatRound — skill
+      action integration > routes player skill through executeSkill,
+      deducts cost, generates token").
+- [x] Combat CLI shows a Skills sub-prompt listing equipped skill
+      names. — Phase 09 `e6ce034` shipped the Skills tab; Phase 17
+      `7595c2e` unified into `npm run game`; Phase 26 `d3c8cc5`
+      extended with in-combat skill picker, walked by
+      `automation/scripts/walkthroughs/skills-in-combat.json`.
+- [x] `npm test` and `npm run type-check` are clean. — Standing
+      invariant; verify gate green throughout the loop.
+- [x] `docs/skills.md` updated to reflect the new type shape and
+      resource economy. — Spec 04 + 04b (pre-loop); Phase 33
+      `011ac2d` added the Resonance Pairs progression model and the
+      Runtime Skill Learning subsection (Phase 30 reference).
 
 ## Out of scope
 
