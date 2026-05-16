@@ -1,4 +1,14 @@
-# Current state — 2026-05-13
+# Current state — 2026-05-13 (frozen baseline)
+
+> **Frozen baseline.** This file is the nexus-adoption snapshot from
+> 2026-05-13 — see `plan/README.md`. Nearly every "Known broken /
+> decayed" or "What's missing for v1" item below has shipped in the
+> phases that followed (Phase 09 game loop, Phase 11 RNG, Phase 12
+> package architecture, Phase 13 ESLint fix, Phase 17 unified CLI,
+> Phases 21 / 26 / 27 / 29 / 30 / 34 / 35, etc.). For the live
+> picture, read `plan/steps/01_build_plan.md` Status block and the
+> shipped commits — this file remains as a historical reference for
+> what the codebase looked like before the autonomous loop took over.
 
 ## What's there
 
