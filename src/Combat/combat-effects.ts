@@ -323,6 +323,7 @@ export function applyProcOutcome(
             intensityDelta,
             durationMode: 'additive',
             durationDelta,
+            sourceId: actor.id,
         },
     );
 
@@ -370,6 +371,7 @@ export function applyProcOutcome(
                 intensityDelta: resolveResult.activeEffect.intensity ?? intensityDelta,
                 durationMode: 'additive',
                 durationDelta,
+                sourceId: actor.id,
             },
         );
         if (reboundTarget === 'self') {
@@ -398,13 +400,21 @@ export function applyProcOutcome(
  * Applies a fumble self-debuff to the actor. Mirrors `applyProcOutcome` for
  * the simpler "always lands on self" case — fumbles use Tier 1 auto-apply
  * semantics for predictable punishment.
+ *
+ * `actorId` (Phase 38) stamps `ActiveEffect.sourceId` so a self-fumble is
+ * attributable to the combatant who fumbled. Optional for back-compat with
+ * any caller that hasn't been threaded yet.
  */
 export function applyFumbleOutcome(
     fumble: FumbleOutcome,
     actorEffects: ActiveEffect[],
     round: number,
+    actorId?: string,
 ): { actorEffects: ActiveEffect[]; result: EffectApplicationResult } {
-    const { activeEffects, result } = applyEffect(actorEffects, fumble.effect, round);
+    const { activeEffects, result } = applyEffect(
+        actorEffects, fumble.effect, round,
+        actorId ? { sourceId: actorId } : undefined,
+    );
     return { actorEffects: activeEffects, result };
 }
 

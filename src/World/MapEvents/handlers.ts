@@ -161,6 +161,11 @@ export function resolveHazard(
     for (const id of payload.effectIds ?? []) {
         const def = lookupEffect(id);
         if (!def) continue;
+        // Phase 38 — environmental hazards intentionally leave sourceId
+        // undefined. Hazards aren't combatants; there's no stable id to
+        // attribute. If a consumer ever needs to distinguish hazards from
+        // other unsourced effects, file an iterate row to add a synthetic
+        // id scheme (e.g. `hazard:<nodeId>`).
         const res = applyEffect(effects, def, round);
         effects = res.activeEffects;
         const a = effects.find(e => e.effectId === id);

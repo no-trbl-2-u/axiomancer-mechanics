@@ -611,7 +611,7 @@ function runActionProcs(p: RunProcsParams): {
     let opponent = p.opponent;
 
     if (fumble) {
-        const { actorEffects, result } = applyFumbleOutcome(fumble, actor.effects, p.round);
+        const { actorEffects, result } = applyFumbleOutcome(fumble, actor.effects, p.round, actor.id);
         actor = { ...actor, effects: actorEffects } as typeof actor;
         p.events.push({
             phase: 'scenario', kind: 'proc-fumbled',

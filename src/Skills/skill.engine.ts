@@ -446,7 +446,7 @@ function applySkillEffect(
         const reboundDuration  = result.activeEffect.remainingDuration ?? durationOverride ?? effect.duration;
         const reboundedEffects = applyEffect(
             player.effects, effect, round,
-            buildApplyOptions(reboundIntensity, reboundDuration),
+            { ...buildApplyOptions(reboundIntensity, reboundDuration), sourceId: player.id },
         );
         events.push({
             kind: 'effect-rebounded', skillId: skill.id, effect, message: result.message,
@@ -472,7 +472,7 @@ function applySkillEffect(
 
     const applied = applyEffect(
         target.effects, effect, round,
-        buildApplyOptions(appliedIntensity, appliedDuration),
+        { ...buildApplyOptions(appliedIntensity, appliedDuration), sourceId: player.id },
     );
 
     events.push({
@@ -574,6 +574,7 @@ function applySpecialMechanic(
             const applied = applyEffect(player.effects, effect, round, {
                 intensityDelta: removed.intensity ?? 1,
                 durationDelta:  removed.remainingDuration,
+                sourceId:       player.id,
             });
             events.push({
                 kind: 'buff-converted', skillId: skill.id, effect,
