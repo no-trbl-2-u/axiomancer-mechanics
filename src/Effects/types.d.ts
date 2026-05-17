@@ -125,6 +125,13 @@ export interface Effect {
     payload: EffectPayload;
     resistedBy?: Stance;
     resistDR?: number;
+    /**
+     * Phase 44 — cross-link back to the originating
+     * `PhilosophicalAlignmentCell.id` (kebab-case) for effects authored
+     * from a fallacy in the 27-cell library. Optional; only set on
+     * philosophy-sourced effects. See `docs/philosophy.md`.
+     */
+    sourcedFromCell?: string;
 }
 
 /**

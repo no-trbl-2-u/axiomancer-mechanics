@@ -18,6 +18,7 @@ import { resolveCombatRound } from '../../Combat/combat.resolver';
 import { mockSequentialRng } from '../../test-utils';
 import { getSkillById } from '../skill.library';
 import { philosophicalAlignmentLibrary } from '../../Philosophy';
+import { lookupEffect, applyEffect } from '../../Effects';
 
 afterEach(() => vi.restoreAllMocks());
 
@@ -89,36 +90,77 @@ describe('Phase 44 — fallacies-as-spells (skills)', () => {
         expect(selfBuff, 'tier1_body_attack should be on the player after the skill resolves').toBeDefined();
     });
 
-    it('nirvana-fallacy applies debuff_confusion to the enemy', () => {
-        mockSequentialRng(0.5);
+    it('nirvana-fallacy applies debuff_confusion to the enemy', testNirvana);
+});
 
-        const skill = getSkillById('nirvana-fallacy')!;
-        const player = createCharacter({
-            name: 'Tester',
-            level: 10,
-            baseStats: { heart: 6, body: 6, mind: 12 },
-            knownSkills: [skill.id],
-            equippedSkills: [skill.id],
-        });
-        const enemy = createEnemy({
-            name: 'Sandbag',
-            level: 10,
-            baseStats: { heart: 6, body: 6, mind: 6 },
-            health: 200,
-            maxHealth: 200,
-        });
-        const combat = initializeCombat(player, enemy);
-        combat.combatResources.mind = 4;
-        combat.combatResources.fallacy = 2;
+const NEW_FALLACY_EFFECT_IDS = [
+    'debuff_no_true_scotsman',
+    'buff_special_pleading',
+    'debuff_category_error',
+] as const;
 
-        const { state: next } = resolveCombatRound(
-            combat,
-            { stance: 'mind', action: 'skill', skillId: skill.id },
-            { stance: 'body', action: 'defend' },
-            getSkillById,
-        );
+describe('Phase 44 — fallacies-as-spells (effects)', () => {
+    it('all 3 new effects resolve via lookupEffect with the expected sourcedFromCell', () => {
+        const expected: Record<string, string> = {
+            'debuff_no_true_scotsman': 'logic-pessimistic-transcendent',
+            'buff_special_pleading':   'faith-optimistic-individual',
+            'debuff_category_error':   'mid-pessimistic-transcendent',
+        };
+        for (const id of NEW_FALLACY_EFFECT_IDS) {
+            const effect = lookupEffect(id);
+            expect(effect, `effect ${id} missing from library`).toBeDefined();
+            expect(effect!.sourcedFromCell).toBe(expected[id]);
+        }
+    });
 
-        const debuff = next.enemy.effects.find(e => e.effectId === 'debuff_confusion');
-        expect(debuff, 'debuff_confusion should be on the enemy after the skill resolves').toBeDefined();
+    it('every sourcedFromCell id round-trips through philosophicalAlignmentLibrary', () => {
+        for (const id of NEW_FALLACY_EFFECT_IDS) {
+            const effect = lookupEffect(id)!;
+            const cell = philosophicalAlignmentLibrary.find(c => c.id === effect.sourcedFromCell);
+            expect(cell, `cell ${effect.sourcedFromCell} missing for effect ${id}`).toBeDefined();
+        }
+    });
+
+    it('applyEffect on debuff_no_true_scotsman produces a tier-2 ActiveEffect with the right resist data', () => {
+        const effect = lookupEffect('debuff_no_true_scotsman')!;
+        const result = applyEffect([], effect, 1);
+        const active = result.activeEffects.find(a => a.effectId === 'debuff_no_true_scotsman');
+        expect(active, 'active effect missing after applyEffect').toBeDefined();
+        expect(active!.tier).toBe(2);
+        expect(active!.resistedBy).toBe('mind');
+        expect(active!.resistDR).toBe(12);
     });
 });
+
+function testNirvana() {
+    mockSequentialRng(0.5);
+
+    const skill = getSkillById('nirvana-fallacy')!;
+    const player = createCharacter({
+        name: 'Tester',
+        level: 10,
+        baseStats: { heart: 6, body: 6, mind: 12 },
+        knownSkills: [skill.id],
+        equippedSkills: [skill.id],
+    });
+    const enemy = createEnemy({
+        name: 'Sandbag',
+        level: 10,
+        baseStats: { heart: 6, body: 6, mind: 6 },
+        health: 200,
+        maxHealth: 200,
+    });
+    const combat = initializeCombat(player, enemy);
+    combat.combatResources.mind = 4;
+    combat.combatResources.fallacy = 2;
+
+    const { state: next } = resolveCombatRound(
+        combat,
+        { stance: 'mind', action: 'skill', skillId: skill.id },
+        { stance: 'body', action: 'defend' },
+        getSkillById,
+    );
+
+    const debuff = next.enemy.effects.find(e => e.effectId === 'debuff_confusion');
+    expect(debuff, 'debuff_confusion should be on the enemy after the skill resolves').toBeDefined();
+}
