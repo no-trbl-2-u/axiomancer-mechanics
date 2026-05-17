@@ -14,14 +14,6 @@
 
 ## Pending
 
-### [LOW] README Public API table has no Philosophy row after Phases 42 + 43 shipped 9 new exports
-- pass: critique-18 (commit c62702e)
-- area: docs
-- observation: `README.md:54-72` "Public API" table lists every barrel group (Character, Enemy, Combat, Combat reducer, Combat resolver, Effects, Items, Skills, Game, World, NPCs, Utils, Utils — RNG) but has no Philosophy row. Phase 42 (`bdfda00`) added 9 new exports to `src/index.ts` under a "Philosophy" block (`bucketAxis`, `getAlignmentCell`, `applyAlignmentDelta`, `defaultAlignment`, `AXIS_HIGH_THRESHOLD`, `AXIS_LOW_THRESHOLD`, `philosophicalAlignmentLibrary`, plus types `AxisBucket`, `PhilosophicalAlignment`, `AlignmentFallacy`, `PhilosophicalAlignmentCell`); Phase 43 (`c62702e`) added the `alignmentDelta` field on dialogue + map-event payloads without surfacing it on the README. A consumer scanning README's Public API table comes away thinking the package has 12 surface areas when it actually has 13. Same pattern Phase 34 / iterate `2a8a9ae` drained for prior phases — README Public API table goes stale exactly one phase at a time.
-- evidence: `grep -n "Philosophy\|philosophical" README.md` returns hits only in the prose tagline (`:3` "themed around logical fallacies and philosophical paradoxes"). The Public API table block at `:54-72` has no Philosophy row. `grep -c "^| " README.md` confirms 13 group rows, but Philosophy isn't one of them.
-- suggested_fix: add a new "Philosophy" row to the Public API table between NPCs and Utils (or between Skills and Game — matches alphabetical-ish ordering used elsewhere). Cover: `bucketAxis` / `getAlignmentCell` / `applyAlignmentDelta` / `defaultAlignment` (Phase 42 helpers), `AXIS_HIGH_THRESHOLD` + `AXIS_LOW_THRESHOLD` (constants), `philosophicalAlignmentLibrary` (27-cell content registry, Phase 42), types (`AxisBucket`, `PhilosophicalAlignment`, `AlignmentFallacy`, `PhilosophicalAlignmentCell`), the `GameState.philosophicalAlignment` field + `SHIFT_PHILOSOPHICAL_ALIGNMENT` action (Phase 42), and the `alignmentDelta` field on `DialogueChoice.effect` + `MapEventPoolEntry` (Phase 43). Cross-link to `docs/philosophy.md`. ~1 line added.
-- source: critique
-
 ### [LOW] `plan/bearings.md` CLI/API contract has no Philosophy entry after Phases 42 + 43 ship
 - pass: critique-18 (commit c62702e)
 - area: docs / autonomous-loop hygiene
@@ -132,6 +124,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] README Public API table has no Philosophy row after Phases 42 + 43 shipped 9 new exports** — resolved at iterate commit `3faf286` (2026-05-16). Added a "Philosophy" row to the Public API table after NPCs covering all four phase-42-family surface additions (Phase 42 engine + library + state field, Phase 43 `alignmentDelta` authoring surfaces, Phase 44 `sourcedFromCell` + 7 named fallacy payloads, Phase 45 enemy alignment + outlook bias). Two adjacent rows also nudged: NPCs row mentions `DialogueChoice.effect.alignmentDelta` (Phase 43); Enemy row mentions `Enemy.philosophicalAlignment` + outlook bias (Phase 45). Consumers reading the NPCs or Enemy row in isolation now see the alignment hook in context. 546/546 tests; verify clean (docs-only change). Impact 5 × Ease 9 / 10 = 4.5.
 
 - [x] **[LOW] `automation/agent-vitest-reporter.mjs` is 483 LOC of untyped JavaScript with no JSDoc type hints** — resolved at iterate commit `02ac1bb` (2026-05-16). Picked Path (a) per the critique row: added `// @ts-check` at the top of the file plus JSDoc `@param`/`@returns` annotations on every helper (15 functions total: `buildReport`, `readPriorReport`, `indexTestsByKey`, `computeDiff`, `computeCallouts`, `topFailureFile`, `countSlowTests`, `diffHasContent`, `collectTestCases`, `safeDiagnostic`, `moduleStatus`, `locationFromError`, `resolveGetRunnerTask`, `locationFromRunner`). The verify gate is unaffected because `tsconfig.json` `rootDir: ./src` excludes `automation/` from `tsc --noEmit` — `// @ts-check` only takes effect in IDEs and explicit `tsc --checkJs` runs. Path (b) (convert to `.ts`) was skipped because the `.mjs` convention matches sibling `automation/agent-e2e.mjs` and conversion is a bigger refactor that needs its own phase. 523/523 tests; `npm run verify:agent` smoke green. Impact 4 × Ease 6 / 10 = 2.4 (× 1.5 reporter bias = 3.6).
 
