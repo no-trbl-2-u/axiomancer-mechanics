@@ -31,6 +31,8 @@ const fvCutscene: MapEventPool = {
             ],
             description: 'Arrival at the fishing village.',
         },
+        // Phase 43 — arriving among people: gentle relational pull.
+        alignmentDelta: { scope: 1 },
     }],
 };
 
@@ -130,6 +132,8 @@ const fvDriftwood: MapEventPool = {
             }],
             description: 'Driftwood, piled against the dunes.',
         },
+        // Phase 43 — solitary scavenging leans individual.
+        alignmentDelta: { scope: -1 },
     }],
 };
 
@@ -142,6 +146,9 @@ const fvCampfire: MapEventPool = {
             healFraction: 1.0,
             description: 'An old fisher\'s campfire still warm. You catch your breath.',
         },
+        // Phase 43 — peaceful rest at an unattended campfire (someone left
+        // it warm for whoever followed): small optimistic + relational pull.
+        alignmentDelta: { outlook: 2, scope: 1 },
     }],
 };
 
@@ -154,6 +161,9 @@ const fvHazard: MapEventPool = {
             damage: 2,
             description: 'You stumble through a thicket of jagged barnacles.',
         },
+        // Phase 43 — the world is indifferent and bites; pessimistic +
+        // logical-acceptance lean (Camus / Schopenhauer territory).
+        alignmentDelta: { epistemology: 1, outlook: -1 },
     }],
 };
 
@@ -212,6 +222,9 @@ const nfSpring: MapEventPool = {
             healFraction: 1.0,
             description: 'A clearing with a cold spring. You catch your breath.',
         },
+        // Phase 43 — the spring's hush invites the larger picture:
+        // transcendent scope, mild faith-leaning epistemology.
+        alignmentDelta: { epistemology: -1, scope: 2 },
     }],
 };
 
@@ -298,6 +311,9 @@ const nfCaveMouth: MapEventPool = {
             ],
             description: 'The cave at the forest\'s edge.',
         },
+        // Phase 43 — cosmic dread at the dark gate: Lovecraft / Cioran
+        // territory (Agnostic-Pessimistic-Transcendent).
+        alignmentDelta: { outlook: -2, scope: 3 },
     }],
 };
 

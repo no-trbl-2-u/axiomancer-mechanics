@@ -55,7 +55,10 @@ const oldDockmasterTree: DialogueTree = {
                 {
                     text: "I've got my own dead to bury — maybe later.",
                     nextNodeId: undefined,
-                    effect: { moralDelta: 2 },
+                    // Phase 43 — declining for personal grief: scope leans
+                    // individual; outlook nudges pessimistic via the weight
+                    // of acknowledged loss.
+                    effect: { moralDelta: 2, alignmentDelta: { outlook: -1, scope: -2 } },
                 },
             ],
         },
@@ -77,13 +80,26 @@ const oldDockmasterTree: DialogueTree = {
                     text: "Take only half — your need is greater than mine.",
                     nextNodeId: undefined,
                     requires: { questCompleted: 'starting-quest' },
-                    effect: { grantCurrency: 12, moralDelta: 5 },
+                    // Phase 43 — Faith-Optimistic-Relational lean (Jean
+                    // Valjean / Dorothy Day cells): mercy + service.
+                    effect: {
+                        grantCurrency: 12,
+                        moralDelta: 5,
+                        alignmentDelta: { epistemology: -2, outlook: 3, scope: 3 },
+                    },
                 },
                 {
                     text: "This nearly killed me. Pay double or keep it.",
                     nextNodeId: undefined,
                     requires: { questCompleted: 'starting-quest' },
-                    effect: { grantCurrency: 25, moralDelta: -4, setFlag: 'marrow_pressed' },
+                    // Phase 43 — Logic-Pessimistic-Individual lean (Underground
+                    // Man cell): hyper-rational grievance + self-prioritisation.
+                    effect: {
+                        grantCurrency: 25,
+                        moralDelta: -4,
+                        setFlag: 'marrow_pressed',
+                        alignmentDelta: { epistemology: 3, outlook: -3, scope: -3 },
+                    },
                 },
             ],
         },
@@ -137,7 +153,12 @@ const beggarTree: DialogueTree = {
                 {
                     text: "Give 10 gold generously. \"Here, take this.\"",
                     nextNodeId: 'grateful_generous',
-                    effect: { grantCurrency: -10, moralDelta: 5 },
+                    // Phase 43 — Faith-Optimistic-Relational lean.
+                    effect: {
+                        grantCurrency: -10,
+                        moralDelta: 5,
+                        alignmentDelta: { epistemology: -2, outlook: 2, scope: 3 },
+                    },
                 },
                 {
                     text: "Give 5 gold. \"I can spare a little.\"",
@@ -147,7 +168,13 @@ const beggarTree: DialogueTree = {
                 {
                     text: "Offer to share your rations instead.",
                     nextNodeId: 'grateful_kind',
-                    effect: { moralDelta: 3 },
+                    // Phase 43 — Agnostic-Optimistic-Relational lean (Atticus
+                    // Finch / Dewey cells): practical kindness without
+                    // metaphysical justification.
+                    effect: {
+                        moralDelta: 3,
+                        alignmentDelta: { outlook: 2, scope: 2 },
+                    },
                 },
                 {
                     text: "\"Everyone has their struggles.\" (Walk away)",
@@ -157,7 +184,12 @@ const beggarTree: DialogueTree = {
                 {
                     text: "\"Find work like everyone else.\" (Be harsh)",
                     nextNodeId: 'harsh',
-                    effect: { moralDelta: -5 },
+                    // Phase 43 — Logic-Pessimistic-Individual lean: cold
+                    // rationality + dismissal of relational obligation.
+                    effect: {
+                        moralDelta: -5,
+                        alignmentDelta: { epistemology: 2, outlook: -2, scope: -3 },
+                    },
                 },
             ],
         },

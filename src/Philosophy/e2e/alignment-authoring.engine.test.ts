@@ -75,6 +75,41 @@ describe('Phase 43 — dialogue alignmentDelta', () => {
     });
 });
 
+describe('Phase 43 — content authoring (directional drift)', () => {
+    it('Old Marrow "Take only half" choice carries a Faith-Optimistic-Relational pull', async () => {
+        // Pull the authored tree by re-importing the maps module, which
+        // registers it via getMapDefinition. Drive applyDialogueChoice
+        // against the actual content rather than a synthetic stub.
+        const { getMapDefinition } = await import('../../World/map.registry');
+        await import('../../World/Continents/Coastal-Village/maps');
+        const def = getMapDefinition('coastal-continent', 'fishing-village');
+        const tree = def.npcs!.find(n => n.name === 'Old Marrow')!.dialogueTree!;
+        const thanksNode = tree.nodes['thanks'];
+        const halfChoice = thanksNode.choices!.find(c => c.text.includes('Take only half'))!;
+        const d = halfChoice.effect?.alignmentDelta;
+        expect(d).toBeDefined();
+        // Direction-pinned: epistemology ↓ (Faith), outlook ↑ (Optimistic),
+        // scope ↑ (Relational). Magnitudes are authoring-balance work and
+        // may drift; signs must not.
+        expect((d!.epistemology ?? 0)).toBeLessThan(0);
+        expect((d!.outlook ?? 0)).toBeGreaterThan(0);
+        expect((d!.scope ?? 0)).toBeGreaterThan(0);
+    });
+
+    it('Old Marrow "Pay double" choice carries a Logic-Pessimistic-Individual pull', async () => {
+        const { getMapDefinition } = await import('../../World/map.registry');
+        await import('../../World/Continents/Coastal-Village/maps');
+        const def = getMapDefinition('coastal-continent', 'fishing-village');
+        const tree = def.npcs!.find(n => n.name === 'Old Marrow')!.dialogueTree!;
+        const doubleChoice = tree.nodes['thanks'].choices!.find(c => c.text.includes('Pay double'))!;
+        const d = doubleChoice.effect?.alignmentDelta;
+        expect(d).toBeDefined();
+        expect((d!.epistemology ?? 0)).toBeGreaterThan(0);
+        expect((d!.outlook ?? 0)).toBeLessThan(0);
+        expect((d!.scope ?? 0)).toBeLessThan(0);
+    });
+});
+
 describe('Phase 43 — map-event pool-entry alignmentDelta', () => {
     beforeEach(() => {
         _clearMapEventPoolRegistry();
