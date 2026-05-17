@@ -191,6 +191,82 @@ Marrow + Coastal Beggar trees) and 6 map-event pool-entry deltas
 nf-4 / nf-10). Together they exercise every axis in both
 directions across a starting-area playthrough.
 
+## Authoring gates (Phase 46)
+
+Phase 46 introduces `AlignmentGate` — a single-clause predicate that
+locks dialogue choices and skill learning behind a position on the
+alignment cube.
+
+```ts
+interface AlignmentGate {
+    axis: 'epistemology' | 'outlook' | 'scope';
+    op: 'gte' | 'lte';
+    value: number;
+}
+```
+
+The predicate sits on two existing requirement shapes:
+
+- `DialogueChoice.requires.requiresAlignment?: AlignmentGate` —
+  evaluated by `visibleChoices(node, ctx)`. When `ctx.alignment`
+  doesn't satisfy the gate (or isn't provided), the choice is hidden.
+  Mirrors the existing `requires.flag` semantic — a missing context
+  field implicitly hides the gated content.
+
+- `SkillLearningRequirement.requiresAlignment?: AlignmentGate` —
+  evaluated by `meetsLearningRequirement(character, skill, alignment?)`.
+  `getAvailableSkills` and `learnSkill` accept an optional `alignment`
+  parameter and thread it through. The reducer's `LEARN_SKILL` action
+  reads `state.philosophicalAlignment` automatically.
+
+### Operator semantics
+
+| Op | Means | Threshold alignment with bucketAxis |
+|---|---|---|
+| `gte` | "axis value ≥ `value`" | `value: 34` matches the `high` bucket boundary |
+| `lte` | "axis value ≤ `value`" | `value: -34` matches the `low` bucket boundary |
+
+Use `value: 34` for "high-bucket only" gates (`gte 34`) and
+`value: -34` for "low-bucket only" gates (`lte -34`). Mid-bucket
+gates (e.g. "must be in `outlook` mid") aren't supported as a
+single clause today — author two separate gated choices with
+`gte -33` and `lte 33` that share a `nextNodeId`. Promote to a
+range form if real content authoring needs it.
+
+### Phase 46 first-pass authoring
+
+Authored gates (`src/Skills/skill.library.ts` +
+`src/World/Continents/Coastal-Village/maps.ts`):
+
+| Surface | Author | Gate | Rationale |
+|---|---|---|---|
+| Skill | `nirvana-fallacy` | `outlook lte -34` | Schopenhauer's metaphysics; only learnable by a pessimistic caster. |
+| Skill | `appeal-to-fear` | `scope gte 34` | Lovecraftian indifference; only learnable by a transcendent-leaning caster. |
+| Dialogue | Old Marrow `offer` "You speak like someone who already lost everything" | `outlook lte -34` | Two-broken-people recognition — gate accepts the quest with a different framing. |
+| Dialogue | Coastal Beggar `greet` "Sit with them a while. Their grief is part of yours." | `scope gte 34` | Transcendent player hears the beggar as part of the larger weave. |
+
+### Compound gates
+
+Single-clause is the canonical shape. To express "Pessimistic AND
+Transcendent" (e.g. Lovecraft cell), author two distinct gated
+choices that share a `nextNodeId`:
+
+```ts
+choices: [
+    { text: '...', nextNodeId: 'next',
+      requires: { requiresAlignment: { axis: 'outlook', op: 'lte', value: -34 } } },
+    // The second gate is checked only if the first matches — both
+    // must hold for the choice to surface (visibleChoices ANDs all
+    // requires clauses).
+],
+```
+
+Better: when both clauses are on the SAME choice, the engine
+currently supports one `requiresAlignment` per `requires` block.
+Compound surfacing patterns (multiple gated branches with same
+outcome) are the in-scope idiom; an `AlignmentGate[]` AND-of-array
+form is a deferred follow-up if content authoring grows compound.
+
 ## Relationship to `moralMeter`
 
 `philosophicalAlignment` is **orthogonal** to

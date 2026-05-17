@@ -75,6 +75,104 @@ describe('Phase 43 — dialogue alignmentDelta', () => {
     });
 });
 
+describe('Phase 46 — alignment-gated content (live authored gates)', () => {
+    it('the pessimistic-only Old Marrow branch is visible only to outlook ≤ -34', async () => {
+        const { getMapDefinition } = await import('../../World/map.registry');
+        const { visibleChoices } = await import('../../NPCs/dialogue');
+        await import('../../World/Continents/Coastal-Village/maps');
+
+        const def = getMapDefinition('coastal-continent', 'fishing-village');
+        const tree = def.npcs!.find(n => n.name === 'Old Marrow')!.dialogueTree!;
+        const offer = tree.nodes['offer'];
+
+        const pessimistic = {
+            activeQuests: new Set<string>(), completedQuests: new Set<string>(), flags: new Set<string>(),
+            alignment: { epistemology: 0, outlook: -50, scope: 0 },
+        };
+        const optimistic = {
+            activeQuests: new Set<string>(), completedQuests: new Set<string>(), flags: new Set<string>(),
+            alignment: { epistemology: 0, outlook: 50, scope: 0 },
+        };
+        const noAlign = {
+            activeQuests: new Set<string>(), completedQuests: new Set<string>(), flags: new Set<string>(),
+        };
+
+        const pessVisible = visibleChoices(offer, pessimistic);
+        const optVisible = visibleChoices(offer, optimistic);
+        const noAlignVisible = visibleChoices(offer, noAlign);
+
+        const gatedText = 'You speak like someone who already lost everything.';
+        expect(pessVisible.some(c => c.text === gatedText)).toBe(true);
+        expect(optVisible.some(c => c.text === gatedText)).toBe(false);
+        expect(noAlignVisible.some(c => c.text === gatedText)).toBe(false);
+    });
+
+    it('nirvana-fallacy is learnable only when outlook ≤ -34', async () => {
+        const { getSkillById } = await import('../../Skills/skill.library');
+        const { meetsLearningRequirement } = await import('../../Skills/skill.engine');
+        const { createCharacter } = await import('../../Character');
+
+        const skill = getSkillById('nirvana-fallacy')!;
+        const ch = createCharacter({
+            name: 'Tester', level: 10,
+            baseStats: { heart: 6, body: 6, mind: 6 },
+        });
+
+        expect(meetsLearningRequirement(ch, skill,
+            { epistemology: 0, outlook: -50, scope: 0 })).toBe(true);
+        expect(meetsLearningRequirement(ch, skill,
+            { epistemology: 0, outlook: 0, scope: 0 })).toBe(false);
+        expect(meetsLearningRequirement(ch, skill)).toBe(false); // no alignment → gate fails
+    });
+
+    it('appeal-to-fear is learnable only when scope ≥ 34', async () => {
+        const { getSkillById } = await import('../../Skills/skill.library');
+        const { meetsLearningRequirement } = await import('../../Skills/skill.engine');
+        const { createCharacter } = await import('../../Character');
+
+        const skill = getSkillById('appeal-to-fear')!;
+        const ch = createCharacter({
+            name: 'Tester', level: 10,
+            baseStats: { heart: 6, body: 6, mind: 6 },
+        });
+
+        expect(meetsLearningRequirement(ch, skill,
+            { epistemology: 0, outlook: 0, scope: 50 })).toBe(true);
+        expect(meetsLearningRequirement(ch, skill,
+            { epistemology: 0, outlook: 0, scope: 0 })).toBe(false);
+    });
+
+    it('LEARN_SKILL dispatched through gameReducer respects the alignment gate', async () => {
+        const { gameReducer, createNewGameState } = await import('../../Game/game.reducer');
+
+        const state = createNewGameState();
+        // Player needs level 10 + the right alignment. Boost both for the
+        // positive case.
+        const pessimisticAtLevel: typeof state = {
+            ...state,
+            player: { ...state.player, level: 10 },
+            philosophicalAlignment: { epistemology: 0, outlook: -50, scope: 0 },
+        };
+        const optimisticAtLevel: typeof state = {
+            ...state,
+            player: { ...state.player, level: 10 },
+            philosophicalAlignment: { epistemology: 0, outlook: 50, scope: 0 },
+        };
+
+        const learned = gameReducer(pessimisticAtLevel, {
+            type: 'LEARN_SKILL',
+            payload: { skillId: 'nirvana-fallacy' },
+        });
+        expect(learned.player.knownSkills).toContain('nirvana-fallacy');
+
+        const refused = gameReducer(optimisticAtLevel, {
+            type: 'LEARN_SKILL',
+            payload: { skillId: 'nirvana-fallacy' },
+        });
+        expect(refused.player.knownSkills).not.toContain('nirvana-fallacy');
+    });
+});
+
 describe('Phase 43 — full path through gameReducer (APPLY_DIALOGUE)', () => {
     it('APPLY_DIALOGUE on the authored Old Marrow tree shifts GameState.philosophicalAlignment', async () => {
         const { gameReducer } = await import('../../Game/game.reducer');

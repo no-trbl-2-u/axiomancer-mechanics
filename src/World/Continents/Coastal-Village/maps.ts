@@ -60,6 +60,19 @@ const oldDockmasterTree: DialogueTree = {
                     // of acknowledged loss.
                     effect: { moralDelta: 2, alignmentDelta: { outlook: -1, scope: -2 } },
                 },
+                {
+                    // Phase 46 — pessimistic-only branch. Surfaces only when
+                    // the player already shares Old Marrow's grief-shape.
+                    // Two-broken-people recognition: he opens up because you
+                    // arrive carrying the same weight.
+                    text: "You speak like someone who already lost everything.",
+                    nextNodeId: 'accepted',
+                    requires: { requiresAlignment: { axis: 'outlook', op: 'lte', value: -34 } },
+                    effect: {
+                        startQuest: 'starting-quest',
+                        alignmentDelta: { outlook: -1, scope: 1 },
+                    },
+                },
             ],
         },
         accepted: {
@@ -189,6 +202,21 @@ const beggarTree: DialogueTree = {
                     effect: {
                         moralDelta: -5,
                         alignmentDelta: { epistemology: 2, outlook: -2, scope: -3 },
+                    },
+                },
+                {
+                    // Phase 46 — transcendent-only branch (placed LAST so the
+                    // index-based tests in moral.meter.engine.test.ts keep
+                    // their assertions stable). A player whose scope already
+                    // reaches past the individual hears the beggar as a node
+                    // in the larger weave; the recognition changes the
+                    // encounter.
+                    text: "Sit with them a while. Their grief is part of yours.",
+                    nextNodeId: 'grateful_kind',
+                    requires: { requiresAlignment: { axis: 'scope', op: 'gte', value: 34 } },
+                    effect: {
+                        moralDelta: 4,
+                        alignmentDelta: { epistemology: -1, outlook: 1, scope: 2 },
                     },
                 },
             ],

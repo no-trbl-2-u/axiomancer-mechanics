@@ -49,10 +49,16 @@ describe('meetsLearningRequirement — tier-derived defaults', () => {
         }
     });
 
-    it('admits a level-15 character to every Tier 3 skill', () => {
+    it('admits a level-15 character to every Tier 3 skill (with all-passing alignment)', () => {
         const ch = buildPlayer(15);
+        // Phase 46 authored two alignment gates on Tier 3 skills:
+        //   nirvana-fallacy → outlook ≤ -34
+        //   appeal-to-fear  → scope   ≥ 34
+        // The two gates are orthogonal axes, so an alignment that satisfies
+        // both exists: pessimistic AND transcendent.
+        const passAllGates = { epistemology: 0, outlook: -50, scope: 50 };
         for (const s of skillLibrary.filter(x => x.tier === 3)) {
-            expect(meetsLearningRequirement(ch, s)).toBe(true);
+            expect(meetsLearningRequirement(ch, s, passAllGates)).toBe(true);
         }
     });
 });
@@ -60,7 +66,9 @@ describe('meetsLearningRequirement — tier-derived defaults', () => {
 describe('getAvailableSkills', () => {
     it('returns every library skill the character does not already know AND qualifies for', () => {
         const ch = buildPlayer(15);
-        const available = getAvailableSkills(ch);
+        // Phase 46 — same all-passing alignment as the Tier 3 admission test.
+        const passAllGates = { epistemology: 0, outlook: -50, scope: 50 };
+        const available = getAvailableSkills(ch, passAllGates);
         expect(available.length).toBe(skillLibrary.length);
     });
 
@@ -74,7 +82,9 @@ describe('getAvailableSkills', () => {
 
     it('preserves library order so the UI list is stable', () => {
         const ch = buildPlayer(15);
-        const available = getAvailableSkills(ch);
+        // Phase 46 — supply the alignment that admits every Tier 3 skill.
+        const passAllGates = { epistemology: 0, outlook: -50, scope: 50 };
+        const available = getAvailableSkills(ch, passAllGates);
         const libraryIds = skillLibrary.map(s => s.id);
         const availableIds = available.map(s => s.id);
         expect(availableIds).toEqual(libraryIds);

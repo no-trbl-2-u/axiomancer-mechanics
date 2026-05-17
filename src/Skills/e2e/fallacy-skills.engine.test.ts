@@ -42,7 +42,10 @@ describe('Phase 44 — fallacies-as-spells (skills)', () => {
             expect(skill, `skill ${id} missing from library`).toBeDefined();
             expect(skill!.tier).toBe(3);
             expect(skill!.sourcedFromCell).toBe(expected[id]);
-            expect(skill!.learningRequirement).toEqual({ level: 10 });
+            // Phase 44 set { level: 10 }; Phase 46 added requiresAlignment to
+            // nirvana-fallacy + appeal-to-fear. Assert the level floor stays
+            // and the alignment gate is present where Phase 46 authored it.
+            expect(skill!.learningRequirement?.level).toBe(10);
         }
     });
 

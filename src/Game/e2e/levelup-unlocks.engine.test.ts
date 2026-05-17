@@ -19,7 +19,12 @@ import { skillLibrary } from '../../Skills/skill.library';
 import { EXPERIENCE_PER_LEVEL } from '../game-mechanics.constants';
 import type { TypedLevelUpEvent } from '../events.types';
 
-function buildStore(level: number, opts: { experience?: number; knownSkills?: string[] } = {}) {
+function buildStore(level: number, opts: {
+    experience?: number;
+    knownSkills?: string[];
+    /** Phase 46 — override alignment so alignment-gated tier-3 skills can pass. */
+    philosophicalAlignment?: { epistemology: number; outlook: number; scope: number };
+} = {}) {
     const events = createEventEmitter();
     const player = createCharacter({
         name: 'Learner',
@@ -29,6 +34,9 @@ function buildStore(level: number, opts: { experience?: number; knownSkills?: st
     });
     const state = { ...createNewGameState(), player };
     if (opts.experience !== undefined) state.player.experience = opts.experience;
+    if (opts.philosophicalAlignment !== undefined) {
+        state.philosophicalAlignment = opts.philosophicalAlignment;
+    }
     const captured: TypedLevelUpEvent[] = [];
     events.on('character:levelup', e => captured.push(e as TypedLevelUpEvent));
     const store = createGameStore(nullAdapter, state, events);
@@ -61,8 +69,11 @@ describe('character:levelup payload — Phase 30 unit 2', () => {
     it('lists both tier-2 and tier-3 skills when a cascade crosses both thresholds', () => {
         // Level 4 with 14000 XP (level-14 worth) cascades through 5..14.
         // Crosses both T2 (level 5) and T3 (level 10) gates.
+        // Phase 46 — pass an alignment that satisfies both authored tier-3
+        // gates (nirvana-fallacy outlook ≤ -34, appeal-to-fear scope ≥ 34).
         const { store, captured } = buildStore(4, {
             experience: 14 * EXPERIENCE_PER_LEVEL,
+            philosophicalAlignment: { epistemology: 0, outlook: -50, scope: 50 },
         });
         store.getState().levelUp();
         const finalLevel = store.getState().player.level;

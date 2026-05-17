@@ -296,7 +296,13 @@ const nirvanaFallacy: Skill = {
     combatEffects: [
         { effectId: 'debuff_confusion', appliedTo: 'opponent' },
     ],
-    learningRequirement: { level: 10 },
+    // Phase 46 — only learnable by a sufficiently pessimistic character.
+    // The skill expresses Schopenhauer / Underground Man metaphysics; a
+    // hopeful caster wouldn't reach the contempt the wager requires.
+    learningRequirement: {
+        level: 10,
+        requiresAlignment: { axis: 'outlook', op: 'lte', value: -34 },
+    },
     sourcedFromCell: 'logic-pessimistic-individual',
 };
 
@@ -337,7 +343,13 @@ const appealToFear: Skill = {
     combatEffects: [
         { effectId: 'debuff_slow', appliedTo: 'opponent' },
     ],
-    learningRequirement: { level: 10 },
+    // Phase 46 — only learnable by a sufficiently transcendent character.
+    // The cosmic-dread whisper requires a caster whose attention is already
+    // tuned to the indifferent beyond (Lovecraft / Burroughs archetype).
+    learningRequirement: {
+        level: 10,
+        requiresAlignment: { axis: 'scope', op: 'gte', value: 34 },
+    },
     sourcedFromCell: 'mid-pessimistic-transcendent',
 };
 
