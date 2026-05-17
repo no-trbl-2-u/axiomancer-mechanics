@@ -119,6 +119,78 @@ system"), the fallacies are reserved as content fuel for a future
 skill/effect/spell phase. See `plan/phases/phase_42_philosophical_alignment.md`
 "Follow-ups" for the planned content arcs.
 
+## Authoring deltas (Phase 43)
+
+Content authors shift the alignment cube through two surfaces, both
+accepting `alignmentDelta?: Partial<PhilosophicalAlignment>`. Each
+axis clamps to `[-100, +100]` via `applyAlignmentDelta`; missing axes
+in the partial pass through unchanged.
+
+### `DialogueChoice.effect.alignmentDelta`
+
+Lives next to `moralDelta` on the dialogue-choice effect block.
+Applied by `applyDialogueChoice` and surfaced on
+`ApplyDialogueChoiceResult.effects.philosophicalShift` (only the
+axes that actually moved appear in the summary).
+
+Example — Old Marrow's "Take only half — your need is greater than
+mine." choice in `src/World/Continents/Coastal-Village/maps.ts`:
+
+```ts
+{
+    text: "Take only half — your need is greater than mine.",
+    effect: {
+        grantCurrency: 12,
+        moralDelta: 5,
+        // Faith-Optimistic-Relational lean (Jean Valjean / Dorothy Day cells).
+        alignmentDelta: { epistemology: -2, outlook: 3, scope: 3 },
+    },
+},
+```
+
+### `MapEventPoolEntry.alignmentDelta`
+
+Lives on the pool-entry shape next to `weight`. Applied by
+`resolveMapEvent` AFTER the matching handler runs and BEFORE the
+consume / reveal step — the per-event delta (HP heal, item grant,
+etc.) lands on the pre-shift state and the alignment shift applies
+on top. Single field for all 8 payload kinds.
+
+Example — the fv-9 unattended-campfire rest in
+`src/World/MapEvents/content.ts`:
+
+```ts
+{
+    kind: 'rest', weight: 1,
+    payload: { kind: 'rest', healFraction: 1.0, description: '...' },
+    // Peaceful rest at someone else's campfire: small optimistic +
+    // relational pull.
+    alignmentDelta: { outlook: 2, scope: 1 },
+},
+```
+
+### Magnitude band
+
+| Delta | Authoring use |
+|---|---|
+| `±1` | Incidental flavour (a small kindness, a brief flinch). |
+| `±2..±3` | Routine choice with a clear philosophical lean. |
+| `±4..±5` | Strong choice — defines the player's posture in this scene. |
+| `±10` | Reserved for endgame "defining" choices. Do NOT use in early-act content. |
+
+These match `moralMeter`'s authoring band by design — a content
+author scoring a choice on both axes can use the same magnitudes
+for moral + philosophical impact. A future calibration pass can
+tune both bands together if the cube moves too fast in playtest.
+
+### Phase 43 first-pass authoring
+
+The Phase 43 content sweep landed 5 dialogue-choice deltas (Old
+Marrow + Coastal Beggar trees) and 6 map-event pool-entry deltas
+(Fishing Village fv-1 / fv-8 / fv-9 / fv-10 + Northern Forest
+nf-4 / nf-10). Together they exercise every axis in both
+directions across a starting-area playthrough.
+
 ## Relationship to `moralMeter`
 
 `philosophicalAlignment` is **orthogonal** to

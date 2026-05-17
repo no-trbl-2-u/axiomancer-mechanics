@@ -75,6 +75,32 @@ describe('Phase 43 — dialogue alignmentDelta', () => {
     });
 });
 
+describe('Phase 43 — full path through gameReducer (APPLY_DIALOGUE)', () => {
+    it('APPLY_DIALOGUE on the authored Old Marrow tree shifts GameState.philosophicalAlignment', async () => {
+        const { gameReducer } = await import('../../Game/game.reducer');
+        const { getMapDefinition } = await import('../../World/map.registry');
+        await import('../../World/Continents/Coastal-Village/maps');
+
+        const def = getMapDefinition('coastal-continent', 'fishing-village');
+        const tree = def.npcs!.find(n => n.name === 'Old Marrow')!.dialogueTree!;
+        // "Take half" requires `questCompleted: 'starting-quest'`; bypass by
+        // hand-crafting an identical choice without the gate so the runtime
+        // applies the authored effect.
+        const authored = tree.nodes['thanks'].choices!
+            .find(c => c.text.includes('Take only half'))!;
+        const choice = { ...authored, requires: undefined };
+
+        const state = createNewGameState();
+        const before = state.philosophicalAlignment;
+        const next = gameReducer(state, { type: 'APPLY_DIALOGUE', payload: { tree, choice } });
+        // Faith-Optimistic-Relational sign-pin: every axis moved in the
+        // expected direction.
+        expect(next.philosophicalAlignment.epistemology).toBeLessThan(before.epistemology);
+        expect(next.philosophicalAlignment.outlook).toBeGreaterThan(before.outlook);
+        expect(next.philosophicalAlignment.scope).toBeGreaterThan(before.scope);
+    });
+});
+
 describe('Phase 43 — content authoring (directional drift)', () => {
     it('Old Marrow "Take only half" choice carries a Faith-Optimistic-Relational pull', async () => {
         // Pull the authored tree by re-importing the maps module, which
