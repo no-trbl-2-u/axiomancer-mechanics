@@ -176,6 +176,49 @@ Every effect's mechanical modifications live in its `payload` object.
 }
 ```
 
+### Runtime aggregation (pre-loop, verified at Phase 48)
+
+Active effects' `statModifiers` + `defenseModifier` are aggregated and
+applied to combatant stats at every stat-accessor call — the engine
+has never read raw `Character.derivedStats` in combat math. The
+pipeline:
+
+```
+applyEffect (rolls intensity / duration / resist)
+    → ActiveEffect attached to combatant.effects
+        → getActiveEffectModifiers(effects)        // one-pass aggregation
+            → { statFlat, statMultBonus, defenseDelta, ... }
+                → getEffectiveStats(combatant)     // folds into stats
+                    → { baseStats, derivedStats, nonCombatStats, defenseDelta }
+                        → getAttackStat / getDefenseStat / getResistStat
+                          getBaseStat / getSaveStat                    // src/Combat/stats.ts
+                            → resolveCombatRound (every stat read)
+```
+
+Aggregation rules:
+
+- **Intensity scaling is unconditional.** Every numeric modifier
+  contributes `value × intensity`. Multipliers contribute
+  `(value - 1) × intensity` to a stat-mult-bonus that composes
+  additively per Q3: `final = base × (1 + Σ bonus)`.
+- **Base-stat targets re-derive every dependent.** A `statModifiers:
+  [{ stat: 'body', value: 2 }]` buff bumps body, then `physicalAttack`,
+  `physicalSkill`, `physicalDefense`, `luck`, and (for Characters) the
+  `physicalSave` / `physicalTest` non-combat pair all re-derive from
+  the effective body.
+- **Derived-stat targets patch directly.** A `statModifiers: [{ stat:
+  'physicalDefense', value: -2 }]` debuff drops the derived defense
+  after re-derivation, without disturbing the base stat.
+- **`defenseModifier` is stance-agnostic.** Folded into `defenseDelta`
+  and added by `getDefenseStat` on top of the (effective) stance
+  defense.
+
+Verified at Phase 48 (`c892801`) via
+`src/Combat/e2e/effect-stat-modifiers.engine.test.ts` — 8 hermetic
+cases pin the public stat-accessor surface against the live
+library effects (`buff_body_attack_up`, `buff_max_hp_up`,
+`buff_barrier`, `debuff_all_stats_down`).
+
 ### Payload field implementation status
 
 | Field                     | Status   | Where consumed                              |
