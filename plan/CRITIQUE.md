@@ -6,13 +6,45 @@
 > by `/iterate`.
 
 <!-- Metadata (updated by /critique after each pass):
-> Last pass: 2026-05-16 at commit d1ebd7f
-> Pass count: 17
+> Last pass: 2026-05-16 at commit c62702e
+> Pass count: 18
 -->
 
 ---
 
 ## Pending
+
+### [LOW] README Public API table has no Philosophy row after Phases 42 + 43 shipped 9 new exports
+- pass: critique-18 (commit c62702e)
+- area: docs
+- observation: `README.md:54-72` "Public API" table lists every barrel group (Character, Enemy, Combat, Combat reducer, Combat resolver, Effects, Items, Skills, Game, World, NPCs, Utils, Utils — RNG) but has no Philosophy row. Phase 42 (`bdfda00`) added 9 new exports to `src/index.ts` under a "Philosophy" block (`bucketAxis`, `getAlignmentCell`, `applyAlignmentDelta`, `defaultAlignment`, `AXIS_HIGH_THRESHOLD`, `AXIS_LOW_THRESHOLD`, `philosophicalAlignmentLibrary`, plus types `AxisBucket`, `PhilosophicalAlignment`, `AlignmentFallacy`, `PhilosophicalAlignmentCell`); Phase 43 (`c62702e`) added the `alignmentDelta` field on dialogue + map-event payloads without surfacing it on the README. A consumer scanning README's Public API table comes away thinking the package has 12 surface areas when it actually has 13. Same pattern Phase 34 / iterate `2a8a9ae` drained for prior phases — README Public API table goes stale exactly one phase at a time.
+- evidence: `grep -n "Philosophy\|philosophical" README.md` returns hits only in the prose tagline (`:3` "themed around logical fallacies and philosophical paradoxes"). The Public API table block at `:54-72` has no Philosophy row. `grep -c "^| " README.md` confirms 13 group rows, but Philosophy isn't one of them.
+- suggested_fix: add a new "Philosophy" row to the Public API table between NPCs and Utils (or between Skills and Game — matches alphabetical-ish ordering used elsewhere). Cover: `bucketAxis` / `getAlignmentCell` / `applyAlignmentDelta` / `defaultAlignment` (Phase 42 helpers), `AXIS_HIGH_THRESHOLD` + `AXIS_LOW_THRESHOLD` (constants), `philosophicalAlignmentLibrary` (27-cell content registry, Phase 42), types (`AxisBucket`, `PhilosophicalAlignment`, `AlignmentFallacy`, `PhilosophicalAlignmentCell`), the `GameState.philosophicalAlignment` field + `SHIFT_PHILOSOPHICAL_ALIGNMENT` action (Phase 42), and the `alignmentDelta` field on `DialogueChoice.effect` + `MapEventPoolEntry` (Phase 43). Cross-link to `docs/philosophy.md`. ~1 line added.
+- source: critique
+
+### [LOW] `plan/bearings.md` CLI/API contract has no Philosophy entry after Phases 42 + 43 ship
+- pass: critique-18 (commit c62702e)
+- area: docs / autonomous-loop hygiene
+- observation: `plan/bearings.md:53-69` reads as the autonomous-loop's quick reference for the locked public-API contract — every other skill (`ship-a-phase`, `iterate`, `critique`) reads it before touching code. After Phase 42 + 43 shipped, the contract block lists 11 groups (Character, Enemy, Combat, Combat reducer, Effects, Items, Game, World, Utils) but has no Philosophy row. Two consequences: (1) future critique passes may flag the new exports as "additions not in the contract" by mistake; (2) /march and /ship-a-phase dispatchers reading bearings to understand surface coverage will under-count the public surface and may mis-route refactor decisions. Mirrors the prior `WorldMap` removal trail (iterate `5996991`) — bearings tracks contract changes one phase at a time.
+- evidence: `sed -n '53,69p' plan/bearings.md` shows the block; `grep -n "Philosophy" plan/bearings.md` returns 0 hits despite Phase 42 (`bdfda00`) + Phase 43 (`c62702e`) shipping 9 + 2 public-surface additions respectively (the `alignmentDelta` field on the dialogue + map-event payloads doesn't add a new export but extends the existing locked DialogueChoice / MapEventPoolEntry shapes).
+- suggested_fix: append a `Philosophy:` row to the CLI/API contract block in `plan/bearings.md`. List the same exports the README row would list (see prior CRITIQUE row). One row, ~2 lines. /iterate-safe and pair-able with the README finding above into a single docs-sweep tick if a future iterate ticket bundles them.
+- source: critique
+
+### [LOW] No conversation-loop spec for the philosophical alignment system after two phases shipped against it
+- pass: critique-18 (commit c62702e)
+- area: spec-gap
+- observation: Phase 42 brief (`plan/phases/phase_42_philosophical_alignment.md`) explicitly said a `specs/14-philosophical-alignment.md` spec would be filed "if the system grows enough to need its own conversation-loop spec." Phase 42 shipped, Phase 43 shipped against the same surface, Phases 44 (fallacies-as-spells) + 45 (enemies-by-alignment) are promoted on the build plan with their scopes targeting the same engine. Four phases on one mechanic, no spec. Every other multi-phase mechanic in this repo (Combat — Spec 02 / 03; Skills — Spec 04 / 04b; Equipment — Spec 05 / 05b / 05c / 05d / 05e; Character progression — Spec 06; MapEvents — Spec 23) ships a conversation-loop spec to centralise the Q&A trail. The alignment system has graduated from "one-off Phase 42" to "system" without picking up that artefact. `specs/README.md` recommended order also has no Philosophy entry.
+- evidence: `ls specs/` returns no `14-philosophical-alignment.md` (next number is 24+); `grep -n "Philosophy\|philosophical" specs/README.md` returns zero hits. `plan/phases/phase_42_philosophical_alignment.md` Decisions block says "No standalone `specs/NN-philosophical-alignment.md` is being authored in this phase — the PDF acts as the source-of-truth for cell content and the engine details are all decided in this brief. A follow-up `specs/14-philosophical-alignment.md` is filed under Follow-ups if the system grows enough to need its own conversation-loop spec." Build plan rows for Phases 43-45 all reference the system; no spec backs them.
+- suggested_fix: file `specs/14-philosophical-alignment.md` using the `specs/00-how-to-use-specs.md` template. Goal section is the 3-axis cube + 27-cell registry. Current state section cites Phases 42 (`bdfda00`) + 43 (`c62702e`) as already-shipped. Open questions: (1) Should `moralMeter` be unified into the cube as a 4th axis, (2) Should fallacies surface as skill payloads, effect payloads, or both, (3) Should enemies carry a `philosophicalAlignment?` field, (4) Should there be alignment-gated skills / effects / endings, (5) How does the alignment cube intersect with the friendship-victory mechanic. Add a `specs/README.md` row pointing at the new file. Pure docs work; no code touched. Pairs with the README + bearings findings above into a single Phase-42-paperwork sweep.
+- source: critique
+
+### [LOW] `alignmentDelta` is not cross-linked from `docs/world.md` (MapEvent authoring) or `docs/npcs.md` (dialogue authoring)
+- pass: critique-18 (commit c62702e)
+- area: docs
+- observation: Phase 43 (`c62702e`) added the `alignmentDelta?` field on `DialogueChoice.effect` (`src/NPCs/types.d.ts`) and `MapEventPoolEntry` (`src/World/MapEvents/types.ts`). The documentation lives only in `docs/philosophy.md` "Authoring deltas" subsection. A content author opening `docs/world.md` to look up MapEvent authoring conventions, or `docs/npcs.md` to look up dialogue-choice effect fields, won't see the new field — they'd have to know philosophy.md exists and bridge over manually. Same drift pattern critique pass 15 surfaced for `docs/world.md` after Phase 24, and the docs sweep at Phase 34 (`ac20950`) drained.
+- evidence: `grep -n "alignmentDelta\|philosophicalAlignment" docs/world.md docs/npcs.md` returns 0 hits. `docs/world.md` "Node Event Dispatcher" + MapEvents section name every payload kind but don't mention the per-entry `alignmentDelta`. `docs/npcs.md` lists the `DialogueChoice.effect` fields (`startQuest`, `progressQuest`, `completeQuest`, `teachSkill`, `setFlag`, `grantCurrency`, `moralDelta`) but doesn't list `alignmentDelta`.
+- suggested_fix: add a one-paragraph "Philosophical alignment" subsection to each doc, cross-linking to `docs/philosophy.md` "Authoring deltas". For `docs/world.md`, add a row to the MapEventPoolEntry shape description naming `alignmentDelta?: Partial<PhilosophicalAlignment>` with the `±1..±5` band note. For `docs/npcs.md`, add `alignmentDelta` to the DialogueChoice.effect fields list with the same cross-link. ~6 lines total across the two files. /iterate-safe; pairs with the README + bearings findings above as a single Phase-42-paperwork tick.
+- source: critique
 
 ### [LOW] Spec 03 (Tier 2 / 3 effect procs) — all 5 acceptance boxes unchecked despite shipping pre-loop
 - pass: critique-17 (commit d1ebd7f)
