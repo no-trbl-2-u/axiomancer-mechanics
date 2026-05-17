@@ -5,6 +5,7 @@ import { BaseStats, DerivedStats } from '../Character/types';
 import { ActiveEffect } from '../Effects/types';
 import { ProcOverrides, ProcUnlocks } from '../Combat/combat-effects';
 import { Item } from '../Items/types';
+import { PhilosophicalAlignment } from '../Philosophy/types';
 
 /**
  * Decision-making strategy used by an enemy each round (Spec 07).
@@ -103,4 +104,13 @@ export interface Enemy {
     /** Flat experience-point award on kill. Defaults computed by difficulty. */
     xpReward?: number;
     effects: ActiveEffect[];
+    /**
+     * Phase 45 — per-enemy pin on the 3-axis philosophical alignment cube.
+     * Optional; legacy enemies without a pin behave exactly as before.
+     * When set, `decideEnemyAction` applies an outlook-driven bias on top of
+     * the per-strategy decision (pessimistic enemies sometimes defend when
+     * they would attack; optimistic enemies sometimes attack when they would
+     * defend). See `docs/enemy.md` "Alignment-driven AI tuning".
+     */
+    philosophicalAlignment?: PhilosophicalAlignment;
 }

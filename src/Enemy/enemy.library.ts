@@ -73,6 +73,8 @@ export const TidepoolCrab = createEnemy({
     logic: 'aggressive',
     tier1Overrides: T1_DEFAULT,
     loot: [none(80), drop('minor-healing-potion', 20)],
+    // Phase 45 — mid-mid-individual (Montaigne / Ishmael archetype).
+    philosophicalAlignment: { epistemology: 0, outlook: 0, scope: -67 },
 });
 
 export const SeaMistWisp = createEnemy({
@@ -86,6 +88,8 @@ export const SeaMistWisp = createEnemy({
     logic: 'defensive',
     tier1Overrides: T1_DEFAULT,
     loot: [none(75), drop('clarity-serum', 20), drop('focus-vial', 5)],
+    // Phase 45 — mid-mid-transcendent (Lao Tzu / Siddhartha archetype).
+    philosophicalAlignment: { epistemology: 0, outlook: 0, scope: 67 },
 });
 
 export const LullabyMoth = createEnemy({
@@ -99,6 +103,8 @@ export const LullabyMoth = createEnemy({
     logic: 'random',
     tier1Overrides: T1_DEFAULT,
     loot: [none(80), drop('heart-draught', 18), drop('minor-healing-potion', 2)],
+    // Phase 45 — faith-optimistic-individual (Kierkegaard / Alyosha archetype).
+    philosophicalAlignment: { epistemology: -67, outlook: 67, scope: -67 },
 });
 
 // ─── Normal (6) — level 2-3 ───────────────────────────────────────────────────
@@ -120,6 +126,8 @@ export const Disatree_01 = createEnemy({
     logic: 'balanced',
     tier1Overrides: T1_DEFAULT,
     loot: [none(70), drop('minor-healing-potion', 25), drop('healing-potion', 5)],
+    // Phase 45 — mid-pessimistic-relational (Zapffe / Ahab archetype).
+    philosophicalAlignment: { epistemology: 0, outlook: -67, scope: 0 },
 });
 
 export const WetHound = createEnemy({
@@ -133,6 +141,8 @@ export const WetHound = createEnemy({
     logic: 'aggressive',
     tier1Overrides: T1_DEFAULT,
     loot: [none(60), drop('body-elixir', 30), drop('healing-potion', 10)],
+    // Phase 45 — logic-pessimistic-individual (Schopenhauer / Underground Man archetype).
+    philosophicalAlignment: { epistemology: 67, outlook: -67, scope: -67 },
 });
 
 export const MournfulGull = createEnemy({
@@ -146,6 +156,8 @@ export const MournfulGull = createEnemy({
     logic: 'balanced',
     tier1Overrides: T1_DEFAULT,
     loot: [none(60), drop('heart-draught', 30), drop('minor-healing-potion', 10)],
+    // Phase 45 — mid-pessimistic-individual (Cioran / Hamlet archetype).
+    philosophicalAlignment: { epistemology: 0, outlook: -67, scope: -67 },
 });
 
 export const ForestSprite = createEnemy({
@@ -159,6 +171,8 @@ export const ForestSprite = createEnemy({
     logic: 'defensive',
     tier1Overrides: T1_DEFAULT,
     loot: [none(55), drop('clarity-serum', 30), drop('focus-vial', 15)],
+    // Phase 45 — mid-optimistic-individual (Rorty / Huck Finn archetype).
+    philosophicalAlignment: { epistemology: 0, outlook: 67, scope: -67 },
 });
 
 export const HollowEyedBeggar = createEnemy({
@@ -172,6 +186,8 @@ export const HollowEyedBeggar = createEnemy({
     logic: 'strategic',
     tier1Overrides: T1_DEFAULT,
     loot: [none(50), drop('heart-draught', 30), drop('healing-potion', 15), drop('antidote', 5)],
+    // Phase 45 — faith-pessimistic-relational (Mainländer / Ferreira archetype).
+    philosophicalAlignment: { epistemology: -67, outlook: -67, scope: 0 },
 });
 
 export const ArgumentativeCrow = createEnemy({
@@ -185,6 +201,8 @@ export const ArgumentativeCrow = createEnemy({
     logic: 'strategic',
     tier1Overrides: T1_DEFAULT,
     loot: [none(50), drop('clarity-serum', 25), drop('focus-vial', 20), drop('philosopher-tea', 5)],
+    // Phase 45 — logic-optimistic-individual (Nietzsche / Prometheus archetype).
+    philosophicalAlignment: { epistemology: 67, outlook: 67, scope: -67 },
 });
 
 // ─── Elite (3) — level 4-5 ────────────────────────────────────────────────────
@@ -203,6 +221,8 @@ export const TideflukeReaver = createEnemy({
         body: { attack: 2, defend: 2 },
     },
     loot: [none(35), drop('body-elixir', 35), drop('healing-potion', 20), drop('berserker-brew', 10)],
+    // Phase 45 — logic-pessimistic-relational (Ligotti / Rust Cohle archetype).
+    philosophicalAlignment: { epistemology: 67, outlook: -67, scope: 0 },
 });
 
 export const HushWraith = createEnemy({
@@ -219,6 +239,8 @@ export const HushWraith = createEnemy({
         mind: { attack: 2, defend: 2 },
     },
     loot: [none(35), drop('clarity-serum', 25), drop('focus-vial', 25), drop('philosopher-tea', 15)],
+    // Phase 45 — mid-pessimistic-transcendent (Lovecraft / Burroughs archetype).
+    philosophicalAlignment: { epistemology: 0, outlook: -67, scope: 67 },
 });
 
 export const HollowSaint = createEnemy({
@@ -235,6 +257,8 @@ export const HollowSaint = createEnemy({
         heart: { attack: 2, defend: 2 },
     },
     loot: [none(30), drop('heart-draught', 30), drop('healing-potion', 25), drop('resonance-crystal', 15)],
+    // Phase 45 — faith-mid-transcendent (St. John of the Cross / Rodrigues archetype).
+    philosophicalAlignment: { epistemology: -67, outlook: 0, scope: 67 },
 });
 
 // ─── Boss (2) — level 7-8 ─────────────────────────────────────────────────────
@@ -260,6 +284,8 @@ export const CoastalTyrant = createEnemy({
         drop('body-elixir', 30),
         drop('heart-draught', 20),
     ],
+    // Phase 45 — faith-pessimistic-transcendent (Marcion / Grand Inquisitor archetype).
+    philosophicalAlignment: { epistemology: -67, outlook: -67, scope: 67 },
 });
 
 export const TheDisagreement = createEnemy({
@@ -284,6 +310,8 @@ export const TheDisagreement = createEnemy({
         drop('focus-vial', 20),
         drop('revive-crystal', 10),
     ],
+    // Phase 45 — logic-mid-individual (Camus / Meursault archetype).
+    philosophicalAlignment: { epistemology: 67, outlook: 0, scope: -67 },
 });
 
 // ─── Unique (1) — level 10 signature fight ────────────────────────────────────
@@ -310,6 +338,8 @@ export const EchoOfPyrrhonia = createEnemy({
         drop('philosopher-tea', 30),
         drop('revive-crystal', 10),
     ],
+    // Phase 45 — mid-mid-individual (Montaigne / Ishmael archetype).
+    philosophicalAlignment: { epistemology: 0, outlook: 0, scope: -67 },
 });
 
 // ─── Test fixture (legacy, NOT counted toward Spec 07's 15) ───────────────────
@@ -331,6 +361,8 @@ export const Sandbag_01 = createEnemy({
     difficulty: 'simple',
     logic: 'random',
     tier1Overrides: T1_DEFAULT,
+    // Phase 45 — mid-mid-relational (Buber / Carraway archetype): the witness.
+    philosophicalAlignment: { epistemology: 0, outlook: 0, scope: 0 },
 });
 
 // ─── Library indices ──────────────────────────────────────────────────────────

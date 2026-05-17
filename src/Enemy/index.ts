@@ -4,6 +4,7 @@ import { ActiveEffect } from '../Effects/types';
 import { BaseStats } from '../Character/types';
 import { deriveStats, calculateMaxHealth } from '../Utils';
 import { ProcOverrides, ProcUnlocks } from '../Combat/combat-effects';
+import { PhilosophicalAlignment } from '../Philosophy/types';
 import {
     Enemy, EnemyLogic, EnemyDifficulty, Tier1EffectOverrides, LootTableEntry,
 } from './types';
@@ -27,6 +28,8 @@ export interface CreateEnemyOptions {
     loot?: LootTableEntry[];
     xpReward?: number;
     effects?: ActiveEffect[];
+    /** Phase 45 — optional pin on the 27-cell alignment cube. */
+    philosophicalAlignment?: PhilosophicalAlignment;
 }
 
 /**
@@ -51,7 +54,7 @@ export function createEnemy(options: CreateEnemyOptions): Enemy {
     const {
         id, name, description, level, baseStats, mapName, logic,
         difficulty, tier1Overrides, procUnlocks, procOverrides,
-        skills, loot, xpReward, effects = [],
+        skills, loot, xpReward, effects = [], philosophicalAlignment,
     } = options;
 
     const maxHealth = calculateMaxHealth(level, baseStats);
@@ -70,6 +73,7 @@ export function createEnemy(options: CreateEnemyOptions): Enemy {
         loot,
         xpReward: resolvedXp,
         effects,
+        philosophicalAlignment,
     };
 }
 
