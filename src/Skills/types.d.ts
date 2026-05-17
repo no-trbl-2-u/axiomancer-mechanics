@@ -170,4 +170,11 @@ export interface Skill {
     combatEffects?: SkillCombatEffects[];
     specialMechanics?: SkillSpecialMechanic[];
     learningRequirement?: SkillLearningRequirement;
+    /**
+     * Phase 44 — cross-link back to the originating
+     * `PhilosophicalAlignmentCell.id` (kebab-case) for skills authored
+     * from a fallacy in the 27-cell library. Optional; only set on
+     * philosophy-sourced skills. See `docs/philosophy.md`.
+     */
+    sourcedFromCell?: string;
 }

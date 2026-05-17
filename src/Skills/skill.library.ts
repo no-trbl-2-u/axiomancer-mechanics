@@ -252,6 +252,95 @@ const bootstrapParadox: Skill = {
     learningRequirement: { level: 10 },
 };
 
+// ─── Tier 3 — Phase 44 fallacies-as-spells (4 skills) ────────────────────────
+//
+// Each draws from a named fallacy on the Phase 42 27-cell library. The cell
+// id round-trips via `sourcedFromCell` so consumers can trace the skill back
+// to its philosophical origin via `philosophicalAlignmentLibrary`.
+
+const appealToConsequences: Skill = {
+    id: 'appeal-to-consequences',
+    name: 'Appeal to Consequences',
+    category: 'fallacy',
+    philosophicalAspect: 'body',
+    description:
+        'You strike, and the world tilts to validate the strike. The belief makes ' +
+        'you stronger, so the belief is true. They feel both the blow and the ' +
+        'argument arrive at once.',
+    tier: 3,
+    resourceCost: { body: 3, fallacy: 1 },
+    targetType: 'enemy',
+    basePower: 16,
+    scalingStat: 'body',
+    combatEffects: [
+        { effectId: 'tier1_body_attack', appliedTo: 'self', intensity: 2, duration: 3 },
+    ],
+    learningRequirement: { level: 10 },
+    sourcedFromCell: 'logic-optimistic-individual',
+};
+
+const nirvanaFallacy: Skill = {
+    id: 'nirvana-fallacy',
+    name: 'Nirvana Fallacy',
+    category: 'fallacy',
+    philosophicalAspect: 'mind',
+    description:
+        'You hold up the perfect outcome the world refused to grant them, and ' +
+        'their own existence falls short of it. The contrast disorders their ' +
+        'reasoning faster than the wound disorders their flesh.',
+    tier: 3,
+    resourceCost: { mind: 2, fallacy: 1 },
+    targetType: 'enemy',
+    basePower: 14,
+    scalingStat: 'mind',
+    combatEffects: [
+        { effectId: 'debuff_confusion', appliedTo: 'opponent' },
+    ],
+    learningRequirement: { level: 10 },
+    sourcedFromCell: 'logic-pessimistic-individual',
+};
+
+const pascalsWager: Skill = {
+    id: 'pascals-wager',
+    name: "Pascal's Wager",
+    category: 'paradox',
+    philosophicalAspect: 'heart',
+    description:
+        'You commit to the belief that costs nothing if you are wrong, and saves ' +
+        'you if you are right. The certainty is its own balm; the wound closes ' +
+        'around the wager.',
+    tier: 3,
+    resourceCost: { heart: 2, paradox: 1 },
+    targetType: 'self',
+    basePower: 0,
+    scalingStat: 'heart',
+    // Mirrors `bootstrap-paradox`: heart × 0.5 × 3 → heart × 1.5 healed.
+    scalingMultiplier: 3,
+    learningRequirement: { level: 10 },
+    sourcedFromCell: 'mid-optimistic-transcendent',
+};
+
+const appealToFear: Skill = {
+    id: 'appeal-to-fear',
+    name: 'Appeal to Fear',
+    category: 'fallacy',
+    philosophicalAspect: 'heart',
+    description:
+        'You whisper the indifferent cosmos into their ear — what waits beyond ' +
+        'them, what cares for them — and the dread lands before the strike does. ' +
+        'They move like something has already begun pulling at their feet.',
+    tier: 3,
+    resourceCost: { heart: 2, fallacy: 1 },
+    targetType: 'enemy',
+    basePower: 12,
+    scalingStat: 'heart',
+    combatEffects: [
+        { effectId: 'debuff_slow', appliedTo: 'opponent' },
+    ],
+    learningRequirement: { level: 10 },
+    sourcedFromCell: 'mid-pessimistic-transcendent',
+};
+
 // ─── Library Export ──────────────────────────────────────────────────────────
 
 /**
@@ -275,6 +364,11 @@ export const skillLibrary: Skill[] = [
     soritesCascade,
     strawGiant,
     bootstrapParadox,
+    // Tier 3 — Phase 44 fallacies-as-spells
+    appealToConsequences,
+    nirvanaFallacy,
+    pascalsWager,
+    appealToFear,
 ];
 
 const skillRegistry: ReadonlyMap<string, Skill> = new Map(
