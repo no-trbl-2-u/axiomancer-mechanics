@@ -13,6 +13,7 @@ import type { ShopInventory } from '../../Items/shop.types';
 import type { NPC, DialogueTree } from '../../NPCs/types';
 import type { EnemySlug } from '../../Enemy/enemy.library';
 import type { Encounter, NodeId } from '../types';
+import type { PhilosophicalAlignment } from '../../Philosophy/types';
 
 /** The eight final MapEvent kinds. */
 export type MapEventKind =
@@ -113,6 +114,13 @@ export interface MapEventPoolEntry {
     /** Weight for weighted-random draw; must be positive. */
     weight: number;
     payload: MapEventPayload;
+    /**
+     * Per-axis shift on the Phase 42 philosophical alignment cube, applied
+     * by `resolveMapEvent` after the matching handler runs. Each axis clamps
+     * to [-100, +100]. Missing axes in the partial pass through unchanged.
+     * Authoring band: ±1..±5; defining ±10 choices reserved for endgame.
+     */
+    alignmentDelta?: Partial<PhilosophicalAlignment>;
 }
 
 export interface MapEventPool {

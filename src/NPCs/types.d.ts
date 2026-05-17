@@ -1,5 +1,6 @@
 import { Image } from '../Utils/types';
 import { QuestName } from '../World/quest.library';
+import { PhilosophicalAlignment } from '../Philosophy/types';
 
 /**
  * NPCs module type definitions.
@@ -59,6 +60,14 @@ export interface DialogueChoice {
          * read as "more virtuous"; negative as "more pragmatic / cruel".
          */
         moralDelta?: number;
+        /**
+         * Per-axis shift on the Phase 42 philosophical alignment cube,
+         * applied by `applyDialogueChoice` via `applyAlignmentDelta`. Each
+         * axis clamps to [-100, +100]. Missing axes in the partial pass
+         * through unchanged. Authoring band: ±1..±5; defining ±10 choices
+         * reserved for endgame.
+         */
+        alignmentDelta?: Partial<PhilosophicalAlignment>;
     };
 }
 

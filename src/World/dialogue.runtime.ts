@@ -13,6 +13,8 @@ import {
 } from './quest.engine';
 import { getMapDefinition } from './map.registry';
 import { QuestName } from './quest.library';
+import { applyAlignmentDelta } from '../Philosophy';
+import type { PhilosophicalAlignment } from '../Philosophy/types';
 
 /** Result of applying a dialogue choice to the GameState. */
 export interface ApplyDialogueChoiceResult {
@@ -27,6 +29,12 @@ export interface ApplyDialogueChoiceResult {
         setFlag?: string;
         grantedCurrency?: number;
         moralShift?: number;
+        /**
+         * Per-axis shift on the Phase 42 philosophical alignment cube. Only
+         * the axes that actually moved are present (non-zero deltas).
+         * Mirrors the `moralShift?` convention.
+         */
+        philosophicalShift?: Partial<PhilosophicalAlignment>;
     };
 }
 
@@ -48,6 +56,7 @@ export function applyDialogueChoice(
     let quests = gameState.quests;
     let flags = gameState.flags;
     let moralMeter = gameState.moralMeter;
+    let philosophicalAlignment = gameState.philosophicalAlignment;
     const effects: ApplyDialogueChoiceResult['effects'] = {};
 
     const e = choice.effect;
@@ -104,12 +113,22 @@ export function applyDialogueChoice(
             moralMeter = Math.max(-100, Math.min(100, moralMeter + delta));
             effects.moralShift = (effects.moralShift ?? 0) + delta;
         }
+        if (e.alignmentDelta) {
+            philosophicalAlignment = applyAlignmentDelta(philosophicalAlignment, e.alignmentDelta);
+            const shifted: Partial<PhilosophicalAlignment> = {};
+            const axes: Array<keyof PhilosophicalAlignment> = ['epistemology', 'outlook', 'scope'];
+            for (const axis of axes) {
+                const v = e.alignmentDelta[axis];
+                if (typeof v === 'number' && v !== 0) shifted[axis] = v;
+            }
+            if (Object.keys(shifted).length > 0) effects.philosophicalShift = shifted;
+        }
     }
 
     const nextNode = choice.nextNodeId ? (tree.nodes[choice.nextNodeId] ?? null) : null;
 
     return {
-        gameState: { ...gameState, player, quests, flags, moralMeter },
+        gameState: { ...gameState, player, quests, flags, moralMeter, philosophicalAlignment },
         nextNode,
         effects,
     };

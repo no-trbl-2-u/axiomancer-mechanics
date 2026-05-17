@@ -22,6 +22,7 @@ import { revealAdjacent, markNodeConsumed, unlockAdjacent } from '../world.reduc
 import { getRng } from '../../Utils/rng';
 import { applyPayload } from './handlers';
 import { reachableObjectives, progressQuest } from '../quest.engine';
+import { applyAlignmentDelta } from '../../Philosophy';
 import type { QuestLog, NodeId } from '../types';
 import type {
     MapEventPool, MapEventPoolEntry, ResolveMapEventResult, ResolvedEvent,
@@ -162,18 +163,31 @@ export function resolveMapEvent(
     // 4. Apply the matching handler.
     const result = applyPayload(stateAfterReach, entry.payload, rng);
 
+    // 4b. Apply the pool entry's authored alignment delta, if any (Phase 43).
+    // Mirrors the dialogue-runtime moralDelta path — the handler computes its
+    // event delta on the pre-shift state; the alignment shift applies on top.
+    const stateWithAlignment: GameState = entry.alignmentDelta
+        ? {
+            ...result.state,
+            philosophicalAlignment: applyAlignmentDelta(
+                result.state.philosophicalAlignment,
+                entry.alignmentDelta,
+            ),
+        }
+        : result.state;
+
     // 5. Reveal + unlock adjacents + mark consumed. Phase 31 — unlock is what
     // moves the adjacents out of `lockedNodes` into `availableNodes` so the
     // CLI `mapTab` filter actually offers them as valid moves. The reveal
     // path (Spec 23) only updates `discoveredNodes`.
     const next = unlockAdjacent(
-        revealAdjacent(result.state.world.currentMap, nodeId),
+        revealAdjacent(stateWithAlignment.world.currentMap, nodeId),
         nodeId,
     );
     const consumed = markNodeConsumed(next, nodeId);
     const nextState: GameState = {
-        ...result.state,
-        world: { ...result.state.world, currentMap: consumed },
+        ...stateWithAlignment,
+        world: { ...stateWithAlignment.world, currentMap: consumed },
     };
 
     return { state: nextState, event: result.event };
