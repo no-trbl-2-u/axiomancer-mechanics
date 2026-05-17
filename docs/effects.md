@@ -579,6 +579,28 @@ Full per-effect documentation: [`docs/effects/debuffs/`](./effects/debuffs/)
 
 ---
 
+## Philosophical fallacy payloads (Phase 44)
+
+Phase 44 promotes 3 marquee fallacies from the
+[Phase 42 27-cell library](./philosophy.md) into status-effect payloads.
+Each carries `sourcedFromCell?: string` on the `Effect` interface (a
+kebab-case `PhilosophicalAlignmentCell.id`) so consumers can trace the
+effect back to its philosophical origin via
+`philosophicalAlignmentLibrary`.
+
+| Effect id | Source cell (PDF #) | Tier | Payload |
+|---|---|---|---|
+| `debuff_no_true_scotsman` | Logic-Pessimistic-Transcendent / Gnostics (9) | 2 (resisted by mind, DR 12) | `statModifiers: physicalDefense -2/intensity`, dur 3 |
+| `buff_special_pleading` | Faith-Optimistic-Individual / Kierkegaard (19) | 1 | `defenseModifier +2/intensity`, dur 2 |
+| `debuff_category_error` | Agnostic-Pessimistic-Transcendent / Lovecraft (18) | 2 (resisted by heart, DR 11) | `rollModifierPerIntensity -2`, dur 3 |
+
+All three reuse existing `EffectPayload` primitives — no new payload
+kinds. The fallacy framing is purely thematic on top of the existing
+tier-1/2/3 application + resist machinery. See
+[docs/philosophy.md](./philosophy.md) for the full 27-cell map and
+[docs/skills.md](./skills.md#philosophical-fallacy-payloads-phase-44)
+for the matching skill payloads.
+
 ## Pending
 
 The Specs 01 / 04 / 05 / 08 work that this section used to track has

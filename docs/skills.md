@@ -226,6 +226,28 @@ and resolved by `executeSkill` after damage and after effect application.
   Drive it through `resolveCombatRound` in a hermetic test (see
   `src/Skills/e2e/skill-resource-system.engine.test.ts` for the pattern).
 
+## Philosophical fallacy payloads (Phase 44)
+
+Phase 44 promotes 4 marquee fallacies from the
+[Phase 42 27-cell library](./philosophy.md) into Tier 3 skill payloads.
+Each carries `sourcedFromCell?: string` (a kebab-case
+`PhilosophicalAlignmentCell.id`) so consumers can trace the skill back
+to its philosophical origin via `philosophicalAlignmentLibrary`.
+
+| Skill id | Source cell (PDF #) | Aspect | Mechanic |
+|---|---|---|---|
+| `appeal-to-consequences` | Logic-Optimistic-Individual / Nietzsche (1) | body | damage + self-applies `tier1_body_attack` |
+| `nirvana-fallacy` | Logic-Pessimistic-Individual / Schopenhauer (7) | mind | damage + applies `debuff_confusion` to enemy |
+| `pascals-wager` | Agnostic-Optimistic-Transcendent / James (12) | heart (self) | self-heal via `scalingMultiplier: 3` |
+| `appeal-to-fear` | Agnostic-Pessimistic-Transcendent / Lovecraft (18) | heart | damage + applies `debuff_slow` to enemy |
+
+All four are Tier 3 with `learningRequirement: { level: 10 }`. They
+reuse existing `combatEffects` references and resource-cost machinery
+— no new combat primitives. See
+[docs/philosophy.md](./philosophy.md) for the full 27-cell map and
+[docs/effects.md](./effects.md#philosophical-fallacy-payloads-phase-44)
+for the matching status-effect payloads.
+
 ## Out of Scope (here)
 
 - Skill purchasing / learning flow — Spec 06 / 08.

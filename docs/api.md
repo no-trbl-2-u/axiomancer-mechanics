@@ -207,7 +207,7 @@ hermetic walkthrough.
   `ActiveEffect`, `StatModifier`, `DamageOverTime`,
   `RegenerationConfig`, `ActionRestriction`, etc.) — Stable.
 
-### Philosophy (Phase 42) — Beta
+### Philosophy (Phase 42, Phase 43, Phase 44) — Beta
 
 3-axis alignment cube indexing a 27-cell content registry. See
 [docs/philosophy.md](./philosophy.md) for the full table.
@@ -227,8 +227,18 @@ hermetic walkthrough.
   `shiftPhilosophicalAlignment(delta: Partial<PhilosophicalAlignment>)` — Beta.
 
 Orthogonal to `moralMeter` — both fields persist independently. The
-three fallacies per cell are reserved as content fuel for future
-skill/effect/spell authoring; they are not yet wired to gameplay.
+three fallacies per cell are content fuel for skill/effect/spell
+authoring; the first batch is live as of Phase 44.
+
+**Phase 43 — content authoring surfaces:**
+- `DialogueChoice.effect.alignmentDelta?: Partial<PhilosophicalAlignment>` — Beta. Applied by `applyDialogueChoice` and surfaced on `effects.philosophicalShift`.
+- `MapEventPoolEntry.alignmentDelta?: Partial<PhilosophicalAlignment>` — Beta. Applied by `resolveMapEvent` after the matching handler runs.
+
+**Phase 44 — fallacies-as-spells / abilities:**
+- `Skill.sourcedFromCell?: string` — Beta. Cross-link to the originating cell id for fallacy-themed skills.
+- `Effect.sourcedFromCell?: string` — Beta. Same for fallacy-themed status effects.
+- 4 new Tier 3 fallacy skills (`appeal-to-consequences`, `nirvana-fallacy`, `pascals-wager`, `appeal-to-fear`) in `skillLibrary`.
+- 3 new fallacy status effects (`debuff_no_true_scotsman`, `buff_special_pleading`, `debuff_category_error`) in `effectsLibrary`.
 
 ### NPCs & Dialogue
 
