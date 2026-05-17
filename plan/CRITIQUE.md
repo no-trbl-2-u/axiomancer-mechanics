@@ -6,13 +6,37 @@
 > by `/iterate`.
 
 <!-- Metadata (updated by /critique after each pass):
-> Last pass: 2026-05-16 at commit c62702e
-> Pass count: 18
+> Last pass: 2026-05-16 at commit 6e833a9
+> Pass count: 19
 -->
 
 ---
 
 ## Pending
+
+### [LOW] `docs/effects.md` heading + ToC counts (`Buffs (39)` / `Debuffs (46)`) stale after Phase 44 added 1 buff + 2 debuffs
+- pass: critique-19 (commit 6e833a9)
+- area: docs
+- observation: `docs/effects.md:19-20` ToC and `:399` + `:447` section headers both name the library counts explicitly: `Complete Effects Table — Buffs (39)` and `Complete Effects Table — Debuffs (46)`. Phase 44 (`06f5ffe`) appended `buff_special_pleading` to `src/Effects/buffs.library.json` (now 40 entries) and `debuff_no_true_scotsman` + `debuff_category_error` to `src/Effects/debuffs.library.json` (now 48 entries). The doc still claims the pre-Phase-44 counts, so a reader scanning the ToC believes the library is smaller than it is and may not look for the new entries. Same one-phase-at-a-time drift pattern Phase 34 / iterate `2a8a9ae` drained for prior README count claims.
+- evidence: `grep -c '"id":' src/Effects/buffs.library.json` returns 40; `grep -c '"id":' src/Effects/debuffs.library.json` returns 48. `grep -n "Buffs (39)\|Debuffs (46)" docs/effects.md` returns four hits (two ToC, two headers) — all four are now off-by-one or off-by-two.
+- suggested_fix: in `docs/effects.md`, update the ToC entries on lines 19-20 and the section headers at `:399` + `:447` to `Buffs (40)` / `Debuffs (48)`. Optionally add a new table row to each "Complete Effects Table" describing the three new Phase 44 entries (the per-effect description lines), or rely on the existing "Philosophical fallacy payloads (Phase 44)" subsection (which already lists them at higher granularity) for that surface. ~4 lines edited. /iterate-safe pure-docs change.
+- source: critique
+
+### [LOW] Spec 23 acceptance checklist missing a Phase 43 `alignmentDelta` extension line
+- pass: critique-19 (commit 6e833a9)
+- area: docs
+- observation: `specs/23-map-events.md` acceptance checklist ends with 12 ticked rows — the original 11 plus a Phase 41 unit 3 addition documenting Phase 37's `VillagePayload.shop?: ShopInventory` extension on the `MapEventPoolEntry` payload surface. Phase 43 (`764de7f`) extended the same surface again by adding `alignmentDelta?: Partial<PhilosophicalAlignment>` on `MapEventPoolEntry` (sibling field to `payload`, applied by `resolveMapEvent` between handler and consume / reveal). The acceptance checklist doesn't mention it. A reader walking the Spec 23 acceptance trail concludes the surface ends at Phase 37, not Phase 43. Same drift pattern Phase 41 unit 3 just drained for Spec 37 — a fresh "13th acceptance line" follow-up is the mirror.
+- evidence: `tail -25 specs/23-map-events.md` shows the 12th line as the Phase 37 shop extension and no 13th. `grep -n "alignmentDelta" specs/23-map-events.md` returns 0 hits. `grep -n "alignmentDelta" src/World/MapEvents/types.ts src/World/MapEvents/resolve-map-event.ts` returns 4 hits (the field declaration + the apply path) — the implementation is live, the spec acceptance just doesn't say so.
+- suggested_fix: append a 13th acceptance row to `specs/23-map-events.md` modeled on the 12th (Phase 37 shop) — name the Phase 43 `alignmentDelta` extension, cite the commit (`764de7f`), point at the hermetic test (`src/Philosophy/e2e/alignment-authoring.engine.test.ts`). Optionally drop a parallel content-drift assertion in `src/World/MapEvents/e2e/content.engine.test.ts` mirroring the Phase 37 one, but that's optional — the existing tests already pin the field through. ~5 lines added.
+- source: critique
+
+### [LOW] `docs/morality.md` carries no cross-link to `docs/philosophy.md` despite Phase 42's explicit orthogonality commitment
+- pass: critique-19 (commit 6e833a9)
+- area: docs
+- observation: Phase 42 brief explicitly frames `philosophicalAlignment` as orthogonal to `moralMeter` — both fields persist independently, neither replaces the other (Spec 10 Q1 + Q4). `docs/philosophy.md` "Relationship to `moralMeter`" subsection makes this clear from the philosophy-doc side, but `docs/morality.md` has zero mention of philosophy, Phase 42, or the orthogonal system that now lives next door. `grep -n "philosophy\|philosophical\|Phase 42\|orthog" docs/morality.md` returns 0 hits across 154 lines. A reader landing on `docs/morality.md` to look up the meter doesn't learn that a sibling axis exists — they have to grep the engine or stumble onto `docs/philosophy.md` separately. Asymmetric cross-linking that the existing Phase 36 / iterate `7306111` drained the other direction (`docs/combat.md` → `docs/morality.md` Friendship Path), but not this one.
+- evidence: `grep -c "philosophy\|philosophical" docs/morality.md` returns 0. `docs/philosophy.md` "Relationship to `moralMeter`" subsection (lines authored at Phase 42 unit 3, commit `bdfda00`) cross-links to morality.md. The link is one-way.
+- suggested_fix: add a short "Relationship to `philosophicalAlignment` (Phase 42)" subsection to `docs/morality.md` — one paragraph explaining that the two systems are orthogonal (moralMeter = compassion ↔ ruthlessness, philosophicalAlignment = 3-axis epistemology / outlook / scope cube), that both persist independently across save / load, and that no unification is planned in v1. Cross-link to `docs/philosophy.md`. ~10 lines added.
+- source: critique
 
 ### [LOW] No conversation-loop spec for the philosophical alignment system after two phases shipped against it
 - pass: critique-18 (commit c62702e)
