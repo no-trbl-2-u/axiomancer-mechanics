@@ -9,9 +9,70 @@
  * land in the same file once the bias helper is wired.
  */
 
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ENEMY_REGISTRY, type EnemySlug } from '../enemy.library';
 import { getAlignmentCell, bucketAxis } from '../../Philosophy';
+import { decideEnemyAction } from '../enemy.logic';
+import { createEnemy } from '../index';
+import { mockSequentialRng } from '../../test-utils';
+import type { Enemy } from '../types';
+
+afterEach(() => vi.restoreAllMocks());
+
+function makeEnemy(outlook: number, logic: Enemy['logic'] = 'aggressive'): Enemy {
+    return createEnemy({
+        id: `phase45-test-outlook-${outlook}`,
+        name: 'Phase 45 Test',
+        description: 'Synthetic test enemy.',
+        level: 1,
+        baseStats: { body: 5, mind: 1, heart: 1 },
+        mapName: 'fishing-village',
+        logic,
+        philosophicalAlignment: { epistemology: 0, outlook, scope: 0 },
+    });
+}
+
+describe('Phase 45 — decideEnemyAction outlook bias', () => {
+    it('pessimistic enemy: aggressive `attack` flips to `defend` when RNG rolls inside the 0.25 flip window', () => {
+        // mockSequentialRng(0.1):
+        //   aggressiveLogic: chance(0.75) → 0.1 < 0.75 → 'attack';
+        //                    pickRandom(STANCES) → 0.1 → stance 'heart'.
+        //   applyOutlookBias: 0.1 < 0.25 → flip.
+        mockSequentialRng(0.1);
+        const decided = decideEnemyAction(makeEnemy(-67));
+        expect(decided.action).toBe('defend');
+    });
+
+    it('pessimistic enemy: bias does NOT flip when RNG rolls outside the 0.25 flip window', () => {
+        // mockSequentialRng(0.5):
+        //   chance(0.75) → 0.5 < 0.75 → 'attack'.
+        //   applyOutlookBias: 0.5 >= 0.25 → no flip.
+        mockSequentialRng(0.5);
+        const decided = decideEnemyAction(makeEnemy(-67));
+        expect(decided.action).toBe('attack');
+    });
+
+    it('optimistic enemy: defensive `defend` flips to `attack` when RNG rolls inside the flip window', () => {
+        // defensiveLogic at full HP picks a random stance and `defend`;
+        // applyOutlookBias flips it on the next RNG call.
+        mockSequentialRng(0.1);
+        const decided = decideEnemyAction(makeEnemy(67, 'defensive'));
+        expect(decided.action).toBe('attack');
+    });
+
+    it('mid-bucket enemy: bias never flips regardless of RNG', () => {
+        mockSequentialRng(0.1);
+        const decided = decideEnemyAction(makeEnemy(0));
+        expect(decided.action).toBe('attack'); // aggressive at 0.1 → attack
+    });
+
+    it('legacy single-arg dispatch (decideEnemyAction(logic)) is unaffected', () => {
+        mockSequentialRng(0.1);
+        const decided = decideEnemyAction('aggressive');
+        // No enemy → no alignment → no bias possible.
+        expect(['attack', 'defend']).toContain(decided.action);
+    });
+});
 
 describe('Phase 45 — every authored enemy carries a valid alignment pin', () => {
     it('all ENEMY_REGISTRY entries have philosophicalAlignment set', () => {

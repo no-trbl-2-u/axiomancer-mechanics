@@ -13,6 +13,7 @@
 import { Stance, Action, CombatAction, CombatState } from '../Combat/types';
 import { Enemy, EnemyLogic } from './types';
 import { getRng } from '../Utils/rng';
+import { bucketAxis } from '../Philosophy';
 
 const STANCES: readonly Stance[] = ['heart', 'body', 'mind'];
 const ATTACK_OR_DEFEND: readonly Extract<Action, 'attack' | 'defend'>[] =
@@ -145,6 +146,47 @@ export function bossLogic(_enemy: Enemy, state?: CombatState): CombatAction {
     }
 }
 
+// ─── Phase 45 — outlook-driven basic-action bias ─────────────────────────────
+
+/**
+ * Probability that a pessimistic / optimistic enemy flips its basic-action
+ * decision once per round. Colocated here so a future calibration pass can
+ * tune the dial in one place.
+ */
+const ALIGNMENT_FLIP_CHANCE = 0.25;
+
+/**
+ * Applies the Phase 45 outlook-driven bias on top of the per-strategy
+ * decision. Pure and optional:
+ *   - No-op when `enemy` is undefined (legacy `decideEnemyAction(logic)` path).
+ *   - No-op when `enemy.philosophicalAlignment` is unset.
+ *   - No-op when the outlook bucket is `'mid'`.
+ *   - No-op on `skill` / `item` / `flee` actions — only basic `attack` /
+ *     `defend` decisions are nudged.
+ *
+ * When all those guards pass, rolls `getRng().random()` once: with
+ * probability `ALIGNMENT_FLIP_CHANCE`, flip the action toward the outlook's
+ * disposition (pessimistic → defend, optimistic → attack). Stance is
+ * preserved — that remains the per-strategy logic's call.
+ */
+export function applyOutlookBias(
+    action: CombatAction,
+    enemy: Enemy | undefined,
+): CombatAction {
+    if (!enemy?.philosophicalAlignment) return action;
+    const outlook = bucketAxis(enemy.philosophicalAlignment.outlook);
+    if (outlook === 'mid') return action;
+    if (action.action !== 'attack' && action.action !== 'defend') return action;
+    if (getRng().random() >= ALIGNMENT_FLIP_CHANCE) return action;
+    if (outlook === 'low' && action.action === 'attack') {
+        return { ...action, action: 'defend' };
+    }
+    if (outlook === 'high' && action.action === 'defend') {
+        return { ...action, action: 'attack' };
+    }
+    return action;
+}
+
 // ─── Dispatcher ───────────────────────────────────────────────────────────────
 
 /**
@@ -165,23 +207,35 @@ export function decideEnemyAction(
     const enemy: Enemy | undefined = typeof arg === 'object' ? arg : undefined;
     const logic: EnemyLogic = typeof arg === 'string' ? arg : arg.logic;
 
+    let decided: CombatAction;
     switch (logic) {
         case 'random':
-            return randomLogic();
+            decided = randomLogic();
+            break;
         case 'aggressive':
-            return aggressiveLogic(state);
+            decided = aggressiveLogic(state);
+            break;
         case 'defensive':
-            return enemy ? defensiveLogic(enemy, state) : randomLogic();
+            decided = enemy ? defensiveLogic(enemy, state) : randomLogic();
+            break;
         case 'balanced':
-            return enemy ? balancedLogic(enemy, state) : randomLogic();
+            decided = enemy ? balancedLogic(enemy, state) : randomLogic();
+            break;
         case 'strategic':
-            return enemy ? strategicLogic(enemy, state) : randomLogic();
+            decided = enemy ? strategicLogic(enemy, state) : randomLogic();
+            break;
         case 'boss':
-            return enemy ? bossLogic(enemy, state) : randomLogic();
+            decided = enemy ? bossLogic(enemy, state) : randomLogic();
+            break;
         default: {
             const _exhaustive: never = logic;
             void _exhaustive;
-            return randomLogic();
+            decided = randomLogic();
         }
     }
+
+    // Phase 45 — apply the outlook bias to nudge basic-action decisions
+    // for pessimistic / optimistic enemies. No-op when enemy is undefined
+    // (legacy logic-only path), alignment is unset, or outlook is mid.
+    return applyOutlookBias(decided, enemy);
 }

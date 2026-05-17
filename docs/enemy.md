@@ -55,6 +55,52 @@ Combat consumes the AI via `determineEnemyAction(enemy, state?)` in
 [`Combat/index.ts`](../src/Combat/index.ts). Strategies that need to react to
 the player (every non-random strategy) receive the live `CombatState`.
 
+## Alignment-driven AI tuning (Phase 45)
+
+`Enemy.philosophicalAlignment?: PhilosophicalAlignment` (optional) pins an
+enemy to a cell on the [Phase 42 27-cell cube](./philosophy.md). When set,
+`decideEnemyAction` runs the per-strategy decision and then post-passes the
+result through `applyOutlookBias`:
+
+- **Pessimistic enemies** (outlook bucket `'low'`, value `<= -34`): with
+  probability `0.25` per round, an `attack` decision flips to `defend`.
+  Stance is preserved.
+- **Optimistic enemies** (outlook bucket `'high'`, value `>= 34`): with
+  probability `0.25` per round, a `defend` decision flips to `attack`.
+- **Neutral enemies** (outlook bucket `'mid'`): bias is a no-op.
+- **Non-basic actions** (`skill` / `item` / `flee`): bias is a no-op.
+
+The bias spends one `getRng().random()` call per dispatch — deterministic
+under the `src/test-utils/rng.ts` stubs. Enemies without an alignment pin
+(legacy fixtures, the single-arg `decideEnemyAction(logic)` path) are
+unaffected.
+
+### Cell pins on authored enemies
+
+The 16 enemies in `ENEMY_REGISTRY` carry first-pass cell pins:
+
+| Enemy | Cell | Archetype |
+|---|---|---|
+| TidepoolCrab, EchoOfPyrrhonia | `mid-mid-individual` | Montaigne / Ishmael |
+| SeaMistWisp | `mid-mid-transcendent` | Lao Tzu / Siddhartha |
+| LullabyMoth | `faith-optimistic-individual` | Kierkegaard / Alyosha |
+| Disatree_01 | `mid-pessimistic-relational` | Zapffe / Ahab |
+| WetHound | `logic-pessimistic-individual` | Schopenhauer / Underground Man |
+| MournfulGull | `mid-pessimistic-individual` | Cioran / Hamlet |
+| ForestSprite | `mid-optimistic-individual` | Rorty / Huck Finn |
+| HollowEyedBeggar | `faith-pessimistic-relational` | Mainländer / Ferreira |
+| ArgumentativeCrow | `logic-optimistic-individual` | Nietzsche / Prometheus |
+| TideflukeReaver | `logic-pessimistic-relational` | Ligotti / Rust Cohle |
+| HushWraith | `mid-pessimistic-transcendent` | Lovecraft / Burroughs |
+| HollowSaint | `faith-mid-transcendent` | St. John of the Cross / Rodrigues |
+| CoastalTyrant | `faith-pessimistic-transcendent` | Marcion / Grand Inquisitor |
+| TheDisagreement | `logic-mid-individual` | Camus / Meursault |
+| Sandbag_01 | `mid-mid-relational` | Buber / Carraway |
+
+13 distinct cells used out of 27; the remaining 14 are headroom for future
+enemies. Cell ids are stable across versions (see
+[docs/philosophy.md](./philosophy.md) for the full registry).
+
 ## Loot tables
 
 `LootTableEntry { item: Item | null; weight: number }` — weighted entries
