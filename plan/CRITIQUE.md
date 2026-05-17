@@ -14,14 +14,6 @@
 
 ## Pending
 
-### [LOW] `plan/bearings.md` CLI/API contract has no Philosophy entry after Phases 42 + 43 ship
-- pass: critique-18 (commit c62702e)
-- area: docs / autonomous-loop hygiene
-- observation: `plan/bearings.md:53-69` reads as the autonomous-loop's quick reference for the locked public-API contract — every other skill (`ship-a-phase`, `iterate`, `critique`) reads it before touching code. After Phase 42 + 43 shipped, the contract block lists 11 groups (Character, Enemy, Combat, Combat reducer, Effects, Items, Game, World, Utils) but has no Philosophy row. Two consequences: (1) future critique passes may flag the new exports as "additions not in the contract" by mistake; (2) /march and /ship-a-phase dispatchers reading bearings to understand surface coverage will under-count the public surface and may mis-route refactor decisions. Mirrors the prior `WorldMap` removal trail (iterate `5996991`) — bearings tracks contract changes one phase at a time.
-- evidence: `sed -n '53,69p' plan/bearings.md` shows the block; `grep -n "Philosophy" plan/bearings.md` returns 0 hits despite Phase 42 (`bdfda00`) + Phase 43 (`c62702e`) shipping 9 + 2 public-surface additions respectively (the `alignmentDelta` field on the dialogue + map-event payloads doesn't add a new export but extends the existing locked DialogueChoice / MapEventPoolEntry shapes).
-- suggested_fix: append a `Philosophy:` row to the CLI/API contract block in `plan/bearings.md`. List the same exports the README row would list (see prior CRITIQUE row). One row, ~2 lines. /iterate-safe and pair-able with the README finding above into a single docs-sweep tick if a future iterate ticket bundles them.
-- source: critique
-
 ### [LOW] No conversation-loop spec for the philosophical alignment system after two phases shipped against it
 - pass: critique-18 (commit c62702e)
 - area: spec-gap
@@ -124,6 +116,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] `plan/bearings.md` CLI/API contract has no Philosophy entry after Phases 42 + 43 ship** — resolved at iterate commit `81edd2d` (2026-05-16). Appended a `Philosophy:` row to the locked-contract block in `plan/bearings.md` covering every Phase 42-45 public-surface addition (helpers, constants, library, types, plus the field / action additions on GameState, DialogueChoice.effect, MapEventPoolEntry, Skill, Effect, Enemy). Pairs with the README Philosophy row landed at iterate `3faf286` — both files are now cross-checkable. 546/546 tests; verify clean (docs-only). Impact 4 × Ease 9 / 10 = 3.6.
 
 - [x] **[LOW] README Public API table has no Philosophy row after Phases 42 + 43 shipped 9 new exports** — resolved at iterate commit `3faf286` (2026-05-16). Added a "Philosophy" row to the Public API table after NPCs covering all four phase-42-family surface additions (Phase 42 engine + library + state field, Phase 43 `alignmentDelta` authoring surfaces, Phase 44 `sourcedFromCell` + 7 named fallacy payloads, Phase 45 enemy alignment + outlook bias). Two adjacent rows also nudged: NPCs row mentions `DialogueChoice.effect.alignmentDelta` (Phase 43); Enemy row mentions `Enemy.philosophicalAlignment` + outlook bias (Phase 45). Consumers reading the NPCs or Enemy row in isolation now see the alignment hook in context. 546/546 tests; verify clean (docs-only change). Impact 5 × Ease 9 / 10 = 4.5.
 
