@@ -66,6 +66,15 @@ Game:       createGameStore, GameState, nullAdapter, persistence adapters
 World:      createStartingWorld, world reducer, WorldState, MapState, MapDefinition
 Utils:      clamp, randomInt, deepClone, deriveStats, calculateMaxHealth,
             createDieRoll, isCharacter, isEnemy
+Philosophy: bucketAxis, getAlignmentCell, applyAlignmentDelta, defaultAlignment,
+            AXIS_HIGH_THRESHOLD, AXIS_LOW_THRESHOLD,
+            philosophicalAlignmentLibrary,
+            PhilosophicalAlignment, AxisBucket, AlignmentFallacy,
+            PhilosophicalAlignmentCell
+            (+ GameState.philosophicalAlignment field, SHIFT_PHILOSOPHICAL_ALIGNMENT
+            action, alignmentDelta? on DialogueChoice.effect + MapEventPoolEntry,
+            sourcedFromCell? on Skill + Effect, Enemy.philosophicalAlignment? —
+            Phases 42-45)
 ```
 
 Adding new exports is allowed. Renaming or removing existing ones requires
