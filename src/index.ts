@@ -203,6 +203,7 @@ export type {
 // ─── NPCs (types + dialogue helpers) ──────────────────────────────────────────
 export type {
     NPC, DialogueMap, DialogueTree, DialogueNode, DialogueChoice, DialogueContext,
+    AlignmentGate,
 } from './NPCs';
 export { getDialogueNode, visibleChoices, isLeafNode } from './NPCs';
 

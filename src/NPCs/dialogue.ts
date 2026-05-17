@@ -9,6 +9,7 @@
  */
 
 import { DialogueChoice, DialogueNode, DialogueTree } from './types';
+import type { PhilosophicalAlignment } from '../Philosophy/types';
 
 /** Lookup a dialogue node, throwing if the id is unknown. */
 export function getDialogueNode(tree: DialogueTree, nodeId: string): DialogueNode {
@@ -27,11 +28,17 @@ export function getDialogueNode(tree: DialogueTree, nodeId: string): DialogueNod
  * @property completedQuests - Names of quests marked completed. Used by
  *                             `requires.questCompleted`.
  * @property flags           - World flags currently set.
+ * @property alignment       - Phase 46 — player's current alignment on the
+ *                             27-cell cube. Used by `requires.requiresAlignment`.
+ *                             Optional; a missing field implicitly hides
+ *                             every alignment-gated choice (mirrors the
+ *                             behaviour of a missing flag).
  */
 export interface DialogueContext {
     activeQuests: ReadonlySet<string>;
     completedQuests: ReadonlySet<string>;
     flags: ReadonlySet<string>;
+    alignment?: PhilosophicalAlignment;
 }
 
 /**
@@ -49,6 +56,15 @@ export function visibleChoices(
         if (req.quest && !ctx.activeQuests.has(req.quest) && !ctx.completedQuests.has(req.quest)) return false;
         if (req.questCompleted && !ctx.completedQuests.has(req.questCompleted)) return false;
         if (req.flag && !ctx.flags.has(req.flag)) return false;
+        if (req.requiresAlignment) {
+            // Phase 46 — alignment gate. Missing ctx.alignment hides the
+            // choice (parallel to a missing flag).
+            if (!ctx.alignment) return false;
+            const { axis, op, value } = req.requiresAlignment;
+            const v = ctx.alignment[axis];
+            if (op === 'gte' && !(v >= value)) return false;
+            if (op === 'lte' && !(v <= value)) return false;
+        }
         return true;
     });
 }

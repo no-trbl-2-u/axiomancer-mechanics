@@ -3,6 +3,23 @@ import { QuestName } from '../World/quest.library';
 import { PhilosophicalAlignment } from '../Philosophy/types';
 
 /**
+ * Single-clause alignment predicate used by `DialogueChoice.requires` and
+ * `SkillLearningRequirement` to gate content behind a position on the
+ * Phase 42 alignment cube.
+ *
+ * `gte` matches when the player's axis value is greater than or equal to
+ * `value`; `lte` matches when less than or equal. Compound gates (e.g.
+ * "pessimistic AND transcendent") author as two separate gated choices
+ * sharing a `nextNodeId` until a real consumer demands an AND-of-array
+ * shape.
+ */
+export interface AlignmentGate {
+    axis: 'epistemology' | 'outlook' | 'scope';
+    op: 'gte' | 'lte';
+    value: number;
+}
+
+/**
  * NPCs module type definitions.
  *
  * - `DialogueMap` is the legacy flat string-keyed map. Retained so older NPC
@@ -46,6 +63,14 @@ export interface DialogueChoice {
         quest?: QuestName;
         flag?: string;
         questCompleted?: QuestName;
+        /**
+         * Phase 46 — gates the choice on the player's position on the
+         * Phase 42 alignment cube. Single axis + operator + threshold;
+         * the choice is hidden by `visibleChoices` when either the
+         * gate is unmet OR the player's alignment isn't in
+         * `DialogueContext`.
+         */
+        requiresAlignment?: AlignmentGate;
     };
     effect?: {
         startQuest?: QuestName;
