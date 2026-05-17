@@ -6,13 +6,45 @@
 > by `/iterate`.
 
 <!-- Metadata (updated by /critique after each pass):
-> Last pass: 2026-05-16 at commit 6e833a9
-> Pass count: 19
+> Last pass: 2026-05-16 at commit 57fbb83
+> Pass count: 20
 -->
 
 ---
 
 ## Pending
+
+### [LOW] `docs/api.md` Philosophy entry stops at Phase 44 — missing Phase 46 surface (AlignmentGate + requiresAlignment)
+- pass: critique-20 (commit 57fbb83)
+- area: docs
+- observation: `docs/api.md:210` Philosophy entry header reads "Phase 42, Phase 43, Phase 44 — Beta" — Phase 46 (shipped at `3765c31`, closed the Phase 42-46 four-corner triangle) added a new public surface that the entry doesn't mention: `AlignmentGate` type, `DialogueChoice.requires.requiresAlignment?: AlignmentGate`, `SkillLearningRequirement.requiresAlignment?: AlignmentGate`, plus the optional `alignment` parameter on `meetsLearningRequirement` / `getAvailableSkills` / `learnSkill` + the `DialogueContext.alignment?` field on `visibleChoices`. A consumer scanning `docs/api.md` for the Philosophy surface thinks the system stops at "fallacies as spells" (Phase 44) and never gates content. Same drift pattern Phase 34 / iterate `2a8a9ae` drained for prior phase ships.
+- evidence: `grep -n "Phase 46\|requiresAlignment\|AlignmentGate" docs/api.md` returns 0 hits. `grep -n "Phase 42\|Phase 43\|Phase 44" docs/api.md` returns hits at `:210` + a couple `:212`-area bullets. Phase 45 was rolled into the Phase 42-43-44 header in the prior iterate but Phase 46 was never added.
+- suggested_fix: update the Philosophy entry header to "Phase 42, Phase 43, Phase 44, Phase 45, Phase 46 — Beta" (or change to a date / range form). Append a "Phase 46 — alignment-gated content" block listing: `AlignmentGate` type re-exported from the NPCs barrel, `requiresAlignment` on both `DialogueChoice.requires` and `SkillLearningRequirement`, optional `alignment` parameter on the three Skills helpers, optional `DialogueContext.alignment?` field. Cross-link to `docs/philosophy.md` "Authoring gates (Phase 46)". ~6 lines added.
+- source: critique
+
+### [LOW] `README.md` Philosophy row + `plan/bearings.md` Philosophy contract block missing Phase 46 surface
+- pass: critique-20 (commit 57fbb83)
+- area: docs / autonomous-loop hygiene
+- observation: Iterate ticks `3faf286` (README) and `81edd2d` (bearings) added the Phase 42-45 Philosophy surface to both files. Phase 46 (commit `3765c31`) added a new public surface (`AlignmentGate` type, `requiresAlignment` on DialogueChoice + SkillLearningRequirement, alignment-aware accessors) that neither file mentions. Mirrors the README + bearings drift pattern this audit already caught for Phases 42-45 — every new alignment phase needs both surface updates.
+- evidence: `grep -n "AlignmentGate\|requiresAlignment\|Phase 46" README.md plan/bearings.md` returns 0 hits. Both files name Phase 45 (the most recent Phase 42-family entry) and stop there.
+- suggested_fix: add `AlignmentGate` + the `requiresAlignment?` annotations to both: (1) README Philosophy row gains a `Phase 46 — alignment gates: AlignmentGate type, DialogueChoice.requires.requiresAlignment, SkillLearningRequirement.requiresAlignment, alignment-aware meetsLearningRequirement / getAvailableSkills / learnSkill signatures, DialogueContext.alignment?` clause; (2) bearings.md CLI/API contract Philosophy block gets a parenthetical line for the Phase 46 fields. ~3 lines edited across the two files. Pair-able with the critique-18 README + bearings drains.
+- source: critique
+
+### [LOW] `docs/npcs.md` carries no `alignmentDelta` OR `requiresAlignment` surface despite Phase 43 + 46 shipping both on DialogueChoice
+- pass: critique-20 (commit 57fbb83)
+- area: docs
+- observation: Critique-18 already filed a row noting `docs/world.md` + `docs/npcs.md` have no `alignmentDelta` cross-link. The doc is now a beat further behind — Phase 46 added `requiresAlignment` to `DialogueChoice.requires` on top of the unresolved alignmentDelta gap. A content author opening `docs/npcs.md` to look up dialogue-choice effect fields sees neither `alignmentDelta` (Phase 43, content authoring) nor `requiresAlignment` (Phase 46, content gating) — both miss from the doc. The critique-18 row's suggested fix should be extended to cover Phase 46 too when the row is drained.
+- evidence: `grep -n "alignmentDelta\|requiresAlignment\|AlignmentGate" docs/npcs.md` returns 0 hits. `DialogueChoice.requires.requiresAlignment` is exported through the public barrel via `src/NPCs/index.ts` (commit `49b02f6`); `DialogueChoice.effect.alignmentDelta` since Phase 43.
+- suggested_fix: extend the critique-18 docs-cross-link row (currently Pending) to cover both fields when drained. New paragraph in `docs/npcs.md` describing dialogue-choice gating + alignment shifts, cross-linking to `docs/philosophy.md` "Authoring deltas (Phase 43)" + "Authoring gates (Phase 46)". ~12 lines added. Same /iterate-safe pair-with-critique-18 disposition.
+- source: critique
+
+### [LOW] `docs/skills.md` mentions `sourcedFromCell` (Phase 44) but not `requiresAlignment` (Phase 46) on SkillLearningRequirement
+- pass: critique-20 (commit 57fbb83)
+- area: docs
+- observation: `docs/skills.md:229` carries a "Philosophical fallacy payloads (Phase 44)" subsection naming `sourcedFromCell`. Phase 46 added `requiresAlignment` to `SkillLearningRequirement` (mirror of the dialogue gate) — two skills in the live library (`nirvana-fallacy` at `outlook ≤ -34`, `appeal-to-fear` at `scope ≥ 34`) carry the gate. The doc doesn't mention the new field, so a future skill author won't know it exists. A reader walking the Phase 44 table sees the gates as "the skills are alignment-tied" but no entry in the skill-type field reference describes the gate's shape.
+- evidence: `grep -n "requiresAlignment\|AlignmentGate" docs/skills.md` returns 0 hits. `grep -n "requiresAlignment" src/Skills/skill.library.ts` returns the two authored gates (Phase 46 unit 3 commit `3765c31`).
+- suggested_fix: add a short "Alignment gating (Phase 46)" subsection to `docs/skills.md` (or extend the existing Phase 44 subsection) describing `SkillLearningRequirement.requiresAlignment?: AlignmentGate`, the operator semantics (`gte` / `lte` + axis), and the two authored gates. Cross-link to `docs/philosophy.md` "Authoring gates". ~10 lines added.
+- source: critique
 
 ### [LOW] `docs/effects.md` heading + ToC counts (`Buffs (39)` / `Debuffs (46)`) stale after Phase 44 added 1 buff + 2 debuffs
 - pass: critique-19 (commit 6e833a9)
