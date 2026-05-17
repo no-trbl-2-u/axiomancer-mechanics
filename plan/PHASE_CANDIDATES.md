@@ -13,30 +13,6 @@
 
 ## Pending
 
-### Candidate: Alignment-gated content (`requires.alignment` on dialogue + skill / effect learning)
-- signal: Phase 42 brief Follow-ups names "Alignment-gated skills / effects / endings" explicitly. Phase 42-45 shipped the cube + payloads + enemy pins; nothing gates *content access* on alignment yet. Today every dialogue choice + skill is reachable regardless of cell. The natural next phase locks specific content behind cell requirements — same shape as the existing `DialogueChoice.requires.flag` and `SkillLearningRequirement.level` gates. Without this, a player at `faith-pessimistic-transcendent` (Grand Inquisitor cell) and one at `logic-optimistic-individual` (Nietzsche cell) see the same content menu, which mutes the cube's narrative weight.
-- scope: Three units. Unit 1 — extend `DialogueChoice.requires` with `requiresAlignment?: { axis: 'epistemology' | 'outlook' | 'scope'; op: 'gte' | 'lte'; value: number }` (or a Partial range form); `visibleChoices` filters by the player's `philosophicalAlignment`. Unit 2 — extend `SkillLearningRequirement` with the same shape; `meetsLearningRequirement` checks it before allowing `learnSkill`. Unit 3 — author 2-3 alignment-gated dialogue choices on Old Marrow + Coastal Beggar (e.g. Old Marrow opens a "you remind me of someone who broke" branch when player is `outlook < -34`); author 1-2 alignment-gated Tier 3 skills (e.g. `appeal-to-fear` only learnable when player has `scope > 33`). Hermetic e2e drives each gate path. Update `docs/philosophy.md` "Authoring gates" subsection.
-- unblocks: Makes the cube's mechanical reach asymmetric — different alignments unlock different content. Closes the Phase 42 Follow-up. Sets the pattern for future alignment-gated endings (the longest-arc Follow-up).
-- blocked-by: Phases 42-45 all shipped. No code-level prerequisites.
-- score: 6 × 5 / 10 = 3.0 (high value; medium effort because of the three authoring units + the dual-path requires-shape on both DialogueChoice and Skill).
-- recommended-slot: First post-Phase-45 phase. Closes the "alignment is observable / payloadable / enemy-side / gates" four-corner triangle the system has been heading toward.
-
-### Candidate: Knowledge-Gaps acceptance sweep (mirror Phase 41's spec-sweep pattern)
-- signal: `Knowledge-Gaps.md` carries 25 numbered questions. After Phase 41's Q5 / Q12 / Q15 / Q17 / Q18 / Q19 / Q20 cleanup, the file still has ~14 entries that are EITHER (a) genuinely open combat-tuning questions deliberately deferred (Q1, Q2, Q4, Q6) or (b) resolved by shipped phases but never marked (Q8 / Q9 / Q10 effect runtime — partially shipped at Spec 01; Q11 world-tick — `processWorldEffectTick` exists; Q13 XP formula — shipped pre-loop as linear; Q14 stat allocation cap — Phase 29 shipped 3/level with no cap; Q16 skill slots — Spec 04 shipped fixed equip count; Q22 Map vs MapState — Phase 23/24 settled this; Q23-Q25 RN consumption + Zustand placement — Phase 12+21 resolved). A reader landing on Knowledge-Gaps.md can't tell open from resolved without grepping each question against the spec / build-plan trail. Same drift Phase 41 unit 4 drained for Q15/Q17/Q18/Q19/Q20.
-- scope: One pure-docs phase, one commit per question cluster (Phase 41 used 4 commit units; this one should land in 3-4). Walk every numbered question top-to-bottom, classify into (1) genuinely open + deliberately deferred (Q1/Q2/Q4/Q6 — combat-tuning), (2) resolved-not-marked (most of Q8-Q25), (3) genuinely open + actionable (Q14 cap, Q16 max slots — flag for /oversight). For each (2) question, write "**Resolved at <spec / phase> (<hash>).**" with the shipping reference. For (3), file as iterate rows in AUDIT.md.
-- unblocks: Knowledge-Gaps.md becomes navigable again — open questions stand out from resolved noise. Future critique passes have a clean signal-floor; /oversight briefings cite open KG count accurately.
-- blocked-by: None. Pure documentation work; no engine touch.
-- score: 4 × 8 / 10 = 3.2 (medium impact — pure paperwork — but high ease because every spec/phase reference already exists).
-- recommended-slot: After the alignment-gated content candidate above. Pairs naturally as a docs-sweep tick that drains accumulated audit-honesty debt.
-
-### Candidate: Effect runtime — apply `statModifiers` + intensity scaling to derived stats (KG Q8 / Q9)
-- signal: `Knowledge-Gaps.md` Q8 says "the combat math never aggregates `statModifiers` onto the character's stats" and Q9 asks whether `statModifiers` should scale with intensity (today only `rollModifierPerIntensity` does). The effects JSON authors `statModifiers` payloads on 39 buffs + 46 debuffs (`grep -c statModifiers src/Effects/buffs.library.json` returns 36, debuffs ~30+), but the runtime never sums those modifiers onto `Character.derivedStats` outside of the existing `rollModifier` / `defenseModifier` paths. The Phase 44 fallacy effects (`debuff_no_true_scotsman` — `physicalDefense -2`) sit in the same gap: the field is authored, but combat math doesn't currently read it. Audit-pass-honesty-wise the effects library is bigger than the engine's actual coverage.
-- scope: Two units. Unit 1 — extend `getEffectiveStats(character)` (or add it if missing) to fold every active effect's `statModifiers[]` into derived stats, scaled by intensity if `intensityScalesStatModifiers?: boolean` is set on the Effect (per Q9). Touch every site that reads `derivedStats` to call the new helper instead of the raw field. Unit 2 — hermetic e2e covers: a buff that bumps `physicalAttack` by +2 raises the attack roll by 2 in combat; a debuff that drops `physicalDefense` increases damage taken; intensity-scaled modifiers scale correctly. Update `docs/effects.md` Payload Field Reference. Closes KG Q8 + Q9 fully.
-- unblocks: The 36+30 `statModifiers`-bearing effects in the library actually do what their payloads claim. Phase 44 `debuff_no_true_scotsman` becomes mechanically real. Future content authors can trust the payload field. Effects library shrinks the "authored but inert" surface.
-- blocked-by: None. Phases 42-45 are independent; this is engine-side coverage of authored content.
-- score: 6 × 5 / 10 = 3.0 (high impact — closes two long-standing KG questions and activates a lot of authored content; medium effort because the threading touches every derived-stat read site).
-- recommended-slot: After alignment-gated content + KG sweep. Combat-tuning is naturally bundled, and this is the largest tuning gap with no on-disk effort to identify it.
-
 ### Candidate: Agent verify reporter polish bundle (was named "Phase 41" pre-promotion; renamed at oversight 2026-05-16 after Phase 41 went to the acceptance sweep)
 - signal: After Phase 40 closed the MED 5.4 row (commit `87bab8c`),
   five Phase 39 self-critique AUDIT rows remain, all carrying the
@@ -189,6 +165,33 @@
 ---
 
 ## Promoted
+
+### Phase 46 — Alignment-gated content (`requires.alignment` on dialogue + skill learning)
+- promoted: 2026-05-16 (oversight; promote-multiple sequence Phase 46/47/48 after the 42-45 follow-up arc closed)
+- source: expand pass 7 candidate, filed at `5b37528`; Phase 42 brief Follow-ups
+- signal: Phase 42-45 shipped the cube + payloads + enemy pins; nothing gates *content access* on alignment yet. Same-shape extension of the existing `DialogueChoice.requires.flag` and `SkillLearningRequirement.level` gates. Closes the "alignment is observable / payloadable / enemy-side / gates" four-corner triangle.
+- scope: Three units. Unit 1 — extend `DialogueChoice.requires` with `requiresAlignment?: { axis, op: 'gte' | 'lte', value: number }`; `visibleChoices` filters by player's `philosophicalAlignment`. Unit 2 — extend `SkillLearningRequirement` with the same shape; `meetsLearningRequirement` checks it. Unit 3 — author 2-3 alignment-gated dialogue branches on Old Marrow / Coastal Beggar + 1-2 alignment-gated Tier 3 skills. Hermetic e2e drives each gate path. Update `docs/philosophy.md` "Authoring gates" subsection.
+- unblocks: Makes the cube's mechanical reach asymmetric — different alignments unlock different content.
+- blocked-by: Phases 42-45 (all shipped). No code-level prerequisites.
+- score: 6 × 5 / 10 = 3.0
+
+### Phase 47 — Knowledge-Gaps acceptance sweep (mirror Phase 41's spec-sweep pattern)
+- promoted: 2026-05-16 (oversight; promote-multiple sequence)
+- source: expand pass 7 candidate, filed at `5b37528`
+- signal: `Knowledge-Gaps.md` carries 25 numbered questions. ~14 entries are either (a) deliberately deferred combat-tuning (Q1/Q2/Q4/Q6) or (b) resolved by shipped phases but never marked. Same drift Phase 41 unit 4 drained for Q15/Q17-Q20.
+- scope: One pure-docs phase, 3-4 commit units. Walk every numbered question, classify into deferred / resolved-not-marked / genuinely-open. For resolved entries, write "**Resolved at <spec / phase> (<hash>).**" with shipping references. For new open + actionable entries, file iterate rows.
+- unblocks: Knowledge-Gaps.md becomes navigable again. Future critique passes have a cleaner signal floor.
+- blocked-by: None. Pure documentation work.
+- score: 4 × 8 / 10 = 3.2
+
+### Phase 48 — Effect runtime: apply `statModifiers` + intensity scaling to derived stats (KG Q8 / Q9)
+- promoted: 2026-05-16 (oversight; promote-multiple sequence)
+- source: expand pass 7 candidate, filed at `5b37528`
+- signal: KG Q8 says "the combat math never aggregates `statModifiers` onto the character's stats" and Q9 asks whether they should scale with intensity. The effects JSON authors `statModifiers` payloads on ~66 effects but the runtime never sums them onto `Character.derivedStats` outside the existing `rollModifier` / `defenseModifier` paths. Phase 44 `debuff_no_true_scotsman` (`physicalDefense -2`) sits in this gap.
+- scope: Two units. Unit 1 — extend / add `getEffectiveStats(character)` to fold active-effect `statModifiers[]` into derived stats, scaled by intensity when `intensityScalesStatModifiers?: boolean` is set. Thread every `derivedStats` read site through the new helper. Unit 2 — hermetic e2e for buff / debuff stat-modifier effects + intensity scaling. Update `docs/effects.md` Payload Field Reference. Closes KG Q8 + Q9.
+- unblocks: Activates ~66 authored `statModifiers`-bearing effects. Phase 44 fallacy debuffs become mechanically real.
+- blocked-by: None. Independent of Phases 42-45; can ship after 46 + 47 or interleave.
+- score: 6 × 5 / 10 = 3.0
 
 ### Phase 43 — Alignment-shifting authoring sweep on existing MapEvent + dialogue content
 - promoted: 2026-05-16 (oversight; top-scoring candidate after Phase 42 ship)
