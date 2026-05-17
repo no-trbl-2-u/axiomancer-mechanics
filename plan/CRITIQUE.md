@@ -135,15 +135,6 @@
 - suggested_fix: author `automation/scripts/walkthroughs/shop.json` (boots an `apprentice` preset, moves to `fv-3`, exercises the buy / sell loop, exits) and `shop.goal.md` (asserts the buy decrements currency + adds the item, the sell-back decrements inventory + increments currency). Update `automation/scripts/walkthroughs/README.md` to list the new walkthrough. Mirrors the pattern at e.g. `stat-allocation.{json,goal.md}` (Phase 29).
 - source: critique
 
-### [LOW] `automation/spec05_smoke.ts` is a Phase-17-orphaned standalone script with no surviving caller
-- pass: critique-14 (commit 1180f51)
-- area: dead-code
-- observation: `automation/spec05_smoke.ts` (126 LOC) is an executable smoke walkthrough for Spec 05 (equipment + consumables) that the Phase 17 brief explicitly deferred ("`automation/spec05_smoke.ts` stays. Independent script, out of scope" — `plan/phases/phase_17_unify_cli_surface.md:185`). The Phase 17 CLI unification removed every other ad-hoc CLI surface; this file is the lone leftover. `grep -rn "spec05_smoke"` returns hits only in `plan/phases/phase_17_unify_cli_surface.md` and `specs/`. No `package.json` script invokes it; no walkthrough references it; no documentation page surfaces it. The Spec 05 surface it exercises is fully covered hermetically by `src/Items/e2e/equipment.engine.test.ts` (per its own header comment).
-- evidence: `automation/spec05_smoke.ts:1-9` (its own JSDoc points at the replacement); `grep -rn "spec05_smoke" --include="*.ts" --include="*.mjs" --include="*.json"` outside `plan/`/`specs/` returns zero hits; Phase 17 brief at lines 30, 103, 185, 236 acknowledges the punt as a follow-up.
-- suggested_fix: `git rm automation/spec05_smoke.ts`. No replacement needed — `src/Items/e2e/equipment.engine.test.ts` is the canonical Spec 05 coverage. Verify gate. Pre-1.0 (0.7.0), `automation/` is not on the public barrel, no consumer migration required.
-- deletion-authorized: **YES** — `/oversight` 2026-05-16. /iterate under /loop may execute `git rm automation/spec05_smoke.ts` without further prompts.
-- source: critique
-
 ### [LOW] Three Phase-11 walkthrough JSONs in `automation/scripts/` feed the deleted `npm run auto:combat` Python harness
 - pass: critique-14 (commit 1180f51)
 - area: dead-code
@@ -172,6 +163,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] `automation/spec05_smoke.ts` is a Phase-17-orphaned standalone script with no surviving caller** — resolved at iterate commit `fdbd0eb` (2026-05-16). `git rm automation/spec05_smoke.ts` per the /oversight 2026-05-16 (commit `6966461`) deletion-authorization. The script's Spec 05 surface is fully covered hermetically by `src/Items/e2e/equipment.engine.test.ts`; grep confirms zero in-repo callers; pre-1.0 + `automation/` not on the public barrel means no consumer migration. 569/569 tests; verify + lint + build clean. Impact 3 × Ease 10 / 10 = 3.0 (× 1.5 dead-code bias = 4.5).
 
 - [x] **[LOW] `plan/bearings.md` CLI/API contract has no Philosophy entry after Phases 42 + 43 ship** — resolved at iterate commit `81edd2d` (2026-05-16). Appended a `Philosophy:` row to the locked-contract block in `plan/bearings.md` covering every Phase 42-45 public-surface addition (helpers, constants, library, types, plus the field / action additions on GameState, DialogueChoice.effect, MapEventPoolEntry, Skill, Effect, Enemy). Pairs with the README Philosophy row landed at iterate `3faf286` — both files are now cross-checkable. 546/546 tests; verify clean (docs-only). Impact 4 × Ease 9 / 10 = 3.6.
 
