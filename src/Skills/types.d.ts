@@ -5,6 +5,8 @@
  * `specs/04-skills-engine.md` for the full economy design.
  */
 
+import type { AlignmentGate } from '../NPCs/types';
+
 /**
  * Philosophical aspect alignment for skills
  * Determines which base stat the skill scales with and which combat type it uses.
@@ -78,6 +80,12 @@ export interface SkillLearningRequirement {
     statRequirementType?: SkillsStatType;
     statRequirementValue?: number;
     prerequisiteSkill?: string;
+    /**
+     * Phase 46 — alignment gate. Locks the skill behind a position on the
+     * Phase 42 alignment cube. Single-clause gate (axis + op + value);
+     * missing alignment on the character implicitly fails the gate.
+     */
+    requiresAlignment?: AlignmentGate;
 }
 
 /**

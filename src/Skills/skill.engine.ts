@@ -14,6 +14,7 @@
  */
 
 import { Character } from '../Character/types';
+import type { PhilosophicalAlignment } from '../Philosophy/types';
 import { Enemy } from '../Enemy/types';
 import { ActiveEffect, Effect } from '../Effects/types';
 import { lookupEffect, applyEffect } from '../Effects';
@@ -169,13 +170,19 @@ function defaultLevelForTier(tier: SkillTier): number {
 
 /**
  * True iff `character` meets every clause on `skill.learningRequirement`
- * (level minimum, optional stat threshold, optional prerequisite skill).
- * When the skill has no explicit requirement, falls back to a tier-derived
- * level minimum per `defaultLevelForTier`.
+ * (level minimum, optional stat threshold, optional prerequisite skill,
+ * optional alignment gate). When the skill has no explicit requirement,
+ * falls back to a tier-derived level minimum per `defaultLevelForTier`.
+ *
+ * @param alignment - Phase 46 optional. When provided AND the skill carries
+ *   `requiresAlignment`, the gate must pass. When the skill carries the
+ *   gate but no alignment is passed in, the requirement fails (parallel to
+ *   the dialogue `requiresAlignment` semantic).
  */
 export function meetsLearningRequirement(
     character: Pick<Character, 'level' | 'baseStats' | 'knownSkills'>,
     skill: Skill,
+    alignment?: PhilosophicalAlignment,
 ): boolean {
     const req = skill.learningRequirement ?? { level: defaultLevelForTier(skill.tier) };
     if (character.level < req.level) return false;
@@ -187,6 +194,13 @@ export function meetsLearningRequirement(
     if (req.prerequisiteSkill && !character.knownSkills.includes(req.prerequisiteSkill)) {
         return false;
     }
+    if (req.requiresAlignment) {
+        if (!alignment) return false;
+        const { axis, op, value } = req.requiresAlignment;
+        const v = alignment[axis];
+        if (op === 'gte' && !(v >= value)) return false;
+        if (op === 'lte' && !(v <= value)) return false;
+    }
     return true;
 }
 
@@ -194,13 +208,18 @@ export function meetsLearningRequirement(
  * Returns every entry in `skillLibrary` that the character has not already
  * learned AND meets the learning requirement for. Order matches the library
  * order so the UI can show a stable list across calls.
+ *
+ * @param alignment - Phase 46 optional. Threaded into `meetsLearningRequirement`
+ *   so alignment-gated skills are filtered out when the character's
+ *   alignment doesn't match (or isn't provided).
  */
 export function getAvailableSkills(
     character: Pick<Character, 'level' | 'baseStats' | 'knownSkills'>,
+    alignment?: PhilosophicalAlignment,
 ): Skill[] {
     return skillLibrary.filter(s =>
         !character.knownSkills.includes(s.id)
-        && meetsLearningRequirement(character, s),
+        && meetsLearningRequirement(character, s, alignment),
     );
 }
 
@@ -208,15 +227,20 @@ export function getAvailableSkills(
  * Appends `skillId` to `character.knownSkills` when the skill exists, is not
  * already known, and the character meets its learning requirement. Pure;
  * returns the unchanged character (same reference) on any guard miss.
+ *
+ * @param alignment - Phase 46 optional. Threaded into `meetsLearningRequirement`
+ *   so alignment-gated skills can only be learned by characters whose
+ *   alignment matches the gate.
  */
 export function learnSkill(
     character: Character,
     skillId: string,
+    alignment?: PhilosophicalAlignment,
 ): Character {
     if (character.knownSkills.includes(skillId)) return character;
     const skill = getSkillById(skillId);
     if (!skill) return character;
-    if (!meetsLearningRequirement(character, skill)) return character;
+    if (!meetsLearningRequirement(character, skill, alignment)) return character;
     return {
         ...character,
         knownSkills: [...character.knownSkills, skillId],

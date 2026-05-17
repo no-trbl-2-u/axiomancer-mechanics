@@ -153,8 +153,11 @@ function enrichExtra(
 ): { report?: CombatEndReport; unlockedSkills?: string[] } | undefined {
     if (action.type !== 'LEVEL_UP') return extra;
     if (next.player.level === prev.player.level) return extra; // No promotion → no diff.
-    const before = new Set(getAvailableSkills(prev.player).map(s => s.id));
-    const after = getAvailableSkills(next.player).map(s => s.id);
+    // Phase 46 — thread the alignment so the unlockedSkills diff reflects
+    // alignment-gated skill availability changes (e.g. a SHIFT_PHILOSOPHICAL_ALIGNMENT
+    // that crosses a gate threshold should surface the newly-eligible skills).
+    const before = new Set(getAvailableSkills(prev.player, prev.philosophicalAlignment).map(s => s.id));
+    const after = getAvailableSkills(next.player, next.philosophicalAlignment).map(s => s.id);
     const unlockedSkills = after.filter(id => !before.has(id));
     return { ...(extra ?? {}), unlockedSkills };
 }

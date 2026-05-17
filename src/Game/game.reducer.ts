@@ -278,7 +278,14 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         }
 
         case 'LEARN_SKILL': {
-            return { ...state, player: learnSkill(state.player, action.payload.skillId) };
+            return {
+                ...state,
+                player: learnSkill(
+                    state.player,
+                    action.payload.skillId,
+                    state.philosophicalAlignment,
+                ),
+            };
         }
 
         case 'SHIFT_MORAL_METER': {
