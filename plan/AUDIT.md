@@ -40,6 +40,15 @@
 - source: critique-21 (commit `5f5b2c4`), promoted via `/oversight` 2026-05-19
 - next: preferred path — drop `export` from `function applyOutlookBias` at `src/Enemy/enemy.logic.ts:172` (used only internally by `decideEnemyAction` at `:240`). See `plan/CRITIQUE.md` critique-21 row 3.
 
+### [tracking] GH#64 — engine handoff (skillLibrary re-export + types.d.ts emission + PersistenceAdapter ergonomics)
+- category: tracking
+- impact: 0 (tracking row; not an iterate target)
+- ease: 0
+- score: 0 (do not pick — work is routed through a phase)
+- source: triage 2026-05-19 — labeled `triage:loop-queued,bug` on GH#64; duplicates GH#61/62/63 closed as `triage:closed,duplicate`
+- next: `/ship-a-phase` Phase 50 (engine handoff for `axiomancer-mobile`, promoted via `/oversight` 2026-05-19). Issues 1 + 2 from the handoff doc are blocking; Issue 3 (PersistenceAdapter ergonomics) is lower priority and may be deferred.
+- notes: filed by the mobile autonomous loop. Republish to `0.7.1` once Phase 50 lands so mobile can unpin from `0.7.0` exact and resume Phase 16 + 21.
+
 ### [LOW] `getCoastalMap` barrel export — authorized for removal by oversight
 - category: dead-code
 - impact: 3 (zero in-repo callers; `@deprecated` per JSDoc since Phase 23 era; pre-1.0 permits breaking changes in minor bumps; replacement `getMapDefinition('coastal-continent', mapName)` + `createMapState` already exists)
