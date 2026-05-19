@@ -84,6 +84,7 @@ export function runScenarioPhase(
     playerStance: Stance,
     enemyStance: Stance,
     playerAction: CombatAction,
+    enemyAction: CombatAction,
     playerActionFinal: Action | 'skip',
     enemyActionFinal:  Action | 'skip',
     playerAdvantage: Advantage,
@@ -133,6 +134,52 @@ export function runScenarioPhase(
             player = resolution.state.player;
             enemy  = resolution.state.enemy;
             combatResources = resolution.state.combatResources;
+            for (const ev of resolution.events) events.push(toRoundEvent(ev));
+        }
+    }
+
+    // 5a-enemy (Phase 49). Enemy picked `skill` → validate against the
+    // enemy's `skills` rotation and route through `executeSkill(..., 'enemy')`.
+    // Per D2 of plan/phases/phase_49_enemy_skill_caster.md, enemies bypass
+    // the player's resource economy — we hand executeSkill a sentinel pool
+    // so canUseSkill always passes, then discard the post-skill pool state
+    // and restore the player's actual `combatResources`. Validation parallels
+    // the player path: unknown skill or not-in-rotation → blocked, no basic
+    // exchange this turn (the basic-action match branches below don't
+    // include any `enemyActionFinal === 'skill'` case so the whiff falls
+    // through naturally).
+    if (enemyActionFinal === 'skill') {
+        if (!enemyAction.skillId) {
+            throw new Error("enemyAction.action === 'skill' requires a skillId.");
+        }
+        if (!skillLookup) {
+            throw new Error("Enemy chose a skill, but no skillLookup was supplied to resolveCombatRound.");
+        }
+
+        const skillId = enemyAction.skillId;
+        const skill   = skillLookup(skillId);
+        const rotation = enemy.skills ?? [];
+        const inRotation = rotation.some(s => s.id === skillId);
+
+        if (!skill) {
+            events.push({ phase: 'skill', kind: 'blocked', skillId, reason: 'unknown-skill' });
+        } else if (!inRotation) {
+            events.push({ phase: 'skill', kind: 'blocked', skillId, reason: 'not-equipped' });
+        } else {
+            // Sentinel resource pool — large enough for any authored cost so
+            // canUseSkill always passes. The post-skill pool returned by
+            // executeSkill is discarded; the player's combatResources is the
+            // only resource state tracked across rounds.
+            const sentinel: CombatResources = {
+                heart: 999, body: 999, mind: 999, fallacy: 999, paradox: 999,
+            };
+            const skillState: CombatState = {
+                ...state, player, enemy, combatResources: sentinel,
+            };
+            const resolution = executeSkill(skillState, skillId, skillLookup, 'enemy');
+            player = resolution.state.player;
+            enemy  = resolution.state.enemy;
+            // combatResources intentionally NOT updated — D2 bypass.
             for (const ev of resolution.events) events.push(toRoundEvent(ev));
         }
     }

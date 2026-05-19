@@ -43,6 +43,7 @@ import { mockAlternatingRng, mockSequentialRng } from '../../test-utils/rng';
 import { isCombatOngoing, determineCombatEnd } from '../index';
 import { initializeCombat } from '../combat.reducer';
 import { resolveCombatRound } from '../combat.resolver';
+import { getSkillById } from '../../Skills/skill.library';
 
 // ─── Tests ───────────────────────────────────────────────────────────────────
 
@@ -234,6 +235,87 @@ describe('Crit wiring (Phase 32)', () => {
         expect(playerHit).toBeDefined();
         expect(playerHit?.isCritical).toBeUndefined();
         expect(playerHit?.critStyle).toBeUndefined();
+    });
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// PHASE 49 — ENEMY SKILL PATH
+// ────────────────────────────────────────────────────────────────────────────
+
+describe('Enemy skill caster path (Phase 49)', () => {
+    it('routes an enemy skill action through executeSkill and lands damage on the player', () => {
+        mockSequentialRng(0.5);
+
+        const skillLookup = (id: string) => getSkillById(id);
+
+        // Coastal Tyrant carries achilles-gambit (Phase 49 unit 2).
+        const enemy = { ...Disatree_01, skills: [getSkillById('achilles-gambit')!] };
+        const state = initializeCombat(Player, enemy);
+        const playerHpBefore = state.player.health;
+
+        const { state: next, combatEvents } = resolveCombatRound(
+            state,
+            { stance: 'mind', action: 'defend' },
+            { stance: 'body', action: 'skill', skillId: 'achilles-gambit' },
+            skillLookup,
+        );
+
+        // Skill phase event fired for the enemy's damaging skill.
+        const skillEvents = combatEvents.filter(e => e.phase === 'skill');
+        const damageEvent = skillEvents.find(
+            (e): e is Extract<typeof e, { kind: 'damage' }> => e.kind === 'damage',
+        );
+        expect(damageEvent).toBeDefined();
+        // skill.targetType is relative to caster — 'enemy' means the opposing side
+        // (the player), and damage lands there.
+        expect(next.player.health).toBeLessThan(playerHpBefore);
+    });
+
+    it("does NOT touch the player's combatResources when the enemy casts a skill (D2 bypass)", () => {
+        mockSequentialRng(0.5);
+
+        const skillLookup = (id: string) => getSkillById(id);
+        const enemy = { ...Disatree_01, skills: [getSkillById('achilles-gambit')!] };
+        const state = initializeCombat(Player, enemy);
+        const resourcesBefore = { ...state.combatResources };
+
+        const { state: next } = resolveCombatRound(
+            state,
+            { stance: 'mind', action: 'defend' }, // player defending; will generate +5 mind
+            { stance: 'body', action: 'skill', skillId: 'achilles-gambit' },
+            skillLookup,
+        );
+
+        // Player defended in mind → +5 mind. Other pools unchanged. Specifically,
+        // body / fallacy / paradox should NOT show any enemy-skill spend or
+        // generation.
+        expect(next.combatResources.mind).toBe(resourcesBefore.mind + 5);
+        expect(next.combatResources.body).toBe(resourcesBefore.body);
+        expect(next.combatResources.fallacy).toBe(resourcesBefore.fallacy);
+        expect(next.combatResources.paradox).toBe(resourcesBefore.paradox);
+    });
+
+    it("blocks an enemy skill not in the enemy's rotation and emits a skill-blocked event", () => {
+        mockSequentialRng(0.5);
+
+        const skillLookup = (id: string) => getSkillById(id);
+        // Enemy has NO skills rotation — the dispatched skill should be rejected.
+        const enemy = { ...Disatree_01, skills: [] };
+        const state = initializeCombat(Player, enemy);
+
+        const { combatEvents } = resolveCombatRound(
+            state,
+            { stance: 'mind', action: 'defend' },
+            { stance: 'body', action: 'skill', skillId: 'achilles-gambit' },
+            skillLookup,
+        );
+
+        const blockedEvent = combatEvents.find(
+            (e): e is Extract<typeof e, { kind: 'blocked' }> =>
+                e.phase === 'skill' && e.kind === 'blocked',
+        );
+        expect(blockedEvent).toBeDefined();
+        expect(blockedEvent?.reason).toBe('not-equipped');
     });
 });
 

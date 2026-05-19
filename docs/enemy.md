@@ -177,3 +177,32 @@ npm run game   # tabbed demo loop; pick the Combat tab to engage
 Victory grants are surfaced inside the Combat tab after each encounter
 resolves; the hermetic e2e suite (`src/**/e2e/*.engine.test.ts`) is the
 durable way to exercise specific enemy fixtures.
+
+## Skill use (Phase 49)
+
+Enemies with a non-empty `Enemy.skills?: Skill[]` field can fire skills
+during combat. `decideEnemyAction` consults a new helper
+`pickEnemySkill(enemy)` BEFORE the per-strategy dispatch — when the
+rotation is non-empty AND `getRng().random() < ENEMY_SKILL_PICK_CHANCE`
+(0.35), it returns `{ action: 'skill', skillId, stance }`. Otherwise
+the strategy resolves normally. The stance is sourced from
+`skill.philosophicalAspect` so a body-aspected skill arrives with
+`stance: 'body'`.
+
+Two enemies carry first-pass rotations:
+
+| Enemy | Difficulty | Skill | Skill aspect |
+|---|---|---|---|
+| Argumentative Crow | normal | `false-dilemma` | mind |
+| The Coastal Tyrant | boss | `achilles-gambit` | body |
+
+The actual skill execution runs through `executeSkill` with
+`casterSide: 'enemy'` — see `docs/skills.md` "Enemy caster path
+(Phase 49)" for the engine-side semantics, including D2 (enemies
+bypass the player's `combatResources` pool) and D3 (`skill.targetType`
+is relative to the caster).
+
+Calibration: the 0.35 fire rate is colocated with the Phase 45
+`ALIGNMENT_FLIP_CHANCE` in `src/Enemy/enemy.logic.ts`. Tune both
+together if a future playtest pass shows elite/boss encounters
+feel too spammy or too quiet.

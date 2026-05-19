@@ -272,7 +272,7 @@ export function resolveCombatRound(
     // 5. Scenario resolution.
     const scenario = runScenarioPhase(
         state, player, enemy, playerStance, enemyStance,
-        playerAction, playerActionFinal, enemyActionFinal,
+        playerAction, enemyAction, playerActionFinal, enemyActionFinal,
         playerAdvantage, enemyAdvantage,
         state.combatResources, state.friendshipCounter,
         state.round, skillLookup,

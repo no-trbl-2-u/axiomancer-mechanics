@@ -251,10 +251,50 @@ for the matching status-effect payloads.
 ## Out of Scope (here)
 
 - Skill purchasing / learning flow — Spec 06 / 08.
-- Enemy skill use — Spec 07.
+- Enemy skill use — Phase 49 (live; see "Enemy caster path" below).
 - Moral-alignment gates — Spec 10.
 - Round-damage-total telemetry that would replace Bootstrap Paradox's flat
   heal — deferred; needs a per-round damage accumulator on `CombatState`.
+
+## Enemy caster path (Phase 49)
+
+`executeSkill` is caster-agnostic since Phase 49. The 4th argument
+`casterSide: 'player' | 'enemy'` (default `'player'`) decides which
+side of the `CombatState` is firing the skill. When `casterSide === 'enemy'`:
+
+- Validation switches from `Character.equippedSkills` (player path) to
+  `Enemy.skills?: Skill[]` (rotation membership). An enemy whose
+  `skills` field is missing or doesn't contain the dispatched id emits
+  a `skill-blocked` event with `reason: 'not-equipped'` and the enemy
+  whiffs its turn.
+- `skill.targetType` is interpreted **relative to the caster**:
+  `'self'` lands the payload on the enemy (the caster); `'enemy'`
+  lands it on the player (the opposing side, regardless of subtype).
+  The field's literal name is unchanged for back-compat — read it as
+  "opponent" when the enemy is the caster.
+- Enemy-cast skills **bypass the player's `combatResources` pool**
+  (D2 in `plan/phases/phase_49_enemy_skill_caster.md`). The caller
+  in `src/Combat/phases/scenario.ts` hands `executeSkill` a sentinel
+  resource pool and discards the post-skill pool state; the player's
+  actual `combatResources` is untouched by an enemy skill. The
+  resource economy stays Spec-04-locked for the player side only;
+  enemies don't generate or spend tokens. Revisit if combat balance
+  shows enemies feel under- or over-tuned.
+
+Enemy skill picks happen in `decideEnemyAction` (Spec 07 — `src/Enemy/enemy.logic.ts`).
+A new `pickEnemySkill(enemy)` helper runs BEFORE the per-strategy
+dispatch: when `Enemy.skills?` is non-empty AND a probabilistic gate
+(`ENEMY_SKILL_PICK_CHANCE = 0.35`) fires, the AI returns
+`{ action: 'skill', skillId, stance }` where `stance` is sourced from
+`skill.philosophicalAspect`. Otherwise it falls through to the
+strategy's basic action. Two enemies carry rotations as of Phase 49:
+
+| Enemy | Difficulty | Skill | Rationale |
+|---|---|---|---|
+| Argumentative Crow | normal | `false-dilemma` | Mind-aspected; matches the crow's "sequence of premises" voice. |
+| The Coastal Tyrant | boss | `achilles-gambit` | Body-aspected; matches the magistrate's heavy blade. |
+
+See `docs/enemy.md` "Skill use (Phase 49)" for the AI dispatch side.
 
 ## Source Material
 
