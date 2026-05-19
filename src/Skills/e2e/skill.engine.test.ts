@@ -236,6 +236,72 @@ describe('executeSkill — guards', () => {
     });
 });
 
+describe('executeSkill — Phase 49 casterSide=enemy', () => {
+    it("routes a damaging skill from the enemy's rotation against the player", () => {
+        const enemy = { ...fixtureEnemy(), skills: [damagingSkill] };
+        const state: CombatState = {
+            ...initializeCombat(fixturePlayer(), enemy),
+            // D2 sentinel — enemy bypasses resource costs.
+            combatResources: { heart: 999, body: 999, mind: 999, fallacy: 999, paradox: 999 },
+        };
+        const playerHpBefore = state.player.health;
+
+        const { state: next, events } = executeSkill(state, damagingSkill.id, lookup, 'enemy');
+
+        // Damage formula: basePower 5 + body 3 × 0.5 = 6.5 → 7. Player is the target.
+        expect(next.player.health).toBe(playerHpBefore - 7);
+        // Caster (enemy) is unchanged on HP.
+        expect(next.enemy.health).toBe(state.enemy.health);
+        // Damage event target=='enemy' is relative-to-caster — D3.
+        expect(events.find(e => e.kind === 'damage')).toMatchObject({
+            target: 'enemy', amount: 7, hpBefore: playerHpBefore, hpAfter: next.player.health,
+        });
+    });
+
+    it("routes a self-target heal onto the enemy when casterSide='enemy'", () => {
+        const enemyAtLowHp = { ...fixtureEnemy(), skills: [buffSkill] };
+        enemyAtLowHp.health = Math.max(1, enemyAtLowHp.health - 10);
+        const state: CombatState = {
+            ...initializeCombat(fixturePlayer(), enemyAtLowHp),
+            combatResources: { heart: 999, body: 999, mind: 999, fallacy: 999, paradox: 999 },
+        };
+        const enemyHpBefore = state.enemy.health;
+        const playerHpBefore = state.player.health;
+
+        const { state: next, events } = executeSkill(state, buffSkill.id, lookup, 'enemy');
+
+        // Heal lands on the caster (enemy). 4 + heart 3 × 0.5 = 5.5 → 6.
+        expect(next.enemy.health).toBe(enemyHpBefore + 6);
+        // Player (target) is untouched.
+        expect(next.player.health).toBe(playerHpBefore);
+        expect(events.find(e => e.kind === 'heal')).toMatchObject({
+            target: 'self', amount: 6,
+        });
+    });
+
+    it("throws when skill is not in the enemy's rotation", () => {
+        const enemy = { ...fixtureEnemy(), skills: [] as Skill[] };
+        const state: CombatState = {
+            ...initializeCombat(fixturePlayer(), enemy),
+            combatResources: { heart: 999, body: 999, mind: 999, fallacy: 999, paradox: 999 },
+        };
+        expect(() => executeSkill(state, damagingSkill.id, lookup, 'enemy'))
+            .toThrow(/not in the enemy's rotation/);
+    });
+
+    it("player-side default behaviour is unchanged when casterSide is omitted", () => {
+        // Regression — pre-Phase-49 call sites omit the 4th arg and must
+        // still get the player-cast pathway.
+        const state = fixtureState({ body: 3 });
+        const enemyHpBefore = state.enemy.health;
+        const { state: next } = executeSkill(state, damagingSkill.id, lookup);
+
+        expect(next.enemy.health).toBe(enemyHpBefore - 8);
+        // Player's resource pool spent + token granted (the canonical pre-49 contract).
+        expect(next.combatResources).toEqual({ ...zero, fallacy: 1 });
+    });
+});
+
 describe('resolveCombatRound — skill action integration', () => {
     it('routes player skill through executeSkill, deducts cost, generates token', () => {
         const state = fixtureState({ body: 3 });

@@ -306,7 +306,7 @@ export interface SkillLookup {
 /**
  * Runs a skill end-to-end against the current `CombatState`:
  *
- *   1. Validate the skill is equipped and known.
+ *   1. Validate the skill is equipped (player) or in the enemy's rotation.
  *   2. Validate `canUseSkill` (resources sufficient) — throws otherwise.
  *   3. Apply damage / heal based on `targetType`.
  *   4. Resolve each `combatEffects` payload through `resolveEffectApplication`
@@ -318,18 +318,39 @@ export interface SkillLookup {
  * to the broader combatEvents stream; it adapts our `SkillEvent[]` into that
  * shape.
  *
- * @throws if the skill is not equipped, not found in the lookup, or the
- *   actor cannot afford it.
+ * Phase 49 — `casterSide` decides which side is firing the skill. Defaults
+ * to `'player'` for back-compat with the pre-Phase-49 call site at
+ * `src/Combat/phases/scenario.ts`. When `'enemy'`, the enemy is the caster
+ * and the player is the target; `skill.targetType` is interpreted relative
+ * to the caster (`'self'` → caster's effects; `'enemy'` → opposing side).
+ * Enemy-cast skills are validated against `Enemy.skills?` rather than
+ * `Character.equippedSkills`. Resource handling stays uniform — the caller
+ * is responsible for passing a sentinel `combatResources` for the enemy
+ * path (per D2 in plan/phases/phase_49_enemy_skill_caster.md).
+ *
+ * @throws if the skill is not equipped (player path) or not in the enemy's
+ *   rotation (enemy path), not found in the lookup, or the caster cannot
+ *   afford it.
  */
 export function executeSkill(
     state: CombatState,
     skillId: string,
     lookupSkill: SkillLookup,
+    casterSide: 'player' | 'enemy' = 'player',
 ): SkillResolution {
-    const player = state.player;
+    const isPlayerCaster = casterSide === 'player';
+    const caster: Combatant = isPlayerCaster ? state.player : state.enemy;
+    const target: Combatant = isPlayerCaster ? state.enemy : state.player;
 
-    if (!player.equippedSkills.includes(skillId)) {
-        throw new Error(`Skill '${skillId}' is not equipped.`);
+    if (isPlayerCaster) {
+        if (!(caster as Character).equippedSkills.includes(skillId)) {
+            throw new Error(`Skill '${skillId}' is not equipped.`);
+        }
+    } else {
+        const rotation = (caster as Enemy).skills ?? [];
+        if (!rotation.some(s => s.id === skillId)) {
+            throw new Error(`Skill '${skillId}' is not in the enemy's rotation.`);
+        }
     }
 
     const skill = lookupSkill(skillId);
@@ -343,45 +364,44 @@ export function executeSkill(
 
     const events: SkillEvent[] = [];
 
-    let workingPlayer: Character = player;
-    let workingEnemy: Enemy = state.enemy;
+    let workingCaster: Combatant = caster;
+    let workingTarget: Combatant = target;
 
-    const targetIsEnemy = skill.targetType === 'enemy';
-    const damage = calculateSkillDamage(workingPlayer, skill);
+    const damage = calculateSkillDamage(workingCaster, skill);
 
     if (damage > 0) {
-        if (targetIsEnemy) {
-            const hpBefore = workingEnemy.health;
-            workingEnemy = applyDamage(workingEnemy, damage);
+        if (skill.targetType === 'enemy') {
+            const hpBefore = workingTarget.health;
+            workingTarget = applyDamage(workingTarget, damage);
             events.push({
                 kind: 'damage', skillId, target: 'enemy',
-                amount: damage, hpBefore, hpAfter: workingEnemy.health,
+                amount: damage, hpBefore, hpAfter: workingTarget.health,
             });
         } else {
-            const hpBefore = workingPlayer.health;
-            workingPlayer = heal(workingPlayer, damage);
+            const hpBefore = workingCaster.health;
+            workingCaster = heal(workingCaster, damage);
             events.push({
                 kind: 'heal', skillId, target: 'self',
-                amount: damage, hpBefore, hpAfter: workingPlayer.health,
+                amount: damage, hpBefore, hpAfter: workingCaster.health,
             });
         }
     }
 
     for (const payload of skill.combatEffects ?? []) {
         const result = applySkillEffect(
-            payload, skill, workingPlayer, workingEnemy, state.round,
+            payload, skill, workingCaster, workingTarget, state.round,
         );
-        workingPlayer = result.player;
-        workingEnemy  = result.enemy;
+        workingCaster = result.caster;
+        workingTarget = result.target;
         events.push(...result.events);
     }
 
     for (const mechanic of skill.specialMechanics ?? []) {
         const result = applySpecialMechanic(
-            mechanic, skill, workingPlayer, workingEnemy, state.round,
+            mechanic, skill, workingCaster, workingTarget, state.round,
         );
-        workingPlayer = result.player;
-        workingEnemy  = result.enemy;
+        workingCaster = result.caster;
+        workingTarget = result.target;
         events.push(...result.events);
     }
 
@@ -393,11 +413,14 @@ export function executeSkill(
     events.push({ kind: 'resources-spent', skillId, cost: skill.resourceCost });
     events.push({ kind: 'philosophical-generated', skillId, category: genCategory });
 
+    const nextPlayer = (isPlayerCaster ? workingCaster : workingTarget) as Character;
+    const nextEnemy  = (isPlayerCaster ? workingTarget : workingCaster) as Enemy;
+
     return {
         state: {
             ...state,
-            player: workingPlayer,
-            enemy:  workingEnemy,
+            player: nextPlayer,
+            enemy:  nextEnemy,
             combatResources: nextResources,
         },
         events,
@@ -405,8 +428,8 @@ export function executeSkill(
 }
 
 interface SkillEffectResult {
-    player: Character;
-    enemy: Enemy;
+    caster: Combatant;
+    target: Combatant;
     events: SkillEvent[];
 }
 
@@ -420,31 +443,35 @@ interface SkillEffectResult {
  * stack/duration so skills like Liar's Echo (+2 intensity, 2-round mark) and
  * Sorites' Cascade (intensity-2 bleed) can lean on the same library entry as
  * the proc system without warping the underlying effect definition.
+ *
+ * Phase 49 — caster-agnostic. `payload.appliedTo === 'self'` routes to
+ * `caster.effects`; `'enemy'` routes to `target.effects` (the opposing
+ * side, regardless of which Combatant subtype that is).
  */
 function applySkillEffect(
     payload: SkillCombatEffects,
     skill: Skill,
-    player: Character,
-    enemy: Enemy,
+    caster: Combatant,
+    target: Combatant,
     round: number,
 ): SkillEffectResult {
     const events: SkillEvent[] = [];
     const effect = lookupEffect(payload.effectId);
     if (!effect) {
-        return { player, enemy, events };
+        return { caster, target, events };
     }
 
     const targetIsSelf = payload.appliedTo === 'self';
-    const target: Combatant = targetIsSelf ? player : enemy;
+    const effectTarget: Combatant = targetIsSelf ? caster : target;
     const intensityOverride = payload.intensity;
     const durationOverride  = payload.duration;
 
     const built = buildActiveEffect(effect, round, intensityOverride, durationOverride);
     const result = resolveEffectApplication(
-        target,
+        effectTarget,
         built,
         effect.type,
-        player.baseStats.heart,
+        caster.baseStats.heart,
     );
 
     // When the skill payload explicitly overrides duration we must apply in
@@ -468,16 +495,17 @@ function applySkillEffect(
     if (result.rebounded && result.activeEffect) {
         const reboundIntensity = result.activeEffect.intensity ?? intensityOverride ?? 1;
         const reboundDuration  = result.activeEffect.remainingDuration ?? durationOverride ?? effect.duration;
+        // Rebound always lands on the caster (the side that originated the skill).
         const reboundedEffects = applyEffect(
-            player.effects, effect, round,
-            { ...buildApplyOptions(reboundIntensity, reboundDuration), sourceId: player.id },
+            caster.effects, effect, round,
+            { ...buildApplyOptions(reboundIntensity, reboundDuration), sourceId: caster.id },
         );
         events.push({
             kind: 'effect-rebounded', skillId: skill.id, effect, message: result.message,
         });
         return {
-            player: { ...player, effects: reboundedEffects.activeEffects },
-            enemy,
+            caster: { ...caster, effects: reboundedEffects.activeEffects } as Combatant,
+            target,
             events,
         };
     }
@@ -488,15 +516,15 @@ function applySkillEffect(
             appliedTo: targetIsSelf ? 'self' : 'enemy',
             effect, message: result.message,
         });
-        return { player, enemy, events };
+        return { caster, target, events };
     }
 
     const appliedIntensity = result.activeEffect?.intensity ?? intensityOverride ?? 1;
     const appliedDuration  = result.activeEffect?.remainingDuration ?? durationOverride ?? effect.duration;
 
     const applied = applyEffect(
-        target.effects, effect, round,
-        { ...buildApplyOptions(appliedIntensity, appliedDuration), sourceId: player.id },
+        effectTarget.effects, effect, round,
+        { ...buildApplyOptions(appliedIntensity, appliedDuration), sourceId: caster.id },
     );
 
     events.push({
@@ -507,14 +535,14 @@ function applySkillEffect(
 
     if (targetIsSelf) {
         return {
-            player: { ...player, effects: applied.activeEffects },
-            enemy,
+            caster: { ...caster, effects: applied.activeEffects } as Combatant,
+            target,
             events,
         };
     }
     return {
-        player,
-        enemy: { ...enemy, effects: applied.activeEffects },
+        caster,
+        target: { ...target, effects: applied.activeEffects } as Combatant,
         events,
     };
 }
@@ -551,41 +579,41 @@ function buildActiveEffect(
 function applySpecialMechanic(
     mechanic: SkillSpecialMechanic,
     skill: Skill,
-    player: Character,
-    enemy: Enemy,
+    caster: Combatant,
+    target: Combatant,
     round: number,
 ): SkillEffectResult {
     const events: SkillEvent[] = [];
 
     switch (mechanic.kind) {
         case 'bypass_defense':
-            return { player, enemy, events };
+            return { caster, target, events };
 
         case 'strip_random_buff': {
             if (mechanic.appliedTo === 'enemy') {
-                const { target: nextEnemy, removed } = removeRandomBuff(enemy);
+                const { target: nextTarget, removed } = removeRandomBuff(target);
                 events.push({
                     kind: 'buff-stripped', skillId: skill.id, target: 'enemy',
                     effect: removed ? lookupEffect(removed.effectId) ?? null : null,
                 });
-                return { player, enemy: nextEnemy, events };
+                return { caster, target: nextTarget, events };
             }
-            const { target: nextPlayer, removed } = removeRandomBuff(player);
+            const { target: nextCaster, removed } = removeRandomBuff(caster);
             events.push({
                 kind: 'buff-stripped', skillId: skill.id, target: 'self',
                 effect: removed ? lookupEffect(removed.effectId) ?? null : null,
             });
-            return { player: nextPlayer, enemy, events };
+            return { caster: nextCaster, target, events };
         }
 
         case 'convert_enemy_buff_to_self': {
-            const { target: nextEnemy, removed } = removeRandomBuff(enemy);
+            const { target: nextTarget, removed } = removeRandomBuff(target);
             if (!removed) {
                 events.push({
                     kind: 'buff-converted', skillId: skill.id, effect: null,
                     message: 'No buffs to convert.',
                 });
-                return { player, enemy: nextEnemy, events };
+                return { caster, target: nextTarget, events };
             }
             const effect = lookupEffect(removed.effectId);
             if (!effect) {
@@ -593,20 +621,20 @@ function applySpecialMechanic(
                     kind: 'buff-converted', skillId: skill.id, effect: null,
                     message: 'Buff stripped but unknown — could not transfer.',
                 });
-                return { player, enemy: nextEnemy, events };
+                return { caster, target: nextTarget, events };
             }
-            const applied = applyEffect(player.effects, effect, round, {
+            const applied = applyEffect(caster.effects, effect, round, {
                 intensityDelta: removed.intensity ?? 1,
                 durationDelta:  removed.remainingDuration,
-                sourceId:       player.id,
+                sourceId:       caster.id,
             });
             events.push({
                 kind: 'buff-converted', skillId: skill.id, effect,
-                message: `${effect.name} converted onto the player.`,
+                message: `${effect.name} converted onto the caster.`,
             });
             return {
-                player: { ...player, effects: applied.activeEffects },
-                enemy:  nextEnemy,
+                caster: { ...caster, effects: applied.activeEffects } as Combatant,
+                target: nextTarget,
                 events,
             };
         }
@@ -615,18 +643,18 @@ function applySpecialMechanic(
             const multiplier = mechanic.multiplier ?? 1;
             const amount = Math.max(
                 0,
-                Math.round(player.baseStats[mechanic.stat] * SKILL_STAT_MULTIPLIER * multiplier),
+                Math.round(caster.baseStats[mechanic.stat] * SKILL_STAT_MULTIPLIER * multiplier),
             );
             if (amount <= 0) {
-                return { player, enemy, events };
+                return { caster, target, events };
             }
-            const hpBefore = player.health;
-            const nextPlayer = heal(player, amount);
+            const hpBefore = caster.health;
+            const nextCaster = heal(caster, amount);
             events.push({
                 kind: 'heal', skillId: skill.id, target: 'self',
-                amount, hpBefore, hpAfter: nextPlayer.health,
+                amount, hpBefore, hpAfter: nextCaster.health,
             });
-            return { player: nextPlayer, enemy, events };
+            return { caster: nextCaster, target, events };
         }
     }
 }
