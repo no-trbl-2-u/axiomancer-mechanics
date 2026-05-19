@@ -13,13 +13,49 @@
  */
 
 import { execSync } from 'node:child_process'
-import { existsSync } from 'node:fs'
+import { existsSync, readdirSync, statSync } from 'node:fs'
+import { join } from 'node:path'
 
 const DIST = 'dist'
+const SRC = 'src'
 
 if (!existsSync(DIST)) {
   console.error('[deploy:check] dist/ not found. Run `npm run build` first.')
   console.error('[deploy:check] The verify gate (npm run verify) creates dist/.')
+  process.exit(1)
+}
+
+// Phase 50 guard — every src/<Module>/types.ts must emit a matching
+// dist/<Module>/types.d.ts. Catches the regression that filed GH#64
+// (mobile handoff Issue 2) cheaply, without enumerating every public name.
+function countModuleTypesFiles(root, declarationOnly) {
+  let count = 0
+  const moduleDirs = readdirSync(root, { withFileTypes: true })
+    .filter(d => d.isDirectory())
+    .map(d => d.name)
+  for (const mod of moduleDirs) {
+    const file = declarationOnly
+      ? join(root, mod, 'types.d.ts')
+      : join(root, mod, 'types.ts')
+    if (existsSync(file) && statSync(file).isFile()) {
+      count += 1
+    }
+  }
+  return count
+}
+
+const srcTypesCount = countModuleTypesFiles(SRC, false)
+const distTypesCount = countModuleTypesFiles(DIST, true)
+
+if (distTypesCount < srcTypesCount) {
+  console.error(
+    `[deploy:check] dist/<Module>/types.d.ts emission shortfall: ` +
+    `expected ${srcTypesCount} (one per src/<Module>/types.ts), got ${distTypesCount}.`
+  )
+  console.error(
+    '[deploy:check] A module-level types.ts was likely re-introduced as types.d.ts ' +
+    '(tsc does not emit pre-existing .d.ts files). See plan/phases/phase_50_engine_handoff.md.'
+  )
   process.exit(1)
 }
 
