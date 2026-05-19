@@ -6,13 +6,37 @@
 > by `/iterate`.
 
 <!-- Metadata (updated by /critique after each pass):
-> Last pass: 2026-05-16 at commit 57fbb83
-> Pass count: 20
+> Last pass: 2026-05-19 at commit facafc8
+> Pass count: 21
 -->
 
 ---
 
 ## Pending
+
+### [LOW] `docs/effects.md` "API at a glance" lists 4 Combat-private aggregators as if they were public surface
+- pass: critique-21 (commit facafc8)
+- area: docs / api
+- observation: `docs/effects.md:561-565` "API at a glance" table lists `getActiveEffectModifiers` / `getEffectiveStats` / `canAct` / `resolveEffectiveAdvantage` with their source files in `src/Combat/`. The Phase 48 "Runtime aggregation" subsection (lines 179-218, shipped at `57fbb83`) reinforces `getEffectiveStats` as the central pipeline entry. But none of these four functions are re-exported through `src/index.ts` (which uses named imports like `export { determineAdvantage, getAttackStat, ... } from './Combat'` — the four aggregators are not on that list). `package.json` `exports` map only exposes `./` (the core barrel) and `./node`; there is no `./Combat` subpath. A package consumer reading `docs/effects.md` to look up `getEffectiveStats` is told a path that is unreachable from outside the repo. The wrapper accessors (`getAttackStat` / `getDefenseStat` / `getResistStat` / `getBaseStat` / `getSaveStat`) ARE on the public barrel and route through `getEffectiveStats` internally, so the doc's pipeline diagram is correct for in-repo readers — but it's the wrong audience for a `docs/` page that frames itself as the consumer-facing reference.
+- evidence: `grep -n "getEffectiveStats\|getActiveEffectModifiers\|canAct\|resolveEffectiveAdvantage" src/index.ts` returns 0 hits. `grep -n "exports" package.json` shows only `.` and `./node` subpaths. `src/Combat/index.ts:43-48` exports the four functions from the Combat barrel, but external consumers can't reach `src/Combat/index.ts` without an exports-map subpath.
+- suggested_fix: pick one — (a) re-export the four aggregators through `src/index.ts` in the Combat block, making the doc's pipeline diagram literally true for consumers; (b) rewrite the four `docs/effects.md` API table rows to frame `getEffectiveStats` / `getActiveEffectModifiers` / `canAct` as internal aggregators behind the wrapper accessors, with a "consumer entry points" note pointing at `getAttackStat` etc; the Phase 48 "Runtime aggregation" subsection stays as-is (it describes the engine pipeline, not the consumer surface). Path (a) is preferred since the functions are stable and useful — a power-user RN consumer composing custom UI may reasonably want to read effective stats directly without going through one stance/stat at a time. ~5 lines added to `src/index.ts` Combat block + 1 hermetic public-barrel-import test in `src/test-utils/e2e/`. /iterate-safe.
+- source: critique
+
+### [LOW] `specs/README.md` Recommended order table stops at Spec 12 and is missing DONE flags + Spec 23
+- pass: critique-21 (commit facafc8)
+- area: docs
+- observation: `specs/README.md:60-71` "Recommended order" table lists 12 specs (rows 1-12). Rows 1-8 are marked **DONE**; rows 9-12 (specs 09 / 10 / 11 / 12) are NOT marked DONE despite all four having shipped pre-loop or via loop phases (Phase 09 game loop, Phase 10 moral meter, Phase 11 RNG, Phase 12 package architecture). Spec 23 (`specs/23-map-events.md`, shipped across Phases 23 / 24 / 25 / 31 / 37 with full acceptance ticked at Phase 41 unit 3) is missing entirely from the table. A reader landing on `specs/README.md` to look for "what spec to pick up next" sees 4 unfinished specs that are actually done, and zero indication that Spec 23 exists. Same drift pattern Phase 34 unit 5 + Phase 41 drained for individual spec acceptance checklists, but the index that points at them was never refreshed.
+- evidence: `grep -n "^| " specs/README.md` returns 12 table rows; rows 9-12 carry "| 9 |" / "| 10 |" / "| 11 |" / "| 12 |" without **DONE** flags. `grep -n "Spec 23\|23-map" specs/README.md` returns 0 hits. Per `plan/steps/01_build_plan.md`: Spec 09-12 all `[x]` shipped (Phase 09 `e6ce034`, Phase 10 `a6085c4`, Phase 11 `a6b33f0`, Phase 12 `251dda9`); Spec 23 shipped via Phases 23-25 + acceptance via Phase 41 unit 3 (`518b5dd`).
+- suggested_fix: in `specs/README.md`, (1) flip rows 9 / 10 / 11 / 12 from `| 9 |` to `| 9 **DONE** |` etc. matching the existing convention; (2) append a row 13 for Spec 23 (`23-map-events.md`) — "Phase 23 / 24 / 25. Replaces the legacy `processNode` with a typed MapEvents engine + 8-kind taxonomy. Depends on (9)." with a **DONE** flag. Optionally add a forward-looking note at the bottom that future specs are filed at higher numbers as needed (the `specs/00-how-to-use-specs.md` template stays the source-of-truth). ~5 lines edited. Pure docs work; pairs cleanly with the critique-18 specs/14-philosophical-alignment.md gap row if both ship together (since landing 14 would add another row).
+- source: critique
+
+### [LOW] `applyOutlookBias` is exported from `src/Enemy/enemy.logic.ts` but not re-exported through `src/Enemy/index.ts`
+- pass: critique-21 (commit facafc8)
+- area: structure
+- observation: Phase 45 unit 2 (`b185fe2`) added `export function applyOutlookBias(action, enemy): CombatAction` at `src/Enemy/enemy.logic.ts:172`. It's used only internally — `decideEnemyAction` at `:240` calls it as the last step of dispatch. The `src/Enemy/index.ts:80-84` re-export block lists 9 logic helpers (`randomLogic`, `decideEnemyAction`, the four named logics, `bossLogic`, `counterStanceOf`, `weakestStanceOf`) but not `applyOutlookBias`. So the function is `export`-keyword-tagged but not actually on the module's external API. Either (a) the keyword should drop to `function` (signals "in-repo only", matches other internal helpers in the same file), or (b) the function should be added to the re-export block. Same pattern Phase 35 used for `Character.id` auto-gen (the helper stayed internal as a `function`, not `export function`). The mismatch is small but it's the kind of thing critique pass catches before it propagates — if future units pin the function name in JSDoc or `@see` references as if it's a barrel export, the drift becomes harder to untangle. `docs/enemy.md:63` mentions the function by name in the description but doesn't claim it's a public entry point.
+- evidence: `grep -n "applyOutlookBias" src/Enemy/index.ts src/index.ts` returns 0 hits. `grep -n "export function applyOutlookBias\|applyOutlookBias(" src/Enemy/enemy.logic.ts` returns the declaration at `:172` and one internal call site at `:240`. Across all other files in the repo: `grep -rn "applyOutlookBias" src/ --include="*.ts" | grep -v "enemy.logic"` returns 0 hits.
+- suggested_fix: pick one. Path (a) — drop `export` to make it `function applyOutlookBias(...)` at `:172`; matches the in-repo-only intent and prevents future barrel-leak surprises. Path (b) — add `applyOutlookBias` to the `src/Enemy/index.ts:80-84` block; appropriate IF a future phase wants UI consumers to apply the outlook bias to externally-sourced enemy decisions (no current evidence of that need). Recommend (a) as the conservative choice; revisit if Phase 49 (Enemy-skill caster path) refactors the AI dispatch and the bias function gains external callers. Either is a 1-line edit. /iterate-safe.
+- source: critique
 
 ### [LOW] `docs/api.md` Philosophy entry stops at Phase 44 — missing Phase 46 surface (AlignmentGate + requiresAlignment)
 - pass: critique-20 (commit 57fbb83)
