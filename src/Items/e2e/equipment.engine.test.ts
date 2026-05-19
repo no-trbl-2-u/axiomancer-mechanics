@@ -487,7 +487,7 @@ describe('Invariants', () => {
 // ────────────────────────────────────────────────────────────────────────────
 
 describe('Game store lifecycle: equipment & consumables with nullAdapter', () => {
-    it('equipItem / unequipItem flow through the store; autosave fires (Spec 09 Q4) but the nullAdapter never touches disk', () => {
+    it('equipItem / unequipItem flow through the store; autosave is intentionally NOT fired on UI-tier actions (Phase 51, Spec 09 Q4 path B)', () => {
         const saveSpy = vi.spyOn(nullAdapter, 'save');
         const player  = buildPlayer();
         const store   = createGameStore(nullAdapter, { player });
@@ -500,9 +500,12 @@ describe('Game store lifecycle: equipment & consumables with nullAdapter', () =>
         expect(store.getState().player.equipment.weapon).toBeUndefined();
         expect(store.getState().player.derivedStats.physicalAttack).toBe(3);
 
-        // Autosave on every action — but the nullAdapter's save is a silent
-        // no-op, so no disk write actually occurs.
-        expect(saveSpy).toHaveBeenCalled();
+        // Phase 51: EQUIP_ITEM and UNEQUIP_ITEM are UI-tier actions and are
+        // intentionally excluded from the DURABLE_ACTIONS allowlist. The
+        // next COMBAT_ROUND / LEVEL_UP / MOVE_TO_NODE / SAVE_GAME persists
+        // the equipment change; an explicit store.save() always writes
+        // through. See plan/phases/phase_51_autosave_throttling.md.
+        expect(saveSpy).not.toHaveBeenCalled();
     });
 
     it('useConsumable applies the healAmount on the root player and decrements the stack', () => {

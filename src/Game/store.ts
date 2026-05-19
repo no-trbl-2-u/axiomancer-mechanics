@@ -59,6 +59,25 @@ import {
 } from '../Items/item.reducer';
 
 /**
+ * Curated set of action types that trigger an autosave through the
+ * provided `PersistenceAdapter` (Phase 51, Spec 09 Q4 path B).
+ *
+ * UI-tier actions (`USE_ITEM`, `EQUIP_ITEM`, `ALLOCATE_STAT_POINT`,
+ * `LEARN_SKILL`, `SHIFT_MORAL_METER`, `SHIFT_PHILOSOPHICAL_ALIGNMENT`,
+ * `START_COMBAT`, `PROCESS_NODE`, `LOAD_GAME`) are intentionally excluded —
+ * they will save on the next durable transition or via an explicit
+ * `SAVE_GAME` / `save()` call.
+ */
+const DURABLE_ACTIONS: ReadonlySet<GameAction['type']> = new Set<GameAction['type']>([
+    'COMBAT_ROUND',
+    'LEVEL_UP',
+    'END_COMBAT',
+    'MOVE_TO_NODE',
+    'APPLY_DIALOGUE',
+    'SAVE_GAME',
+]);
+
+/**
  * Summary of what an `endCombat` call granted to the player (Spec 07).
  *
  * Returned from `endCombat()` so the CLI / UI can render an after-action
@@ -210,10 +229,11 @@ export function createGameStore(
     }
 
     return createStore<GameStore>()((set, get) => {
-        // Core dispatch: run reducer → set → emit → autosave.
-        // TODO(spec-09): autosave fires on every action. Throttle (or restrict
-        //  to map transitions) if playtesting reveals the cadence is too
-        //  brutal — Spec 09 Q4 deliberately leaves this dial open.
+        // Core dispatch: run reducer → set → emit → autosave (gated).
+        // Phase 51 (Spec 09 Q4): autosave only fires for the curated
+        // DURABLE_ACTIONS set; UI-tier actions never write through. The
+        // direct `save()` verb below + `updateCombat()` keep their own
+        // unconditional writes.
         function dispatch(action: GameAction, extra?: { report?: CombatEndReport }): GameState {
             const prev = get();
             const next = gameReducer(prev, action);
@@ -223,14 +243,16 @@ export function createGameStore(
             if (event && emitter) emitter.emit(event);
             // Save excludes transient currentEncounter — encounters re-roll on
             // load (Spec 07).
-            const {
-                currentEncounter: _drop, version, player, world, combat, quests, flags,
-                moralMeter, rngState, philosophicalAlignment,
-            } = next;
-            adapter.save({
-                version, player, world, combat, quests, flags,
-                moralMeter, rngState, philosophicalAlignment,
-            });
+            if (DURABLE_ACTIONS.has(action.type)) {
+                const {
+                    currentEncounter: _drop, version, player, world, combat, quests, flags,
+                    moralMeter, rngState, philosophicalAlignment,
+                } = next;
+                adapter.save({
+                    version, player, world, combat, quests, flags,
+                    moralMeter, rngState, philosophicalAlignment,
+                });
+            }
             return next;
         }
 

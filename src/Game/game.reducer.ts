@@ -137,9 +137,8 @@ function shiftMoralMeter(state: GameState, delta: number, gating?: { min?: numbe
  * action types — instead returns state unchanged (caller is responsible for
  * type safety).
  *
- * TODO(spec-09): autosave currently fires on every action in the store. If
- *  the resulting cadence feels too brutal in playtest, throttle to map
- *  transitions or explicit saves only.
+ * Autosave policy lives in `store.ts` (Phase 51, Spec 09 Q4 path B):
+ * only the curated `DURABLE_ACTIONS` set triggers an `adapter.save` call.
  */
 export function gameReducer(state: GameState, action: GameAction): GameState {
     switch (action.type) {
