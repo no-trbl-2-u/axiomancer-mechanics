@@ -19,6 +19,10 @@ import { describe, it, expect } from 'vitest';
 import {
     skillLibrary,
     getSkillById,
+    getActiveEffectModifiers,
+    getEffectiveStats,
+    canAct,
+    resolveEffectiveAdvantage,
 } from '../../index';
 
 describe('Phase 50 — public barrel exposes skillLibrary + getSkillById', () => {
@@ -50,5 +54,33 @@ describe('Phase 50 — public barrel exposes skillLibrary + getSkillById', () =>
     it('getSkillById returns undefined for an unknown id', () => {
         const result = getSkillById('this-skill-id-does-not-exist-anywhere');
         expect(result).toBeUndefined();
+    });
+});
+
+describe('iterate (post-critique-21) — public barrel exposes 4 Combat-tier aggregators', () => {
+    // Pins the four effect/combat aggregators that `docs/effects.md` lists
+    // as public Combat-tier helpers. Until this iterate tick they lived only
+    // on `src/Combat/index.ts` and were unreachable from the top-level
+    // `axiomancer-mechanics` barrel — external consumers (e.g. mobile
+    // building custom UI on top of `getEffectiveStats`) had no path in.
+
+    it('getActiveEffectModifiers is a function', () => {
+        expect(getActiveEffectModifiers).toBeDefined();
+        expect(typeof getActiveEffectModifiers).toBe('function');
+    });
+
+    it('getEffectiveStats is a function', () => {
+        expect(getEffectiveStats).toBeDefined();
+        expect(typeof getEffectiveStats).toBe('function');
+    });
+
+    it('canAct is a function', () => {
+        expect(canAct).toBeDefined();
+        expect(typeof canAct).toBe('function');
+    });
+
+    it('resolveEffectiveAdvantage is a function', () => {
+        expect(resolveEffectiveAdvantage).toBeDefined();
+        expect(typeof resolveEffectiveAdvantage).toBe('function');
     });
 });

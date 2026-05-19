@@ -42,6 +42,7 @@ export type { EnemySlug } from './Enemy/enemy.library';
 // ─── Combat ───────────────────────────────────────────────────────────────────
 export {
     determineAdvantage, getAdvantageModifier, hasAdvantage,
+    resolveEffectiveAdvantage,
     getBaseStat, getAttackStat, getDefenseStat, getSaveStat, getResistStat,
     rollSkillCheck, isCriticalHit, isCriticalMiss,
     applyCriticalMultiplier, calculateFinalDamage, selectCritDamage, isAttackSuccessful,
@@ -49,6 +50,7 @@ export {
     getStudyMarkIntensity, getActiveRollModifier, getThornsReflect,
     updateEffectDuration, tickAllEffects,
     removeRandomBuff, extendRandomBuffDuration, applyRegen,
+    getActiveEffectModifiers, getEffectiveStats, canAct,
     resolveEffectApplication,
     determineEnemyAction, isCombatOngoing, determineCombatEnd, isValidCombatAction,
     healCharacter,
@@ -56,6 +58,7 @@ export {
 export type {
     Stance, Action, Advantage, CritStyle, CombatAction, CombatPhase,
     BattleLogEntry, CombatState, Combatant,
+    AggregatedEffectModifiers, EffectiveStats,
 } from './Combat';
 
 // ─── Combat reducer ───────────────────────────────────────────────────────────
