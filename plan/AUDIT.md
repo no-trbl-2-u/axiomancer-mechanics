@@ -16,14 +16,6 @@
 
 ## Pending
 
-### [LOW] `docs/effects.md` API table lists 4 Combat-private aggregators as public surface (promoted from critique-21)
-- category: docs
-- impact: 4 (`docs/effects.md` is the canonical consumer-facing effect reference; the four functions named at `:561-565` — `getActiveEffectModifiers`, `getEffectiveStats`, `canAct`, `resolveEffectiveAdvantage` — read as public API entry points but aren't on `src/index.ts` and the package `exports` map only exposes `.` + `./node`. An external RN consumer cannot reach them, despite the doc framing them as Combat-tier helpers)
-- ease: 7 (small src/index.ts edit OR small doc rewrite — see suggested_fix on the critique row)
-- score: 2.8 (× 1.5 docs bias = 4.2)
-- source: critique-21 (commit `5f5b2c4`), promoted via `/oversight` 2026-05-19
-- next: pick path — (a) re-export the four aggregators through `src/index.ts` Combat block (preferred — they're stable and useful for power-user RN consumers composing custom UI; also surfaces them for Item 1 of the mobile handoff pattern), with a hermetic public-barrel-import test in `src/test-utils/e2e/`; OR (b) rewrite the four `docs/effects.md` API table rows (`:562-564`) to mark the aggregators as internal-only and route consumers to the wrapper accessors (`getAttackStat` / `getDefenseStat` / etc). See `plan/CRITIQUE.md` critique-21 row 1 for the full evidence + fix proposals.
-
 ### [LOW] `specs/README.md` Recommended order missing DONE flags for rows 9-12 + missing Spec 23 entirely (promoted from critique-21)
 - category: docs
 - impact: 3 (`specs/README.md` is the spec-tree entry point; readers landing there see Spec 09 / 10 / 11 / 12 as unfinished despite all four shipping; Spec 23 — map-events, full acceptance ticked at Phase 41 unit 3 — is missing from the order table entirely)
@@ -61,6 +53,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] `docs/effects.md` API table lists 4 Combat-private aggregators as public surface (promoted from critique-21)** — resolved at iterate commit `7ee0745` (2026-05-19). Picked path (a) re-export: `src/index.ts` Combat block now forwards `getActiveEffectModifiers`, `getEffectiveStats`, `canAct`, `resolveEffectiveAdvantage` from `./Combat` (all four were already on `src/Combat/index.ts`); types `AggregatedEffectModifiers` + `EffectiveStats` added so consumers can annotate return shapes. Extended the Phase 50 hermetic test in `src/test-utils/e2e/public-barrel.engine.test.ts` with a second `describe` block pinning all four aggregators reachable as functions from the package barrel. 598/598 tests (+4 net from Phase 51's 594); verify + deploy:check clean. Mirrors the Phase 50 engine-handoff pattern; `docs/effects.md` API rows now correctly describe public surface. Impact 4 × Ease 7 / 10 = 2.8 (× 1.5 docs bias = 4.2). Source: critique-21 row 1 (commit `5f5b2c4`).
 
 - [x] **[LOW] Phase 39 reporter — `durationMs` precision is inconsistent between JSON and markdown** — resolved at iterate commit `5401de4` (2026-05-16). `automation/agent-vitest-reporter.mjs#buildReport` wraps both `diag?.duration ?? 0` (per-test) and `modDiag?.duration ?? 0` (per-file) with `Math.round(...)`, so the JSON emits integer milliseconds throughout. `slowest5` / `slowestFailures` / `files[].tests[].durationMs` / `files[].durationMs` all inherit the rounded values; `deltaMs` in `computeDiff` is integer-by-construction (int − int). New hermetic case in `src/test-utils/e2e/agent-vitest-reporter.engine.test.ts` drives a fractional Vitest duration (`66.41922499999987`) through the reporter and asserts the rounded test-level + file-level + slowest5-inherited durationMs with `Number.isInteger()`. The existing 13 cases passed integer durations so they round-trip identically — no fixture updates. 524/524 tests (+1 net); verify clean. Impact 2 × Ease 10 / 10 = 2.0 (× 1.5 reporter bias = 3.0).
 

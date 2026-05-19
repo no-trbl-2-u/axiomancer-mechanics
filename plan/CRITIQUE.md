@@ -14,15 +14,6 @@
 
 ## Pending
 
-### [LOW] `docs/effects.md` "API at a glance" lists 4 Combat-private aggregators as if they were public surface
-- pass: critique-21 (commit facafc8)
-- promoted-to-audit: 2026-05-19 (oversight; tracked at `plan/AUDIT.md` Pending under the same title for /iterate scoring + docs-bias weighting)
-- area: docs / api
-- observation: `docs/effects.md:561-565` "API at a glance" table lists `getActiveEffectModifiers` / `getEffectiveStats` / `canAct` / `resolveEffectiveAdvantage` with their source files in `src/Combat/`. The Phase 48 "Runtime aggregation" subsection (lines 179-218, shipped at `57fbb83`) reinforces `getEffectiveStats` as the central pipeline entry. But none of these four functions are re-exported through `src/index.ts` (which uses named imports like `export { determineAdvantage, getAttackStat, ... } from './Combat'` — the four aggregators are not on that list). `package.json` `exports` map only exposes `./` (the core barrel) and `./node`; there is no `./Combat` subpath. A package consumer reading `docs/effects.md` to look up `getEffectiveStats` is told a path that is unreachable from outside the repo. The wrapper accessors (`getAttackStat` / `getDefenseStat` / `getResistStat` / `getBaseStat` / `getSaveStat`) ARE on the public barrel and route through `getEffectiveStats` internally, so the doc's pipeline diagram is correct for in-repo readers — but it's the wrong audience for a `docs/` page that frames itself as the consumer-facing reference.
-- evidence: `grep -n "getEffectiveStats\|getActiveEffectModifiers\|canAct\|resolveEffectiveAdvantage" src/index.ts` returns 0 hits. `grep -n "exports" package.json` shows only `.` and `./node` subpaths. `src/Combat/index.ts:43-48` exports the four functions from the Combat barrel, but external consumers can't reach `src/Combat/index.ts` without an exports-map subpath.
-- suggested_fix: pick one — (a) re-export the four aggregators through `src/index.ts` in the Combat block, making the doc's pipeline diagram literally true for consumers; (b) rewrite the four `docs/effects.md` API table rows to frame `getEffectiveStats` / `getActiveEffectModifiers` / `canAct` as internal aggregators behind the wrapper accessors, with a "consumer entry points" note pointing at `getAttackStat` etc; the Phase 48 "Runtime aggregation" subsection stays as-is (it describes the engine pipeline, not the consumer surface). Path (a) is preferred since the functions are stable and useful — a power-user RN consumer composing custom UI may reasonably want to read effective stats directly without going through one stance/stat at a time. ~5 lines added to `src/index.ts` Combat block + 1 hermetic public-barrel-import test in `src/test-utils/e2e/`. /iterate-safe.
-- source: critique
-
 ### [LOW] `specs/README.md` Recommended order table stops at Spec 12 and is missing DONE flags + Spec 23
 - pass: critique-21 (commit facafc8)
 - promoted-to-audit: 2026-05-19 (oversight; tracked at `plan/AUDIT.md` Pending for /iterate weighting)
@@ -183,6 +174,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] `docs/effects.md` "API at a glance" lists 4 Combat-private aggregators as if they were public surface** — resolved at iterate commit `7ee0745` (2026-05-19). Picked path (a) re-export: `src/index.ts` Combat block now forwards `getActiveEffectModifiers`, `getEffectiveStats`, `canAct`, `resolveEffectiveAdvantage` from `./Combat`; types `AggregatedEffectModifiers` + `EffectiveStats` added. Extended the Phase 50 hermetic public-barrel test with a second `describe` block pinning all four aggregators reachable as functions. The `docs/effects.md` "API at a glance" table is now literally true for external consumers; pipeline diagram in the Phase 48 "Runtime aggregation" subsection stays as-is. 598/598 tests stay green (+4 net from the new test cases); verify + deploy:check clean. Impact 4 × Ease 7 / 10 = 2.8 (× 1.5 docs bias = 4.2). Source: critique-21 row 1.
 
 - [x] **[LOW] `docs/gameloop.md` carries stale `GAME_STATE_VERSION` claims (says 4, actual is 5) + migrator ladder paragraph predates Phase 42** — resolved at iterate commit `a6fb6bf` (2026-05-19). `docs/gameloop.md:13` flipped to `// GAME_STATE_VERSION (current: 5)` + added `philosophicalAlignment: PhilosophicalAlignment` to the GameState example block. Migrator ladder at :188-190 extended to `migrateV2toV3 → migrateV3toV4 → migrateV4toV5 (adds philosophicalAlignment defaulting to { epistemology: 0, outlook: 0, scope: 0 }, Phase 42)` — used the actual axis names from `src/Philosophy/types.ts` (epistemology/outlook/scope), not the placeholder shape from the suggested_fix. "When `GAME_STATE_VERSION` next bumps" paragraph rewritten to v5→v6 shape so the migrator-add-pattern doc still teaches the right thing. 594/594 tests stay green; pure docs change. Impact 3 × Ease 10 / 10 = 3.0 (× 1.5 docs bias = 4.5). Source: critique-22 (commit `d4bcc86`).
 
