@@ -12,6 +12,7 @@
 
 import { Stance, Action, CombatAction, CombatState } from '../Combat/types';
 import { Enemy, EnemyLogic } from './types';
+import type { Skill } from '../Skills/types';
 import { getRng } from '../Utils/rng';
 import { bucketAxis } from '../Philosophy';
 
@@ -156,6 +157,14 @@ export function bossLogic(_enemy: Enemy, state?: CombatState): CombatAction {
 const ALIGNMENT_FLIP_CHANCE = 0.25;
 
 /**
+ * Phase 49 — probability that an enemy with a non-empty `skills` rotation
+ * picks a skill instead of dispatching its strategy's basic action. Picked
+ * at 0.35 so skill-rich enemies feel distinct without monopolising every
+ * round; calibrate down if elite/boss feel too spammy in playtest.
+ */
+const ENEMY_SKILL_PICK_CHANCE = 0.35;
+
+/**
  * Applies the Phase 45 outlook-driven bias on top of the per-strategy
  * decision. Pure and optional:
  *   - No-op when `enemy` is undefined (legacy `decideEnemyAction(logic)` path).
@@ -187,6 +196,34 @@ export function applyOutlookBias(
     return action;
 }
 
+// ─── Phase 49 — skill-pick path ──────────────────────────────────────────────
+
+/**
+ * Returns a `{ action: 'skill', skillId, stance }` action when the enemy is
+ * eligible to fire a skill this round, or `null` to fall through to the
+ * strategy's basic action.
+ *
+ * Eligibility:
+ *   - `enemy.skills` is non-empty.
+ *   - `getRng().random() < ENEMY_SKILL_PICK_CHANCE` (probabilistic gate).
+ *
+ * Selection: picks the first skill in the rotation (stable across calls
+ * given the seedable RNG; future calibration may rotate or weight). The
+ * stance is sourced from the skill's `philosophicalAspect` so it reads as
+ * intentionally aligned ("heart-attack while casting a heart-aspect skill").
+ */
+export function pickEnemySkill(enemy: Enemy | undefined): CombatAction | null {
+    const rotation: readonly Skill[] = enemy?.skills ?? [];
+    if (rotation.length === 0) return null;
+    if (getRng().random() >= ENEMY_SKILL_PICK_CHANCE) return null;
+    const skill = rotation[0];
+    return {
+        stance: skill.philosophicalAspect,
+        action: 'skill',
+        skillId: skill.id,
+    };
+}
+
 // ─── Dispatcher ───────────────────────────────────────────────────────────────
 
 /**
@@ -206,6 +243,13 @@ export function decideEnemyAction(
 ): CombatAction {
     const enemy: Enemy | undefined = typeof arg === 'object' ? arg : undefined;
     const logic: EnemyLogic = typeof arg === 'string' ? arg : arg.logic;
+
+    // Phase 49 — skill-pick path runs BEFORE the strategy dispatch so an
+    // enemy with a real rotation gets the chance to express it. Falls
+    // through to the strategy when the gate doesn't fire (or `skills` is
+    // empty, or `enemy` is undefined via the legacy logic-only overload).
+    const skillAction = pickEnemySkill(enemy);
+    if (skillAction) return skillAction;
 
     let decided: CombatAction;
     switch (logic) {

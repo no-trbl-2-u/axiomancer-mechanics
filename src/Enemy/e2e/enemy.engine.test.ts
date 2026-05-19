@@ -16,11 +16,14 @@ import { describe, it, expect, afterEach, vi } from 'vitest';
 import {
     decideEnemyAction, aggressiveLogic, defensiveLogic, balancedLogic,
     strategicLogic, bossLogic, counterStanceOf, weakestStanceOf,
+    pickEnemySkill,
 } from '../enemy.logic';
 import { Enemy } from '../types';
 import { CombatState } from '../../Combat/types';
 import { createEnemy } from '../index';
-import { ENEMY_REGISTRY } from '../enemy.library';
+import { ENEMY_REGISTRY, ArgumentativeCrow, CoastalTyrant } from '../enemy.library';
+import { mockSequentialRng } from '../../test-utils/rng';
+import { getSkillById } from '../../Skills/skill.library';
 
 function makeEnemy(overrides: Partial<Enemy> = {}): Enemy {
     return {
@@ -281,5 +284,85 @@ describe('ENEMY_REGISTRY', () => {
             // Slug stability: the slug must round-trip back to the same fixture.
             expect(ENEMY_REGISTRY[slug as keyof typeof ENEMY_REGISTRY]).toBe(enemy);
         }
+    });
+});
+
+describe('pickEnemySkill — Phase 49', () => {
+    it('returns null when enemy.skills is unset', () => {
+        const enemy = makeEnemy();
+        // High rng so the gate would fire if there were skills.
+        mockSequentialRng(0.99);
+        expect(pickEnemySkill(enemy)).toBeNull();
+    });
+
+    it('returns null when the probabilistic gate misses (low rng)', () => {
+        const skill = getSkillById('false-dilemma')!;
+        const enemy = makeEnemy({ skills: [skill] });
+        // 0.36 → 0.99: first roll 0.36 is ≥ ENEMY_SKILL_PICK_CHANCE (0.35) → null.
+        mockSequentialRng(0.36, 0.99);
+        expect(pickEnemySkill(enemy)).toBeNull();
+    });
+
+    it('returns the first skill in the rotation when the gate fires (high rng)', () => {
+        const skill = getSkillById('achilles-gambit')!;
+        const enemy = makeEnemy({ skills: [skill] });
+        // 0.10 < 0.35 → gate fires.
+        mockSequentialRng(0.10);
+        const action = pickEnemySkill(enemy);
+        expect(action).not.toBeNull();
+        expect(action).toMatchObject({
+            action: 'skill',
+            skillId: 'achilles-gambit',
+            stance: 'body', // philosophicalAspect on achilles-gambit
+        });
+    });
+
+    it('returns null for an undefined enemy (legacy logic-only overload safety)', () => {
+        mockSequentialRng(0.01);
+        expect(pickEnemySkill(undefined)).toBeNull();
+    });
+});
+
+describe('decideEnemyAction — Phase 49 skill dispatch', () => {
+    it("returns the skill action when an enemy with a rotation passes the gate", () => {
+        const enemy = ArgumentativeCrow;
+        // First roll consumed by pickEnemySkill — 0.10 fires the gate.
+        mockSequentialRng(0.10);
+        const decision = decideEnemyAction(enemy, makeState({ enemy }));
+        expect(decision).toMatchObject({
+            action: 'skill',
+            skillId: 'false-dilemma',
+        });
+    });
+
+    it("falls through to the strategy's basic action when the gate misses", () => {
+        const enemy = CoastalTyrant;
+        // First roll 0.99 ≥ 0.35 → gate doesn't fire.
+        mockSequentialRng(0.99);
+        const decision = decideEnemyAction(enemy, makeState({ enemy }));
+        expect(decision.action).not.toBe('skill');
+        // CoastalTyrant logic='boss' — round 1, phase 1 → body defend.
+        expect(decision).toMatchObject({ stance: 'body', action: 'defend' });
+    });
+
+    it("respects the legacy logic-only overload (no skill path)", () => {
+        // decideEnemyAction(logic) — enemy is undefined → pickEnemySkill bails.
+        mockSequentialRng(0.10);
+        const decision = decideEnemyAction('aggressive');
+        expect(decision.action).not.toBe('skill');
+    });
+});
+
+describe('ArgumentativeCrow + CoastalTyrant — Phase 49 rotations', () => {
+    it('Argumentative Crow carries the false-dilemma rotation', () => {
+        expect(ArgumentativeCrow.skills).toBeDefined();
+        expect(ArgumentativeCrow.skills?.length).toBe(1);
+        expect(ArgumentativeCrow.skills?.[0].id).toBe('false-dilemma');
+    });
+
+    it('Coastal Tyrant carries the achilles-gambit rotation', () => {
+        expect(CoastalTyrant.skills).toBeDefined();
+        expect(CoastalTyrant.skills?.length).toBe(1);
+        expect(CoastalTyrant.skills?.[0].id).toBe('achilles-gambit');
     });
 });

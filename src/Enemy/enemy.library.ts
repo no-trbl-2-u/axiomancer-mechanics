@@ -24,6 +24,19 @@ import { createEnemy } from './index';
 import { LootTableEntry } from './types';
 import { consumableLibrary, getConsumableById } from '../Items/consumable.library';
 import { Consumable } from '../Items/types';
+import { getSkillById } from '../Skills/skill.library';
+import type { Skill } from '../Skills/types';
+
+// ─── Skill rotation helpers (Phase 49) ────────────────────────────────────────
+
+/** Returns a fresh copy of the named skill from the library. */
+function skill(id: string): Skill {
+    const found = getSkillById(id);
+    if (!found) {
+        throw new Error(`enemy.library: unknown skill id '${id}'.`);
+    }
+    return found;
+}
 
 // ─── Loot helpers ─────────────────────────────────────────────────────────────
 
@@ -203,6 +216,8 @@ export const ArgumentativeCrow = createEnemy({
     loot: [none(50), drop('clarity-serum', 25), drop('focus-vial', 20), drop('philosopher-tea', 5)],
     // Phase 45 — logic-optimistic-individual (Nietzsche / Prometheus archetype).
     philosophicalAlignment: { epistemology: 67, outlook: 67, scope: -67 },
+    // Phase 49 — mind-aspected fallacy skill matches the crow's "sequence of premises" voice.
+    skills: [skill('false-dilemma')],
 });
 
 // ─── Elite (3) — level 4-5 ────────────────────────────────────────────────────
@@ -286,6 +301,8 @@ export const CoastalTyrant = createEnemy({
     ],
     // Phase 45 — faith-pessimistic-transcendent (Marcion / Grand Inquisitor archetype).
     philosophicalAlignment: { epistemology: -67, outlook: -67, scope: 67 },
+    // Phase 49 — body-aspected paradox skill matches the magistrate's heavy blade.
+    skills: [skill('achilles-gambit')],
 });
 
 export const TheDisagreement = createEnemy({
