@@ -10,7 +10,7 @@
 
 ```ts
 interface GameState {
-  version: number;                   // GAME_STATE_VERSION (current: 4)
+  version: number;                   // GAME_STATE_VERSION (current: 5)
   player: Character;
   world: WorldState;
   combat: CombatState | null;        // null when out of combat
@@ -19,6 +19,7 @@ interface GameState {
   flags: string[];
   moralMeter: number;                // Spec 10 — clamped to [-100, +100]
   rngState: number;                  // Spec 11 — LCG seed snapshot
+  philosophicalAlignment: PhilosophicalAlignment;  // Phase 42 — 3-axis cube
 }
 ```
 
@@ -186,11 +187,12 @@ to `migrate()`, which:
 - Refuses payloads newer than the runtime.
 - Funnels older payloads through stepwise upgrades. The ladder today:
   `migrateV2toV3` (adds `moralMeter`, Spec 10) → `migrateV3toV4` (adds
-  `rngState`, Spec 11).
+  `rngState`, Spec 11) → `migrateV4toV5` (adds `philosophicalAlignment`
+  defaulting to `{ epistemology: 0, outlook: 0, scope: 0 }`, Phase 42).
 - Validates the top-level shape before handing back a `GameState`.
 
-When `GAME_STATE_VERSION` next bumps, add a `migrateV4toV5` step and call it
-from `migrate()` for `fromVersion < 5`. Each step is a pure
+When `GAME_STATE_VERSION` next bumps, add a `migrateV5toV6` step and call it
+from `migrate()` for `fromVersion < 6`. Each step is a pure
 `(prev) => next` function — no I/O, no defaults pulled at call time.
 
 ## game.cli.ts
