@@ -6,8 +6,8 @@
 > by `/iterate`.
 
 <!-- Metadata (updated by /critique after each pass):
-> Last pass: 2026-05-19 at commit facafc8
-> Pass count: 21
+> Last pass: 2026-05-19 at commit d4bcc86
+> Pass count: 22
 -->
 
 ---
@@ -178,6 +178,14 @@
 - observation: `src/World/map.registry.ts:75-84` defines `getCoastalMap(mapName)` as a "backwards-compatible resolver" — `@deprecated` per the JSDoc, with `getMapDefinition('coastal-continent', mapName)` + `createMapState` as the replacement. It re-exports from `src/World/index.ts:22` and `src/index.ts:152`. `grep -rn "getCoastalMap" src/` shows zero in-repo callers beyond the three barrel / declaration sites. Same pattern as the `WorldMap` finding `/oversight` just authorised for removal at commit `a707316`.
 - evidence: `src/World/map.registry.ts:75-84` (declaration + JSDoc); `src/World/index.ts:22`, `src/index.ts:152` (re-exports); `grep -rn "getCoastalMap" src/` returns only the four sites and no consumer.
 - suggested_fix: ask `/oversight` to authorise the barrel removal (Hard Rule 9 blocks autonomous removal). When approved: drop the function declaration in `map.registry.ts`, the re-export in `src/World/index.ts:22`, and the re-export in `src/index.ts:152`. Update any docs that mention `getCoastalMap` (README Public API table doesn't currently list it; check `docs/api.md`). Pre-1.0 (0.7.0) permits breaking changes in minor bumps.
+- source: critique
+
+### [LOW] `docs/gameloop.md` carries stale `GAME_STATE_VERSION` claims (says 4, actual is 5) + migrator ladder paragraph predates Phase 42
+- pass: critique-22 (commit d4bcc86)
+- area: docs
+- observation: `docs/gameloop.md:13` reads `version: number;                   // GAME_STATE_VERSION (current: 4)` inside the `GameState` example block — actual current is **5** since Phase 42 (`05c4f42`) bumped it. Adjacent prose at `:188-192` lists the migrator ladder as `migrateV2toV3 → migrateV3toV4` and then says "When `GAME_STATE_VERSION` next bumps, add a `migrateV4toV5` step" — but `migrateV4toV5` already exists at `src/Game/game.migrate.ts:60` and ships in the runtime ladder. `docs/api.md:224-225` was updated to say "now is 5; v4 saves migrate cleanly via migrateV4toV5" but `docs/gameloop.md` was missed in the Phase 42 doc sweep. Readers landing on `gameloop.md` (the canonical doc for the game loop + persistence) will get an outdated picture of save versioning.
+- evidence: `docs/gameloop.md:13` (stale version 4 inline comment), `:188` (ladder stops at v3→v4), `:192` (says to add migrateV4toV5 *next* — but it's already there); `src/Game/game.reducer.ts:50` (`export const GAME_STATE_VERSION = 5`); `src/Game/game.migrate.ts:60` (`function migrateV4toV5(...)`); `docs/api.md:224-225` (the parallel doc *was* updated correctly).
+- suggested_fix: flip line 13 to `// GAME_STATE_VERSION (current: 5)`. Extend the ladder at line 188 to `migrateV2toV3 → migrateV3toV4 → migrateV4toV5 (adds philosophicalAlignment defaulting to {0,0,0}, Phase 42)`. Rewrite the "when next bumps" paragraph at :192 to use the next-bump shape (v5→v6) so the migrator-add-pattern doc still teaches the right thing. ~5 lines edited; pure docs change.
 - source: critique
 
 ---
