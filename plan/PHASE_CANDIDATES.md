@@ -37,15 +37,6 @@
 - score: 4 × 8 / 10 = 3.2 (medium impact — fixes a structural gap; high ease — template-driven docs).
 - recommended-slot: bundled with the docs sweep candidate (it's a docs-shaped item too), OR independent. If bundled, the docs sweep grows by 1 unit.
 
-### Candidate: Engine handoff for axiomancer-mobile (skillLibrary re-export + types.d.ts emission fix)
-- signal: `axiomancer-mobile/docs/engine-team-handoff-2026-05-16.md` (filed 3 days ago by the mobile autonomous loop) names 3 concrete asks against `axiomancer-mechanics@0.7.0`. Verified state in the local working tree (mechanics now `0.9.0`, but the asks still apply against the dist surface): **Issue 1 still valid** — `grep skillLibrary src/index.ts` returns 0 hits; **Issue 2 still valid** — `find dist -name types.d.ts` returns only 3 files (`Game/persistence`, `Items`, `World/MapEvents`); 6 sub-paths (`Combat`, `Effects`, `Skills`, `Game` top-level, `Character`, `Enemy`, `NPCs`, `World` top-level) still lack `types.d.ts`. **Issue 3 already shipped** — `PersistenceAdapter` is exported via `src/index.ts:143` and the mobile asyncStorageAdapter at `state/persistence/asyncStorageAdapter.ts:2` already imports it cleanly. The mobile audit row `[needs-engine-release] axiomancer-mechanics@0.6.1+ ...` (`axiomancer-mobile/plan/AUDIT.md`) is gating 3 mobile phases (Phase 16 [skipped], candidate Phase 21, candidate Phase 24) on the engine release. Mobile is pinned `axiomancer-mechanics: "0.7.0"` exact, so the engine release lands behind a manual pin bump — but the mobile loop will pick up the unblock automatically once the bump lands.
-- scope: Two units. Unit 1 — Issue 1: add `export { skillLibrary, getSkillById } from './Skills';` to `src/index.ts` (after the existing Skills block); add a hermetic public-barrel-import test in `src/test-utils/e2e/` that asserts both symbols resolve to non-undefined at runtime. Unit 2 — Issue 2: investigate why `types.d.ts` is missing from 6 of the 9 sub-paths in `dist/`. Likely cause per the handoff: a `tsconfig.json` `include` mismatch — Items / Game/persistence / World/MapEvents (the 3 that work) likely differ from the other 6 in their build config. Diff a working sub-path's tsconfig (or path-pattern matching) against a missing one and apply the fix; verify `find dist -name "types.d.ts" | wc -l` returns 9+; add a smoke assertion (or `scripts/deploy-check.mjs` extension) that pins the count so the regression can't recur silently. Version bump + npm publish lands as a separate user-triggered step after verify is green (out of phase scope; user calls `npm run publish:patch`).
-- unblocks: 3 mobile phases (mobile Phase 16, candidate 21, candidate 24); the entire mobile autonomous loop progresses further after the engine bump. Also resolves the broader latent type-emission risk for any external TypeScript consumer of the engine (Issue 2 is a real build bug, not just mobile's problem).
-- blocked-by: None. Independent of Phases 42-49.
-- score: 6 × 7 / 10 = 4.2 (high impact — cross-repo unblock; medium-high ease — Issue 1 is a 2-line edit, Issue 2 needs build-config investigation but the handoff says it's a single tsconfig change).
-- recommended-slot: ahead of Phase 49 (combat-depth refactor) — the engine handoff is cheaper and unblocks downstream mobile work. Or interleave: ship the handoff as Phase 50 right after Phase 49 lands. User pick at the next oversight.
-- watch: confirm Issue 3 stays resolved (already on barrel); the mobile audit row needs a manual flip when the engine version bumps, since mobile is pinned exact.
-
 ### Candidate: Befriendable-enemy content arc
 - signal: Phase 36 (`276eecb`) shipped the friendship-victory mechanics
   half (outcome string, half-XP grant, full loot, +1 moral meter), but
@@ -74,34 +65,6 @@
 - recommended-slot: after the Northern Continent stub (the Northern
   Continent could ship one befriendable enemy as its anchor narrative)
 
-### Candidate: Autosave throttling per Spec 09 Q4
-- signal: `src/Game/store.ts:203` + `src/Game/game.reducer.ts:138`
-  carry standing `TODO(spec-09)` comments: "autosave currently fires
-  on every action in the store. If brutal — Spec 09 Q4 deliberately
-  leaves this dial open." The dial has stayed open across every phase
-  since 09; saves are cheap today (nullAdapter is a no-op; node.adapter
-  writes a single JSON file), but the React Native consumer (per
-  spec.md Primary consumer) will eventually hit AsyncStorage with
-  every action. The TODO has been "deliberate" for ~26 phases and
-  ought to either land or be removed.
-- scope: Two options to explore as commit units. (A) Throttle by
-  time — `debounce(adapter.save, 500ms)` on a per-store basis so a
-  burst of actions collapses into one write; risks losing the last
-  ~500ms on a crash, but cheap to implement. (B) Restrict by action
-  type — only autosave on a curated set (`COMBAT_ROUND`, `LEVEL_UP`,
-  `END_COMBAT`, `MOVE_TO_NODE`, `APPLY_DIALOGUE`, `SAVE_GAME`); UI-tier
-  actions like prompt navigation never trigger writes. Recommend (B)
-  — it's a deterministic policy a reader can audit, and the action
-  list maps to durable game-state changes anyway. Hermetic e2e drives
-  the store through a series of actions and counts `adapter.save`
-  invocations.
-- unblocks: pre-emptive readiness for the React Native AsyncStorage
-  backend (Spec 12 noted that adapter is the throttle dial). Drains
-  two standing TODO comments. Closes Spec 09 Q4.
-- blocked-by: none. Pure store-layer change.
-- score: 4 × 6 / 10 = 2.4
-
-
 ### Candidate: Second continent — Northern Continent stub
 - signal: `spec.md` 6-month horizon — "Additional world content
   (biomes, continent 2+)". Phase 23's MapEvents engine + Phase 24's
@@ -123,6 +86,25 @@
 ---
 
 ## Promoted
+
+### Phase 50 — Engine handoff for `axiomancer-mobile` (skillLibrary re-export + types.d.ts emission fix)
+- promoted: 2026-05-19 (oversight; build-plan queue empty after Phase 49 shipped; user picked cross-repo unblock as the highest-leverage candidate)
+- source: `axiomancer-mobile/docs/engine-team-handoff-2026-05-16.md`; filed at expand pass 8 (`aff5a57`) by oversight `e300b8d`
+- signal: 3 mobile phases gated on the engine release (`axiomancer-mobile/plan/AUDIT.md` `[needs-engine-release]` row); mobile pinned `axiomancer-mechanics: "0.7.0"` exact. Verified in local working tree: Issue 1 — `grep skillLibrary src/index.ts` returns 0 hits; Issue 2 — `find dist -name types.d.ts` returns only 3 of 9 expected sub-paths. Issue 3 already shipped (`PersistenceAdapter` on barrel).
+- scope: Two units. Unit 1 — add `export { skillLibrary, getSkillById } from './Skills';` to `src/index.ts` Skills block + hermetic public-barrel-import test in `src/test-utils/e2e/` asserting both symbols resolve to non-undefined at runtime. Unit 2 — investigate why `types.d.ts` is missing from 6 of 9 `dist/` sub-paths (Combat / Effects / Skills / Game top-level / Character / Enemy / NPCs / World top-level); likely cause is a tsconfig `include` mismatch between working sub-paths (Items / Game/persistence / World/MapEvents) and the missing ones. Apply the fix; verify `find dist -name "types.d.ts" | wc -l` returns 9+; add a smoke assertion (or `scripts/deploy-check.mjs` extension) that pins the count so the regression can't recur silently. Version bump + npm publish lands as a separate user-triggered step after verify is green.
+- unblocks: 3 mobile phases (mobile Phase 16 [skipped], candidate 21, candidate 24); the mobile autonomous loop progresses further after the engine bump. Also resolves the broader latent type-emission risk for any external TypeScript consumer.
+- blocked-by: None.
+- watch: mobile's `axiomancer-mechanics: "0.7.0"` exact pin needs a manual bump after `npm publish`; mobile audit row needs a manual flip after that bump.
+- score: 6 × 7 / 10 = 4.2
+
+### Phase 51 — Autosave throttling per Spec 09 Q4
+- promoted: 2026-05-19 (oversight; user pick from the older candidate tail — only the code-only candidate of the three was promoted; Northern Continent + befriendable-enemy stay pending as content-arc work that wants user-led design direction)
+- source: standing `TODO(spec-09)` comments at `src/Game/store.ts:203` + `src/Game/game.reducer.ts:138`; filed at expand pass 6 (`48a57b7`)
+- signal: The TODO has stayed open across ~26 phases since Spec 09. Saves are cheap today (nullAdapter no-op; node.adapter writes a single JSON), but the React Native AsyncStorage consumer (spec.md Primary consumer) will hit the backend on every action. Pre-emptive plumbing before mobile starts shipping save / load surface.
+- scope: Pick path (B) restrict-by-action-type — only autosave on a curated set (`COMBAT_ROUND`, `LEVEL_UP`, `END_COMBAT`, `MOVE_TO_NODE`, `APPLY_DIALOGUE`, `SAVE_GAME`); UI-tier actions like prompt navigation never trigger writes. Deterministic policy a reader can audit; action list maps to durable game-state changes anyway. Path (A) time-throttle (`debounce(adapter.save, 500ms)`) considered and rejected at promotion — risks losing the last ~500ms on a crash and is less audit-friendly. Hermetic e2e drives the store through a sequence of actions and counts `adapter.save` invocations across both UI-tier and durable actions.
+- unblocks: Pre-emptive readiness for the React Native AsyncStorage backend (paired with the Phase 50 engine handoff so the mobile consumer hits the engine with both fixes already in place). Drains two standing TODO comments. Closes Spec 09 Q4.
+- blocked-by: None. Pure store-layer change. Independent of Phase 50; can ship after.
+- score: 4 × 6 / 10 = 2.4
 
 ### Phase 49 — Enemy-skill caster path (combat depth)
 - promoted: 2026-05-19 (oversight; build-plan queue was empty after Phase 48 shipped)
