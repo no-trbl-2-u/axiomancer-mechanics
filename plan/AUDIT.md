@@ -16,6 +16,30 @@
 
 ## Pending
 
+### [LOW] `docs/effects.md` API table lists 4 Combat-private aggregators as public surface (promoted from critique-21)
+- category: docs
+- impact: 4 (`docs/effects.md` is the canonical consumer-facing effect reference; the four functions named at `:561-565` — `getActiveEffectModifiers`, `getEffectiveStats`, `canAct`, `resolveEffectiveAdvantage` — read as public API entry points but aren't on `src/index.ts` and the package `exports` map only exposes `.` + `./node`. An external RN consumer cannot reach them, despite the doc framing them as Combat-tier helpers)
+- ease: 7 (small src/index.ts edit OR small doc rewrite — see suggested_fix on the critique row)
+- score: 2.8 (× 1.5 docs bias = 4.2)
+- source: critique-21 (commit `5f5b2c4`), promoted via `/oversight` 2026-05-19
+- next: pick path — (a) re-export the four aggregators through `src/index.ts` Combat block (preferred — they're stable and useful for power-user RN consumers composing custom UI; also surfaces them for Item 1 of the mobile handoff pattern), with a hermetic public-barrel-import test in `src/test-utils/e2e/`; OR (b) rewrite the four `docs/effects.md` API table rows (`:562-564`) to mark the aggregators as internal-only and route consumers to the wrapper accessors (`getAttackStat` / `getDefenseStat` / etc). See `plan/CRITIQUE.md` critique-21 row 1 for the full evidence + fix proposals.
+
+### [LOW] `specs/README.md` Recommended order missing DONE flags for rows 9-12 + missing Spec 23 entirely (promoted from critique-21)
+- category: docs
+- impact: 3 (`specs/README.md` is the spec-tree entry point; readers landing there see Spec 09 / 10 / 11 / 12 as unfinished despite all four shipping; Spec 23 — map-events, full acceptance ticked at Phase 41 unit 3 — is missing from the order table entirely)
+- ease: 9 (pure docs; 5-line edit)
+- score: 2.7 (× 1.5 docs bias = 4.05)
+- source: critique-21 (commit `5f5b2c4`), promoted via `/oversight` 2026-05-19
+- next: in `specs/README.md`, flip rows 9 / 10 / 11 / 12 to `| 9 **DONE** |` etc. matching the existing convention; append a row 13 for Spec 23 (`23-map-events.md`) with **DONE** flag. ~5 lines edited. See `plan/CRITIQUE.md` critique-21 row 2.
+
+### [LOW] `applyOutlookBias` is exported from `src/Enemy/enemy.logic.ts` but not on the Enemy barrel (promoted from critique-21)
+- category: structure
+- impact: 2 (small barrel/keyword mismatch; no in-repo breakage but a latent confusion source — Phase 49 will touch `decideEnemyAction` and may interact with this function)
+- ease: 9 (1-line edit — either drop `export` or add to `src/Enemy/index.ts:80-84` re-export block)
+- score: 1.8 (no bias multiplier — structure, not docs)
+- source: critique-21 (commit `5f5b2c4`), promoted via `/oversight` 2026-05-19
+- next: preferred path — drop `export` from `function applyOutlookBias` at `src/Enemy/enemy.logic.ts:172` (used only internally by `decideEnemyAction` at `:240`). See `plan/CRITIQUE.md` critique-21 row 3.
+
 ### [LOW] `getCoastalMap` barrel export — authorized for removal by oversight
 - category: dead-code
 - impact: 3 (zero in-repo callers; `@deprecated` per JSDoc since Phase 23 era; pre-1.0 permits breaking changes in minor bumps; replacement `getMapDefinition('coastal-continent', mapName)` + `createMapState` already exists)
