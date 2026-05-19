@@ -13,81 +13,6 @@
 
 ## Pending
 
-### Candidate: Agent verify reporter polish bundle (was named "Phase 41" pre-promotion; renamed at oversight 2026-05-16 after Phase 41 went to the acceptance sweep)
-- signal: After Phase 40 closed the MED 5.4 row (commit `87bab8c`),
-  five Phase 39 self-critique AUDIT rows remain, all carrying the
-  `reporter` category — exactly the queue the oversight-set iterate
-  bias (`> Bias: reporter`, plan/AUDIT.md) is steering. Letting
-  /iterate drain them one tick at a time costs ~5 commit cycles + 5
-  briefings of the same module; bundling them as a single phase
-  matches the Phase 34 (docs sweep) and Phase 40 (failures[] bundled
-  with prior-run-diff) pattern — fewer briefings, one verify gate,
-  schema settles in one pass.
-- scope: Land five focused changes to
-  `automation/agent-vitest-reporter.mjs` in one phase:
-  1. `rollup.callouts: string[]` heuristic strings ("3 tests > 50ms",
-     "1 test failed in src/Combat", "0 new tests since last report"
-     reads off `rollup.diff` already shipping at Phase 40).
-  2. Slow-failed-tests surface — either drop the `passed`-only filter
-     on `slowest5` or add `slowestFailures: [{name, file, durationMs,
-     status}]` (decide in brief; bundle the existing AUDIT row's
-     trade-off note).
-  3. Per-test `location` via Vitest's `experimental_getRunnerTask`
-     (file:line for each `it()`). Document the experimental dep in
-     the brief Follow-ups.
-  4. Chain `--reporter=default --reporter=./automation/...` in the
-     `verify:agent` script so manual runs keep progress output.
-  5. Round `durationMs` to integer milliseconds in JSON for
-     consistency with the markdown's `.toFixed(0)`.
-  Hermetic test extensions for each behaviour; verify gate + smoke
-  `npm run verify:agent` after.
-- unblocks: Drains five AUDIT rows in one phase (combined score 15.5).
-  Settles the reporter schema; the polish queue goes empty and the
-  bias can be cleared (oversight). The next reporter-touching work
-  is a feature add, not a polish item.
-- blocked-by: None; Phase 40 (`87bab8c`) shipped every prerequisite
-  (failures[], diff, JSON shape). Independent of remaining pending
-  candidates (befriendable-enemy, Northern Continent, autosave).
-- score: 5 × 7 / 10 = 3.5
-- recommended-slot: as the next phase. Pairs with the standing
-  reporter bias; once shipped the bias can be cleared at the
-  following oversight.
-
-### Candidate: Enemy-skill caster path (combat depth)
-- signal: Phase 38 brief explicitly named this as the next direction:
-  "the skill caster is always the player in this codebase
-  (`skill.engine.ts` takes a `player: Character` param; there is no
-  `executeSkill(caster: …)`). Future enemy-skill work would change
-  this, but it's not a Phase 38 concern." Spec 07 acceptance says
-  the enemy AI dispatches between `attack` / `defend`; today's
-  `decideEnemyAction` does exactly that and ignores any
-  `skills?: string[]` on Enemy. Elite + boss enemies feel
-  mechanically thin because every fight resolves on the same two
-  verbs. The `learnSkill` + `getAvailableSkills` surface from
-  Phase 30 already exists; this is the symmetric application path.
-- scope: Three units. Unit 1 — refactor `executeSkill` to take a
-  `caster: Combatant` and `target: Combatant` (today: `player +
-  enemy` positional args + `targetType: 'self' | 'enemy'` flag).
-  Unit 2 — extend `decideEnemyAction` to optionally pick a skill
-  from the enemy's `equippedSkills` when affordable; route through
-  the (now agnostic) `executeSkill`. Author 1-2 elite / boss
-  enemies with a skill rotation (e.g. Coastal Tyrant gets
-  `argument-from-authority` per spec 04b). Unit 3 — hermetic e2e
-  drives an enemy-skill-fired round through `resolveCombatRound`;
-  `combat:round` event carries the per-skill `SkillPhaseEvent` for
-  the enemy actor. Update `docs/enemy.md` + `docs/skills.md`.
-- unblocks: Combat depth lever. Spec 07 elite / boss progression
-  becomes mechanically distinct. The `ActiveEffect.sourceId` wiring
-  from Phase 38 starts paying off (enemy debuffs now have a real
-  caster). Future feature: per-enemy skill libraries by tier.
-- blocked-by: None — every prerequisite (Phase 30 learnSkill, Phase
-  35 Character.id, Phase 38 sourceId wiring) has shipped.
-- score: 6 × 4 / 10 = 2.4 (high value; medium effort because the
-  refactor touches the executeSkill signature + every call site in
-  the resolver path).
-- recommended-slot: After the polish bundle + docs sweep. Combat
-  feature work after the tooling settles.
-
 ### Candidate: Befriendable-enemy content arc
 - signal: Phase 36 (`276eecb`) shipped the friendship-victory mechanics
   half (outcome string, half-XP grant, full loot, +1 moral meter), but
@@ -165,6 +90,15 @@
 ---
 
 ## Promoted
+
+### Phase 49 — Enemy-skill caster path (combat depth)
+- promoted: 2026-05-19 (oversight; build-plan queue was empty after Phase 48 shipped)
+- source: Phase 38 brief's named follow-up direction + Spec 07 elite/boss progression gap; filed at expand pass 7 (`5b37528`)
+- signal: Phase 38 brief explicitly named this as the next direction: "the skill caster is always the player in this codebase (`skill.engine.ts` takes a `player: Character` param; there is no `executeSkill(caster: …)`). Future enemy-skill work would change this, but it's not a Phase 38 concern." Spec 07 acceptance says the enemy AI dispatches between `attack` / `defend`; today's `decideEnemyAction` does exactly that and ignores any `skills?: string[]` on Enemy. Elite + boss enemies feel mechanically thin because every fight resolves on the same two verbs. The `learnSkill` + `getAvailableSkills` surface from Phase 30 already exists; this is the symmetric application path. The Phase 45 outlook-bias AI hook is the natural place to read alignment + pick a skill once the caster path is generic.
+- scope: Three units. Unit 1 — refactor `executeSkill` to take a `caster: Combatant` and `target: Combatant` (today: `player + enemy` positional args + `targetType: 'self' | 'enemy'` flag). Unit 2 — extend `decideEnemyAction` to optionally pick a skill from the enemy's `equippedSkills` when affordable; route through the (now agnostic) `executeSkill`. Author 1-2 elite / boss enemies with a skill rotation (e.g. Coastal Tyrant gets `argument-from-authority` per spec 04b; pair with the Phase 45 alignment pin so the skill pick reads as in-character). Unit 3 — hermetic e2e drives an enemy-skill-fired round through `resolveCombatRound`; `combat:round` event carries the per-skill `SkillPhaseEvent` for the enemy actor. Update `docs/enemy.md` + `docs/skills.md`.
+- unblocks: Combat depth lever. Spec 07 elite / boss progression becomes mechanically distinct. The `ActiveEffect.sourceId` wiring from Phase 38 starts paying off (enemy debuffs now have a real caster). The Phase 44 fallacy-as-spell library starts to read from the enemy side too. Future feature: per-enemy skill libraries by tier.
+- blocked-by: None — every prerequisite (Phase 30 learnSkill, Phase 35 Character.id, Phase 38 sourceId wiring, Phase 44 fallacy library, Phase 45 enemy alignment) has shipped.
+- score: 6 × 4 / 10 = 2.4 (high value; medium effort because the refactor touches the executeSkill signature + every call site in the resolver path).
 
 ### Phase 46 — Alignment-gated content (`requires.alignment` on dialogue + skill learning)
 - promoted: 2026-05-16 (oversight; promote-multiple sequence Phase 46/47/48 after the 42-45 follow-up arc closed)
@@ -682,6 +616,10 @@
 ---
 
 ## Rejected
+
+### Candidate: Agent verify reporter polish bundle
+- rejected: 2026-05-19 (oversight; superseded by /iterate)
+- reason: All 5 items in the candidate's scope shipped via /iterate ticks after Phase 40 closed, under the standing reporter bias. Specifically: (1) `rollup.callouts: string[]` heuristics → `886b862`; (2) slow-failed-tests surface (`slowestFailures: [{name, file, durationMs, status}]`) → `1dbce81`; (3) per-test `location` via `experimental_getRunnerTask` → `8fe314b` (with the lazy-dynamic-import polish at `a799e75`); (4) `--reporter=default` chained alongside the custom reporter → `934cee6`; (5) `durationMs` integer rounding → `5401de4`. The combined-score-15.5 drain happened in 5 commits rather than 1 phase, but the schema is now settled and the reporter polish queue is empty. No follow-on phase needed; future reporter work would be a feature add, not a polish bundle.
 
 ### Candidate: Combat sub-event surfacing in agent-e2e state log
 - rejected: 2026-05-15 (oversight; redundant after iterate)
