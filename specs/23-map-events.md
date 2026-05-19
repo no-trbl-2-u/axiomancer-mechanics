@@ -210,6 +210,14 @@ export function markNodeConsumed(state: MapState, nodeId: NodeId): MapState;
       `nf-8` Glen Market. — Phase 37 `f9c18f0`; content-drift assertion
       in `src/World/MapEvents/e2e/content.engine.test.ts`
       ("Phase 37 shop content").
+- [x] **Phase 43 alignment-shifting extension.** `MapEventPoolEntry.alignmentDelta?:
+      Partial<PhilosophicalAlignment>` (sibling field to `payload`,
+      applied by `resolveMapEvent` between handler and consume/reveal).
+      Authored across 6 pool entries (fv-1 / fv-8 / fv-9 / fv-10 /
+      nf-4 / nf-10) inside the `±1..±5` band moralMeter uses. — Phase 43
+      `764de7f`; field declaration + apply path in `src/World/MapEvents/types.ts`
+      + `src/World/MapEvents/resolve-map-event.ts`; hermetic coverage in
+      `src/Philosophy/e2e/alignment-authoring.engine.test.ts`.
 
 ## Out of scope
 

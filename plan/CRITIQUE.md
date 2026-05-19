@@ -81,13 +81,6 @@
 - suggested_fix: in `docs/effects.md`, update the ToC entries on lines 19-20 and the section headers at `:399` + `:447` to `Buffs (40)` / `Debuffs (48)`. Optionally add a new table row to each "Complete Effects Table" describing the three new Phase 44 entries (the per-effect description lines), or rely on the existing "Philosophical fallacy payloads (Phase 44)" subsection (which already lists them at higher granularity) for that surface. ~4 lines edited. /iterate-safe pure-docs change.
 - source: critique
 
-### [LOW] Spec 23 acceptance checklist missing a Phase 43 `alignmentDelta` extension line
-- pass: critique-19 (commit 6e833a9)
-- area: docs
-- observation: `specs/23-map-events.md` acceptance checklist ends with 12 ticked rows — the original 11 plus a Phase 41 unit 3 addition documenting Phase 37's `VillagePayload.shop?: ShopInventory` extension on the `MapEventPoolEntry` payload surface. Phase 43 (`764de7f`) extended the same surface again by adding `alignmentDelta?: Partial<PhilosophicalAlignment>` on `MapEventPoolEntry` (sibling field to `payload`, applied by `resolveMapEvent` between handler and consume / reveal). The acceptance checklist doesn't mention it. A reader walking the Spec 23 acceptance trail concludes the surface ends at Phase 37, not Phase 43. Same drift pattern Phase 41 unit 3 just drained for Spec 37 — a fresh "13th acceptance line" follow-up is the mirror.
-- evidence: `tail -25 specs/23-map-events.md` shows the 12th line as the Phase 37 shop extension and no 13th. `grep -n "alignmentDelta" specs/23-map-events.md` returns 0 hits. `grep -n "alignmentDelta" src/World/MapEvents/types.ts src/World/MapEvents/resolve-map-event.ts` returns 4 hits (the field declaration + the apply path) — the implementation is live, the spec acceptance just doesn't say so.
-- suggested_fix: append a 13th acceptance row to `specs/23-map-events.md` modeled on the 12th (Phase 37 shop) — name the Phase 43 `alignmentDelta` extension, cite the commit (`764de7f`), point at the hermetic test (`src/Philosophy/e2e/alignment-authoring.engine.test.ts`). Optionally drop a parallel content-drift assertion in `src/World/MapEvents/e2e/content.engine.test.ts` mirroring the Phase 37 one, but that's optional — the existing tests already pin the field through. ~5 lines added.
-- source: critique
 
 ### [LOW] `docs/morality.md` carries no cross-link to `docs/philosophy.md` despite Phase 42's explicit orthogonality commitment
 - pass: critique-19 (commit 6e833a9)
@@ -190,6 +183,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] Spec 23 acceptance checklist missing a Phase 43 `alignmentDelta` extension line** — resolved at iterate (this commit). Appended a 13th acceptance row to `specs/23-map-events.md` modeled on the Phase 37 row at line 12 — names the Phase 43 `MapEventPoolEntry.alignmentDelta?: Partial<PhilosophicalAlignment>` extension, cites the commit (`764de7f`), points at the engine apply path in `src/World/MapEvents/resolve-map-event.ts` + the hermetic coverage in `src/Philosophy/e2e/alignment-authoring.engine.test.ts`. Optional content-drift assertion (parallel to the Phase 37 one) skipped — the existing alignment-authoring tests already pin the field's apply path end-to-end. 585/585 tests stay green; pure docs change. Impact 4 × Ease 9 / 10 = 3.6 (× 1.5 docs bias = 5.4).
 
 - [x] **[LOW] `automation/spec05_smoke.ts` is a Phase-17-orphaned standalone script with no surviving caller** — resolved at iterate commit `fdbd0eb` (2026-05-16). `git rm automation/spec05_smoke.ts` per the /oversight 2026-05-16 (commit `6966461`) deletion-authorization. The script's Spec 05 surface is fully covered hermetically by `src/Items/e2e/equipment.engine.test.ts`; grep confirms zero in-repo callers; pre-1.0 + `automation/` not on the public barrel means no consumer migration. 569/569 tests; verify + lint + build clean. Impact 3 × Ease 10 / 10 = 3.0 (× 1.5 dead-code bias = 4.5).
 
