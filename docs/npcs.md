@@ -42,6 +42,7 @@ interface DialogueChoice {
         quest?: QuestName;          // satisfied when the quest is active OR completed
         flag?: string;              // satisfied when the named flag is set
         questCompleted?: QuestName; // satisfied only when completed
+        requiresAlignment?: AlignmentGate;  // Phase 46: gate by alignment cell axis
     };
     effect?: {
         startQuest?: QuestName;
@@ -51,9 +52,22 @@ interface DialogueChoice {
         setFlag?: string;
         grantCurrency?: number;
         moralDelta?: number;        // Phase 14: direct moral-meter shift, clamped [-100, +100]
+        alignmentDelta?: Partial<PhilosophicalAlignment>;  // Phase 43: 3-axis cube shift
     };
 }
 ```
+
+### Alignment-aware content (Phase 43 + 46)
+
+Two Philosophy-system fields live on `DialogueChoice`:
+
+- `effect.alignmentDelta?: Partial<PhilosophicalAlignment>` — Phase 43 authoring surface. When the choice is committed via `applyDialogueChoice`, the engine threads the delta through `applyAlignmentDelta(state.philosophicalAlignment, delta)` and surfaces the shift on `ApplyDialogueChoiceResult.effects.philosophicalShift`. Conventional band is ±1..±5 per axis; the helper clamps each axis to `[-100, +100]`.
+- `requires.requiresAlignment?: AlignmentGate` — Phase 46 gating surface. Shape: `{ axis: 'epistemology' | 'outlook' | 'scope', op: 'gte' | 'lte', value: number }`. `visibleChoices` evaluates the gate against the optional `DialogueContext.alignment` (when supplied); choices whose gate misses are hidden from the returned list, identical to the existing `quest` / `flag` / `questCompleted` gating semantics. When `DialogueContext.alignment` is undefined, alignment-gated choices are hidden by default.
+
+Cross-link: `docs/philosophy.md` carries the full authoring guidance in
+"Authoring deltas (Phase 43)" + "Authoring gates (Phase 46)" — including
+operator semantics, compound-gate composition, and the first-pass
+authored gates on the Old Marrow and Coastal Beggar dialogue trees.
 
 `DialogueMap` is the original flat shape keyed by trigger / context (e.g.
 `"greeting"`, `"shop_open"`, `"quest_<id>_offer"`). Either a single line or an
