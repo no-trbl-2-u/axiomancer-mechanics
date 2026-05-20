@@ -175,12 +175,15 @@ export const MournfulGull = createEnemy({
     skills: [skill('appeal-to-pity')],
     // Phase 60 — befriending "every slight it remembers" yields a
     // heart-attuned remembrance gift (1 guaranteed heart-draught + 10 XP).
+    // Phase 62 — sets a world flag so downstream dialogue / quests can
+    // gate on whether the gull was befriended.
     friendshipReward: {
         items: [{ ...getConsumableById('heart-draught')! }],
         xpBonus: 10,
         narrative:
             'The gull stops circling. It settles on the rail beside you. ' +
             'For a long moment, neither of you speaks the slights you remember.',
+        flagSet: 'befriended-mournful-gull',
     },
 });
 

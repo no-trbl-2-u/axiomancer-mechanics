@@ -219,6 +219,21 @@ const beggarTree: DialogueTree = {
                         alignmentDelta: { epistemology: -1, outlook: 1, scope: 2 },
                     },
                 },
+                {
+                    // Phase 62 — flag-gated branch surfacing only after the
+                    // player has befriended the Mournful Gull (which sets
+                    // the `befriended-mournful-gull` flag via its
+                    // friendshipReward.flagSet). The beggar's voice softens
+                    // when they recognise a fellow listener. Placed LAST per
+                    // the same index-stability convention.
+                    text: "\"I've been hearing the gulls quieter, lately.\" (Mention the Mournful Gull.)",
+                    nextNodeId: 'gull_recognition',
+                    requires: { flag: 'befriended-mournful-gull' },
+                    effect: {
+                        moralDelta: 2,
+                        alignmentDelta: { outlook: 1, scope: 1 },
+                    },
+                },
             ],
         },
         grateful_generous: {
@@ -240,6 +255,13 @@ const beggarTree: DialogueTree = {
         harsh: {
             id: 'harsh',
             text: "The beggar recoils as if struck. \"I... I have tried. But the storms...\" They lower their head in shame and say no more. [Moral meter -5]",
+        },
+        gull_recognition: {
+            id: 'gull_recognition',
+            // Phase 62 — terminal node for the post-befriend-gull dialogue
+            // branch. Establishes the village as a small network of listeners
+            // who notice when a known bitter creature stops circling.
+            text: "The beggar's head tilts. \"Aye. She used to scream the same names every dawn. I'd thought she was warning us. Maybe she was just keeping count.\" Their gaze settles on the harbor. \"It's good to hear a quieter morning.\"",
         },
     },
 };
