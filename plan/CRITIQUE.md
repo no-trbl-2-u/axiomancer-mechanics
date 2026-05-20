@@ -24,13 +24,6 @@
 
 
 
-### [LOW] Three Phase-11 walkthrough JSONs in `automation/scripts/` feed the deleted `npm run auto:combat` Python harness
-- pass: critique-14 (commit 1180f51)
-- area: dead-code
-- observation: `automation/scripts/{ad-baculum-clear,heart-buff-strip,mind-mark-stack}.json` (33 LOC total) were authored in Phase 11 (`plan/phases/phase_11_rng_seeding_and_test_harness.md:428,444,462`) as scripted walkthroughs for the `npm run auto:combat` Python pexpect harness. Phase 17 deleted that harness — `git log --all -- automation/combat-test.py` returns the removal commit, and `package.json` no longer carries the `auto:combat` script. The three JSONs are now orphaned: they reference a CLI shape (pre-Phase-17 `combat.cli.ts` flow) that no longer exists, and the Phase 20+ scripted walkthroughs all live under `automation/scripts/walkthroughs/` instead.
-- evidence: `automation/scripts/{ad-baculum-clear,heart-buff-strip,mind-mark-stack}.json` are tracked (`git ls-files automation/scripts/*.json`); `grep -rn` outside `plan/phases/phase_11_*.md` and `specs/11-*.md` returns zero callers; `automation/scripts/walkthroughs/README.md` is the live inventory and does not list them.
-- suggested_fix: `git rm automation/scripts/ad-baculum-clear.json automation/scripts/heart-buff-strip.json automation/scripts/mind-mark-stack.json`. Same-pass-as the `spec05_smoke.ts` row would be efficient (single dead-code commit). Verify gate.
-- deletion-authorized: **YES** — `/oversight` 2026-05-16. /iterate under /loop may execute `git rm` on all three JSONs without further prompts; bundling with the `spec05_smoke.ts` row into one dead-code commit is explicitly authorized.
 - source: critique
 
 ### [LOW] `automation/` lacks a top-level README inventorying the directory after Phase 39 added a second tool
@@ -44,6 +37,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] Three Phase-11 walkthrough JSONs in `automation/scripts/` feed the deleted `npm run auto:combat` Python harness** — resolved at iterate commit `8baf0e1` (2026-05-19). `git rm` of `automation/scripts/{ad-baculum-clear,heart-buff-strip,mind-mark-stack}.json` (33 LOC total). Zero in-repo callers confirmed via grep; Phase-17 already deleted the Python harness these JSONs fed. Deletion-authorized by /oversight 2026-05-16 (Hard Rule 9 override). Mirrors the spec05_smoke.ts removal at fdbd0eb. 600/600 tests stay green. Impact 3 × Ease 10 / 10 = 3.0. Source: critique-14.
 
 - [x] **[LOW] Shop economy has no agent-graded walkthrough at `automation/scripts/walkthroughs/shop.{json,goal.md}`** — resolved at iterate (2026-05-19). Authored `automation/scripts/walkthroughs/shop.json` (wanderer preset, fv-1 → fv-2 → fv-3, buys `minor-healing-potion` at 12, sells back at `defaultSellPrice` 6, leaves, quits) + `shop.goal.md` (pass conditions cover the bootstrap, both movement events, the buy/sell ledger 25 → 13 → 19, the strictly-less-than-buy invariant, clean quit; negative conditions name the closed exploit). README inventory table gains a `shop` row between save-load and skill-learning. Picked wanderer preset over apprentice (currency 0) or sage (75 — overkill). fv-3 Fishing Village Stalls is the only authored shop. 600/600 tests stay green (pure test-asset addition; no engine code touched). Impact 3 × Ease 7 / 10 = 2.1. Source: critique-15.
 
