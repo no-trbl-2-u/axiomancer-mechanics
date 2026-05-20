@@ -38,14 +38,6 @@
 - suggested_fix: When the next iterate drains critique-24 row 2, fold this row's Enemy-row entry into the same commit. The suggested addition to the README.md Enemy row: "; per-enemy `friendshipReward?: FriendshipReward` ({ items, xpBonus, narrative }) drives the Phase 60 befriendable-enemy content (MournfulGull + HollowEyedBeggar authored today)". Mirror to `plan/bearings.md` Enemy row with similar phrasing. If the two rows drain in separate iterate ticks, file this one's commit as a follow-up to critique-24 row 2's drain — no harm, just a small extra commit.
 - source: critique
 
-### [MED] spec.md still lists "Published npm release" as both a 6-month-horizon item and a Non-goal — engine has been on npm since `0.2.0`
-- pass: critique-24 (commit 7078829)
-- area: spec-drift
-- observation: `spec.md` lists "Published npm release" at line 53 (6-month-horizon, future tense) and "Published npm release before v1 implementation is complete" at line 85 (Non-goals). Both are stale by 8 releases — `axiomancer-mechanics` is on npm at `v0.10.2` (published 2026-05-20), with a tagged CHANGELOG history going back to `0.2.0` (2026-05-08) and a formal `RELEASING.md` flow shipped by Phase 52. A reader landing on spec.md without context would read the Non-goal as authoritative and conclude the package is internal-only — which is the opposite of the truth. Compounding: spec.md is the file `plan/bearings.md` cross-references as "what is the contract" + "what is excluded by design."
-- evidence: `spec.md:53` ("Published npm release."), `spec.md:85` ("Published npm release before v1 implementation is complete."); `git tag --sort=-creatordate | head` shows `v0.10.2 / v0.10.1 / v0.10.0 / v0.9.0 / v0.8.0 / v0.7.0`; `CHANGELOG.md` carries 9 tagged versions plus the live `[unreleased]` placeholder; `RELEASING.md` documents the manual publish flow.
-- suggested_fix: Two edits. (a) `spec.md:53` — strike "Published npm release." from the 6-month horizon, or annotate as "**Shipped 2026-05-08 (`0.2.0`).** First release under the autonomous-loop era was `0.10.0` (2026-05-19); current is `0.10.2`. See `CHANGELOG.md` + `RELEASING.md`." (b) `spec.md:85` — delete the Non-goal entry. Replace with the real current non-goal: "v1.0.0 stable-API stamp before the spec contracts settle." Update the surrounding Non-goals to ensure the section reads as forward-looking constraints, not historical ones.
-- source: critique
-
 ### [LOW] README.md Public API table — Items row missing Phase 37 shop economy + Phase 54 set items; Skills row missing Phase 50 `skillLibrary` / `getSkillById`
 - pass: critique-24 (commit 7078829)
 - area: docs
@@ -81,6 +73,8 @@
 ---
 
 ## Done
+
+- [x] **[MED] spec.md still lists "Published npm release" as both a 6-month-horizon item and a Non-goal — engine has been on npm since `0.2.0`** — resolved at iterate commit `0931ce8` (2026-05-20). Picked both suggested-fix paths: (a) `spec.md:53` — struck through "Published npm release." in the 6-month horizon with a "**Shipped 2026-05-08 (`0.2.0`).**" annotation + cross-link to CHANGELOG.md + RELEASING.md naming the autonomous-loop-era first release (`0.10.0`) and the current tag (`0.10.2`); (b) `spec.md:85` — replaced the Non-goal entry with "v1.0.0 stable-API stamp before the spec contracts settle" naming the pre-1.0 breaking-change policy + the downstream-pin pattern (`axiomancer-mobile` exact-version pinning). 629/629 tests stay green; pure docs change. Impact 5 × Ease 9 / 10 = 4.5. Source: critique-24 row 1 (commit `7078829`).
 
 - [x] **[LOW] No conversation-loop spec for the philosophical alignment system after two phases shipped against it** — resolved at Phase 58 commit `f103a8d` (2026-05-20). `specs/14-philosophical-alignment.md` filed retroactively with all four open questions answered inline (orthogonal moralMeter per D3, no NPC observer wiring yet per D4, no endgame alignment gates yet per D5 — but `AlignmentGate` is the pre-shaped primitive, friendship-victory orthogonality per D6). `specs/README.md` Recommended order grows a row 14 **DONE** pointing at the new spec. Pure docs work; engine was live since Phase 42 (`bdfda00`). 625/625 tests stay green (no code change). Impact 4 × Ease 8 / 10 = 3.2. Source: critique-18 row (commit `c62702e`). Note: this row's original suggested_fix listed 5 open questions; critique-18's filing had 5 but the four-question framing landed in the Phase 58 brief + spec (the original Q2 "fallacies as skill/effect/both" was already answered by Phase 44 shipping both — folded into the Current state inventory rather than carried as an open question).
 
