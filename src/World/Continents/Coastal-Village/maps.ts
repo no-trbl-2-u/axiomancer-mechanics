@@ -27,6 +27,11 @@ export type CoastalContinentMapNames =
 // ─── NPC content for fishing-village ──────────────────────────────────────────
 
 const oldDockmasterTree: DialogueTree = {
+    // Phase 63 — observed tree. applyDialogueChoice writes the player's
+    // current alignment cell id to state.lastSeenAlignmentCells['old-marrow']
+    // after each choice; the gull_recognition-style reactive branch below
+    // surfaces when the player's cell has shifted since the last visit.
+    id: 'old-marrow',
     rootId: 'greet',
     nodes: {
         greet: {
@@ -40,6 +45,19 @@ const oldDockmasterTree: DialogueTree = {
                 {
                     text: "Leave him be.",
                     nextNodeId: undefined,
+                },
+                {
+                    // Phase 63 — reactive branch surfacing when the player's
+                    // alignment cell has shifted since the last conversation
+                    // with Old Marrow. Placed LAST per the stable-index
+                    // convention. The observer cache is keyed by tree.id.
+                    text: "(Stand quietly. He looks up and sees who you have become.)",
+                    nextNodeId: 'observer_recognition',
+                    requires: { playerAlignmentCellChangedSince: true },
+                    effect: {
+                        moralDelta: 1,
+                        alignmentDelta: { outlook: 1 },
+                    },
                 },
             ],
         },
@@ -78,6 +96,13 @@ const oldDockmasterTree: DialogueTree = {
         accepted: {
             id: 'accepted',
             text: "Old Marrow nods slowly. \"Mind the tide. The reef takes the careless.\"",
+        },
+        observer_recognition: {
+            id: 'observer_recognition',
+            // Phase 63 — terminal node for the post-shift reactive branch.
+            // Old Marrow has been weighing nets long enough to notice when
+            // the wind off a person changes.
+            text: "He sets the net down. \"Aye. Something's moved in you since we last spoke. The sea makes that kind of weather too — a tide that turns inside, not on the chart.\" He doesn't ask which way it turned.",
         },
         thanks: {
             id: 'thanks',
