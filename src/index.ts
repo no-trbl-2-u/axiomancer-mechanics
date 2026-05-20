@@ -33,6 +33,7 @@ export type {
     Enemy, EnemyLogic, EnemyDifficulty, Tier1EffectOverrides,
     LootTableEntry, CreateEnemyOptions,
     LootRng,
+    FriendshipReward,
 } from './Enemy';
 export {
     EnemyLibrary, EnemiesByMap, ENEMY_REGISTRY,

@@ -40,6 +40,31 @@ export type Tier1EffectOverrides =
     Partial<Record<Stance, Partial<Record<'attack' | 'defend', string>>>>;
 
 /**
+ * Phase 60 — per-enemy content awarded when combat resolves via
+ * friendship (Phase 36's `outcome === 'friendship'` path).
+ *
+ * Layered ON TOP OF the existing Phase 36 base: half-XP +
+ * full loot + +1 moralMeter. None of the FriendshipReward fields
+ * REPLACE the Phase 36 grants; they augment them. Authors leave
+ * undefined for enemies whose friendship path is purely mechanical
+ * (no content stakes).
+ *
+ * Engine wiring lives in `store.endCombat()` — items append to
+ * `report.loot` and `xpBonus` adds to `report.xpGained` before the
+ * level-up cascade fires. `narrative` surfaces on
+ * `CombatEndReport.friendshipReward.narrative` for the CLI / UI
+ * (engine does not interpret).
+ */
+export interface FriendshipReward {
+    /** Guaranteed items appended to the weighted-loot roll. */
+    items?: Item[];
+    /** Extra XP on top of the half-XP base. Additive, not multiplicative. */
+    xpBonus?: number;
+    /** Optional flavour text for the CLI / UI to render after combat-end. */
+    narrative?: string;
+}
+
+/**
  * Weighted drop entry on an `Enemy.loot` table (Spec 07 Q7B).
  *
  * Each entry contributes its `weight` to the roll; the rolled bucket spawns
@@ -113,4 +138,12 @@ export interface Enemy {
      * defend). See `docs/enemy.md` "Alignment-driven AI tuning".
      */
     philosophicalAlignment?: PhilosophicalAlignment;
+    /**
+     * Phase 60 — optional per-enemy reward content surfaced on
+     * `outcome === 'friendship'`. See {@link FriendshipReward}.
+     * When undefined, the enemy's friendship resolution is purely
+     * mechanical (Phase 36 base only: half-XP + weighted-loot roll
+     * + +1 moralMeter).
+     */
+    friendshipReward?: FriendshipReward;
 }

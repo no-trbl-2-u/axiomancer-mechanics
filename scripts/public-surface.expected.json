@@ -299,6 +299,7 @@
     "EquipmentProcTrigger",
     "EquipmentSlot",
     "EquipmentTemplate",
+    "FriendshipReward",
     "GameAction",
     "GameActionOf",
     "GameActions",

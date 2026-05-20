@@ -98,6 +98,16 @@ export interface CombatEndReport {
     outcome: 'victory' | 'defeat' | 'friendship' | 'flee';
     xpGained: number;
     loot: Item[];
+    /**
+     * Phase 60 — per-enemy friendship-reward content. Only present on
+     * `outcome === 'friendship'` when the befriended enemy carries a
+     * `friendshipReward`. The engine has already applied the reward's
+     * `items` to `loot` and `xpBonus` to `xpGained` by the time this
+     * surfaces; `narrative` is here for the CLI / UI to render.
+     */
+    friendshipReward?: {
+        narrative?: string;
+    };
 }
 
 /**
@@ -311,9 +321,25 @@ export function createGameStore(
                     // friendship as a peaceful resolution rather than a flee).
                     xpGained = Math.floor(totalEncounterXp(pre.currentEncounter) * 0.5);
                     loot = rollEncounterLoot(pre.currentEncounter);
+                    // Phase 60 — per-enemy friendshipReward supplement. Items
+                    // append to the weighted-loot roll; xpBonus adds on top of
+                    // the half-XP base.
+                    const fr = pre.combat.enemy.friendshipReward;
+                    if (fr) {
+                        if (fr.items) loot = [...loot, ...fr.items];
+                        if (fr.xpBonus) xpGained += fr.xpBonus;
+                    }
                 }
 
                 const report: CombatEndReport = { outcome, xpGained, loot };
+                // Phase 60 — surface the narrative on the report so the CLI /
+                // UI can render it. Items + xpBonus already reach the consumer
+                // through report.loot / report.xpGained.
+                if (outcome === 'friendship' && pre.combat.enemy.friendshipReward?.narrative) {
+                    report.friendshipReward = {
+                        narrative: pre.combat.enemy.friendshipReward.narrative,
+                    };
+                }
                 dispatch(
                     { type: 'END_COMBAT', payload: { grantedLoot: loot, grantedXp: xpGained } },
                     { report },

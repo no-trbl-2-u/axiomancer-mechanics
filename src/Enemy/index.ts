@@ -7,6 +7,7 @@ import { ProcOverrides, ProcUnlocks } from '../Combat/combat-effects';
 import { PhilosophicalAlignment } from '../Philosophy/types';
 import {
     Enemy, EnemyLogic, EnemyDifficulty, Tier1EffectOverrides, LootTableEntry,
+    FriendshipReward,
 } from './types';
 
 /**
@@ -30,6 +31,8 @@ export interface CreateEnemyOptions {
     effects?: ActiveEffect[];
     /** Phase 45 — optional pin on the 27-cell alignment cube. */
     philosophicalAlignment?: PhilosophicalAlignment;
+    /** Phase 60 — optional per-enemy friendship-resolution content. */
+    friendshipReward?: FriendshipReward;
 }
 
 /**
@@ -55,6 +58,7 @@ export function createEnemy(options: CreateEnemyOptions): Enemy {
         id, name, description, level, baseStats, mapName, logic,
         difficulty, tier1Overrides, procUnlocks, procOverrides,
         skills, loot, xpReward, effects = [], philosophicalAlignment,
+        friendshipReward,
     } = options;
 
     const maxHealth = calculateMaxHealth(level, baseStats);
@@ -74,6 +78,7 @@ export function createEnemy(options: CreateEnemyOptions): Enemy {
         xpReward: resolvedXp,
         effects,
         philosophicalAlignment,
+        friendshipReward,
     };
 }
 
@@ -86,4 +91,5 @@ export { rollLoot, rollLootMany } from './loot';
 export type { LootRng } from './loot';
 export type {
     Enemy, EnemyLogic, EnemyDifficulty, Tier1EffectOverrides, LootTableEntry,
+    FriendshipReward,
 } from './types';
