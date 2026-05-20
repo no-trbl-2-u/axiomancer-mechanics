@@ -53,7 +53,8 @@ The barrel at `src/index.ts` is the public contract. These groups are
 ```
 Character:  createCharacter, Character, BaseStats, DerivedStats, NonCombatStats
 Enemy:      createEnemy, Enemy, EnemyLogic, decideEnemyAction, randomLogic,
-            FriendshipReward (+ Enemy.friendshipReward? — Phase 60)
+            FriendshipReward (+ Enemy.friendshipReward? — Phase 60;
+            + flagSet? extension — Phase 62)
 Combat:     determineAdvantage, getAttackStat, getDefenseStat, getSaveStat,
             getResistStat, applyDamage, heal, tickAllEffects, applyRegen,
             getActiveRollModifier, getThornsReflect, resolveEffectApplication,
@@ -64,6 +65,8 @@ Effects:    applyEffect, applyTier1CombatEffect, clearTier1EffectsForStance,
             lookupEffect, Effect, ActiveEffect, EffectTier
 Items:      addItem, removeItem, useConsumable, stackItem, Item (and variants)
 Game:       createGameStore, GameState, nullAdapter, persistence adapters
+            (+ GameState.lastSeenAlignmentCells? — Phase 63 alignment-observer
+            cache, additive optional, no GAME_STATE_VERSION bump)
 World:      createStartingWorld, world reducer, WorldState, MapState, MapDefinition
 Utils:      clamp, randomInt, deepClone, deriveStats, calculateMaxHealth,
             createDieRoll, isCharacter, isEnemy

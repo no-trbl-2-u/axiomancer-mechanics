@@ -106,9 +106,43 @@ befriended enemy carries an authored `Enemy.friendshipReward?:
 FriendshipReward`. Per-enemy `items` and `xpBonus` are already
 applied to `report.loot` / `report.xpGained` by the time this
 surfaces; `narrative` is the field consumers render for the
-after-action UI. See `docs/combat.md` § "Friendship Path" + §
-"Befriendable-enemy content (Phase 60)" and `docs/enemy.md` §
-"Befriendable enemies (Phase 60)".
+after-action UI.
+
+Phase 62 extended `FriendshipReward` with `flagSet?: string` — when
+present, the END_COMBAT reducer appends the flag to `state.flags`
+on friendship outcome (de-duped). Reuses the existing
+`DialogueChoice.requires.flag` / `visibleChoices` machinery; no new
+gate primitive. Convention: `befriended-<enemy-id-stem>`. First
+authored use: `MournfulGull.friendshipReward.flagSet:
+'befriended-mournful-gull'` unlocks a flag-gated branch on the
+Coastal Beggar's `greet` node.
+
+See `docs/combat.md` § "Friendship Path" + § "Befriendable-enemy
+content (Phase 60)" and `docs/enemy.md` § "Befriendable enemies
+(Phase 60)".
+
+**Reactive NPCs — alignment observers (Phase 63).** Tree-level
+observer machinery — Beta:
+
+- `DialogueTree.id?: string` — optional tree identifier opting the
+  tree into the observer cache.
+- `GameState.lastSeenAlignmentCells?: Record<string, string>` —
+  additive optional cache keyed by `tree.id`, value is the alignment
+  cell id at the last `applyDialogueChoice` against the tree.
+  Defaults to `undefined` (cold-start); no `GAME_STATE_VERSION`
+  bump.
+- `DialogueChoice.requires.playerAlignmentCellChangedSince?: boolean`
+  — reactive gate visible only when the player's CURRENT cell
+  differs from the cached one.
+- `DialogueContext.lastSeenAlignmentCellId?: string` — caller
+  sources this from `state.lastSeenAlignmentCells?.[tree.id]` when
+  invoking `visibleChoices`.
+
+First authored use: Old Marrow's tree (`id: 'old-marrow'`) surfaces
+a reactive `(Stand quietly. He looks up and sees who you have
+become.)` branch on re-conversation after the player's alignment
+cell has shifted. See `docs/npcs.md` § "Reactive NPCs — alignment
+observers (Phase 63)" for the consumer-side API.
 
 `TypedGameEvent<T>` narrows the event by topic; `payload` is always
 the engine envelope above. Per-topic aliases ship for all 10
