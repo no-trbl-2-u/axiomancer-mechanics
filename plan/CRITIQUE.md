@@ -22,14 +22,6 @@
 - suggested_fix: Two paths. Path (a) — drop the `export` keyword from `pickEnemySkill` (mirrors the iterate-17e76b9 treatment of `applyOutlookBias`). The test currently imports `pickEnemySkill` directly; refactor those 6 cases to drive through `decideEnemyAction` (which already consults `pickEnemySkill` via the gate at `:251`), pinning the behaviour through the public path. This keeps the AI-helper layer internal. Path (b) — promote `pickEnemySkill` to the Enemy barrel + top-level barrel as part of the documented Phase 49 caster path (it's a sibling to `decideEnemyAction`, which IS on the barrel; arguably consumers building UI hints about enemy intent would benefit). The two paths differ on whether the AI internals are part of the public contract; Phase 49's brief framed them as internal, so Path (a) matches author intent and is the cheaper fix. Pair with the critique-21 row in CRITIQUE.md Done as the precedent commit.
 - source: critique
 
-### [LOW] `src/Game/e2e/befriend.engine.test.ts` victory-regression assertion is unnecessarily compound and hard to read
-- pass: critique-25 (commit d4959ef)
-- area: tests
-- observation: The fourth case in the Phase 60 e2e (`src/Game/e2e/befriend.engine.test.ts:85-89`) asserts that the friendshipReward thread does NOT fire on `outcome === 'victory'`. The intent is "the heart-draught the friendship reward would have granted does not appear in victory loot." The actual assertion currently reads `expect(report.loot.every(item => item.id !== 'heart-draught' || (combat.enemy.loot ?? []).some(e => e.item?.id === 'heart-draught'))).toBe(true);` — a compound `every + ||` shape that requires a reader to mentally enumerate (a) every loot item, (b) is it not heart-draught OR was heart-draught a possible weighted-roll outcome anyway. The compound is correct (heart-draught CAN appear in victory loot via the existing 30%-weighted entry in MournfulGull's loot table), but the assertion buries the intent. The case shipped at Phase 60 unit 3 (commit `b13348b`); fresh self-critique.
-- evidence: `src/Game/e2e/befriend.engine.test.ts:85-89`; compare to the cleaner shape of the other three cases in the file (`expect(report.friendshipReward).toBeUndefined()` etc.).
-- suggested_fix: Replace the compound `every + ||` with the direct semantic assertion: `expect(report.friendshipReward).toBeUndefined()` (already covered at `:80`) is the load-bearing assertion for "the thread does not fire on victory"; the loot-content assertion is redundant — victory loot is just `rollEncounterLoot(encounter)` (the Phase 60 thread only fires on the friendship branch). Drop lines `:85-89` entirely; the `:80` assertion + the `expect(report.outcome).toBe('victory')` at `:79` cover the regression. If a future reader wants explicit loot-content guarantees, factor a `expectLootSize(report, encounterRollOnly: true)` helper rather than encoding the compound inline. Net delta: −5 LOC, +0 coverage loss.
-- source: critique
-
 ### [LOW] `scripts/README.md` Fixture section reads "as of `0.10.1` unreleased" but `0.10.1` + `0.10.2` have both shipped
 - pass: critique-24 (commit 7078829)
 - area: docs
@@ -41,6 +33,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] `src/Game/e2e/befriend.engine.test.ts` victory-regression assertion is unnecessarily compound and hard to read** — resolved at iterate commit `e5d1799` (2026-05-20). Dropped the compound `report.loot.every(item => item.id !== 'heart-draught' || ...)` assertion + its two comment lines from the victory-regression case; the load-bearing `expect(report.friendshipReward).toBeUndefined()` (already on the case at `:80`) is the actual D7 guard, the loot-content assertion was redundant because victory loot is just `rollEncounterLoot(encounter)` (the Phase 60 thread only fires on the friendship branch). Net delta: −3 LOC, +0 coverage loss; 629/629 tests stay green; the 4 cases in the file still pin outcome / friendshipReward / loot-items / xpGained / narrative as before. Impact 2 × Ease 10 / 10 = 2.0. Source: critique-25 row 2 (commit `d4959ef`).
 
 - [x] **[LOW] README.md + plan/bearings.md Public API Enemy row missing Phase 60 `FriendshipReward` surface** — resolved at iterate commit `59a0439` (2026-05-20). README.md:65 Enemy row gains the FriendshipReward phrasing with the 2 authored enemies (MournfulGull + HollowEyedBeggar) named inline; plan/bearings.md:55 Enemy public-api block gains `FriendshipReward (+ Enemy.friendshipReward? — Phase 60)` on a second line. Filed as a follow-up commit to critique-24 row 2's drain per the suggested_fix paired-note guidance. 629/629 tests stay green; pure docs change. Impact 3 × Ease 8 / 10 = 2.4. Source: critique-25 row 3 (commit `d4959ef`).
 
