@@ -23,14 +23,6 @@
 - suggested_fix: pick one. Path (a) — drop `export` to make it `function applyOutlookBias(...)` at `:172`; matches the in-repo-only intent and prevents future barrel-leak surprises. Path (b) — add `applyOutlookBias` to the `src/Enemy/index.ts:80-84` block; appropriate IF a future phase wants UI consumers to apply the outlook bias to externally-sourced enemy decisions (no current evidence of that need). Recommend (a) as the conservative choice; revisit if Phase 49 (Enemy-skill caster path) refactors the AI dispatch and the bias function gains external callers. Either is a 1-line edit. /iterate-safe.
 - source: critique
 
-### [LOW] `README.md` Philosophy row + `plan/bearings.md` Philosophy contract block missing Phase 46 surface
-- pass: critique-20 (commit 57fbb83)
-- area: docs / autonomous-loop hygiene
-- observation: Iterate ticks `3faf286` (README) and `81edd2d` (bearings) added the Phase 42-45 Philosophy surface to both files. Phase 46 (commit `3765c31`) added a new public surface (`AlignmentGate` type, `requiresAlignment` on DialogueChoice + SkillLearningRequirement, alignment-aware accessors) that neither file mentions. Mirrors the README + bearings drift pattern this audit already caught for Phases 42-45 — every new alignment phase needs both surface updates.
-- evidence: `grep -n "AlignmentGate\|requiresAlignment\|Phase 46" README.md plan/bearings.md` returns 0 hits. Both files name Phase 45 (the most recent Phase 42-family entry) and stop there.
-- suggested_fix: add `AlignmentGate` + the `requiresAlignment?` annotations to both: (1) README Philosophy row gains a `Phase 46 — alignment gates: AlignmentGate type, DialogueChoice.requires.requiresAlignment, SkillLearningRequirement.requiresAlignment, alignment-aware meetsLearningRequirement / getAvailableSkills / learnSkill signatures, DialogueContext.alignment?` clause; (2) bearings.md CLI/API contract Philosophy block gets a parenthetical line for the Phase 46 fields. ~3 lines edited across the two files. Pair-able with the critique-18 README + bearings drains.
-- source: critique
-
 ### [LOW] `docs/npcs.md` carries no `alignmentDelta` OR `requiresAlignment` surface despite Phase 43 + 46 shipping both on DialogueChoice
 - pass: critique-20 (commit 57fbb83)
 - area: docs
@@ -149,6 +141,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] `README.md` Philosophy row + `plan/bearings.md` Philosophy contract block missing Phase 46 surface** — resolved at iterate commit `e870e81` (2026-05-19). README Philosophy row gained an "Alignment gates" clause listing AlignmentGate shape + requiresAlignment on DialogueChoice + SkillLearningRequirement + alignment param on the three Skills helpers + DialogueContext.alignment, attributed "(Phase 46)". bearings.md CLI/API contract Philosophy block extended with the same fields; phase range bumped from "Phases 42-45" to "Phases 42-46". 598/598 tests stay green. Impact 3 × Ease 8 / 10 = 2.4 (× 1.5 docs bias = 3.6). Source: critique-20.
 
 - [x] **[LOW] `docs/api.md` Philosophy entry stops at Phase 44 — missing Phase 46 surface (AlignmentGate + requiresAlignment)** — resolved at iterate commit `03daba1` (2026-05-19). Entry header bumped to "Phase 42, Phase 43, Phase 44, Phase 46". New "Phase 46 — alignment-gated content" block added between the Phase 44 fallacies-as-spells block and the NPCs section, listing AlignmentGate type shape, requiresAlignment on dialogue + skill-learning, DialogueContext.alignment, and the 2+2 authored gates from Phase 46 unit 3. Cross-link to `docs/philosophy.md` "Authoring gates (Phase 46)". 598/598 tests stay green. Impact 3 × Ease 8 / 10 = 2.4 (× 1.5 docs bias = 3.6). Source: critique-20.
 
