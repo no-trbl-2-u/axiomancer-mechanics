@@ -50,7 +50,10 @@ a React Native UI can wrap without pulling in any additional game-logic:
 - Second+ enemy class families.
 - Additional skill tiers (Tier 2+).
 - Additional world content (biomes, continent 2+).
-- Published npm release.
+- ~~Published npm release.~~ **Shipped 2026-05-08 (`0.2.0`).** First
+  release under the autonomous-loop era was `0.10.0` (2026-05-19);
+  current is `0.10.2`. See `CHANGELOG.md` + `RELEASING.md` for the
+  per-tag history and the manual publish flow.
 
 ## Stack
 
@@ -82,4 +85,9 @@ build.
 - Database or server — none.
 - Network play or cloud sync.
 - Multiple save slots (deferred).
-- Published npm release before v1 implementation is complete.
+- **v1.0.0 stable-API stamp before the spec contracts settle.** Pre-1.0
+  minor bumps may carry breaking public-API changes (deprecation
+  lifecycle per `RELEASING.md`); `1.0.0` graduates the contract surface
+  to semver-strict only once the spec coverage matches the shipped
+  engine. Until then, downstream consumers (e.g. `axiomancer-mobile`)
+  pin exact versions and bump deliberately per release.
