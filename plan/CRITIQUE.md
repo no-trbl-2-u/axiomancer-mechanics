@@ -23,14 +23,6 @@
 - suggested_fix: pick one. Path (a) — drop `export` to make it `function applyOutlookBias(...)` at `:172`; matches the in-repo-only intent and prevents future barrel-leak surprises. Path (b) — add `applyOutlookBias` to the `src/Enemy/index.ts:80-84` block; appropriate IF a future phase wants UI consumers to apply the outlook bias to externally-sourced enemy decisions (no current evidence of that need). Recommend (a) as the conservative choice; revisit if Phase 49 (Enemy-skill caster path) refactors the AI dispatch and the bias function gains external callers. Either is a 1-line edit. /iterate-safe.
 - source: critique
 
-### [LOW] `docs/skills.md` mentions `sourcedFromCell` (Phase 44) but not `requiresAlignment` (Phase 46) on SkillLearningRequirement
-- pass: critique-20 (commit 57fbb83)
-- area: docs
-- observation: `docs/skills.md:229` carries a "Philosophical fallacy payloads (Phase 44)" subsection naming `sourcedFromCell`. Phase 46 added `requiresAlignment` to `SkillLearningRequirement` (mirror of the dialogue gate) — two skills in the live library (`nirvana-fallacy` at `outlook ≤ -34`, `appeal-to-fear` at `scope ≥ 34`) carry the gate. The doc doesn't mention the new field, so a future skill author won't know it exists. A reader walking the Phase 44 table sees the gates as "the skills are alignment-tied" but no entry in the skill-type field reference describes the gate's shape.
-- evidence: `grep -n "requiresAlignment\|AlignmentGate" docs/skills.md` returns 0 hits. `grep -n "requiresAlignment" src/Skills/skill.library.ts` returns the two authored gates (Phase 46 unit 3 commit `3765c31`).
-- suggested_fix: add a short "Alignment gating (Phase 46)" subsection to `docs/skills.md` (or extend the existing Phase 44 subsection) describing `SkillLearningRequirement.requiresAlignment?: AlignmentGate`, the operator semantics (`gte` / `lte` + axis), and the two authored gates. Cross-link to `docs/philosophy.md` "Authoring gates". ~10 lines added.
-- source: critique
-
 ### [LOW] `docs/effects.md` heading + ToC counts (`Buffs (39)` / `Debuffs (46)`) stale after Phase 44 added 1 buff + 2 debuffs
 - pass: critique-19 (commit 6e833a9)
 - area: docs
@@ -133,6 +125,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] `docs/skills.md` mentions `sourcedFromCell` (Phase 44) but not `requiresAlignment` (Phase 46) on SkillLearningRequirement** — resolved at iterate commit `9653915` (2026-05-19). "Runtime skill learning (Phase 30)" section updated to show the optional `alignment` parameter on `meetsLearningRequirement` / `getAvailableSkills` / `learnSkill`; SkillLearningRequirement clause list now names `requiresAlignment`. New "Alignment gates on learning (Phase 46)" subsection describes the AlignmentGate shape + undefined-alignment-blocks-by-default semantics + the two live gates (`nirvana-fallacy` outlook ≤ -34, `appeal-to-fear` scope ≥ 34) + the LEARN_SKILL reducer's automatic `state.philosophicalAlignment` read. Cross-link to `docs/philosophy.md` "Authoring gates (Phase 46)" + `docs/npcs.md` "Alignment-aware content". 598/598 tests stay green. Impact 3 × Ease 8 / 10 = 2.4 (× 1.5 docs bias = 3.6). Source: critique-20.
 
 - [x] **[LOW] `docs/npcs.md` carries no `alignmentDelta` OR `requiresAlignment` surface despite Phase 43 + 46 shipping both on DialogueChoice** — resolved at iterate commit `9700775` (2026-05-19). DialogueChoice interface block in `docs/npcs.md` gained `requiresAlignment?: AlignmentGate` in `requires` (Phase 46) + `alignmentDelta?: Partial<PhilosophicalAlignment>` in `effect` (Phase 43). New "Alignment-aware content (Phase 43 + 46)" subsection describes the two fields' runtime behaviour + cross-links to `docs/philosophy.md` "Authoring deltas" + "Authoring gates". The companion critique-18 row (`docs/world.md` cross-link gap) is a separate doc and stays Pending. 598/598 tests stay green. Impact 3 × Ease 8 / 10 = 2.4 (× 1.5 docs bias = 3.6). Source: critique-20.
 
