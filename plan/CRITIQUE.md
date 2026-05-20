@@ -30,14 +30,6 @@
 - suggested_fix: Replace the compound `every + ||` with the direct semantic assertion: `expect(report.friendshipReward).toBeUndefined()` (already covered at `:80`) is the load-bearing assertion for "the thread does not fire on victory"; the loot-content assertion is redundant — victory loot is just `rollEncounterLoot(encounter)` (the Phase 60 thread only fires on the friendship branch). Drop lines `:85-89` entirely; the `:80` assertion + the `expect(report.outcome).toBe('victory')` at `:79` cover the regression. If a future reader wants explicit loot-content guarantees, factor a `expectLootSize(report, encounterRollOnly: true)` helper rather than encoding the compound inline. Net delta: −5 LOC, +0 coverage loss.
 - source: critique
 
-### [LOW] README.md + plan/bearings.md Public API Enemy row missing Phase 60 `FriendshipReward` surface — extends critique-24 row 2's "front-door currency" pattern
-- pass: critique-25 (commit d4959ef)
-- area: docs
-- observation: Phase 60 (`7724c96`) added `FriendshipReward` to the top-level type-export block and `Enemy.friendshipReward?: FriendshipReward` to the canonical Enemy shape. `docs/api.md:103-111` covers the new field through the `CombatEndReport.friendshipReward` cross-link, but the README.md Public API Enemy row at `:65` stops at "outlook-driven basic-action bias since Phase 45" and `plan/bearings.md` Public-API quick-reference Enemy row (`:71` Enemy entry) doesn't list the new surface either. This row pairs naturally with the existing critique-24 row 2 ("Items row missing Phase 37 shop + Phase 54 sets; Skills row missing Phase 50 skillLibrary") — the same front-door-currency pattern, one more entry to fold in. The Enemy row addition is one phrase ("authored `friendshipReward?: FriendshipReward` on 2 enemies (Phase 60)"); bearings is one similar phrase.
-- evidence: `grep -n "FriendshipReward\|friendshipReward\|befriend" README.md plan/bearings.md` returns 0 hits in both files. `README.md:65` Enemy row text confirmed. `docs/api.md:103-111` confirms the field IS covered in the deeper docs (so the gap is specifically the front-door table, not the canonical reference).
-- suggested_fix: When the next iterate drains critique-24 row 2, fold this row's Enemy-row entry into the same commit. The suggested addition to the README.md Enemy row: "; per-enemy `friendshipReward?: FriendshipReward` ({ items, xpBonus, narrative }) drives the Phase 60 befriendable-enemy content (MournfulGull + HollowEyedBeggar authored today)". Mirror to `plan/bearings.md` Enemy row with similar phrasing. If the two rows drain in separate iterate ticks, file this one's commit as a follow-up to critique-24 row 2's drain — no harm, just a small extra commit.
-- source: critique
-
 ### [LOW] `scripts/README.md` Fixture section reads "as of `0.10.1` unreleased" but `0.10.1` + `0.10.2` have both shipped
 - pass: critique-24 (commit 7078829)
 - area: docs
@@ -49,6 +41,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] README.md + plan/bearings.md Public API Enemy row missing Phase 60 `FriendshipReward` surface** — resolved at iterate commit `59a0439` (2026-05-20). README.md:65 Enemy row gains the FriendshipReward phrasing with the 2 authored enemies (MournfulGull + HollowEyedBeggar) named inline; plan/bearings.md:55 Enemy public-api block gains `FriendshipReward (+ Enemy.friendshipReward? — Phase 60)` on a second line. Filed as a follow-up commit to critique-24 row 2's drain per the suggested_fix paired-note guidance. 629/629 tests stay green; pure docs change. Impact 3 × Ease 8 / 10 = 2.4. Source: critique-25 row 3 (commit `d4959ef`).
 
 - [x] **[LOW] `src/Combat/e2e/combat.resolver.test.ts` violates the `.engine.test.ts` naming convention despite self-describing as the canonical example** — resolved at iterate commit `7bf8115` (2026-05-20). `git mv src/Combat/e2e/combat.resolver.test.ts src/Combat/e2e/combat.resolver.engine.test.ts`; `docs/testing.md:235 + :244` references updated via replace_all (2 hits). No imports to fix — the file is a test entry point, not importable. Historical AUDIT.md / CRITIQUE.md references to the old filename left as archaeology. 629/629 tests stay green; verify + deploy:check clean. Now all 33 e2e files under `src/**/e2e/*.engine.test.ts` follow the canonical marker. Impact 3 × Ease 9 / 10 = 2.7. Source: critique-24 row 4 (commit `7078829`).
 
