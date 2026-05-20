@@ -2,7 +2,7 @@
  * Philosophical alignment — three-axis cube (Phase 42).
  *
  * The system encodes a character's philosophical position on three
- * orthogonal axes drawn from `PhilosAxiosDoc.pdf`:
+ * orthogonal axes drawn from `content/philosophy/PhilosAxiosDoc.pdf`:
  *
  *   epistemology  — how truth is known           (Faith ↔ Agnostic ↔ Logic)
  *   outlook       — disposition toward existence (Pessimistic ↔ Neutral ↔ Optimistic)

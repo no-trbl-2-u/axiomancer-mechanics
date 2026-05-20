@@ -1,10 +1,10 @@
 # Philosophy — 3-axis alignment cube (Phase 42)
 
-> Source-of-truth content: `PhilosAxiosDoc.pdf` at the repo root.
+> Source-of-truth content: `content/philosophy/PhilosAxiosDoc.pdf`.
 > Engine module: `src/Philosophy/`. Reducer wiring: `src/Game/`.
 
 The philosophical-alignment system encodes a character's position on
-three orthogonal axes drawn from `PhilosAxiosDoc.pdf`. Each axis is
+three orthogonal axes drawn from `content/philosophy/PhilosAxiosDoc.pdf`. Each axis is
 an integer in `[-100, +100]`. The current `(low | mid | high)` bucket
 triple indexes one of 27 cells in `philosophicalAlignmentLibrary`,
 each carrying a representative philosopher, a literary character with

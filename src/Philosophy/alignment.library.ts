@@ -2,7 +2,7 @@
  * Philosophical alignment library (Phase 42).
  *
  * The 27-cell registry indexed by the `(epistemology, outlook, scope)`
- * bucket triple. Authored verbatim from `PhilosAxiosDoc.pdf`:
+ * bucket triple. Authored verbatim from `content/philosophy/PhilosAxiosDoc.pdf`:
  * each cell carries its representative philosopher, literary character
  * (with the source work), and three signature logical fallacies (name,
  * example sentence, and alignment rationale).

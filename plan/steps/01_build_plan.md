@@ -524,7 +524,7 @@ Tier 3 polish (3 skills + tests + docs update).
 ### Phase 42 — Philosophical alignment engine
 
 **Promoted via `/oversight` 2026-05-16 — derived from the
-`PhilosAxiosDoc.pdf` committed at the repo root (12-page document
+`content/philosophy/PhilosAxiosDoc.pdf` (12-page document
 laying out a 3×3×3 alignment cube: epistemology × outlook × scope,
 27 cells total, each carrying a representative philosopher, literary
 character, and three signature logical fallacies).**

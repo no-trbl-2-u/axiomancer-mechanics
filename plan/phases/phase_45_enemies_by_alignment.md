@@ -230,7 +230,7 @@ Closes Phase 45 and the Phase 42 follow-up sequence (43 → 44 → 45).
 - docs/enemy.md "Alignment-driven AI tuning (Phase 45)" subsection
   documents the field + bias + cell-pin table.
 
-Refs: PhilosAxiosDoc.pdf, plan/phases/phase_45_enemies_by_alignment.md,
+Refs: content/philosophy/PhilosAxiosDoc.pdf, plan/phases/phase_45_enemies_by_alignment.md,
 Phases 42 (bdfda00) + 43 (c62702e) + 44 (0af3b26).
 ```
 

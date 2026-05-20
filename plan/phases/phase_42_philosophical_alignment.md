@@ -1,7 +1,7 @@
 # Phase 42 — Philosophical alignment engine (3-axis Logic/Outlook/Scope cube)
 
 > Lays in the foundation of the 27-cell philosophical-alignment system
-> described in `PhilosAxiosDoc.pdf` (committed at the repo root). Ships
+> described in `content/philosophy/content/philosophy/PhilosAxiosDoc.pdf` (moved from the repo root at iterate 322227a era). Ships
 > the engine primitives — state shape, shift reducer, bucket-to-cell
 > selector — and the full 27-entry content registry (philosopher,
 > literary character, three signature fallacies per cell). Wires
@@ -39,7 +39,7 @@ After this phase:
 
 ## Source spec
 
-- `PhilosAxiosDoc.pdf` (12 pages, repo root, committed) — the
+- `content/philosophy/PhilosAxiosDoc.pdf` (12 pages, repo root, committed) — the
   authoritative 27-cell layout. Each cell entry is read straight off
   the PDF in `philosophicalAlignment.library`.
 - `specs/10-moral-difficulty-meter.md` Q1 explicitly leaves room:
@@ -201,7 +201,7 @@ Commit: `feat(philosophy): Phase 42 unit 1 — alignment engine + state field + 
 
 **File:** `src/Philosophy/alignment.library.ts` (replace placeholder).
 
-Author all 27 cells exactly as listed in `PhilosAxiosDoc.pdf`. Cell id
+Author all 27 cells exactly as listed in `content/philosophy/PhilosAxiosDoc.pdf`. Cell id
 format: `<eps>-<outlook>-<scope>` lowercase (e.g.
 `logic-optimistic-individual`). Triples in `(epistemology, outlook,
 scope)` order. Cell mappings:
@@ -353,7 +353,7 @@ feat(philosophy): Phase 42 — 3-axis philosophical alignment engine
 
 Adds `philosophicalAlignment: { epistemology, outlook, scope }` to
 GameState (-100..+100 per axis, defaults 0/0/0) and a 27-cell content
-registry mirroring `PhilosAxiosDoc.pdf` (philosopher + literary
+registry mirroring `content/philosophy/PhilosAxiosDoc.pdf` (philosopher + literary
 character + 3 logical fallacies per cell). Cells are computed by
 bucketing each axis at ±34. `shiftPhilosophicalAlignment` action
 mirrors `shiftMoralMeter`. Save migration v4 → v5 defaults new field.
@@ -361,7 +361,7 @@ CLI Character tab renders the current cell + philosopher + literary
 character. `moralMeter` keeps its existing role; the new system is
 orthogonal, not a replacement (Spec 10 Q1 follow-up).
 
-Refs: PhilosAxiosDoc.pdf, plan/phases/phase_42_philosophical_alignment.md
+Refs: content/philosophy/PhilosAxiosDoc.pdf, plan/phases/phase_42_philosophical_alignment.md
 ```
 
 ## Definition of Done
@@ -370,7 +370,7 @@ Refs: PhilosAxiosDoc.pdf, plan/phases/phase_42_philosophical_alignment.md
 - [ ] `shiftPhilosophicalAlignment` reducer + `SHIFT_PHILOSOPHICAL_ALIGNMENT` action + store action all wired; clamps to `[-100, +100]`.
 - [ ] `bucketAxis(value)` returns `'low' | 'mid' | 'high'` with the documented thresholds.
 - [ ] `getAlignmentCell(alignment)` returns the correct cell for every reachable triple; throws on unknown triple (invariant: never reachable in practice once the library is exhaustive).
-- [ ] `philosophicalAlignment.library` contains exactly 27 entries; ids unique; one entry per `(low|mid|high)^3` triple; content matches `PhilosAxiosDoc.pdf` (philosopher name, literary character name + work, three fallacies with name/example/rationale).
+- [ ] `philosophicalAlignment.library` contains exactly 27 entries; ids unique; one entry per `(low|mid|high)^3` triple; content matches `content/philosophy/PhilosAxiosDoc.pdf` (philosopher name, literary character name + work, three fallacies with name/example/rationale).
 - [ ] `GAME_STATE_VERSION` is 5; `game.migrate.ts` carries a `migrateV4toV5` step; `assertGameState` validates the new field; legacy save fixture loads.
 - [ ] `src/index.ts` re-exports the new public types + helpers + library.
 - [ ] CLI Character tab renders cell label + philosopher + literary character + per-axis bucket and raw int.

@@ -37,7 +37,7 @@
 - Build-plan row Phase 44 (`plan/steps/01_build_plan.md:66`).
 - Promoted via `/oversight` 2026-05-16 (commit `6966461`) as the
   second Phase 42 follow-up in a 3-phase sequence (43 → 44 → 45).
-- `PhilosAxiosDoc.pdf` closing line: "could serve as 'spells' or
+- `content/philosophy/PhilosAxiosDoc.pdf` closing line: "could serve as 'spells' or
   abilities in your RPG system."
 - `plan/phases/phase_42_philosophical_alignment.md` Follow-ups
   block — "Fallacies as spells / abilities" item names the scope.
@@ -236,7 +236,7 @@ live skill + effect registries. New `sourcedFromCell?: string` on both
 - docs/skills.md + docs/effects.md gain "Philosophical fallacy payloads"
   subsections cross-linking to docs/philosophy.md.
 
-Refs: PhilosAxiosDoc.pdf, plan/phases/phase_44_fallacies_as_spells.md,
+Refs: content/philosophy/PhilosAxiosDoc.pdf, plan/phases/phase_44_fallacies_as_spells.md,
 Phase 42 (bdfda00), Phase 43 (c62702e).
 ```
 
