@@ -238,6 +238,9 @@ interface FriendshipReward {
     xpBonus?: number;
     /** Optional flavour text for the CLI / UI to render after combat-end. */
     narrative?: string;
+    /** Phase 62 — optional world flag appended to state.flags on
+     *  friendship. Convention: `befriended-<enemy-id-stem>`. */
+    flagSet?: string;
 }
 ```
 
@@ -252,7 +255,7 @@ Two enemies ship authored rewards today:
 
 | Enemy | Difficulty | Items | xpBonus | Narrative tone |
 |---|---|---|---|---|
-| **MournfulGull** | normal | 1 × heart-draught | +10 | Heart-attuned remembrance gift; the gull stops circling. |
+| **MournfulGull** | normal | 1 × heart-draught | +10 | Heart-attuned remembrance gift; the gull stops circling. Sets flag `befriended-mournful-gull` (Phase 62) — Coastal Beggar's dialogue surfaces a new branch acknowledging the gull's silence. |
 | **HollowEyedBeggar** | normal | 1 × healing-potion + 1 × antidote | +15 | Reversal of the begging dynamic; they offer what they carry. |
 
 The 2 enemies are picked from the fishing-village normal tier

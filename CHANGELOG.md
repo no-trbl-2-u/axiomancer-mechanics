@@ -21,12 +21,13 @@ addressing critique passes 24 / 25. Includes a canonical
 a bump — see the Migration notes below.
 
 ### Added
-- **Befriendable-enemy content arc (Phase 60).** New public type
-  `FriendshipReward` (`{ items?: Item[]; xpBonus?: number;
-  narrative?: string }`); optional `Enemy.friendshipReward?:
-  FriendshipReward` field on the canonical Enemy shape; optional
-  `CombatEndReport.friendshipReward?: { narrative? }` field on the
-  combat report. Engine wiring: `store.endCombat()` threads the
+- **Befriendable-enemy content arc (Phase 60 + Phase 62).** New
+  public type `FriendshipReward` (`{ items?: Item[]; xpBonus?:
+  number; narrative?: string; flagSet?: string }` — `flagSet?`
+  added at Phase 62 unit 1 `adf4403`); optional
+  `Enemy.friendshipReward?: FriendshipReward` field on the canonical
+  Enemy shape; optional `CombatEndReport.friendshipReward?: {
+  narrative? }` field on the combat report. Engine wiring: `store.endCombat()` threads the
   per-enemy reward through the `outcome === 'friendship'` branch —
   items append to `report.loot`, `xpBonus` adds to `report.xpGained`,
   `narrative` surfaces on the report for the CLI / UI. Two enemies
@@ -38,6 +39,21 @@ a bump — see the Migration notes below.
   hermetic e2e + docs + Knowledge-Gaps Q5 close).
   `scripts/public-surface.expected.json` grows from 158 → 159 types
   (runtime exports unchanged at 233).
+
+- **Quest-branch wire-in on `outcome === 'friendship'` (Phase 62).**
+  `FriendshipReward.flagSet?: string` extension: when the befriended
+  enemy carries the field, the END_COMBAT reducer appends the flag
+  to `state.flags` (de-duped). Reuses the existing
+  `DialogueChoice.requires.flag` / `visibleChoices` machinery —
+  downstream dialogue branches + quest objectives gate on the flag
+  with no new gate primitive. First authored use: MournfulGull's
+  `friendshipReward.flagSet: 'befriended-mournful-gull'` unlocks a
+  new dialogue branch on the Coastal Beggar's `greet` node
+  ("I've been hearing the gulls quieter, lately."). Convention:
+  `befriended-<enemy-id-stem>`. Phase 62 commits: `adf4403`
+  (Unit 1 — type + reducer) + `c32e9fe` (Unit 2 — content) +
+  Unit 3 (this commit — e2e + docs). Closes the Phase 60 D3 deferral.
+  No fixture change (the field is on an existing exported type).
 
 ### Changed
 - **`pickEnemySkill` no longer exported from

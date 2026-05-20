@@ -100,3 +100,76 @@ describe('Phase 60 — befriendable-enemy content arc', () => {
         expect(report.friendshipReward).toBeUndefined();
     });
 });
+
+describe('Phase 62 — quest-branch wire-in on outcome === friendship', () => {
+    it('friendship outcome appends FriendshipReward.flagSet to state.flags (de-duped)', () => {
+        const store = createGameStore(nullAdapter);
+        store.getState().startCombat(MournfulGull);
+        driveToFriendship(store);
+        store.getState().endCombat();
+        // First friendship sets the flag.
+        expect(store.getState().flags).toContain('befriended-mournful-gull');
+
+        // Drive a second friendship encounter (same flag would be a no-op).
+        store.getState().startCombat(MournfulGull);
+        driveToFriendship(store);
+        store.getState().endCombat();
+        // De-duped: still exactly one occurrence per Phase 62 D3.
+        const matches = store.getState().flags.filter(f => f === 'befriended-mournful-gull');
+        expect(matches.length).toBe(1);
+    });
+
+    it('victory outcome does NOT set the friendship flag (only fires for outcome === friendship)', () => {
+        const store = createGameStore(nullAdapter);
+        store.getState().startCombat(MournfulGull);
+        const combat = store.getState().combat!;
+        store.getState().updateCombat({
+            ...combat,
+            enemy: { ...combat.enemy, health: 0 },
+        });
+        store.getState().endCombat();
+        expect(store.getState().flags).not.toContain('befriended-mournful-gull');
+    });
+
+    it('Coastal Beggar gull-recognition branch is hidden pre-friendship + visible post-friendship', async () => {
+        const { visibleChoices } = await import('../../NPCs');
+        const { getMapDefinition } = await import('../../World/map.registry');
+        const fishingVillage = getMapDefinition('coastal-continent', 'fishing-village');
+        const beggar = fishingVillage.npcs.find(npc => npc.name === 'Coastal Beggar')!;
+        const greetNode = beggar.dialogueTree.nodes.greet;
+
+        const baseCtx = {
+            activeQuests: new Set<string>(),
+            completedQuests: new Set<string>(),
+        };
+
+        // Pre-friendship: gull_recognition choice should be hidden.
+        const visibleBefore = visibleChoices(greetNode, {
+            ...baseCtx,
+            flags: new Set<string>(),
+        });
+        expect(visibleBefore.find(c => c.nextNodeId === 'gull_recognition')).toBeUndefined();
+
+        // Post-friendship: with the flag set, the choice surfaces.
+        const visibleAfter = visibleChoices(greetNode, {
+            ...baseCtx,
+            flags: new Set(['befriended-mournful-gull']),
+        });
+        const gullChoice = visibleAfter.find(c => c.nextNodeId === 'gull_recognition');
+        expect(gullChoice).toBeDefined();
+        expect(gullChoice!.text).toMatch(/quieter/);
+    });
+
+    it('end-to-end: friendship → flag-set → dialogue branch unlocks', () => {
+        // Drive the full path through createGameStore. visibleChoices is
+        // pure-engine so we don't need the store after endCombat — but
+        // assert state.flags carries the flag the dialogue engine will read.
+        const store = createGameStore(nullAdapter);
+        store.getState().startCombat(MournfulGull);
+        driveToFriendship(store);
+        store.getState().endCombat();
+        expect(store.getState().flags).toContain('befriended-mournful-gull');
+        // The dialogue runtime reads ctx.flags = state.flags downstream;
+        // the visibleChoices behaviour is pinned by the test above.
+    });
+});

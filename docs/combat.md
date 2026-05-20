@@ -186,6 +186,13 @@ the returned `CombatEndReport` carries:
 - `friendshipReward?: { narrative? }` (Phase 60) — present only when
   the befriended enemy carries an authored `friendshipReward` and a
   `narrative` string. Engine doesn't interpret; CLI / UI renders.
+- **State side effect (Phase 62)** — when the befriended enemy carries
+  `friendshipReward.flagSet?: string`, the END_COMBAT reducer appends
+  the flag to `state.flags` (de-duped). Downstream dialogue choices /
+  quest objectives can gate on the flag via the existing
+  `DialogueChoice.requires.flag` machinery — no new engine surface
+  for the consumer. Convention is `befriended-<enemy-id-stem>` (e.g.
+  `befriended-mournful-gull`). The flag does NOT surface on the report.
 
 The reducer side (Phase 10) also shifts the moral meter `+1` (see
 `docs/morality.md` § "Combat: Friendship Victories") and routes the player
