@@ -22,21 +22,11 @@
 - suggested_fix: file `specs/14-philosophical-alignment.md` using the `specs/00-how-to-use-specs.md` template. Goal section is the 3-axis cube + 27-cell registry. Current state section cites Phases 42 (`bdfda00`) + 43 (`c62702e`) as already-shipped. Open questions: (1) Should `moralMeter` be unified into the cube as a 4th axis, (2) Should fallacies surface as skill payloads, effect payloads, or both, (3) Should enemies carry a `philosophicalAlignment?` field, (4) Should there be alignment-gated skills / effects / endings, (5) How does the alignment cube intersect with the friendship-victory mechanic. Add a `specs/README.md` row pointing at the new file. Pure docs work; no code touched. Pairs with the README + bearings findings above into a single Phase-42-paperwork sweep.
 - source: critique
 
-
-
-- source: critique
-
-### [LOW] `automation/` lacks a top-level README inventorying the directory after Phase 39 added a second tool
-- pass: critique-14 (commit 1180f51)
-- area: docs
-- observation: `automation/` now contains two top-level executable tools (`agent-e2e.mjs` Phase 26, `agent-vitest-reporter.mjs` Phase 39), one orphaned smoke script (`spec05_smoke.ts`), and a `scripts/` subdir with `walkthroughs/` (which DOES have its own `README.md`). A new contributor or returning agent has no index for the directory — they have to read each file's JSDoc to learn what's there and which entry point feeds which workflow. Phase 26 was a single tool so it didn't need a directory README; Phase 39's addition tipped the surface into "multiple tools, no map." `docs/testing.md` Phase 39 subsection points at `agent-vitest-reporter.mjs` by full path but doesn't introduce the directory; `automation/scripts/walkthroughs/README.md` only covers the walkthroughs subtree.
-- evidence: `ls automation/` shows `agent-e2e.mjs`, `agent-vitest-reporter.mjs`, `last-verify-report.json` (gitignored), `scripts/`, `spec05_smoke.ts`, `testing-logs/` (gitignored); no `automation/README.md` exists; `docs/testing.md` "Agent-friendly report" subsection (lines added at Phase 39, commit `602da33`) doesn't link to any `automation/` index.
-- suggested_fix: Add `automation/README.md` as a one-page directory index — purpose of `automation/` (non-hermetic + tooling surface that complements the hermetic vitest suite), a table of the two `.mjs` tools (entry point, npm-script wrapper, what it consumes / produces, where its tests live if any), a one-line note on `scripts/walkthroughs/` (and that the smoke / Phase-11 JSONs are dead pending the dead-code rows above). Cross-link from `docs/testing.md` Phase 39 subsection. ~40-line file, no code change.
-- source: critique
-
 ---
 
 ## Done
+
+- [x] **[LOW] `automation/` lacks a top-level README inventorying the directory after Phase 39 added a second tool** — resolved at iterate commit `ce8f5c4` (2026-05-19). New `automation/README.md` (~50 lines): purpose section frames automation/ as the non-hermetic complement to src/; tools table for `agent-e2e.mjs` (Phase 26) + `agent-vitest-reporter.mjs` (Phase 39) with npm-script wrappers, inputs, outputs, hermetic-coverage pointer; subdirectories block names scripts/walkthroughs/ + the gitignored outputs; "When to add a new tool" section codifies the surface boundary. `docs/testing.md` Phase 39 subsection gains a one-line cross-link. spec05_smoke.ts no longer included (deleted at fdbd0eb). 600/600 tests stay green. Impact 2 × Ease 8 / 10 = 1.6 (× 1.5 docs bias = 2.4). Source: critique-14.
 
 - [x] **[LOW] Three Phase-11 walkthrough JSONs in `automation/scripts/` feed the deleted `npm run auto:combat` Python harness** — resolved at iterate commit `8baf0e1` (2026-05-19). `git rm` of `automation/scripts/{ad-baculum-clear,heart-buff-strip,mind-mark-stack}.json` (33 LOC total). Zero in-repo callers confirmed via grep; Phase-17 already deleted the Python harness these JSONs fed. Deletion-authorized by /oversight 2026-05-16 (Hard Rule 9 override). Mirrors the spec05_smoke.ts removal at fdbd0eb. 600/600 tests stay green. Impact 3 × Ease 10 / 10 = 3.0. Source: critique-14.
 
