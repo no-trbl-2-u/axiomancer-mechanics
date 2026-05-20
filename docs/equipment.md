@@ -500,11 +500,114 @@ Tier-1 → Tier-3 generation chain isn't short-circuited by an item.
 `prevent_ko` effect (which is not yet in the global effects library); revisit
 when a dedicated "negate next lethal hit" effect lands.
 
+## Set Items (Spec 05e / Phase 54)
+
+Equipment can belong to named **sets**. Equipping multiple members of a
+set grants threshold-keyed `SetBonus` payloads on top of the per-item
+`statModifiers` / `resourceInteraction` / `passiveEffects`. Sets are
+computed on-demand at every `initializeCombat` and
+`generateBasicActionResources` call — there is no cached per-character
+"active sets" state, which keeps equip/unequip side-effect-free.
+
+### Type shape
+
+```ts
+interface SetBonus {
+    resourceInteraction?: Partial<ResourceInteraction>;
+    passiveEffects?: string[];        // effect-library IDs
+    statModifiers?: StatModifier[];
+}
+
+interface ItemSet {
+    id: string;
+    name: string;
+    description: string;
+    memberTemplateIds: string[];      // EquipmentTemplate.id matches
+    bonuses: Partial<Record<2 | 3 | 4, SetBonus>>;
+}
+```
+
+Bonuses are sparse — a 2-piece set defines only `{ 2 }`, a 3-piece set
+defines `{ 2, 3 }`. `getActiveSetBonuses` returns every threshold whose
+piece count is met (so a 3-of-3 wearer gets BOTH the 2-piece and 3-piece
+bonuses).
+
+### Runtime application
+
+- **Combat start tokens.** `initializeCombat` sums per-item
+  `combatStartTokens` (existing `aggregateCombatStartTokens`) AND per-set
+  `combatStartTokens` (new `aggregateSetStartTokens`) additively. Spec
+  05e Q2 — no cap.
+- **Basic action generation.**  `generateBasicActionResources` chains
+  per-set `applySetGenerationBonus` after the per-item
+  `applyEquipmentGenerationBonus`. Same `trigger: 'hit' | 'miss' |
+  'defend' | 'any'` semantics; counters clamped to ≥ 0.
+- **Passive effects.** Set `passiveEffects` are applied as combat-scoped
+  `ActiveEffect`s on `combatState.player.effects` at the combat-start
+  step, sourced as `'set-bonus'`. They live through the normal
+  combat-end cleanup — they are NOT persisted on `character.effects`
+  between combats (Spec 05e Q4).
+- **Stat modifiers.** Set `statModifiers` fold through the same
+  pipeline as equipment `statModifiers` (`getEquipmentModifiers` +
+  derived-stat aggregation).
+
+### Set library
+
+The initial library (`src/Items/set.library.ts`) ships 3 sets:
+
+- **Wanderer's Road** (2-piece): `sandals` + `leather-cap`. 2-piece
+  bonus: `combatStartTokens: { heart: 2 }`.
+- **Iron Discipline** (3-piece): `leather-cap` + `cloth-wrap` +
+  `cloth-gloves`. 2-piece bonus: `statModifiers: [{ stat:
+  'physicalDefense', value: 3 }]`. 3-piece bonus: `generationBonus: [{
+  trigger: 'any', resourceType: 'body', bonus: 1 }]`.
+- **Scholar's Circle** (2-piece): `copper-ring` + `leather-cap`.
+  2-piece bonus: `combatStartTokens: { mind: 2 }` + `passiveEffects:
+  ['buff_critical_rate_up']`.
+
+Sets intentionally overlap on `leather-cap`. A player wearing
+`sandals` + `leather-cap` + `copper-ring` activates BOTH the
+Wanderer's Road 2-piece and the Scholar's Circle 2-piece bonuses
+simultaneously.
+
+### Public API
+
+Engine helpers re-exported through the package barrel:
+
+```ts
+import {
+    getActiveSetBonuses,           // (equipment) → SetBonus[]
+    getActiveSetBonusesForCharacter,
+    aggregateSetStartTokens,       // (equipment) → CombatResources
+    applySetGenerationBonus,       // (resources, equipment, outcome) → CombatResources
+    getActiveSetPassiveEffectIds,  // (equipment) → string[]
+    getEquippedItemSets,           // (equipment) → Array<{ set, equipped }>
+    itemSetLibrary,
+    getItemSetById,
+} from 'axiomancer-mechanics';
+
+import type { SetBonus, ItemSet } from 'axiomancer-mechanics';
+```
+
+### Adding a new set
+
+1. Append the `ItemSet` literal to `itemSetLibrary` in
+   `src/Items/set.library.ts`.
+2. Add a hermetic case to `src/Items/e2e/sets.engine.test.ts` if the
+   bonus shape introduces a new pattern (e.g. a 4-piece set, or a
+   `passiveEffects` ID not yet covered).
+3. Update the **Set library** subsection above with the new entry.
+
+More sets is iterate-tier content authoring, not a phase. Unique-item
+membership (`UniqueItemTemplate.setMembership`) is reserved for a
+future phase per Spec 05e Q1.
+
 ## Out of scope / future work
 
 - Modifier catalogue content (Spec 05d) — the in-factory mod catalogue
   shipped with Spec 05c is intentionally minimal.
-- Set items and engine-side set bonuses (Spec 05e).
+- Unique-item set membership (`UniqueItemTemplate.setMembership`) —
+  field is wired but not honored in initial Phase 54 implementation.
 - Loot drops (Spec 07), shop pricing (Spec 08), equipment as quest rewards
   (Spec 08).
 - A bespoke `prevent_ko` / "negates next lethal hit" effect.

@@ -158,14 +158,14 @@ sum of item-level and set-level token grants.
 
 ## Acceptance checklist
 
-- [ ] `SetBonus` and `ItemSet` types exported from `src/Items/`.
-- [ ] `getActiveSetBonuses` implemented in `src/Items/set.engine.ts`.
-- [ ] `initializeCombat` stacks set `combatStartTokens` additively.
-- [ ] `generateBasicActionResources` applies set `generationBonus` entries.
-- [ ] Set `passiveEffects` applied at combat start and cleaned up at combat end.
-- [ ] 3 initial sets defined in `src/Items/set.library.ts`.
-- [ ] Hermetic tests covering all scenarios above.
-- [ ] `docs/equipment.md` updated with a "Set Items" section.
+- [x] `SetBonus` and `ItemSet` types exported from `src/Items/`. Shipped at Phase 54 unit 1 (`0cb4b2a`): `src/Items/set.types.ts` authors both interfaces; barrel re-exports through `src/Items/index.ts` + `src/index.ts` Items block.
+- [x] `getActiveSetBonuses` implemented in `src/Items/set.engine.ts`. Phase 54 unit 2 — accepts `Partial<Record<EquipmentSlot, Equipment>>` (D1 — match existing aggregator signatures); returns every threshold whose piece count is met; iteration order is library-deterministic. Sibling helpers `aggregateSetStartTokens` / `applySetGenerationBonus` / `getActiveSetPassiveEffectIds` / `getEquippedItemSets` also exported.
+- [x] `initializeCombat` stacks set `combatStartTokens` additively. Phase 54 unit 2 — `src/Combat/combat.reducer.ts` sums per-item + per-set start tokens (Spec Q2 no cap); zero-set baseline unchanged.
+- [x] `generateBasicActionResources` applies set `generationBonus` entries. Phase 54 unit 2 — `src/Skills/skill.engine.ts` chains `applySetGenerationBonus` after the existing per-item `applyEquipmentGenerationBonus` call. Same trigger semantics; counters clamped ≥ 0.
+- [x] Set `passiveEffects` applied at combat start and cleaned up at combat end. Phase 54 unit 2 — `initializeCombat` applies each set-bonus effect ID via `applyEffect` with `sourceId: 'set-bonus'`; effects land on `combatState.player.effects` (NOT `character.effects`); combat-end cleanup discards the cloned player so set passives are combat-scoped per Spec Q4.
+- [x] 3 initial sets defined in `src/Items/set.library.ts`. Phase 54 unit 2 — Wanderer's Road (2-piece, sandals + leather-cap, `+2 heart` start tokens); Iron Discipline (3-piece, leather-cap + cloth-wrap + cloth-gloves, `+3 physicalDefense` at 2 pieces / `+1 body/any` at 3 pieces); Scholar's Circle (2-piece, copper-ring + leather-cap, `+2 mind` start tokens + `buff_critical_rate_up` passive). Per D3, Scholar's Circle uses a real effect ID (`buff_critical_rate_up`) instead of the spec's placeholder `duration-extend-buff-id`.
+- [x] Hermetic tests covering all scenarios above. Phase 54 unit 3 — `src/Items/e2e/sets.engine.test.ts` ships 13 cases across set-library inventory, getActiveSetBonuses (4 cases — Wanderer's-Road 2-piece active, sub-threshold no-op, Iron-Discipline 2+3-piece simultaneous, overlapping-membership independent activation), aggregator helpers (3 cases), initializeCombat seeding (2 cases), set passive lifecycle (2 cases — present in combatState, absent in character), and `generateBasicActionResources` chaining. 615/615 tests (+15 net from Phase 53's 600).
+- [x] `docs/equipment.md` updated with a "Set Items" section. Phase 54 unit 3 — new "Set Items (Spec 05e / Phase 54)" section between "Library" and "Out of scope" lists the type shape, the runtime application (combat start tokens / basic action generation / passive effects / stat modifiers), the set library, the public API, and the "Adding a new set" instructions.
 
 ## Out of scope
 
