@@ -16,7 +16,26 @@
 
 import type { Character } from '../Character/types';
 import type { Item } from './types';
+import type { ShopWare } from './shop.types';
 import { deepClone } from '../Utils';
+
+/**
+ * Default sell price for a shop ware (Phase 37, exploit-fix iterate).
+ *
+ * Halves the buy price and floors — so a ware with price 1 sells for 0,
+ * price 2 sells for 1, price 12 sells for 6. The result is always
+ * strictly less than the buy price for any positive integer price,
+ * which forces every buy → sell round-trip to be net-negative for the
+ * player and forecloses the small infinite-money loop the prior
+ * `Math.max(1, Math.floor(price / 2))` floor allowed at price ≤ 2.
+ *
+ * UIs should call this helper rather than re-implementing the
+ * heuristic; the policy lives on the engine side so future content
+ * pricing stays consistent across CLI, RN, and any other consumer.
+ */
+export function defaultSellPrice(ware: ShopWare): number {
+    return Math.floor(ware.price / 2);
+}
 
 export function buyItem(
     character: Character,

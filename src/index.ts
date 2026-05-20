@@ -106,7 +106,7 @@ export {
     uniqueTemplates, getUniqueTemplate,
     dropItem, rollModifiers, resolveModifiers, rarityWeightTable,
     consumableLibrary, getConsumableById,
-    buyItem, sellItem,
+    buyItem, sellItem, defaultSellPrice,
 } from './Items';
 export type {
     Item, Equipment, Consumable, Material, QuestItem,

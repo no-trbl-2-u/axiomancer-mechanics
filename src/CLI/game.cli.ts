@@ -38,7 +38,7 @@ import { Stance, CombatState, CombatAction, Action } from '../Combat/types';
 import { getSkillById } from '../Skills/skill.library';
 import { canUseSkill, getAvailableSkills } from '../Skills/skill.engine';
 import { isConsumable } from '../Items/types';
-import { buyItem, sellItem } from '../Items/shop.reducer';
+import { buyItem, sellItem, defaultSellPrice } from '../Items/shop.reducer';
 import { getConsumableById } from '../Items/consumable.library';
 import { bucketAxis, getAlignmentCell } from '../Philosophy';
 import { CombatEndReport } from '../Game/store';
@@ -226,9 +226,14 @@ async function shopLoop(store: GameStoreHandle, shop: { wares: ReadonlyArray<{ i
         const inv = store.getState().player.inventory;
         if (inv.length === 0) { log('Nothing to sell.'); continue; }
         const choices = inv.map((i, idx) => {
-            // Use the shop's posted price if the item is also one of the wares; else half the first ware's price as a floor.
+            // Engine-tier policy (Phase 37 + iterate exploit-fix): defaultSellPrice
+            // halves and floors a ware's buy price. Always strictly less than the
+            // buy price for any positive integer, so buy → sell round-trips are
+            // net-negative for the player. For items not on the current shop's
+            // ware list, fall back to 1 (the pre-existing minimum) — that path
+            // is unaffected by the exploit since it doesn't loop with a buy.
             const matching = shop.wares.find(w => w.itemId === i.id);
-            const sellPrice = matching ? Math.max(1, Math.floor(matching.price / 2)) : 1;
+            const sellPrice = matching ? defaultSellPrice(matching) : 1;
             return { name: `${i.name} — sell for ${sellPrice}`, value: `${idx}:${sellPrice}` };
         });
         choices.push({ name: 'back', value: '' });
