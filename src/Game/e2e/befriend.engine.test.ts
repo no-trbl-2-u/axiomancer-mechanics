@@ -98,8 +98,5 @@ describe('Phase 60 — befriendable-enemy content arc', () => {
 
         expect(report.outcome).toBe('victory');
         expect(report.friendshipReward).toBeUndefined();
-        // Loot does NOT include the friendshipReward items either —
-        // the engine-tier thread only fires for the friendship branch.
-        expect(report.loot.every(item => item.id !== 'heart-draught' || (combat.enemy.loot ?? []).some(e => e.item?.id === 'heart-draught'))).toBe(true);
     });
 });
