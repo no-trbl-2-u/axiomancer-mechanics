@@ -23,6 +23,11 @@ import {
     getEffectiveStats,
     canAct,
     resolveEffectiveAdvantage,
+    nullAdapter,
+} from '../../index';
+import type {
+    PersistenceAdapter,
+    GameState,
 } from '../../index';
 
 describe('Phase 50 — public barrel exposes skillLibrary + getSkillById', () => {
@@ -82,5 +87,48 @@ describe('iterate (post-critique-21) — public barrel exposes 4 Combat-tier agg
     it('resolveEffectiveAdvantage is a function', () => {
         expect(resolveEffectiveAdvantage).toBeDefined();
         expect(typeof resolveEffectiveAdvantage).toBe('function');
+    });
+});
+
+describe('Phase 55 — PersistenceAdapter is reachable + shape-stable', () => {
+    // The type is imported at the top of the file via `import type`. If the
+    // public barrel ever loses the PersistenceAdapter export, the compile
+    // step (npm run type-check) catches it before this test even runs.
+
+    it('nullAdapter is a PersistenceAdapter value-export from the public barrel', () => {
+        expect(nullAdapter).toBeDefined();
+        expect(typeof nullAdapter.load).toBe('function');
+        expect(typeof nullAdapter.save).toBe('function');
+    });
+
+    it('the interface shape is a synchronous two-method contract — extending it compile-checks', () => {
+        // The extension pattern documented in src/Game/persistence/types.ts:
+        // adapters bridging to async backends extend PersistenceAdapter and
+        // add async lifecycle helpers (preload / flush / clear). This test
+        // builds a minimal extension to compile-check the contract; runtime
+        // shape (sync load + save) is the engine guarantee.
+        interface FakeAsyncAdapter extends PersistenceAdapter {
+            preload(): Promise<void>;
+            flush(): Promise<void>;
+        }
+
+        const fake: FakeAsyncAdapter = {
+            load: () => null,
+            save: (_state: GameState) => { /* no-op */ },
+            preload: async () => { /* no-op */ },
+            flush: async () => { /* no-op */ },
+        };
+
+        expect(typeof fake.load).toBe('function');
+        expect(typeof fake.save).toBe('function');
+        expect(typeof fake.preload).toBe('function');
+        expect(typeof fake.flush).toBe('function');
+
+        // The sync surface still works through the extended interface
+        // without any await — that's the architectural guarantee mobile's
+        // AsyncStorageAdapter depends on.
+        const loaded = fake.load();
+        expect(loaded).toBeNull();
+        fake.save({ version: 5 } as GameState);
     });
 });
