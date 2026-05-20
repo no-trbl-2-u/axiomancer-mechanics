@@ -26,8 +26,12 @@ fixture IS the gesture for "I'm changing the public barrel"; deploy
 gate fails on any PR that adds/removes/renames a top-level export
 without refreshing the fixture.
 
-Current shape (as of `0.10.1` unreleased): 233 runtime exports + 158
-type exports across the 13 module sections.
+Current shape (HEAD, post-Phase-60): 233 runtime exports + 159 type
+exports across the 13 module sections. The `v0.10.2` tag shipped at
+233 + 158; Phase 60 added one type (`FriendshipReward`) over that
+baseline. `0.10.1` and `0.10.2` otherwise added no new public surface
+vs `0.10.0`; the next bump (post-Phase-60) flips the `[unreleased]`
+heading and ships the type addition.
 
 ## When to add a new tool here
 
