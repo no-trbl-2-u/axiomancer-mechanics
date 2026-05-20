@@ -6,13 +6,21 @@
 > by `/iterate`.
 
 <!-- Metadata (updated by /critique after each pass):
-> Last pass: 2026-05-20 at commit d4959ef
-> Pass count: 25
+> Last pass: 2026-05-20 at commit 317d2e3
+> Pass count: 26
 -->
 
 ---
 
 ## Pending
+
+### [MED] `CHANGELOG.md` `[unreleased]` is empty despite Phase 58/59/60 + 7 iterate fixes shipping post-0.10.2 — including a new public-API type (`FriendshipReward`)
+- pass: critique-26 (commit 317d2e3)
+- area: release-engineering
+- observation: The `[unreleased]` heading at `CHANGELOG.md:13-17` currently carries only the post-publish placeholder text ("Next bump's work lands here. Per RELEASING.md, the post-publish step is to add this placeholder heading; the next `npm publish` will flip it to a real version + date."). But the post-`v0.10.2` HEAD has shipped real work that the next bump will ship: **Phase 58** (`specs/14-philosophical-alignment.md` — pure docs, no surface impact), **Phase 59** (zero-residual docs gap audit — also no surface impact), and **Phase 60** which DID change the public surface (`FriendshipReward` type + `Enemy.friendshipReward?` field + `CombatEndReport.friendshipReward?: { narrative? }` field + 2 authored library enemies with the new field). Plus 7 iterate fixes (spec.md publish-stale, README/bearings/scripts/README front-door currency, docs/testing.md CI subsection, combat.resolver rename, pickEnemySkill un-export, befriend.engine.test simplification, scripts/README fixture freshen). Phase 60 unit 1 (`7724c96`) flipped the public-surface fixture from 233+158 → 233+159; that's a contract change downstream consumers (`axiomancer-mobile`) need to see in CHANGELOG to know what their next-bump issue covers.
+- evidence: `head -20 CHANGELOG.md` shows `[unreleased]` body = placeholder only (no `### Added` / `### Changed` blocks). Phase 60 unit 1 added `export type { ... FriendshipReward }` to `src/index.ts` (visible in `git log -p 7724c96 -- src/index.ts`). `scripts/public-surface.expected.json` count diff between `v0.10.2` (233+158) and HEAD (233+159) — verified at `scripts/README.md`'s post-Phase-60 freshen. If the next bump fires without populating `[unreleased]`, the publish-flow Pre-release-checklist item 6 ("CHANGELOG ready") fails by construction and the bump ships under-documented.
+- suggested_fix: Populate `[unreleased]` with the standard Keep-a-Changelog blocks before the next user-triggered publish. Skeleton: `### Added` — `FriendshipReward` type + `Enemy.friendshipReward?` field + `CombatEndReport.friendshipReward?: { narrative? }` field, all attributed to Phase 60 (commits `7724c96` + `6e03871` + `b13348b`); `### Changed` — `pickEnemySkill` no longer exported from `src/Enemy/enemy.logic.ts` (mirrors `applyOutlookBias` precedent at iterate `17e76b9`; internal AI helper, no consumer-visible API change). `### Docs` — Spec 14 retroactive conversation-loop spec (Phase 58); `docs/testing.md` Continuous integration subsection (iterate `b7a3fa6`); README + bearings + `docs/api.md` + `docs/enemy.md` + `docs/combat.md` surface refreshes; spec.md publish-stale flipped; `combat.resolver.test.ts` renamed to `.engine.test.ts` per the convention codified in `docs/testing.md`. `### Migration notes` — none (additive optional fields; existing consumers that destructure `{ outcome, xpGained, loot }` continue to work; only consumers that opt into `report.friendshipReward?.narrative` see the new field). The whole authoring runs ≤30 lines; `deploy:check`'s tag/CHANGELOG assertion (Phase 52 unit 2) ignores `(unreleased)` headings so the gate stays green while authoring. Cite the per-version diff via `node scripts/diff-public-surface.mjs v0.10.2 HEAD` (Phase 53) for the per-export bullets — that's the canonical source per `RELEASING.md` post-Phase-52.
+- source: critique
 
 ---
 
