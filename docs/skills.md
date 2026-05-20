@@ -98,24 +98,46 @@ import {
 Skills can be learned at runtime, not just bundled by a preset at
 character creation. Three helpers ship the surface:
 
-- **`meetsLearningRequirement(character, skill)`** — pure boolean.
+- **`meetsLearningRequirement(character, skill, alignment?)`** — pure boolean.
   Consults each clause on `skill.learningRequirement` (`level`,
   optional `statRequirementType` + `statRequirementValue`, optional
-  `prerequisiteSkill`). When a skill omits `learningRequirement`,
-  falls back to a tier-derived level minimum: **T1=1, T2=5, T3=10**.
-  Authors can override per-skill for special unlocks (a stat-gated
-  paradox skill, a "must know X first" chain).
-- **`getAvailableSkills(character)`** — returns every entry in
-  `skillLibrary` that the character does NOT already know AND
+  `prerequisiteSkill`, optional `requiresAlignment`). When a skill omits
+  `learningRequirement`, falls back to a tier-derived level minimum:
+  **T1=1, T2=5, T3=10**. Authors can override per-skill for special
+  unlocks (a stat-gated paradox skill, a "must know X first" chain,
+  an alignment-gated fallacy skill).
+- **`getAvailableSkills(character, alignment?)`** — returns every entry
+  in `skillLibrary` that the character does NOT already know AND
   meets the learning requirement for, preserving library order
   for stable UI listing.
-- **`learnSkill(character, skillId)`** — pure reducer-style
+- **`learnSkill(character, skillId, alignment?)`** — pure reducer-style
   function; appends to `knownSkills` when eligible, no-ops when
   already known / unknown to the library / requirement-blocked.
 
 The game-store action `LEARN_SKILL` dispatches through `learnSkill`;
-the CLI Character tab surfaces a `rawlist` prompt when
-`getAvailableSkills(player).length > 0` (Phase 30 unit 3).
+the reducer reads `state.philosophicalAlignment` automatically so the
+optional `alignment` argument only needs to be threaded by callers
+that compose `meetsLearningRequirement` / `getAvailableSkills` directly
+(e.g. the CLI Character tab's Learn loop in Phase 30 unit 3 + Phase 46
+unit 2). The CLI Character tab surfaces a `rawlist` prompt when
+`getAvailableSkills(player, state.philosophicalAlignment).length > 0`.
+
+#### Alignment gates on learning (Phase 46)
+
+`SkillLearningRequirement.requiresAlignment?: AlignmentGate` mirrors
+the same predicate type used on `DialogueChoice.requires` (see
+[docs/npcs.md](./npcs.md) "Alignment-aware content"). Shape:
+`{ axis: 'epistemology' | 'outlook' | 'scope', op: 'gte' | 'lte', value: number }`.
+When `alignment` is undefined, alignment-gated skills are blocked by
+default — same semantics as alignment-gated dialogue choices. Two live
+gates ship in `skillLibrary` as of Phase 46:
+
+- `nirvana-fallacy` — `outlook ≤ -34` (pessimistic disposition).
+- `appeal-to-fear` — `scope ≥ 34` (transcendent scope).
+
+Cross-link: `docs/philosophy.md` "Authoring gates (Phase 46)" carries
+operator semantics + compound-gate composition + first-pass authoring
+guidance.
 
 The `character:levelup` event payload also carries
 `unlockedSkills: string[]` listing skill ids that became eligible
