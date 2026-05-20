@@ -201,22 +201,66 @@ spec. Rewards (`{ kind: 'currency', amount }`) increment this directly.
 
 ## Demo Content (fishing-village)
 
-`src/World/Continents/Coastal-Village/maps.ts` ships a complete chain so
-the loop is testable end-to-end:
+`src/World/Continents/Coastal-Village/maps.ts` ships the canonical
+"base" starting map. **As of Phase 65** it's a 25-node branching grid
+with three sub-areas; the linear 10-node spine `fv-1` → `fv-10` along
+`y=0` is preserved so existing Phase 23/24 MapEventPool overrides +
+Phase 43 alignmentDelta authoring + Phase 62 flag-gated dialogue +
+Phase 63 observer wiring all continue to work without modification.
+
+### Spine (`y=0`, pre-Phase-65)
 
 ```
-fv-1 (start)
-  → fv-2 (npc:    Old Marrow, quest-giver — branching tree)
-  → fv-3 (shop:   Tide-Shopkeeper)
-  → fv-4 (encounter)
-  → fv-5 (treasure, +10 currency)
-  → fv-6 (boss-encounter: The Coastal Tyrant)
+fv-1 (start, dock cutscene)
+  → fv-2 (interaction: Old Marrow, quest-giver — branching tree)
+  → fv-3 (village: Fishing Village Stalls — Tide-Shopkeeper)
+  → fv-4 (encounter: wet-hound)
+  → fv-5 (loot-cache, +10 currency)
+  → fv-6 (encounter-boss: The Coastal Tyrant)
+  → fv-7 (interaction: Coastal Beggar)
+  → fv-8 (gathering: driftwood)
+  → fv-9 (rest: campfire)
+  → fv-10 (hazard: barnacles)
 ```
 
-The starting quest's objective is `kill The Coastal Tyrant`; defeating
-the boss auto-completes the quest and grants the 25-currency reward.
+The starting quest's objective is `kill The Coastal Tyrant`;
+defeating the boss auto-completes the quest and grants the
+25-currency reward.
 
-`northern-forest` adds an `event`-type node (rest) at `nf-4`.
+### Sub-areas (Phase 65)
+
+**Harbor district** (`y=+1..+2`, entered from fv-1 / fv-2 / fv-3):
+- fv-11 fishmonger row (village — Net-Mender Joss + small shop).
+- fv-12 ferry slip (cutscene — empty slip; absent ferrier).
+- fv-13 quayside chapel (rest, half-heal).
+- fv-14 tide pools (gathering — tide-shell).
+- fv-15 gull crag (encounter — Mournful Gull, Phase 60 befriendable;
+  **dead-end** via fv-14).
+
+**Inland streets** (`y=-1..-2`, entered from fv-3 / fv-4 / fv-5):
+- fv-16 town well (rest, three-quarter heal).
+- fv-17 smokehouse (gathering — salt-fish).
+- fv-18 back alley (encounter — Hollow-Eyed Beggar, Phase 60
+  befriendable).
+- fv-19 abandoned shack (loot-cache, +8 currency).
+- fv-20 old shrine (cutscene — kept offerings to a half-forgotten
+  sea-god). **Small loop**: fv-17 ↔ fv-19; fv-20 cul-de-sac off
+  fv-19.
+
+**Cliff path / headlands** (`y=+1..+2` east, entered from fv-7 / fv-8):
+- fv-21 gull-tossed steps (cutscene — returning fisherman).
+- fv-22 sea-stack (loot-cache, +12 currency).
+- fv-23 lighthouse ruin (cutscene — the lamp room open to sky).
+- fv-24 keeper's cottage (rest, full heal).
+- fv-25 gull's nest (hazard — fledglings; **dead-end** via fv-24).
+
+All 8 `MapEventKind` values are represented multiple times across the
+25 nodes (5 cutscene / 2 village / 2 interaction / 3 gathering / 4
+encounter / 3 loot-cache / 4 rest / 2 hazard).
+
+`northern-forest` is a smaller 10-node branching map (2-way fork at
+nf-1 joining at nf-6); a future content phase can densify it to match
+the fishing-village shape.
 
 ## Bootstrap
 

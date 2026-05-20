@@ -268,3 +268,74 @@ describe('applyDialogueChoice', () => {
         expect(step.gameState.player.currency).toBe(before + 25);
     });
 });
+
+describe('Phase 65 — expanded fishing-village layout', () => {
+    const fv = () => getMapDefinition('coastal-continent', 'fishing-village');
+
+    it('grows from 10 to 25 nodes (spine + 3 sub-areas)', () => {
+        expect(fv().nodes.length).toBe(25);
+    });
+
+    it('preserves the spine fv-1..fv-10 along y=0', () => {
+        const map = fv();
+        for (let i = 1; i <= 10; i++) {
+            const node = map.nodes.find(n => n.id === `fv-${i}`);
+            expect(node, `fv-${i} should exist`).toBeDefined();
+            expect(node!.location[1], `fv-${i} should be on y=0`).toBe(0);
+        }
+    });
+
+    it('extends (does not replace) the spine connectedNodes with new branch IDs', () => {
+        const map = fv();
+        // fv-3 gains fv-13 (harbor) + fv-16 (inland) on top of the spine fv-4.
+        const fv3 = map.nodes.find(n => n.id === 'fv-3')!;
+        expect(fv3.connectedNodes).toContain('fv-4');   // spine preserved
+        expect(fv3.connectedNodes).toContain('fv-13');  // harbor branch
+        expect(fv3.connectedNodes).toContain('fv-16');  // inland branch
+    });
+
+    it('fv-15 (gull crag) is a dead-end via fv-14', () => {
+        const map = fv();
+        const fv15 = map.nodes.find(n => n.id === 'fv-15')!;
+        expect(fv15.connectedNodes).toEqual(['fv-14']);
+    });
+
+    it('fv-25 (gulls nest) is a dead-end via fv-24', () => {
+        const map = fv();
+        const fv25 = map.nodes.find(n => n.id === 'fv-25')!;
+        expect(fv25.connectedNodes).toEqual(['fv-24']);
+    });
+
+    it('fv-17 ↔ fv-19 small loop in the inland streets sub-area', () => {
+        const map = fv();
+        const fv17 = map.nodes.find(n => n.id === 'fv-17')!;
+        const fv19 = map.nodes.find(n => n.id === 'fv-19')!;
+        // Loop: fv-17 → fv-19 and fv-19 → fv-17 (bidirectional).
+        expect(fv17.connectedNodes).toContain('fv-19');
+        expect(fv19.connectedNodes).toContain('fv-17');
+    });
+
+    it('all 25 nodes have a registered MapEventPool', () => {
+        // Drive resolveMapEvent against each node id; expect every one to
+        // surface a non-null event (i.e. the registered pool fired).
+        const map = fv();
+        for (const node of map.nodes) {
+            const state = createNewGameState();
+            state.world = {
+                ...state.world,
+                currentMap: {
+                    ...state.world.currentMap,
+                    state: {
+                        ...state.world.currentMap.state,
+                        currentNodeId: node.id,
+                        availableNodes: [node.id],
+                        discoveredNodes: [node.id],
+                        consumedNodes: [],
+                    },
+                },
+            };
+            const result = resolveMapEvent(state);
+            expect(result.event, `fv ${node.id} should have a registered pool`).not.toBeNull();
+        }
+    });
+});

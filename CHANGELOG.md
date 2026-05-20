@@ -75,6 +75,27 @@ a bump — see the Migration notes below.
   No fixture change (the field is on an existing exported type).
 
 ### Changed
+- **Fishing-village starting map expanded (Phase 65).** The canonical
+  starting map grew from a linear 10-node chain along the dockside to
+  a 25-node branching grid with three sub-areas — Harbor District
+  (`fv-11..fv-15`, dead-end at gull crag), Inland Streets
+  (`fv-16..fv-20`, small loop `fv-17 ↔ fv-19`), and Cliff Path
+  Headlands (`fv-21..fv-25`, dead-end at gull's nest). The original
+  10-node spine `fv-1` → `fv-10` is preserved verbatim so all
+  existing Phase 23/24 MapEventPool overrides, Phase 43
+  `alignmentDelta` authoring, Phase 62 flag-gated dialogue, and
+  Phase 63 observer wiring continue to function without modification
+  (only `connectedNodes` extended, never replaced). 15 new
+  `MapEventPool` consts registered in `FISHING_VILLAGE_POOLS`. All 8
+  `MapEventKind` values now appear multiple times across the 25
+  nodes. Phase 60 befriendable enemies (MournfulGull at `fv-15`
+  gull crag; HollowEyedBeggar at `fv-18` back alley) are now
+  discoverable in the world. No new public-API exports; pure content
+  scale. See `docs/world.md` § "Demo Content (fishing-village)" for
+  the layout. Phase 65 commits: `4f3b9ec` (Unit 1 — node structure +
+  connections) + `e8d3b90` (Unit 2 — 15 MapEventPool authoring) +
+  Unit 3 (this commit — e2e + docs).
+
 - **`pickEnemySkill` no longer exported from
   `src/Enemy/enemy.logic.ts`** (iterate `c15d3fa`). Internal AI
   helper, never on the Enemy barrel or top-level barrel; mirrors the
