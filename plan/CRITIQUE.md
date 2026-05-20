@@ -14,14 +14,6 @@
 
 ## Pending
 
-### [LOW] `scripts/` lacks a top-level README inventorying the 5 tools after Phase 53 added 3
-- pass: critique-23 (commit 44a179b)
-- area: docs / structure
-- observation: `scripts/` now contains 5 files: `deploy-check.mjs` (pre-loop), `loop-issue.mjs` (Phase 26 era), and 3 just-shipped at Phase 53 (`snapshot-public-surface.mjs`, `diff-public-surface.mjs`, `public-surface.expected.json`). Same drift pattern critique-14 caught for `automation/` after Phase 39 added a second tool — drained at iterate `ce8f5c4` this session. `scripts/` now sits in the same "multiple tools, no map" state `automation/` did, with one extra wrinkle: the `public-surface.expected.json` fixture is a contract (Phase 53 drift detector enforces it) but a reader running `ls scripts/` has no breadcrumb explaining what owns it.
-- evidence: `ls scripts/` returns the 5 files; no `scripts/README.md` exists; `grep -rn "scripts/" docs/` returns occasional references but no directory index. The matching `automation/README.md` (commit `ce8f5c4`) is the model — purpose section, tools table, fixture / output notes, "When to add a new tool" guidance.
-- suggested_fix: author `scripts/README.md` mirroring `automation/README.md`'s shape. Tools table covers `deploy-check.mjs` (the deploy gate), `loop-issue.mjs` (phase-mirror best-effort), `snapshot-public-surface.mjs` + `diff-public-surface.mjs` (Phase 53 — public-surface contract enforcement + diff). Note that `public-surface.expected.json` is the committed fixture; refreshing it is the user's gesture for "I'm changing the public barrel." ~30-line file, no code change. Cross-link from `docs/testing.md` "verify gate" subsection. Impact 2 × Ease 9 / 10 = 1.8.
-- source: critique
-
 ### [LOW] No conversation-loop spec for the philosophical alignment system after two phases shipped against it
 - pass: critique-18 (commit c62702e)
 - area: spec-gap
@@ -33,6 +25,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] `scripts/` lacks a top-level README inventorying the 5 tools after Phase 53 added 3** — resolved at iterate commit `7c95643` (2026-05-20). New `scripts/README.md` mirrors `automation/README.md` shape: purpose framing (enforcement layer vs automation's walkthroughs), tools table for all 4 .mjs entry points, dedicated Fixture subsection explaining `public-surface.expected.json`'s role + `--write` workflow, "When to add a new tool" guidance, cross-links to RELEASING.md / CHANGELOG.md / automation/README.md. `docs/testing.md` gained a new "Deploy gate" subsection cross-linking to scripts/README.md and naming the four deploy-check assertions. 616/616 tests stay green. Impact 2 × Ease 9 / 10 = 1.8. Source: critique-23 row 4.
 
 - [x] **[LOW] `docs/api.md` Public API table missing Phase 54 set surface + `defaultSellPrice` + Phase 50 aggregators that landed at iterate** — resolved at iterate commit `12dfeb9` (2026-05-20). Items section gained: `defaultSellPrice` on the Phase 37 shop bullet (with the strictly-less-than-buy-price invariant noted); a new "Set Items (Phase 54 / Spec 05e)" sub-bullet listing the 6 set engine helpers + library + types + cross-link to `docs/equipment.md`. Combat section gained a new bullet for the 4 effect aggregators + 2 types with the iterate-7ee0745 attribution. 616/616 tests stay green. Impact 3 × Ease 8 / 10 = 2.4 (no docs bias). Source: critique-23 row 3.
 
