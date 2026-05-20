@@ -21,7 +21,11 @@ import {
 import { Enemy } from '../types';
 import { CombatState } from '../../Combat/types';
 import { createEnemy } from '../index';
-import { ENEMY_REGISTRY, ArgumentativeCrow, CoastalTyrant } from '../enemy.library';
+import {
+    ENEMY_REGISTRY, ArgumentativeCrow, CoastalTyrant,
+    TideflukeReaver, HushWraith, HollowSaint, TheDisagreement, EchoOfPyrrhonia,
+    MournfulGull, HollowEyedBeggar,
+} from '../enemy.library';
 import { mockSequentialRng } from '../../test-utils/rng';
 import { getSkillById } from '../../Skills/skill.library';
 
@@ -353,16 +357,50 @@ describe('decideEnemyAction — Phase 49 skill dispatch', () => {
     });
 });
 
-describe('ArgumentativeCrow + CoastalTyrant — Phase 49 rotations', () => {
-    it('Argumentative Crow carries the false-dilemma rotation', () => {
+describe('Phase 49 + Phase 57 enemy rotations', () => {
+    // Phase 49 (`27064d9`) authored the first 2 rotations; Phase 57
+    // (this commit) extended the coverage to all 5 elites/boss/unique
+    // + 2 of the 6 normals. The 3 simplest normals (Tidepool Crab,
+    // Sea-Mist Wisp, Lullaby Moth) intentionally stay skill-less per
+    // Phase 57 D2 (early-game pacing).
+
+    it('Argumentative Crow carries the false-dilemma rotation (Phase 49)', () => {
         expect(ArgumentativeCrow.skills).toBeDefined();
         expect(ArgumentativeCrow.skills?.length).toBe(1);
         expect(ArgumentativeCrow.skills?.[0].id).toBe('false-dilemma');
     });
 
-    it('Coastal Tyrant carries the achilles-gambit rotation', () => {
+    it('Coastal Tyrant carries the achilles-gambit rotation (Phase 49)', () => {
         expect(CoastalTyrant.skills).toBeDefined();
         expect(CoastalTyrant.skills?.length).toBe(1);
         expect(CoastalTyrant.skills?.[0].id).toBe('achilles-gambit');
+    });
+
+    it('Tidefluke Reaver carries the straw-giant rotation (Phase 57)', () => {
+        expect(TideflukeReaver.skills?.[0].id).toBe('straw-giant');
+    });
+
+    it('Hush-Wraith carries the sorites-cascade rotation (Phase 57)', () => {
+        expect(HushWraith.skills?.[0].id).toBe('sorites-cascade');
+    });
+
+    it('Hollow Saint carries the pascals-wager rotation (Phase 57)', () => {
+        expect(HollowSaint.skills?.[0].id).toBe('pascals-wager');
+    });
+
+    it('The Disagreement carries the liars-echo rotation (Phase 57)', () => {
+        expect(TheDisagreement.skills?.[0].id).toBe('liars-echo');
+    });
+
+    it('Echo of Pyrrhonia carries the eternal-regress rotation (Phase 57)', () => {
+        expect(EchoOfPyrrhonia.skills?.[0].id).toBe('eternal-regress');
+    });
+
+    it('Mournful Gull carries the appeal-to-pity rotation (Phase 57)', () => {
+        expect(MournfulGull.skills?.[0].id).toBe('appeal-to-pity');
+    });
+
+    it('Hollow-Eyed Beggar carries the pascals-wager rotation (Phase 57)', () => {
+        expect(HollowEyedBeggar.skills?.[0].id).toBe('pascals-wager');
     });
 });

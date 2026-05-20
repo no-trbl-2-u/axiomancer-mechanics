@@ -171,6 +171,8 @@ export const MournfulGull = createEnemy({
     loot: [none(60), drop('heart-draught', 30), drop('minor-healing-potion', 10)],
     // Phase 45 — mid-pessimistic-individual (Cioran / Hamlet archetype).
     philosophicalAlignment: { epistemology: 0, outlook: -67, scope: -67 },
+    // Phase 57 — heart self-heal fallacy matches "every slight it remembers".
+    skills: [skill('appeal-to-pity')],
 });
 
 export const ForestSprite = createEnemy({
@@ -201,6 +203,9 @@ export const HollowEyedBeggar = createEnemy({
     loot: [none(50), drop('heart-draught', 30), drop('healing-potion', 15), drop('antidote', 5)],
     // Phase 45 — faith-pessimistic-relational (Mainländer / Ferreira archetype).
     philosophicalAlignment: { epistemology: -67, outlook: -67, scope: 0 },
+    // Phase 57 — heart self-heal paradox; shares the Saint's archetype at a
+    // different tier ("what you carry, not what you are" — survival-wager flavour).
+    skills: [skill('pascals-wager')],
 });
 
 export const ArgumentativeCrow = createEnemy({

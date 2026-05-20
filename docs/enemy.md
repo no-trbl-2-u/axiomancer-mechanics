@@ -189,12 +189,27 @@ the strategy resolves normally. The stance is sourced from
 `skill.philosophicalAspect` so a body-aspected skill arrives with
 `stance: 'body'`.
 
-Two enemies carry first-pass rotations:
+Nine enemies carry rotations — 2 from Phase 49, 7 from Phase 57.
+Picks come exclusively from the existing `skillLibrary` (no new skill
+content); each is single-skill per the current `pickEnemySkill`
+contract (first-pick semantics).
 
-| Enemy | Difficulty | Skill | Skill aspect |
-|---|---|---|---|
-| Argumentative Crow | normal | `false-dilemma` | mind |
-| The Coastal Tyrant | boss | `achilles-gambit` | body |
+| Enemy | Difficulty | Skill | Skill aspect | Phase |
+|---|---|---|---|---|
+| Mournful Gull | normal | `appeal-to-pity` | heart | 57 |
+| Hollow-Eyed Beggar | normal | `pascals-wager` | heart | 57 |
+| Argumentative Crow | normal | `false-dilemma` | mind | 49 |
+| Tidefluke Reaver | elite | `straw-giant` | body | 57 |
+| Hush-Wraith | elite | `sorites-cascade` | mind | 57 |
+| Hollow Saint | elite | `pascals-wager` | heart | 57 |
+| The Coastal Tyrant | boss | `achilles-gambit` | body | 49 |
+| The Disagreement | boss | `liars-echo` | mind | 57 |
+| Echo of Pyrrhonia | unique | `eternal-regress` | heart | 57 |
+
+The 3 simplest normals (Tidepool Crab, Sea-Mist Wisp, Lullaby Moth)
+stay skill-less per Phase 57 D2 — early-game pacing benefits from
+straight basic-action encounters before the player has the reactive
+budget for enemy skill rotations.
 
 The actual skill execution runs through `executeSkill` with
 `casterSide: 'enemy'` — see `docs/skills.md` "Enemy caster path
