@@ -206,8 +206,8 @@ authored rewards today:
 
 | Enemy | Items | xpBonus | Narrative |
 |---|---|---|---|
-| **MournfulGull** | 1 × heart-draught | +10 | "The gull stops circling. It settles on the rail beside you. For a long moment, neither of you speaks the slights you remember." |
-| **HollowEyedBeggar** | 1 × healing-potion + 1 × antidote | +15 | "They pull a folded cloth from somewhere inside the rags. Two phials, both still cold. \"I was carrying these for someone,\" they say. \"But you stopped. So.\"" |
+| **MournfulGull** (at `fv-15` gull crag, Phase 65) | 1 × heart-draught | +10 | "The gull stops circling. It settles on the rail beside you. For a long moment, neither of you speaks the slights you remember." |
+| **HollowEyedBeggar** (at `fv-18` back alley, Phase 65) | 1 × healing-potion + 1 × antidote | +15 | "They pull a folded cloth from somewhere inside the rags. Two phials, both still cold. \"I was carrying these for someone,\" they say. \"But you stopped. So.\"" |
 
 `FriendshipReward` is `{ items?: Item[]; xpBonus?: number; narrative?:
 string }`. Items are appended to the weighted-loot roll, xpBonus is

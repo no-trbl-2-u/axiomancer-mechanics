@@ -253,10 +253,10 @@ augment them.
 
 Two enemies ship authored rewards today:
 
-| Enemy | Difficulty | Items | xpBonus | Narrative tone |
-|---|---|---|---|---|
-| **MournfulGull** | normal | 1 × heart-draught | +10 | Heart-attuned remembrance gift; the gull stops circling. Sets flag `befriended-mournful-gull` (Phase 62) — Coastal Beggar's dialogue surfaces a new branch acknowledging the gull's silence. |
-| **HollowEyedBeggar** | normal | 1 × healing-potion + 1 × antidote | +15 | Reversal of the begging dynamic; they offer what they carry. |
+| Enemy | Difficulty | World placement (Phase 65) | Items | xpBonus | Narrative tone |
+|---|---|---|---|---|---|
+| **MournfulGull** | normal | `fv-15` gull crag (Harbor District dead-end via `fv-11` → `fv-14`) | 1 × heart-draught | +10 | Heart-attuned remembrance gift; the gull stops circling. Sets flag `befriended-mournful-gull` (Phase 62) — Coastal Beggar's dialogue surfaces a new branch acknowledging the gull's silence. |
+| **HollowEyedBeggar** | normal | `fv-18` back alley (Inland Streets, on the way to the abandoned-shack loop via `fv-5` → `fv-18` or `fv-3` → `fv-16` → `fv-17` → `fv-18`) | 1 × healing-potion + 1 × antidote | +15 | Reversal of the begging dynamic; they offer what they carry. |
 
 The 2 enemies are picked from the fishing-village normal tier
 (level 2-3), where the player's first deliberate befriending
