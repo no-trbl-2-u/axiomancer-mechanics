@@ -40,6 +40,25 @@ a bump — see the Migration notes below.
   `scripts/public-surface.expected.json` grows from 158 → 159 types
   (runtime exports unchanged at 233).
 
+- **NPC alignment observers (Phase 63).** Tree-level observation
+  pattern for reactive dialogue: `DialogueTree.id?: string`
+  (optional tree identifier) +
+  `GameState.lastSeenAlignmentCells?: Record<string, string>`
+  (additive optional cache, no `GAME_STATE_VERSION` bump per
+  Phase 63 D2) + `DialogueChoice.requires.playerAlignmentCellChangedSince?:
+  boolean` (reactive gate) + `DialogueContext.lastSeenAlignmentCellId?:
+  string` (visibleChoices input).
+  `applyDialogueChoice` writes the current alignment cell id to
+  `state.lastSeenAlignmentCells[tree.id]` after each choice on
+  identified trees; the gate surfaces a choice only when the
+  player's CURRENT cell differs from the cached one. First
+  authored use: Old Marrow's tree (`id: 'old-marrow'`) gains a
+  reactive "Stand quietly. He looks up and sees who you have
+  become." branch. Closes Spec 14 Q2 deferral. Phase 63 commits:
+  `aa11262` (Unit 1 — engine primitive) + `664a5d0` (Unit 2 — Old
+  Marrow content) + Unit 3 (this commit — e2e + docs). No fixture
+  change (additive optional fields on existing exported types).
+
 - **Quest-branch wire-in on `outcome === 'friendship'` (Phase 62).**
   `FriendshipReward.flagSet?: string` extension: when the befriended
   enemy carries the field, the END_COMBAT reducer appends the flag

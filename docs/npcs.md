@@ -128,6 +128,57 @@ It returns the next dialogue node (or `null` when the conversation ends)
 alongside a flat side-effect summary the UI logs (including the cumulative
 `moralShift` if any).
 
+## Reactive NPCs — alignment observers (Phase 63)
+
+NPCs whose dialogue trees carry `DialogueTree.id?: string` opt into the
+alignment-observer machinery:
+
+```typescript
+interface DialogueTree {
+    id?: string;                     // Phase 63 — observer cache key
+    rootId: string;
+    nodes: Record<string, DialogueNode>;
+}
+```
+
+When `applyDialogueChoice` runs against an identified tree, it writes
+the player's current alignment cell id (per `getAlignmentCell`) to
+`GameState.lastSeenAlignmentCells?[tree.id]` AFTER applying the
+choice's effects. Trees without an `id` opt out; their cache slot is
+never written.
+
+Reactive dialogue branches gate on the cache via:
+
+```typescript
+choices: [
+    {
+        text: "(Stand quietly. He looks up and sees who you have become.)",
+        nextNodeId: 'observer_recognition',
+        requires: { playerAlignmentCellChangedSince: true },
+    },
+];
+```
+
+The gate surfaces the choice only when the player's CURRENT alignment
+cell id differs from the cached one. Both `DialogueContext.alignment`
+AND `DialogueContext.lastSeenAlignmentCellId` must be present in the
+caller's context for the gate to fire; either missing hides the
+choice (cold-start safe).
+
+**Caller responsibility.** When invoking `visibleChoices` for an
+identified tree, source `lastSeenAlignmentCellId` from
+`state.lastSeenAlignmentCells?.[tree.id]`. The package barrel doesn't
+ship a sugar wrapper for this — consumers walk the cache directly.
+
+**First authored use.** Old Marrow's tree (`id: 'old-marrow'`) gains
+a reactive `(Stand quietly...)` branch that surfaces on re-conversation
+when the player's alignment cell has shifted since the last visit.
+See `src/World/Continents/Coastal-Village/maps.ts` for the authored
+shape.
+
+Hermetic coverage at
+[`src/Game/e2e/old-marrow-observer.engine.test.ts`](../src/Game/e2e/old-marrow-observer.engine.test.ts).
+
 ## Pending
 
 - **Shop reducers** — `NPC.isShopkeeper` is typed but no `openShop` /

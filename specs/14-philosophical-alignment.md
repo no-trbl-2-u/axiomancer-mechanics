@@ -83,17 +83,22 @@ Hermetic test coverage:
 
 2. **Should alignment shifts propagate to NPCs that observe the
    player?**
-   > Your answer: Deferred. As of Phase 49 the alignment is a
-   > player-state field; NPCs read it via `requiresAlignment`
-   > gates (Phase 46) but do not react to shifts. There is no
-   > observer wiring on `NPC` and no per-NPC "remembered last
-   > seen alignment" state. Adding observer wiring is a
-   > content-phase decision once specific NPCs need it, not an
-   > engine-tier change. Out of scope for Spec 14; if/when added,
-   > the natural extension is an `observesAlignment?: boolean` field
-   > on `NPC` + a reactive dialogue-branch mechanism that fires
-   > when the player's current alignment cell differs from the
-   > one cached at last interaction.
+   > Your answer: **Resolved at Phase 63.** The deferral has been
+   > closed. Phase 63 shipped tree-level observers rather than
+   > NPC-level (per Phase 63 D1 — cleaner ergonomics; trees are
+   > what `applyDialogueChoice` operates on):
+   > `DialogueTree.id?: string` opts a tree into the cache;
+   > `GameState.lastSeenAlignmentCells?: Record<string, string>` is
+   > the keyed cache (tree-id → cell-id, additive optional field,
+   > no `GAME_STATE_VERSION` bump per Phase 63 D2);
+   > `DialogueChoice.requires.playerAlignmentCellChangedSince?:
+   > boolean` is the reactive gate; `applyDialogueChoice` writes
+   > the current cell to the cache AFTER applying choice effects
+   > per Phase 63 D4. First authored use: Old Marrow's tree
+   > (`id: 'old-marrow'`) gains a reactive branch that surfaces on
+   > re-conversation after the player's cell has shifted.
+   > See `docs/npcs.md` § "Reactive NPCs — alignment observers
+   > (Phase 63)" for the consumer-side API.
 
 3. **Should there be alignment-gated endings?**
    > Your answer: Deferred. No endgame content exists in the engine
