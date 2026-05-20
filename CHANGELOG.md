@@ -12,10 +12,17 @@ deep imports are part of the supported surface.
 
 ## [unreleased]
 
+Next bump's work lands here. Per RELEASING.md, the post-publish step
+is to add this placeholder heading; the next `npm publish` will flip
+it to a real version + date.
+
+## [0.10.2] — 2026-05-20
+
 Phases 55, 56, 57 — PersistenceAdapter docs/contract, CI verify
 workflow, enemy skill-rotation content. No new public-API names; the
-public-surface fixture is unchanged. Flip this heading to
-`[0.10.2] — <ISO date>` at publish time per `RELEASING.md`.
+public-surface fixture is unchanged (still 233 runtime values + 158
+types). Consumers see this as a behaviour bump only (enemy combat
+depth + a CI gate).
 
 ### Added
 - **PersistenceAdapter extension pattern docs (Phase 55).**
