@@ -87,8 +87,10 @@ how to add a new walkthrough.
 
 `npm run verify:agent` runs the same gates as `npm run verify`
 (`type-check`, `lint`, the hermetic vitest suite, `build`) but swaps the
-default Vitest reporter for `automation/agent-vitest-reporter.mjs`. Two
-artefacts land at the end of the run:
+default Vitest reporter for `automation/agent-vitest-reporter.mjs`
+(see [`automation/README.md`](../automation/README.md) for the
+directory's full tools table). Two artefacts land at the end of the
+run:
 
 - **`automation/last-verify-report.json`** — structured rollup
   (`{ total, passed, failed, skipped, reason, unhandledErrors,
