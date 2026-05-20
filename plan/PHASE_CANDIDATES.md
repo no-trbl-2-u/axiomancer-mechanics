@@ -5,8 +5,8 @@
 > `## Promoted` or `## Rejected`.
 
 <!-- Metadata (updated by /expand after each pass):
-> Last pass: 2026-05-19 at commit 90432bb
-> Pass count: 12
+> Last pass: 2026-05-19 at commit 7978a89
+> Pass count: 13
 -->
 
 ---
@@ -72,6 +72,14 @@
 - blocked-by: Phase 50 (the skillLibrary re-export + types.d.ts emission fixes must land first — otherwise this adapter polish would need to be folded into Phase 50 itself, which the user already chose to scope out).
 - score: 3 × 6 / 10 = 1.8 (low-medium impact — small ergonomic gain affecting one file in mobile; medium ease — depends on what the specific friction turns out to be, which the candidate scope cannot fully predict until it actually reads the mobile local re-declaration).
 - recommended-slot: directly after Phase 50, OR deferred until the next time mobile flags adapter friction in a handoff. If `[needs-user-call]` after Phase 50 ships is the better trigger, this candidate can be marked rejected at that point with a one-line "no longer relevant — mobile stopped re-declaring" note.
+
+### Candidate: CI verify-on-PR / verify-on-push (GitHub Actions)
+- signal: `.github/workflows/march.yml` exists (manual-dispatch runner for the autonomous-loop `/march` skill), but there is no `verify`-on-PR or `verify`-on-push workflow. For a published-npm package with an external consumer (`axiomancer-mobile`), the absence of a remote PR gate means a typo or test break that slips past local-only `npm run verify` can land on `main` and ship in a tag. The autonomous loop runs `verify` before every commit so today's risk is low, but as soon as a human contributor or a one-off branch lands without the loop, the gap is exposed. The current dispatch surface for catching regressions is `scripts/deploy-check.mjs` (which Phase 53 will extend with public-surface drift) — but that runs *after* `dist/` is built and only when someone runs `npm run deploy:check`. A PR-level gate would catch the same shape one step earlier and surface red CI on the PR view.
+- scope: One phase, 1-2 units. Unit 1 — author `.github/workflows/verify.yml` running on `pull_request` against `main` + on `push` against `main`. Steps: Node setup (LTS), `npm ci`, `npm run verify` (type-check + tests + build), `npm run deploy:check`. Cache `node_modules` keyed off `package-lock.json` sha for speed. Unit 2 (optional) — extend to a release workflow on tag push (`v*.*.*`) that runs verify, builds dist, and prepares a draft `npm publish` (without auto-publishing; user-triggered per the existing convention). The release workflow pairs with Phase 52's RELEASING.md.
+- unblocks: Future human contributors / branch experiments get a remote red-CI signal. The 0.10.x → 0.11.x bump line gets a verifiable gate. README can carry a CI badge.
+- blocked-by: None. Independent of Phase 52 / 53 / 54.
+- score: 4 × 7 / 10 = 2.8 (medium impact — closes a real gap for a published package; high ease — single workflow file, standard pattern).
+- recommended-slot: after Phase 52 (release-engineering coherence), or in parallel.
 
 ### Candidate: Deprecation lifecycle policy
 - signal: This session shipped a `getCoastalMap` removal that was @deprecated since the Phase 23 era — it sat for ~27 phases before removal, with no formal policy on when @deprecated → removed transitions can happen. The mobile consumer had no advance warning that "0.10.x will remove this"; the breakage was discovered post-fact at the iterate tick. Today `grep -rn "@deprecated" src/` returns zero hits (getCoastalMap was the last one), so the queue is empty — but the NEXT deprecation will hit the same pattern unless the policy is codified. Pre-1.0 (currently 0.10.0) permits breaking changes in minor bumps per `plan/bearings.md`, but that's a permission, not a policy. The mobile-engine handshake is now an established pattern (engine ships at 0.7 / 0.8 / 0.9 / 0.10; mobile pins exact + bumps deliberately) — both sides benefit from knowing the lifecycle.
