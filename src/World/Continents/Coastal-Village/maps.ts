@@ -328,22 +328,47 @@ const fishingVillage: MapDefinition = {
     name: 'fishing-village',
     continent: 'coastal-continent',
     description: 'Your home town: familiar faces, salty air, old shacks lining the docks.',
+    // Phase 65 — expanded from a linear 10-node chain to a 25-node
+    // branching grid with three sub-areas: Harbor District (y=+1..+2),
+    // Inland Streets (y=-1..-2), and Cliff Path (y=+1..+2 east). Spine
+    // fv-1..fv-10 preserved verbatim along y=0 so existing tests / Phase
+    // 43 / Phase 62 / Phase 63 wiring continue to work unmodified; new
+    // connectedNodes extend (don't replace) the spine entries.
     startingNode: {
         id: 'fv-1',
         location: [0, 0],
-        connectedNodes: ['fv-2'],
+        connectedNodes: ['fv-2', 'fv-11'],
     },
     nodes: [
-        { id: 'fv-1',  location: [0, 0], connectedNodes: ['fv-2'] },
-        { id: 'fv-2',  location: [1, 0], connectedNodes: ['fv-3'] },
-        { id: 'fv-3',  location: [2, 0], connectedNodes: ['fv-4'] },
-        { id: 'fv-4',  location: [3, 0], connectedNodes: ['fv-5'] },
-        { id: 'fv-5',  location: [4, 0], connectedNodes: ['fv-6'] },
+        // ── Spine (Phase 1 era; preserved by Phase 65 D1) ────────────
+        { id: 'fv-1',  location: [0, 0], connectedNodes: ['fv-2', 'fv-11'] },
+        { id: 'fv-2',  location: [1, 0], connectedNodes: ['fv-3', 'fv-12'] },
+        { id: 'fv-3',  location: [2, 0], connectedNodes: ['fv-4', 'fv-13', 'fv-16'] },
+        { id: 'fv-4',  location: [3, 0], connectedNodes: ['fv-5', 'fv-17'] },
+        { id: 'fv-5',  location: [4, 0], connectedNodes: ['fv-6', 'fv-18'] },
         { id: 'fv-6',  location: [5, 0], connectedNodes: ['fv-7'] },
-        { id: 'fv-7',  location: [6, 0], connectedNodes: ['fv-8'] },
-        { id: 'fv-8',  location: [7, 0], connectedNodes: ['fv-9'] },
+        { id: 'fv-7',  location: [6, 0], connectedNodes: ['fv-8', 'fv-21'] },
+        { id: 'fv-8',  location: [7, 0], connectedNodes: ['fv-9', 'fv-22'] },
         { id: 'fv-9',  location: [8, 0], connectedNodes: ['fv-10'] },
         { id: 'fv-10', location: [9, 0], connectedNodes: [] },
+        // ── Harbor district (Phase 65; y=+1..+2; fv-15 dead-end) ──────
+        { id: 'fv-11', location: [0, 1], connectedNodes: ['fv-1', 'fv-12', 'fv-14'] },
+        { id: 'fv-12', location: [1, 1], connectedNodes: ['fv-2', 'fv-11', 'fv-13'] },
+        { id: 'fv-13', location: [2, 1], connectedNodes: ['fv-3', 'fv-12'] },
+        { id: 'fv-14', location: [0, 2], connectedNodes: ['fv-11', 'fv-15'] },
+        { id: 'fv-15', location: [1, 2], connectedNodes: ['fv-14'] },
+        // ── Inland streets (Phase 65; y=-1..-2; fv-17 ↔ fv-19 loop) ──
+        { id: 'fv-16', location: [2, -1], connectedNodes: ['fv-3', 'fv-17'] },
+        { id: 'fv-17', location: [3, -1], connectedNodes: ['fv-4', 'fv-16', 'fv-18', 'fv-19'] },
+        { id: 'fv-18', location: [4, -1], connectedNodes: ['fv-5', 'fv-17', 'fv-19'] },
+        { id: 'fv-19', location: [3, -2], connectedNodes: ['fv-17', 'fv-18', 'fv-20'] },
+        { id: 'fv-20', location: [4, -2], connectedNodes: ['fv-19'] },
+        // ── Cliff path (Phase 65; y=+1..+2 east; fv-25 dead-end) ─────
+        { id: 'fv-21', location: [6, 1], connectedNodes: ['fv-7', 'fv-22', 'fv-24'] },
+        { id: 'fv-22', location: [7, 1], connectedNodes: ['fv-8', 'fv-21', 'fv-23'] },
+        { id: 'fv-23', location: [8, 1], connectedNodes: ['fv-22', 'fv-24'] },
+        { id: 'fv-24', location: [8, 2], connectedNodes: ['fv-21', 'fv-23', 'fv-25'] },
+        { id: 'fv-25', location: [9, 2], connectedNodes: ['fv-24'] },
     ],
     npcs: [oldMarrow, tideShopkeeper, coastalBeggar],
     enemies: [],
