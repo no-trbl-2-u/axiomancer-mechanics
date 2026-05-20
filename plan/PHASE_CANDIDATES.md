@@ -5,8 +5,8 @@
 > `## Promoted` or `## Rejected`.
 
 <!-- Metadata (updated by /expand after each pass):
-> Last pass: 2026-05-19 at commit 7978a89
-> Pass count: 13
+> Last pass: 2026-05-20 at commit 2476589
+> Pass count: 14
 -->
 
 ---
@@ -81,13 +81,6 @@
 - score: 4 × 7 / 10 = 2.8 (medium impact — closes a real gap for a published package; high ease — single workflow file, standard pattern).
 - recommended-slot: after Phase 52 (release-engineering coherence), or in parallel.
 
-### Candidate: Deprecation lifecycle policy
-- signal: This session shipped a `getCoastalMap` removal that was @deprecated since the Phase 23 era — it sat for ~27 phases before removal, with no formal policy on when @deprecated → removed transitions can happen. The mobile consumer had no advance warning that "0.10.x will remove this"; the breakage was discovered post-fact at the iterate tick. Today `grep -rn "@deprecated" src/` returns zero hits (getCoastalMap was the last one), so the queue is empty — but the NEXT deprecation will hit the same pattern unless the policy is codified. Pre-1.0 (currently 0.10.0) permits breaking changes in minor bumps per `plan/bearings.md`, but that's a permission, not a policy. The mobile-engine handshake is now an established pattern (engine ships at 0.7 / 0.8 / 0.9 / 0.10; mobile pins exact + bumps deliberately) — both sides benefit from knowing the lifecycle.
-- scope: One phase, 1-2 units. Unit 1 — author `RELEASING.md` (or extend the equivalent doc from the Release Process candidate) with a "Deprecation lifecycle" subsection codifying: (a) deprecated symbols get a JSDoc `@deprecated` tag naming the replacement; (b) the deprecation lands in a minor bump and ships a CHANGELOG "Deprecated" entry; (c) removal happens NO SOONER than the next minor bump (so consumers have at least one published version to migrate against); (d) removal lands in a separate minor bump with a CHANGELOG "Removed" entry naming the deprecation version. The Phase 22+ era WorldMap / getCoastalMap pattern stays valid; future deprecations follow this lifecycle. Unit 2 (optional) — extend `scripts/deploy-check.mjs` with a scan for `@deprecated` JSDoc tags + a warn-line listing each one with its first-deprecated commit / version (best-effort; reads `git log -L` for the line that introduced the tag). Helps oversight see the deprecation queue at a glance.
-- unblocks: Future deprecation → removal cycles don't surprise consumers. Mobile (and any future consumer) has a predictable upgrade window between deprecation and removal. The Release Process candidate's CHANGELOG gets a structured "Deprecated" section.
-- blocked-by: Best paired with (but does not require) the Release Process candidate since the policy lives in `RELEASING.md`. If Release Process ships first, this is a small extension. If this ships first, it can live in `plan/bearings.md` until the dedicated doc exists.
-- score: 3 × 8 / 10 = 2.4 (medium-low impact — forward-looking; current deprecation queue is empty; high ease — pure docs work).
-- recommended-slot: bundled with the Release Process candidate as its fourth unit.
 
 ### Candidate: Second continent — Northern Continent stub
 - signal: `spec.md` 6-month horizon — "Additional world content
@@ -679,6 +672,10 @@
 ---
 
 ## Rejected
+
+### Candidate: Deprecation lifecycle policy
+- rejected: 2026-05-20 (expand pass 14; superseded by Phase 52)
+- reason: The candidate's Unit 1 scope (codify the deprecation lifecycle in `RELEASING.md` — mark `@deprecated`, ship a CHANGELOG `Deprecated` entry, wait at least one minor bump, remove with a CHANGELOG `Removed` entry) shipped verbatim at Phase 52 unit 2 (commit `be955b2`) as the "Deprecation lifecycle" section in `RELEASING.md`. WorldMap + getCoastalMap are cited there as past examples of the lifecycle. The candidate's optional Unit 2 (`scripts/deploy-check.mjs` scan for `@deprecated` JSDoc tags + warn-line) is forward-looking-only: `grep -rn "@deprecated" src/` returns 0 hits today, so the scan would be empty and the deploy-gate output would gain noise without signal. If the deprecation queue grows post-1.0 graduation (or post-mobile bump if a new deprecation lands), the scan can be added as a focused iterate-tier fix at that point. No standalone phase warranted.
 
 ### Candidate: Agent verify reporter polish bundle
 - rejected: 2026-05-19 (oversight; superseded by /iterate)
