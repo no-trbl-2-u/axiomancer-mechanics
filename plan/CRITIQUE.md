@@ -6,13 +6,53 @@
 > by `/iterate`.
 
 <!-- Metadata (updated by /critique after each pass):
-> Last pass: 2026-05-20 at commit 44a179b
-> Pass count: 23
+> Last pass: 2026-05-20 at commit 7078829
+> Pass count: 24
 -->
 
 ---
 
 ## Pending
+
+### [MED] spec.md still lists "Published npm release" as both a 6-month-horizon item and a Non-goal — engine has been on npm since `0.2.0`
+- pass: critique-24 (commit 7078829)
+- area: spec-drift
+- observation: `spec.md` lists "Published npm release" at line 53 (6-month-horizon, future tense) and "Published npm release before v1 implementation is complete" at line 85 (Non-goals). Both are stale by 8 releases — `axiomancer-mechanics` is on npm at `v0.10.2` (published 2026-05-20), with a tagged CHANGELOG history going back to `0.2.0` (2026-05-08) and a formal `RELEASING.md` flow shipped by Phase 52. A reader landing on spec.md without context would read the Non-goal as authoritative and conclude the package is internal-only — which is the opposite of the truth. Compounding: spec.md is the file `plan/bearings.md` cross-references as "what is the contract" + "what is excluded by design."
+- evidence: `spec.md:53` ("Published npm release."), `spec.md:85` ("Published npm release before v1 implementation is complete."); `git tag --sort=-creatordate | head` shows `v0.10.2 / v0.10.1 / v0.10.0 / v0.9.0 / v0.8.0 / v0.7.0`; `CHANGELOG.md` carries 9 tagged versions plus the live `[unreleased]` placeholder; `RELEASING.md` documents the manual publish flow.
+- suggested_fix: Two edits. (a) `spec.md:53` — strike "Published npm release." from the 6-month horizon, or annotate as "**Shipped 2026-05-08 (`0.2.0`).** First release under the autonomous-loop era was `0.10.0` (2026-05-19); current is `0.10.2`. See `CHANGELOG.md` + `RELEASING.md`." (b) `spec.md:85` — delete the Non-goal entry. Replace with the real current non-goal: "v1.0.0 stable-API stamp before the spec contracts settle." Update the surrounding Non-goals to ensure the section reads as forward-looking constraints, not historical ones.
+- source: critique
+
+### [LOW] README.md Public API table — Items row missing Phase 37 shop economy + Phase 54 set items; Skills row missing Phase 50 `skillLibrary` / `getSkillById`
+- pass: critique-24 (commit 7078829)
+- area: docs
+- observation: README.md is the front-door quick-reference for the public API surface; per `plan/bearings.md` and `agents.md` it's the contract mirror readers consult before diving into `docs/api.md`. Two marquee surfaces shipped to the barrel are absent from the table. (1) **Items row** (README.md:70) lists `addItem`/`removeItem`/`stackItem`, `useConsumable`/`useConsumableEffect`, equipment helpers, templates, `consumableLibrary`, type guards — but no `buyItem` / `sellItem` / `defaultSellPrice` (Phase 37 + iterate `3ba5319`) and no `getActiveSetBonuses` / `getActiveSetBonusesForCharacter` / `aggregateSetStartTokens` / `applySetGenerationBonus` / `getActiveSetPassiveEffectIds` / `getEquippedItemSets` / `itemSetLibrary` / `getItemSetById` / `SetBonus` / `ItemSet` / `ShopWare` / `ShopInventory` (Phase 54 + Phase 37 types). Set items is the marquee feature for `0.10.0` per its CHANGELOG entry; missing from the front-door table is a real discoverability gap. (2) **Skills row** (README.md:71) lists `executeSkill`, resource helpers, runtime learning — but no `skillLibrary` / `getSkillById` (Phase 50 unit 1 — the engine-handoff fix that was the entire reason `0.10.1` was cut).
+- evidence: `README.md:70` (Items row) — grep `getActiveSetBonuses\|buyItem\|sellItem\|itemSetLibrary` against the row returns 0 hits; `README.md:71` (Skills row) — grep `skillLibrary\|getSkillById` returns 0 hits; both surfaces are present in `src/index.ts:97-118` and `docs/api.md` is current. Phase 37 shipped at `ea9c23a` (Phase 37 unit 1) + iterate `3ba5319` (defaultSellPrice); Phase 50 unit 1 shipped at `19f2015`; Phase 54 shipped at `0cb4b2a + bcb4e03`.
+- suggested_fix: One-pass docs commit. Extend `README.md:70` Items row with: shop economy block (`buyItem` / `sellItem` / `defaultSellPrice`, types `ShopWare` / `ShopInventory` — Phase 37 + iterate) and set items block (`getActiveSetBonuses` + 5 siblings, `itemSetLibrary` / `getItemSetById`, types `SetBonus` / `ItemSet` — Phase 54). Extend `README.md:71` Skills row with `skillLibrary` + `getSkillById` (Phase 50 unit 1 — pair with the existing learning-API references). No code change. Pairs naturally with the spec.md publish-stale finding above as a "front-door currency" sweep.
+- source: critique
+
+### [LOW] `src/Combat/e2e/combat.resolver.test.ts` violates the `.engine.test.ts` naming convention despite self-describing as the canonical example
+- pass: critique-24 (commit 7078829)
+- area: structure
+- observation: `docs/testing.md:188-189` codifies `.engine.test.ts` as a "fixed marker meaning the file is a hermetic e2e test"; `plan/bearings.md:161 + 215` corroborates. Phase 16 (`bb369c1`) migrated sibling tests into `src/<Module>/e2e/` for layout consistency. Every other e2e test in the repo follows the convention — 31 of 32 files under `src/**/e2e/*.engine.test.ts`. The one exception is `src/Combat/e2e/combat.resolver.test.ts`, whose header reads "This file is the *canonical example* of a hermetic e2e test in this repo. If you are writing a new e2e test, copy its structure." (lines 4-6). A canonical example whose filename doesn't match the convention it teaches is precedent-rot — future authors will either copy the wrong suffix or be confused about which marker to use.
+- evidence: `ls src/**/e2e/*.test.ts` — only `combat.resolver.test.ts` lacks the `.engine.` marker among 32 files. `docs/testing.md:188-189` + `plan/bearings.md:161 + 215` codify the convention. The file's own header (`src/Combat/e2e/combat.resolver.test.ts:1-7`) names itself the canonical example.
+- suggested_fix: `git mv src/Combat/e2e/combat.resolver.test.ts src/Combat/e2e/combat.resolver.engine.test.ts`. Update the docs/testing.md cross-link at line 217 (it already points at the new path under the renamed file, just update the displayed filename). No imports to fix — the file is a test entry point, not an importable module. Verify suite stays green at 625/625.
+- source: critique
+
+### [LOW] Phase 56 CI workflow (`.github/workflows/verify.yml`) not surfaced in `docs/testing.md` or README.md
+- pass: critique-24 (commit 7078829)
+- area: docs
+- observation: Phase 56 (`87fb6ab`) shipped `.github/workflows/verify.yml` running `npm run verify` + `npm run deploy:check` on every PR / push against main. The workflow file's own header comment explains its purpose, but the docs surface a contributor would read FIRST — `docs/testing.md` (which has a "Deploy gate" subsection at line 86 referencing `scripts/README.md`) and `README.md` (which lists the verify gate but never names CI) — make no mention that a remote CI gate exists. The autonomous-beast loop runs verify before each commit, so the gate's primary audience is human-PR / one-off branch contributors, who currently have no doc telling them the gate fires.
+- evidence: `grep -rn "verify\.yml\|GitHub Actions\|workflows/verify" docs/ README.md` returns 0 hits. `docs/testing.md:86` Deploy gate subsection ends at the scripts/README.md cross-link; no CI extension. `.github/workflows/verify.yml:1-15` self-documents but isn't navigable from the docs.
+- suggested_fix: Add a "Continuous integration (Phase 56)" subsection to `docs/testing.md` directly under "Deploy gate" naming `.github/workflows/verify.yml`, the on-triggers (`pull_request` against main + `push` to main), the assertion chain (`npm run verify` → `npm run deploy:check`), the concurrency-group + cancel-in-progress behaviour, and the "no auto-publish step by design — manual + attended per RELEASING.md" caveat. Optionally add a CI status badge to README.md top section. Mirrors the doc-currency pattern Phase 34 / iterate ce8f5c4 used for `automation/` (the `automation/README.md` ships its own coverage; testing.md cross-links).
+- source: critique
+
+### [LOW] `scripts/README.md` Fixture section reads "as of `0.10.1` unreleased" but `0.10.1` + `0.10.2` have both shipped
+- pass: critique-24 (commit 7078829)
+- area: docs
+- observation: `scripts/README.md` (added by iterate `7c95643` resolving critique-23 row 4) Fixture subsection currently reads: "Current shape (as of `0.10.1` unreleased): 233 runtime exports + 158 type exports across the 13 module sections." `0.10.1` shipped 2026-05-20 morning (tag `v0.10.1`); `0.10.2` shipped same day later (tag `v0.10.2`) and added no new public surface (the fixture stayed at 233 / 158, confirmed by Phase 57's brief). The "unreleased" qualifier is stale by two publish cycles in the same calendar day — typical post-publish doc drift the deploy gate doesn't catch because the fixture itself is correct; only the prose `as of` annotation is off.
+- evidence: `scripts/README.md` Fixture section ("Current shape (as of `0.10.1` unreleased): 233 runtime exports + 158 type exports"); `git tag --sort=-creatordate | head -3` shows `v0.10.2 / v0.10.1 / v0.10.0`; `cat scripts/public-surface.expected.json | jq '.values | length, .types | length'` returns 233 / 158.
+- suggested_fix: One-line edit. Replace "Current shape (as of `0.10.1` unreleased): 233 runtime exports + 158 type exports across the 13 module sections." with "Current shape (as of `0.10.2`): 233 runtime exports + 158 type exports across the 13 module sections. Phase 55/56/57 added no new public surface; the previous publish cycle (`0.10.1`) is the canonical reference for the current fixture content." Folds the same-day publish history without re-litigating the per-version Added/Changed bullets that belong in `CHANGELOG.md`.
+- source: critique
 
 ### [LOW] No conversation-loop spec for the philosophical alignment system after two phases shipped against it
 - pass: critique-18 (commit c62702e)
