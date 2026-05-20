@@ -73,8 +73,11 @@ Philosophy: bucketAxis, getAlignmentCell, applyAlignmentDelta, defaultAlignment,
             PhilosophicalAlignmentCell
             (+ GameState.philosophicalAlignment field, SHIFT_PHILOSOPHICAL_ALIGNMENT
             action, alignmentDelta? on DialogueChoice.effect + MapEventPoolEntry,
-            sourcedFromCell? on Skill + Effect, Enemy.philosophicalAlignment? —
-            Phases 42-45)
+            sourcedFromCell? on Skill + Effect, Enemy.philosophicalAlignment?,
+            AlignmentGate type + requiresAlignment? on DialogueChoice.requires +
+            SkillLearningRequirement, optional alignment param on
+            meetsLearningRequirement / getAvailableSkills / learnSkill,
+            DialogueContext.alignment? — Phases 42-46)
 ```
 
 Adding new exports is allowed. Renaming or removing existing ones requires
