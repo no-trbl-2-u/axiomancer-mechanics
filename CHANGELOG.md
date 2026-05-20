@@ -12,9 +12,119 @@ deep imports are part of the supported surface.
 
 ## [unreleased]
 
-Next bump's work lands here. Per RELEASING.md, the post-publish step
-is to add this placeholder heading; the next `npm publish` will flip
-it to a real version + date.
+Phase 58 (Spec 14 retroactive conversation-loop spec), Phase 59
+(zero-residual docs gap audit), Phase 60 (befriendable-enemy content
+arc — the only public-surface addition), plus 7 iterate fixes
+addressing critique passes 24 / 25. Includes a canonical
+**re-grounding migration guide** for consumers (e.g.
+`axiomancer-mobile`) hitting "type X has no property Y" errors after
+a bump — see the Migration notes below.
+
+### Added
+- **Befriendable-enemy content arc (Phase 60).** New public type
+  `FriendshipReward` (`{ items?: Item[]; xpBonus?: number;
+  narrative?: string }`); optional `Enemy.friendshipReward?:
+  FriendshipReward` field on the canonical Enemy shape; optional
+  `CombatEndReport.friendshipReward?: { narrative? }` field on the
+  combat report. Engine wiring: `store.endCombat()` threads the
+  per-enemy reward through the `outcome === 'friendship'` branch —
+  items append to `report.loot`, `xpBonus` adds to `report.xpGained`,
+  `narrative` surfaces on the report for the CLI / UI. Two enemies
+  ship authored rewards (MournfulGull + HollowEyedBeggar; Phase 60
+  D2 — boss-tier deferred to follow-up). All additive + optional;
+  existing consumers destructuring `{ outcome, xpGained, loot }`
+  continue to work. Phase 60 commits: `7724c96` (Unit 1 — type +
+  engine) + `6e03871` (Unit 2 — content) + `b13348b` (Unit 3 —
+  hermetic e2e + docs + Knowledge-Gaps Q5 close).
+  `scripts/public-surface.expected.json` grows from 158 → 159 types
+  (runtime exports unchanged at 233).
+
+### Changed
+- **`pickEnemySkill` no longer exported from
+  `src/Enemy/enemy.logic.ts`** (iterate `c15d3fa`). Internal AI
+  helper, never on the Enemy barrel or top-level barrel; mirrors the
+  iterate-17e76b9 treatment of `applyOutlookBias`. No
+  consumer-visible API change; the public path is
+  `decideEnemyAction` which continues to consult `pickEnemySkill`
+  internally. Phase 49 introduced both helpers; this drain closes
+  the export-hygiene gap critique-25 flagged.
+- **`src/Combat/e2e/combat.resolver.test.ts` renamed to
+  `combat.resolver.engine.test.ts`** (iterate `7bf8115`). Aligns with
+  the `.engine.test.ts` convention codified in
+  `docs/testing.md:188-189`. All 33 e2e files under
+  `src/**/e2e/*.engine.test.ts` now follow the canonical marker.
+  Not a public-surface change; test entry-point only.
+
+### Docs
+- **`specs/14-philosophical-alignment.md`** — retroactive
+  conversation-loop spec for the Phase 42-46 alignment system
+  (Phase 58, `f103a8d`). All four open questions answered inline
+  with shipped-code references; `specs/README.md` Recommended order
+  gains row 14.
+- **Phase 59 zero-residual docs gap audit** (`916cef8`) — single
+  audit-summary commit confirming the older Docs-sweep candidate's
+  9 row-groups all drained via /iterate ticks across May 19-20.
+- **`docs/testing.md` "Continuous integration (Phase 56)"
+  subsection** (iterate `b7a3fa6`) — names
+  `.github/workflows/verify.yml`, the on-triggers, the assertion
+  chain, the concurrency-group behaviour, and the
+  no-publish-step-by-design caveat.
+- **`spec.md` "Published npm release" Non-goal flipped to shipped**
+  (iterate `0931ce8`) — 6-month-horizon entry annotated as shipped
+  at v0.2.0 (2026-05-08); Non-goals replaced with the real current
+  non-goal (v1.0.0 stable-API stamp before spec contracts settle).
+- **Front-door currency refreshes** — `README.md` Items row gains
+  Phase 37 shop economy + Phase 54 set items + Phase 60
+  FriendshipReward (iterates `650f2b2` + `59a0439`);
+  `plan/bearings.md` Enemy public-api block gains FriendshipReward
+  (iterate `59a0439`); `scripts/README.md` Fixture section
+  freshened ("HEAD, post-Phase-60: 233 runtime + 159 types" per
+  iterate `9bed952`); `docs/api.md` `CombatEndReport.friendshipReward`
+  surfaced (Phase 60 Unit 3 `b13348b`).
+- **`src/Game/e2e/befriend.engine.test.ts` simplification** (iterate
+  `e5d1799`) — Phase 60 victory-regression compound assertion
+  dropped (−3 LOC; no coverage loss).
+
+### Migration notes
+
+**From `0.10.2` to `[unreleased]`:** none required. All additions are
+optional; existing consumers continue to compile.
+
+**Re-grounding consumer-side types.** If a consumer (e.g. mobile,
+or any external TypeScript client) is hitting "Property X does not
+exist on type Y" errors after a bump, the issue is almost always
+**stale local type definitions drifting against the engine's
+canonical shipped shape**, not a fresh regression. The table below
+gives the canonical replacement for every removed / renamed symbol
+the `axiomancer-mobile` consumer surfaced at issue #93:
+
+| Symbol (consumer expected) | Canonical replacement | When removed |
+|---|---|---|
+| `getCoastalMap()` | `getMapDefinition('coastal-continent', mapName)` + `createMapState(definition)` | iterate `b85f509` (post-v0.10.0) |
+| `WorldMap` type alias | `MapDefinition` (authored shape) + `MapState` (runtime instance) — Phase 23 split | iterate `a707316` (post-v0.9.0) |
+| `Encounter.enemy` single-enemy field | `Encounter.enemies: Enemy[]` (length 1 today; designed for multi-enemy fights) | Pre-v0.7.0 — v0.7.0 already shipped the array shape |
+| `DialogueChoice.id` / `.label` | Track by **index** in `DialogueNode.choices[]`; `DialogueChoice.text` is the human-readable label | Pre-v0.7.0 — current shape has `text` + `effect?` + `requires?` only |
+| `DialogueNode.speaker` | Source from the parent `NPC.name` (the dialogue tree is owned by an NPC) | Pre-v0.7.0 — current `DialogueNode` carries `text`, `choices?`, `flag?` |
+| `Character.mana` / `.maxMana` | `CombatState.player.combatResources` (per-stance Spec 04 tokens); the player's combat resource pool lives on `CombatState`, not `Character`. Out-of-combat there is no mana — the engine doesn't track resource carry-over between encounters. | Pre-v0.7.0 — `mana` was never on the canonical `Character` shape per Spec 06 |
+| `ActiveEffect.id` / `.name` | `activeEffect.effectId: string` references back to `lookupEffect(effectId).name` (the library entry carries the display name) | Pre-v0.7.0 — current `ActiveEffect` is the runtime instance; library lookup is the canonical name source |
+| `EffectStatTarget` accepting arbitrary strings | Use the canonical literal-union members (`'body'` / `'mind'` / `'heart'` / `'maxHealth'` / `'physicalDefense'` / `'magicalDefense'` / etc. — see `src/Effects/types.ts` for the exhaustive list) | Pre-v0.7.0 — tightened to a literal union per Spec 01 |
+| `GameState` accessed via string index (`state[key]`) | Read explicit fields from the documented shape: `version`, `player`, `world`, `combat`, `quests`, `flags`, `moralMeter`, `rngState`, `philosophicalAlignment`. Only `flags: Record<string, boolean>` is a string-indexed slot. | Pre-v0.7.0 — explicit-fields shape since Spec 09 |
+
+**Authoritative shape pointers.** When in doubt about what the
+engine's public surface actually looks like, consult in order:
+
+1. `src/index.ts` — the top-level barrel; this is what `import {
+   X } from 'axiomancer-mechanics'` resolves to.
+2. `dist/index.d.ts` (after `npm run build`) — the consumer-facing
+   `.d.ts` view of the barrel.
+3. `scripts/public-surface.expected.json` — the deploy-gate fixture
+   (Phase 53); canonical truth from 0.10.1 forward.
+4. `node scripts/diff-public-surface.mjs <ref-A> <ref-B>` — emits
+   per-tag deltas in markdown form. Both refs must contain the
+   fixture (Phase 53 introduced it).
+
+For the post-v0.10.2 delta vs HEAD, the only change is the Phase 60
+`FriendshipReward` type addition above — 233+158 → 233+159.
 
 ## [0.10.2] — 2026-05-20
 
@@ -249,6 +359,15 @@ for `WorldMap` and `getCoastalMap`.
 - **`WorldMap` type** (commit `a707316`). Replacement is
   `MapDefinition` + `MapState`, the canonical split since Phase 23. No
   in-repo consumers; mobile didn't import it.
+- **`getCoastalMap()` registry helper** (iterate `b85f509`,
+  post-tag oversight authorization). Replacement is
+  `getMapDefinition('coastal-continent', mapName)` +
+  `createMapState(definition)`. Mobile call sites at
+  `axiomancer-mobile/state/actions.ts:29,759` +
+  `state/e2e/exploration.engine.test.ts:11` need the replacement at
+  bump time (flagged in the b85f509 commit body). See the
+  `[unreleased]` Migration notes for the canonical re-grounding
+  table.
 
 ### Migration notes
 - **Persisted `GameState`** gains `philosophicalAlignment`.
