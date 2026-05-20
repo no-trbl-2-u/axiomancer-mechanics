@@ -207,7 +207,7 @@ hermetic walkthrough.
   `ActiveEffect`, `StatModifier`, `DamageOverTime`,
   `RegenerationConfig`, `ActionRestriction`, etc.) — Stable.
 
-### Philosophy (Phase 42, Phase 43, Phase 44) — Beta
+### Philosophy (Phase 42, Phase 43, Phase 44, Phase 46) — Beta
 
 3-axis alignment cube indexing a 27-cell content registry. See
 [docs/philosophy.md](./philosophy.md) for the full table.
@@ -239,6 +239,13 @@ authoring; the first batch is live as of Phase 44.
 - `Effect.sourcedFromCell?: string` — Beta. Same for fallacy-themed status effects.
 - 4 new Tier 3 fallacy skills (`appeal-to-consequences`, `nirvana-fallacy`, `pascals-wager`, `appeal-to-fear`) in `skillLibrary`.
 - 3 new fallacy status effects (`debuff_no_true_scotsman`, `buff_special_pleading`, `debuff_category_error`) in `effectsLibrary`.
+
+**Phase 46 — alignment-gated content:**
+- `AlignmentGate` type (`{ axis: 'epistemology' | 'outlook' | 'scope', op: 'gte' | 'lte', value: number }`) — Beta. Predicate shape for gating content on the player's current alignment cube position.
+- `DialogueChoice.requires.requiresAlignment?: AlignmentGate` — Beta. Applied by `visibleChoices` (gated choices are hidden when the gate misses).
+- `SkillLearningRequirement.requiresAlignment?: AlignmentGate` — Beta. Applied by `meetsLearningRequirement` / `getAvailableSkills` / `learnSkill` (each accepts an optional `alignment` argument; the `LEARN_SKILL` reducer reads `state.philosophicalAlignment` automatically).
+- `DialogueContext.alignment?: PhilosophicalAlignment` — Beta. Optional context field threaded through `visibleChoices` so callers can preview gates without committing dispatch.
+- 2 live gates authored on `nirvana-fallacy` (`outlook ≤ -34`) + `appeal-to-fear` (`scope ≥ 34`); 2 dialogue branches gated on Old Marrow + Coastal Beggar. See [docs/philosophy.md "Authoring gates (Phase 46)"](./philosophy.md) for operator semantics + authoring guidance.
 
 ### NPCs & Dialogue
 
