@@ -16,14 +16,6 @@
 
 ## Pending
 
-### [LOW] `specs/README.md` Recommended order missing DONE flags for rows 9-12 + missing Spec 23 entirely (promoted from critique-21)
-- category: docs
-- impact: 3 (`specs/README.md` is the spec-tree entry point; readers landing there see Spec 09 / 10 / 11 / 12 as unfinished despite all four shipping; Spec 23 — map-events, full acceptance ticked at Phase 41 unit 3 — is missing from the order table entirely)
-- ease: 9 (pure docs; 5-line edit)
-- score: 2.7 (× 1.5 docs bias = 4.05)
-- source: critique-21 (commit `5f5b2c4`), promoted via `/oversight` 2026-05-19
-- next: in `specs/README.md`, flip rows 9 / 10 / 11 / 12 to `| 9 **DONE** |` etc. matching the existing convention; append a row 13 for Spec 23 (`23-map-events.md`) with **DONE** flag. ~5 lines edited. See `plan/CRITIQUE.md` critique-21 row 2.
-
 ### [LOW] `applyOutlookBias` is exported from `src/Enemy/enemy.logic.ts` but not on the Enemy barrel (promoted from critique-21)
 - category: structure
 - impact: 2 (small barrel/keyword mismatch; no in-repo breakage but a latent confusion source — Phase 49 will touch `decideEnemyAction` and may interact with this function)
@@ -53,6 +45,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] `specs/README.md` Recommended order missing DONE flags for rows 9-12 + missing Spec 23 entirely (promoted from critique-21)** — resolved at iterate commit `fb76fb8` (2026-05-19). Rows 9 / 10 / 11 / 12 flipped to `| N **DONE** |` matching the existing convention; appended a new row 13 for Spec 23 (`23-map-events.md`) with **DONE** flag, citing Phase 41 unit 3 + Phase 43 alignmentDelta extension as the acceptance trail. 598/598 tests stay green; pure docs change. Impact 3 × Ease 9 / 10 = 2.7 (× 1.5 docs bias = 4.05). Source: critique-21 row 2.
 
 - [x] **[LOW] `docs/effects.md` API table lists 4 Combat-private aggregators as public surface (promoted from critique-21)** — resolved at iterate commit `7ee0745` (2026-05-19). Picked path (a) re-export: `src/index.ts` Combat block now forwards `getActiveEffectModifiers`, `getEffectiveStats`, `canAct`, `resolveEffectiveAdvantage` from `./Combat` (all four were already on `src/Combat/index.ts`); types `AggregatedEffectModifiers` + `EffectiveStats` added so consumers can annotate return shapes. Extended the Phase 50 hermetic test in `src/test-utils/e2e/public-barrel.engine.test.ts` with a second `describe` block pinning all four aggregators reachable as functions from the package barrel. 598/598 tests (+4 net from Phase 51's 594); verify + deploy:check clean. Mirrors the Phase 50 engine-handoff pattern; `docs/effects.md` API rows now correctly describe public surface. Impact 4 × Ease 7 / 10 = 2.8 (× 1.5 docs bias = 4.2). Source: critique-21 row 1 (commit `5f5b2c4`).
 

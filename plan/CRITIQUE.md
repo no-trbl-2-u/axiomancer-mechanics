@@ -14,15 +14,6 @@
 
 ## Pending
 
-### [LOW] `specs/README.md` Recommended order table stops at Spec 12 and is missing DONE flags + Spec 23
-- pass: critique-21 (commit facafc8)
-- promoted-to-audit: 2026-05-19 (oversight; tracked at `plan/AUDIT.md` Pending for /iterate weighting)
-- area: docs
-- observation: `specs/README.md:60-71` "Recommended order" table lists 12 specs (rows 1-12). Rows 1-8 are marked **DONE**; rows 9-12 (specs 09 / 10 / 11 / 12) are NOT marked DONE despite all four having shipped pre-loop or via loop phases (Phase 09 game loop, Phase 10 moral meter, Phase 11 RNG, Phase 12 package architecture). Spec 23 (`specs/23-map-events.md`, shipped across Phases 23 / 24 / 25 / 31 / 37 with full acceptance ticked at Phase 41 unit 3) is missing entirely from the table. A reader landing on `specs/README.md` to look for "what spec to pick up next" sees 4 unfinished specs that are actually done, and zero indication that Spec 23 exists. Same drift pattern Phase 34 unit 5 + Phase 41 drained for individual spec acceptance checklists, but the index that points at them was never refreshed.
-- evidence: `grep -n "^| " specs/README.md` returns 12 table rows; rows 9-12 carry "| 9 |" / "| 10 |" / "| 11 |" / "| 12 |" without **DONE** flags. `grep -n "Spec 23\|23-map" specs/README.md` returns 0 hits. Per `plan/steps/01_build_plan.md`: Spec 09-12 all `[x]` shipped (Phase 09 `e6ce034`, Phase 10 `a6085c4`, Phase 11 `a6b33f0`, Phase 12 `251dda9`); Spec 23 shipped via Phases 23-25 + acceptance via Phase 41 unit 3 (`518b5dd`).
-- suggested_fix: in `specs/README.md`, (1) flip rows 9 / 10 / 11 / 12 from `| 9 |` to `| 9 **DONE** |` etc. matching the existing convention; (2) append a row 13 for Spec 23 (`23-map-events.md`) — "Phase 23 / 24 / 25. Replaces the legacy `processNode` with a typed MapEvents engine + 8-kind taxonomy. Depends on (9)." with a **DONE** flag. Optionally add a forward-looking note at the bottom that future specs are filed at higher numbers as needed (the `specs/00-how-to-use-specs.md` template stays the source-of-truth). ~5 lines edited. Pure docs work; pairs cleanly with the critique-18 specs/14-philosophical-alignment.md gap row if both ship together (since landing 14 would add another row).
-- source: critique
-
 ### [LOW] `applyOutlookBias` is exported from `src/Enemy/enemy.logic.ts` but not re-exported through `src/Enemy/index.ts`
 - pass: critique-21 (commit facafc8)
 - promoted-to-audit: 2026-05-19 (oversight; tracked at `plan/AUDIT.md` Pending for /iterate weighting — no docs-bias multiplier since this is structure, not docs)
@@ -174,6 +165,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] `specs/README.md` Recommended order table stops at Spec 12 and is missing DONE flags + Spec 23** — resolved at iterate commit `fb76fb8` (2026-05-19). Rows 9 / 10 / 11 / 12 flipped to `| N **DONE** |`; appended row 13 for Spec 23 (`23-map-events.md`) with **DONE** flag, citing Phase 41 unit 3 + Phase 43 alignmentDelta. 598/598 tests stay green; pure docs change. Impact 3 × Ease 9 / 10 = 2.7 (× 1.5 docs bias = 4.05). Source: critique-21 row 2.
 
 - [x] **[LOW] `docs/effects.md` "API at a glance" lists 4 Combat-private aggregators as if they were public surface** — resolved at iterate commit `7ee0745` (2026-05-19). Picked path (a) re-export: `src/index.ts` Combat block now forwards `getActiveEffectModifiers`, `getEffectiveStats`, `canAct`, `resolveEffectiveAdvantage` from `./Combat`; types `AggregatedEffectModifiers` + `EffectiveStats` added. Extended the Phase 50 hermetic public-barrel test with a second `describe` block pinning all four aggregators reachable as functions. The `docs/effects.md` "API at a glance" table is now literally true for external consumers; pipeline diagram in the Phase 48 "Runtime aggregation" subsection stays as-is. 598/598 tests stay green (+4 net from the new test cases); verify + deploy:check clean. Impact 4 × Ease 7 / 10 = 2.8 (× 1.5 docs bias = 4.2). Source: critique-21 row 1.
 
