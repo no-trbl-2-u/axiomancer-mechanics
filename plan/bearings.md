@@ -52,7 +52,8 @@ The barrel at `src/index.ts` is the public contract. These groups are
 
 ```
 Character:  createCharacter, Character, BaseStats, DerivedStats, NonCombatStats
-Enemy:      createEnemy, Enemy, EnemyLogic, decideEnemyAction, randomLogic
+Enemy:      createEnemy, Enemy, EnemyLogic, decideEnemyAction, randomLogic,
+            FriendshipReward (+ Enemy.friendshipReward? — Phase 60)
 Combat:     determineAdvantage, getAttackStat, getDefenseStat, getSaveStat,
             getResistStat, applyDamage, heal, tickAllEffects, applyRegen,
             getActiveRollModifier, getThornsReflect, resolveEffectApplication,
