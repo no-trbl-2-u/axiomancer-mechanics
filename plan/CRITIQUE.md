@@ -23,14 +23,6 @@
 - suggested_fix: pick one. Path (a) — drop `export` to make it `function applyOutlookBias(...)` at `:172`; matches the in-repo-only intent and prevents future barrel-leak surprises. Path (b) — add `applyOutlookBias` to the `src/Enemy/index.ts:80-84` block; appropriate IF a future phase wants UI consumers to apply the outlook bias to externally-sourced enemy decisions (no current evidence of that need). Recommend (a) as the conservative choice; revisit if Phase 49 (Enemy-skill caster path) refactors the AI dispatch and the bias function gains external callers. Either is a 1-line edit. /iterate-safe.
 - source: critique
 
-### [LOW] `docs/api.md` Philosophy entry stops at Phase 44 — missing Phase 46 surface (AlignmentGate + requiresAlignment)
-- pass: critique-20 (commit 57fbb83)
-- area: docs
-- observation: `docs/api.md:210` Philosophy entry header reads "Phase 42, Phase 43, Phase 44 — Beta" — Phase 46 (shipped at `3765c31`, closed the Phase 42-46 four-corner triangle) added a new public surface that the entry doesn't mention: `AlignmentGate` type, `DialogueChoice.requires.requiresAlignment?: AlignmentGate`, `SkillLearningRequirement.requiresAlignment?: AlignmentGate`, plus the optional `alignment` parameter on `meetsLearningRequirement` / `getAvailableSkills` / `learnSkill` + the `DialogueContext.alignment?` field on `visibleChoices`. A consumer scanning `docs/api.md` for the Philosophy surface thinks the system stops at "fallacies as spells" (Phase 44) and never gates content. Same drift pattern Phase 34 / iterate `2a8a9ae` drained for prior phase ships.
-- evidence: `grep -n "Phase 46\|requiresAlignment\|AlignmentGate" docs/api.md` returns 0 hits. `grep -n "Phase 42\|Phase 43\|Phase 44" docs/api.md` returns hits at `:210` + a couple `:212`-area bullets. Phase 45 was rolled into the Phase 42-43-44 header in the prior iterate but Phase 46 was never added.
-- suggested_fix: update the Philosophy entry header to "Phase 42, Phase 43, Phase 44, Phase 45, Phase 46 — Beta" (or change to a date / range form). Append a "Phase 46 — alignment-gated content" block listing: `AlignmentGate` type re-exported from the NPCs barrel, `requiresAlignment` on both `DialogueChoice.requires` and `SkillLearningRequirement`, optional `alignment` parameter on the three Skills helpers, optional `DialogueContext.alignment?` field. Cross-link to `docs/philosophy.md` "Authoring gates (Phase 46)". ~6 lines added.
-- source: critique
-
 ### [LOW] `README.md` Philosophy row + `plan/bearings.md` Philosophy contract block missing Phase 46 surface
 - pass: critique-20 (commit 57fbb83)
 - area: docs / autonomous-loop hygiene
@@ -157,6 +149,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] `docs/api.md` Philosophy entry stops at Phase 44 — missing Phase 46 surface (AlignmentGate + requiresAlignment)** — resolved at iterate commit `03daba1` (2026-05-19). Entry header bumped to "Phase 42, Phase 43, Phase 44, Phase 46". New "Phase 46 — alignment-gated content" block added between the Phase 44 fallacies-as-spells block and the NPCs section, listing AlignmentGate type shape, requiresAlignment on dialogue + skill-learning, DialogueContext.alignment, and the 2+2 authored gates from Phase 46 unit 3. Cross-link to `docs/philosophy.md` "Authoring gates (Phase 46)". 598/598 tests stay green. Impact 3 × Ease 8 / 10 = 2.4 (× 1.5 docs bias = 3.6). Source: critique-20.
 
 - [x] **[LOW] `getCoastalMap` is `@deprecated` on the public barrel with zero in-repo callers** — resolved at iterate commit `b85f509` (2026-05-19). Function declaration in `src/World/map.registry.ts` + re-exports in `src/World/index.ts:22` and `src/index.ts:158` removed; `docs/world.md` + `docs/api.md` refreshed. BREAKING for external consumers — replacement `getMapDefinition` + `createMapState` already on the public barrel; mobile call sites flagged in the commit body for the in-flight 0.7.0 → 0.10.x bump. 598/598 tests stay green. Impact 3 × Ease 8 / 10 = 2.4. Source: oversight authorization 2026-05-16 of this row.
 
