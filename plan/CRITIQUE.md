@@ -23,13 +23,6 @@
 - source: critique
 
 
-### [LOW] Shop economy has no agent-graded walkthrough at `automation/scripts/walkthroughs/shop.{json,goal.md}`
-- pass: critique-15 (commit cee2614)
-- area: tests / agent-coverage
-- observation: Every other Phase 26+ CLI surface has a paired `automation/scripts/walkthroughs/<surface>.json` + `<surface>.goal.md` for the agent-graded harness (boss-encounter, character-sheet, item-use, map-events, save-load, skill-learning, skills-in-combat, stat-allocation — eight files indexed in `automation/scripts/walkthroughs/README.md`). Phase 37 shipped the `shopLoop` CLI affordance but did not author the walkthrough pair; the Phase 37 brief Follow-ups punted it and `docs/items.md` Pending lists it, but neither AUDIT.md nor CRITIQUE.md carried a row so /iterate had nothing to pick up. The CLI shop surface is now the only post-Phase-37 affordance without agent-graded coverage.
-- evidence: `ls automation/scripts/walkthroughs/` returns 8 walkthroughs, none shop-related; `plan/phases/phase_37_shop_economy.md` Follow-ups section names the gap; `docs/items.md` Pending block lists it.
-- suggested_fix: author `automation/scripts/walkthroughs/shop.json` (boots an `apprentice` preset, moves to `fv-3`, exercises the buy / sell loop, exits) and `shop.goal.md` (asserts the buy decrements currency + adds the item, the sell-back decrements inventory + increments currency). Update `automation/scripts/walkthroughs/README.md` to list the new walkthrough. Mirrors the pattern at e.g. `stat-allocation.{json,goal.md}` (Phase 29).
-- source: critique
 
 ### [LOW] Three Phase-11 walkthrough JSONs in `automation/scripts/` feed the deleted `npm run auto:combat` Python harness
 - pass: critique-14 (commit 1180f51)
@@ -51,6 +44,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] Shop economy has no agent-graded walkthrough at `automation/scripts/walkthroughs/shop.{json,goal.md}`** — resolved at iterate (2026-05-19). Authored `automation/scripts/walkthroughs/shop.json` (wanderer preset, fv-1 → fv-2 → fv-3, buys `minor-healing-potion` at 12, sells back at `defaultSellPrice` 6, leaves, quits) + `shop.goal.md` (pass conditions cover the bootstrap, both movement events, the buy/sell ledger 25 → 13 → 19, the strictly-less-than-buy invariant, clean quit; negative conditions name the closed exploit). README inventory table gains a `shop` row between save-load and skill-learning. Picked wanderer preset over apprentice (currency 0) or sage (75 — overkill). fv-3 Fishing Village Stalls is the only authored shop. 600/600 tests stay green (pure test-asset addition; no engine code touched). Impact 3 × Ease 7 / 10 = 2.1. Source: critique-15.
 
 - [x] **[LOW] Phase 37 CLI `shopLoop` sell-price floor (`Math.max(1, …)`) enables a small infinite-money exploit for any ware at price ≤ 2** — resolved at iterate commit `3ba5319` (2026-05-19). Picked path (b) from the suggested_fix (engine-tier helper). New `defaultSellPrice(ware: ShopWare): number = Math.floor(ware.price / 2)` in `src/Items/shop.reducer.ts` exported through `src/Items/index.ts` + the top-level `src/index.ts` Items block. CLI shopLoop sell branch now calls `defaultSellPrice(matching)` instead of inline `Math.max(1, Math.floor(...))`. 2 regression-test cases in `src/Items/shop.reducer.test.ts`: fixed-table check (price 12 → 6, 7 → 3, 2 → 1, 1 → 0, 0 → 0) + loop-invariant (`for price in 1..100: defaultSellPrice < price`). 600/600 tests (+2 net); verify + deploy:check clean. Impact 5 × Ease 7 / 10 = 3.5. Source: critique-15.
 
