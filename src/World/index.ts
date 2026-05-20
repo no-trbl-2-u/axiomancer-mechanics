@@ -19,7 +19,7 @@ export function createStartingWorld(): WorldState {
 }
 
 export {
-    MAP_REGISTRY, getMapDefinition, createMapState, getCoastalMap, MapNotFoundError,
+    MAP_REGISTRY, getMapDefinition, createMapState, MapNotFoundError,
 } from './map.registry';
 
 export type {

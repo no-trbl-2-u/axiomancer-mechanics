@@ -73,7 +73,6 @@ interface GameState {
 - `createMapState(def)` — builds the initial runtime `MapState` from a
   definition: starting node populated, neighbours enter `availableNodes`,
   everything else enters `lockedNodes`.
-- `getCoastalMap(mapName)` — deprecated thin wrapper kept for back-compat.
 
 Adding a continent or map is a one-file change to the registry plus the
 authoring file under `src/World/Continents/<Name>/maps.ts`.

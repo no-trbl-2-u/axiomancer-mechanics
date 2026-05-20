@@ -158,7 +158,7 @@ reality.
 
 - World creation (`createStartingWorld`) — Stable.
 - Map registry (`MAP_REGISTRY`, `getMapDefinition`, `createMapState`,
-  `getCoastalMap`, `MapNotFoundError`) — Stable.
+  `MapNotFoundError`) — Stable.
 - Navigation (`moveToNode`, `completeCurrentNode`,
   `IllegalMoveError`) — Stable.
 - World reducer (`changeMap`, `completeMap`, `unlockMap`,

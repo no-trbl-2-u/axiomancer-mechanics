@@ -155,7 +155,7 @@ export type { CombatActionName } from './Game/actions.constants';
 
 // ─── World ────────────────────────────────────────────────────────────────────
 export {
-    createStartingWorld, getCoastalMap, MapNotFoundError,
+    createStartingWorld, MapNotFoundError,
     MAP_REGISTRY, getMapDefinition, createMapState,
     moveToNode, completeCurrentNode, IllegalMoveError,
     applyDialogueChoice,

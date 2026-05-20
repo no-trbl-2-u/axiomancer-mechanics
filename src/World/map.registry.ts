@@ -3,7 +3,8 @@
  *
  * Keyed by `ContinentName` → `MapName` → `MapDefinition`. Adding a new
  * continent or map is a single-file change here plus the underlying
- * map-definition file. The legacy `getCoastalMap` is kept as a thin wrapper.
+ * map-definition file. Consumers should reach a map via
+ * `getMapDefinition(continent, mapName)` + `createMapState(def)`.
  */
 
 import { MapDefinition, MapState, NodeId, UniqueEvent } from './types';
@@ -72,13 +73,3 @@ export function createMapState(def: MapDefinition): MapState {
     };
 }
 
-/**
- * Backwards-compatible resolver — accepts a bare `MapName` belonging to the
- * Coastal Continent and returns the initial `MapState`. Prefer
- * `getMapDefinition` + `createMapState` for new call sites.
- *
- * @deprecated Use `getMapDefinition('coastal-continent', mapName)` + `createMapState`.
- */
-export function getCoastalMap(mapName: MapName): MapState {
-    return createMapState(getMapDefinition('coastal-continent', mapName));
-}
