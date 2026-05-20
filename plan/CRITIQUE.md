@@ -14,14 +14,6 @@
 
 ## Pending
 
-### [LOW] `docs/api.md` Public API table missing Phase 54 set surface + `defaultSellPrice` + Phase 50 aggregators that landed at iterate
-- pass: critique-23 (commit 44a179b)
-- area: docs
-- observation: `docs/api.md` is the canonical Public API table per `README.md`'s pointer block. It carries entries for the Phase 42-46 Philosophy surface, the Phase 37 shop reducers, and earlier phases — but post-Phase-46 additions to the public barrel have not been backfilled. Missing from `docs/api.md`: `SetBonus` + `ItemSet` types (Phase 54); the 6 set engine helpers (`getActiveSetBonuses`, `getActiveSetBonusesForCharacter`, `aggregateSetStartTokens`, `applySetGenerationBonus`, `getActiveSetPassiveEffectIds`, `getEquippedItemSets`) (Phase 54); `itemSetLibrary` + `getItemSetById` (Phase 54); `defaultSellPrice` (iterate `3ba5319`); the 4 Combat effect aggregators + `AggregatedEffectModifiers` + `EffectiveStats` (iterate `7ee0745`). A consumer scanning `docs/api.md` for the Phase 54 set surface won't find it.
-- evidence: `grep -n "SetBonus\|ItemSet\|getActiveSetBonuses\|itemSetLibrary\|defaultSellPrice\|AggregatedEffectModifiers" docs/api.md` returns 0 hits. `docs/api.md` Items section last named the shop reducers (Phase 37); no row exists for Phase 54.
-- suggested_fix: in `docs/api.md`, (1) add `SetBonus` + `ItemSet` types under the Items section + a "Set Items (Phase 54)" bullet listing the engine helpers + library; (2) add `defaultSellPrice` to the Phase 37 shop bullet; (3) add the 4 Combat aggregators + types to the Combat section. ~10 lines added. Pair-able with the CHANGELOG fix above as a single "post-Phase-46 documentation drain" tick. Impact 3 × Ease 8 / 10 = 2.4.
-- source: critique
-
 ### [LOW] `scripts/` lacks a top-level README inventorying the 5 tools after Phase 53 added 3
 - pass: critique-23 (commit 44a179b)
 - area: docs / structure
@@ -41,6 +33,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] `docs/api.md` Public API table missing Phase 54 set surface + `defaultSellPrice` + Phase 50 aggregators that landed at iterate** — resolved at iterate commit `12dfeb9` (2026-05-20). Items section gained: `defaultSellPrice` on the Phase 37 shop bullet (with the strictly-less-than-buy-price invariant noted); a new "Set Items (Phase 54 / Spec 05e)" sub-bullet listing the 6 set engine helpers + library + types + cross-link to `docs/equipment.md`. Combat section gained a new bullet for the 4 effect aggregators + 2 types with the iterate-7ee0745 attribution. 616/616 tests stay green. Impact 3 × Ease 8 / 10 = 2.4 (no docs bias). Source: critique-23 row 3.
 
 - [x] **[MED] CHANGELOG `[0.10.1] — unreleased` is missing Phase 52, 53, 54 surface — would publish under-documented** — resolved at iterate commit `db9ea3a` (2026-05-20). CHANGELOG `### Added` now lists the Phase 54 set-items engine + library + authored sets, the Phase 52 release artefacts (CHANGELOG.md + RELEASING.md), the three new `scripts/deploy-check.mjs` assertions attributed to their phases, and the Phase 53 public-surface tooling. New `### Fixed` section records the Phase 54 passive-expiry bug + iterate-`f250ce4` fix (Spec 05e Q4 compliance). Migration notes gain pointers to the Phase 54 power-user surface (`getEquippedItemSets`) and to the diff-tool workflow for future release authors. The diff-tool source was inaccessible for this entry because `v0.10.0` predates the fixture (Phase 53 introduced it); entries authored from per-phase briefs instead, and the migration notes codify "from 0.10.1 forward, the diff tool is the canonical source." Folded in the LOW DURABLE_ACTIONS reframing (next row, see Done below) per its paired-note suggestion. 616/616 tests stay green; deploy:check including tag/CHANGELOG assertion clean. Impact 5 × Ease 9 / 10 = 4.5. Source: critique-23 row 2.
 
