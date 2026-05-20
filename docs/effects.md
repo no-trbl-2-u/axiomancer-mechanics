@@ -16,8 +16,8 @@ documents in [`docs/effects/`](./effects/).
 6. [Combat Consumption Map](#combat-consumption-map)
 7. [Round Order](#round-order)
 8. [Tier 1 Auto-Effects](#tier-1-auto-effects)
-9. [Complete Effects Table — Buffs (39)](#complete-effects-table--buffs-39)
-10. [Complete Effects Table — Debuffs (46)](#complete-effects-table--debuffs-46)
+9. [Complete Effects Table — Buffs (40)](#complete-effects-table--buffs-40)
+10. [Complete Effects Table — Debuffs (48)](#complete-effects-table--debuffs-48)
 11. [Effect Engine API](#effect-engine-api)
 12. [Implementation Status](#implementation-status)
 13. [Pending](#pending)
@@ -439,7 +439,7 @@ no resist roll. Switching stances removes the previous stance's self-buff immedi
 
 ---
 
-## Complete Effects Table — Buffs (39)
+## Complete Effects Table — Buffs (40)
 
 Full per-effect documentation: [`docs/effects/buffs/`](./effects/buffs/)
 
@@ -487,7 +487,7 @@ Full per-effect documentation: [`docs/effects/buffs/`](./effects/buffs/)
 
 ---
 
-## Complete Effects Table — Debuffs (46)
+## Complete Effects Table — Debuffs (48)
 
 Full per-effect documentation: [`docs/effects/debuffs/`](./effects/debuffs/)
 
