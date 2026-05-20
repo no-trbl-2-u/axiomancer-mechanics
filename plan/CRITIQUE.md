@@ -23,15 +23,6 @@
 - suggested_fix: pick one. Path (a) — drop `export` to make it `function applyOutlookBias(...)` at `:172`; matches the in-repo-only intent and prevents future barrel-leak surprises. Path (b) — add `applyOutlookBias` to the `src/Enemy/index.ts:80-84` block; appropriate IF a future phase wants UI consumers to apply the outlook bias to externally-sourced enemy decisions (no current evidence of that need). Recommend (a) as the conservative choice; revisit if Phase 49 (Enemy-skill caster path) refactors the AI dispatch and the bias function gains external callers. Either is a 1-line edit. /iterate-safe.
 - source: critique
 
-### [LOW] `docs/effects.md` heading + ToC counts (`Buffs (39)` / `Debuffs (46)`) stale after Phase 44 added 1 buff + 2 debuffs
-- pass: critique-19 (commit 6e833a9)
-- area: docs
-- observation: `docs/effects.md:19-20` ToC and `:399` + `:447` section headers both name the library counts explicitly: `Complete Effects Table — Buffs (39)` and `Complete Effects Table — Debuffs (46)`. Phase 44 (`06f5ffe`) appended `buff_special_pleading` to `src/Effects/buffs.library.json` (now 40 entries) and `debuff_no_true_scotsman` + `debuff_category_error` to `src/Effects/debuffs.library.json` (now 48 entries). The doc still claims the pre-Phase-44 counts, so a reader scanning the ToC believes the library is smaller than it is and may not look for the new entries. Same one-phase-at-a-time drift pattern Phase 34 / iterate `2a8a9ae` drained for prior README count claims.
-- evidence: `grep -c '"id":' src/Effects/buffs.library.json` returns 40; `grep -c '"id":' src/Effects/debuffs.library.json` returns 48. `grep -n "Buffs (39)\|Debuffs (46)" docs/effects.md` returns four hits (two ToC, two headers) — all four are now off-by-one or off-by-two.
-- suggested_fix: in `docs/effects.md`, update the ToC entries on lines 19-20 and the section headers at `:399` + `:447` to `Buffs (40)` / `Debuffs (48)`. Optionally add a new table row to each "Complete Effects Table" describing the three new Phase 44 entries (the per-effect description lines), or rely on the existing "Philosophical fallacy payloads (Phase 44)" subsection (which already lists them at higher granularity) for that surface. ~4 lines edited. /iterate-safe pure-docs change.
-- source: critique
-
-
 ### [LOW] `docs/morality.md` carries no cross-link to `docs/philosophy.md` despite Phase 42's explicit orthogonality commitment
 - pass: critique-19 (commit 6e833a9)
 - area: docs
@@ -125,6 +116,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] `docs/effects.md` heading + ToC counts (`Buffs (39)` / `Debuffs (46)`) stale after Phase 44 added 1 buff + 2 debuffs** — resolved at iterate commit `385fac6` (2026-05-19). 4 references in docs/effects.md (ToC :19 + :20, section headers :442 + :490) updated to `Buffs (40)` + `Debuffs (48)` matching the actual library counts (`src/Effects/buffs.library.json` has 40 entries, `src/Effects/debuffs.library.json` has 48). Per-row entries for the 3 new Phase 44 effects already exist under the "Philosophical fallacy payloads (Phase 44)" subsection; no per-row additions to the Complete Effects Table headers needed (suggested_fix's optional path was skipped). 598/598 tests stay green. Impact 2 × Ease 9 / 10 = 1.8 (× 1.5 docs bias = 2.7). Source: critique-19.
 
 - [x] **[LOW] `docs/skills.md` mentions `sourcedFromCell` (Phase 44) but not `requiresAlignment` (Phase 46) on SkillLearningRequirement** — resolved at iterate commit `9653915` (2026-05-19). "Runtime skill learning (Phase 30)" section updated to show the optional `alignment` parameter on `meetsLearningRequirement` / `getAvailableSkills` / `learnSkill`; SkillLearningRequirement clause list now names `requiresAlignment`. New "Alignment gates on learning (Phase 46)" subsection describes the AlignmentGate shape + undefined-alignment-blocks-by-default semantics + the two live gates (`nirvana-fallacy` outlook ≤ -34, `appeal-to-fear` scope ≥ 34) + the LEARN_SKILL reducer's automatic `state.philosophicalAlignment` read. Cross-link to `docs/philosophy.md` "Authoring gates (Phase 46)" + `docs/npcs.md` "Alignment-aware content". 598/598 tests stay green. Impact 3 × Ease 8 / 10 = 2.4 (× 1.5 docs bias = 3.6). Source: critique-20.
 
