@@ -5,13 +5,21 @@
 > `## Promoted` or `## Rejected`.
 
 <!-- Metadata (updated by /expand after each pass):
-> Last pass: 2026-05-20 at commit 92a28ae
-> Pass count: 15
+> Last pass: 2026-05-20 at commit 7aa392a
+> Pass count: 16
 -->
 
 ---
 
 ## Pending
+
+### Candidate: Tier 2 synergy skills — reward switching, not repeating
+- signal: `braindump/BRAINDUMP.md` § "Combat — Tier 2 Synergy" (lines 50-61). "Tier 1 effects reward repeating the same Stance. Tier 2 should reward switching. Add skills that get bonuses based on the duration or intensity of an effect already on the field." Two worked examples in the braindump: Example A (cross-stance poison-duration bonus damage) + Example B (Body Thorns → Heart Bat Swarm via duration-based buff type-swap). The engine surfaces this needs already exist as of Phase 44 (`sourcedFromCell` on Skill + Effect), Phase 38 (`ActiveEffect.sourceId`), Phase 48 (statModifiers + intensity scaling verified runtime), and Phase 49 (skill caster path with stance derivation from `philosophicalAspect`). What's missing is the SKILL-AUTHORING surface that lets a skill payload inspect the live `ActiveEffect[]` and condition damage / effect application on its `intensity` / `remainingDuration`.
+- scope: Two units. Unit 1 — extend the skill engine with a new `SkillEffectClause` shape (or extend the existing payload variants) supporting `whenEffectAtLeast?: { effectId: string; intensityMin?: number; durationMin?: number; on: 'caster' | 'target' }` predicate. The skill engine evaluates the predicate against the relevant `ActiveEffect[]` before applying the main payload; failing predicate routes to a fallback payload (or no-op). Unit 2 — author 2-3 marquee Tier 2 synergy skills following the braindump's two examples: (a) a cross-stance damage amp keyed on a different-stance DoT's remaining duration; (b) a buff type-swap (Thorns → Bat Swarm) gated by duration threshold. Hermetic e2e drives each through `executeSkill` with seeded active effects on the combatant.
+- unblocks: Tier 2 mechanical identity becomes "rewards stance switching" per the braindump design intent. Phase 33 already declared `learningRequirement: { level: 5 }` on every Tier 2 skill; this candidate's content fills the mechanical promise. Future Tier 2 content authoring (more synergy skills, per-stance themed pairs) becomes a one-line skill payload.
+- blocked-by: None on the engine side (all upstream primitives shipped). Wants a content-design pass from the user before brief drafting — picking which 2-3 synergy patterns are canonical, the damage / duration thresholds, and the cell mapping for `sourcedFromCell` if any.
+- score: 5 × 4 / 10 = 2.0 (medium impact — fills the Tier 2 mechanical-identity gap; medium-low ease — new payload-clause primitive + ≥2 hermetic e2e cases per skill, plus content design coordination).
+- recommended-slot: queue behind Boss-tier befriendable enemy + Northern Continent. Best paired with a /oversight design pass to lock the 2-3 specific synergy patterns; otherwise the brief invents content that the user may want to override.
 
 ### Candidate: Boss-tier befriendable enemy (Phase 60 follow-up)
 - signal: Phase 60 (`7724c96 + 6e03871 + b13348b`) Follow-ups explicitly named "Boss-tier befriendable enemy. The candidate's third example ('one boss-tier enemy where the choice is genuinely costly') wants its own phase scope — boss-tier rewards likely want bigger payloads (unique items, alignment shifts, named NPC follow-up) than the authored rewards in this phase." Engine field (`Enemy.friendshipReward?: FriendshipReward`) is live since Phase 60; this is pure content + maybe one small typed-surface extension.
