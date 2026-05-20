@@ -31,14 +31,6 @@
 - suggested_fix: file `specs/14-philosophical-alignment.md` using the `specs/00-how-to-use-specs.md` template. Goal section is the 3-axis cube + 27-cell registry. Current state section cites Phases 42 (`bdfda00`) + 43 (`c62702e`) as already-shipped. Open questions: (1) Should `moralMeter` be unified into the cube as a 4th axis, (2) Should fallacies surface as skill payloads, effect payloads, or both, (3) Should enemies carry a `philosophicalAlignment?` field, (4) Should there be alignment-gated skills / effects / endings, (5) How does the alignment cube intersect with the friendship-victory mechanic. Add a `specs/README.md` row pointing at the new file. Pure docs work; no code touched. Pairs with the README + bearings findings above into a single Phase-42-paperwork sweep.
 - source: critique
 
-### [LOW] `alignmentDelta` is not cross-linked from `docs/world.md` (MapEvent authoring) or `docs/npcs.md` (dialogue authoring)
-- pass: critique-18 (commit c62702e)
-- area: docs
-- observation: Phase 43 (`c62702e`) added the `alignmentDelta?` field on `DialogueChoice.effect` (`src/NPCs/types.d.ts`) and `MapEventPoolEntry` (`src/World/MapEvents/types.ts`). The documentation lives only in `docs/philosophy.md` "Authoring deltas" subsection. A content author opening `docs/world.md` to look up MapEvent authoring conventions, or `docs/npcs.md` to look up dialogue-choice effect fields, won't see the new field — they'd have to know philosophy.md exists and bridge over manually. Same drift pattern critique pass 15 surfaced for `docs/world.md` after Phase 24, and the docs sweep at Phase 34 (`ac20950`) drained.
-- evidence: `grep -n "alignmentDelta\|philosophicalAlignment" docs/world.md docs/npcs.md` returns 0 hits. `docs/world.md` "Node Event Dispatcher" + MapEvents section name every payload kind but don't mention the per-entry `alignmentDelta`. `docs/npcs.md` lists the `DialogueChoice.effect` fields (`startQuest`, `progressQuest`, `completeQuest`, `teachSkill`, `setFlag`, `grantCurrency`, `moralDelta`) but doesn't list `alignmentDelta`.
-- suggested_fix: add a one-paragraph "Philosophical alignment" subsection to each doc, cross-linking to `docs/philosophy.md` "Authoring deltas". For `docs/world.md`, add a row to the MapEventPoolEntry shape description naming `alignmentDelta?: Partial<PhilosophicalAlignment>` with the `±1..±5` band note. For `docs/npcs.md`, add `alignmentDelta` to the DialogueChoice.effect fields list with the same cross-link. ~6 lines total across the two files. /iterate-safe; pairs with the README + bearings findings above as a single Phase-42-paperwork tick.
-- source: critique
-
 ### [LOW] Spec 03 (Tier 2 / 3 effect procs) — all 5 acceptance boxes unchecked despite shipping pre-loop
 - pass: critique-17 (commit d1ebd7f)
 - area: docs
@@ -108,6 +100,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] `alignmentDelta` is not cross-linked from `docs/world.md` (MapEvent authoring) or `docs/npcs.md` (dialogue authoring)** — resolved across two iterate commits: docs/npcs.md half at `9700775` (2026-05-19, alignmentDelta + requiresAlignment on DialogueChoice block); docs/world.md half at `bb5a857` (2026-05-19, new "Philosophical alignment shifts (Phase 43)" bullet in the MapEvents section + cross-link to `docs/philosophy.md` "Authoring deltas (Phase 43)"). Both halves close the asymmetric cross-link the critique-18 row flagged. 598/598 tests stay green. Impact 2 × Ease 9 / 10 = 1.8 (× 1.5 docs bias = 2.7). Source: critique-18.
 
 - [x] **[LOW] `docs/morality.md` carries no cross-link to `docs/philosophy.md` despite Phase 42's explicit orthogonality commitment** — resolved at iterate commit `ce543d8` (2026-05-19). New "Relationship to `philosophicalAlignment` (Phase 42)" subsection inserted between Overview and Core Mechanics; explains the orthogonal compassion-vs-cube split, the independent-persistence guarantee, and the no-unification-in-v1 stance per Spec 10 Q8. Cross-link to `docs/philosophy.md` added; the link is now bidirectional. 598/598 tests stay green. Impact 2 × Ease 9 / 10 = 1.8 (× 1.5 docs bias = 2.7). Source: critique-19.
 
