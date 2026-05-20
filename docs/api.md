@@ -47,6 +47,15 @@ unchanged, but the absolute semver guarantee starts at 1.0.
 - Combat state management (`initializeCombat`, `endCombat`, etc.) — Stable.
 - Combat types (`CombatState`, `Action`, `Stance`, `RoundEvent`,
   `RoundResolution`, etc.) — Stable.
+- **Effect aggregators (iterate `7ee0745`):** `getActiveEffectModifiers`,
+  `getEffectiveStats`, `canAct`, `resolveEffectiveAdvantage` — Stable.
+  The four Combat-tier aggregators `docs/effects.md` "API at a glance"
+  names; previously reachable only via `src/Combat/index.ts`, now
+  re-exported through the top-level barrel. Types
+  `AggregatedEffectModifiers`, `EffectiveStats` ride alongside.
+  Power-user RN consumers composing custom UI may want to read these
+  directly rather than going through one stance/stat at a time via
+  the wrapper accessors (`getAttackStat` / `getDefenseStat` / etc.).
 
 ### Game Store and State
 
@@ -132,13 +141,43 @@ reality.
   `QuestItem`, `ItemCategory`, `EquipmentSlot`, `ItemRarity`,
   `RolledModifier`, etc.) — Stable.
 - `consumableLibrary`, `getConsumableById` — Stable.
-- **Shop economy (Phase 37):** `buyItem(character, item, price)`,
-  `sellItem(character, itemId, price)` — Stable. Pure `Character →
-  Character` reducers; bad input (negative price, insufficient funds,
-  missing item) returns the input unchanged. `ShopWare` and
-  `ShopInventory` types ride on `VillagePayload.shop?` and the
-  resolved village event's `shop?` field. See `docs/items.md`
+- **Shop economy (Phase 37 + iterate `3ba5319`):**
+  `buyItem(character, item, price)`,
+  `sellItem(character, itemId, price)`,
+  `defaultSellPrice(ware: ShopWare): number` (engine-tier helper —
+  halves and floors the ware's buy price; always strictly less than
+  the buy price for any positive integer, so buy → sell round-trips
+  are net-negative for the player). All three Stable. Pure
+  `Character → Character` reducers; bad input (negative price,
+  insufficient funds, missing item) returns the input unchanged.
+  `ShopWare` and `ShopInventory` types ride on `VillagePayload.shop?`
+  and the resolved village event's `shop?` field. See `docs/items.md`
   "Shop economy" for the schema and the authored shop tables.
+
+- **Set Items (Phase 54 / Spec 05e):** Beta. Equipping multiple
+  members of a named `ItemSet` grants threshold-keyed `SetBonus`
+  payloads on top of per-item `statModifiers` /
+  `resourceInteraction` / `passiveEffects`. Set bonuses are computed
+  on-demand at `initializeCombat` + `generateBasicActionResources` —
+  no cached per-character state. Engine helpers + library:
+  - `getActiveSetBonuses(equipment): SetBonus[]` — primary lookup
+    against an equipped-slots snapshot.
+  - `getActiveSetBonusesForCharacter(character)` — convenience
+    wrapper.
+  - `aggregateSetStartTokens(equipment)` /
+    `applySetGenerationBonus(resources, equipment, outcome)` /
+    `getActiveSetPassiveEffectIds(equipment)` — siblings of the
+    per-item aggregators, additive on top.
+  - `getEquippedItemSets(equipment)` — `Array<{ set, equipped }>`
+    including partial counts (1/3 of Iron Discipline), for UI
+    summaries.
+  - `itemSetLibrary` + `getItemSetById(id)` — frozen 3-entry roster
+    (Wanderer's Road, Iron Discipline, Scholar's Circle); members
+    overlap on `leather-cap`.
+  - Types: `SetBonus`, `ItemSet`.
+  See [`docs/equipment.md`](./equipment.md) "Set Items (Spec 05e /
+  Phase 54)" for runtime application notes + the "Adding a new set"
+  steps.
 
 ### Skills
 
