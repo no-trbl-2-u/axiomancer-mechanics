@@ -35,4 +35,13 @@ export {
 export { consumableLibrary, getConsumableById } from './consumable.library';
 export { buyItem, sellItem, defaultSellPrice } from './shop.reducer';
 export type { SetBonus, ItemSet } from './set.types';
+export {
+    getActiveSetBonuses,
+    getActiveSetBonusesForCharacter,
+    aggregateSetStartTokens,
+    applySetGenerationBonus,
+    getActiveSetPassiveEffectIds,
+    getEquippedItemSets,
+} from './set.engine';
+export { itemSetLibrary, getItemSetById } from './set.library';
 export type { ShopWare, ShopInventory } from './shop.types';

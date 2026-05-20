@@ -28,6 +28,7 @@ import {
 } from '../Game/game-mechanics.constants';
 import { Equipment, EquipmentSlot } from '../Items/types';
 import { applyEquipmentGenerationBonus } from '../Items/equipment.engine';
+import { applySetGenerationBonus } from '../Items/set.engine';
 import {
     CombatResources, ResourceCost, Skill, SkillCategory, SkillCombatEffects,
     SkillSpecialMechanic, SkillTier,
@@ -66,7 +67,11 @@ export function generateBasicActionResources(
       :                        RESOURCE_GENERATION.ATTACK_MISS;
     const base: CombatResources = { ...resources, [stance]: resources[stance] + amount };
     if (!equipment) return base;
-    return applyEquipmentGenerationBonus(base, equipment, outcome);
+    // Apply per-item generation bonuses first, then per-set bonuses on top.
+    // Both share the same `EquipmentBonusOutcome` semantics and the same ≥0
+    // clamp per counter (Spec 05e Q2 — additive, no cap).
+    const withItemBonuses = applyEquipmentGenerationBonus(base, equipment, outcome);
+    return applySetGenerationBonus(withItemBonuses, equipment, outcome);
 }
 
 /**

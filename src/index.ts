@@ -107,6 +107,10 @@ export {
     dropItem, rollModifiers, resolveModifiers, rarityWeightTable,
     consumableLibrary, getConsumableById,
     buyItem, sellItem, defaultSellPrice,
+    getActiveSetBonuses, getActiveSetBonusesForCharacter,
+    aggregateSetStartTokens, applySetGenerationBonus,
+    getActiveSetPassiveEffectIds, getEquippedItemSets,
+    itemSetLibrary, getItemSetById,
 } from './Items';
 export type {
     Item, Equipment, Consumable, Material, QuestItem,
