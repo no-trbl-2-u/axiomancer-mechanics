@@ -14,15 +14,6 @@
 
 ## Pending
 
-### [LOW] `applyOutlookBias` is exported from `src/Enemy/enemy.logic.ts` but not re-exported through `src/Enemy/index.ts`
-- pass: critique-21 (commit facafc8)
-- promoted-to-audit: 2026-05-19 (oversight; tracked at `plan/AUDIT.md` Pending for /iterate weighting — no docs-bias multiplier since this is structure, not docs)
-- area: structure
-- observation: Phase 45 unit 2 (`b185fe2`) added `export function applyOutlookBias(action, enemy): CombatAction` at `src/Enemy/enemy.logic.ts:172`. It's used only internally — `decideEnemyAction` at `:240` calls it as the last step of dispatch. The `src/Enemy/index.ts:80-84` re-export block lists 9 logic helpers (`randomLogic`, `decideEnemyAction`, the four named logics, `bossLogic`, `counterStanceOf`, `weakestStanceOf`) but not `applyOutlookBias`. So the function is `export`-keyword-tagged but not actually on the module's external API. Either (a) the keyword should drop to `function` (signals "in-repo only", matches other internal helpers in the same file), or (b) the function should be added to the re-export block. Same pattern Phase 35 used for `Character.id` auto-gen (the helper stayed internal as a `function`, not `export function`). The mismatch is small but it's the kind of thing critique pass catches before it propagates — if future units pin the function name in JSDoc or `@see` references as if it's a barrel export, the drift becomes harder to untangle. `docs/enemy.md:63` mentions the function by name in the description but doesn't claim it's a public entry point.
-- evidence: `grep -n "applyOutlookBias" src/Enemy/index.ts src/index.ts` returns 0 hits. `grep -n "export function applyOutlookBias\|applyOutlookBias(" src/Enemy/enemy.logic.ts` returns the declaration at `:172` and one internal call site at `:240`. Across all other files in the repo: `grep -rn "applyOutlookBias" src/ --include="*.ts" | grep -v "enemy.logic"` returns 0 hits.
-- suggested_fix: pick one. Path (a) — drop `export` to make it `function applyOutlookBias(...)` at `:172`; matches the in-repo-only intent and prevents future barrel-leak surprises. Path (b) — add `applyOutlookBias` to the `src/Enemy/index.ts:80-84` block; appropriate IF a future phase wants UI consumers to apply the outlook bias to externally-sourced enemy decisions (no current evidence of that need). Recommend (a) as the conservative choice; revisit if Phase 49 (Enemy-skill caster path) refactors the AI dispatch and the bias function gains external callers. Either is a 1-line edit. /iterate-safe.
-- source: critique
-
 ### [LOW] No conversation-loop spec for the philosophical alignment system after two phases shipped against it
 - pass: critique-18 (commit c62702e)
 - area: spec-gap
@@ -76,6 +67,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] `applyOutlookBias` is exported from `src/Enemy/enemy.logic.ts` but not re-exported through `src/Enemy/index.ts`** — resolved at iterate commit `17e76b9` (2026-05-19). Dropped the `export` keyword from `src/Enemy/enemy.logic.ts:181` (path (a) of the suggested_fix). Only internal caller is `decideEnemyAction` at `:284`; no imports anywhere in src/; tests reference the name in comments only. 598/598 tests stay green. Impact 2 × Ease 9 / 10 = 1.8 (no docs bias — structure). Source: critique-21 row 3.
 
 - [x] **[LOW] `PhilosAxiosDoc.pdf` is loose at the repo root with no folder home** — resolved at iterate commit `2529697` (2026-05-19). `git mv PhilosAxiosDoc.pdf → content/philosophy/PhilosAxiosDoc.pdf` (created the parent folder; sibling to existing `content/characters/`, `content/locations/`, `content/story/`). Picked path (a) `content/philosophy/` from the suggested_fix over (b) `braindump/` or (c) `specs/philosophy/`. Refreshed 6 live refs to the new path: `src/Philosophy/alignment.library.ts:5` JSDoc, `src/Philosophy/types.ts:5` JSDoc, `plan/phases/phase_42_philosophical_alignment.md` (5 refs), `plan/phases/phase_44_fallacies_as_spells.md` (2 refs), `plan/phases/phase_45_enemies_by_alignment.md:233`, `docs/philosophy.md:3 + :7`, and `plan/steps/01_build_plan.md:527`. Left `plan/steps/01_build_plan.md:72` (Phase 42 historical ship row) untouched to preserve ship-time signal. 598/598 tests stay green. Impact 2 × Ease 9 / 10 = 1.8 (× 1.5 docs bias = 2.7). Source: critique-17.
 

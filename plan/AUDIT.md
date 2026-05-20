@@ -25,14 +25,6 @@
 - notes: `specs/05e-set-items.md` Goal section names Wanderer's Road as the 2/3-piece reference set; Q4 + Q5 in the spec's open-questions block are answered, the rest are blank. Three options for /oversight: (a) promote Spec 05e to a phase (estimated 2-3 commit units: types + engine + library + hermetic tests + docs/equipment.md "Set Items" section), (b) leave deferred and rephrase the spec's status as "queued for late-game", (c) drop the spec entirely if set items are no longer desired. Mobile is currently bumping to 0.10.0 and does not depend on Spec 05e either way.
 - next: `/oversight` decision required. The build plan row was flipped from `[x] (pre-loop)` to `[ ]` at iterate (commit will be ee... when this AUDIT row commits), with an inline note describing the mismark; the critique-17 row is moved to Done with a corrective trail rather than ticked.
 
-### [LOW] `applyOutlookBias` is exported from `src/Enemy/enemy.logic.ts` but not on the Enemy barrel (promoted from critique-21)
-- category: structure
-- impact: 2 (small barrel/keyword mismatch; no in-repo breakage but a latent confusion source — Phase 49 will touch `decideEnemyAction` and may interact with this function)
-- ease: 9 (1-line edit — either drop `export` or add to `src/Enemy/index.ts:80-84` re-export block)
-- score: 1.8 (no bias multiplier — structure, not docs)
-- source: critique-21 (commit `5f5b2c4`), promoted via `/oversight` 2026-05-19
-- next: preferred path — drop `export` from `function applyOutlookBias` at `src/Enemy/enemy.logic.ts:172` (used only internally by `decideEnemyAction` at `:240`). See `plan/CRITIQUE.md` critique-21 row 3.
-
 ### [tracking] GH#64 — engine handoff (skillLibrary re-export + types.d.ts emission + PersistenceAdapter ergonomics)
 - category: tracking
 - impact: 0 (tracking row; not an iterate target)
@@ -45,6 +37,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] `applyOutlookBias` is exported from `src/Enemy/enemy.logic.ts` but not on the Enemy barrel (promoted from critique-21)** — resolved at iterate commit `17e76b9` (2026-05-19). Dropped `export` keyword from the function declaration at `src/Enemy/enemy.logic.ts:181`, matching the in-repo-only intent (path (a) from the suggested_fix). Only internal caller is `decideEnemyAction` at `:284`; src/Enemy/index.ts barrel does not list it; no imports anywhere in src/. Tests reference the name only in comments. 598/598 tests stay green. Impact 2 × Ease 9 / 10 = 1.8 (no docs bias — structure). Source: critique-21 row 3.
 
 - [x] **[LOW] `getCoastalMap` barrel export — authorized for removal by oversight** — resolved at iterate commit `b85f509` (2026-05-19). Removed the `getCoastalMap` function declaration in `src/World/map.registry.ts` + the re-exports in `src/World/index.ts:22` and `src/index.ts:158`. Updated `docs/world.md` (registry-functions list) + `docs/api.md` (Map registry stability row). Spec 08 Q6's historical `getCoastalMap` mention left as-is (it's the original deprecation question, not a forward-looking reference). BREAKING for external consumers — replacement is `getMapDefinition('coastal-continent', mapName)` + `createMapState`. Mobile call sites at `axiomancer-mobile/state/actions.ts:29,759` + `state/e2e/exploration.engine.test.ts:11` will need the replacement at the in-flight 0.7.0 → 0.10.x bump (flagged in the commit body so the user can update `axiomancer-mobile/docs/engine-upgrade-0.7.0-to-0.10.0.md` §2 alongside). 598/598 tests stay green; verify + deploy:check clean. Impact 3 × Ease 8 / 10 = 2.4. Source: oversight authorization 2026-05-16 of CRITIQUE pass 13.
 
