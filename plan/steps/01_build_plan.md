@@ -23,7 +23,7 @@ shipped (with commit hash).
 - [x] Spec 05b — Equipment library: 50 pieces + 12 consumables (pre-loop)
 - [x] Spec 05c — Item rarity (pre-loop)
 - [x] Spec 05d — Modifier catalogue (pre-loop)
-- [x] Spec 05e — Set items (pre-loop)
+- [ ] Spec 05e — Set items: spec authored pre-loop but **implementation never shipped**. `src/Items/set.engine.ts`, `src/Items/set.library.ts`, the `SetBonus` / `ItemSet` types, and `getActiveSetBonuses` are all absent from the codebase. The only artifact is `Equipment.setMembership?: string` at `src/Items/types.ts:199`, marked "Reserved for late-game" (Spec 05e). The spec itself at `specs/05e-set-items.md` carries 0/8 acceptance boxes ticked. Build plan row corrected from `[x] (pre-loop)` at iterate (this commit, 2026-05-19) — the prior `[x]` was a documentation mismark that critique-17 surfaced. Promotion to a phase is pending `/oversight` review; AUDIT.md carries a `[needs-user-call]` row.
 - [x] Spec 06 — Character progression (XP, levelling, skill learning) (pre-loop)
 - [x] Spec 07 — Enemy content and AI (pre-loop)
 - [x] Spec 08 — World content and hazards (pre-loop)

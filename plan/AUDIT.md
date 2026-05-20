@@ -16,6 +16,15 @@
 
 ## Pending
 
+### [needs-user-call] Spec 05e (Set items) — spec exists, implementation never shipped
+- category: design
+- impact: n/a (tracking row; not an iterate target)
+- ease: n/a
+- score: 0 (do not pick — pending user decision)
+- source: critique-17 (commit `d1ebd7f`) surfaced via iterate at this commit when ticking the acceptance checklist revealed the prior `[x] (pre-loop)` build plan mark was a documentation mismark; no `src/Items/set.engine.ts` / `set.library.ts` / `SetBonus` / `ItemSet` / `getActiveSetBonuses` exists. The only artifact is `Equipment.setMembership?: string` at `src/Items/types.ts:199` (Spec 05e "Reserved for late-game" stub).
+- notes: `specs/05e-set-items.md` Goal section names Wanderer's Road as the 2/3-piece reference set; Q4 + Q5 in the spec's open-questions block are answered, the rest are blank. Three options for /oversight: (a) promote Spec 05e to a phase (estimated 2-3 commit units: types + engine + library + hermetic tests + docs/equipment.md "Set Items" section), (b) leave deferred and rephrase the spec's status as "queued for late-game", (c) drop the spec entirely if set items are no longer desired. Mobile is currently bumping to 0.10.0 and does not depend on Spec 05e either way.
+- next: `/oversight` decision required. The build plan row was flipped from `[x] (pre-loop)` to `[ ]` at iterate (commit will be ee... when this AUDIT row commits), with an inline note describing the mismark; the critique-17 row is moved to Done with a corrective trail rather than ticked.
+
 ### [LOW] `applyOutlookBias` is exported from `src/Enemy/enemy.logic.ts` but not on the Enemy barrel (promoted from critique-21)
 - category: structure
 - impact: 2 (small barrel/keyword mismatch; no in-repo breakage but a latent confusion source — Phase 49 will touch `decideEnemyAction` and may interact with this function)
