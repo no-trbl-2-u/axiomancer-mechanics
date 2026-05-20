@@ -212,7 +212,7 @@ function applyOutlookBias(
  * stance is sourced from the skill's `philosophicalAspect` so it reads as
  * intentionally aligned ("heart-attack while casting a heart-aspect skill").
  */
-export function pickEnemySkill(enemy: Enemy | undefined): CombatAction | null {
+function pickEnemySkill(enemy: Enemy | undefined): CombatAction | null {
     const rotation: readonly Skill[] = enemy?.skills ?? [];
     if (rotation.length === 0) return null;
     if (getRng().random() >= ENEMY_SKILL_PICK_CHANCE) return null;

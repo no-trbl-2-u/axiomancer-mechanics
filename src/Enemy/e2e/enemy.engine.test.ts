@@ -16,7 +16,6 @@ import { describe, it, expect, afterEach, vi } from 'vitest';
 import {
     decideEnemyAction, aggressiveLogic, defensiveLogic, balancedLogic,
     strategicLogic, bossLogic, counterStanceOf, weakestStanceOf,
-    pickEnemySkill,
 } from '../enemy.logic';
 import { Enemy } from '../types';
 import { CombatState } from '../../Combat/types';
@@ -27,7 +26,6 @@ import {
     MournfulGull, HollowEyedBeggar,
 } from '../enemy.library';
 import { mockSequentialRng } from '../../test-utils/rng';
-import { getSkillById } from '../../Skills/skill.library';
 
 function makeEnemy(overrides: Partial<Enemy> = {}): Enemy {
     return {
@@ -291,51 +289,29 @@ describe('ENEMY_REGISTRY', () => {
     });
 });
 
-describe('pickEnemySkill — Phase 49', () => {
-    it('returns null when enemy.skills is unset', () => {
-        const enemy = makeEnemy();
-        // High rng so the gate would fire if there were skills.
-        mockSequentialRng(0.99);
-        expect(pickEnemySkill(enemy)).toBeNull();
-    });
-
-    it('returns null when the probabilistic gate misses (low rng)', () => {
-        const skill = getSkillById('false-dilemma')!;
-        const enemy = makeEnemy({ skills: [skill] });
-        // 0.36 → 0.99: first roll 0.36 is ≥ ENEMY_SKILL_PICK_CHANCE (0.35) → null.
-        mockSequentialRng(0.36, 0.99);
-        expect(pickEnemySkill(enemy)).toBeNull();
-    });
-
-    it('returns the first skill in the rotation when the gate fires (high rng)', () => {
-        const skill = getSkillById('achilles-gambit')!;
-        const enemy = makeEnemy({ skills: [skill] });
-        // 0.10 < 0.35 → gate fires.
-        mockSequentialRng(0.10);
-        const action = pickEnemySkill(enemy);
-        expect(action).not.toBeNull();
-        expect(action).toMatchObject({
-            action: 'skill',
-            skillId: 'achilles-gambit',
-            stance: 'body', // philosophicalAspect on achilles-gambit
-        });
-    });
-
-    it('returns null for an undefined enemy (legacy logic-only overload safety)', () => {
-        mockSequentialRng(0.01);
-        expect(pickEnemySkill(undefined)).toBeNull();
-    });
-});
-
 describe('decideEnemyAction — Phase 49 skill dispatch', () => {
     it("returns the skill action when an enemy with a rotation passes the gate", () => {
         const enemy = ArgumentativeCrow;
-        // First roll consumed by pickEnemySkill — 0.10 fires the gate.
+        // First roll consumed by the internal skill-pick gate — 0.10 fires it.
         mockSequentialRng(0.10);
         const decision = decideEnemyAction(enemy, makeState({ enemy }));
         expect(decision).toMatchObject({
             action: 'skill',
             skillId: 'false-dilemma',
+        });
+    });
+
+    it("derives the skill stance from philosophicalAspect on the skill", () => {
+        // CoastalTyrant carries `achilles-gambit` (philosophicalAspect: 'body').
+        // The dispatch must surface stance: 'body' alongside the skill action,
+        // not the strategy's would-be basic-action stance.
+        const enemy = CoastalTyrant;
+        mockSequentialRng(0.10); // gate fires
+        const decision = decideEnemyAction(enemy, makeState({ enemy }));
+        expect(decision).toMatchObject({
+            action: 'skill',
+            skillId: 'achilles-gambit',
+            stance: 'body',
         });
     });
 
@@ -349,8 +325,19 @@ describe('decideEnemyAction — Phase 49 skill dispatch', () => {
         expect(decision).toMatchObject({ stance: 'body', action: 'defend' });
     });
 
+    it("never dispatches a skill action for an enemy with no skills rotation", () => {
+        // makeEnemy() returns an Enemy with skills: undefined; the dispatch
+        // must short-circuit the skill-pick gate even when rng is in the
+        // fire-range (otherwise the strategy receives a fabricated skill
+        // action with no payload).
+        const enemy = makeEnemy();
+        mockSequentialRng(0.01); // would fire the gate if skills were present
+        const decision = decideEnemyAction(enemy, makeState({ enemy }));
+        expect(decision.action).not.toBe('skill');
+    });
+
     it("respects the legacy logic-only overload (no skill path)", () => {
-        // decideEnemyAction(logic) — enemy is undefined → pickEnemySkill bails.
+        // decideEnemyAction(logic) — enemy is undefined → skill-pick bails.
         mockSequentialRng(0.10);
         const decision = decideEnemyAction('aggressive');
         expect(decision.action).not.toBe('skill');
