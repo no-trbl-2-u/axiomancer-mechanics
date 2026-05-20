@@ -115,6 +115,7 @@ export type {
     ItemRarity, RolledModifier, EquipmentTemplate, UniqueItemTemplate,
     ConsumableUseResult,
     ShopWare, ShopInventory,
+    SetBonus, ItemSet,
 } from './Items';
 
 // ─── Skills ───────────────────────────────────────────────────────────────────

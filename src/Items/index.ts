@@ -34,4 +34,5 @@ export {
 } from './item.factory';
 export { consumableLibrary, getConsumableById } from './consumable.library';
 export { buyItem, sellItem, defaultSellPrice } from './shop.reducer';
+export type { SetBonus, ItemSet } from './set.types';
 export type { ShopWare, ShopInventory } from './shop.types';
