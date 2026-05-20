@@ -33,18 +33,11 @@
 - next: `/ship-a-phase` Phase 50 (engine handoff for `axiomancer-mobile`, promoted via `/oversight` 2026-05-19). Issues 1 + 2 from the handoff doc are blocking; Issue 3 (PersistenceAdapter ergonomics) is lower priority and may be deferred.
 - notes: filed by the mobile autonomous loop. Republish to `0.7.1` once Phase 50 lands so mobile can unpin from `0.7.0` exact and resume Phase 16 + 21.
 
-### [LOW] `getCoastalMap` barrel export — authorized for removal by oversight
-- category: dead-code
-- impact: 3 (zero in-repo callers; `@deprecated` per JSDoc since Phase 23 era; pre-1.0 permits breaking changes in minor bumps; replacement `getMapDefinition('coastal-continent', mapName)` + `createMapState` already exists)
-- ease: 8 (drop three lines: declaration in `src/World/map.registry.ts:75-84`, re-export in `src/World/index.ts:22`, re-export in `src/index.ts:152`; refresh any remaining mentions in docs)
-- score: 2.4
-- source: oversight authorization (2026-05-16) of the `[LOW] getCoastalMap` row in CRITIQUE pass 13
-- next: remove `getCoastalMap` from `src/index.ts`, `src/World/index.ts`, and `src/World/map.registry.ts`. Check `docs/api.md` and `docs/world.md` for residual mentions; replace with the `getMapDefinition` + `createMapState` two-call pattern. Verify gate. Hard Rule 9 unlock granted by `/oversight` 2026-05-16; mirrors the WorldMap removal at `a707316`.
-- deletion-authorized: **YES** — re-confirmed via `/oversight` 2026-05-16 (this commit). /iterate under /loop may execute the barrel removal without further prompts; the autonomous classifier's tracked-file-deletion guard is overridden for this specific row.
-
 ---
 
 ## Done
+
+- [x] **[LOW] `getCoastalMap` barrel export — authorized for removal by oversight** — resolved at iterate commit `b85f509` (2026-05-19). Removed the `getCoastalMap` function declaration in `src/World/map.registry.ts` + the re-exports in `src/World/index.ts:22` and `src/index.ts:158`. Updated `docs/world.md` (registry-functions list) + `docs/api.md` (Map registry stability row). Spec 08 Q6's historical `getCoastalMap` mention left as-is (it's the original deprecation question, not a forward-looking reference). BREAKING for external consumers — replacement is `getMapDefinition('coastal-continent', mapName)` + `createMapState`. Mobile call sites at `axiomancer-mobile/state/actions.ts:29,759` + `state/e2e/exploration.engine.test.ts:11` will need the replacement at the in-flight 0.7.0 → 0.10.x bump (flagged in the commit body so the user can update `axiomancer-mobile/docs/engine-upgrade-0.7.0-to-0.10.0.md` §2 alongside). 598/598 tests stay green; verify + deploy:check clean. Impact 3 × Ease 8 / 10 = 2.4. Source: oversight authorization 2026-05-16 of CRITIQUE pass 13.
 
 - [x] **[LOW] `specs/README.md` Recommended order missing DONE flags for rows 9-12 + missing Spec 23 entirely (promoted from critique-21)** — resolved at iterate commit `fb76fb8` (2026-05-19). Rows 9 / 10 / 11 / 12 flipped to `| N **DONE** |` matching the existing convention; appended a new row 13 for Spec 23 (`23-map-events.md`) with **DONE** flag, citing Phase 41 unit 3 + Phase 43 alignmentDelta extension as the acceptance trail. 598/598 tests stay green; pure docs change. Impact 3 × Ease 9 / 10 = 2.7 (× 1.5 docs bias = 4.05). Source: critique-21 row 2.
 

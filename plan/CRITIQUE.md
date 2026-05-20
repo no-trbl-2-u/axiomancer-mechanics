@@ -154,17 +154,11 @@
 - suggested_fix: Add `automation/README.md` as a one-page directory index — purpose of `automation/` (non-hermetic + tooling surface that complements the hermetic vitest suite), a table of the two `.mjs` tools (entry point, npm-script wrapper, what it consumes / produces, where its tests live if any), a one-line note on `scripts/walkthroughs/` (and that the smoke / Phase-11 JSONs are dead pending the dead-code rows above). Cross-link from `docs/testing.md` Phase 39 subsection. ~40-line file, no code change.
 - source: critique
 
-### [LOW] `getCoastalMap` is `@deprecated` on the public barrel with zero in-repo callers
-- pass: critique-13 (commit a707316)
-- area: dead-code
-- observation: `src/World/map.registry.ts:75-84` defines `getCoastalMap(mapName)` as a "backwards-compatible resolver" — `@deprecated` per the JSDoc, with `getMapDefinition('coastal-continent', mapName)` + `createMapState` as the replacement. It re-exports from `src/World/index.ts:22` and `src/index.ts:152`. `grep -rn "getCoastalMap" src/` shows zero in-repo callers beyond the three barrel / declaration sites. Same pattern as the `WorldMap` finding `/oversight` just authorised for removal at commit `a707316`.
-- evidence: `src/World/map.registry.ts:75-84` (declaration + JSDoc); `src/World/index.ts:22`, `src/index.ts:152` (re-exports); `grep -rn "getCoastalMap" src/` returns only the four sites and no consumer.
-- suggested_fix: ask `/oversight` to authorise the barrel removal (Hard Rule 9 blocks autonomous removal). When approved: drop the function declaration in `map.registry.ts`, the re-export in `src/World/index.ts:22`, and the re-export in `src/index.ts:152`. Update any docs that mention `getCoastalMap` (README Public API table doesn't currently list it; check `docs/api.md`). Pre-1.0 (0.7.0) permits breaking changes in minor bumps.
-- source: critique
-
 ---
 
 ## Done
+
+- [x] **[LOW] `getCoastalMap` is `@deprecated` on the public barrel with zero in-repo callers** — resolved at iterate commit `b85f509` (2026-05-19). Function declaration in `src/World/map.registry.ts` + re-exports in `src/World/index.ts:22` and `src/index.ts:158` removed; `docs/world.md` + `docs/api.md` refreshed. BREAKING for external consumers — replacement `getMapDefinition` + `createMapState` already on the public barrel; mobile call sites flagged in the commit body for the in-flight 0.7.0 → 0.10.x bump. 598/598 tests stay green. Impact 3 × Ease 8 / 10 = 2.4. Source: oversight authorization 2026-05-16 of this row.
 
 - [x] **[LOW] `specs/README.md` Recommended order table stops at Spec 12 and is missing DONE flags + Spec 23** — resolved at iterate commit `fb76fb8` (2026-05-19). Rows 9 / 10 / 11 / 12 flipped to `| N **DONE** |`; appended row 13 for Spec 23 (`23-map-events.md`) with **DONE** flag, citing Phase 41 unit 3 + Phase 43 alignmentDelta. 598/598 tests stay green; pure docs change. Impact 3 × Ease 9 / 10 = 2.7 (× 1.5 docs bias = 4.05). Source: critique-21 row 2.
 
