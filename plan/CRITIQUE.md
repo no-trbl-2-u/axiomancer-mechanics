@@ -46,14 +46,6 @@
 - suggested_fix: `git mv src/Combat/e2e/combat.resolver.test.ts src/Combat/e2e/combat.resolver.engine.test.ts`. Update the docs/testing.md cross-link at line 217 (it already points at the new path under the renamed file, just update the displayed filename). No imports to fix — the file is a test entry point, not an importable module. Verify suite stays green at 625/625.
 - source: critique
 
-### [LOW] Phase 56 CI workflow (`.github/workflows/verify.yml`) not surfaced in `docs/testing.md` or README.md
-- pass: critique-24 (commit 7078829)
-- area: docs
-- observation: Phase 56 (`87fb6ab`) shipped `.github/workflows/verify.yml` running `npm run verify` + `npm run deploy:check` on every PR / push against main. The workflow file's own header comment explains its purpose, but the docs surface a contributor would read FIRST — `docs/testing.md` (which has a "Deploy gate" subsection at line 86 referencing `scripts/README.md`) and `README.md` (which lists the verify gate but never names CI) — make no mention that a remote CI gate exists. The autonomous-beast loop runs verify before each commit, so the gate's primary audience is human-PR / one-off branch contributors, who currently have no doc telling them the gate fires.
-- evidence: `grep -rn "verify\.yml\|GitHub Actions\|workflows/verify" docs/ README.md` returns 0 hits. `docs/testing.md:86` Deploy gate subsection ends at the scripts/README.md cross-link; no CI extension. `.github/workflows/verify.yml:1-15` self-documents but isn't navigable from the docs.
-- suggested_fix: Add a "Continuous integration (Phase 56)" subsection to `docs/testing.md` directly under "Deploy gate" naming `.github/workflows/verify.yml`, the on-triggers (`pull_request` against main + `push` to main), the assertion chain (`npm run verify` → `npm run deploy:check`), the concurrency-group + cancel-in-progress behaviour, and the "no auto-publish step by design — manual + attended per RELEASING.md" caveat. Optionally add a CI status badge to README.md top section. Mirrors the doc-currency pattern Phase 34 / iterate ce8f5c4 used for `automation/` (the `automation/README.md` ships its own coverage; testing.md cross-links).
-- source: critique
-
 ### [LOW] `scripts/README.md` Fixture section reads "as of `0.10.1` unreleased" but `0.10.1` + `0.10.2` have both shipped
 - pass: critique-24 (commit 7078829)
 - area: docs
@@ -65,6 +57,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] Phase 56 CI workflow (`.github/workflows/verify.yml`) not surfaced in `docs/testing.md` or README.md** — resolved at iterate commit `b7a3fa6` (2026-05-20). New "Continuous integration — `.github/workflows/verify.yml` (Phase 56)" subsection in `docs/testing.md` directly under "Deploy gate". Names the on-triggers (PR against main + push to main), the 4-step pipeline (checkout → setup-node → verify → deploy:check), the concurrency-group cancel-in-progress behaviour, and the no-publish-step-by-design caveat. Cross-links to `.github/workflows/verify.yml` + RELEASING.md + critique-13 / expand-pass-13 historical signals. README.md badge addition deferred per the suggested_fix's "optionally" framing — docs/testing.md discoverability is the load-bearing surface. Pure docs change; 629/629 tests stay green. Impact 4 × Ease 7 / 10 = 2.8. Source: critique-24 row 3 (commit `7078829`).
 
 - [x] **[LOW] README.md Public API table — Items row missing Phase 37 shop economy + Phase 54 set items; Skills row missing Phase 50 `skillLibrary` / `getSkillById`** — resolved at iterate commit `650f2b2` (2026-05-20). Items row extended with shop economy block (`buyItem`/`sellItem`/`defaultSellPrice`, types `ShopWare`/`ShopInventory` — Phase 37 + iterate `3ba5319`) and set items block (`getActiveSetBonuses` + 5 siblings, `itemSetLibrary`/`getItemSetById`, types `SetBonus`/`ItemSet` — Phase 54). Skills row extended with `skillLibrary` + `getSkillById` (Phase 50 unit 1). Pure docs change; 629/629 tests stay green. The paired Enemy-row addition for Phase 60 `FriendshipReward` (critique-25 row 3) drains in a separate iterate tick per the one-finding-per-tick hard rule. Impact 4 × Ease 8 / 10 = 3.2. Source: critique-24 row 2 (commit `7078829`).
 
