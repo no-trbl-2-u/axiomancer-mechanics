@@ -178,7 +178,7 @@ const ENEMY_SKILL_PICK_CHANCE = 0.35;
  * disposition (pessimistic → defend, optimistic → attack). Stance is
  * preserved — that remains the per-strategy logic's call.
  */
-export function applyOutlookBias(
+function applyOutlookBias(
     action: CombatAction,
     enemy: Enemy | undefined,
 ): CombatAction {
