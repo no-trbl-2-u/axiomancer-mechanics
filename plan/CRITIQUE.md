@@ -14,14 +14,6 @@
 
 ## Pending
 
-### [MED] Phase 54 Scholar's Circle set passive expires mid-combat (round 4) instead of at combat end
-- pass: critique-23 (commit 44a179b)
-- area: gameplay / spec-mismatch
-- observation: Spec 05e Q4 + Phase 54 D4 both say set-bonus `passiveEffects` should be "combat-scoped — removed at combat end via the normal combat-end cleanup path." The Phase 54 brief specifies `duration: 999` as a combat-lifetime sentinel. The actual implementation at `src/Combat/combat.reducer.ts:50-53` calls `applyEffect(effects, effect, 1, { sourceId: 'set-bonus' })` with NO duration override — so the effect's default duration is used. For Scholar's Circle 2-piece (the only authored set passive today, `buff_critical_rate_up`), that default is 4 rounds (`src/Effects/buffs.library.json` — `"duration": 4`). The buff therefore decays via the normal `tickAllEffects` path and expires mid-combat after round 4, not at combat end. The hermetic test at `src/Items/e2e/sets.engine.test.ts` only asserts the effect is PRESENT at combat start (round 1), so it never observes the early-expire behaviour. Real spec-vs-implementation gap.
-- evidence: `grep -n "set-bonus" src/Combat/combat.reducer.ts` returns the `applyEffect` call with no `durationDelta` / `durationMode`. `grep -B1 -A2 "buff_critical_rate_up" src/Effects/buffs.library.json` returns `"duration": 4`. Phase 54 brief D4 says "use 999 — well past any plausible combat" but the brief's verbatim is `applyEffect(..., { duration: 999 })` which doesn't match ApplyEffectOptions (the option is `durationDelta`, not `duration`); the brief misnamed the field, so the impl shipped with no override.
-- suggested_fix: in `src/Combat/combat.reducer.ts:50-53`, pass `durationDelta: 999, durationMode: 'reset'` (or simpler: `durationDelta: MAX_EFFECT_DURATION` if that constant is in scope). Add a hermetic case to `src/Items/e2e/sets.engine.test.ts` that runs `tickAllEffects` 6+ times and asserts `buff_critical_rate_up` is still present at round 7 (i.e. it doesn't decay below combat lifetime). Mirror the fix in the Phase 54 brief's D4 note so the next reader sees the correct option name. ~5 lines edited + 1 new test case. Impact 4 × Ease 8 / 10 = 3.2.
-- source: critique
-
 ### [MED] CHANGELOG `[0.10.1] — unreleased` is missing Phase 52, 53, 54 surface — would publish under-documented
 - pass: critique-23 (commit 44a179b)
 - area: docs / release-engineering
@@ -65,6 +57,8 @@
 ---
 
 ## Done
+
+- [x] **[MED] Phase 54 Scholar's Circle set passive expires mid-combat (round 4) instead of at combat end** — resolved at iterate commit `f250ce4` (2026-05-20). Real fix bypasses `applyEffect`'s `MAX_EFFECT_DURATION = 10` ceiling by constructing the ActiveEffect directly with `remainingDuration: -1` — the engine's "infinite-duration" sentinel that `tickAllEffects` already special-cases (`src/Combat/effects.ts:73-76`). Combat-end cleanup discards the cloned player along with the effect, so persistence is naturally bounded by the combat lifetime even though duration is unbounded. New hermetic case ticks effects 20× past any plausible combat length and asserts `remainingDuration === -1`. 616/616 tests (+1 net from Phase 54's 615); verify clean. The Phase 54 brief D4's `duration: 999` reference was the misnamed cue — the option is `durationDelta`, not `duration`, so the impl shipped with no override. Impact 4 × Ease 8 / 10 = 3.2. Source: critique-23 row 1.
 
 - [x] **[LOW] `automation/` lacks a top-level README inventorying the directory after Phase 39 added a second tool** — resolved at iterate commit `ce8f5c4` (2026-05-19). New `automation/README.md` (~50 lines): purpose section frames automation/ as the non-hermetic complement to src/; tools table for `agent-e2e.mjs` (Phase 26) + `agent-vitest-reporter.mjs` (Phase 39) with npm-script wrappers, inputs, outputs, hermetic-coverage pointer; subdirectories block names scripts/walkthroughs/ + the gitignored outputs; "When to add a new tool" section codifies the surface boundary. `docs/testing.md` Phase 39 subsection gains a one-line cross-link. spec05_smoke.ts no longer included (deleted at fdbd0eb). 600/600 tests stay green. Impact 2 × Ease 8 / 10 = 1.6 (× 1.5 docs bias = 2.4). Source: critique-14.
 
