@@ -238,6 +238,8 @@ export const TideflukeReaver = createEnemy({
     loot: [none(35), drop('body-elixir', 35), drop('healing-potion', 20), drop('berserker-brew', 10)],
     // Phase 45 — logic-pessimistic-relational (Ligotti / Rust Cohle archetype).
     philosophicalAlignment: { epistemology: 67, outlook: -67, scope: 0 },
+    // Phase 57 — body-aspected tier-3 fallacy matches the reaver's "built threat → strike" trope.
+    skills: [skill('straw-giant')],
 });
 
 export const HushWraith = createEnemy({
@@ -256,6 +258,8 @@ export const HushWraith = createEnemy({
     loot: [none(35), drop('clarity-serum', 25), drop('focus-vial', 25), drop('philosopher-tea', 15)],
     // Phase 45 — mid-pessimistic-transcendent (Lovecraft / Burroughs archetype).
     philosophicalAlignment: { epistemology: 0, outlook: -67, scope: 67 },
+    // Phase 57 — mind-aspected paradox; gradual-undoing matches "listens until you doubt the answer".
+    skills: [skill('sorites-cascade')],
 });
 
 export const HollowSaint = createEnemy({
@@ -274,6 +278,8 @@ export const HollowSaint = createEnemy({
     loot: [none(30), drop('heart-draught', 30), drop('healing-potion', 25), drop('resonance-crystal', 15)],
     // Phase 45 — faith-mid-transcendent (St. John of the Cross / Rodrigues archetype).
     philosophicalAlignment: { epistemology: -67, outlook: 0, scope: 67 },
+    // Phase 57 — heart self-heal paradox for the martyr-without-cause seeking a wound to claim.
+    skills: [skill('pascals-wager')],
 });
 
 // ─── Boss (2) — level 7-8 ─────────────────────────────────────────────────────
@@ -329,6 +335,8 @@ export const TheDisagreement = createEnemy({
     ],
     // Phase 45 — logic-mid-individual (Camus / Meursault archetype).
     philosophicalAlignment: { epistemology: 67, outlook: 0, scope: -67 },
+    // Phase 57 — mind-mark paradox matches the rehearsed-argument boss whose phases are deliberate.
+    skills: [skill('liars-echo')],
 });
 
 // ─── Unique (1) — level 10 signature fight ────────────────────────────────────
@@ -357,6 +365,10 @@ export const EchoOfPyrrhonia = createEnemy({
     ],
     // Phase 45 — mid-mid-individual (Montaigne / Ishmael archetype).
     philosophicalAlignment: { epistemology: 0, outlook: 0, scope: -67 },
+    // Phase 57 — heart-aspected fallacy; the Pyrrhonian regress IS the classical
+    // skeptic move (every claim demands a deeper claim ad infinitum); the
+    // Echo's recurrence theme fits.
+    skills: [skill('eternal-regress')],
 });
 
 // ─── Test fixture (legacy, NOT counted toward Spec 07's 15) ───────────────────
