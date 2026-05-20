@@ -38,14 +38,6 @@
 - suggested_fix: When the next iterate drains critique-24 row 2, fold this row's Enemy-row entry into the same commit. The suggested addition to the README.md Enemy row: "; per-enemy `friendshipReward?: FriendshipReward` ({ items, xpBonus, narrative }) drives the Phase 60 befriendable-enemy content (MournfulGull + HollowEyedBeggar authored today)". Mirror to `plan/bearings.md` Enemy row with similar phrasing. If the two rows drain in separate iterate ticks, file this one's commit as a follow-up to critique-24 row 2's drain — no harm, just a small extra commit.
 - source: critique
 
-### [LOW] `src/Combat/e2e/combat.resolver.test.ts` violates the `.engine.test.ts` naming convention despite self-describing as the canonical example
-- pass: critique-24 (commit 7078829)
-- area: structure
-- observation: `docs/testing.md:188-189` codifies `.engine.test.ts` as a "fixed marker meaning the file is a hermetic e2e test"; `plan/bearings.md:161 + 215` corroborates. Phase 16 (`bb369c1`) migrated sibling tests into `src/<Module>/e2e/` for layout consistency. Every other e2e test in the repo follows the convention — 31 of 32 files under `src/**/e2e/*.engine.test.ts`. The one exception is `src/Combat/e2e/combat.resolver.test.ts`, whose header reads "This file is the *canonical example* of a hermetic e2e test in this repo. If you are writing a new e2e test, copy its structure." (lines 4-6). A canonical example whose filename doesn't match the convention it teaches is precedent-rot — future authors will either copy the wrong suffix or be confused about which marker to use.
-- evidence: `ls src/**/e2e/*.test.ts` — only `combat.resolver.test.ts` lacks the `.engine.` marker among 32 files. `docs/testing.md:188-189` + `plan/bearings.md:161 + 215` codify the convention. The file's own header (`src/Combat/e2e/combat.resolver.test.ts:1-7`) names itself the canonical example.
-- suggested_fix: `git mv src/Combat/e2e/combat.resolver.test.ts src/Combat/e2e/combat.resolver.engine.test.ts`. Update the docs/testing.md cross-link at line 217 (it already points at the new path under the renamed file, just update the displayed filename). No imports to fix — the file is a test entry point, not an importable module. Verify suite stays green at 625/625.
-- source: critique
-
 ### [LOW] `scripts/README.md` Fixture section reads "as of `0.10.1` unreleased" but `0.10.1` + `0.10.2` have both shipped
 - pass: critique-24 (commit 7078829)
 - area: docs
@@ -57,6 +49,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] `src/Combat/e2e/combat.resolver.test.ts` violates the `.engine.test.ts` naming convention despite self-describing as the canonical example** — resolved at iterate commit `7bf8115` (2026-05-20). `git mv src/Combat/e2e/combat.resolver.test.ts src/Combat/e2e/combat.resolver.engine.test.ts`; `docs/testing.md:235 + :244` references updated via replace_all (2 hits). No imports to fix — the file is a test entry point, not importable. Historical AUDIT.md / CRITIQUE.md references to the old filename left as archaeology. 629/629 tests stay green; verify + deploy:check clean. Now all 33 e2e files under `src/**/e2e/*.engine.test.ts` follow the canonical marker. Impact 3 × Ease 9 / 10 = 2.7. Source: critique-24 row 4 (commit `7078829`).
 
 - [x] **[LOW] Phase 56 CI workflow (`.github/workflows/verify.yml`) not surfaced in `docs/testing.md` or README.md** — resolved at iterate commit `b7a3fa6` (2026-05-20). New "Continuous integration — `.github/workflows/verify.yml` (Phase 56)" subsection in `docs/testing.md` directly under "Deploy gate". Names the on-triggers (PR against main + push to main), the 4-step pipeline (checkout → setup-node → verify → deploy:check), the concurrency-group cancel-in-progress behaviour, and the no-publish-step-by-design caveat. Cross-links to `.github/workflows/verify.yml` + RELEASING.md + critique-13 / expand-pass-13 historical signals. README.md badge addition deferred per the suggested_fix's "optionally" framing — docs/testing.md discoverability is the load-bearing surface. Pure docs change; 629/629 tests stay green. Impact 4 × Ease 7 / 10 = 2.8. Source: critique-24 row 3 (commit `7078829`).
 
