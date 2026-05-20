@@ -232,7 +232,7 @@ For every non-trivial implementation, the e2e file should cover at minimum:
 
 1. **Happy path** — the typical success scenario, end-to-end.
 2. **Boundary / win conditions** — every terminal state the change can reach
-   (e.g. `combat.resolver.test.ts` covers all three: `friendship`, `player`, `ko`).
+   (e.g. `combat.resolver.engine.test.ts` covers all three: `friendship`, `player`, `ko`).
 3. **Invariants** — properties that must hold throughout (HP ≥ 0, round
    counter monotonic, fixtures unmutated).
 4. **Lifecycle integration** — at least one test that drives the change
@@ -241,7 +241,7 @@ For every non-trivial implementation, the e2e file should cover at minimum:
 
 ## Canonical example
 
-[`src/Combat/e2e/combat.resolver.test.ts`](../src/Combat/e2e/combat.resolver.test.ts)
+[`src/Combat/e2e/combat.resolver.engine.test.ts`](../src/Combat/e2e/combat.resolver.engine.test.ts)
 is the reference implementation. Read it before writing a new e2e test —
 its top-of-file comment, its alternating-RNG helper, its three win-condition
 suites, and its store-lifecycle suite together demonstrate every property
