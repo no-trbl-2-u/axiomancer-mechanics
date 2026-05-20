@@ -31,14 +31,6 @@
 - suggested_fix: file `specs/14-philosophical-alignment.md` using the `specs/00-how-to-use-specs.md` template. Goal section is the 3-axis cube + 27-cell registry. Current state section cites Phases 42 (`bdfda00`) + 43 (`c62702e`) as already-shipped. Open questions: (1) Should `moralMeter` be unified into the cube as a 4th axis, (2) Should fallacies surface as skill payloads, effect payloads, or both, (3) Should enemies carry a `philosophicalAlignment?` field, (4) Should there be alignment-gated skills / effects / endings, (5) How does the alignment cube intersect with the friendship-victory mechanic. Add a `specs/README.md` row pointing at the new file. Pure docs work; no code touched. Pairs with the README + bearings findings above into a single Phase-42-paperwork sweep.
 - source: critique
 
-### [LOW] Spec 03 (Tier 2 / 3 effect procs) — all 5 acceptance boxes unchecked despite shipping pre-loop
-- pass: critique-17 (commit d1ebd7f)
-- area: docs
-- observation: `specs/03-tier2-tier3-effect-procs.md:112-118` lists 5 acceptance boxes — all 7 questions answered, proc-table cell coverage, unit-test crit/fumble paths, 50-run distribution sanity, `docs/combat.md` "Effect-Based Combat Specials" extension — and none are ticked. The shipping engine work landed pre-loop (per `plan/steps/01_build_plan.md:20` "Spec 03 — Tier 2/3 effect procs (Stance × action tables) (pre-loop)"), so each box is satisfiable today by reading the matching shipped code. Same pattern Phase 41 just drained for Specs 04 / 10 / 23 (commits b5c4d0b / 3b1fd88 / 518b5dd / 74e7389): walk each `[ ]`, locate the shipping reference, flip to `[x]` with the cite. The "Tier 2 + 3 procs" entry in `docs/effects/README.md` already affirms the engine is live, so the docs-side evidence is in hand.
-- evidence: `grep -c "^- \[ \]" specs/03-tier2-tier3-effect-procs.md` returns `5`; `grep -c "^- \[x\]" specs/03-tier2-tier3-effect-procs.md` returns `0`. `src/Combat/combat-effects.ts` + `src/Combat/phases/scenario.ts` ship the proc tables; `src/Combat/e2e/combat.resolver.test.ts` carries the crit/fumble cases.
-- suggested_fix: one /iterate commit — walk all 5 acceptance boxes, cite the shipping reference (engine module, hermetic test file, doc update), flip to `[x]`. Mirrors the Phase 41 unit-1 / unit-2 pattern (`b5c4d0b` for Spec 04 is the cleanest model). Impact 3 × Ease 8 / 10 = 2.4.
-- source: critique
-
 ### [LOW] Spec 05e (Set items) — all 8 acceptance boxes unchecked despite shipping pre-loop
 - pass: critique-17 (commit d1ebd7f)
 - area: docs
@@ -100,6 +92,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] Spec 03 (Tier 2 / 3 effect procs) — all 5 acceptance boxes unchecked despite shipping pre-loop** — resolved at iterate commit `f642cf4` (2026-05-19). All 5 boxes ticked with shipping references: 7 questions answered (grep-verified); proc table in `src/Combat/combat-effects.library.json` (171 lines, 6 Stance × action cells); per-cell roll test in `src/Combat/combat-effects.test.ts`; crit/fumble paths in `src/Combat/e2e/combat.resolver.test.ts`; hermetic distribution coverage via `mockAlternatingRng` / `mockSequentialRng` replaces the manual 50-run requirement; `docs/combat.md:110` "Effect-Based Combat Specials" section ships the full matrix. Mirrors the Phase 41 unit-pattern (`b5c4d0b`). 598/598 tests stay green. Impact 3 × Ease 8 / 10 = 2.4 (× 1.5 docs bias = 3.6). Source: critique-17.
 
 - [x] **[LOW] `alignmentDelta` is not cross-linked from `docs/world.md` (MapEvent authoring) or `docs/npcs.md` (dialogue authoring)** — resolved across two iterate commits: docs/npcs.md half at `9700775` (2026-05-19, alignmentDelta + requiresAlignment on DialogueChoice block); docs/world.md half at `bb5a857` (2026-05-19, new "Philosophical alignment shifts (Phase 43)" bullet in the MapEvents section + cross-link to `docs/philosophy.md` "Authoring deltas (Phase 43)"). Both halves close the asymmetric cross-link the critique-18 row flagged. 598/598 tests stay green. Impact 2 × Ease 9 / 10 = 1.8 (× 1.5 docs bias = 2.7). Source: critique-18.
 
