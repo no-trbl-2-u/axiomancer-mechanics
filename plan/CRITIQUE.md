@@ -14,15 +14,10 @@
 
 ## Pending
 
-### [LOW] `docs/enemy.md` "Befriendable enemies (Phase 60)" table doesn't cross-link to the Phase 65 world placements (fv-15 gull crag + fv-18 back alley)
-- pass: critique-28 (commit 17479e7)
-- area: docs
-- observation: Phase 65 (`e8d3b90`) placed MournfulGull at `fv-15` (gull crag, harbor district dead-end) and HollowEyedBeggar at `fv-18` (back alley, inland streets) via the new MapEventPool entries — both Phase 60 authored befriendables are now genuinely **discoverable in the world**, not just registered in `ENEMY_REGISTRY`. But `docs/enemy.md` line 225's "Befriendable enemies (Phase 60)" table at lines 258-259 doesn't say where in the world the player encounters them. A reader looking at the befriendable table for guidance doesn't know to walk fv-3 → fv-13 → ... or to dive into the inland streets. The placement is documented in `docs/world.md` Phase 65 sub-area sections but the cross-link is one-way; the befriendable table is the more likely landing point for someone interested in the friendship-victory path.
-- evidence: `grep -nE "fv-15|fv-18|gull crag|back alley" docs/enemy.md docs/combat.md` returns 0 hits — neither doc mentions the world location for either befriendable. `docs/world.md` § "Sub-areas (Phase 65)" lines 235-263 documents the placements but the discoverability gap remains for readers entering via `docs/enemy.md`.
-- suggested_fix: One-line edit per row in the `docs/enemy.md:255-259` Befriendable enemies table. Add a column "World placement (Phase 65)" with values: MournfulGull → "`fv-15` gull crag (Harbor District dead-end)"; HollowEyedBeggar → "`fv-18` back alley (Inland Streets, on the way to the abandoned shack loop)". Mirrors the Phase 60 D2 framing (the per-enemy authored content is the table; the placement is the next column). Optionally cross-link `docs/combat.md` Friendship Path's "Befriendable-enemy content (Phase 60)" subsection table the same way. Pure docs change; no test impact.
-- source: critique
 
 ## Done
+
+- [x] **[LOW] `docs/enemy.md` "Befriendable enemies (Phase 60)" table doesn't cross-link to the Phase 65 world placements (fv-15 gull crag + fv-18 back alley)** — resolved at iterate commit `0444d7d` (2026-05-20). `docs/enemy.md:256` Befriendable enemies table gained a "World placement (Phase 65)" column with both reachable paths to fv-18 spelled out. `docs/combat.md:209-210` befriendable table cells extended with a bracketed (at fv-N <area>, Phase 65) annotation alongside the enemy name (per the suggested_fix's optional combat.md cross-link). 643/643 tests stay green; pure docs change. Impact 3 × Ease 9 / 10 = 2.7. Source: critique-28 row 1 (commit `17479e7`).
 
 - [x] **[LOW] docs/api.md + README.md + plan/bearings.md Public-API quick-reference all missing Phase 62 `FriendshipReward.flagSet?` + Phase 63 4-surface alignment-observer block** — resolved at iterate commit `d0f198d` (2026-05-20). All three readers updated per the suggested_fix in a single pass-through commit: docs/api.md extended Phase 60 FriendshipReward subsection with Phase 62 flagSet semantics + added new "Reactive NPCs — alignment observers (Phase 63)" mini-section listing the 4 surfaces; README.md Enemy / NPCs / Game rows folded in the new phrasing; plan/bearings.md Enemy + Game entries gained the corresponding Phase 62 + 63 lines. Pure docs change; 636/636 tests stay green. Impact 4 × Ease 7 / 10 = 2.8. Source: critique-27 row 1 (commit `b71fbaf`).
 
