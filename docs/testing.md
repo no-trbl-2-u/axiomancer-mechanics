@@ -83,6 +83,16 @@ the canonical correctness signal stays in `src/**/e2e/*.engine.test.ts`.
 See `automation/scripts/walkthroughs/README.md` for the inventory and
 how to add a new walkthrough.
 
+### Deploy gate — `npm run deploy:check`
+
+After `npm run verify` is green, `npm run deploy:check` runs four
+structural assertions before `npm pack --dry-run`: `dist/` exists,
+`dist/<Module>/types.d.ts` count matches `src/<Module>/types.ts`
+count, the latest git tag matches the top tagged CHANGELOG heading,
+and the public-surface snapshot matches the committed fixture. See
+[`scripts/README.md`](../scripts/README.md) for the full tools table
++ the public-surface contract workflow.
+
 ### Agent-friendly report — `npm run verify:agent` (Phase 39)
 
 `npm run verify:agent` runs the same gates as `npm run verify`
