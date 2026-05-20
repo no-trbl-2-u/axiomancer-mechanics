@@ -167,6 +167,238 @@ const fvHazard: MapEventPool = {
     }],
 };
 
+// ─── Phase 65 — fishing-village expansion pools ─────────────────────────────
+//
+// Per Phase 65 D5: reuse existing enemies + NPCs (no new content). Per D6:
+// gathering pools that lack a canonical material id ship as description-
+// only payloads. Per D8: alignmentDelta annotations only where thematically
+// tight (~60% density mirroring Phase 43's first-pass).
+
+const fvFishmongerRow: MapEventPool = {
+    id: 'fv-11.village',
+    entries: [{
+        kind: 'village', weight: 1,
+        payload: {
+            kind: 'village',
+            villageName: 'Fishmonger Row',
+            merchants: [{ name: 'Net-Mender Joss', isShopkeeper: true }],
+            shop: {
+                wares: [
+                    { itemId: 'minor-healing-potion', price: 12 },
+                    { itemId: 'driftwood',            price: 3 },
+                ],
+            },
+            description: 'A line of fishmonger stalls; nets, bait, salt.',
+        },
+    }],
+};
+
+const fvFerrySlip: MapEventPool = {
+    id: 'fv-12.cutscene',
+    entries: [{
+        kind: 'cutscene', weight: 1,
+        payload: {
+            kind: 'cutscene',
+            lines: [
+                'The ferry slip is empty.',
+                'The ferrier\'s lantern is dark; the water laps unanswered.',
+            ],
+            description: 'At the empty ferry slip.',
+        },
+        // Phase 43 — absent ferrier reads as small pessimistic-relational pull.
+        alignmentDelta: { outlook: -1 },
+    }],
+};
+
+const fvQuaysideChapel: MapEventPool = {
+    id: 'fv-13.rest',
+    entries: [{
+        kind: 'rest', weight: 1,
+        payload: {
+            kind: 'rest',
+            healFraction: 0.5,
+            description: 'A small chapel at the quayside. The bench is worn smooth.',
+        },
+        // Phase 43 — chapel rest leans faith-transcendent.
+        alignmentDelta: { epistemology: -1, scope: 1 },
+    }],
+};
+
+const fvTidePools: MapEventPool = {
+    id: 'fv-14.gathering',
+    entries: [{
+        kind: 'gathering', weight: 1,
+        payload: {
+            kind: 'gathering',
+            items: [{
+                id: 'tide-shell', name: 'Tide Shell',
+                description: 'Spiral and chalk-pale; the inside still smells of salt.',
+                category: 'material', quantity: 1,
+            }],
+            description: 'Tide pools at low tide — small treasures wedged among the kelp.',
+        },
+    }],
+};
+
+const fvGullCrag: MapEventPool = {
+    id: 'fv-15.encounter',
+    entries: [{
+        kind: 'encounter', weight: 1,
+        payload: {
+            kind: 'encounter',
+            enemySlug: 'mournful-gull',
+            isBoss: false,
+            description: 'The mournful gull circles her crag, screaming her tallies.',
+        },
+    }],
+};
+
+const fvTownWell: MapEventPool = {
+    id: 'fv-16.rest',
+    entries: [{
+        kind: 'rest', weight: 1,
+        payload: {
+            kind: 'rest',
+            healFraction: 0.75,
+            description: 'The town well; cold water, old stone, kind to throats.',
+        },
+    }],
+};
+
+const fvSmokehouse: MapEventPool = {
+    id: 'fv-17.gathering',
+    entries: [{
+        kind: 'gathering', weight: 1,
+        payload: {
+            kind: 'gathering',
+            items: [{
+                id: 'salt-fish', name: 'Salt-Fish Strip',
+                description: 'Cured hard; chewy, salty, will keep for the road.',
+                category: 'material', quantity: 1,
+            }],
+            description: 'A smokehouse rack half-loaded with salt-fish; some pieces have fallen.',
+        },
+        // Phase 43 — opportunistic gathering at an unattended rack.
+        alignmentDelta: { scope: -1 },
+    }],
+};
+
+const fvBackAlley: MapEventPool = {
+    id: 'fv-18.encounter',
+    entries: [{
+        kind: 'encounter', weight: 1,
+        payload: {
+            kind: 'encounter',
+            enemySlug: 'hollow-eyed-beggar',
+            isBoss: false,
+            description: 'In the back alley a hollow-eyed figure waits without waiting.',
+        },
+    }],
+};
+
+const fvAbandonedShack: MapEventPool = {
+    id: 'fv-19.loot-cache',
+    entries: [{
+        kind: 'loot-cache', weight: 1,
+        payload: {
+            kind: 'loot-cache',
+            currency: 8,
+            description: 'A widow\'s shack. The chest under the bed has a stuck latch.',
+        },
+    }],
+};
+
+const fvOldShrine: MapEventPool = {
+    id: 'fv-20.cutscene',
+    entries: [{
+        kind: 'cutscene', weight: 1,
+        payload: {
+            kind: 'cutscene',
+            lines: [
+                'A weathered shrine to a half-forgotten sea-god.',
+                'The offerings are recent. Someone still remembers.',
+            ],
+            description: 'The old shrine on the back lane.',
+        },
+        // Phase 43 — small faith-transcendent pull at the kept shrine.
+        alignmentDelta: { epistemology: -2, scope: 2 },
+    }],
+};
+
+const fvGullTossedSteps: MapEventPool = {
+    id: 'fv-21.cutscene',
+    entries: [{
+        kind: 'cutscene', weight: 1,
+        payload: {
+            kind: 'cutscene',
+            lines: [
+                'A returning fisherman pauses on the gull-tossed steps to catch his breath.',
+                'He nods. Says nothing. Keeps climbing.',
+            ],
+            description: 'On the gull-tossed steps.',
+        },
+    }],
+};
+
+const fvSeaStack: MapEventPool = {
+    id: 'fv-22.loot-cache',
+    entries: [{
+        kind: 'loot-cache', weight: 1,
+        payload: {
+            kind: 'loot-cache',
+            currency: 12,
+            description: 'A kelp-bound bundle wedged at the sea-stack base.',
+        },
+    }],
+};
+
+const fvLighthouseRuin: MapEventPool = {
+    id: 'fv-23.cutscene',
+    entries: [{
+        kind: 'cutscene', weight: 1,
+        payload: {
+            kind: 'cutscene',
+            lines: [
+                'The lighthouse ruin. The lamp-room is open to the sky.',
+                'You can see the whole coast from here, and how small you are inside it.',
+            ],
+            description: 'At the lighthouse ruin.',
+        },
+        // Phase 43 — vastness from the cliff: small outlook-pessimistic
+        // pull + transcendent-scope shift.
+        alignmentDelta: { outlook: -1, scope: 2 },
+    }],
+};
+
+const fvKeepersCottage: MapEventPool = {
+    id: 'fv-24.rest',
+    entries: [{
+        kind: 'rest', weight: 1,
+        payload: {
+            kind: 'rest',
+            healFraction: 1.0,
+            description: 'The keeper\'s cottage stands open. The kettle is still warm.',
+        },
+        // Phase 43 — abandoned but welcoming: small optimistic +
+        // relational pull (someone left it for whoever came after).
+        alignmentDelta: { outlook: 1, scope: 1 },
+    }],
+};
+
+const fvGullsNest: MapEventPool = {
+    id: 'fv-25.hazard',
+    entries: [{
+        kind: 'hazard', weight: 1,
+        payload: {
+            kind: 'hazard',
+            damage: 1,
+            description: 'A gull\'s nest above the cliff path; fledglings strike at intruders.',
+        },
+        // Phase 43 — territorial fauna at the dead-end; small pessimistic pull.
+        alignmentDelta: { outlook: -1 },
+    }],
+};
+
 // ─── northern-forest pools ────────────────────────────────────────────────────
 
 const nfCutscene: MapEventPool = {
@@ -320,6 +552,7 @@ const nfCaveMouth: MapEventPool = {
 // ─── register everything on module load ───────────────────────────────────────
 
 const FISHING_VILLAGE_POOLS: ReadonlyArray<{ nodeId: string; pool: MapEventPool }> = [
+    // Spine (Phase 23 / 24 era)
     { nodeId: 'fv-1',  pool: fvCutscene  },
     { nodeId: 'fv-2',  pool: fvOldMarrow },
     { nodeId: 'fv-3',  pool: fvShop      },
@@ -330,6 +563,24 @@ const FISHING_VILLAGE_POOLS: ReadonlyArray<{ nodeId: string; pool: MapEventPool 
     { nodeId: 'fv-8',  pool: fvDriftwood },
     { nodeId: 'fv-9',  pool: fvCampfire  },
     { nodeId: 'fv-10', pool: fvHazard    },
+    // Harbor district (Phase 65)
+    { nodeId: 'fv-11', pool: fvFishmongerRow },
+    { nodeId: 'fv-12', pool: fvFerrySlip     },
+    { nodeId: 'fv-13', pool: fvQuaysideChapel },
+    { nodeId: 'fv-14', pool: fvTidePools     },
+    { nodeId: 'fv-15', pool: fvGullCrag      },
+    // Inland streets (Phase 65)
+    { nodeId: 'fv-16', pool: fvTownWell      },
+    { nodeId: 'fv-17', pool: fvSmokehouse    },
+    { nodeId: 'fv-18', pool: fvBackAlley     },
+    { nodeId: 'fv-19', pool: fvAbandonedShack },
+    { nodeId: 'fv-20', pool: fvOldShrine     },
+    // Cliff path (Phase 65)
+    { nodeId: 'fv-21', pool: fvGullTossedSteps },
+    { nodeId: 'fv-22', pool: fvSeaStack       },
+    { nodeId: 'fv-23', pool: fvLighthouseRuin },
+    { nodeId: 'fv-24', pool: fvKeepersCottage },
+    { nodeId: 'fv-25', pool: fvGullsNest      },
 ];
 
 const NORTHERN_FOREST_POOLS: ReadonlyArray<{ nodeId: string; pool: MapEventPool }> = [
