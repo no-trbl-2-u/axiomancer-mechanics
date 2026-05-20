@@ -7,7 +7,8 @@ import { Enemy } from '../Enemy/types';
 import { deepClone } from '../Utils';
 import { aggregateCombatStartTokens } from '../Items/equipment.engine';
 import { aggregateSetStartTokens, getActiveSetPassiveEffectIds } from '../Items/set.engine';
-import { applyEffect, lookupEffect } from '../Effects';
+import { lookupEffect } from '../Effects';
+import type { ActiveEffect } from '../Effects/types';
 import type { CombatResources } from '../Skills/types';
 import {
     Stance, Action, CombatPhase, CombatState, BattleLogEntry,
@@ -37,19 +38,38 @@ export function initializeCombat(player: Character, enemy: Enemy): CombatState {
         paradox:  itemTokens.paradox  + setTokens.paradox,
     };
 
-    // Apply set-bonus passive effects as combat-scoped ActiveEffects (Spec 05e Q4).
-    // Combat-end cleanup discards the cloned player along with these effects,
-    // so persistence is naturally bounded by the combat lifetime.
+    // Apply set-bonus passive effects as combat-LIFETIME ActiveEffects
+    // (Spec 05e Q4). remainingDuration: -1 is the engine's "infinite-duration"
+    // sentinel — tickAllEffects skips the tick decrement for these entries,
+    // so set passives survive every round of combat. Combat-end cleanup
+    // discards the cloned player along with the effects, so persistence is
+    // bounded by the combat lifetime even though duration is unbounded.
+    //
+    // We construct ActiveEffect directly here rather than going through
+    // applyEffect — applyEffect clamps remainingDuration to MAX_EFFECT_DURATION
+    // (10), which would let the passive expire on an unusually long combat
+    // (e.g. boss-encounter walkthrough at ~16+ rounds). The -1 sentinel
+    // bypasses that ceiling.
     const clonedPlayer = deepClone(player);
     const setPassiveIds = getActiveSetPassiveEffectIds(equipment);
     let playerWithSetEffects = clonedPlayer;
     for (const effectId of setPassiveIds) {
         const effect = lookupEffect(effectId);
         if (!effect) continue;
-        const result = applyEffect(playerWithSetEffects.effects ?? [], effect, 1, {
-            sourceId: 'set-bonus',
-        });
-        playerWithSetEffects = { ...playerWithSetEffects, effects: result.activeEffects };
+        const newEffect: ActiveEffect = {
+            effectId:          effect.id,
+            remainingDuration: -1,        // combat-lifetime sentinel (tickAllEffects skips)
+            intensity:         1,
+            appliedAt:         1,
+            tier:              effect.tier,
+            resistedBy:        effect.resistedBy,
+            resistDR:          effect.resistDR,
+            sourceId:          'set-bonus',
+        };
+        playerWithSetEffects = {
+            ...playerWithSetEffects,
+            effects: [...(playerWithSetEffects.effects ?? []), newEffect],
+        };
     }
 
     return {

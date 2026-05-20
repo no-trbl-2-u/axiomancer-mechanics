@@ -30,6 +30,7 @@ import {
 } from '../set.engine';
 import { itemSetLibrary, getItemSetById } from '../set.library';
 import { Disatree_01 } from '../../Enemy/enemy.library';
+import { tickAllEffects } from '../../Combat/effects';
 import type { Equipment, EquipmentSlot } from '../types';
 import type { CombatResources } from '../../Skills/types';
 
@@ -246,6 +247,31 @@ describe('Phase 54 — set passiveEffects are combat-scoped (Spec Q4)', () => {
         // The original player's effects array stays unchanged — set passives
         // live on the combatState, not the canonical character.
         expect(player.effects ?? []).toEqual([]);
+    });
+
+    it('set passive uses the combat-lifetime sentinel (remainingDuration: -1) so it survives every tick', () => {
+        // Critique-23 row: the prior implementation passed `applyEffect` with
+        // no duration override, which let the passive expire mid-combat at
+        // round 4 (buff_critical_rate_up's default duration). The fix uses
+        // the -1 sentinel that tickAllEffects skips.
+        const player = {
+            ...buildPlayer(),
+            equipment: { head: leatherCap, accessory: copperRing },
+        };
+        let state = initializeCombat(player, Disatree_01);
+
+        // Tick the player's effects 20 times — well past any plausible combat
+        // length. The set passive must still be present at the end.
+        for (let i = 0; i < 20; i++) {
+            const result = tickAllEffects(state.player);
+            state = { ...state, player: result.target };
+        }
+
+        const setEffect = state.player.effects?.find(
+            e => e.effectId === 'buff_critical_rate_up' && e.sourceId === 'set-bonus',
+        );
+        expect(setEffect).toBeDefined();
+        expect(setEffect?.remainingDuration).toBe(-1);
     });
 });
 
