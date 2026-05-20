@@ -12,9 +12,9 @@ deep imports are part of the supported surface.
 
 ## [0.10.1] — unreleased
 
-Engine handoff to `axiomancer-mobile` + autosave throttling + post-release
-docs/dead-code cleanup. The first published version under the
-CHANGELOG-tracked release process.
+Engine handoff to `axiomancer-mobile`, autosave throttling, release-process
+artefacts, public-surface contract enforcement, Set items engine. The first
+published version under the CHANGELOG-tracked release process.
 
 ### Added
 - Top-level barrel re-exports `skillLibrary` + `getSkillById` from
@@ -34,22 +34,78 @@ CHANGELOG-tracked release process.
   2). Pre-fix only `Items` emitted; the other 10 modules' `types.d.ts`
   files were authored as `.d.ts` and tsc silently skipped them. Rename
   to `types.ts` was the fix.
-- `DURABLE_ACTIONS` allowlist in `src/Game/store.ts` (Phase 51). UI-tier
-  actions (`USE_ITEM`, `EQUIP_ITEM`, `ALLOCATE_STAT_POINT`,
-  `LEARN_SKILL`, `SHIFT_MORAL_METER`,
-  `SHIFT_PHILOSOPHICAL_ALIGNMENT`, `START_COMBAT`, `PROCESS_NODE`,
-  `LOAD_GAME`) no longer trigger autosave; only `COMBAT_ROUND`,
-  `LEVEL_UP`, `END_COMBAT`, `MOVE_TO_NODE`, `APPLY_DIALOGUE`,
-  `SAVE_GAME` write through.
-- `scripts/deploy-check.mjs` gains a `dist/<Module>/types.d.ts` count
-  guard (Phase 50 unit 2). Fails the gate if the count drops below the
-  source-side `types.ts` count.
+- **Set items engine (Phase 54).** New top-level barrel exports:
+  - Types: `SetBonus`, `ItemSet`.
+  - Engine helpers: `getActiveSetBonuses`,
+    `getActiveSetBonusesForCharacter`, `aggregateSetStartTokens`,
+    `applySetGenerationBonus`, `getActiveSetPassiveEffectIds`,
+    `getEquippedItemSets`.
+  - Library: `itemSetLibrary` + `getItemSetById`.
+  - Authored sets in `itemSetLibrary`: Wanderer's Road (2-piece
+    sandals + leather-cap → `+2 heart` start tokens); Iron Discipline
+    (3-piece leather-cap + cloth-wrap + cloth-gloves → `+3
+    physicalDefense` at 2, `+1 body/any` at 3); Scholar's Circle
+    (2-piece copper-ring + leather-cap → `+2 mind` start tokens +
+    `buff_critical_rate_up` passive).
+  - Set bonuses are computed on-demand at `initializeCombat` +
+    `generateBasicActionResources`; set `passiveEffects` apply as
+    combat-lifetime `ActiveEffect`s with `remainingDuration: -1` and
+    `sourceId: 'set-bonus'` (`tickAllEffects` skips the tick).
+- **CHANGELOG.md + RELEASING.md** (Phase 52 — this document, plus the
+  bump-and-publish flow doc at the repo root with deprecation
+  lifecycle policy).
+- `scripts/deploy-check.mjs` gains three new assertions across this
+  release:
+  - `dist/<Module>/types.d.ts` count guard (Phase 50 unit 2 — fails the
+    gate if the count drops below the source-side `types.ts` count).
+  - Tag / CHANGELOG agreement (Phase 52 unit 2 — fails the gate if
+    `git describe --tags --abbrev=0` doesn't match the top tagged
+    `## [X.Y.Z]` heading in `CHANGELOG.md`; `(unreleased)` headings are
+    skipped).
+  - Public-surface fixture drift (Phase 53 unit 2 — fails the gate if
+    the snapshot of `dist/index.d.ts` diverges from the committed
+    fixture at `scripts/public-surface.expected.json`).
+- **Public-surface tooling (Phase 53).**
+  `scripts/snapshot-public-surface.mjs` reads `dist/index.d.ts` and
+  emits the deterministic-sorted JSON contract.
+  `scripts/diff-public-surface.mjs <ref-A> <ref-B>` pretty-prints
+  Added / Removed / Changed-kind in markdown form for direct paste
+  into a CHANGELOG entry. The committed fixture
+  `scripts/public-surface.expected.json` captures the current public
+  barrel (233 values + 158 types as of this release).
 
 ### Changed
+- **Autosave policy** (Phase 51) — `src/Game/store.ts` restricts
+  write-through to a curated `DURABLE_ACTIONS` allowlist
+  (`COMBAT_ROUND`, `LEVEL_UP`, `END_COMBAT`, `MOVE_TO_NODE`,
+  `APPLY_DIALOGUE`, `SAVE_GAME`). UI-tier actions (`USE_ITEM`,
+  `EQUIP_ITEM`, `ALLOCATE_STAT_POINT`, `LEARN_SKILL`,
+  `SHIFT_MORAL_METER`, `SHIFT_PHILOSOPHICAL_ALIGNMENT`,
+  `START_COMBAT`, `PROCESS_NODE`, `LOAD_GAME`) no longer trigger
+  autosave. The constant is internal to `src/Game/store.ts` (not on
+  the public barrel); consumers see fewer writes, not a different
+  payload. `store.save()` and `updateCombat()` keep their
+  unconditional writes per the Phase 51 brief D2 / D3.
+- **`scripts/deploy-check.mjs`** is now a meaningful gate, not just an
+  `npm pack` wrapper — it runs three structural assertions before the
+  pack dry-run (types.d.ts count, tag/CHANGELOG match, public-surface
+  drift).
 - `src/Items/e2e/equipment.engine.test.ts` "Game store lifecycle"
   assertion flipped: `equipItem` / `unequipItem` no longer call
   `adapter.save` under the Phase 51 DURABLE_ACTIONS policy. (Test
   assertion correction, not an API change.)
+
+### Fixed
+- **Phase 54 Scholar's Circle set passive expiry** (iterate
+  `f250ce4`). The initial Phase 54 ship applied set-bonus
+  `passiveEffects` via `applyEffect` with no duration override, which
+  let the passive (`buff_critical_rate_up`, default duration 4) expire
+  mid-combat at round 5 — violating Spec 05e Q4. The fix constructs
+  the ActiveEffect directly with `remainingDuration: -1` (the engine's
+  infinite-duration sentinel that `tickAllEffects` skips), so set
+  passives survive arbitrary combat lengths. Combat-end cleanup
+  discards the cloned player, so persistence stays naturally
+  combat-scoped.
 
 ### Migration notes
 - **Consumers using `import { skillLibrary } from 'axiomancer-mechanics'`**
@@ -60,6 +116,15 @@ CHANGELOG-tracked release process.
   change; the savings come from fewer write calls, not from a different
   payload. Any UI relying on "every action writes to disk" should
   invoke `store.save()` explicitly when it needs a checkpoint.
+- **Consumers building custom equipment-screen UIs** may want to import
+  the new Phase 54 surface (`getEquippedItemSets` for an "active sets"
+  summary, including partial counts).
+- **Future release authors**: `node scripts/diff-public-surface.mjs
+  <prior-tag> HEAD` (once the fixture exists at both refs) emits the
+  Added / Removed bullets in markdown ready to paste here. The
+  `v0.10.0` predecessor doesn't carry the fixture, so this release's
+  bullets were authored from the per-phase briefs; from `0.10.1`
+  forward, the diff tool is the canonical source.
 
 ## [0.10.0] — 2026-05-19
 
