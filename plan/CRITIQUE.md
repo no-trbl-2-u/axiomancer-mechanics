@@ -22,14 +22,6 @@
 - suggested_fix: file `specs/14-philosophical-alignment.md` using the `specs/00-how-to-use-specs.md` template. Goal section is the 3-axis cube + 27-cell registry. Current state section cites Phases 42 (`bdfda00`) + 43 (`c62702e`) as already-shipped. Open questions: (1) Should `moralMeter` be unified into the cube as a 4th axis, (2) Should fallacies surface as skill payloads, effect payloads, or both, (3) Should enemies carry a `philosophicalAlignment?` field, (4) Should there be alignment-gated skills / effects / endings, (5) How does the alignment cube intersect with the friendship-victory mechanic. Add a `specs/README.md` row pointing at the new file. Pure docs work; no code touched. Pairs with the README + bearings findings above into a single Phase-42-paperwork sweep.
 - source: critique
 
-### [LOW] `TODO(spec-09)` autosave-on-every-action note duplicated in `game.reducer.ts:138` + `store.ts:208` with no carrying issue
-- pass: critique-17 (commit d1ebd7f)
-- area: structure / dead-code
-- observation: Two production source files carry the same Spec-09 deferred-throttle comment word-for-word: `src/Game/game.reducer.ts:138` ("TODO(spec-09): autosave currently fires on every action in the store. If profiling shows...") and `src/Game/store.ts:208` ("TODO(spec-09): autosave fires on every action. Throttle (or restrict..."). Neither carries a tracker issue, a Knowledge-Gaps row, or an AUDIT/CRITIQUE finding pointing at the actual throttle work — so /iterate has no signal to act on. Two copies also means future profiling work has to land twice or risk drift. Spec 09 itself is `[x]` shipped per `plan/steps/01_build_plan.md:32`, so the lingering TODOs are technically resolved-but-deferred without a forward pointer.
-- evidence: `grep -n "TODO(spec-09)" src/Game/game.reducer.ts src/Game/store.ts` returns both lines. `grep -rn "autosave.*throttle\|throttle.*autosave" plan/ Knowledge-Gaps.md` returns no matches — there is no plan-side row that captures the deferral.
-- suggested_fix: one of two paths in /iterate — (a) collapse the comment into one canonical site (`store.ts:208` — that's the file that actually does the autosave) and replace the reducer-side comment with a one-line cross-reference (`// Autosave policy: see store.ts:208`); (b) promote the deferral to an AUDIT.md row so /iterate has a real signal ("throttle autosave: 50ms debounce around `persistence.save`, or restrict to a named subset of actions; benchmark with 1k-action e2e run"). Either resolves the dangling-TODO smell; (b) gives the loop a follow-up. Impact 2 × Ease 8 / 10 = 1.6.
-- source: critique
-
 
 ### [LOW] Phase 37 CLI `shopLoop` sell-price floor (`Math.max(1, …)`) enables a small infinite-money exploit for any ware at price ≤ 2
 - pass: critique-15 (commit cee2614)
@@ -67,6 +59,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] `TODO(spec-09)` autosave-on-every-action note duplicated in `game.reducer.ts:138` + `store.ts:208` with no carrying issue** — **resolved by Phase 51** at commit `4972f9a` (2026-05-19), not by iterate. Phase 51 (autosave throttling per Spec 09 Q4 path B) removed both `TODO(spec-09)` comment blocks entirely rather than collapsing them, and replaced the throttle deferral with the live `DURABLE_ACTIONS` allowlist policy at `src/Game/store.ts` (gated dispatch save) + the explanatory comment in `src/Game/game.reducer.ts` pointing readers to store.ts for the autosave policy. `grep -n "TODO(spec-09)" src/` now returns 0 hits. Spec 09 Q4 acceptance row in `specs/09-game-loop-orchestration.md` carries the "DONE at Phase 51" reference. Row moved Pending → Done at iterate (2026-05-19) as a stale-shipped drain — the critique-17 row's suggested_fix (paths a + b) was superseded by Phase 51's superior solution (allowlist > comment-collapse-only). No code change this tick; pure plan-file maintenance. Impact 2 × Ease 8 / 10 = 1.6. Source: critique-17.
 
 - [x] **[LOW] `applyOutlookBias` is exported from `src/Enemy/enemy.logic.ts` but not re-exported through `src/Enemy/index.ts`** — resolved at iterate commit `17e76b9` (2026-05-19). Dropped the `export` keyword from `src/Enemy/enemy.logic.ts:181` (path (a) of the suggested_fix). Only internal caller is `decideEnemyAction` at `:284`; no imports anywhere in src/; tests reference the name in comments only. 598/598 tests stay green. Impact 2 × Ease 9 / 10 = 1.8 (no docs bias — structure). Source: critique-21 row 3.
 

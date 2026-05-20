@@ -25,18 +25,12 @@
 - notes: `specs/05e-set-items.md` Goal section names Wanderer's Road as the 2/3-piece reference set; Q4 + Q5 in the spec's open-questions block are answered, the rest are blank. Three options for /oversight: (a) promote Spec 05e to a phase (estimated 2-3 commit units: types + engine + library + hermetic tests + docs/equipment.md "Set Items" section), (b) leave deferred and rephrase the spec's status as "queued for late-game", (c) drop the spec entirely if set items are no longer desired. Mobile is currently bumping to 0.10.0 and does not depend on Spec 05e either way.
 - next: `/oversight` decision required. The build plan row was flipped from `[x] (pre-loop)` to `[ ]` at iterate (commit will be ee... when this AUDIT row commits), with an inline note describing the mismark; the critique-17 row is moved to Done with a corrective trail rather than ticked.
 
-### [tracking] GH#64 — engine handoff (skillLibrary re-export + types.d.ts emission + PersistenceAdapter ergonomics)
-- category: tracking
-- impact: 0 (tracking row; not an iterate target)
-- ease: 0
-- score: 0 (do not pick — work is routed through a phase)
-- source: triage 2026-05-19 — labeled `triage:loop-queued,bug` on GH#64; duplicates GH#61/62/63 closed as `triage:closed,duplicate`
-- next: `/ship-a-phase` Phase 50 (engine handoff for `axiomancer-mobile`, promoted via `/oversight` 2026-05-19). Issues 1 + 2 from the handoff doc are blocking; Issue 3 (PersistenceAdapter ergonomics) is lower priority and may be deferred.
-- notes: filed by the mobile autonomous loop. Republish to `0.7.1` once Phase 50 lands so mobile can unpin from `0.7.0` exact and resume Phase 16 + 21.
 
 ---
 
 ## Done
+
+- [x] **[tracking] GH#64 — engine handoff (skillLibrary re-export + types.d.ts emission + PersistenceAdapter ergonomics)** — resolved by Phase 50 at commits `19f2015` (unit 1: skillLibrary + getSkillById top-level re-export + hermetic public-barrel test) + `57c06ab` (unit 2: 10 × `types.d.ts` → `types.ts` rename + scripts/deploy-check.mjs count guard). Closes Issues 1 + 2 from the mobile engine-handoff doc. Issue 3 (PersistenceAdapter ergonomics) was explicitly deferred per Phase 50 D2 and stays scoped to its dedicated follow-up candidate in `plan/PHASE_CANDIDATES.md`. Republish to 0.10.1 (or 0.11.0) remains user-triggered post-ship per oversight 2026-05-19 Q2. Row moved Pending → Done at iterate (2026-05-19) as a stale-shipped drain. Source: triage 2026-05-19 / GH#64.
 
 - [x] **[LOW] `applyOutlookBias` is exported from `src/Enemy/enemy.logic.ts` but not on the Enemy barrel (promoted from critique-21)** — resolved at iterate commit `17e76b9` (2026-05-19). Dropped `export` keyword from the function declaration at `src/Enemy/enemy.logic.ts:181`, matching the in-repo-only intent (path (a) from the suggested_fix). Only internal caller is `decideEnemyAction` at `:284`; src/Enemy/index.ts barrel does not list it; no imports anywhere in src/. Tests reference the name only in comments. 598/598 tests stay green. Impact 2 × Ease 9 / 10 = 1.8 (no docs bias — structure). Source: critique-21 row 3.
 
