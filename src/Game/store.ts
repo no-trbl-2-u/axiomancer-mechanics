@@ -257,10 +257,12 @@ export function createGameStore(
                 const {
                     currentEncounter: _drop, version, player, world, combat, quests, flags,
                     moralMeter, rngState, philosophicalAlignment,
+                    lastSeenAlignmentCells,
                 } = next;
                 adapter.save({
                     version, player, world, combat, quests, flags,
                     moralMeter, rngState, philosophicalAlignment,
+                    lastSeenAlignmentCells,
                 });
             }
             return next;
@@ -292,10 +294,12 @@ export function createGameStore(
                 const {
                     currentEncounter: _drop, version, player, world, combat: cb, quests, flags,
                     moralMeter, rngState, philosophicalAlignment,
+                    lastSeenAlignmentCells,
                 } = next;
                 adapter.save({
                     version, player, world, combat: cb, quests, flags,
                     moralMeter, rngState, philosophicalAlignment,
+                    lastSeenAlignmentCells,
                 });
             },
 
@@ -413,10 +417,12 @@ export function createGameStore(
                 const {
                     currentEncounter: _drop, version, player, world, combat, quests, flags,
                     moralMeter, rngState, philosophicalAlignment,
+                    lastSeenAlignmentCells,
                 } = next;
                 adapter.save({
                     version, player, world, combat, quests, flags,
                     moralMeter, rngState, philosophicalAlignment,
+                    lastSeenAlignmentCells,
                 });
                 if (emitter) emitter.emit({ type: 'game:saved', payload: { state: next } });
             },

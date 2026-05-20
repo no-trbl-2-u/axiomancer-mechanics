@@ -10,6 +10,7 @@
 
 import { DialogueChoice, DialogueNode, DialogueTree } from './types';
 import type { PhilosophicalAlignment } from '../Philosophy/types';
+import { getAlignmentCell } from '../Philosophy';
 
 /** Lookup a dialogue node, throwing if the id is unknown. */
 export function getDialogueNode(tree: DialogueTree, nodeId: string): DialogueNode {
@@ -39,6 +40,13 @@ export interface DialogueContext {
     completedQuests: ReadonlySet<string>;
     flags: ReadonlySet<string>;
     alignment?: PhilosophicalAlignment;
+    /**
+     * Phase 63 — the alignment cell id this tree last observed for the
+     * player. Sourced from `GameState.lastSeenAlignmentCells[tree.id]`
+     * by the caller. Used to evaluate
+     * `requires.playerAlignmentCellChangedSince`.
+     */
+    lastSeenAlignmentCellId?: string;
 }
 
 /**
@@ -64,6 +72,15 @@ export function visibleChoices(
             const v = ctx.alignment[axis];
             if (op === 'gte' && !(v >= value)) return false;
             if (op === 'lte' && !(v <= value)) return false;
+        }
+        if (req.playerAlignmentCellChangedSince) {
+            // Phase 63 — alignment-observer gate. Visible only when the
+            // player's current cell differs from the one this tree last
+            // observed. Missing alignment OR missing cached cell hide the
+            // choice (no shift to detect yet).
+            if (!ctx.alignment || !ctx.lastSeenAlignmentCellId) return false;
+            const currentCell = getAlignmentCell(ctx.alignment);
+            if (currentCell.id === ctx.lastSeenAlignmentCellId) return false;
         }
         return true;
     });

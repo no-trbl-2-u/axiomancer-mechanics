@@ -13,7 +13,7 @@ import {
 } from './quest.engine';
 import { getMapDefinition } from './map.registry';
 import { QuestName } from './quest.library';
-import { applyAlignmentDelta } from '../Philosophy';
+import { applyAlignmentDelta, getAlignmentCell } from '../Philosophy';
 import type { PhilosophicalAlignment } from '../Philosophy/types';
 
 /** Result of applying a dialogue choice to the GameState. */
@@ -127,8 +127,28 @@ export function applyDialogueChoice(
 
     const nextNode = choice.nextNodeId ? (tree.nodes[choice.nextNodeId] ?? null) : null;
 
+    // Phase 63 — for identified trees, cache the player's current
+    // alignment cell after applying the choice's effects so reactive
+    // branches can detect shifts on re-conversation. Trees without an
+    // `id` opt out of the observer machinery.
+    let lastSeenAlignmentCells = gameState.lastSeenAlignmentCells;
+    if (tree.id) {
+        const currentCellId = getAlignmentCell(philosophicalAlignment).id;
+        const prior = lastSeenAlignmentCells?.[tree.id];
+        if (prior !== currentCellId) {
+            lastSeenAlignmentCells = {
+                ...(lastSeenAlignmentCells ?? {}),
+                [tree.id]: currentCellId,
+            };
+        }
+    }
+
     return {
-        gameState: { ...gameState, player, quests, flags, moralMeter, philosophicalAlignment },
+        gameState: {
+            ...gameState,
+            player, quests, flags, moralMeter, philosophicalAlignment,
+            lastSeenAlignmentCells,
+        },
         nextNode,
         effects,
     };

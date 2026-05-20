@@ -46,4 +46,13 @@ export interface GameState {
     moralMeter: number;
     rngState: number;
     philosophicalAlignment: PhilosophicalAlignment;
+    /**
+     * Phase 63 — per-tree alignment-observer cache. Keyed by
+     * `DialogueTree.id`; value is the player's alignment cell id at the
+     * end of the last `applyDialogueChoice` against that tree.
+     * Optional; `undefined` means no observations have been recorded yet
+     * (the gate `playerAlignmentCellChangedSince` hides choices in that
+     * case). Trees without an `id` are never written to the cache.
+     */
+    lastSeenAlignmentCells?: Record<string, string>;
 }

@@ -71,6 +71,16 @@ export interface DialogueChoice {
          * `DialogueContext`.
          */
         requiresAlignment?: AlignmentGate;
+        /**
+         * Phase 63 — when `true`, the choice surfaces only when the
+         * player's current alignment cell differs from the one cached
+         * by this tree's last interaction. Requires
+         * `DialogueContext.alignment` AND
+         * `DialogueContext.lastSeenAlignmentCellId` to be set;
+         * otherwise the gate hides the choice. Use for "I notice you
+         * have shifted" reactive branches on observing NPCs.
+         */
+        playerAlignmentCellChangedSince?: boolean;
     };
     effect?: {
         startQuest?: QuestName;
@@ -112,6 +122,16 @@ export interface DialogueNode {
 export interface DialogueTree {
     rootId: string;
     nodes: Record<string, DialogueNode>;
+    /**
+     * Phase 63 — optional tree identifier used as the cache key for
+     * `GameState.lastSeenAlignmentCells`. When set, `applyDialogueChoice`
+     * writes the player's current alignment cell id to that cache slot
+     * after applying each choice; `DialogueChoice.requires.playerAlignmentCellChangedSince`
+     * gates against the cached cell. Trees without an id opt out of the
+     * observer machinery (the cache is never written; the gate always
+     * hides).
+     */
+    id?: string;
 }
 
 /**
