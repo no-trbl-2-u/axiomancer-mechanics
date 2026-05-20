@@ -51,6 +51,15 @@
 
 ## Promoted
 
+### Phase 65 — Expand the fishing-village starting map ("huge first map" pass)
+- promoted: 2026-05-20 (eighth oversight of the session; user write-in: "I want to make the first map considerably larger. For now it'll be the 'base' map but in the future we can start breaking it up and balancing it. For now, I just want a huge first map").
+- source: oversight write-in. Replaces the candidate-promotion choice for this tick.
+- scope: Significantly expand `src/World/Continents/Coastal-Village/maps.ts` `fishing-village` map from its current shape — a linear 10-node chain (`fv-1` → `fv-10` along the x-axis, each with one `connectedNodes` entry) — to a substantially larger branching map. Target: ~25-35 nodes in a 2D grid layout with multiple branches, sub-areas (harbor district / inland streets / cliff path / etc.), and 3-5 dead-end / loop branches to give exploration weight. Author `MapEventPool` entries for each new node (mix of `encounter` / `interaction` / `gathering` / `rest` / `hazard` / `loot-cache` per the existing Phase 23 8-kind taxonomy; keep `village` entries clustered in the harbor district where shops naturally live; one `cutscene` beat at a marquee location). Reuse existing enemies from `ENEMY_REGISTRY` for encounter nodes (no new enemy content this phase). Reuse existing NPCs (Old Marrow, Coastal Beggar, Tideshopkeeper) for the harbor district. **Phase brief at dispatch** picks the final node count, the layout, and the per-node event-kind assignment; this candidate's scope is "the first map should be a meaningful exploration space, not a railroad." Per the user's "base map" framing, balancing + sub-area splits are explicit follow-up phases.
+- unblocks: Future content phases (per-region quest authoring, alignment-shifting content beats, befriendable enemy placements) have somewhere to land. The Northern Continent stub candidate (carried, score 3.5) becomes more meaningful as the second continent once the first is real. Establishes the per-continent layout pattern (multi-branch grid, sub-areas, mixed pool kinds) for future continents.
+- blocked-by: None. All upstream primitives are live since Phase 23/24/41 (MapEvents engine + pool authoring + Spec 23 acceptance).
+- score: 7 × 5 / 10 = 3.5 (high impact — the canonical playspace gets real; medium-low ease — content authoring across ~25-35 nodes is substantial, but each node is a small JSON-ish payload following existing patterns).
+- recommended-slot: ship next; this is the user's directed next direction.
+
 ### Phase 61 — CHANGELOG breaking-removals backfill (mobile #93 unblock)
 - promoted: 2026-05-20 (seventh oversight; user picked option 1 in response to mobile #93's 58-typecheck-error revert and explicit `### Removed` / `### Breaking` backfill request)
 - source: oversight signal — mobile `axiomancer-mobile#93` comment 2 lists the undocumented breaking removals discovered when bumping the engine pin 0.10.0 → 0.10.2. Absorbs the existing critique-26 row (CHANGELOG `[unreleased]` empty post-0.10.2) into a wider scope.
