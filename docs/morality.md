@@ -11,6 +11,22 @@ combat outcomes, and quest resolutions. The moral meter influences available
 dialogue options, story paths, and endings—not through direct gating but by 
 affecting which narrative branches open over time.
 
+## Relationship to `philosophicalAlignment` (Phase 42)
+
+`moralMeter` and `state.philosophicalAlignment` are **orthogonal** axes
+that persist independently across save / load. The single-axis
+compassion ↔ ruthlessness meter described in this doc is unrelated to
+the 3-axis epistemology / outlook / scope cube introduced at Phase 42.
+A player can be high-moral *and* faith-optimistic-transcendent; the two
+systems never interact through the same reducer or the same field —
+they coexist on `GameState`. No unification is planned in v1 (Spec 10
+Q8 picked "specific story flags as ending selector" with both axes as
+narrative colour, not as gating).
+
+See [`docs/philosophy.md`](./philosophy.md) for the alignment cube +
+27-cell registry; "Relationship to `moralMeter`" on that page reflects
+the same orthogonality from the other side.
+
 ## Core Mechanics
 
 ### Moral Meter
