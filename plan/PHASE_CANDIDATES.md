@@ -5,13 +5,37 @@
 > `## Promoted` or `## Rejected`.
 
 <!-- Metadata (updated by /expand after each pass):
-> Last pass: 2026-05-20 at commit 2476589
-> Pass count: 14
+> Last pass: 2026-05-20 at commit 92a28ae
+> Pass count: 15
 -->
 
 ---
 
 ## Pending
+
+### Candidate: Boss-tier befriendable enemy (Phase 60 follow-up)
+- signal: Phase 60 (`7724c96 + 6e03871 + b13348b`) Follow-ups explicitly named "Boss-tier befriendable enemy. The candidate's third example ('one boss-tier enemy where the choice is genuinely costly') wants its own phase scope — boss-tier rewards likely want bigger payloads (unique items, alignment shifts, named NPC follow-up) than the authored rewards in this phase." Engine field (`Enemy.friendshipReward?: FriendshipReward`) is live since Phase 60; this is pure content + maybe one small typed-surface extension.
+- scope: Two units. Unit 1 — pick one boss-tier enemy from `src/Enemy/enemy.library.ts` (candidates: Coastal Tyrant `boss` / The Disagreement `boss` / Hollow Saint `elite` — boss-tier 'boss' difficulty has 2 entries today). Coastal Tyrant is the natural pick — alignment `faith-pessimistic-transcendent` (Ferreira / Mainländer archetype) suggests a "the priest who lost their god" friendship arc. Author a richer `friendshipReward`: 2-3 guaranteed items (mix of consumables + maybe a unique equipment piece from `uniqueTemplates`), 50+ xpBonus, multi-paragraph narrative. Optionally extend `FriendshipReward` shape with `alignmentDelta?: Partial<PhilosophicalAlignment>` so befriending a philosophical enemy nudges the player toward (or away from) their cell — this is the Spec 14 Q4 follow-up made concrete on a specific encounter. Unit 2 — hermetic e2e extends `src/Game/e2e/befriend.engine.test.ts` with the boss-tier case; `docs/enemy.md` "Befriendable enemies (Phase 60)" table grows to 3 rows.
+- unblocks: Closes Phase 60's most-named follow-up. Establishes the boss-tier reward authoring pattern. If `alignmentDelta` extension lands, partially closes Spec 14 Q4 (friendship-victory ↔ alignment cube intersection — from "orthogonal by design" to "orthogonal by default, opt-in per encounter").
+- blocked-by: None. Phase 60 wired the field; Phase 45 already authored boss-tier alignment pins.
+- score: 4 × 6 / 10 = 2.4
+- recommended-slot: bundled with the quest-branch candidate below if both fire; the alignment-shift extension fits naturally with that candidate's `flagSet?` framing.
+
+### Candidate: Quest-branch wire-in on `outcome === 'friendship'` (Phase 60 follow-up)
+- signal: Phase 60 D3 explicitly deferred: "Quest-branch wire-in on `outcome === 'friendship'`. Deferred per D3. Future phase adds either `FriendshipReward.flagSet?: string` + a flag-gated quest entry, OR a `QuestObjective.completedOn?: 'friendship' | 'victory'` slot." The candidate's original signal (`plan/PHASE_CANDIDATES.md` Phase 60 row) listed "quest entries that branch on `outcome === 'friendship'` vs `'victory'` for at least one quest" — this is the half that didn't ship.
+- scope: Three units. Unit 1 — pick path: (a) `FriendshipReward.flagSet?: string` + extend `store.endCombat()` to dispatch a flag-set action on friendship outcome when the field is present; existing quest-entry flag gates (`DialogueChoice.requires.flag`) consume the flag downstream, OR (b) `QuestObjective.completedOn?: 'friendship' | 'victory'` slot + extend `progressQuest` / `killObjectives` to dispatch on the correct outcome label. Path (a) reuses the existing flag-gate machinery and is the smaller patch; path (b) is more expressive but adds a new field to `QuestObjective`. Brief picks (a) at dispatch. Unit 2 — author one quest entry that branches: MournfulGull's friendship sets a `befriended-mournful-gull` flag; a new dialogue branch on a fishing-village NPC (e.g. Coastal Beggar) gates on the flag and offers a different quest exit when set. Unit 3 — hermetic e2e in `src/Game/e2e/befriend.engine.test.ts` (or sibling) drives a friendship → flag-set → dialogue-gate path end-to-end. `docs/combat.md` Friendship Path section gains the flag-set semantics; `docs/api.md` notes the new field on `FriendshipReward`.
+- unblocks: Friendship outcome becomes a real quest-shaping choice, not just a one-off combat exit. Closes the half of the Phase 60 candidate scope that didn't ship. Enables future "this quest branches on whether you befriended X" authoring without engine work.
+- blocked-by: Phase 60 (shipped). Best paired with the boss-tier candidate above so the same release ships both: one boss-tier enemy with the new `flagSet` field set, plus one quest entry that consumes it.
+- score: 5 × 5 / 10 = 2.5
+- recommended-slot: directly after the boss-tier candidate (or bundled — see above)
+
+### Candidate: NPC alignment observers (Spec 14 Q2 follow-up)
+- signal: `specs/14-philosophical-alignment.md` Q2 documented the extension shape: "observer wiring on `NPC` could be added once specific NPCs need it; the natural extension is an `observesAlignment?: boolean` field on `NPC` + a reactive dialogue-branch mechanism that fires when the player's current alignment cell differs from the one cached at last interaction." Spec 14 deferred this as a content-phase decision; the deferral framing implies "ship when a specific NPC wants to react." Currently no NPC code path reads alignment-delta as an NPC-side input — NPCs gate (Phase 46) but don't react.
+- scope: Three units. Unit 1 — extend `NPC` type with `observesAlignment?: boolean` (default `false` / undefined treated as opt-out); add a per-NPC `lastSeenAlignmentCellId?: string` field to the `state.flags` or a sibling state map (writes on every `applyDialogueChoice` to an observing NPC). Unit 2 — extend the dialogue runtime so reactive branches can gate on `playerAlignmentCellChangedSince?: string` (predicate against the cached cell id) — same shape as the existing `requires.flag` slot; opt-in per dialogue choice. Unit 3 — author 1 NPC that observes: Old Marrow is the natural pick (already carries alignment-gated dialogue per Phase 43+46). Add a dialogue branch that surfaces if the player's alignment has visibly shifted since the last conversation. Hermetic e2e drives a shift → re-converse → new branch path.
+- unblocks: Spec 14 Q2 closes (engine surface exists; per-NPC adoption is content-author work). NPCs become reactive to player philosophical drift, not just gating. Future content phases can wire any NPC into the same observer machinery without engine work.
+- blocked-by: Phases 42-46 (shipped). Independent of Phase 60 follow-ups.
+- score: 4 × 5 / 10 = 2.0
+- recommended-slot: independent of Phase 60 follow-ups; can interleave or ship in isolation.
 
 ### Candidate: Second continent — Northern Continent stub
 - signal: `spec.md` 6-month horizon — "Additional world content
