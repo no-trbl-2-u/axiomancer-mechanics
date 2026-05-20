@@ -93,6 +93,33 @@ and the public-surface snapshot matches the committed fixture. See
 [`scripts/README.md`](../scripts/README.md) for the full tools table
 + the public-surface contract workflow.
 
+### Continuous integration — `.github/workflows/verify.yml` (Phase 56)
+
+The CI gate at [`.github/workflows/verify.yml`](../.github/workflows/verify.yml)
+fires on every `pull_request` against `main` and every `push` to `main`.
+Pipeline steps:
+
+1. Checkout with `fetch-depth: 0` (full history; `deploy:check` runs
+   `git describe --tags --abbrev=0` for the tag/CHANGELOG assertion).
+2. Setup Node 20 + `npm ci` with the setup-node cache.
+3. `npm run verify` (`type-check` + tests + `build`).
+4. `npm run deploy:check` (the four structural assertions above).
+
+Concurrency group `verify-${{ github.ref }}` with
+`cancel-in-progress: true` — force-pushes on the same branch / PR
+don't pile up redundant runs.
+
+**No publish step by design.** Per `RELEASING.md`, `npm publish` is
+manual + attended (2FA prompt fires during the publish). The CI
+workflow validates publishability via `npm pack --dry-run`; the
+actual publish is a user-triggered ceremony, not a CI step.
+
+The autonomous-beast loop (`.github/workflows/march.yml`) runs verify
+before every commit it makes, so today's CI gate's primary audience is
+human-PR / one-off branch contributors who need a remote red/green
+signal before merge. Closes the PR-level gap critique-13 /
+expand-pass-13 flagged for the published npm package.
+
 ### Agent-friendly report — `npm run verify:agent` (Phase 39)
 
 `npm run verify:agent` runs the same gates as `npm run verify`
