@@ -6,13 +6,21 @@
 > by `/iterate`.
 
 <!-- Metadata (updated by /critique after each pass):
-> Last pass: 2026-05-20 at commit 317d2e3
-> Pass count: 26
+> Last pass: 2026-05-20 at commit b71fbaf
+> Pass count: 27
 -->
 
 ---
 
 ## Pending
+
+### [LOW] docs/api.md + README.md + plan/bearings.md Public-API quick-reference all missing Phase 62 `FriendshipReward.flagSet?` + Phase 63 4-surface alignment-observer block
+- pass: critique-27 (commit b71fbaf)
+- area: docs
+- observation: Four phases shipped post-pass-26 (Phase 61 / 62 / 63 / 64). The front-door public-API references are partially current — `CHANGELOG.md [unreleased]` has the full Phase 62 + 63 entries — but three downstream readers haven't caught up: (1) `docs/api.md` mentions Phase 60 FriendshipReward at line 103 but no `flagSet?` (Phase 62) and no `DialogueTree.id?` / `GameState.lastSeenAlignmentCells?` / `DialogueChoice.requires.playerAlignmentCellChangedSince?` / `DialogueContext.lastSeenAlignmentCellId?` (the 4 Phase 63 surfaces). (2) `README.md` Public API Enemy + NPCs + Game rows similarly lag — Enemy row got Phase 60 FriendshipReward at iterate `59a0439` but not the Phase 62 `flagSet?` extension; NPCs / Game rows have no Phase 63 surface. (3) `plan/bearings.md` Public-API quick-reference at `:56` shows `FriendshipReward (+ Enemy.friendshipReward? — Phase 60)` but no Phase 62 / 63 entries. Same pattern as critique-24 row 2 (Items + Skills lag) and critique-25 row 3 (Enemy row FriendshipReward lag) — front-door docs lag the public-surface ships by a tick. The `[unreleased]` `### Added` blocks in CHANGELOG.md are the source of truth; the three readers just need to fold the same bullets in.
+- evidence: `grep -n "flagSet\|playerAlignmentCellChangedSince\|lastSeenAlignmentCells\|DialogueTree.id" docs/api.md README.md plan/bearings.md` returns ONLY `plan/bearings.md:56` (FriendshipReward Phase 60 mention only). `docs/api.md:103-111` covers Phase 60 surface but stops there. `src/index.ts` exports remain stable (no fixture change — Phase 62 + 63 added fields to existing exported types, not new top-level exports), so `scripts/public-surface.expected.json` is unchanged at 233+159. The drift is purely in prose / quick-reference annotation.
+- suggested_fix: One pass-through commit. (a) `docs/api.md`: extend the Phase 60 FriendshipReward subsection to mention `flagSet?: string` (Phase 62) + the END_COMBAT thread-to-state.flags semantics; add a new "Reactive NPCs (Phase 63)" mini-section listing `DialogueTree.id?`, `GameState.lastSeenAlignmentCells?`, the two new `DialogueChoice.requires.playerAlignmentCellChangedSince?` + `DialogueContext.lastSeenAlignmentCellId?` consumer-side inputs, with a cross-link to `docs/npcs.md` § "Reactive NPCs — alignment observers (Phase 63)" as the canonical reference. (b) `README.md` Enemy row gains the `flagSet?` extension phrase; NPCs row gains the Phase 63 surface phrase; Game row gains the `lastSeenAlignmentCells?` field. (c) `plan/bearings.md` Public-API block grows two lines: `FriendshipReward (+ flagSet? — Phase 62)` extension and an NPCs/Game line listing the Phase 63 surface. The CHANGELOG `[unreleased]` ### Added blocks have the exact phrasing to paste; no semantic invention needed. Pure docs change; 636/636 tests stay green. Fold all three readers into one commit to drain the pattern in a single tick.
+- source: critique
 
 ---
 
