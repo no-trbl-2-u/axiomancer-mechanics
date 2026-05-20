@@ -6,15 +6,21 @@
 > by `/iterate`.
 
 <!-- Metadata (updated by /critique after each pass):
-> Last pass: 2026-05-20 at commit b71fbaf
-> Pass count: 27
+> Last pass: 2026-05-20 at commit 17479e7
+> Pass count: 28
 -->
 
 ---
 
 ## Pending
 
----
+### [LOW] `docs/enemy.md` "Befriendable enemies (Phase 60)" table doesn't cross-link to the Phase 65 world placements (fv-15 gull crag + fv-18 back alley)
+- pass: critique-28 (commit 17479e7)
+- area: docs
+- observation: Phase 65 (`e8d3b90`) placed MournfulGull at `fv-15` (gull crag, harbor district dead-end) and HollowEyedBeggar at `fv-18` (back alley, inland streets) via the new MapEventPool entries — both Phase 60 authored befriendables are now genuinely **discoverable in the world**, not just registered in `ENEMY_REGISTRY`. But `docs/enemy.md` line 225's "Befriendable enemies (Phase 60)" table at lines 258-259 doesn't say where in the world the player encounters them. A reader looking at the befriendable table for guidance doesn't know to walk fv-3 → fv-13 → ... or to dive into the inland streets. The placement is documented in `docs/world.md` Phase 65 sub-area sections but the cross-link is one-way; the befriendable table is the more likely landing point for someone interested in the friendship-victory path.
+- evidence: `grep -nE "fv-15|fv-18|gull crag|back alley" docs/enemy.md docs/combat.md` returns 0 hits — neither doc mentions the world location for either befriendable. `docs/world.md` § "Sub-areas (Phase 65)" lines 235-263 documents the placements but the discoverability gap remains for readers entering via `docs/enemy.md`.
+- suggested_fix: One-line edit per row in the `docs/enemy.md:255-259` Befriendable enemies table. Add a column "World placement (Phase 65)" with values: MournfulGull → "`fv-15` gull crag (Harbor District dead-end)"; HollowEyedBeggar → "`fv-18` back alley (Inland Streets, on the way to the abandoned shack loop)". Mirrors the Phase 60 D2 framing (the per-enemy authored content is the table; the placement is the next column). Optionally cross-link `docs/combat.md` Friendship Path's "Befriendable-enemy content (Phase 60)" subsection table the same way. Pure docs change; no test impact.
+- source: critique
 
 ## Done
 
