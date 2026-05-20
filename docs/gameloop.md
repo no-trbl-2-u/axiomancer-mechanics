@@ -170,6 +170,34 @@ implements the same interface (Spec 09 Q5 — kept in the consumer to preserve
 separation of responsibilities). The recommended shape lives in
 [`docs/api.md`](./api.md) under "React Native Usage" (post-Phase 21).
 
+#### Extending PersistenceAdapter for async backends (Phase 55)
+
+The two-method shape is intentionally synchronous — `gameReducer`
+dispatches don't await persistence. Consumers bridging to an async
+backend (AsyncStorage, IndexedDB, network) should **extend** the
+interface, not re-declare it locally:
+
+```ts
+import type { PersistenceAdapter } from 'axiomancer-mechanics';
+
+export interface AsyncStorageAdapter extends PersistenceAdapter {
+    /** Populate the in-memory cache before load() returns meaningful data. */
+    preload(): Promise<void>;
+    /** Wait for any debounced write to land. */
+    flush(): Promise<void>;
+    /** Wipe cache + on-disk slot. */
+    clear(): Promise<void>;
+}
+```
+
+The pattern is: `load()` returns from an in-memory cache (sync), `save()`
+schedules a debounced write (sync), and the host calls `preload()` once
+at startup before the engine starts dispatching. The
+`axiomancer-mobile/state/persistence/asyncStorageAdapter.ts` consumer
+is the canonical reference implementation. The synchronous engine
+contract stays clean while async bridging happens at the consumer
+boundary.
+
 ### Save versioning + migration
 
 ```ts
