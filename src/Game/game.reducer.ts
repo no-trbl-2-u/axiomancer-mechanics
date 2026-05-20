@@ -222,11 +222,24 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
                 }
             }
 
+            // Phase 62 — friendship resolutions append the per-enemy
+            // `flagSet` to state.flags (de-duped). Reuses the existing
+            // requires.flag machinery so downstream dialogue / quest
+            // content can gate on the flag without engine work.
+            let nextFlags = state.flags;
+            if (outcome === 'friendship') {
+                const flag = combat.enemy.friendshipReward?.flagSet;
+                if (flag && !nextFlags.includes(flag)) {
+                    nextFlags = [...nextFlags, flag];
+                }
+            }
+
             // Friendship victories grant +1 to moral meter (compassion)
             const baseState = {
                 ...state,
                 player: nextPlayer,
                 quests: nextQuests,
+                flags: nextFlags,
                 combat: null,
                 currentEncounter: undefined,
             };

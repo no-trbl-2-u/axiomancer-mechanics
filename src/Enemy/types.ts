@@ -62,6 +62,15 @@ export interface FriendshipReward {
     xpBonus?: number;
     /** Optional flavour text for the CLI / UI to render after combat-end. */
     narrative?: string;
+    /**
+     * Phase 62 — optional world-flag appended to `state.flags` when combat
+     * resolves via friendship. Reuses the existing flag-gate machinery
+     * (`DialogueChoice.requires.flag`, `visibleChoices`); downstream content
+     * (dialogue branches, quest objectives) can gate on the flag without
+     * extending the engine. Convention: `befriended-<enemy-id-stem>`
+     * (e.g. `'befriended-mournful-gull'`). De-duplicated on append.
+     */
+    flagSet?: string;
 }
 
 /**
