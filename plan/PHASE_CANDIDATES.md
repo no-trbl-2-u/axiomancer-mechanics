@@ -13,51 +13,6 @@
 
 ## Pending
 
-### Candidate: Docs sweep — drain pending CRITIQUE.md rows (Phase 34 mirror)
-- signal: `plan/CRITIQUE.md` Pending carries 21 rows (3 just promoted to AUDIT via critique-21; remaining 18 sit from passes 13-20). The docs-bias multiplier on `/iterate` (1.5×) will drain them one at a time, but Phase 34 (`9d0aeb9` era) showed that bundling a docs sweep as a single phase saves 8-10 commit cycles + 8-10 briefings of the same module families. The current pending queue clusters into: (a) docs/api.md Philosophy entry stops at Phase 44 (critique-20); (b) README.md + plan/bearings.md Philosophy row missing Phase 46 (critique-20); (c) docs/npcs.md missing alignmentDelta + requiresAlignment (critique-20); (d) docs/skills.md missing requiresAlignment on SkillLearningRequirement (critique-20); (e) docs/effects.md count drift after Phase 44 (critique-19); (f) Spec 23 acceptance missing Phase 43 line (critique-19); (g) docs/morality.md missing philosophy cross-link (critique-19); (h) specs/14-philosophical-alignment.md spec-gap (critique-18 — see separate candidate); (i) older items from passes 13-17 (Spec 03/05e acceptance unchecked, PhilosAxiosDoc.pdf placement, TODO(spec-09), Phase 37 sell-price exploit, shop walkthrough, Phase-11 walkthrough JSONs cleanup, automation/ README, getCoastalMap removal — the last 3 are already in AUDIT pending).
-- scope: One phase, 6-8 commit units (Phase 34 had 9). Each unit drains 2-3 rows in a thematic bundle: Unit 1 (Philosophy doc surface — drains rows a/b/c/d in one pass, since they all touch the Phase 42-46 surface); Unit 2 (Effects + Spec 23 — drains rows e/f); Unit 3 (Cross-doc cross-links — drains row g + any related); Unit 4 (Older spec acceptance — drains Spec 03/05e); Unit 5 (Repo structure — PhilosAxiosDoc.pdf placement + automation/ README); Unit 6 (TODO(spec-09) collapse + Phase 37 sell-price helper extraction). Pure docs / structure work; no code logic touched. Each unit ships as a separate commit so /iterate-style review is feasible.
-- unblocks: The CRITIQUE queue mostly empties, leaving only the 3 promoted AUDIT rows + any older still-pending. Future critique passes start from a low baseline so signal is easier to spot. Drains the docs-bias multiplier's queue.
-- blocked-by: None. Pure docs work. Independent of any code-phase ordering.
-- score: 6 × 8 / 10 = 4.8 (high impact — drains 8+ rows in one phase; high ease — pure docs).
-- recommended-slot: right after the engine handoff candidate so the docs queue stays current with the recent Phase 49 / Phase 50 surface changes. Or interleave: ship after Phase 49 (now), bundle the engine handoff next.
-
-### Candidate: `specs/14-philosophical-alignment.md` — conversation-loop spec for the Phase 42-46 alignment cube
-- signal: critique-18 row "No conversation-loop spec for the philosophical alignment system after two phases shipped against it" (filed at `c62702e`, pending in `plan/CRITIQUE.md`). Phase 42 brief Decisions block explicitly said a `specs/14-philosophical-alignment.md` spec would be filed "if the system grows enough to need its own conversation-loop spec." Phases 42 + 43 + 44 + 45 + 46 + half of Phase 49 (the casterSide refactor pulled the alignment-driven AI tuner from Phase 45 into a richer state) have all shipped against the same engine surface; the alignment cube has graduated from "one-off Phase 42" to "a five-phase system" without picking up that spec artefact. Every other multi-phase mechanic in this repo (Combat — Spec 02 / 03; Skills — Spec 04 / 04b; Equipment — Spec 05 / 05b / 05c / 05d / 05e; Character — Spec 06) ships a conversation-loop spec to centralise the Q&A trail. The alignment system is now the only multi-phase mechanic without one.
-- scope: One phase, 2-3 commit units. Unit 1 — file `specs/14-philosophical-alignment.md` using the `specs/00-how-to-use-specs.md` template. Goal section names the 3-axis cube + 27-cell registry. Current state section cites Phase 42 (engine), 43 (alignmentDelta authoring surfaces), 44 (sourcedFromCell + fallacies-as-spells), 45 (enemy alignment + outlook bias), 46 (AlignmentGate). Open questions section captures the four remaining design calls per the critique row: (1) Should `moralMeter` unify into the cube as a 4th axis? (2) Should alignment shifts propagate to NPCs that observe the player? (3) Should there be alignment-gated endings? (4) How does the alignment cube intersect with the friendship-victory mechanic? Acceptance checklist boxes for each shipped surface point at the commit that shipped it. Unit 2 — add a row to `specs/README.md` Recommended order pointing at the new spec (Spec 14 ships **DONE** since the engine is live; the spec is documentation, not greenfield work). Unit 3 — answer any of the 4 open questions where the answer is already implicit in shipped code (e.g. Q4 friendship-victory: orthogonal — `moralMeter` shifts but `philosophicalAlignment` is unaffected since none of the 27 cells carries an alignmentDelta tied to friendship-counter resolution).
-- unblocks: critique-18 row drains. Future alignment phases have a centralised Q&A surface to extend. Closes the symmetry gap with every other multi-phase mechanic.
-- blocked-by: None. Pure docs work; can ship in parallel with content/engine phases.
-- score: 4 × 8 / 10 = 3.2 (medium impact — fixes a structural gap; high ease — template-driven docs).
-- recommended-slot: bundled with the docs sweep candidate (it's a docs-shaped item too), OR independent. If bundled, the docs sweep grows by 1 unit.
-
-### Candidate: Befriendable-enemy content arc
-- signal: Phase 36 (`276eecb`) shipped the friendship-victory mechanics
-  half (outcome string, half-XP grant, full loot, +1 moral meter), but
-  Knowledge-Gaps Q5 explicitly flagged a second half that's still open:
-  "What determines the rewards/narrative outcome of a friendship
-  victory vs a combat victory? Are there enemies that *should* be
-  befriended rather than defeated?" The mechanics now reward
-  friendship, but no enemy in the library currently *invites* the path
-  — the demo `Disatree_01` is mechanically befriendable but
-  narratively just a stalemate exit.
-- scope: Pick 2-3 enemies from `src/Enemy/enemy.library.ts` and author
-  per-enemy friendship narrative — a `friendshipReward?: Reward` (or
-  similar) field on `Enemy`, optional dialogue lines surfaced via a
-  new `combat:befriended` MapEvent / dialogue hook, and quest entries
-  that branch on `outcome === 'friendship'` vs `'victory'` for at
-  least one quest. Example targets: `MournfulGull` (befriend → unique
-  passive), `HollowEyedBeggar` (befriend → moral arc tie-in via
-  beggar quest), one boss-tier enemy where the choice is genuinely
-  costly. Hermetic e2e drives one befriend run end-to-end and asserts
-  the per-enemy reward + the quest branch.
-- unblocks: Knowledge-Gaps Q5 closes fully. Friendship becomes a real
-  player choice with content stakes, not just a mechanical exit.
-  Establishes the pattern other enemies can opt into.
-- blocked-by: none. Phase 36 wired the mechanics; this is content.
-- score: 5 × 6 / 10 = 3.0
-- recommended-slot: after the Northern Continent stub (the Northern
-  Continent could ship one befriendable enemy as its anchor narrative)
-
-
 ### Candidate: Second continent — Northern Continent stub
 - signal: `spec.md` 6-month horizon — "Additional world content
   (biomes, continent 2+)". Phase 23's MapEvents engine + Phase 24's
@@ -79,6 +34,30 @@
 ---
 
 ## Promoted
+
+### Phase 58 — `specs/14-philosophical-alignment.md` — conversation-loop spec for the Phase 42-46 alignment cube
+- promoted: 2026-05-20 (sixth oversight of the session; build-plan queue empty after Phase 55/56/57 shipped; user multi-selected three candidates with Spec 14 prioritised as the smallest, blocks-nothing pure-docs unlock that also drains the only pending CRITIQUE row)
+- source: filed at expand pass 14 (`d6f42f0`); critique-18 row (commit `c62702e`)
+- scope: One phase, 2-3 commit units. Unit 1 — file `specs/14-philosophical-alignment.md` using the `specs/00-how-to-use-specs.md` template. Goal section names the 3-axis cube + 27-cell registry. Current state section cites Phase 42 (engine), 43 (alignmentDelta authoring surfaces), 44 (sourcedFromCell + fallacies-as-spells), 45 (enemy alignment + outlook bias), 46 (AlignmentGate). Open questions section captures the four remaining design calls per the critique row: (1) Should `moralMeter` unify into the cube as a 4th axis? (2) Should alignment shifts propagate to NPCs that observe the player? (3) Should there be alignment-gated endings? (4) How does the alignment cube intersect with the friendship-victory mechanic? Acceptance checklist boxes for each shipped surface point at the commit that shipped it. Unit 2 — add a row to `specs/README.md` Recommended order pointing at the new spec (Spec 14 ships **DONE** since the engine is live; the spec is documentation, not greenfield work). Unit 3 — answer any of the 4 open questions where the answer is already implicit in shipped code (e.g. Q4 friendship-victory: orthogonal — `moralMeter` shifts but `philosophicalAlignment` is unaffected since none of the 27 cells carries an alignmentDelta tied to friendship-counter resolution). On ship, drain the critique-18 row from `plan/CRITIQUE.md` Pending → Done.
+- unblocks: critique-18 row drains. Future alignment phases have a centralised Q&A surface to extend. Closes the symmetry gap with every other multi-phase mechanic.
+- blocked-by: None. Pure docs work; can ship in parallel with content/engine phases.
+- score: 4 × 8 / 10 = 3.2.
+
+### Phase 59 — Docs gap audit + drain (re-scoped from older Docs-sweep candidate)
+- promoted: 2026-05-20 (sixth oversight; user multi-selected with explicit "re-scope down to current pending only before promotion" guidance — the original candidate's 9-row-group signal has largely drained through May 19-20 iterate ticks)
+- source: filed at expand pass 11 (`ce88559`) as "Docs sweep — drain pending CRITIQUE.md rows (Phase 34 mirror)"
+- scope: One phase, audit-first. The original candidate listed 9 row-groups (a-i): (a) docs/api.md Philosophy entry, (b) README.md + bearings.md Philosophy row, (c) docs/npcs.md alignmentDelta, (d) docs/skills.md requiresAlignment, (e) docs/effects.md count drift, (f) Spec 23 acceptance Phase 43 line, (g) docs/morality.md philosophy cross-link, (h) specs/14 spec-gap (now Phase 58), (i) older items (Spec 03/05e acceptance, PhilosAxiosDoc placement, TODO(spec-09), Phase 37 sell-price exploit, shop walkthrough, Phase-11 walkthroughs, automation/ README, getCoastalMap). Many shipped via /iterate across May 19-20 (CHANGELOG, docs/api.md Phase 54 backfill, scripts/README.md, DURABLE_ACTIONS reframe). At phase-brief time the brief re-audits CRITIQUE pending + recent AUDIT Done + a fresh grep of each row-group's expected text to identify residual drift; ships whatever remains as commit-per-row units (target ≤4 units). If the re-audit finds zero residual, the phase ships as a single audit-summary commit listing each row-group with shipping reference + "no residual" verdict, then closes.
+- unblocks: Confirms the docs queue is genuinely drained (or surfaces what's left). Future critique passes start from a low baseline.
+- blocked-by: None. Independent of Phase 58 (which removes row-group (h)) and Phase 60.
+- score: 3 × 9 / 10 = 2.7 (re-scoped down from 4.8 nominal because most of the original signal has drained; high ease because audit-first means worst case is a single closing commit).
+
+### Phase 60 — Befriendable-enemy content arc
+- promoted: 2026-05-20 (sixth oversight; user multi-selected as the content-arc direction; closes Knowledge-Gaps Q5 fully — Phase 36 shipped the mechanics half, this phase ships the content half)
+- source: filed at expand pass 8 (`aff5a57`)
+- scope: Pick 2-3 enemies from `src/Enemy/enemy.library.ts` and author per-enemy friendship narrative — a `friendshipReward?: Reward` (or similar) field on `Enemy`, optional dialogue lines surfaced via a new `combat:befriended` MapEvent / dialogue hook, and quest entries that branch on `outcome === 'friendship'` vs `'victory'` for at least one quest. Example targets: `MournfulGull` (befriend → unique passive), `HollowEyedBeggar` (befriend → moral arc tie-in via beggar quest), one boss-tier enemy where the choice is genuinely costly. Hermetic e2e drives one befriend run end-to-end and asserts the per-enemy reward + the quest branch. Phase brief at dispatch time picks the final enemy set + reward shape; the `friendshipReward` field shape is a phase decision.
+- unblocks: Knowledge-Gaps Q5 closes fully. Friendship becomes a real player choice with content stakes, not just a mechanical exit. Establishes the pattern other enemies can opt into.
+- blocked-by: None. Phase 36 wired the mechanics; this is content + a small typed-surface addition.
+- score: 5 × 6 / 10 = 3.0.
 
 ### Phase 55 — PersistenceAdapter ergonomics (Phase 50 follow-up)
 - promoted: 2026-05-20 (fifth oversight of the session; user picked the smallest mobile-unblocking follow-up as the top priority post-0.10.1-publish — closes the last loose end of the GH#64 engine handoff)

@@ -12,10 +12,46 @@ deep imports are part of the supported surface.
 
 ## [unreleased]
 
-Next bump's work lands here. Phases 55 / 56 / 57 are promoted (see
-`plan/steps/01_build_plan.md`). Per RELEASING.md, the post-publish
-step is to add this placeholder heading; the next `npm publish` will
-flip it to a real version + date.
+Phases 55, 56, 57 — PersistenceAdapter docs/contract, CI verify
+workflow, enemy skill-rotation content. No new public-API names; the
+public-surface fixture is unchanged. Flip this heading to
+`[0.10.2] — <ISO date>` at publish time per `RELEASING.md`.
+
+### Added
+- **PersistenceAdapter extension pattern docs (Phase 55).**
+  `src/Game/persistence/types.ts` JSDoc extended with the recommended
+  pattern for async backends (preload / flush / clear lifecycle
+  helpers), citing `axiomancer-mobile`'s `AsyncStorageAdapter` as the
+  reference implementation. `docs/gameloop.md` persistence subsection
+  gains an "Extending PersistenceAdapter for async backends" block.
+- **Compile-time PersistenceAdapter contract test (Phase 55).**
+  `src/test-utils/e2e/public-barrel.engine.test.ts` gains a Phase 55
+  describe block asserting `nullAdapter` is value-exported with the
+  canonical two-method shape, plus a `FakeAsyncAdapter extends
+  PersistenceAdapter` compile-check that breaks at type-check if the
+  interface shape ever drifts.
+- **CI verify workflow (Phase 56).** `.github/workflows/verify.yml`
+  runs `npm run verify` + `npm run deploy:check` on every pull
+  request against `main` and every push to `main`. Node 20, `npm
+  ci`, setup-node cache. Concurrency group cancels in-progress runs
+  on the same ref. No auto-publish step (manual + attended per
+  `RELEASING.md`).
+- **Enemy skill rotations (Phase 57).** 7 of 16 registry enemies now
+  carry a skill rotation read by `pickEnemySkill` (Phase 49) —
+  Tidefluke Reaver → `straw-giant`, Hush-Wraith →
+  `sorites-cascade`, Hollow Saint → `pascals-wager`, The
+  Disagreement → `liars-echo`, Echo of Pyrrhonia → `eternal-regress`,
+  Mournful Gull → `appeal-to-pity`, Hollow-Eyed Beggar →
+  `pascals-wager`. Tidepool Crab / Sea-Mist Wisp / Lullaby Moth
+  intentionally stay skill-less for early-game pacing. `docs/enemy.md`
+  Skill-use table grows from 2 → 9 rows.
+
+### Notes
+- No new public-API exports vs `0.10.1`; the
+  `scripts/public-surface.expected.json` fixture is unchanged (still
+  233 runtime values + 158 types). Consumers see this as a behaviour
+  bump only (enemy combat depth + a CI gate).
+- Migration: none.
 
 ## [0.10.1] — 2026-05-20
 
