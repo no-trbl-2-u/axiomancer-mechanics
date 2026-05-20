@@ -23,14 +23,6 @@
 - source: critique
 
 
-### [LOW] Phase 37 CLI `shopLoop` sell-price floor (`Math.max(1, …)`) enables a small infinite-money exploit for any ware at price ≤ 2
-- pass: critique-15 (commit cee2614)
-- area: gameplay / cli / exploit
-- observation: `src/CLI/game.cli.ts` `shopLoop` computes the displayed sell price as `Math.max(1, Math.floor(matching.price / 2))`. For any ware whose `price` is 1 or 2 the formula yields a sell price ≥ the buy price (price-1 → floor(0.5) = 0, max-1 → 1; price-2 → floor(1) = 1 — equal to buy price). The player can then buy → sell → buy → sell at zero net cost, or at +1 currency per cycle if a future ware lands at price 0 in the catalogue. No live exploit today (cheapest authored ware is `minor-healing-potion` at 12 → sells for 6, comfortably profitable for the shop), but the heuristic is fragile against future content authoring.
-- evidence: `src/CLI/game.cli.ts:228` — `const sellPrice = matching ? Math.max(1, Math.floor(matching.price / 2)) : 1;`. The engine reducer `sellItem` (`src/Items/shop.reducer.ts:34`) accepts any non-negative price; the CLI is the only place enforcing a policy, and the policy is silently broken at the low end.
-- suggested_fix: drop the `Math.max(1, …)` floor and accept `Math.floor(ware.price / 2)` as-is (a price-1 ware sells for 0; a price-2 ware sells for 1 — both correctly net-negative for the player). Or move the heuristic into a `defaultSellPrice(ware: ShopWare): number` helper in `src/Items/shop.reducer.ts` so the policy is engine-tier + unit-testable; the CLI imports + uses it. Either approach plus a Phase 37 e2e case asserting "buy then sell nets ≤ 0 currency for the player on every authored ware" prevents regression.
-- source: critique
-
 ### [LOW] Shop economy has no agent-graded walkthrough at `automation/scripts/walkthroughs/shop.{json,goal.md}`
 - pass: critique-15 (commit cee2614)
 - area: tests / agent-coverage
@@ -59,6 +51,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] Phase 37 CLI `shopLoop` sell-price floor (`Math.max(1, …)`) enables a small infinite-money exploit for any ware at price ≤ 2** — resolved at iterate commit `3ba5319` (2026-05-19). Picked path (b) from the suggested_fix (engine-tier helper). New `defaultSellPrice(ware: ShopWare): number = Math.floor(ware.price / 2)` in `src/Items/shop.reducer.ts` exported through `src/Items/index.ts` + the top-level `src/index.ts` Items block. CLI shopLoop sell branch now calls `defaultSellPrice(matching)` instead of inline `Math.max(1, Math.floor(...))`. 2 regression-test cases in `src/Items/shop.reducer.test.ts`: fixed-table check (price 12 → 6, 7 → 3, 2 → 1, 1 → 0, 0 → 0) + loop-invariant (`for price in 1..100: defaultSellPrice < price`). 600/600 tests (+2 net); verify + deploy:check clean. Impact 5 × Ease 7 / 10 = 3.5. Source: critique-15.
 
 - [x] **[LOW] `TODO(spec-09)` autosave-on-every-action note duplicated in `game.reducer.ts:138` + `store.ts:208` with no carrying issue** — **resolved by Phase 51** at commit `4972f9a` (2026-05-19), not by iterate. Phase 51 (autosave throttling per Spec 09 Q4 path B) removed both `TODO(spec-09)` comment blocks entirely rather than collapsing them, and replaced the throttle deferral with the live `DURABLE_ACTIONS` allowlist policy at `src/Game/store.ts` (gated dispatch save) + the explanatory comment in `src/Game/game.reducer.ts` pointing readers to store.ts for the autosave policy. `grep -n "TODO(spec-09)" src/` now returns 0 hits. Spec 09 Q4 acceptance row in `specs/09-game-loop-orchestration.md` carries the "DONE at Phase 51" reference. Row moved Pending → Done at iterate (2026-05-19) as a stale-shipped drain — the critique-17 row's suggested_fix (paths a + b) was superseded by Phase 51's superior solution (allowlist > comment-collapse-only). No code change this tick; pure plan-file maintenance. Impact 2 × Ease 8 / 10 = 1.6. Source: critique-17.
 
