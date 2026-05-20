@@ -221,3 +221,53 @@ Calibration: the 0.35 fire rate is colocated with the Phase 45
 `ALIGNMENT_FLIP_CHANCE` in `src/Enemy/enemy.logic.ts`. Tune both
 together if a future playtest pass shows elite/boss encounters
 feel too spammy or too quiet.
+
+## Befriendable enemies (Phase 60)
+
+Per-enemy `Enemy.friendshipReward?: FriendshipReward` lets authors
+attach bonus content to the Phase 36 friendship-victory path. The
+field is optional; enemies without an authored reward resolve via
+the Phase 36 base only (half-XP + weighted-loot roll + +1
+moralMeter).
+
+```typescript
+interface FriendshipReward {
+    /** Guaranteed items appended to the weighted-loot roll. */
+    items?: Item[];
+    /** Extra XP on top of the half-XP base. Additive, not multiplicative. */
+    xpBonus?: number;
+    /** Optional flavour text for the CLI / UI to render after combat-end. */
+    narrative?: string;
+}
+```
+
+Engine wiring lives in `src/Game/store.ts#endCombat`: in the
+`outcome === 'friendship'` branch, the reward's `items` append to
+`report.loot`, `xpBonus` adds to `report.xpGained`, and `narrative`
+surfaces on `CombatEndReport.friendshipReward.narrative`. None of
+the FriendshipReward fields REPLACE the Phase 36 grants; they
+augment them.
+
+Two enemies ship authored rewards today:
+
+| Enemy | Difficulty | Items | xpBonus | Narrative tone |
+|---|---|---|---|---|
+| **MournfulGull** | normal | 1 × heart-draught | +10 | Heart-attuned remembrance gift; the gull stops circling. |
+| **HollowEyedBeggar** | normal | 1 × healing-potion + 1 × antidote | +15 | Reversal of the begging dynamic; they offer what they carry. |
+
+The 2 enemies are picked from the fishing-village normal tier
+(level 2-3), where the player's first deliberate befriending
+attempts are likeliest to land. Boss-tier befriendable enemies +
+quest-branch wire-in on `outcome === 'friendship'` (vs `'victory'`)
+are deferred to follow-up content phases — the engine field is
+ready; the content authoring lags by design.
+
+Hermetic e2e coverage at
+[`src/Game/e2e/befriend.engine.test.ts`](../src/Game/e2e/befriend.engine.test.ts)
+drives one friendship run per authored enemy + a no-friendshipReward
+regression case (TidepoolCrab) + a victory-outcome regression case
+(no friendshipReward thread on non-friendship outcomes).
+
+See `docs/combat.md` § "Friendship Path" for the engine-side
+semantics + `docs/morality.md` § "Combat: Friendship Victories" for
+the moralMeter shift that fires alongside.

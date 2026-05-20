@@ -98,8 +98,17 @@ otherwise.
 
 `CombatEndReport.outcome` is `'victory' | 'defeat' | 'friendship' |
 'flee'`. Phase 36 added `'friendship'` for the friendship-counter exit
-— half XP grant + full loot + `+1` moral meter. See `docs/combat.md`
-"Friendship Path".
+— half XP grant + full loot + `+1` moral meter.
+
+Phase 60 added `CombatEndReport.friendshipReward?: { narrative?:
+string }` — present only on `outcome === 'friendship'` when the
+befriended enemy carries an authored `Enemy.friendshipReward?:
+FriendshipReward`. Per-enemy `items` and `xpBonus` are already
+applied to `report.loot` / `report.xpGained` by the time this
+surfaces; `narrative` is the field consumers render for the
+after-action UI. See `docs/combat.md` § "Friendship Path" + §
+"Befriendable-enemy content (Phase 60)" and `docs/enemy.md` §
+"Befriendable enemies (Phase 60)".
 
 `TypedGameEvent<T>` narrows the event by topic; `payload` is always
 the engine envelope above. Per-topic aliases ship for all 10

@@ -178,12 +178,38 @@ When the Game store's `endCombat()` resolves a friendship exit (Phase 36),
 the returned `CombatEndReport` carries:
 
 - `outcome: 'friendship'` (distinct from `'flee'`)
-- `xpGained: floor(totalEncounterXp * 0.5)` — half the kill-win XP
-- `loot: rollEncounterLoot(encounter)` — the full loot table
+- `xpGained: floor(totalEncounterXp * 0.5) + friendshipReward?.xpBonus` —
+  half the kill-win XP plus any per-enemy bonus (Phase 60)
+- `loot: rollEncounterLoot(encounter) ++ friendshipReward?.items` —
+  the full weighted-loot roll with any per-enemy guaranteed items
+  appended (Phase 60)
+- `friendshipReward?: { narrative? }` (Phase 60) — present only when
+  the befriended enemy carries an authored `friendshipReward` and a
+  `narrative` string. Engine doesn't interpret; CLI / UI renders.
 
 The reducer side (Phase 10) also shifts the moral meter `+1` (see
 `docs/morality.md` § "Combat: Friendship Victories") and routes the player
-through `applyLevelUps` if the half-XP crossed a threshold.
+through `applyLevelUps` if the (now possibly-bonused) XP crossed a threshold.
+
+### Befriendable-enemy content (Phase 60)
+
+Per-enemy `Enemy.friendshipReward?: FriendshipReward` lets authors
+attach bonus content to the friendship resolution. Two enemies ship
+authored rewards today:
+
+| Enemy | Items | xpBonus | Narrative |
+|---|---|---|---|
+| **MournfulGull** | 1 × heart-draught | +10 | "The gull stops circling. It settles on the rail beside you. For a long moment, neither of you speaks the slights you remember." |
+| **HollowEyedBeggar** | 1 × healing-potion + 1 × antidote | +15 | "They pull a folded cloth from somewhere inside the rags. Two phials, both still cold. \"I was carrying these for someone,\" they say. \"But you stopped. So.\"" |
+
+`FriendshipReward` is `{ items?: Item[]; xpBonus?: number; narrative?:
+string }`. Items are appended to the weighted-loot roll, xpBonus is
+additive on top of the half-XP base, and `narrative` surfaces on
+`CombatEndReport.friendshipReward.narrative` for the consumer to
+render. Enemies without an authored `friendshipReward` resolve via the
+Phase 36 base only (the report's `friendshipReward` field is
+`undefined`). See `docs/enemy.md` § "Befriendable enemies (Phase 60)"
+for authoring guidance.
 
 ## Combat End Conditions
 
