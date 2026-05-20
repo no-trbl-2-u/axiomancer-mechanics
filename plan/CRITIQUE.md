@@ -23,14 +23,6 @@
 - suggested_fix: pick one. Path (a) — drop `export` to make it `function applyOutlookBias(...)` at `:172`; matches the in-repo-only intent and prevents future barrel-leak surprises. Path (b) — add `applyOutlookBias` to the `src/Enemy/index.ts:80-84` block; appropriate IF a future phase wants UI consumers to apply the outlook bias to externally-sourced enemy decisions (no current evidence of that need). Recommend (a) as the conservative choice; revisit if Phase 49 (Enemy-skill caster path) refactors the AI dispatch and the bias function gains external callers. Either is a 1-line edit. /iterate-safe.
 - source: critique
 
-### [LOW] `docs/npcs.md` carries no `alignmentDelta` OR `requiresAlignment` surface despite Phase 43 + 46 shipping both on DialogueChoice
-- pass: critique-20 (commit 57fbb83)
-- area: docs
-- observation: Critique-18 already filed a row noting `docs/world.md` + `docs/npcs.md` have no `alignmentDelta` cross-link. The doc is now a beat further behind — Phase 46 added `requiresAlignment` to `DialogueChoice.requires` on top of the unresolved alignmentDelta gap. A content author opening `docs/npcs.md` to look up dialogue-choice effect fields sees neither `alignmentDelta` (Phase 43, content authoring) nor `requiresAlignment` (Phase 46, content gating) — both miss from the doc. The critique-18 row's suggested fix should be extended to cover Phase 46 too when the row is drained.
-- evidence: `grep -n "alignmentDelta\|requiresAlignment\|AlignmentGate" docs/npcs.md` returns 0 hits. `DialogueChoice.requires.requiresAlignment` is exported through the public barrel via `src/NPCs/index.ts` (commit `49b02f6`); `DialogueChoice.effect.alignmentDelta` since Phase 43.
-- suggested_fix: extend the critique-18 docs-cross-link row (currently Pending) to cover both fields when drained. New paragraph in `docs/npcs.md` describing dialogue-choice gating + alignment shifts, cross-linking to `docs/philosophy.md` "Authoring deltas (Phase 43)" + "Authoring gates (Phase 46)". ~12 lines added. Same /iterate-safe pair-with-critique-18 disposition.
-- source: critique
-
 ### [LOW] `docs/skills.md` mentions `sourcedFromCell` (Phase 44) but not `requiresAlignment` (Phase 46) on SkillLearningRequirement
 - pass: critique-20 (commit 57fbb83)
 - area: docs
@@ -141,6 +133,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] `docs/npcs.md` carries no `alignmentDelta` OR `requiresAlignment` surface despite Phase 43 + 46 shipping both on DialogueChoice** — resolved at iterate commit `9700775` (2026-05-19). DialogueChoice interface block in `docs/npcs.md` gained `requiresAlignment?: AlignmentGate` in `requires` (Phase 46) + `alignmentDelta?: Partial<PhilosophicalAlignment>` in `effect` (Phase 43). New "Alignment-aware content (Phase 43 + 46)" subsection describes the two fields' runtime behaviour + cross-links to `docs/philosophy.md` "Authoring deltas" + "Authoring gates". The companion critique-18 row (`docs/world.md` cross-link gap) is a separate doc and stays Pending. 598/598 tests stay green. Impact 3 × Ease 8 / 10 = 2.4 (× 1.5 docs bias = 3.6). Source: critique-20.
 
 - [x] **[LOW] `README.md` Philosophy row + `plan/bearings.md` Philosophy contract block missing Phase 46 surface** — resolved at iterate commit `e870e81` (2026-05-19). README Philosophy row gained an "Alignment gates" clause listing AlignmentGate shape + requiresAlignment on DialogueChoice + SkillLearningRequirement + alignment param on the three Skills helpers + DialogueContext.alignment, attributed "(Phase 46)". bearings.md CLI/API contract Philosophy block extended with the same fields; phase range bumped from "Phases 42-45" to "Phases 42-46". 598/598 tests stay green. Impact 3 × Ease 8 / 10 = 2.4 (× 1.5 docs bias = 3.6). Source: critique-20.
 
