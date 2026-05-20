@@ -23,14 +23,6 @@
 - suggested_fix: pick one. Path (a) — drop `export` to make it `function applyOutlookBias(...)` at `:172`; matches the in-repo-only intent and prevents future barrel-leak surprises. Path (b) — add `applyOutlookBias` to the `src/Enemy/index.ts:80-84` block; appropriate IF a future phase wants UI consumers to apply the outlook bias to externally-sourced enemy decisions (no current evidence of that need). Recommend (a) as the conservative choice; revisit if Phase 49 (Enemy-skill caster path) refactors the AI dispatch and the bias function gains external callers. Either is a 1-line edit. /iterate-safe.
 - source: critique
 
-### [LOW] `docs/morality.md` carries no cross-link to `docs/philosophy.md` despite Phase 42's explicit orthogonality commitment
-- pass: critique-19 (commit 6e833a9)
-- area: docs
-- observation: Phase 42 brief explicitly frames `philosophicalAlignment` as orthogonal to `moralMeter` — both fields persist independently, neither replaces the other (Spec 10 Q1 + Q4). `docs/philosophy.md` "Relationship to `moralMeter`" subsection makes this clear from the philosophy-doc side, but `docs/morality.md` has zero mention of philosophy, Phase 42, or the orthogonal system that now lives next door. `grep -n "philosophy\|philosophical\|Phase 42\|orthog" docs/morality.md` returns 0 hits across 154 lines. A reader landing on `docs/morality.md` to look up the meter doesn't learn that a sibling axis exists — they have to grep the engine or stumble onto `docs/philosophy.md` separately. Asymmetric cross-linking that the existing Phase 36 / iterate `7306111` drained the other direction (`docs/combat.md` → `docs/morality.md` Friendship Path), but not this one.
-- evidence: `grep -c "philosophy\|philosophical" docs/morality.md` returns 0. `docs/philosophy.md` "Relationship to `moralMeter`" subsection (lines authored at Phase 42 unit 3, commit `bdfda00`) cross-links to morality.md. The link is one-way.
-- suggested_fix: add a short "Relationship to `philosophicalAlignment` (Phase 42)" subsection to `docs/morality.md` — one paragraph explaining that the two systems are orthogonal (moralMeter = compassion ↔ ruthlessness, philosophicalAlignment = 3-axis epistemology / outlook / scope cube), that both persist independently across save / load, and that no unification is planned in v1. Cross-link to `docs/philosophy.md`. ~10 lines added.
-- source: critique
-
 ### [LOW] No conversation-loop spec for the philosophical alignment system after two phases shipped against it
 - pass: critique-18 (commit c62702e)
 - area: spec-gap
@@ -116,6 +108,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] `docs/morality.md` carries no cross-link to `docs/philosophy.md` despite Phase 42's explicit orthogonality commitment** — resolved at iterate commit `ce543d8` (2026-05-19). New "Relationship to `philosophicalAlignment` (Phase 42)" subsection inserted between Overview and Core Mechanics; explains the orthogonal compassion-vs-cube split, the independent-persistence guarantee, and the no-unification-in-v1 stance per Spec 10 Q8. Cross-link to `docs/philosophy.md` added; the link is now bidirectional. 598/598 tests stay green. Impact 2 × Ease 9 / 10 = 1.8 (× 1.5 docs bias = 2.7). Source: critique-19.
 
 - [x] **[LOW] `docs/effects.md` heading + ToC counts (`Buffs (39)` / `Debuffs (46)`) stale after Phase 44 added 1 buff + 2 debuffs** — resolved at iterate commit `385fac6` (2026-05-19). 4 references in docs/effects.md (ToC :19 + :20, section headers :442 + :490) updated to `Buffs (40)` + `Debuffs (48)` matching the actual library counts (`src/Effects/buffs.library.json` has 40 entries, `src/Effects/debuffs.library.json` has 48). Per-row entries for the 3 new Phase 44 effects already exist under the "Philosophical fallacy payloads (Phase 44)" subsection; no per-row additions to the Complete Effects Table headers needed (suggested_fix's optional path was skipped). 598/598 tests stay green. Impact 2 × Ease 9 / 10 = 1.8 (× 1.5 docs bias = 2.7). Source: critique-19.
 
