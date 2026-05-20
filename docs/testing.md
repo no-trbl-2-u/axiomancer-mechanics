@@ -81,7 +81,12 @@ goal file. It calls the Anthropic API; the vitest suite does not. Treat
 it as a smoke-grade integration test, not a unit-of-correctness test —
 the canonical correctness signal stays in `src/**/e2e/*.engine.test.ts`.
 See `automation/scripts/walkthroughs/README.md` for the inventory and
-how to add a new walkthrough.
+how to add a new walkthrough. The Phase 64 `endgame-loadout`
+walkthrough is the canonical example of a *demonstration-grade*
+script — it exercises multi-phase interactions (Tier 3 skill content,
+equipped-skill rotation, enemy alignment AI bias, enemy-skill caster
+path, boss combat resolution) without requiring a kill-completion
+outcome.
 
 ### Deploy gate — `npm run deploy:check`
 

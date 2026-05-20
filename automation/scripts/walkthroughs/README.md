@@ -28,6 +28,7 @@ and the goal file to the grader for pass/fail.
 | `skill-learning` | Character-tab Learn prompt (Phase 30 unit 3 — `LEARN_SKILL` action wired to `learnSkill`) | `wanderer` | — | — | `quit` reason; state log shows newly-learned skills the preset didn't ship with |
 | `skills-in-combat` | In-combat `skill` action (Phase 26 unit 1) — `ad-hominem-strike` mid-fight | `wanderer` | `wet-hound` (debug-spawned) | — | `quit` reason after combat; skill resource cost + damage applied |
 | `stat-allocation` | Character-tab stat-allocation prompt loop (Phase 29 `db7c26f` — spend `availableStatPoints`) | `sage` | `coastal-tyrant` (long combat to generate XP / level-ups) | — | Combat ends; allocation prompt fires; `availableStatPoints` decrements |
+| `endgame-loadout` | Phase 64 — endgame interactions: Tier 3 skill use (Phase 33/44), equipped-skill rotation (Phase 18+30), enemy alignment AI bias (Phase 45), enemy-skill caster path (Phase 49), boss combat resolution (Phase 15 phases). Drives `bootstrap-paradox` against the Coastal Tyrant. | `sage` | `coastal-tyrant` (debug-spawned) | — | Demonstration-grade — combat in progress at script quit OR `combat:ended` (any outcome); the value is exercising the surfaces, not finishing the fight |
 
 ## Conventions
 

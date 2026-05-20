@@ -91,6 +91,18 @@ a bump — see the Migration notes below.
   Not a public-surface change; test entry-point only.
 
 ### Docs
+- **Phase 64 endgame-loadout walkthrough** —
+  `automation/scripts/walkthroughs/endgame-loadout.{json,goal.md}`.
+  Demonstration-grade agent-graded script driving the Sage preset
+  (level 15, Tier 1+2+3 skills) through a `bootstrap-paradox` Tier 3
+  skill use against the Coastal Tyrant, exercising the interactions
+  between Tier 3 skill content (Phase 33/44), equipped-skill rotation
+  (Phase 18+30), enemy alignment AI bias (Phase 45), enemy-skill
+  caster path (Phase 49), and boss combat resolution (Phase 15
+  phases). NO new engine surface — pure walkthrough authoring;
+  `automation/` is dev-only and doesn't ship in the published
+  package per `package.json` `files`. Walkthrough README inventory +
+  `docs/testing.md` agent-graded subsection updated.
 - **`specs/14-philosophical-alignment.md`** — retroactive
   conversation-loop spec for the Phase 42-46 alignment system
   (Phase 58, `f103a8d`). All four open questions answered inline
