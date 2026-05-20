@@ -173,6 +173,15 @@ export const MournfulGull = createEnemy({
     philosophicalAlignment: { epistemology: 0, outlook: -67, scope: -67 },
     // Phase 57 — heart self-heal fallacy matches "every slight it remembers".
     skills: [skill('appeal-to-pity')],
+    // Phase 60 — befriending "every slight it remembers" yields a
+    // heart-attuned remembrance gift (1 guaranteed heart-draught + 10 XP).
+    friendshipReward: {
+        items: [{ ...getConsumableById('heart-draught')! }],
+        xpBonus: 10,
+        narrative:
+            'The gull stops circling. It settles on the rail beside you. ' +
+            'For a long moment, neither of you speaks the slights you remember.',
+    },
 });
 
 export const ForestSprite = createEnemy({
@@ -206,6 +215,19 @@ export const HollowEyedBeggar = createEnemy({
     // Phase 57 — heart self-heal paradox; shares the Saint's archetype at a
     // different tier ("what you carry, not what you are" — survival-wager flavour).
     skills: [skill('pascals-wager')],
+    // Phase 60 — "they want what you carry, not what you are" reverses on
+    // friendship: they offer what they carry. 2 phials + 15 XP.
+    friendshipReward: {
+        items: [
+            { ...getConsumableById('healing-potion')! },
+            { ...getConsumableById('antidote')! },
+        ],
+        xpBonus: 15,
+        narrative:
+            'They pull a folded cloth from somewhere inside the rags. ' +
+            'Two phials, both still cold. "I was carrying these for someone," ' +
+            'they say. "But you stopped. So."',
+    },
 });
 
 export const ArgumentativeCrow = createEnemy({
