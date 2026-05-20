@@ -13,11 +13,12 @@
  */
 
 import { execSync } from 'node:child_process'
-import { existsSync, readdirSync, statSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 
 const DIST = 'dist'
 const SRC = 'src'
+const CHANGELOG = 'CHANGELOG.md'
 
 if (!existsSync(DIST)) {
   console.error('[deploy:check] dist/ not found. Run `npm run build` first.')
@@ -57,6 +58,52 @@ if (distTypesCount < srcTypesCount) {
     '(tsc does not emit pre-existing .d.ts files). See plan/phases/phase_50_engine_handoff.md.'
   )
   process.exit(1)
+}
+
+// Phase 52 guard — the latest git tag must match the top tagged-version
+// heading in CHANGELOG.md. `(unreleased)` headings are allowed and treated
+// as "the next bump in flight" — they are skipped when scanning for the
+// canonical version match. Catches the case where a tag is cut without a
+// CHANGELOG bump (or vice versa).
+function readLatestGitTag() {
+  try {
+    return execSync('git describe --tags --abbrev=0 2>/dev/null', { encoding: 'utf8' }).trim()
+  } catch {
+    return ''
+  }
+}
+
+function readTopChangelogVersion() {
+  if (!existsSync(CHANGELOG)) return { version: '', headingRaw: '' }
+  const text = readFileSync(CHANGELOG, 'utf8')
+  for (const line of text.split('\n')) {
+    const match = line.match(/^##\s+\[([^\]]+)\]\s+—\s+(.+)$/)
+    if (!match) continue
+    const [, version, suffix] = match
+    if (/unreleased/i.test(suffix)) continue
+    return { version: version.trim(), headingRaw: line.trim() }
+  }
+  return { version: '', headingRaw: '' }
+}
+
+const latestTag = readLatestGitTag()
+const { version: topChangelogVersion, headingRaw: topChangelogHeading } = readTopChangelogVersion()
+
+if (latestTag && topChangelogVersion) {
+  // Normalise the tag — `v0.10.0` → `0.10.0`.
+  const normalisedTag = latestTag.replace(/^v/, '')
+  if (normalisedTag !== topChangelogVersion) {
+    console.error(
+      `[deploy:check] git tag / CHANGELOG.md disagreement: ` +
+      `latest tag is "${latestTag}" (normalised "${normalisedTag}"), ` +
+      `but the top tagged CHANGELOG heading is "${topChangelogHeading}".`
+    )
+    console.error(
+      '[deploy:check] Either bump the CHANGELOG (flip the `(unreleased)` heading to the tag\'s ISO date) ' +
+      'or cut a new tag matching the CHANGELOG. See RELEASING.md.'
+    )
+    process.exit(1)
+  }
 }
 
 try {

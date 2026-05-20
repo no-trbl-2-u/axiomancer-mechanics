@@ -4,6 +4,10 @@ Turn-based RPG engine with a Heart / Body / Mind combat system. Status effects, 
 
 This repository is the **non-UI engine** only. It is consumed as a library by clients (e.g. a React Native app). All logic is exposed through the package barrel at [`src/index.ts`](./src/index.ts).
 
+See [`CHANGELOG.md`](./CHANGELOG.md) for version history and
+[`RELEASING.md`](./RELEASING.md) for the publish flow + deprecation
+lifecycle policy.
+
 ---
 
 ## Install
