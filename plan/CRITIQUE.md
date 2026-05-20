@@ -6,13 +6,37 @@
 > by `/iterate`.
 
 <!-- Metadata (updated by /critique after each pass):
-> Last pass: 2026-05-20 at commit 7078829
-> Pass count: 24
+> Last pass: 2026-05-20 at commit d4959ef
+> Pass count: 25
 -->
 
 ---
 
 ## Pending
+
+### [LOW] `pickEnemySkill` is exported from `src/Enemy/enemy.logic.ts` but not on the Enemy barrel — same pattern as critique-21's `applyOutlookBias` row
+- pass: critique-25 (commit d4959ef)
+- area: structure
+- observation: `pickEnemySkill(enemy: Enemy | undefined): CombatAction | null` at `src/Enemy/enemy.logic.ts:215` carries the `export` keyword, but the symbol is NOT re-exported through `src/Enemy/index.ts` (the module barrel) and NOT on `src/index.ts` (the top-level public barrel). Only in-repo caller is `decideEnemyAction` in the same file (`:251`). The exact same pattern critique-21 caught for `applyOutlookBias` (commit `5f5b2c4`) and iterate `17e76b9` resolved by dropping the `export` keyword. Phase 49's brief introduced `pickEnemySkill` alongside `applyOutlookBias` (both internal AI helpers under `decideEnemyAction`); the iterate fix retroactively only touched `applyOutlookBias` — `pickEnemySkill` slipped through.
+- evidence: `grep -n "export function pickEnemySkill\|export function applyOutlookBias" src/Enemy/enemy.logic.ts` shows `pickEnemySkill` exported at `:215`; `applyOutlookBias` no longer exported (was at `:181` pre-iterate-17e76b9). `grep -n "pickEnemySkill\|applyOutlookBias" src/Enemy/index.ts src/index.ts` returns 0 in both files. In-repo callers of `pickEnemySkill` (`grep -rn "pickEnemySkill" src/ --include="*.ts"`): the export site itself, one call at `:251`, and a test importing it directly from `'./enemy.logic'` at `src/Enemy/e2e/enemy.engine.test.ts:19` (and 6 test-case usages). No external callers.
+- suggested_fix: Two paths. Path (a) — drop the `export` keyword from `pickEnemySkill` (mirrors the iterate-17e76b9 treatment of `applyOutlookBias`). The test currently imports `pickEnemySkill` directly; refactor those 6 cases to drive through `decideEnemyAction` (which already consults `pickEnemySkill` via the gate at `:251`), pinning the behaviour through the public path. This keeps the AI-helper layer internal. Path (b) — promote `pickEnemySkill` to the Enemy barrel + top-level barrel as part of the documented Phase 49 caster path (it's a sibling to `decideEnemyAction`, which IS on the barrel; arguably consumers building UI hints about enemy intent would benefit). The two paths differ on whether the AI internals are part of the public contract; Phase 49's brief framed them as internal, so Path (a) matches author intent and is the cheaper fix. Pair with the critique-21 row in CRITIQUE.md Done as the precedent commit.
+- source: critique
+
+### [LOW] `src/Game/e2e/befriend.engine.test.ts` victory-regression assertion is unnecessarily compound and hard to read
+- pass: critique-25 (commit d4959ef)
+- area: tests
+- observation: The fourth case in the Phase 60 e2e (`src/Game/e2e/befriend.engine.test.ts:85-89`) asserts that the friendshipReward thread does NOT fire on `outcome === 'victory'`. The intent is "the heart-draught the friendship reward would have granted does not appear in victory loot." The actual assertion currently reads `expect(report.loot.every(item => item.id !== 'heart-draught' || (combat.enemy.loot ?? []).some(e => e.item?.id === 'heart-draught'))).toBe(true);` — a compound `every + ||` shape that requires a reader to mentally enumerate (a) every loot item, (b) is it not heart-draught OR was heart-draught a possible weighted-roll outcome anyway. The compound is correct (heart-draught CAN appear in victory loot via the existing 30%-weighted entry in MournfulGull's loot table), but the assertion buries the intent. The case shipped at Phase 60 unit 3 (commit `b13348b`); fresh self-critique.
+- evidence: `src/Game/e2e/befriend.engine.test.ts:85-89`; compare to the cleaner shape of the other three cases in the file (`expect(report.friendshipReward).toBeUndefined()` etc.).
+- suggested_fix: Replace the compound `every + ||` with the direct semantic assertion: `expect(report.friendshipReward).toBeUndefined()` (already covered at `:80`) is the load-bearing assertion for "the thread does not fire on victory"; the loot-content assertion is redundant — victory loot is just `rollEncounterLoot(encounter)` (the Phase 60 thread only fires on the friendship branch). Drop lines `:85-89` entirely; the `:80` assertion + the `expect(report.outcome).toBe('victory')` at `:79` cover the regression. If a future reader wants explicit loot-content guarantees, factor a `expectLootSize(report, encounterRollOnly: true)` helper rather than encoding the compound inline. Net delta: −5 LOC, +0 coverage loss.
+- source: critique
+
+### [LOW] README.md + plan/bearings.md Public API Enemy row missing Phase 60 `FriendshipReward` surface — extends critique-24 row 2's "front-door currency" pattern
+- pass: critique-25 (commit d4959ef)
+- area: docs
+- observation: Phase 60 (`7724c96`) added `FriendshipReward` to the top-level type-export block and `Enemy.friendshipReward?: FriendshipReward` to the canonical Enemy shape. `docs/api.md:103-111` covers the new field through the `CombatEndReport.friendshipReward` cross-link, but the README.md Public API Enemy row at `:65` stops at "outlook-driven basic-action bias since Phase 45" and `plan/bearings.md` Public-API quick-reference Enemy row (`:71` Enemy entry) doesn't list the new surface either. This row pairs naturally with the existing critique-24 row 2 ("Items row missing Phase 37 shop + Phase 54 sets; Skills row missing Phase 50 skillLibrary") — the same front-door-currency pattern, one more entry to fold in. The Enemy row addition is one phrase ("authored `friendshipReward?: FriendshipReward` on 2 enemies (Phase 60)"); bearings is one similar phrase.
+- evidence: `grep -n "FriendshipReward\|friendshipReward\|befriend" README.md plan/bearings.md` returns 0 hits in both files. `README.md:65` Enemy row text confirmed. `docs/api.md:103-111` confirms the field IS covered in the deeper docs (so the gap is specifically the front-door table, not the canonical reference).
+- suggested_fix: When the next iterate drains critique-24 row 2, fold this row's Enemy-row entry into the same commit. The suggested addition to the README.md Enemy row: "; per-enemy `friendshipReward?: FriendshipReward` ({ items, xpBonus, narrative }) drives the Phase 60 befriendable-enemy content (MournfulGull + HollowEyedBeggar authored today)". Mirror to `plan/bearings.md` Enemy row with similar phrasing. If the two rows drain in separate iterate ticks, file this one's commit as a follow-up to critique-24 row 2's drain — no harm, just a small extra commit.
+- source: critique
 
 ### [MED] spec.md still lists "Published npm release" as both a 6-month-horizon item and a Non-goal — engine has been on npm since `0.2.0`
 - pass: critique-24 (commit 7078829)
