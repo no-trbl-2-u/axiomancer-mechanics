@@ -5,8 +5,8 @@
 > `## Promoted` or `## Rejected`.
 
 <!-- Metadata (updated by /expand after each pass):
-> Last pass: 2026-05-19 at commit 37da7c3
-> Pass count: 11
+> Last pass: 2026-05-19 at commit 90432bb
+> Pass count: 12
 -->
 
 ---
