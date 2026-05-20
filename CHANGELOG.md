@@ -10,7 +10,14 @@ Pre-1.0.0 status: minor bumps may carry breaking public-API changes
 map exposes `.` (top-level barrel) and `./node` (Node.js adapter); no
 deep imports are part of the supported surface.
 
-## [0.10.1] — unreleased
+## [unreleased]
+
+Next bump's work lands here. Phases 55 / 56 / 57 are promoted (see
+`plan/steps/01_build_plan.md`). Per RELEASING.md, the post-publish
+step is to add this placeholder heading; the next `npm publish` will
+flip it to a real version + date.
+
+## [0.10.1] — 2026-05-20
 
 Engine handoff to `axiomancer-mobile`, autosave throttling, release-process
 artefacts, public-surface contract enforcement, Set items engine. The first
