@@ -14,14 +14,6 @@
 
 ## Pending
 
-### [MED] CHANGELOG `[0.10.1] — unreleased` is missing Phase 52, 53, 54 surface — would publish under-documented
-- pass: critique-23 (commit 44a179b)
-- area: docs / release-engineering
-- observation: `CHANGELOG.md` was authored at Phase 52 unit 1 (commit `e7fb73d`) with an `[0.10.1] — unreleased` section listing the surface known AT THAT TIME — Phase 50 + Phase 51 + the pre-Phase-52 iterate ticks (defaultSellPrice, 4 effect aggregators). It does NOT list Phase 52 itself (`CHANGELOG.md`, `RELEASING.md`, tag/CHANGELOG deploy-check assertion, README cross-links), Phase 53 (`scripts/snapshot-public-surface.mjs`, `scripts/diff-public-surface.mjs`, `scripts/public-surface.expected.json`, deploy-check public-surface drift detector), or Phase 54 (`SetBonus` + `ItemSet` types, 6 set engine helpers, `itemSetLibrary` + `getItemSetById`, 3 authored sets, `initializeCombat` + `generateBasicActionResources` wiring, `docs/equipment.md` Set Items section). If a user runs `npm publish` against current main, the published `0.10.1` ships with a CHANGELOG that under-claims by ~3 phases of work. Defeats the whole point of Phase 52 (codify the bump-and-publish dance with an accurate changelog).
-- evidence: `awk '/^## \[0.10.1\]/,/^## \[0.10.0\]/' CHANGELOG.md` returns the original 6-bullet `### Added` block + 1-bullet `### Changed`. `grep -n "Phase 52\|Phase 53\|Phase 54\|SetBonus\|snapshot-public-surface" CHANGELOG.md` returns zero hits in the `[0.10.1]` section. Phase 53's public-surface diff tool (`scripts/diff-public-surface.mjs v0.10.0 HEAD`) would surface the 8 + 8 new exports immediately as the canonical Added bullets.
-- suggested_fix: refresh `[0.10.1] — unreleased` with three new entries describing Phases 52 / 53 / 54. Easiest source: run `node scripts/diff-public-surface.mjs v0.10.0 HEAD` and paste the Added list under each phase's bullet (Phase 53's diff tool was designed for exactly this consumption). Optionally reframe `DURABLE_ACTIONS` (currently bullet-5 of `### Added`) as an internal-policy note rather than a public-API addition — it's not on `src/index.ts`. Impact 5 × Ease 9 / 10 = 4.5.
-- source: critique
-
 ### [LOW] `docs/api.md` Public API table missing Phase 54 set surface + `defaultSellPrice` + Phase 50 aggregators that landed at iterate
 - pass: critique-23 (commit 44a179b)
 - area: docs
@@ -38,14 +30,6 @@
 - suggested_fix: author `scripts/README.md` mirroring `automation/README.md`'s shape. Tools table covers `deploy-check.mjs` (the deploy gate), `loop-issue.mjs` (phase-mirror best-effort), `snapshot-public-surface.mjs` + `diff-public-surface.mjs` (Phase 53 — public-surface contract enforcement + diff). Note that `public-surface.expected.json` is the committed fixture; refreshing it is the user's gesture for "I'm changing the public barrel." ~30-line file, no code change. Cross-link from `docs/testing.md` "verify gate" subsection. Impact 2 × Ease 9 / 10 = 1.8.
 - source: critique
 
-### [LOW] CHANGELOG `[0.10.1]` ### Added lists `DURABLE_ACTIONS` — misleading; it's not a public-API export
-- pass: critique-23 (commit 44a179b)
-- area: docs / release-engineering
-- observation: `CHANGELOG.md:24-32` (the `### Added` block of `[0.10.1] — unreleased`) names `DURABLE_ACTIONS` alongside genuinely-added public exports (`skillLibrary`, `defaultSellPrice`, etc.). But `DURABLE_ACTIONS` is an **internal constant** declared inside `src/Game/store.ts` and never re-exported — it never reaches the public barrel. A consumer reading the CHANGELOG and trying `import { DURABLE_ACTIONS } from 'axiomancer-mechanics'` gets `undefined`. Better framed as a "Changed: autosave policy" or an "Engine behaviour" note. Pairs with the [MED] CHANGELOG-completeness row above as a single editorial pass.
-- evidence: `grep -n "DURABLE_ACTIONS" src/index.ts src/Game/index.ts` returns 0 hits. `grep -B1 -A3 "DURABLE_ACTIONS" src/Game/store.ts` returns the const declaration with no `export` keyword (Phase 51 D2: kept internal because UI consumers don't author this set — the engine owns the policy).
-- suggested_fix: move the DURABLE_ACTIONS bullet out of `### Added` and into a sibling `### Changed` block titled "Autosave policy: write-through restricted to a curated DURABLE_ACTIONS action-type allowlist (Phase 51). See `src/Game/store.ts` for the canonical list." That keeps the user-visible behavioural change without claiming a public-API export that doesn't exist. ~3 lines edited. Impact 2 × Ease 10 / 10 = 2.0.
-- source: critique
-
 ### [LOW] No conversation-loop spec for the philosophical alignment system after two phases shipped against it
 - pass: critique-18 (commit c62702e)
 - area: spec-gap
@@ -57,6 +41,10 @@
 ---
 
 ## Done
+
+- [x] **[MED] CHANGELOG `[0.10.1] — unreleased` is missing Phase 52, 53, 54 surface — would publish under-documented** — resolved at iterate commit `db9ea3a` (2026-05-20). CHANGELOG `### Added` now lists the Phase 54 set-items engine + library + authored sets, the Phase 52 release artefacts (CHANGELOG.md + RELEASING.md), the three new `scripts/deploy-check.mjs` assertions attributed to their phases, and the Phase 53 public-surface tooling. New `### Fixed` section records the Phase 54 passive-expiry bug + iterate-`f250ce4` fix (Spec 05e Q4 compliance). Migration notes gain pointers to the Phase 54 power-user surface (`getEquippedItemSets`) and to the diff-tool workflow for future release authors. The diff-tool source was inaccessible for this entry because `v0.10.0` predates the fixture (Phase 53 introduced it); entries authored from per-phase briefs instead, and the migration notes codify "from 0.10.1 forward, the diff tool is the canonical source." Folded in the LOW DURABLE_ACTIONS reframing (next row, see Done below) per its paired-note suggestion. 616/616 tests stay green; deploy:check including tag/CHANGELOG assertion clean. Impact 5 × Ease 9 / 10 = 4.5. Source: critique-23 row 2.
+
+- [x] **[LOW] CHANGELOG `[0.10.1]` ### Added lists `DURABLE_ACTIONS` — misleading; it's not a public-API export** — resolved at iterate commit `db9ea3a` (2026-05-20, same edit as the row above per its paired-note guidance). `DURABLE_ACTIONS` moved out of `### Added` into `### Changed` as an "Autosave policy" entry. The framing now correctly names the user-visible behavioural change (fewer writes) without claiming a public-API export that doesn't exist. The same `### Changed` section also notes that `scripts/deploy-check.mjs` is now a meaningful gate (three structural assertions), not just an `npm pack` wrapper. Impact 2 × Ease 10 / 10 = 2.0. Source: critique-23 row 5.
 
 - [x] **[MED] Phase 54 Scholar's Circle set passive expires mid-combat (round 4) instead of at combat end** — resolved at iterate commit `f250ce4` (2026-05-20). Real fix bypasses `applyEffect`'s `MAX_EFFECT_DURATION = 10` ceiling by constructing the ActiveEffect directly with `remainingDuration: -1` — the engine's "infinite-duration" sentinel that `tickAllEffects` already special-cases (`src/Combat/effects.ts:73-76`). Combat-end cleanup discards the cloned player along with the effect, so persistence is naturally bounded by the combat lifetime even though duration is unbounded. New hermetic case ticks effects 20× past any plausible combat length and asserts `remainingDuration === -1`. 616/616 tests (+1 net from Phase 54's 615); verify clean. The Phase 54 brief D4's `duration: 999` reference was the misnamed cue — the option is `durationDelta`, not `duration`, so the impl shipped with no override. Impact 4 × Ease 8 / 10 = 3.2. Source: critique-23 row 1.
 
