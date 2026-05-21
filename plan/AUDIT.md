@@ -7,11 +7,15 @@
 <!-- Bias line (written by /oversight when set):
 > Bias: <category> (set via oversight <date>)
 -->
+> Bias: tooling (set via oversight 2026-05-20)
+
+<!-- Bias RE-SET to "tooling" via oversight 2026-05-20 (eleventh oversight, post-Phase-66/67 ship + 3 iterate drains). AUDIT pending is 0, CRITIQUE pending is 0 — there's no live queue to multiply yet, but tooling pre-positions weighting for the post-Phase-68 critique pass: the new `BefriendabilityConfig` engine primitive + Coastal Tyrant authoring + public-surface fixture bump are exactly the kind of footprint that surfaces tooling/fixture/barrel findings on the next /critique pass. Phase 68 promoted from the Befriending mechanic v2 candidate under design path (a) per-enemy config (4 other directions rejected at this oversight). Boss-tier befriendable enemy candidate now blocked-by Phase 68 (its config side ships in Phase 68 Unit 2; reward-content side stays in candidate scope). -->
 
 <!-- Bias CLEARED via oversight 2026-05-20 (sixth oversight, post-Phase-55/56/57 ship + post-0.10.1 publish). The tooling driver queue stayed empty across the entire 2026-05-20 session (no Phase 55/56/57 follow-up findings landed in CRITIQUE that the tooling multiplier would have weighted). AUDIT pending is 0; CRITIQUE pending is 1 LOW (Spec 14 spec-gap, which is being promoted to a phase at this oversight). With no category dominating, /iterate should weight all categories evenly until signals re-cluster naturally. User also picked 0.10.2 publish now to ship the Phase 55/56/57 surface (mostly behaviour — CI gate + enemy rotations + PersistenceAdapter docs/test), and promoted three candidates as Phase 58 (Spec 14 — philosophical-alignment conversation-loop spec), Phase 59 (Docs gap audit + drain — re-scoped from the older Docs sweep candidate since most of its 9 row-groups have drained), Phase 60 (Befriendable-enemy content arc — closes Knowledge-Gaps Q5 fully). -->
 
 <!-- Bias history (most recent first):
-- 2026-05-20: tooling → CLEARED (this oversight)
+- 2026-05-20: CLEARED → tooling (this oversight, eleventh of session; Phase 68 promoted)
+- 2026-05-20: tooling → CLEARED (sixth oversight)
 - 2026-05-20: tooling KEPT (post-Phase-52/53/54 + critique-23 drain)
 - 2026-05-19: docs → tooling (post-loop-drain)
 - 2026-05-19: docs KEPT (multiple oversights)
