@@ -100,9 +100,9 @@ otherwise.
 'flee'`. Phase 36 added `'friendship'` for the friendship-counter exit
 — half XP grant + full loot + `+1` moral meter.
 
-**Befriendable-enemy content (Phase 60 + Phase 62) — Beta.** Phase 60
-added `CombatEndReport.friendshipReward?: { narrative?: string }` —
-present only on `outcome === 'friendship'` when the befriended enemy
+**Befriendable-enemy content (Phase 60 + Phase 62 + Phase 69) — Beta.**
+Phase 60 added `CombatEndReport.friendshipReward?: { narrative?: string }`
+— present only on `outcome === 'friendship'` when the befriended enemy
 carries an authored `Enemy.friendshipReward?: FriendshipReward`.
 Per-enemy `items` and `xpBonus` are already applied to `report.loot` /
 `report.xpGained` by the time this surfaces; `narrative` is the field
@@ -116,6 +116,22 @@ gate primitive. Convention: `befriended-<enemy-id-stem>`. First
 authored use: `MournfulGull.friendshipReward.flagSet:
 'befriended-mournful-gull'` unlocks a flag-gated branch on the
 Coastal Beggar's `greet` node.
+
+Phase 69 extended `FriendshipReward` with
+`alignmentDelta?: Partial<PhilosophicalAlignment>` — when present,
+the END_COMBAT reducer applies the delta to
+`state.philosophicalAlignment` via the Phase 42 `applyAlignmentDelta`
+clamp helper (each axis clamps to `[-100, +100]`; missing axes pass
+through). The post-clamp `PhilosophicalAlignment` surfaces on
+`CombatEndReport.friendshipReward.alignmentShift?: PhilosophicalAlignment`
+for consumers to render (mirrors `applyDialogueChoice`'s
+`effects.philosophicalShift`). Phase 36's +1 `moralMeter` shift stays
+unchanged on top — friendship resolutions now optionally shift BOTH
+axes per encounter. Closes Spec 14 Q4. Authoring band: ±1..±5 per axis
+(matches Phase 43's dialogue / map-event delta convention). First
+authored deltas: MournfulGull `{ outlook: +3 }` (wistful empathy);
+HollowEyedBeggar `{ scope: -3 }` (re-grounds toward the relational
+individual).
 
 See `docs/combat.md` § "Friendship Path" + § "Befriendable-enemy
 content (Phase 60)" and `docs/enemy.md` § "Befriendable enemies

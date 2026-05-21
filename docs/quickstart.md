@@ -21,7 +21,7 @@ canonical entry points. Cross-link to the per-module doc for depth.
 | **Character** | `createCharacter`, presets (`apprentice`/`wanderer`/`sage`), equipment + stat allocation, `Character.id` auto-gen | 18, 29, 35 | [character.md](./character.md) |
 | **Combat** | `resolveCombatRound`, per-phase split (`Combat/phases/*`), stat accessors, advantage / crit / friendship | 9, 15, 32, 36, 38 | [combat.md](./combat.md) |
 | **Effects** | `applyEffect`, Tier 1-3 procs, `statModifiers` + intensity scaling, fallacy payloads | 1, 3, 38, 44, 48 | [effects.md](./effects.md) |
-| **Enemy** | `createEnemy`, AI strategies + outlook-bias (Phase 45), enemy-skill caster path (Phase 49), per-enemy alignment + `friendshipReward` + Phase 68 `BefriendabilityConfig` | 7, 45, 49, 57, 60, 62, 68 | [enemy.md](./enemy.md) |
+| **Enemy** | `createEnemy`, AI strategies + outlook-bias (Phase 45), enemy-skill caster path (Phase 49), per-enemy alignment + `friendshipReward` (+ Phase 69 `alignmentDelta`) + Phase 68 `BefriendabilityConfig` | 7, 45, 49, 57, 60, 62, 68, 69 | [enemy.md](./enemy.md) |
 | **Game** | `createGameStore`, save/load + migrators (`GAME_STATE_VERSION` 5), event surface, autosave throttling, persistence adapters | 9, 11, 12, 21, 35, 38, 50, 51, 55 | [gameloop.md](./gameloop.md) |
 | **Items** | `addItem` / shop reducers (`buyItem`/`sellItem`/`defaultSellPrice` — Phase 37), set items engine (Phase 54) | 5, 5b, 37, 54 | [items.md](./items.md), [equipment.md](./equipment.md) |
 | **NPCs** | `getDialogueNode` + `visibleChoices`, alignment gates (Phase 46), tree-id observer cache (Phase 63) | 14, 22, 46, 63 | [npcs.md](./npcs.md) |
@@ -140,17 +140,28 @@ the full inventory + exit expectations.
    semantics. First boss-tier authored config: `CoastalTyrant`
    (`hpGate { belowPct: 0.4 }`, `requiredStances: ['heart']`,
    `roundsThreshold: 5`).
+7. **Per-enemy `alignmentDelta` on friendship** (Phase 69 — closes
+   Spec 14 Q4) — if the befriended enemy carries
+   `friendshipReward.alignmentDelta?: Partial<PhilosophicalAlignment>`,
+   the END_COMBAT reducer applies the delta to
+   `state.philosophicalAlignment` via the Phase 42 `applyAlignmentDelta`
+   clamp helper (each axis clamps to `[-100, +100]`; missing axes pass
+   through). The post-clamp `PhilosophicalAlignment` surfaces on
+   `report.friendshipReward.alignmentShift` for the CLI / UI to render.
+   Phase 36's +1 `moralMeter` stays on top. Authoring band: ±1..±5 per
+   axis.
 
 Two normal-tier befriendable enemies ship authored content today
-(Phase 60 + 65) — both default to the Phase 36 mechanic:
+(Phase 60 + 65 + 69) — both default to the Phase 36 mechanic:
 
 - **MournfulGull** at `fv-15` (gull crag, harbor district dead-end
-  via `fv-11` → `fv-14`).
+  via `fv-11` → `fv-14`). Phase 69 `alignmentDelta: { outlook: +3 }`.
 - **HollowEyedBeggar** at `fv-18` (back alley, inland streets).
+  Phase 69 `alignmentDelta: { scope: -3 }`.
 
 CoastalTyrant ships only the Phase 68 predicate today; the matching
 `friendshipReward` content (multi-paragraph narrative + boss-tier
-items + maybe `alignmentDelta`) is deferred to a follow-up content
+items + Phase 69 `alignmentDelta`) is deferred to a follow-up content
 phase.
 
 ### Map exploration
