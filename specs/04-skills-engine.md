@@ -254,3 +254,67 @@ No cap on token accumulation for now; revisit after playtesting.
 - Level-up flow that grants skill points — Spec 06.
 - Moral alignment learning gates — Spec 10.
 - Seedable RNG — Spec 11.
+
+## Post-spec engine extensions
+
+### Phase 66 — Tier 2 synergy clause
+
+Phase 66 (`25e3c28` engine primitive + `2f75ba0` content + `d41d90b`
+e2e) extended the `Skill` type with an optional `synergy?: SkillSynergy`
+field. The skills engine evaluates it inside `executeSkill` after
+`calculateSkillDamage` runs and before `combatEffects` apply — a
+matched predicate amplifies damage, optionally consumes the matched
+effect, optionally consumes the caster's combat-resource pool, and
+optionally clears all `ActiveEffect`s on both combatants.
+
+```typescript
+export interface SkillSynergy {
+    /** Optional predicate. When absent, the synergy fires unconditionally
+     *  on cast (used by resonance-detonation). */
+    predicate?: SynergyPredicate;
+    /** Flat bonus damage on match. */
+    bonusDamage?: number;
+    /** Multiplier × matched effect's remainingDuration. */
+    durationDamageMul?: number;
+    /** Multiplier × matched effect's intensity. */
+    intensityDamageMul?: number;
+    /** Multiplier × total consumed combat-resource tokens. */
+    resourceTokenDamageMul?: number;
+    /** Consume (clear) the matched effect on the predicate's `on` side. */
+    consumeMatched?: boolean;
+    /** Consume the caster's full combat-resource pool. */
+    consumeAllResources?: boolean;
+    /** Clear all ActiveEffects from both combatants (including Phase 60
+     *  set-bonus passives — see Phase 66 D9). */
+    clearAllEffectsBothSides?: boolean;
+    /** Apply an additional effect on the caster when synergy fires —
+     *  used by bat-swarm-thoughtform for the buff type-swap. */
+    applyEffectOnFire?: SkillCombatEffects;
+}
+
+export interface SynergyPredicate {
+    effectId: string;
+    on: 'caster' | 'target';
+    intensityMin?: number;
+    durationMin?: number;
+}
+```
+
+Synergy damage formula (added to the skill's existing `basePower`-based
+damage):
+
+```
+synergyDamage = bonusDamage
+              + (matched ? matched.intensity × intensityDamageMul : 0)
+              + (matched ? matched.remainingDuration × durationDamageMul : 0)
+              + (consumedTokens × resourceTokenDamageMul)
+```
+
+A new `SkillEvent` / `SkillPhaseEvent` variant `synergy-fired` carries
+`bonusDamage`, `consumedEffectIds`, `consumedAllResources`,
+`consumedTokens`, and `clearedAllEffects` for UI / agent rendering.
+Tests pin all 5 authored Tier 2 synergy skills + per-skill
+predicate-match / predicate-miss paths at
+`src/Skills/e2e/synergy-skills.engine.test.ts`. See
+`docs/skills.md` § "Tier 2 synergy (Phase 66)" + `specs/04b` Tier 2
+table for the per-skill content mapping.
