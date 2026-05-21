@@ -14,14 +14,6 @@
 
 ## Pending
 
-### [LOW] Phase 68 surface missing from front-door docs (docs/api.md + README.md + docs/quickstart.md)
-- pass: critique-30 (commit 9e38629)
-- area: docs
-- observation: Phase 68 shipped `BefriendabilityConfig` + `Enemy.befriendabilityConfig?` on the public barrel (`src/index.ts:36`) + a new internal `isFriendshipEligible` helper. The surface is documented in `docs/combat.md` (Friendship Path § "Per-enemy predicate (Phase 68 — `BefriendabilityConfig`)"), `docs/enemy.md` (Befriendable enemies table extended with a Phase 68 column), `plan/bearings.md` (Enemy block), and `CHANGELOG.md` `[unreleased]` ### Added/Changed entries. The three FRONT-DOOR readers haven't been updated: `docs/api.md` Enemy section ends at the Phase 60 / Phase 62 `FriendshipReward` block; `README.md` Enemy row doesn't list `BefriendabilityConfig`; `docs/quickstart.md` (Phase 67) module table + key in-game flows section was authored before Phase 68 and doesn't reference the new predicate.
-- evidence: `docs/api.md` (no `Phase 68` or `BefriendabilityConfig` matches); `README.md` (no match); `docs/quickstart.md` (no match). Compare against the Phase 66/67 critique-29 row 1 finding's pattern — same surface-drift shape.
-- suggested_fix: add a short Phase 68 subsection to `docs/api.md` Enemy block naming `BefriendabilityConfig` + the predicate-axes list + late-resolution semantics; extend the `README.md` Enemy row with `BefriendabilityConfig` (mirror the existing `FriendshipReward` clause); update `docs/quickstart.md` §4 "Key in-game flows" combat → friendship paragraph to mention the per-enemy predicate override (with `CoastalTyrant` as the example). Single pass-through commit per the critique-29 row-1 model.
-- source: critique
-
 ### [LOW] `scripts/README.md` fixture-state annotation is stale (says 159 types; current is 162)
 - pass: critique-30 (commit 9e38629)
 - area: docs
@@ -41,6 +33,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] Phase 68 surfaces (`BefriendabilityConfig` + `Enemy.befriendabilityConfig?` + `isFriendshipEligible` internal helper) missing from front-door readers (docs/api.md + README.md + docs/quickstart.md)** — resolved at iterate commit `0574315` (2026-05-21). Single pass-through commit per the suggested_fix (mirrors the critique-29 row-1 → iterate-4a2d835 drain pattern). `docs/api.md` Enemy section gained a new "Per-enemy befriend predicate (Phase 68)" block naming the type + all five predicate fields + AND-composition rule + late-resolution semantics + isFriendshipEligible (with the D11 "not on public barrel" note) + CoastalTyrant example. `README.md` Enemy row extended with the BefriendabilityConfig phrasing + the five fields + CoastalTyrant config values. `docs/quickstart.md` §4 "Key in-game flows" combat → friendship paragraph extended with a step 6 covering the Phase 68 predicate override + late-resolution + isFriendshipEligible lockstep; module table Enemy row's "Phases" cell picks up `68`. 674/674 tests stay green; verify + deploy:check clean. Impact 4 × Ease 8 / 10 = 3.2. Source: critique-30 row 1 (commit `0520115`).
 
 - [x] **[LOW] `specs/04b-skills-library-and-e2e.md` still says "Tier 2 — Resonance Required (3 skills)" — Phase 66 added 5 more, total is now 8** — resolved at iterate commit `52b8ac2` (2026-05-20). Heading flipped to "(8 skills — 3 original + 5 Phase 66 synergy)"; original 3-row table preserved under an "Original 3" subheading; new "Phase 66 synergy batch" block introduces SkillSynergy + 5-row table with aspect / cost / target / basePower / synergy summary per skill; closing line cites Phase 66 acceptance commits (`2f75ba0` content + `d41d90b` e2e). Pure docs change; 653/653 tests stay green. Impact 3 × Ease 7 / 10 = 2.1. Source: critique-29 row 2 (commit `53cb9a1`).
 
