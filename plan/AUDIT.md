@@ -7,14 +7,16 @@
 <!-- Bias line (written by /oversight when set):
 > Bias: <category> (set via oversight <date>)
 -->
-> Bias: tooling (set via oversight 2026-05-20)
+
+<!-- Bias CLEARED via oversight 2026-05-21 (twelfth oversight, post-Phase-68 ship + ~18 iterate drains + critique pass 33). Per the critique-33 row's primary suggested_fix: the tooling driver queue was empty across critique passes 28-32 (0 multiplier-affected findings against 8 total filed rows; all categorised docs / spec-gap / structure). With no category dominating, /iterate weights all evenly until signals re-cluster naturally. User also promoted the FriendshipReward.alignmentDelta extension candidate as Phase 69 (closes Spec 14 Q4 — score 3.5; no blockers). The pool stays rich (8 Pending candidates remain after the promotion). -->
 
 <!-- Bias RE-SET to "tooling" via oversight 2026-05-20 (eleventh oversight, post-Phase-66/67 ship + 3 iterate drains). AUDIT pending is 0, CRITIQUE pending is 0 — there's no live queue to multiply yet, but tooling pre-positions weighting for the post-Phase-68 critique pass: the new `BefriendabilityConfig` engine primitive + Coastal Tyrant authoring + public-surface fixture bump are exactly the kind of footprint that surfaces tooling/fixture/barrel findings on the next /critique pass. Phase 68 promoted from the Befriending mechanic v2 candidate under design path (a) per-enemy config (4 other directions rejected at this oversight). Boss-tier befriendable enemy candidate now blocked-by Phase 68 (its config side ships in Phase 68 Unit 2; reward-content side stays in candidate scope). -->
 
 <!-- Bias CLEARED via oversight 2026-05-20 (sixth oversight, post-Phase-55/56/57 ship + post-0.10.1 publish). The tooling driver queue stayed empty across the entire 2026-05-20 session (no Phase 55/56/57 follow-up findings landed in CRITIQUE that the tooling multiplier would have weighted). AUDIT pending is 0; CRITIQUE pending is 1 LOW (Spec 14 spec-gap, which is being promoted to a phase at this oversight). With no category dominating, /iterate should weight all categories evenly until signals re-cluster naturally. User also picked 0.10.2 publish now to ship the Phase 55/56/57 surface (mostly behaviour — CI gate + enemy rotations + PersistenceAdapter docs/test), and promoted three candidates as Phase 58 (Spec 14 — philosophical-alignment conversation-loop spec), Phase 59 (Docs gap audit + drain — re-scoped from the older Docs sweep candidate since most of its 9 row-groups have drained), Phase 60 (Befriendable-enemy content arc — closes Knowledge-Gaps Q5 fully). -->
 
 <!-- Bias history (most recent first):
-- 2026-05-20: CLEARED → tooling (this oversight, eleventh of session; Phase 68 promoted)
+- 2026-05-21: tooling → CLEARED (this oversight, twelfth of session; Phase 69 promoted)
+- 2026-05-20: CLEARED → tooling (eleventh oversight; Phase 68 promoted)
 - 2026-05-20: tooling → CLEARED (sixth oversight)
 - 2026-05-20: tooling KEPT (post-Phase-52/53/54 + critique-23 drain)
 - 2026-05-19: docs → tooling (post-loop-drain)
@@ -33,16 +35,6 @@
 
 ## Pending
 
-> **Audit status (2026-05-21):** Pending queue empty. The recent docs / spec sweep
-> drained the post-Phase-68 drift across both engine specs (01 / 02 / 04 / 07 /
-> 12 / 23), front-door docs (api.md / README.md / quickstart.md), CHANGELOG
-> migration paragraphs, Knowledge-Gaps Q5 resolution rollup, agents.md skill
-> table, and the Combat-reducer JSDoc surface. Critique pass 33 filed one
-> remaining LOW row (AUDIT bias `tooling` has been a no-op multiplier across
-> passes 28-32) — that row is `/oversight`-routed (iterate cannot edit the bias
-> autonomously). With expand rate-limited until commit 7ac2b07+20, the next
-> couple `/march` ticks will likely surface only sub-3.0 derivable findings;
-> after that, expand pass 19 should refresh the candidate pool.
 
 ---
 
