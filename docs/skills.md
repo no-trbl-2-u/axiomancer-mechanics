@@ -179,9 +179,10 @@ so the late-combat chain keeps cycling — see
 The learning-requirement defaults match the preset roster
 (`apprentice` level 1 / `wanderer` level 8 / `sage` level 15) — every
 shipped library skill carries an explicit `learningRequirement` as of
-Phase 33 (`{ level: 5 }` on the 3 Tier 2 skills, `{ level: 10 }` on
-the 3 Tier 3 skills) so the gating is data-driven, not just inferred
-by `meetsLearningRequirement`'s tier fallback.
+Phase 33 (`{ level: 5 }` on all 8 Tier 2 skills, `{ level: 10 }` on
+all 7 Tier 3 skills — Phase 44 + Phase 66 extensions preserve the
+tier defaults) so the gating is data-driven, not just inferred by
+`meetsLearningRequirement`'s tier fallback.
 
 
 ### Tier 1 — Single-stance cost (6 skills)
@@ -198,10 +199,12 @@ skill's own category (Fallacy or Paradox).
 | `liars-echo`        | Liar's Echo       | mind  | paradox | `mind: 3`  | enemy | 3  | mind  | damage + Mind Mark intensity 2, 2 rounds |
 | `ship-of-theseus`   | Ship of Theseus   | heart | paradox | `heart: 3` | enemy | 0  | heart | convert one random enemy buff onto self |
 
-### Tier 2 — Resonance required (3 skills)
+### Tier 2 — Resonance required (8 skills — 3 original + 5 Phase 66 synergy)
 
 Multi-key cost; resonance is implicit (the player must hold both pools).
 Generates +1 token of the skill's own category.
+
+**Original 3 (Spec 04b first ship):**
 
 | ID | Name | Cat. | Cost | Target | Base | Scale | Mechanic |
 |---|---|---|---|---|---:|---|---|
@@ -209,17 +212,28 @@ Generates +1 token of the skill's own category.
 | `undistributed-middle` | Undistributed Middle | paradox | `body: 2, mind: 2`   | enemy |  8 | mind  | damage + 3-round Mind Mark intensity 3 |
 | `eternal-regress`      | Eternal Regress      | fallacy | `heart: 2, mind: 2`  | enemy |  6 | heart | applies Confusion AND Slow |
 
-### Tier 3 — Philosophical resource required (3 skills)
+**Phase 66 synergy batch (5 skills):** see § "Tier 2 synergy (Phase 66)"
+below for the schema (`Skill.synergy?: SkillSynergy`), per-skill predicate /
+damage / side-effect mapping, and the full 5-row table.
+
+### Tier 3 — Philosophical resource required (7 skills — 3 original + 4 Phase 44 fallacies-as-spells)
 
 Requires a Fallacy or Paradox token in addition to stance tokens. **Generates
 the OPPOSING philosophical type** (Fallacy → Paradox, Paradox → Fallacy) so
 late-combat skill chains keep spinning.
+
+**Original 3 (Spec 04b first ship):**
 
 | ID | Name | Cat. | Cost | Target | Base | Scale | Mechanic |
 |---|---|---|---|---|---:|---|---|
 | `sorites-cascade`   | Sorites' Cascade  | paradox | `mind: 2, paradox: 1`  | enemy |  5 | mind  | stacking Bleed intensity 2, 4 rounds |
 | `straw-giant`       | Straw Giant       | fallacy | `body: 3, fallacy: 1`  | enemy | 18 | body  | flat damage (bypasses defence) |
 | `bootstrap-paradox` | Bootstrap Paradox | paradox | `heart: 2, paradox: 1` | self  |  0 | heart | self-heal (`heart × 0.5 × 4`; flat-heal fallback until round-damage telemetry lands) |
+
+**Phase 44 fallacies-as-spells batch (4 skills):** see § "Philosophical fallacy
+payloads (Phase 44)" below for the full table (with `sourcedFromCell` mapping
+back to the 27-cell alignment library). Two of the four carry a
+`requiresAlignment` learning gate per Phase 46.
 
 ### Special mechanics
 
