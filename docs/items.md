@@ -143,6 +143,10 @@ interface ShopInventory { readonly wares: ReadonlyArray<ShopWare> }
   + a `recipes.library.ts` would unlock the crafting CLI surface
   sketched in Spec 05.
 - Per-ware stock + refresh policy (Phase 37 follow-up).
-- Agent-graded shop walkthrough at
-  `automation/scripts/walkthroughs/shop.{json,goal.md}` (Phase 37
-  follow-up).
+
+The agent-graded shop walkthrough at
+`automation/scripts/walkthroughs/shop.{json,goal.md}` shipped at Phase 37
+unit 5 (`729e705`) — covers a buy → sell round-trip on
+`minor-healing-potion` (25 → 13 → 19 currency, inventory empty again).
+See [`automation/scripts/walkthroughs/README.md`](../automation/scripts/walkthroughs/README.md)
+for the inventory.
