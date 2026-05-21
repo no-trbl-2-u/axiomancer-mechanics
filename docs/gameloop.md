@@ -90,9 +90,26 @@ rewrite — they all funnel through `dispatch` now.
 
 ### Autosave granularity
 
-Autosave fires after **every** action (Q4 answer). A `TODO` in
-`game.reducer.ts` flags this to revisit if playtest cadence proves brutal —
-the alternatives are map-transition-only or explicit-save-only.
+Autosave is restricted to a curated `DURABLE_ACTIONS` allowlist (Spec 09
+Q4 path B, shipped at Phase 51 `4972f9a`). The allowlist lives in
+`src/Game/store.ts`:
+
+```ts
+const DURABLE_ACTIONS: ReadonlySet<GameAction['type']> = new Set([
+    'COMBAT_ROUND', 'LEVEL_UP', 'END_COMBAT',
+    'MOVE_TO_NODE', 'APPLY_DIALOGUE', 'SAVE_GAME',
+]);
+```
+
+Only actions whose `type` appears in the set write through to
+`adapter.save(...)`. UI-tier actions (stat-allocation prompts, tab
+switches, choice highlights, etc.) never persist. The original Spec 09
+Q4 default ("fires after every action") was the pre-loop Q4 answer; the
+two `TODO(spec-09)` markers that flagged the cadence concern (one in
+`store.ts`, one in `game.reducer.ts`) were both removed by Phase 51 —
+`grep -n "TODO(spec-09)" src/` returns 0. The `DURABLE_ACTIONS` set is
+the canonical autosave policy from Phase 51 onward; hermetic coverage
+at `src/Game/e2e/autosave-throttling.engine.test.ts`.
 
 ## Event surface
 
