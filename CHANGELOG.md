@@ -280,8 +280,12 @@ engine's public surface actually looks like, consult in order:
    per-tag deltas in markdown form. Both refs must contain the
    fixture (Phase 53 introduced it).
 
-For the post-v0.10.2 delta vs HEAD, the only change is the Phase 60
-`FriendshipReward` type addition above — 233+158 → 233+159.
+For the `v0.10.2` → `v0.10.3` delta, the public-surface changes
+were the Phase 60 `FriendshipReward` type addition (158 → 159) plus
+the Phase 66 `SkillSynergy` + `SynergyPredicate` type additions
+(159 → 161). `v0.10.3` shipped with 233 runtime exports + 161 type
+exports. Phase 68's `BefriendabilityConfig` (+1 type, 161 → 162)
+ships with the next bump and belongs in `[unreleased]` only.
 
 ## [0.10.2] — 2026-05-20
 
