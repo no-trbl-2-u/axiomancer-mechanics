@@ -77,8 +77,12 @@ no `Math.random`.
 
 ## Early-game Skill Library
 
-Minimum 12 skills. Two per cell of `(philosophicalAspect × category)` at Tier 1,
-three Tier 2 resonance skills, and three Tier 3 philosophical-resource skills.
+Minimum 12 skills authored at Spec 04b first ship. Two per cell of
+`(philosophicalAspect × category)` at Tier 1, three Tier 2 resonance skills,
+and three Tier 3 philosophical-resource skills. Subsequent phases extended
+the library: Phase 44 added 4 Tier 3 fallacies-as-spells (total Tier 3 = 7);
+Phase 66 added 5 Tier 2 synergy skills (total Tier 2 = 8); current shipped
+library carries **21 skills** across all three tiers.
 
 ### Tier 1 — Single Stance Cost (6 skills)
 
@@ -122,18 +126,38 @@ The `SkillSynergy` clause (added at Phase 66 commit `25e3c28`) lets a skill cond
 
 All 8 carry `learningRequirement: { level: 5 }`. Acceptance for the Phase 66 additions shipped at `2f75ba0` (content) + `d41d90b` (10-case hermetic e2e at `src/Skills/e2e/synergy-skills.engine.test.ts`).
 
-### Tier 3 — Philosophical Resource Required (3 skills)
+### Tier 3 — Philosophical Resource Required (7 skills — 3 original + 4 Phase 44 fallacies-as-spells)
 
 Each Tier 3 skill requires both stance tokens and a Fallacy or Paradox token,
 enforcing the chain: basic actions → Tier 1 skill → philosophical token → Tier 3 skill.
 On use, generates 1 token of the opposing philosophical type (Fallacy → Paradox, Paradox → Fallacy),
 enabling deep skill chains at late combat.
 
+**Original 3 (Spec 04b first ship):**
+
 | ID | Name | Category | Cost | Target | basePower | scalingStat | Effect summary |
 |---|---|---|---|---|---|---|---|
 | `sorites_cascade` | Sorites' Cascade | paradox | `{ mind: 2, paradox: 1 }` | enemy | 5 | mind | Stacking bleed: 4 rounds, intensity 2 |
 | `straw_giant` | Straw Giant | fallacy | `{ body: 3, fallacy: 1 }` | enemy | 18 | body | Damage that bypasses enemy defense entirely |
 | `bootstrap_paradox` | Bootstrap Paradox | paradox | `{ heart: 2, paradox: 1 }` | self | 0 | heart | Restore HP equal to damage dealt this round |
+
+**Phase 44 fallacies-as-spells batch (4 skills authoring against the 27-cell alignment cube):**
+
+Each draws from a named fallacy on the Phase 42 27-cell library. The cell id round-trips
+via `Skill.sourcedFromCell` so consumers can trace each skill back to its philosophical
+origin via `philosophicalAlignmentLibrary`. Two of the four carry a
+`requiresAlignment` learning gate (Phase 46 — the skill expresses a metaphysics that a
+caster with the opposite alignment couldn't reach).
+
+| ID | Name | Category | Aspect | Cost | Target | basePower | sourcedFromCell | learningRequirement |
+|---|---|---|---|---|---|---|---|---|
+| `appeal-to-consequences` | Appeal to Consequences | fallacy | body | `{ body: 3, fallacy: 1 }` | enemy | 16 | `logic-optimistic-individual` | `{ level: 10 }` |
+| `nirvana-fallacy` | Nirvana Fallacy | fallacy | mind | `{ mind: 2, fallacy: 1 }` | enemy | 14 | `logic-pessimistic-individual` | `{ level: 10, requiresAlignment: { axis: 'outlook', op: 'lte', value: -34 } }` |
+| `pascals-wager` | Pascal's Wager | paradox | heart | `{ heart: 2, paradox: 1 }` | self | 0 | `mid-optimistic-transcendent` | `{ level: 10 }` |
+| `appeal-to-fear` | Appeal to Fear | fallacy | heart | `{ heart: 2, fallacy: 1 }` | enemy | 12 | `mid-pessimistic-transcendent` | `{ level: 10, requiresAlignment: { axis: 'scope', op: 'gte', value: 34 } }` |
+
+All 7 carry `learningRequirement: { level: 10 }`. Phase 44 acceptance shipped at
+commits `87cfa7e` (engine + 4 skill content) + `06f5ffe` (hermetic e2e + docs).
 
 ## Proposed approach
 
