@@ -264,6 +264,13 @@ reality.
 - Skill types (`Skill`, `SkillCategory`, `SkillsStatType`,
   `SkillTier`, `SkillTarget`, `ResourceCost`, `CombatResources`,
   `SkillResolution`, etc.) — Stable.
+- **Top-level skill library (Phase 50):** `skillLibrary: Skill[]` +
+  `getSkillById(id: string): Skill | undefined` re-exported on the
+  top-level barrel (Phase 50 unit 1 — `19f2015`, engine-handoff fix
+  for `axiomancer-mobile`). Consumers no longer need to import from a
+  deep path; the canonical 21-skill library (6 Tier 1 + 8 Tier 2 +
+  7 Tier 3 as of Phase 66 + Phase 44) is reachable directly from
+  `import { skillLibrary, getSkillById } from 'axiomancer-mechanics'`.
 - **Runtime learning (Phase 30):** `learnSkill(character, skillId)`,
   `getAvailableSkills(character)`, `meetsLearningRequirement(character,
   skill)` — Stable. The `LEARN_SKILL` action wires this through the
