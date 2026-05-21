@@ -44,6 +44,18 @@ config on CoastalTyrant.
   `scripts/public-surface.expected.json` grows from 161 → 162 types
   (runtime exports unchanged at 233).
 
+### Deprecated
+- **Combat-reducer legacy aliases (`endCombatPlayerVictory` /
+  `endCombatPlayerDefeat` / `endCombatWithFriendship`).** All three are
+  now marked `@deprecated` in `src/Combat/combat.reducer.ts`. They
+  continue to dispatch to `endCombat` (zero behaviour change); the
+  outcome has always been computed by `determineCombatEnd(state)`, not
+  by the function name. Scheduled for removal at the next minor bump
+  (`v0.11.0` or later). Consumers calling them should switch to
+  `endCombat` directly. Tooling note: TypeScript-aware editors will
+  begin flagging the call sites with `@deprecated` strike-through; the
+  build is unaffected.
+
 ### Changed
 - **CoastalTyrant gains a Phase 68 befriend predicate.** First boss-tier
   authored `BefriendabilityConfig` (`hpGate: { belowPct: 0.4 }`,
