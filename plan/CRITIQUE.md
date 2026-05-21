@@ -14,14 +14,6 @@
 
 ## Pending
 
-### [LOW] `scripts/README.md` fixture-state annotation is stale (says 159 types; current is 162)
-- pass: critique-30 (commit 9e38629)
-- area: docs
-- observation: `scripts/README.md` line 29 reads "Current shape (HEAD, post-Phase-60): 233 runtime exports + 159 type exports". This was drained as critique-24 row 5 at iterate `9bed952` (2026-05-20) which flipped the count 158 → 159 and named the Phase 60 `FriendshipReward` addition. Since then Phase 66 added `SkillSynergy` + `SynergyPredicate` (+2 types → 161) and Phase 68 added `BefriendabilityConfig` (+1 type → 162). The current shape is 233 runtime exports + 162 type exports.
-- evidence: `scripts/README.md:29` (159 stated; actual fixture in `scripts/public-surface.expected.json` is 162 types after Phase 68).
-- suggested_fix: flip the line to "Current shape (HEAD, post-Phase-68): 233 runtime exports + 162 type exports." Update the surrounding sentence about the per-version history to fold in the Phase 66 + Phase 68 additions ("Phase 60 added one type (`FriendshipReward`) over the v0.10.0 base; Phase 66 added two (`SkillSynergy` + `SynergyPredicate`); Phase 68 added one (`BefriendabilityConfig`); 0.10.1 + 0.10.2 added no new public surface; 0.10.3 shipped with 233+161 (Phase 66 net), Phase 68 ships with the next bump").
-- source: critique
-
 ### [LOW] CHANGELOG.md `[0.10.3]` Migration notes "post-v0.10.2 delta vs HEAD" pointer is historical-section-stale
 - pass: critique-30 (commit 9e38629)
 - area: docs
@@ -33,6 +25,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] `scripts/README.md` fixture-state annotation is stale (says 159 types; current is 162)** — resolved at iterate commit `cbc658b` (2026-05-21). Flipped "Current shape (HEAD, post-Phase-60): 233 + 159" to "post-Phase-68: 233 + 162". Expanded the surrounding per-version paragraph into a bullet list folding in the Phase 66 (+2: `SkillSynergy` + `SynergyPredicate`) and Phase 68 (+1: `BefriendabilityConfig`) additions plus the v0.10.3 tag state (233+161 — Phase 66 net) and the [unreleased] post-Phase-68 state (233+162). Pure prose annotation change; the fixture file itself unchanged. 674/674 tests stay green. Same shape as the critique-24 row-5 → iterate-`9bed952` drain (2026-05-20) but extended to cover the two intervening surface additions. Impact 2 × Ease 10 / 10 = 2.0. Source: critique-30 row 2 (commit `0520115`).
 
 - [x] **[LOW] Phase 68 surfaces (`BefriendabilityConfig` + `Enemy.befriendabilityConfig?` + `isFriendshipEligible` internal helper) missing from front-door readers (docs/api.md + README.md + docs/quickstart.md)** — resolved at iterate commit `0574315` (2026-05-21). Single pass-through commit per the suggested_fix (mirrors the critique-29 row-1 → iterate-4a2d835 drain pattern). `docs/api.md` Enemy section gained a new "Per-enemy befriend predicate (Phase 68)" block naming the type + all five predicate fields + AND-composition rule + late-resolution semantics + isFriendshipEligible (with the D11 "not on public barrel" note) + CoastalTyrant example. `README.md` Enemy row extended with the BefriendabilityConfig phrasing + the five fields + CoastalTyrant config values. `docs/quickstart.md` §4 "Key in-game flows" combat → friendship paragraph extended with a step 6 covering the Phase 68 predicate override + late-resolution + isFriendshipEligible lockstep; module table Enemy row's "Phases" cell picks up `68`. 674/674 tests stay green; verify + deploy:check clean. Impact 4 × Ease 8 / 10 = 3.2. Source: critique-30 row 1 (commit `0520115`).
 
