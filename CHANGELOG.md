@@ -21,6 +21,36 @@ addressing critique passes 24 / 25. Includes a canonical
 a bump — see the Migration notes below.
 
 ### Added
+- **Tier 2 synergy skills (Phase 66).** New optional `Skill.synergy?:
+  SkillSynergy` clause + matching `SynergyPredicate` interface (both
+  on the public barrel; fixture grew 159 → 161 types). Synergy is
+  evaluated by `executeSkill` after damage and before `combatEffects`;
+  payload supports `bonusDamage` + `durationDamageMul` +
+  `intensityDamageMul` + `resourceTokenDamageMul` (damage scaling),
+  `consumeMatched` / `consumeAllResources` / `clearAllEffectsBothSides`
+  (side effects), and `applyEffectOnFire` (effect type-swap). A new
+  `SkillEvent` / `SkillPhaseEvent` variant `synergy-fired` surfaces
+  the bonus damage, consumed effect ids, consumed-token count, and
+  flag set for UI / agent rendering. **Five Tier 2 skills authored
+  in the first batch**:
+  - `resonance-bleed` (heart) — cross-stance duration amp keyed on
+    `debuff_bleed` on target.
+  - `intensity-feedback` (mind) — cross-stance intensity amp keyed
+    on `buff_critical_rate_up` on caster.
+  - `bat-swarm-thoughtform` (heart) — buff type-swap: consume
+    `tier1_body_defend` on caster (≥5 duration) + apply
+    `buff_max_hp_up`.
+  - `resonance-burst` (mind) — consume `debuff_confusion` on target
+    for damage proportional to intensity × duration.
+  - `resonance-detonation` (heart) — apex burn; no predicate;
+    consume the full combat-resource pool + clear all `ActiveEffect`s
+    on both sides + deal damage proportional to consumed tokens.
+  All five carry `learningRequirement: { level: 5 }`. See
+  [`docs/skills.md` § "Tier 2 synergy (Phase 66)"](docs/skills.md#tier-2-synergy-phase-66)
+  for the schema + per-skill table. Phase 66 commits: `25e3c28`
+  (Unit 1 — engine primitive + executeSkill wiring) + `2f75ba0`
+  (Unit 2 — 5 authored skills) + Unit 3 (this commit — e2e + docs).
+
 - **Befriendable-enemy content arc (Phase 60 + Phase 62).** New
   public type `FriendshipReward` (`{ items?: Item[]; xpBonus?:
   number; narrative?: string; flagSet?: string }` — `flagSet?`

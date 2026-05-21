@@ -270,6 +270,77 @@ reuse existing `combatEffects` references and resource-cost machinery
 [docs/effects.md](./effects.md#philosophical-fallacy-payloads-phase-44)
 for the matching status-effect payloads.
 
+## Tier 2 synergy (Phase 66)
+
+Tier 2 skills can carry an optional `synergy?: SkillSynergy` clause
+that rewards stance-switching by conditioning bonus damage / effect
+consumption / type-swap / detonation on the presence of an
+`ActiveEffect` already on the field. The clause is evaluated AFTER
+`calculateSkillDamage` but BEFORE the skill's own `combatEffects`
+apply.
+
+### Schema
+
+```typescript
+interface SynergyPredicate {
+    effectId: string;
+    on: 'caster' | 'target';
+    intensityMin?: number;
+    durationMin?: number;
+}
+
+interface SkillSynergy {
+    /** Optional. Absent = unconditional fire (e.g. Resonance Detonation). */
+    predicate?: SynergyPredicate;
+    bonusDamage?: number;
+    durationDamageMul?: number;     // × matched.remainingDuration
+    intensityDamageMul?: number;    // × matched.intensity
+    resourceTokenDamageMul?: number; // × consumedTokens
+    consumeMatched?: boolean;        // clear the predicate-matched effect
+    consumeAllResources?: boolean;   // zero the caster's CombatResources pool
+    clearAllEffectsBothSides?: boolean;
+    applyEffectOnFire?: SkillCombatEffects;
+}
+```
+
+Synergy damage formula (added to base damage):
+
+```
+synergyDamage = bonusDamage
+              + matched.intensity         × intensityDamageMul
+              + matched.remainingDuration × durationDamageMul
+              + consumedTokens            × resourceTokenDamageMul
+```
+
+The skill engine emits a `synergy-fired` `SkillEvent` carrying the
+computed bonus damage, consumed effect ids, consumed-tokens count,
+and the clear/consume flag set so UI / agent layers can render the
+moment.
+
+### Authored skills (Phase 66 first batch)
+
+| Skill | Stance | Cost | Predicate | Synergy payload |
+|---|---|---|---|---|
+| **`resonance-bleed`** | heart | `{ heart:2, mind:2 }` | `debuff_bleed` on target, durationMin: 2 | bonusDamage 5; durationDamageMul 3 |
+| **`intensity-feedback`** | mind | `{ mind:2, heart:2 }` | `buff_critical_rate_up` on caster, intensityMin: 1 | bonusDamage 4; intensityDamageMul 5 |
+| **`bat-swarm-thoughtform`** | heart | `{ heart:2, body:2 }` | `tier1_body_defend` on caster, durationMin: 5 (the existing `reflectDamage: 1` defensive buff serves as "Body Thorns") | consumeMatched; applyEffectOnFire `buff_max_hp_up` (intensity 3, duration 5) |
+| **`resonance-burst`** | mind | `{ mind:2, heart:1 }` | `debuff_confusion` on target, durationMin: 1 | bonusDamage 3; intensityDamageMul 2; durationDamageMul 3; consumeMatched |
+| **`resonance-detonation`** | heart | `{ heart:3, body:3, mind:3 }` | (no predicate — unconditional) | bonusDamage 25; resourceTokenDamageMul 10; consumeAllResources; clearAllEffectsBothSides |
+
+All five carry `learningRequirement: { level: 5 }`, matching the
+existing Tier 2 convention.
+
+`resonance-detonation` deserves a particular call-out: it has no
+predicate, fires on every cast, consumes the caster's full combat-
+resource pool, and clears every `ActiveEffect` from both combatants
+(Phase 60 set-bonus passives included per Phase 66 D9 — design
+intent). The total damage scales with how much the caster had to
+spend at detonation time, making it a "spend the whole shape you
+brought into the fight" apex burn.
+
+Hermetic coverage at
+[`src/Skills/e2e/synergy-skills.engine.test.ts`](../src/Skills/e2e/synergy-skills.engine.test.ts).
+
 ## Out of Scope (here)
 
 - Skill purchasing / learning flow — Spec 06 / 08.
