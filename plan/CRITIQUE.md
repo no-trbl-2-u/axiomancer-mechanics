@@ -6,13 +6,29 @@
 > by `/iterate`.
 
 <!-- Metadata (updated by /critique after each pass):
-> Last pass: 2026-05-21 at commit 34881ca
-> Pass count: 33
+> Last pass: 2026-05-21 at commit 7ade4b6
+> Pass count: 34
 -->
 
 ---
 
 ## Pending
+
+### [LOW] Knowledge-Gaps Q5 + header summary missing Phase 69
+- pass: critique-34 (commit 7ade4b6)
+- area: docs
+- observation: Phase 69 (`a42709f` + `9b7787d`, 2026-05-21) shipped `FriendshipReward.alignmentDelta?: Partial<PhilosophicalAlignment>` + the `alignmentShift` report surface — closes Spec 14 Q4. `Knowledge-Gaps.md` was last refreshed at iterate `34881ca` (resolution-sweep summary) and iterate `7b018b9` (Q5 body) — both BEFORE Phase 69 shipped. Q5's body now states "**Remaining follow-up:** boss-tier `friendshipReward` content (multi-paragraph narrative + items + maybe `alignmentDelta` extension on `FriendshipReward`) — the engine fields are ready" — the parenthetical "maybe `alignmentDelta` extension" is stale; Phase 69 shipped the extension. The header rollup summary lists Q5 as "Phase 36 + Phase 60 + Phase 62 + Phase 68" — should include "+ Phase 69".
+- evidence: `Knowledge-Gaps.md:47` Q5 body ("maybe `alignmentDelta` extension on `FriendshipReward`"); `Knowledge-Gaps.md:13-15` rollup ("Phase 36 mechanics + Phase 60 ... + Phase 62 ... + Phase 68 ..."). `grep -n 'Phase 69' Knowledge-Gaps.md` returns 0 hits.
+- suggested_fix: refresh Q5 body to flip "+ maybe `alignmentDelta` extension" → "+ Phase 69 (`a42709f` + `9b7787d`) shipped the `FriendshipReward.alignmentDelta` extension + `alignmentShift` report surface, fully closing Spec 14 Q4". The remaining follow-up shrinks to boss-tier content authoring only (narrative + items; the engine fields including alignmentDelta are all ready). Refresh the header rollup line for Q5 to append "+ Phase 69 `FriendshipReward.alignmentDelta`". Mirror of the post-Phase-68 Q5 refresh at iterate `7b018b9`.
+- source: critique
+
+### [LOW] Boss-tier befriendable enemy candidate scope is stale — Phase 69's alignmentDelta extension shipped
+- pass: critique-34 (commit 7ade4b6)
+- area: docs / candidate-refresh
+- observation: `plan/PHASE_CANDIDATES.md:70-71` Boss-tier candidate scope says "Optionally extend `FriendshipReward` shape with `alignmentDelta?: Partial<PhilosophicalAlignment>` so befriending a philosophical enemy nudges the player toward (or away from) their cell — this is the Spec 14 Q4 follow-up made concrete on a specific encounter." Phase 69 (`a42709f` + `9b7787d`) shipped that shape extension as a standalone phase + fully closed Spec 14 Q4 + first-authored deltas on MournfulGull + HollowEyedBeggar. The candidate's "Optionally extend" framing is now stale; the candidate scope shrinks to pure content authoring (Coastal Tyrant's `friendshipReward` items + narrative + an authored `alignmentDelta` value — but the field is ALREADY available). The `unblocks` row says "If `alignmentDelta` extension lands, partially closes Spec 14 Q4 — from 'orthogonal by design' to 'orthogonal by default, opt-in per encounter'." That's now an accomplished fact for Q4 (Phase 69 closed Q4); the candidate's role is just authoring Coastal Tyrant's per-encounter values.
+- evidence: `plan/PHASE_CANDIDATES.md:70` ("Optionally extend `FriendshipReward` shape with `alignmentDelta?: Partial<PhilosophicalAlignment>` ..."); `plan/PHASE_CANDIDATES.md:71` ("If `alignmentDelta` extension lands, partially closes Spec 14 Q4 — from 'orthogonal by design' to 'orthogonal by default, opt-in per encounter'"); Phase 69 acceptance row in `plan/steps/01_build_plan.md` flips both claims into shipped state.
+- suggested_fix: refresh the Boss-tier candidate scope: drop the "Optionally extend `FriendshipReward` shape" half-sentence; reframe Unit 1 as pure content authoring (Coastal Tyrant's `friendshipReward: { items, xpBonus, narrative, alignmentDelta }` — the field is available; pick a thematic delta matching the magistrate-fallen-priest archetype, e.g. `{ outlook: +3, scope: -2 }`). Refresh the `unblocks` row: "Phase 69 closed Spec 14 Q4; this candidate's role is authoring Coastal Tyrant's per-encounter `alignmentDelta` value as the first boss-tier example of the surface." Optionally also note that the boss-tier candidate now has zero blockers (was blocked-by Phase 68 + the alignmentDelta-extension hypothetical — both shipped).
+- source: critique
 
 ---
 
