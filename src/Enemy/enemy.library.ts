@@ -339,6 +339,16 @@ export const CoastalTyrant = createEnemy({
     philosophicalAlignment: { epistemology: -67, outlook: -67, scope: 67 },
     // Phase 49 — body-aspected paradox skill matches the magistrate's heavy blade.
     skills: [skill('achilles-gambit')],
+    // Phase 68 — boss-tier befriend predicate: the fallen-priest's friendship arc
+    // opens only after he's been brought low (hpGate 40%), the player has shown
+    // empathy at least once (heart stance), and 5 both-defend rounds have passed.
+    // The friendshipReward content side lands in the boss-tier befriendable enemy
+    // follow-up phase (currently blocked-by Phase 68).
+    befriendabilityConfig: {
+        hpGate: { belowPct: 0.4 },
+        requiredStances: ['heart'],
+        roundsThreshold: 5,
+    },
 });
 
 export const TheDisagreement = createEnemy({

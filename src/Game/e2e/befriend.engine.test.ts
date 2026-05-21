@@ -13,10 +13,35 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { MournfulGull, HollowEyedBeggar, TidepoolCrab } from '../../Enemy/enemy.library';
+import {
+    MournfulGull, HollowEyedBeggar, TidepoolCrab, CoastalTyrant,
+} from '../../Enemy/enemy.library';
 import { createGameStore, selectMoralMeter } from '../store';
 import { nullAdapter } from '../persistence/null.adapter';
 import { FRIENDSHIP_COUNTER_MAX } from '../game-mechanics.constants';
+import type { BattleLogEntry, Stance } from '../../Combat/types';
+
+function logEntry(round: number, stance: Stance, skillId?: string): BattleLogEntry {
+    return {
+        round,
+        playerAction: {
+            stance,
+            action: skillId ? 'skill' : 'attack',
+            ...(skillId ? { skillId } : {}),
+        },
+        enemyAction: { stance: 'body', action: 'defend' },
+        advantage: 'neutral',
+        playerRoll: 10,
+        playerRollDetails: '',
+        enemyRoll: 10,
+        enemyRollDetails: '',
+        damageToPlayer: 0,
+        damageToEnemy: 0,
+        playerHPAfter: 50,
+        enemyHPAfter: 50,
+        result: '',
+    };
+}
 
 function driveToFriendship(store: ReturnType<typeof createGameStore>) {
     const combat = store.getState().combat!;
@@ -171,5 +196,86 @@ describe('Phase 62 — quest-branch wire-in on outcome === friendship', () => {
         expect(store.getState().flags).toContain('befriended-mournful-gull');
         // The dialogue runtime reads ctx.flags = state.flags downstream;
         // the visibleChoices behaviour is pinned by the test above.
+    });
+});
+
+describe('Phase 68 — Coastal Tyrant BefriendabilityConfig integration', () => {
+    it('befriend succeeds only when hpGate, requiredStances, and roundsThreshold all pass', () => {
+        const store = createGameStore(nullAdapter);
+        store.getState().startCombat(CoastalTyrant);
+        const combat = store.getState().combat!;
+        // Drive the predicate axes: 5 both-defend rounds; enemy at 30% HP;
+        // at least one heart-stance round in the log.
+        store.getState().updateCombat({
+            ...combat,
+            friendshipCounter: 5,
+            log: [logEntry(1, 'heart'), logEntry(2, 'body'), logEntry(3, 'mind')],
+            enemy: {
+                ...combat.enemy,
+                health: Math.floor(combat.enemy.maxHealth * 0.3),
+            },
+        });
+
+        const report = store.getState().endCombat();
+        expect(report.outcome).toBe('friendship');
+    });
+
+    it('does NOT befriend when enemy is at full HP (hpGate fails) even at the rounds threshold', () => {
+        const store = createGameStore(nullAdapter);
+        store.getState().startCombat(CoastalTyrant);
+        const combat = store.getState().combat!;
+        store.getState().updateCombat({
+            ...combat,
+            friendshipCounter: 5,
+            log: [logEntry(1, 'heart')],
+            // health stays at maxHealth — hpGate (40%) blocks eligibility.
+        });
+
+        const report = store.getState().endCombat();
+        expect(report.outcome).not.toBe('friendship');
+        // Falls through to 'flee' per store.endCombat's fall-through branch
+        // (player alive, enemy alive, friendship ineligible).
+        expect(report.outcome).toBe('flee');
+    });
+
+    it('does NOT befriend when the player never used the heart stance', () => {
+        const store = createGameStore(nullAdapter);
+        store.getState().startCombat(CoastalTyrant);
+        const combat = store.getState().combat!;
+        store.getState().updateCombat({
+            ...combat,
+            friendshipCounter: 5,
+            // body / mind only — no heart stance in the log.
+            log: [logEntry(1, 'body'), logEntry(2, 'mind')],
+            enemy: {
+                ...combat.enemy,
+                health: Math.floor(combat.enemy.maxHealth * 0.3),
+            },
+        });
+
+        const report = store.getState().endCombat();
+        expect(report.outcome).not.toBe('friendship');
+    });
+
+    it('does NOT befriend when counter is short of the per-enemy roundsThreshold (5)', () => {
+        const store = createGameStore(nullAdapter);
+        store.getState().startCombat(CoastalTyrant);
+        const combat = store.getState().combat!;
+        // Default FRIENDSHIP_COUNTER_MAX is 3 — but Coastal Tyrant overrides
+        // to 5. At counter = 4 a Phase-36 enemy would have already triggered
+        // friendship; Coastal Tyrant requires counter >= 5.
+        store.getState().updateCombat({
+            ...combat,
+            friendshipCounter: 4,
+            log: [logEntry(1, 'heart')],
+            enemy: {
+                ...combat.enemy,
+                health: Math.floor(combat.enemy.maxHealth * 0.3),
+            },
+        });
+
+        const report = store.getState().endCombat();
+        expect(report.outcome).not.toBe('friendship');
+        expect(FRIENDSHIP_COUNTER_MAX).toBeLessThan(5);
     });
 });
