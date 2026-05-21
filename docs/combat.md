@@ -172,7 +172,10 @@ Resist stat: `target.baseStats[resistedBy]` (via `getResistStat()` in `Combat/st
 
 Both combatants defending on the same round increments `friendshipCounter`.
 Reaching `FRIENDSHIP_COUNTER_MAX` (3) ends combat with the `friendship`
-outcome.
+outcome — UNLESS the enemy carries a per-enemy `befriendabilityConfig`
+override (Phase 68), in which case ALL of its named predicates must pass
+simultaneously before friendship triggers. See § "Per-enemy predicate
+(Phase 68 — `BefriendabilityConfig`)" below for the override semantics.
 
 When the Game store's `endCombat()` resolves a friendship exit (Phase 36),
 the returned `CombatEndReport` carries:
@@ -218,6 +221,52 @@ Phase 36 base only (the report's `friendshipReward` field is
 `undefined`). See `docs/enemy.md` § "Befriendable enemies (Phase 60)"
 for authoring guidance.
 
+### Per-enemy predicate (Phase 68 — `BefriendabilityConfig`)
+
+`Enemy.befriendabilityConfig?: BefriendabilityConfig` overrides the
+Phase 36 friendship-eligibility predicate per enemy. When absent, the
+Phase 36 mechanic stays unchanged. When present, ALL of its named
+fields AND-compose; eligibility requires every named predicate to pass
+simultaneously. Within a single list-valued predicate, the match is
+existential (at least one element).
+
+| Field | Semantics |
+|---|---|
+| `roundsThreshold?: number` | Per-enemy override of `FRIENDSHIP_COUNTER_MAX`. Defaults to the global value (3) when absent on a config that sets other fields. |
+| `hpGate?: { belowPct: number }` | Enemy HP fraction must be ≤ `belowPct` at the eligibility check. Pure snapshot — healing back above the threshold un-qualifies. Range [0, 1]. |
+| `requiredStances?: Stance[]` | Player must have used at least one of the named stances during combat (existential). Derived from `state.log[].playerAction.stance`. Empty array = no requirement. |
+| `requiredSkillUse?: string[]` | Player must have cast at least one of the named skill IDs during combat (existential). Derived from `state.log[].playerAction` entries with `action === 'skill'`. Empty array = no requirement. |
+| `defaultFallback?: 'both-defend-cap'` | Explicit "fall through to Phase 36". When set, other fields are ignored for THIS enemy; eligibility uses the global counter cap exactly. |
+
+The engine helper that evaluates the predicate is
+`isFriendshipEligible(state: CombatState): boolean` in
+`src/Combat/index.ts`. It is **not** on the public barrel — engine
+consumers read combat-end state through `determineCombatEnd` /
+`isCombatOngoing`, both of which call it so the two predicates stay in
+lockstep.
+
+The counter still increments freely on both-defend rounds (Phase 36
+unchanged); friendship triggers only when ALL config predicates pass
+together. A player can "bank" defends past `roundsThreshold` and have
+friendship trigger later (e.g. once `hpGate` clears via damage progress).
+
+Coastal Tyrant is the first boss-tier authored config (Phase 68):
+
+```typescript
+// CoastalTyrant (boss; alignment faith-pessimistic-transcendent)
+befriendabilityConfig: {
+    hpGate: { belowPct: 0.4 },
+    requiredStances: ['heart'],
+    roundsThreshold: 5,
+},
+```
+
+The fallen magistrate-priest opens his friendship arc only after he's
+been brought low (HP ≤ 40%), the player has shown empathy at least
+once (heart stance), and 5 both-defend rounds have passed. The
+authored `friendshipReward` content (multi-paragraph narrative + items)
+is deferred to the boss-tier befriendable-enemy follow-up phase.
+
 ## Combat End Conditions
 
 `determineCombatEnd(state)` returns:
@@ -226,7 +275,7 @@ for authoring guidance.
 |--------|-----------|
 | `'player'` | Enemy HP ≤ 0 |
 | `'ko'` | Player HP ≤ 0 |
-| `'friendship'` | `friendshipCounter >= FRIENDSHIP_COUNTER_MAX` |
+| `'friendship'` | `isFriendshipEligible(state)` — Phase 36 cap by default, overridden by `enemy.befriendabilityConfig` per Phase 68 |
 | `'ongoing'` | None of the above |
 
 ## Battle Log

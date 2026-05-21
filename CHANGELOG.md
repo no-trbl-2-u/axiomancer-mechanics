@@ -14,13 +14,40 @@ deep imports are part of the supported surface.
 
 Phase 58 (Spec 14 retroactive conversation-loop spec), Phase 59
 (zero-residual docs gap audit), Phase 60 (befriendable-enemy content
-arc — the only public-surface addition), plus 7 iterate fixes
-addressing critique passes 24 / 25. Includes a canonical
-**re-grounding migration guide** for consumers (e.g.
-`axiomancer-mobile`) hitting "type X has no property Y" errors after
-a bump — see the Migration notes below.
+arc), Phase 66 (Tier 2 synergy skills), Phase 68 (per-enemy
+`BefriendabilityConfig` predicate), plus iterate fixes addressing
+critique passes 24-29. Includes a canonical **re-grounding migration
+guide** for consumers (e.g. `axiomancer-mobile`) hitting "type X has
+no property Y" errors after a bump — see the Migration notes below.
 
 ### Added
+- **Per-enemy befriend predicate (Phase 68 — `BefriendabilityConfig`).**
+  New public type `BefriendabilityConfig` (`{ roundsThreshold?,
+  hpGate?, requiredStances?, requiredSkillUse?, defaultFallback? }`)
+  + optional `Enemy.befriendabilityConfig?: BefriendabilityConfig`
+  field. When absent the Phase 36 mechanic
+  (`friendshipCounter >= FRIENDSHIP_COUNTER_MAX`) is unchanged; when
+  present, all named predicates AND-compose to gate the friendship
+  outcome. Within a list-valued predicate (`requiredStances`,
+  `requiredSkillUse`) the match is existential — at least one element
+  must appear in the player's combat log. New internal helper
+  `isFriendshipEligible` in `src/Combat/index.ts` is the single
+  decision point; `determineCombatEnd` and `isCombatOngoing` both call
+  it so the two predicates stay in lockstep (per Phase 68 D11 the
+  helper is NOT on the public barrel — engine consumers read
+  combat-end state through `determineCombatEnd`). Counter still
+  increments freely on both-defend rounds; friendship triggers only
+  when all predicates pass together, so a player can "bank" defends
+  past `roundsThreshold` and have friendship trigger later (e.g. once
+  `hpGate` clears via damage progress). See
+  [`docs/combat.md` § "Per-enemy predicate (Phase 68 — `BefriendabilityConfig`)"](docs/combat.md#per-enemy-predicate-phase-68--befriendabilityconfig)
+  for the override semantics. Phase 68 commits: `99a0cc9` (Unit 1 —
+  engine primitive + hermetic e2e) + `73105dc` (Unit 2 — Coastal
+  Tyrant boss-tier config + befriend.engine integration cases) +
+  Unit 3 (this commit — docs + bearings + CHANGELOG).
+  `scripts/public-surface.expected.json` grows from 161 → 162 types
+  (runtime exports unchanged at 233).
+
 - **Tier 2 synergy skills (Phase 66).** New optional `Skill.synergy?:
   SkillSynergy` clause + matching `SynergyPredicate` interface (both
   on the public barrel; fixture grew 159 → 161 types). Synergy is
@@ -105,6 +132,18 @@ a bump — see the Migration notes below.
   No fixture change (the field is on an existing exported type).
 
 ### Changed
+- **CoastalTyrant gains a Phase 68 befriend predicate.** First boss-tier
+  authored `BefriendabilityConfig` (`hpGate: { belowPct: 0.4 }`,
+  `requiredStances: ['heart']`, `roundsThreshold: 5`) — the
+  magistrate-fallen-priest's friendship arc opens only after he's been
+  brought low, the player has shown empathy at least once, and 5
+  both-defend rounds have passed. Existing CoastalTyrant content
+  (`philosophicalAlignment`, `procUnlocks`, `loot`, `skills`) is
+  unchanged; the new field is purely additive. The matching
+  `friendshipReward` content (multi-paragraph narrative + items + maybe
+  `alignmentDelta`) is deferred to the boss-tier befriendable-enemy
+  follow-up phase.
+
 - **Fishing-village starting map expanded (Phase 65).** The canonical
   starting map grew from a linear 10-node chain along the dockside to
   a 25-node branching grid with three sub-areas — Harbor District
