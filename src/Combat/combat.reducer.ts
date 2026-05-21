@@ -102,7 +102,27 @@ export function appendLog(state: CombatState, entry: BattleLogEntry): CombatStat
     return { ...state, log: [...state.log, entry] };
 }
 
-/** Increments the friendship counter (called when both combatants defend). */
+/**
+ * Increments the friendship counter on a `CombatState`.
+ *
+ * **Two paths to the same state mutation, by design.** This reducer is the
+ * canonical public-API entry point for external consumers (UIs, alternate
+ * drivers) that want to drive a friendship-counter shift through the
+ * standard `state → state` reducer surface. **The engine's own combat
+ * resolver does NOT call this** — `src/Combat/phases/scenario.ts`
+ * (`runScenarioPhase`) increments a local `friendshipCounter` variable
+ * inline alongside an events.push emission during the both-defend branch.
+ * The local-increment pattern is appropriate inside the resolver because
+ * it operates on per-round intermediates (player / enemy / friendshipCounter /
+ * combatResources) that are folded into the returned `CombatState` at the
+ * round's end; constructing + tearing down a full state for the reducer
+ * would add overhead for what's a single integer bump.
+ *
+ * If you're integrating outside the resolver — driving the counter from
+ * a UI dispatch, building a tooling shim, or testing the state-shape
+ * invariant — use this reducer. If you're modifying the round-resolution
+ * pipeline, follow the inline pattern in `scenario.ts:264-270`.
+ */
 export function incrementFriendship(state: CombatState): CombatState {
     return { ...state, friendshipCounter: state.friendshipCounter + 1 };
 }
