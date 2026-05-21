@@ -145,6 +145,13 @@ export type SkillPhaseEvent =
         skillId: string; cost: ResourceCost }
     | { phase: 'skill'; kind: 'philosophical-generated';
         skillId: string; category: SkillCategory }
+    | { phase: 'skill'; kind: 'synergy-fired';
+        skillId: string;
+        bonusDamage: number;
+        consumedEffectIds: { caster: string[]; target: string[] };
+        consumedAllResources: boolean;
+        consumedTokens: number;
+        clearedAllEffects: boolean }
     /**
      * The player chose `action: 'skill'` but either the skill is missing
      * from the lookup or `canUseSkill` failed. The resolver does NOT execute

@@ -12,6 +12,7 @@ export type {
     Skill, SkillCategory, SkillsStatType, SkillTier, SkillTarget,
     ResourceCost, CombatResources,
     SkillLearningRequirement, SkillCombatEffects, SkillSpecialMechanic,
+    SkillSynergy, SynergyPredicate,
 } from './types';
 
 export {

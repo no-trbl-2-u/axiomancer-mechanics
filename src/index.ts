@@ -129,6 +129,7 @@ export type {
     ResourceCost, CombatResources,
     SkillLearningRequirement, SkillCombatEffects,
     BasicActionOutcome, SkillEvent, SkillResolution, SkillLookup,
+    SkillSynergy, SynergyPredicate,
 } from './Skills';
 export {
     generateBasicActionResources, generatePhilosophicalResource,

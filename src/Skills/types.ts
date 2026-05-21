@@ -138,6 +138,73 @@ export type SkillSpecialMechanic =
     | { kind: 'bypass_defense' };
 
 /**
+ * Phase 66 — synergy predicate. The matched ActiveEffect on `on`
+ * satisfies the predicate when its `effectId` matches AND its
+ * `intensity` >= `intensityMin` (if set) AND its `remainingDuration`
+ * >= `durationMin` (if set).
+ */
+export interface SynergyPredicate {
+    effectId: string;
+    on: 'caster' | 'target';
+    intensityMin?: number;
+    durationMin?: number;
+}
+
+/**
+ * Phase 66 — Tier 2 synergy clause. Optional payload on `Skill` that
+ * rewards stance-switching by conditioning damage / effect application
+ * on the presence of an ActiveEffect already on the field (or, for
+ * Resonance Detonation, on the unconditional cast).
+ *
+ * Synergy damage (added to the skill's base damage; doesn't replace):
+ * ```
+ * synergyDamage = bonusDamage
+ *               + matched.intensity            × intensityDamageMul
+ *               + matched.remainingDuration    × durationDamageMul
+ *               + consumedTokens               × resourceTokenDamageMul
+ * ```
+ *
+ * Side effects (in resolution order):
+ *   1. `consumeAllResources` zeros the caster's `combatResources` pool
+ *      and captures `consumedTokens = body + mind + heart` for the
+ *      damage formula.
+ *   2. Synergy damage applies to the target.
+ *   3. `consumeMatched` clears the matched ActiveEffect on the
+ *      predicate's `on` side.
+ *   4. `clearAllEffectsBothSides` clears all ActiveEffects on both
+ *      combatants (Phase 60 set-bonus passives included — design
+ *      intent per Phase 66 D9).
+ *   5. `applyEffectOnFire` applies a fresh effect (typically used to
+ *      "swap type" — body Thorns → heart Bat-Swarm-Thoughtform).
+ *
+ * Synergy runs in `executeSkill` AFTER `calculateSkillDamage` but
+ * BEFORE the skill's own `combatEffects` apply, so consumed effects
+ * don't get post-fire effects layered on top.
+ */
+export interface SkillSynergy {
+    /** Optional predicate. If absent, the synergy fires unconditionally
+     *  when the skill is cast (used by Resonance Detonation per D6). */
+    predicate?: SynergyPredicate;
+    /** Flat bonus damage on match. */
+    bonusDamage?: number;
+    /** Multiplier × matched effect's `remainingDuration`. */
+    durationDamageMul?: number;
+    /** Multiplier × matched effect's `intensity`. */
+    intensityDamageMul?: number;
+    /** Multiplier × total consumed combat-resource tokens (only fires
+     *  when `consumeAllResources` is true). */
+    resourceTokenDamageMul?: number;
+    /** Clear the matched effect from the predicate's `on` side. */
+    consumeMatched?: boolean;
+    /** Zero the caster's full `combatResources` pool. */
+    consumeAllResources?: boolean;
+    /** Clear all ActiveEffects from both combatants. */
+    clearAllEffectsBothSides?: boolean;
+    /** Apply an additional effect on the caster when synergy fires. */
+    applyEffectOnFire?: SkillCombatEffects;
+}
+
+/**
  * Skill entity — an ability that can be learned, equipped, and used in combat.
  *
  * @property id              - Unique identifier for this skill.
@@ -185,4 +252,10 @@ export interface Skill {
      * philosophy-sourced skills. See `docs/philosophy.md`.
      */
     sourcedFromCell?: string;
+    /**
+     * Phase 66 — Tier 2 synergy clause. When present, the skill engine
+     * evaluates the synergy after `calculateSkillDamage` and before
+     * applying `combatEffects` / `specialMechanics`. See {@link SkillSynergy}.
+     */
+    synergy?: SkillSynergy;
 }

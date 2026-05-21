@@ -741,5 +741,13 @@ function toRoundEvent(ev: SkillEvent): SkillPhaseEvent {
         case 'philosophical-generated':
             return { phase: 'skill', kind: 'philosophical-generated',
                      skillId: ev.skillId, category: ev.category };
+        case 'synergy-fired':
+            return { phase: 'skill', kind: 'synergy-fired',
+                     skillId: ev.skillId,
+                     bonusDamage: ev.bonusDamage,
+                     consumedEffectIds: ev.consumedEffectIds,
+                     consumedAllResources: ev.consumedAllResources,
+                     consumedTokens: ev.consumedTokens,
+                     clearedAllEffects: ev.clearedAllEffects };
     }
 }

@@ -295,7 +295,20 @@ export type SkillEvent =
         cost: ResourceCost }
     | { kind: 'philosophical-generated';
         skillId: string;
-        category: SkillCategory };
+        category: SkillCategory }
+    | { kind: 'synergy-fired';
+        skillId: string;
+        /** Synergy damage added on top of the skill's base damage.
+         *  Already applied to the target by the time this event fires. */
+        bonusDamage: number;
+        /** Effect ids consumed from caster/target by `consumeMatched`. */
+        consumedEffectIds: { caster: string[]; target: string[] };
+        /** True if `consumeAllResources` zeroed the pool. */
+        consumedAllResources: boolean;
+        /** Total tokens consumed (sum of body+mind+heart before the zero). */
+        consumedTokens: number;
+        /** True if `clearAllEffectsBothSides` swept both sides. */
+        clearedAllEffects: boolean };
 
 /** Result of `executeSkill`. */
 export interface SkillResolution {
@@ -374,6 +387,96 @@ export function executeSkill(
 
     const damage = calculateSkillDamage(workingCaster, skill);
 
+    // Phase 66 — synergy clause. Evaluate predicate against the
+    // pre-damage effects pool (so the matched effect's intensity /
+    // duration still reflects the field-state the caster saw); apply
+    // synergy damage on top of the base damage; then run any
+    // side-effects (consume matched / consume all resources / clear
+    // both sides / apply effect on fire). Per D7, this happens before
+    // the skill's own `combatEffects` apply.
+    let synergyForceResources: CombatResources | null = null;
+    if (skill.synergy) {
+        const syn = skill.synergy;
+        const pool = syn.predicate?.on === 'caster' ? workingCaster.effects : workingTarget.effects;
+        const matched = syn.predicate
+            ? pool.find(e =>
+                e.effectId === syn.predicate!.effectId
+                && (syn.predicate!.intensityMin === undefined || (e.intensity ?? 0) >= syn.predicate!.intensityMin)
+                && (syn.predicate!.durationMin === undefined || (e.remainingDuration ?? 0) >= syn.predicate!.durationMin)
+            ) ?? null
+            : null;
+        const fired = !syn.predicate || matched !== null;
+        if (fired) {
+            const consumedTokens = syn.consumeAllResources
+                ? state.combatResources.body + state.combatResources.mind + state.combatResources.heart
+                : 0;
+            const bonusDamage =
+                (syn.bonusDamage ?? 0)
+                + (matched ? (matched.intensity ?? 0) * (syn.intensityDamageMul ?? 0) : 0)
+                + (matched ? (matched.remainingDuration ?? 0) * (syn.durationDamageMul ?? 0) : 0)
+                + consumedTokens * (syn.resourceTokenDamageMul ?? 0);
+
+            // Apply synergy damage to the same side as the skill's
+            // primary damage (enemy-targeted skills hit the enemy;
+            // self-targeted skills heal the caster).
+            if (bonusDamage > 0) {
+                if (skill.targetType === 'enemy') {
+                    workingTarget = applyDamage(workingTarget, bonusDamage);
+                } else {
+                    workingCaster = heal(workingCaster, bonusDamage);
+                }
+            }
+
+            // consumeMatched — clear the matched ActiveEffect.
+            const consumedEffectIds: { caster: string[]; target: string[] } = { caster: [], target: [] };
+            if (syn.consumeMatched && matched && syn.predicate) {
+                if (syn.predicate.on === 'caster') {
+                    workingCaster = { ...workingCaster, effects: workingCaster.effects.filter(e => e !== matched) };
+                    consumedEffectIds.caster.push(matched.effectId);
+                } else {
+                    workingTarget = { ...workingTarget, effects: workingTarget.effects.filter(e => e !== matched) };
+                    consumedEffectIds.target.push(matched.effectId);
+                }
+            }
+
+            // clearAllEffectsBothSides — clear every ActiveEffect on
+            // both combatants. Per D9 this includes Phase 60 set-bonus
+            // passives (sourceId: 'set-bonus', remainingDuration: -1).
+            if (syn.clearAllEffectsBothSides) {
+                workingCaster = { ...workingCaster, effects: [] };
+                workingTarget = { ...workingTarget, effects: [] };
+            }
+
+            // applyEffectOnFire — apply the additional effect on the
+            // caster. Uses the same applySkillEffect path the rest of
+            // the engine uses (so resist / rebound / stacking semantics
+            // are honoured).
+            if (syn.applyEffectOnFire) {
+                const result = applySkillEffect(
+                    syn.applyEffectOnFire, skill, workingCaster, workingTarget, state.round,
+                );
+                workingCaster = result.caster;
+                workingTarget = result.target;
+                events.push(...result.events);
+            }
+
+            // consumeAllResources — zero out the pool. Tracked locally
+            // so the final `spendResources` skips re-charging on cost.
+            if (syn.consumeAllResources) {
+                synergyForceResources = { body: 0, mind: 0, heart: 0, fallacy: 0, paradox: 0 };
+            }
+
+            events.push({
+                kind: 'synergy-fired', skillId,
+                bonusDamage,
+                consumedEffectIds,
+                consumedAllResources: syn.consumeAllResources ?? false,
+                consumedTokens,
+                clearedAllEffects: syn.clearAllEffectsBothSides ?? false,
+            });
+        }
+    }
+
     if (damage > 0) {
         if (skill.targetType === 'enemy') {
             const hpBefore = workingTarget.health;
@@ -411,10 +514,13 @@ export function executeSkill(
     }
 
     const genCategory = philosophicalCategoryFor(skill);
-    const nextResources = generatePhilosophicalResource(
-        spendResources(state.combatResources, skill.resourceCost),
-        genCategory,
-    );
+    // Phase 66 — when synergy's `consumeAllResources` fired, the pool
+    // is zeroed (no `spendResources` subtract needed). The philosophical-
+    // category generation still fires per the existing skill-cost
+    // economy.
+    const baseAfterCost = synergyForceResources
+        ?? spendResources(state.combatResources, skill.resourceCost);
+    const nextResources = generatePhilosophicalResource(baseAfterCost, genCategory);
     events.push({ kind: 'resources-spent', skillId, cost: skill.resourceCost });
     events.push({ kind: 'philosophical-generated', skillId, category: genCategory });
 
