@@ -128,3 +128,75 @@ returns a sensible enemy.
 - Boss phase scripting beyond "deterministic stance pattern" — defer if Q1
   picks the simple boss logic.
 - Procedural enemy generation (random stats) — content-author-driven only.
+
+## Post-spec engine extensions
+
+Six post-spec phases extended the `Enemy` shape and the AI pipeline.
+All additions are additive optional fields on the `Enemy` interface;
+existing consumers continue to work.
+
+### Phase 45 — `Enemy.philosophicalAlignment?` + outlook-driven AI bias
+
+Adds optional `philosophicalAlignment?: PhilosophicalAlignment` to
+`Enemy`. When set, `decideEnemyAction` applies an outlook-driven bias
+on top of the per-strategy decision: pessimistic enemies sometimes
+defend when they would attack; optimistic enemies sometimes attack
+when they would defend. Bias fires at `ALIGNMENT_FLIP_CHANCE`
+(0.35, colocated in `src/Enemy/enemy.logic.ts`). Legacy enemies without
+a pin behave exactly as before. See `docs/enemy.md` § "Alignment-driven
+AI tuning".
+
+### Phase 49 — Enemy skill caster path
+
+Promotes `Enemy.skills?: Skill[]` from "typed but unused" (current-state
+bullet, line 30) to a live AI branch. `decideEnemyAction` can now
+return a `'skill'` action; the resolver routes through the same
+`executeSkill` entry point used by the player. Skill choice is keyed
+off `philosophicalAspect` matching the chosen stance with a no-skill-
+rotation short-circuit when the enemy carries no eligible skills. See
+`docs/enemy.md` § "Enemy skill caster path (Phase 49)".
+
+### Phase 57 — Enemy skill rotation content sweep
+
+7 of 16 registry enemies now carry authored `skills: [skill('<id>')]`
+entries. Boss-tier (Coastal Tyrant, The Disagreement) + several
+elite / normal tiers get one Tier 3 fallacy-as-spell each, picked to
+match each enemy's `philosophicalAlignment` cell archetype. Pure
+content; no engine change.
+
+### Phase 60 — `Enemy.friendshipReward?` (befriendable-enemy content arc)
+
+Adds optional `friendshipReward?: FriendshipReward` to `Enemy`. When
+combat resolves via `outcome === 'friendship'`, `store.endCombat()`
+threads per-enemy items / xpBonus / narrative through the report.
+Two enemies ship authored content today (MournfulGull +
+HollowEyedBeggar). See `docs/enemy.md` § "Befriendable enemies
+(Phase 60)" and `specs/05` for the Item type pointer.
+
+### Phase 62 — `FriendshipReward.flagSet?: string`
+
+Extends the Phase 60 `FriendshipReward` shape with an optional
+`flagSet?: string` — when present, the END_COMBAT reducer appends the
+flag to `state.flags` on the friendship outcome (de-duped). Reuses the
+existing `DialogueChoice.requires.flag` machinery; no new gate
+primitive. Convention: `befriended-<enemy-id-stem>`. First authored
+use: `MournfulGull.friendshipReward.flagSet:
+'befriended-mournful-gull'` unlocks a flag-gated branch on the
+Coastal Beggar's `greet` node.
+
+### Phase 68 — `Enemy.befriendabilityConfig?: BefriendabilityConfig`
+
+Per-enemy override of the Phase 36 friendship-eligibility predicate.
+When absent, the global `friendshipCounter >= FRIENDSHIP_COUNTER_MAX`
+mechanic stays unchanged; when present, the five-axis predicate set
+AND-composes (`roundsThreshold` / `hpGate { belowPct }` /
+`requiredStances[]` / `requiredSkillUse[]` / `defaultFallback`). New
+internal helper `isFriendshipEligible(state)` in
+`src/Combat/index.ts` is the single decision point;
+`determineCombatEnd` + `isCombatOngoing` both call it so the two
+predicates stay in lockstep. Helper is intentionally NOT exported on
+the public barrel per Phase 68 D11. First boss-tier authored config:
+CoastalTyrant (`hpGate { belowPct: 0.4 }`, `requiredStances: ['heart']`,
+`roundsThreshold: 5`). See `docs/combat.md` § "Per-enemy predicate
+(Phase 68 — BefriendabilityConfig)" + `specs/02` § "Post-spec engine
+extensions" for the engine-side description.
