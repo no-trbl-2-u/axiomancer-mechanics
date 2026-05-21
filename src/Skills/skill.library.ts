@@ -353,6 +353,135 @@ const appealToFear: Skill = {
     sourcedFromCell: 'mid-pessimistic-transcendent',
 };
 
+// ─── Tier 2 synergy (Phase 66) — 5 skills rewarding stance-switching ────────
+//
+// Each skill carries a `synergy` clause evaluated after damage and before
+// combatEffects. Predicate misses → only the basePower fires. Match → the
+// synergy bonus / consumption / type-swap / detonation runs. See
+// `docs/skills.md` § "Tier 2 synergy (Phase 66)" for the schema.
+
+const resonanceBleed: Skill = {
+    id: 'resonance-bleed',
+    name: 'Resonance Bleed',
+    category: 'paradox',
+    philosophicalAspect: 'heart',
+    description:
+        'A heart-pitched lyric over the body\'s open wound. The bleeding ' +
+        'finds the lyric and the lyric finds your enemy, and the two ' +
+        'agree that it has further to go.',
+    tier: 2,
+    resourceCost: { heart: 2, mind: 2 },
+    targetType: 'enemy',
+    basePower: 4,
+    scalingStat: 'heart',
+    learningRequirement: { level: 5 },
+    synergy: {
+        predicate: { effectId: 'debuff_bleed', on: 'target', durationMin: 2 },
+        bonusDamage: 5,
+        durationDamageMul: 3,
+    },
+};
+
+const intensityFeedback: Skill = {
+    id: 'intensity-feedback',
+    name: 'Intensity Feedback',
+    category: 'paradox',
+    philosophicalAspect: 'mind',
+    description:
+        'You take the certainty you have been holding and let it ring back ' +
+        'into them. The louder it was for you, the louder it lands for them.',
+    tier: 2,
+    resourceCost: { mind: 2, heart: 2 },
+    targetType: 'enemy',
+    basePower: 5,
+    scalingStat: 'mind',
+    learningRequirement: { level: 5 },
+    synergy: {
+        predicate: { effectId: 'buff_critical_rate_up', on: 'caster', intensityMin: 1 },
+        bonusDamage: 4,
+        intensityDamageMul: 5,
+    },
+};
+
+const batSwarmThoughtform: Skill = {
+    id: 'bat-swarm-thoughtform',
+    name: 'Bat-Swarm Thoughtform',
+    category: 'paradox',
+    philosophicalAspect: 'heart',
+    description:
+        'Your defensive thorns lift off your skin in a heart-shape and ' +
+        'become a swarm of small attentive things. They feed on the ' +
+        'distance they remember as your edge.',
+    tier: 2,
+    resourceCost: { heart: 2, body: 2 },
+    targetType: 'self',
+    basePower: 0,
+    scalingStat: 'heart',
+    learningRequirement: { level: 5 },
+    synergy: {
+        // Body Thorns proxy — tier1_body_defend ships reflectDamage: 1 and
+        // is the closest existing buff to the braindump's "Body Thorns".
+        predicate: { effectId: 'tier1_body_defend', on: 'caster', durationMin: 5 },
+        consumeMatched: true,
+        applyEffectOnFire: {
+            effectId: 'buff_max_hp_up',
+            appliedTo: 'self',
+            intensity: 3,
+            duration: 5,
+        },
+    },
+};
+
+const resonanceBurst: Skill = {
+    id: 'resonance-burst',
+    name: 'Resonance Burst',
+    category: 'paradox',
+    philosophicalAspect: 'mind',
+    description:
+        'Burn the lattice; spend it. You collapse the confusion you placed ' +
+        'in them and the collapse itself is the strike — proportional to ' +
+        'how long they have already been losing their footing.',
+    tier: 2,
+    resourceCost: { mind: 2, heart: 1 },
+    targetType: 'enemy',
+    basePower: 3,
+    scalingStat: 'mind',
+    learningRequirement: { level: 5 },
+    synergy: {
+        predicate: { effectId: 'debuff_confusion', on: 'target', durationMin: 1 },
+        bonusDamage: 3,
+        intensityDamageMul: 2,
+        durationDamageMul: 3,
+        consumeMatched: true,
+    },
+};
+
+const resonanceDetonation: Skill = {
+    id: 'resonance-detonation',
+    name: 'Resonance Detonation',
+    category: 'paradox',
+    philosophicalAspect: 'heart',
+    description:
+        'You spend the whole shape you brought into the fight — every ' +
+        'token, every binding, every breath you were saving for after. ' +
+        'The release is the answer; what was on the field is no longer ' +
+        'on the field. Resetting the fight back to its first round in ' +
+        'exchange for one apex truth.',
+    tier: 2,
+    resourceCost: { heart: 3, body: 3, mind: 3 },
+    targetType: 'enemy',
+    basePower: 0,
+    scalingStat: 'heart',
+    learningRequirement: { level: 5 },
+    synergy: {
+        // No predicate — unconditional fire on cast (D6).
+        bonusDamage: 25,
+        resourceTokenDamageMul: 10,
+        consumeAllResources: true,
+        clearAllEffectsBothSides: true,
+    },
+};
+
 // ─── Library Export ──────────────────────────────────────────────────────────
 
 /**
@@ -372,6 +501,12 @@ export const skillLibrary: Skill[] = [
     mobAppeal,
     undistributedMiddle,
     eternalRegress,
+    // Tier 2 — Phase 66 synergy skills (5)
+    resonanceBleed,
+    intensityFeedback,
+    batSwarmThoughtform,
+    resonanceBurst,
+    resonanceDetonation,
     // Tier 3
     soritesCascade,
     strawGiant,
