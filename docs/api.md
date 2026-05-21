@@ -100,13 +100,13 @@ otherwise.
 'flee'`. Phase 36 added `'friendship'` for the friendship-counter exit
 — half XP grant + full loot + `+1` moral meter.
 
-Phase 60 added `CombatEndReport.friendshipReward?: { narrative?:
-string }` — present only on `outcome === 'friendship'` when the
-befriended enemy carries an authored `Enemy.friendshipReward?:
-FriendshipReward`. Per-enemy `items` and `xpBonus` are already
-applied to `report.loot` / `report.xpGained` by the time this
-surfaces; `narrative` is the field consumers render for the
-after-action UI.
+**Befriendable-enemy content (Phase 60 + Phase 62) — Beta.** Phase 60
+added `CombatEndReport.friendshipReward?: { narrative?: string }` —
+present only on `outcome === 'friendship'` when the befriended enemy
+carries an authored `Enemy.friendshipReward?: FriendshipReward`.
+Per-enemy `items` and `xpBonus` are already applied to `report.loot` /
+`report.xpGained` by the time this surfaces; `narrative` is the field
+consumers render for the after-action UI.
 
 Phase 62 extended `FriendshipReward` with `flagSet?: string` — when
 present, the END_COMBAT reducer appends the flag to `state.flags`
@@ -121,7 +121,7 @@ See `docs/combat.md` § "Friendship Path" + § "Befriendable-enemy
 content (Phase 60)" and `docs/enemy.md` § "Befriendable enemies
 (Phase 60)".
 
-**Per-enemy befriend predicate (Phase 68).** Optional
+**Per-enemy befriend predicate (Phase 68) — Beta.** Optional
 `Enemy.befriendabilityConfig?: BefriendabilityConfig` overrides the
 Phase 36 friendship-eligibility check on a per-enemy basis. When
 absent, the Phase 36 mechanic (`friendshipCounter >=
