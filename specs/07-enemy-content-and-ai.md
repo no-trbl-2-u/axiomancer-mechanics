@@ -200,3 +200,25 @@ CoastalTyrant (`hpGate { belowPct: 0.4 }`, `requiredStances: ['heart']`,
 `roundsThreshold: 5`). See `docs/combat.md` § "Per-enemy predicate
 (Phase 68 — BefriendabilityConfig)" + `specs/02` § "Post-spec engine
 extensions" for the engine-side description.
+
+### Phase 69 — `FriendshipReward.alignmentDelta?: Partial<PhilosophicalAlignment>`
+
+Extends the Phase 60 `FriendshipReward` shape with an optional
+`alignmentDelta?: Partial<PhilosophicalAlignment>` field. When combat
+resolves via friendship, the END_COMBAT reducer threads the delta
+through the Phase 42 `applyAlignmentDelta` clamp helper onto
+`state.philosophicalAlignment` (each axis clamps to `[-100, +100]`;
+missing axes pass through). The post-clamp `PhilosophicalAlignment`
+surfaces on `CombatEndReport.friendshipReward.alignmentShift` for
+consumers to render (mirrors `applyDialogueChoice`'s
+`effects.philosophicalShift`). Phase 36's +1 `moralMeter` shift stays
+unchanged on top — friendship resolutions now optionally shift BOTH
+axes per encounter. Closes Spec 14 Q4 ("friendship-victory ↔
+alignment cube intersection"). Authoring band mirrors Phase 43's
+dialogue / map-event delta convention (±1..±5 per axis; ±10 reserved
+for endgame). First authored deltas: MournfulGull `{ outlook: +3 }`
+(wistful empathy); HollowEyedBeggar `{ scope: -3 }` (gravity pulls
+toward the relational individual). The Boss-tier befriendable enemy
+candidate's reward-content scope (currently in
+`plan/PHASE_CANDIDATES.md`) will consume the same primitive at
+authoring time.
