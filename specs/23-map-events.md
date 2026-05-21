@@ -218,6 +218,24 @@ export function markNodeConsumed(state: MapState, nodeId: NodeId): MapState;
       `764de7f`; field declaration + apply path in `src/World/MapEvents/types.ts`
       + `src/World/MapEvents/resolve-map-event.ts`; hermetic coverage in
       `src/Philosophy/e2e/alignment-authoring.engine.test.ts`.
+- [x] **Phase 65 fishing-village expansion (content delta).** The
+      canonical starting map grew from a linear 10-node chain along
+      the dockside to a 25-node branching grid with three sub-areas
+      (Harbor District `fv-11..fv-15`, Inland Streets `fv-16..fv-20`,
+      Cliff Path `fv-21..fv-25`). The original spine `fv-1..fv-10`
+      preserved verbatim along `y=0`; `connectedNodes` extended (not
+      replaced) so existing Phase 23 / 24 pool overrides, Phase 43
+      `alignmentDelta` authoring, Phase 62 flag-gated dialogue, and
+      Phase 63 observer wiring continue to function without
+      modification. 15 new `MapEventPool` consts registered in
+      `FISHING_VILLAGE_POOLS`; all 8 `MapEventKind` values now appear
+      multiple times across the 25 nodes. 6 of the 15 new pools carry
+      `alignmentDelta` annotations (~60% density mirroring Phase 43's
+      first-pass). Phase 60 befriendable enemies placed in the world
+      (MournfulGull at `fv-15` gull crag; HollowEyedBeggar at `fv-18`
+      back alley). — Phase 65 `4f3b9ec` (node structure) + `e8d3b90`
+      (pool authoring) + `e7da1d7` (hermetic e2e + docs); 7 cases in
+      `src/World/e2e/world.engine.test.ts` Phase 65 describe block.
 
 ## Out of scope
 
