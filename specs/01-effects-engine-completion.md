@@ -144,3 +144,45 @@ self-contained commit on the spec branch.
 - `processWorldEffectTick` for hazards while exploring — covered in Spec 08.
 - Skills inflicting effects via `combatEffects` — covered in Spec 04.
 - Equipment-driven `passiveEffects` — covered in Spec 05.
+
+## Post-spec engine extensions
+
+### Phase 44 — `Effect.sourcedFromCell?: string` + 3 fallacy effects
+
+Phase 44 (`87cfa7e` + `06f5ffe` + closing) extended the `Effect` type
+with an optional `sourcedFromCell?: string` field — a kebab-case
+`PhilosophicalAlignmentCell.id` that lets consumers trace a status
+effect back to its philosophical origin via
+`philosophicalAlignmentLibrary` (Spec 14 / Phase 42). Three new
+fallacy-themed status effects ship in the library with the field
+populated:
+
+| Effect ID | Source cell | Kind |
+|---|---|---|
+| `debuff_no_true_scotsman` | `logic-pessimistic-transcendent` | debuff |
+| `buff_special_pleading` | `faith-optimistic-individual` | buff |
+| `debuff_category_error` | `mid-pessimistic-transcendent` | debuff |
+
+The field is purely additive — legacy effects without a pin behave
+exactly as before. Cross-link table at `docs/effects.md` § "Philosophical
+fallacy payloads (Phase 44)" + `docs/skills.md` § "Philosophical fallacy
+payloads (Phase 44)" for the matching Tier 3 skill payloads that apply
+these effects.
+
+### Phase 48 — verified `statModifiers` + intensity scaling
+
+Phase 48 (`c892801` + closing) was an audit-honesty + coverage pass:
+the runtime aggregation surface this spec demands (`statModifiers`
+applied to `derivedStats` / `nonCombatStats` / `defenseDelta` with
+intensity scaling) was already shipped pre-loop at
+`src/Combat/effect-modifiers.ts` (`getActiveEffectModifiers` +
+`getEffectiveStats`). Phase 48 pinned the consumer-facing stat
+accessors with 8 hermetic cases at
+`src/Combat/e2e/effect-stat-modifiers.engine.test.ts` covering flat
+derived-stat buffs / debuffs, base-stat re-derivation, intensity
+scaling for buffs + debuffs, `defenseModifier` + `statModifiers.physicalDefense`
+stacking on `getDefenseStat`, and multiplier additive composition. The
+Knowledge-Gaps Q8 + Q9 rows flipped from "Queued for Phase 48" to
+"Resolved at Spec 01 (pre-loop). Verified at Phase 48 (`c892801`)."
+`docs/effects.md` "Runtime aggregation (pre-loop, verified at Phase 48)"
+subsection documents the aggregation pipeline.
