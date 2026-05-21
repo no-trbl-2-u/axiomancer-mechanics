@@ -14,17 +14,11 @@
 
 ## Pending
 
-### [LOW] CHANGELOG.md `[0.10.3]` Migration notes "post-v0.10.2 delta vs HEAD" pointer is historical-section-stale
-- pass: critique-30 (commit 9e38629)
-- area: docs
-- observation: After the Phase 68 Unit 3 / CHANGELOG-split commit `9e38629` flipped `[unreleased]` → `[0.10.3] — 2026-05-20`, the closing paragraph of `[0.10.3]` Migration notes (CHANGELOG.md lines 283-284) still reads: "For the post-v0.10.2 delta vs HEAD, the only change is the Phase 60 `FriendshipReward` type addition above — 233+158 → 233+159." This wording embeds inside the frozen `[0.10.3]` section but (a) references "HEAD" — which is now post-Phase-68; (b) the count `233+159` was already stale at v0.10.3 (Phase 66 took it to 233+161 before tag time); (c) phrasing should be "v0.10.2 → v0.10.3 delta" since the section is now historical.
-- evidence: `CHANGELOG.md:283-284`.
-- suggested_fix: re-anchor the paragraph as "For the v0.10.2 → v0.10.3 delta, the public-surface changes were the Phase 60 `FriendshipReward` type addition (158 → 159) plus the Phase 66 `SkillSynergy` + `SynergyPredicate` type additions (159 → 161). v0.10.3 shipped with 233 runtime exports + 161 type exports." Phase 68's `BefriendabilityConfig` (+1 type, 161 → 162) ships with the next bump and belongs in `[unreleased]` only (not in this historical paragraph).
-- source: critique
-
 ---
 
 ## Done
+
+- [x] **[LOW] CHANGELOG.md `[0.10.3]` Migration notes "post-v0.10.2 delta vs HEAD" pointer is historical-section-stale** — resolved at iterate commit `4aa6034` (2026-05-21). Re-anchored the paragraph per the suggested_fix: "post-v0.10.2 delta vs HEAD" → "v0.10.2 → v0.10.3 delta" (frozen-section framing); the single-change "Phase 60 `FriendshipReward` 158 → 159" phrasing extended to fold in the Phase 66 `SkillSynergy` + `SynergyPredicate` additions (159 → 161) — `v0.10.3` shipped with 233 + 161; closing sentence makes clear Phase 68's `BefriendabilityConfig` (+1 → 162) is a post-`v0.10.3` `[unreleased]` item, not part of `[0.10.3]`. Pure prose annotation change; 674/674 tests stay green; verify + deploy:check clean. Impact 2 × Ease 9 / 10 = 1.8. Source: critique-30 row 3 (commit `0520115`).
 
 - [x] **[LOW] `scripts/README.md` fixture-state annotation is stale (says 159 types; current is 162)** — resolved at iterate commit `cbc658b` (2026-05-21). Flipped "Current shape (HEAD, post-Phase-60): 233 + 159" to "post-Phase-68: 233 + 162". Expanded the surrounding per-version paragraph into a bullet list folding in the Phase 66 (+2: `SkillSynergy` + `SynergyPredicate`) and Phase 68 (+1: `BefriendabilityConfig`) additions plus the v0.10.3 tag state (233+161 — Phase 66 net) and the [unreleased] post-Phase-68 state (233+162). Pure prose annotation change; the fixture file itself unchanged. 674/674 tests stay green. Same shape as the critique-24 row-5 → iterate-`9bed952` drain (2026-05-20) but extended to cover the two intervening surface additions. Impact 2 × Ease 10 / 10 = 2.0. Source: critique-30 row 2 (commit `0520115`).
 
