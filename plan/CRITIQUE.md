@@ -6,13 +6,29 @@
 > by `/iterate`.
 
 <!-- Metadata (updated by /critique after each pass):
-> Last pass: 2026-05-20 at commit 9e38629
-> Pass count: 30
+> Last pass: 2026-05-21 at commit 0c14a75
+> Pass count: 31
 -->
 
 ---
 
 ## Pending
+
+### [LOW] `specs/02-combat-round-resolver.md` doesn't document Phase 68's per-enemy friendship-eligibility override
+- pass: critique-31 (commit 0c14a75)
+- area: docs / spec-gap
+- observation: Phase 68 changed the resolver's combat-end behaviour: `determineCombatEnd` now consults `Enemy.befriendabilityConfig` via the new internal `isFriendshipEligible` helper instead of branching on `friendshipCounter >= FRIENDSHIP_COUNTER_MAX` directly. `src/Combat/index.ts:149-153` is the new dispatch. The combat-round resolver spec (Spec 02) is the canonical engine description — it mentions `incrementFriendship` (line 41) but nothing about the per-enemy override or the new helper. Equivalent of the post-Phase-66 spec-04b update at iterate `52b8ac2`.
+- evidence: `specs/02-combat-round-resolver.md` (no `Phase 68` / `BefriendabilityConfig` / `isFriendshipEligible` matches).
+- suggested_fix: append a "Phase 68 — per-enemy friendship eligibility" subsection (or note) covering: (a) `Enemy.befriendabilityConfig?` field shape (4 axes + `defaultFallback`); (b) `isFriendshipEligible` as the internal predicate that `determineCombatEnd` and `isCombatOngoing` both call (lockstep guarantee); (c) late-resolution semantics — counter still increments freely; friendship triggers only when all predicates pass. Cross-link `docs/combat.md` § "Per-enemy predicate (Phase 68 — BefriendabilityConfig)" for the consumer-facing schema.
+- source: critique
+
+### [LOW] `specs/04-skills-engine.md` doesn't document Phase 66's `Skill.synergy?: SkillSynergy` clause
+- pass: critique-31 (commit 0c14a75)
+- area: docs / spec-gap
+- observation: Phase 66 added a new optional payload field `Skill.synergy?: SkillSynergy` (with matching `SynergyPredicate`) that the skills engine evaluates inside `executeSkill` after `calculateSkillDamage` and before `combatEffects` apply. `src/Skills/types.ts` carries the types; `src/Skills/skill.engine.ts` carries the evaluation path. Spec 04 is the engine-level skills spec — it documents `Skill`, `executeSkill`, `canUseSkill`, `calculateSkillDamage`, etc., but doesn't mention the synergy clause or the `synergy-fired` `SkillEvent` variant. Spec 04b (the content/library spec) WAS updated post-Phase-66 (at iterate `52b8ac2`) to flip the Tier 2 row count 3 → 8; Spec 04 (the engine spec) was not.
+- evidence: `specs/04-skills-engine.md` (no `synergy` / `SkillSynergy` / `Phase 66` matches).
+- suggested_fix: append a "Phase 66 — Tier 2 synergy clause" subsection covering: (a) `SkillSynergy` field shape (`predicate?` + damage scalars + side-effect flags + `applyEffectOnFire?`); (b) `SynergyPredicate` (effectId / on side / intensityMin / durationMin); (c) evaluation order in `executeSkill` (after damage, before combatEffects); (d) the new `synergy-fired` event surface. Cross-link `docs/skills.md` § "Tier 2 synergy (Phase 66)" for the per-skill content table.
+- source: critique
 
 ---
 
