@@ -18,9 +18,9 @@
  */
 
 import { decideEnemyAction } from '../Enemy/enemy.logic';
-import { Enemy } from '../Enemy/types';
+import { Enemy, BefriendabilityConfig } from '../Enemy/types';
 import { FRIENDSHIP_COUNTER_MAX } from '../Game/game-mechanics.constants';
-import { CombatAction, CombatState } from './types';
+import { CombatAction, CombatState, Stance } from './types';
 
 export type {
     Stance, Action, Advantage, CritStyle, CombatAction, PlayerCombatAction,
@@ -86,19 +86,70 @@ export function determineEnemyAction(
     return decideEnemyAction(enemy, state);
 }
 
-/** True while combat should continue (both alive and friendship hasn't capped). */
+/**
+ * Phase 68 — friendship-eligibility predicate. Returns true when the
+ * current `CombatState` satisfies the active enemy's `BefriendabilityConfig`
+ * (all named predicates AND-compose). When the enemy has no config OR the
+ * config sets `defaultFallback: 'both-defend-cap'`, falls through to the
+ * Phase 36 mechanic (`friendshipCounter >= FRIENDSHIP_COUNTER_MAX`).
+ *
+ * Not exported from the public barrel — internal helper for
+ * `determineCombatEnd` + `isCombatOngoing` so the two predicates stay in
+ * lockstep. Callers outside the engine read combat-end state through
+ * `determineCombatEnd`.
+ *
+ * D5: `requiredStances` / `requiredSkillUse` derive from `state.log` rather
+ * than separate tracking state on `CombatState`. The log already captures
+ * `playerAction.stance` and (when `action === 'skill'`) `playerAction.skillId`
+ * per resolved round.
+ */
+export function isFriendshipEligible(state: CombatState): boolean {
+    const config: BefriendabilityConfig | undefined = state.enemy.befriendabilityConfig;
+    if (!config || config.defaultFallback === 'both-defend-cap') {
+        return state.friendshipCounter >= FRIENDSHIP_COUNTER_MAX;
+    }
+    const threshold = config.roundsThreshold ?? FRIENDSHIP_COUNTER_MAX;
+    if (state.friendshipCounter < threshold) return false;
+    if (config.hpGate) {
+        const maxHp = state.enemy.maxHealth;
+        if (maxHp <= 0) return false;
+        const hpFraction = state.enemy.health / maxHp;
+        if (hpFraction > config.hpGate.belowPct) return false;
+    }
+    if (config.requiredStances && config.requiredStances.length > 0) {
+        const usedStances = new Set<Stance>(
+            state.log.map(entry => entry.playerAction.stance),
+        );
+        if (!config.requiredStances.some(stance => usedStances.has(stance))) {
+            return false;
+        }
+    }
+    if (config.requiredSkillUse && config.requiredSkillUse.length > 0) {
+        const castSkills = new Set<string>(
+            state.log
+                .filter(entry => entry.playerAction.action === 'skill' && entry.playerAction.skillId !== undefined)
+                .map(entry => entry.playerAction.skillId as string),
+        );
+        if (!config.requiredSkillUse.some(skillId => castSkills.has(skillId))) {
+            return false;
+        }
+    }
+    return true;
+}
+
+/** True while combat should continue (both alive and friendship not yet eligible). */
 export function isCombatOngoing(state: CombatState): boolean {
     return state.active
         && state.player.health > 0
         && state.enemy.health > 0
-        && state.friendshipCounter < FRIENDSHIP_COUNTER_MAX;
+        && !isFriendshipEligible(state);
 }
 
 /** Outcome of the encounter. `'ongoing'` while combat is still active. */
 export function determineCombatEnd(state: CombatState): 'player' | 'ko' | 'friendship' | 'ongoing' {
     if (state.enemy.health <= 0) return 'player';
     if (state.player.health <= 0) return 'ko';
-    if (state.friendshipCounter >= FRIENDSHIP_COUNTER_MAX) return 'friendship';
+    if (isFriendshipEligible(state)) return 'friendship';
     return 'ongoing';
 }
 

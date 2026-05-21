@@ -8,6 +8,61 @@ import { Item } from '../Items/types';
 import { PhilosophicalAlignment } from '../Philosophy/types';
 
 /**
+ * Phase 68 — per-enemy override on the Phase 36 friendship-eligibility
+ * predicate. ALL present predicates AND-compose; eligibility requires
+ * every named predicate to pass simultaneously. When the field is
+ * absent, the Phase 36 mechanic stays unchanged
+ * (`friendshipCounter >= FRIENDSHIP_COUNTER_MAX` -> friendship).
+ *
+ * Authors leave predicates undefined when they don't apply (e.g. low-tier
+ * enemies that only need the rounds threshold drop the other three fields).
+ * Within a single list-valued predicate (`requiredStances`, `requiredSkillUse`)
+ * the match is existential — at least one element of the list must appear in
+ * the player's combat log.
+ */
+export interface BefriendabilityConfig {
+    /**
+     * Override for the both-defend round count required. Defaults to the
+     * global `FRIENDSHIP_COUNTER_MAX` (Phase 36) when absent. Setting this
+     * to a lower value makes the enemy easier to befriend on the counter
+     * axis; a higher value makes it harder. Negative or zero values are
+     * not validated; authors are responsible for sensible thresholds.
+     */
+    roundsThreshold?: number;
+    /**
+     * Friendship eligibility requires `enemy.health / enemy.maxHealth`
+     * to be at or below `belowPct` at the eligibility check. Pure
+     * snapshot — healing back above the threshold un-qualifies
+     * eligibility. Range [0, 1].
+     */
+    hpGate?: { belowPct: number };
+    /**
+     * Friendship eligibility requires the player to have used AT LEAST
+     * ONE of the named stances during combat (existential, not universal).
+     * Derived from `state.log[].playerAction.stance`; no separate
+     * tracking state is kept on `CombatState`.
+     * Empty array is treated as "no requirement" (same as undefined).
+     */
+    requiredStances?: Stance[];
+    /**
+     * Friendship eligibility requires the player to have cast AT LEAST
+     * ONE of the named skill IDs during combat (existential, not universal).
+     * Derived from `state.log[].playerAction` entries with
+     * `action === 'skill'` and matching `skillId`.
+     * Empty array is treated as "no requirement" (same as undefined).
+     */
+    requiredSkillUse?: string[];
+    /**
+     * Explicit "fall through to Phase 36 mechanic". When set, the engine
+     * treats this config as if the field were absent — useful for
+     * authoring clarity ("this enemy was explicitly considered and uses
+     * defaults"). Other fields on the same config are ignored when this
+     * is set.
+     */
+    defaultFallback?: 'both-defend-cap';
+}
+
+/**
  * Decision-making strategy used by an enemy each round (Spec 07).
  *
  * - `random`     — picks any stance and any action uniformly.
@@ -155,4 +210,12 @@ export interface Enemy {
      * + +1 moralMeter).
      */
     friendshipReward?: FriendshipReward;
+    /**
+     * Phase 68 — optional per-enemy override of the Phase 36
+     * friendship-eligibility predicate (`friendshipCounter >=
+     * FRIENDSHIP_COUNTER_MAX`). See {@link BefriendabilityConfig}.
+     * When undefined, the Phase 36 mechanic stays unchanged; when
+     * present, ALL named predicates AND-compose.
+     */
+    befriendabilityConfig?: BefriendabilityConfig;
 }

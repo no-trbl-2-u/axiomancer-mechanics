@@ -7,7 +7,7 @@ import { ProcOverrides, ProcUnlocks } from '../Combat/combat-effects';
 import { PhilosophicalAlignment } from '../Philosophy/types';
 import {
     Enemy, EnemyLogic, EnemyDifficulty, Tier1EffectOverrides, LootTableEntry,
-    FriendshipReward,
+    FriendshipReward, BefriendabilityConfig,
 } from './types';
 
 /**
@@ -33,6 +33,11 @@ export interface CreateEnemyOptions {
     philosophicalAlignment?: PhilosophicalAlignment;
     /** Phase 60 — optional per-enemy friendship-resolution content. */
     friendshipReward?: FriendshipReward;
+    /**
+     * Phase 68 — optional per-enemy override of the friendship-eligibility
+     * predicate. When undefined, the Phase 36 mechanic stays unchanged.
+     */
+    befriendabilityConfig?: BefriendabilityConfig;
 }
 
 /**
@@ -58,7 +63,7 @@ export function createEnemy(options: CreateEnemyOptions): Enemy {
         id, name, description, level, baseStats, mapName, logic,
         difficulty, tier1Overrides, procUnlocks, procOverrides,
         skills, loot, xpReward, effects = [], philosophicalAlignment,
-        friendshipReward,
+        friendshipReward, befriendabilityConfig,
     } = options;
 
     const maxHealth = calculateMaxHealth(level, baseStats);
@@ -79,6 +84,7 @@ export function createEnemy(options: CreateEnemyOptions): Enemy {
         effects,
         philosophicalAlignment,
         friendshipReward,
+        befriendabilityConfig,
     };
 }
 
@@ -91,5 +97,5 @@ export { rollLoot, rollLootMany } from './loot';
 export type { LootRng } from './loot';
 export type {
     Enemy, EnemyLogic, EnemyDifficulty, Tier1EffectOverrides, LootTableEntry,
-    FriendshipReward,
+    FriendshipReward, BefriendabilityConfig,
 } from './types';

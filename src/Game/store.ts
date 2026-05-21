@@ -36,6 +36,7 @@ import { createStore, StoreApi } from 'zustand/vanilla';
 import { Character } from '../Character/types';
 import { Enemy } from '../Enemy/types';
 import { CombatState } from '../Combat/types';
+import { isFriendshipEligible } from '../Combat';
 import type { RoundEvent } from '../Combat/combat.resolver';
 import { Encounter } from '../World/types';
 import {
@@ -49,7 +50,6 @@ import { gameReducer, createNewGameState } from './game.reducer';
 import { GameEventEmitter, GameEvent, GameEventType } from './events';
 import { PersistenceAdapter } from './persistence/types';
 import { rollEncounterLoot, totalEncounterXp } from './combat-grants';
-import { FRIENDSHIP_COUNTER_MAX } from './game-mechanics.constants';
 import { getRng } from '../Utils/rng';
 import { getAvailableSkills } from '../Skills';
 import {
@@ -311,7 +311,7 @@ export function createGameStore(
                 const outcome: CombatEndReport['outcome'] =
                     pre.combat.enemy.health <= 0 ? 'victory'
                     : pre.combat.player.health <= 0 ? 'defeat'
-                    : pre.combat.friendshipCounter >= FRIENDSHIP_COUNTER_MAX ? 'friendship'
+                    : isFriendshipEligible(pre.combat) ? 'friendship'
                     : 'flee';
 
                 let xpGained = 0;

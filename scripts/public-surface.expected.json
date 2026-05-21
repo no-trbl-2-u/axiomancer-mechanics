@@ -254,6 +254,7 @@
     "BaseStats",
     "BasicActionOutcome",
     "BattleLogEntry",
+    "BefriendabilityConfig",
     "Character",
     "CharacterPreset",
     "CharacterPresetEquipmentEntry",
