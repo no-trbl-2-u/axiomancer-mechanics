@@ -4,6 +4,13 @@
 > in this repo. Read this top to bottom before touching any file.
 > Standing rules are non-negotiable. Skill files elaborate; this
 > is the canonical source.
+>
+> **Need a player / contributor tour instead?** See
+> [`docs/quickstart.md`](./docs/quickstart.md) — single-page overview
+> of what's shipped, how to drive the CLI through every major
+> surface, the walkthrough catalog, and pointers to deeper docs.
+> Use this file (`agents.md`) for autonomous-loop wiring; use
+> `quickstart.md` for the human-readable map of the engine.
 
 ## Standing rules
 

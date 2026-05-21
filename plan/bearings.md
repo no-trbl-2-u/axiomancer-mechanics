@@ -63,6 +63,10 @@ Combat reducer: initializeCombat, setPhase, setPlayerStance, setPlayerAction,
                 appendLog, incrementFriendship, endCombat
 Effects:    applyEffect, applyTier1CombatEffect, clearTier1EffectsForStance,
             lookupEffect, Effect, ActiveEffect, EffectTier
+Skills:     executeSkill, canUseSkill, learnSkill, getAvailableSkills,
+            skillLibrary, getSkillById, Skill, SkillEvent
+            (+ SkillSynergy, SynergyPredicate types + Skill.synergy?
+            field driving 5 authored Tier 2 synergy skills — Phase 66)
 Items:      addItem, removeItem, useConsumable, stackItem, Item (and variants)
 Game:       createGameStore, GameState, nullAdapter, persistence adapters
             (+ GameState.lastSeenAlignmentCells? — Phase 63 alignment-observer

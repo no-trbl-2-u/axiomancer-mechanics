@@ -235,6 +235,24 @@ reality.
   skill)` — Stable. The `LEARN_SKILL` action wires this through the
   game reducer; the Character tab in `npm run game` exposes it. Closes
   Spec 06 Q7.
+- **Tier 2 synergy (Phase 66):** Beta. Optional
+  `Skill.synergy?: SkillSynergy` clause + matching `SynergyPredicate`
+  shape lets a skill condition bonus damage / effect consumption /
+  type-swap / detonation on the presence of an `ActiveEffect` already
+  on the field. `executeSkill` evaluates synergy after
+  `calculateSkillDamage` but before `combatEffects` apply. A new
+  `synergy-fired` `SkillEvent` (and matching `SkillPhaseEvent`
+  variant) surfaces the bonus damage, consumed effect ids,
+  consumed-token count, and clear/consume flags for UI / agent
+  rendering. Five Tier 2 skills ship as the first authored batch:
+  `resonance-bleed` (heart, cross-stance duration amp),
+  `intensity-feedback` (mind, cross-stance intensity amp),
+  `bat-swarm-thoughtform` (heart, buff type-swap consuming
+  `tier1_body_defend`), `resonance-burst` (mind, consume opposing
+  debuff for damage), `resonance-detonation` (heart, no predicate;
+  apex burn — consume full combat-resource pool + clear all effects
+  + damage proportional to consumed tokens). See `docs/skills.md` §
+  "Tier 2 synergy (Phase 66)" for the schema + the per-skill table.
 
 ### World & Quests
 
