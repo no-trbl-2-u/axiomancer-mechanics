@@ -12,13 +12,9 @@ deep imports are part of the supported surface.
 
 ## [unreleased]
 
-Phase 58 (Spec 14 retroactive conversation-loop spec), Phase 59
-(zero-residual docs gap audit), Phase 60 (befriendable-enemy content
-arc), Phase 66 (Tier 2 synergy skills), Phase 68 (per-enemy
-`BefriendabilityConfig` predicate), plus iterate fixes addressing
-critique passes 24-29. Includes a canonical **re-grounding migration
-guide** for consumers (e.g. `axiomancer-mobile`) hitting "type X has
-no property Y" errors after a bump — see the Migration notes below.
+Phase 68 — per-enemy `BefriendabilityConfig` predicate (override of the
+Phase 36 friendship-eligibility check) + first boss-tier authored
+config on CoastalTyrant.
 
 ### Added
 - **Per-enemy befriend predicate (Phase 68 — `BefriendabilityConfig`).**
@@ -48,6 +44,31 @@ no property Y" errors after a bump — see the Migration notes below.
   `scripts/public-surface.expected.json` grows from 161 → 162 types
   (runtime exports unchanged at 233).
 
+### Changed
+- **CoastalTyrant gains a Phase 68 befriend predicate.** First boss-tier
+  authored `BefriendabilityConfig` (`hpGate: { belowPct: 0.4 }`,
+  `requiredStances: ['heart']`, `roundsThreshold: 5`) — the
+  magistrate-fallen-priest's friendship arc opens only after he's been
+  brought low, the player has shown empathy at least once, and 5
+  both-defend rounds have passed. Existing CoastalTyrant content
+  (`philosophicalAlignment`, `procUnlocks`, `loot`, `skills`) is
+  unchanged; the new field is purely additive. The matching
+  `friendshipReward` content (multi-paragraph narrative + items + maybe
+  `alignmentDelta`) is deferred to the boss-tier befriendable-enemy
+  follow-up phase.
+
+## [0.10.3] — 2026-05-20
+
+Phase 58 (Spec 14 retroactive conversation-loop spec), Phase 59
+(zero-residual docs gap audit), Phase 60 (befriendable-enemy content
+arc — the only public-surface addition), Phase 66 (Tier 2 synergy
+skills — second public-surface addition), Phase 67 (CLI quickstart
+doc), plus iterate fixes addressing critique passes 24-29. Includes a
+canonical **re-grounding migration guide** for consumers (e.g.
+`axiomancer-mobile`) hitting "type X has no property Y" errors after
+a bump — see the Migration notes below.
+
+### Added
 - **Tier 2 synergy skills (Phase 66).** New optional `Skill.synergy?:
   SkillSynergy` clause + matching `SynergyPredicate` interface (both
   on the public barrel; fixture grew 159 → 161 types). Synergy is
@@ -132,18 +153,6 @@ no property Y" errors after a bump — see the Migration notes below.
   No fixture change (the field is on an existing exported type).
 
 ### Changed
-- **CoastalTyrant gains a Phase 68 befriend predicate.** First boss-tier
-  authored `BefriendabilityConfig` (`hpGate: { belowPct: 0.4 }`,
-  `requiredStances: ['heart']`, `roundsThreshold: 5`) — the
-  magistrate-fallen-priest's friendship arc opens only after he's been
-  brought low, the player has shown empathy at least once, and 5
-  both-defend rounds have passed. Existing CoastalTyrant content
-  (`philosophicalAlignment`, `procUnlocks`, `loot`, `skills`) is
-  unchanged; the new field is purely additive. The matching
-  `friendshipReward` content (multi-paragraph narrative + items + maybe
-  `alignmentDelta`) is deferred to the boss-tier befriendable-enemy
-  follow-up phase.
-
 - **Fishing-village starting map expanded (Phase 65).** The canonical
   starting map grew from a linear 10-node chain along the dockside to
   a 25-node branching grid with three sub-areas — Harbor District
