@@ -82,7 +82,11 @@ store on top of the reducer. Every store action:
 1. Computes the next state via `gameReducer(get(), action)`.
 2. Publishes it through Zustand's `set`.
 3. Emits a `GameEvent` if an emitter was supplied.
-4. Calls `adapter.save(nextState)` to autosave (Spec 09 Q4).
+4. Calls `adapter.save(nextState)` to autosave **iff** `action.type`
+   appears in the `DURABLE_ACTIONS` allowlist (Spec 09 Q4 path B,
+   Phase 51). UI-tier action types pass through steps 1-3 without
+   writing to disk. See § "Autosave granularity" below for the full
+   allowlist.
 
 The legacy method-style actions (`startCombat`, `endCombat`,
 `equipItem`, …) are kept as sugar so existing call sites don't need to
