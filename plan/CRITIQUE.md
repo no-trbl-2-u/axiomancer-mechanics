@@ -6,13 +6,37 @@
 > by `/iterate`.
 
 <!-- Metadata (updated by /critique after each pass):
-> Last pass: 2026-05-20 at commit 53cb9a1
-> Pass count: 29
+> Last pass: 2026-05-20 at commit 9e38629
+> Pass count: 30
 -->
 
 ---
 
 ## Pending
+
+### [LOW] Phase 68 surface missing from front-door docs (docs/api.md + README.md + docs/quickstart.md)
+- pass: critique-30 (commit 9e38629)
+- area: docs
+- observation: Phase 68 shipped `BefriendabilityConfig` + `Enemy.befriendabilityConfig?` on the public barrel (`src/index.ts:36`) + a new internal `isFriendshipEligible` helper. The surface is documented in `docs/combat.md` (Friendship Path § "Per-enemy predicate (Phase 68 — `BefriendabilityConfig`)"), `docs/enemy.md` (Befriendable enemies table extended with a Phase 68 column), `plan/bearings.md` (Enemy block), and `CHANGELOG.md` `[unreleased]` ### Added/Changed entries. The three FRONT-DOOR readers haven't been updated: `docs/api.md` Enemy section ends at the Phase 60 / Phase 62 `FriendshipReward` block; `README.md` Enemy row doesn't list `BefriendabilityConfig`; `docs/quickstart.md` (Phase 67) module table + key in-game flows section was authored before Phase 68 and doesn't reference the new predicate.
+- evidence: `docs/api.md` (no `Phase 68` or `BefriendabilityConfig` matches); `README.md` (no match); `docs/quickstart.md` (no match). Compare against the Phase 66/67 critique-29 row 1 finding's pattern — same surface-drift shape.
+- suggested_fix: add a short Phase 68 subsection to `docs/api.md` Enemy block naming `BefriendabilityConfig` + the predicate-axes list + late-resolution semantics; extend the `README.md` Enemy row with `BefriendabilityConfig` (mirror the existing `FriendshipReward` clause); update `docs/quickstart.md` §4 "Key in-game flows" combat → friendship paragraph to mention the per-enemy predicate override (with `CoastalTyrant` as the example). Single pass-through commit per the critique-29 row-1 model.
+- source: critique
+
+### [LOW] `scripts/README.md` fixture-state annotation is stale (says 159 types; current is 162)
+- pass: critique-30 (commit 9e38629)
+- area: docs
+- observation: `scripts/README.md` line 29 reads "Current shape (HEAD, post-Phase-60): 233 runtime exports + 159 type exports". This was drained as critique-24 row 5 at iterate `9bed952` (2026-05-20) which flipped the count 158 → 159 and named the Phase 60 `FriendshipReward` addition. Since then Phase 66 added `SkillSynergy` + `SynergyPredicate` (+2 types → 161) and Phase 68 added `BefriendabilityConfig` (+1 type → 162). The current shape is 233 runtime exports + 162 type exports.
+- evidence: `scripts/README.md:29` (159 stated; actual fixture in `scripts/public-surface.expected.json` is 162 types after Phase 68).
+- suggested_fix: flip the line to "Current shape (HEAD, post-Phase-68): 233 runtime exports + 162 type exports." Update the surrounding sentence about the per-version history to fold in the Phase 66 + Phase 68 additions ("Phase 60 added one type (`FriendshipReward`) over the v0.10.0 base; Phase 66 added two (`SkillSynergy` + `SynergyPredicate`); Phase 68 added one (`BefriendabilityConfig`); 0.10.1 + 0.10.2 added no new public surface; 0.10.3 shipped with 233+161 (Phase 66 net), Phase 68 ships with the next bump").
+- source: critique
+
+### [LOW] CHANGELOG.md `[0.10.3]` Migration notes "post-v0.10.2 delta vs HEAD" pointer is historical-section-stale
+- pass: critique-30 (commit 9e38629)
+- area: docs
+- observation: After the Phase 68 Unit 3 / CHANGELOG-split commit `9e38629` flipped `[unreleased]` → `[0.10.3] — 2026-05-20`, the closing paragraph of `[0.10.3]` Migration notes (CHANGELOG.md lines 283-284) still reads: "For the post-v0.10.2 delta vs HEAD, the only change is the Phase 60 `FriendshipReward` type addition above — 233+158 → 233+159." This wording embeds inside the frozen `[0.10.3]` section but (a) references "HEAD" — which is now post-Phase-68; (b) the count `233+159` was already stale at v0.10.3 (Phase 66 took it to 233+161 before tag time); (c) phrasing should be "v0.10.2 → v0.10.3 delta" since the section is now historical.
+- evidence: `CHANGELOG.md:283-284`.
+- suggested_fix: re-anchor the paragraph as "For the v0.10.2 → v0.10.3 delta, the public-surface changes were the Phase 60 `FriendshipReward` type addition (158 → 159) plus the Phase 66 `SkillSynergy` + `SynergyPredicate` type additions (159 → 161). v0.10.3 shipped with 233 runtime exports + 161 type exports." Phase 68's `BefriendabilityConfig` (+1 type, 161 → 162) ships with the next bump and belongs in `[unreleased]` only (not in this historical paragraph).
+- source: critique
 
 ---
 
