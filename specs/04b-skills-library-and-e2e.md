@@ -94,17 +94,33 @@ On use, generates 1 Fallacy token (fallacy category) or 1 Paradox token (paradox
 | `liars_echo` | Liar's Echo | mind | paradox | `{ mind: 3 }` | enemy | 3 | mind | Deal damage + apply 2-round mind mark (+2 intensity) |
 | `ship_of_theseus` | Ship of Theseus | heart | paradox | `{ heart: 3 }` | enemy | 0 | heart | Convert 1 random enemy buff into the same effect on the player |
 
-### Tier 2 — Resonance Required (3 skills)
+### Tier 2 — Resonance Required (8 skills — 3 original + 5 Phase 66 synergy)
 
 Each Tier 2 skill costs 2 tokens of two different colors; both must be held
 (resonance condition is implicit in the multi-key `resourceCost`).
 On use, generates 1 Fallacy or Paradox token per the skill's category.
+
+**Original 3 (Spec 04b first ship):**
 
 | ID | Name | Category | Cost | Target | basePower | scalingStat | Effect summary |
 |---|---|---|---|---|---|---|---|
 | `mob_appeal` | Mob Appeal | fallacy | `{ body: 2, heart: 2 }` | enemy | 10 | body | Deal damage + heal self for `heart × SKILL_STAT_MULTIPLIER` |
 | `undistributed_middle` | Undistributed Middle | paradox | `{ body: 2, mind: 2 }` | enemy | 8 | mind | Deal damage + apply 3-round mind mark debuff |
 | `eternal_regress` | Eternal Regress | fallacy | `{ heart: 2, mind: 2 }` | enemy | 6 | heart | Apply two different Tier 2 debuffs simultaneously |
+
+**Phase 66 synergy batch (5 skills authoring against the new `Skill.synergy?: SkillSynergy` primitive):**
+
+The `SkillSynergy` clause (added at Phase 66 commit `25e3c28`) lets a skill condition bonus damage / effect consumption / type-swap / detonation on the presence of an `ActiveEffect` already on the field. Synergy is evaluated by `executeSkill` after `calculateSkillDamage` but before `combatEffects` apply. See [`docs/skills.md` § "Tier 2 synergy (Phase 66)"](../docs/skills.md#tier-2-synergy-phase-66) for the schema + per-skill table.
+
+| ID | Name | Category | Aspect | Cost | Target | basePower | Synergy summary |
+|---|---|---|---|---|---|---|---|
+| `resonance-bleed` | Resonance Bleed | paradox | heart | `{ heart: 2, mind: 2 }` | enemy | 4 | Predicate `debuff_bleed` on target (durationMin: 2); bonus damage 5 + 3 × remaining duration. Cross-stance duration amp. |
+| `intensity-feedback` | Intensity Feedback | paradox | mind | `{ mind: 2, heart: 2 }` | enemy | 5 | Predicate `buff_critical_rate_up` on caster (intensityMin: 1); bonus damage 4 + 5 × intensity. Cross-stance intensity amp. |
+| `bat-swarm-thoughtform` | Bat-Swarm Thoughtform | paradox | heart | `{ heart: 2, body: 2 }` | self | 0 | Predicate `tier1_body_defend` on caster (durationMin: 5); consume the matched effect + apply `buff_max_hp_up` (intensity 3 / duration 5). Buff type-swap. |
+| `resonance-burst` | Resonance Burst | paradox | mind | `{ mind: 2, heart: 1 }` | enemy | 3 | Predicate `debuff_confusion` on target (durationMin: 1); bonus damage 3 + 2 × intensity + 3 × duration; consume the matched effect. |
+| `resonance-detonation` | Resonance Detonation | paradox | heart | `{ heart: 3, body: 3, mind: 3 }` | enemy | 0 | No predicate (unconditional fire on cast); bonus damage 25 + 10 × consumed tokens; consume the caster's full combat-resource pool + clear all `ActiveEffect`s on both combatants. The "spend the whole shape you brought into the fight" apex burn. |
+
+All 8 carry `learningRequirement: { level: 5 }`. Acceptance for the Phase 66 additions shipped at `2f75ba0` (content) + `d41d90b` (10-case hermetic e2e at `src/Skills/e2e/synergy-skills.engine.test.ts`).
 
 ### Tier 3 — Philosophical Resource Required (3 skills)
 
