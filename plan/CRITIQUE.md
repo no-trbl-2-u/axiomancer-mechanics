@@ -6,13 +6,29 @@
 > by `/iterate`.
 
 <!-- Metadata (updated by /critique after each pass):
-> Last pass: 2026-05-21 at commit 0c14a75
-> Pass count: 31
+> Last pass: 2026-05-21 at commit c7617eb
+> Pass count: 32
 -->
 
 ---
 
 ## Pending
+
+### [LOW] `incrementFriendship` reducer is exported public API but the engine resolver bypasses it (inline increment at scenario.ts:266)
+- pass: critique-32 (commit c7617eb)
+- area: structure / dead-code
+- observation: `src/Combat/combat.reducer.ts:106` exports `incrementFriendship(state: CombatState): CombatState` — documented public API (README.md:73 + plan/bearings.md:64 list it as part of the Combat reducer's public surface). But the engine's actual increment site lives inline at `src/Combat/phases/scenario.ts:266` (`friendshipCounter = before + 1`), not through the reducer. Net effect: there are two parallel paths to the same state mutation, but only the inline path is exercised in production; the public reducer exists for external callers but the engine itself doesn't use it. Same shape as critique-25 row 1's `pickEnemySkill` finding (which was un-exported at iterate `c15d3fa` when no external caller existed).
+- evidence: `src/Combat/combat.reducer.ts:106` (definition); `src/Combat/combat.reducer.test.ts:55-58` (only non-`index.ts` caller — a direct unit test of the reducer); `src/Combat/phases/scenario.ts:264-270` (inline increment + events.push, bypasses the reducer). `grep -rn 'incrementFriendship' src/ --include='*.ts'` returns 5 hits across 3 files: `src/index.ts` (re-export), `src/Combat/combat.reducer.ts` (definition), `src/Combat/combat.reducer.test.ts` (test only).
+- suggested_fix: pick one of two paths. **(a) Route scenario.ts through the reducer** — replace the inline `friendshipCounter = before + 1` with `const newState = incrementFriendship({ ...partialState, friendshipCounter: before })` (or wire the helper differently to fit the events.push pattern). Preserves the public API and removes the "two paths" footgun. **(b) Un-export the reducer + drop the unit test** — mirror the `pickEnemySkill` drain pattern: drop the `export` keyword, drop the `incrementFriendship` reference from README.md + plan/bearings.md, drop the 3-case describe block from `combat.reducer.test.ts`. Shrinks the public surface; doesn't change runtime behaviour. Pick (a) if the reducer is genuinely intended consumer-facing API (would let external UIs drive friendship-counter shifts without the inline scenario.ts logic); pick (b) if it's vestigial (the inline path is the only one ever exercised). Path (a) is the safer guess given the bearings/README mention.
+- source: critique
+
+### [LOW] Legacy `endCombatPlayerVictory` / `endCombatPlayerDefeat` / `endCombatWithFriendship` aliases have zero in-repo callers and no deprecation timeline
+- pass: critique-32 (commit c7617eb)
+- area: dead-code / api
+- observation: `src/Combat/combat.reducer.ts:122-124` declares three legacy aliases (`endCombatPlayerVictory = endCombat`, etc.) with an explanatory comment block (line 116-121) explaining "all three end-variants all dispatch to `endCombat`; the actual outcome is computed by `determineCombatEnd(state)`, so calling `endCombatPlayerDefeat(state)` does NOT mark a defeat; treat the names as historical noise and prefer `endCombat` in new code." All three are re-exported through `src/index.ts:69` AND named in README.md's Combat-reducer row + plan/bearings.md. Zero in-repo callers outside the definition; no deprecation marker (e.g. JSDoc `@deprecated` tag), no removal timeline, no `RELEASING.md` entry tracking the eventual breaking change.
+- evidence: `src/Combat/combat.reducer.ts:115-124` (definition + commentary); `src/index.ts:69` (re-export); README.md:73 (explicit mention with "retained on the barrel for back-compat" note). `grep -rn 'endCombatPlayer\|endCombatWithFriendship' src/ --include='*.ts' | grep -v 'index\.ts\|combat\.reducer\.ts'` returns 0 hits.
+- suggested_fix: pick one. **(a) Add `@deprecated` JSDoc tags to all three** so consumer IDE tooling flags the calls; document the deprecation timeline in CHANGELOG (e.g. "removed at v0.11.0") + `RELEASING.md`'s breaking-change section. Lowest-friction. **(b) Remove all three at the next minor bump** since `endCombat` has been the canonical entry point since pre-loop and zero in-repo callers means removal won't ripple in the engine; the README.md sentence already calls them "back-compat" so consumers were warned. Requires a CHANGELOG `### Removed` row + verified-zero-consumer-callers (a `gh code-search`-style check against `axiomancer-mobile`). **(c) Leave them as-is** if the back-compat story is genuinely indefinite. Pick (a) as the conservative default — flags the intent without forcing a removal pass.
+- source: critique
 
 ---
 
