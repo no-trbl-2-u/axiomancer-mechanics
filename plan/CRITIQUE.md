@@ -14,17 +14,11 @@
 
 ## Pending
 
-### [LOW] `specs/04b-skills-library-and-e2e.md` still says "Tier 2 — Resonance Required (3 skills)" — Phase 66 added 5 more, total is now 8
-- pass: critique-29 (commit 53cb9a1)
-- area: spec-drift
-- observation: `specs/04b-skills-library-and-e2e.md:97` heads its Tier 2 subsection "### Tier 2 — Resonance Required (3 skills)" and the subsequent table lists the original mob-appeal / undistributed-middle / eternal-regress trio. Phase 66 (`2f75ba0`) added 5 new Tier 2 skills (resonance-bleed, intensity-feedback, bat-swarm-thoughtform, resonance-burst, resonance-detonation), bringing the total to 8. A reader landing on Spec 04b for the canonical Tier 2 inventory gets a stale count + a partial table. Similar to the Phase 65 ↔ Phase 60 cross-link drift critique-28 caught: a feature shipped against a spec but the spec section never refreshed.
-- evidence: `grep -nE "Tier 2 — Resonance Required \(3 skills\)" specs/04b-skills-library-and-e2e.md` returns the heading at `:97`. `grep -nE "resonance-bleed|intensity-feedback|bat-swarm-thoughtform|resonance-burst|resonance-detonation" specs/04b-skills-library-and-e2e.md` returns 0 hits.
-- suggested_fix: Flip the heading from "(3 skills)" to "(8 skills — 3 original + 5 Phase 66 synergy)". Extend the table at `:99-107` with five new rows for the Phase 66 skills with their stance / cost / predicate / synergy-payload summary (the same 5-row table that shipped in `docs/skills.md` Phase 66 section can be copied + adapted to Spec 04b's column shape). Spec 04b acceptance checklist (if any) ticked for the Phase 66 additions per the existing "shipped at commit X" convention. Pure docs change; the spec doc is documentation, not greenfield work.
-- source: critique
-
 ---
 
 ## Done
+
+- [x] **[LOW] `specs/04b-skills-library-and-e2e.md` still says "Tier 2 — Resonance Required (3 skills)" — Phase 66 added 5 more, total is now 8** — resolved at iterate commit `52b8ac2` (2026-05-20). Heading flipped to "(8 skills — 3 original + 5 Phase 66 synergy)"; original 3-row table preserved under an "Original 3" subheading; new "Phase 66 synergy batch" block introduces SkillSynergy + 5-row table with aspect / cost / target / basePower / synergy summary per skill; closing line cites Phase 66 acceptance commits (`2f75ba0` content + `d41d90b` e2e). Pure docs change; 653/653 tests stay green. Impact 3 × Ease 7 / 10 = 2.1. Source: critique-29 row 2 (commit `53cb9a1`).
 
 - [x] **[LOW] Phase 66 surfaces (SkillSynergy + SynergyPredicate + 5 new skills + synergy-fired event) missing from docs/api.md + README.md + plan/bearings.md; agents.md doesn't cross-link to Phase 67 docs/quickstart.md** — resolved at iterate commit `4a2d835` (2026-05-20). All four readers updated in a single pass-through commit per the suggested_fix: docs/api.md Skills section gained a "Tier 2 synergy (Phase 66)" subsection naming the types + 5 skills + synergy-fired event; README.md Skills row extended with the Phase 66 surface clause; plan/bearings.md gained a brand-new Skills entry (Skills was implicit in the Public-API block before; now explicit with the Phase 66 synergy line); agents.md gained a top-level docs/quickstart.md pointer. Pure docs change; 653/653 tests stay green. Impact 3 × Ease 8 / 10 = 2.4. Source: critique-29 row 1 (commit `53cb9a1`).
 
