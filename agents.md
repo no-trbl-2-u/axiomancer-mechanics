@@ -138,7 +138,9 @@ Also available (project-specific):
 | Skill | Source | What it does |
 |---|---|---|
 | `brainstorm-mechanics` | `.claude/skills/brainstorm-mechanics` | Socratic brainstorming for TTRPG mechanic design. |
-| `story-spec` | `.claude/skills/story-spec` | Story spec creation for NPCs and narrative beats. |
+| `character-spec` | `.claude/skills/character-spec` | Character spec creation for named NPCs / antagonists / player presets (files to `specs/characters/`). |
+| `story-spec` | `.claude/skills/story-spec` | Story spec creation for NPCs and narrative beats (files to `specs/story/`). |
+| `world-spec` | `.claude/skills/world-spec` | World spec creation for locations, regions, environmental beats (files to `specs/world/`). |
 
 ### Invocation
 
