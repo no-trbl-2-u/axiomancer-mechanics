@@ -85,6 +85,21 @@ condition this module reads. See `docs/combat.md` § "Friendship Path"
 and § "Per-enemy predicate (Phase 68 — `BefriendabilityConfig`)" for
 the eligibility-check details.
 
+**Orthogonal alignment shift (Phase 69 — closes Spec 14 Q4).** The
+moralMeter +1 above is the moral-axis shift. Independently, if the
+befriended enemy carries
+`friendshipReward.alignmentDelta?: Partial<PhilosophicalAlignment>`,
+the END_COMBAT reducer ALSO threads the delta through
+`applyAlignmentDelta` onto `state.philosophicalAlignment` (Phase 42's
+3-axis cube). The two axes were filed as orthogonal at Phase 58 / 63
+and remain so by design — `moralMeter` is the compassion ↔ ruthlessness
+narrative axis; `philosophicalAlignment` is the Logic / Outlook / Scope
+cube. Phase 69 just makes the friendship outcome a hook for BOTH
+shifts when the per-enemy authoring opts in. First authored deltas:
+MournfulGull `{ outlook: +3 }`; HollowEyedBeggar `{ scope: -3 }`. See
+`docs/philosophy.md` for the cube + `docs/enemy.md` § "Befriendable
+enemies (Phase 60)" for the per-enemy authoring table.
+
 ```ts
 // Triggered automatically in END_COMBAT when determineCombatEnd() === 'friendship'
 // (Phase 36 cap by default; Enemy.befriendabilityConfig overrides per Phase 68).
