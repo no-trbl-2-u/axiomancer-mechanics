@@ -507,7 +507,21 @@ if (result.event.kind === 'encounter') {
 
 This package follows semver post-1.0; pre-1.0 minor bumps may carry
 breaking changes (typed event surface in 0.6.0, for example). The
-Stability Levels above indicate intent rather than enforcement.
+Stability Levels above indicate intent — and since Phase 53 the
+contract is **enforced** by a public-surface snapshot at
+[`scripts/public-surface.expected.json`](../scripts/public-surface.expected.json):
+
+- Every additive symbol on the top-level barrel must land with a
+  matching fixture refresh (`node scripts/snapshot-public-surface.mjs
+  --write`).
+- `npm run deploy:check` compares the live `dist/index.d.ts` against
+  the fixture and exits non-zero on drift; the deploy gate is wired
+  into CI (`.github/workflows/verify.yml`).
+- Per-tag deltas are emitted by `node scripts/diff-public-surface.mjs
+  <ref-A> <ref-B>` (markdown-shaped Added / Removed / Changed lists);
+  the CHANGELOG `[unreleased]` block carries the per-bump prose.
+
+Semver tier definitions:
 
 - **Major (post-1.0)**: Breaking changes to stable APIs.
 - **Minor**: New features; pre-1.0, may also break Beta APIs.
