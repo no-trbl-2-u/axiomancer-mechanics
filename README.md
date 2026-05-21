@@ -167,12 +167,15 @@ automation/                # standalone walkthrough script + replay fixtures
 
 ## Scripts
 
-| Script                | What it does                       |
-| --------------------- | ---------------------------------- |
-| `npm run build`       | Type-check and compile to `dist/`  |
-| `npm run type-check`  | Type-check only                    |
-| `npm test`            | Run the vitest suite               |
-| `npm run test:watch`  | Vitest in watch mode               |
-| `npm run lint`        | Run ESLint                         |
-| `npm run check`       | Lint + type-check                  |
-| `npm run game`        | Interactive demo CLI (tabbed loop) |
+| Script                  | What it does                                                                                          |
+| ----------------------- | ----------------------------------------------------------------------------------------------------- |
+| `npm run build`         | Type-check and compile to `dist/`                                                                     |
+| `npm run type-check`    | Type-check only                                                                                       |
+| `npm test`              | Run the vitest suite                                                                                  |
+| `npm run test:watch`    | Vitest in watch mode                                                                                  |
+| `npm run lint`          | Run ESLint                                                                                            |
+| `npm run check`         | Lint + type-check                                                                                     |
+| **`npm run verify`**    | **Hard gate** — `type-check && lint && test && build` chained; runs before every commit                |
+| **`npm run deploy:check`** | **Hard gate** — `npm pack --dry-run` + public-surface drift check (Phase 53); runs after every push |
+| `npm run verify:agent`  | Agent-friendly verify report (Phase 39 + 40); writes `automation/last-verify-report.json` + markdown summary on stdout |
+| `npm run game`          | Interactive demo CLI (tabbed loop)                                                                    |
