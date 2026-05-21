@@ -76,7 +76,7 @@ If you cannot, extract logic until you can — or document the
 (`vi.restoreAllMocks` in `afterEach`).
 
 - **Standard:** [`docs/testing.md`](./docs/testing.md) (canonical).
-- **Reference test:** [`src/Combat/e2e/combat.resolver.test.ts`](./src/Combat/e2e/combat.resolver.test.ts) (copy its structure).
+- **Reference test:** [`src/Combat/e2e/combat.resolver.engine.test.ts`](./src/Combat/e2e/combat.resolver.engine.test.ts) (copy its structure).
 - **Location:** `src/<Module>/e2e/<feature>.engine.test.ts` (the `.engine.test.ts`
   suffix is a fixed marker meaning "hermetic e2e suite"). The engine code
   itself lives next to the module as `<feature>.resolver.ts` (composite
