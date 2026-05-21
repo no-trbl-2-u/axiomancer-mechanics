@@ -181,15 +181,34 @@ Hermetic coverage at
 
 ## Pending
 
-- **Shop reducers** — `NPC.isShopkeeper` is typed but no `openShop` /
-  `purchaseItem` reducers exist yet. Spec 08 Q8 added the `currency` counter;
-  the shop transaction flow lands with the shops phase.
-- **Moral gating (read-side)** — Phase 14 wired the write path
-  (`moralDelta` shifts the meter). Folding `state.moralMeter` into
-  `DialogueContext` so choices can be **hidden** based on alignment is
-  still pending and lands in a later phase.
 - **Dialogue-driven combat triggers** — currently choices can start quests
   and teach skills but cannot directly seed an encounter; a `startEncounter`
-  effect is being scoped for a later spec.
+  effect on `DialogueChoice.effect` is being scoped for a later spec.
+- **Per-NPC alignment observers** — Phase 63 shipped tree-level observers
+  (`DialogueTree.id?` + `GameState.lastSeenAlignmentCells?`). NPC-level
+  observation (different alignment cells gate different greetings on the
+  same NPC across multiple trees) is a deliberate follow-up, not yet
+  authored.
 
-See [`specs/08-world-content-and-hazards.md`](../specs/08-world-content-and-hazards.md).
+### Resolved since the original Pending list
+
+- ~~Shop reducers~~ — Phase 37 (`f9c18f0`) shipped `buyItem` + `sellItem`
+  + `defaultSellPrice` reducers in `src/Items/shop.reducer.ts`; CLI
+  affordance lives in `src/CLI/game.cli.ts` `shopLoop`. `NPC.isShopkeeper`
+  is consulted by the dialogue runtime to route into the shop. See
+  [`docs/items.md`](./items.md#shop-economy-phase-37) for the engine
+  description.
+- ~~Moral gating (read-side via `state.moralMeter`)~~ — Spec 10 Q4 locked
+  `moralMeter` as narrative-only by design. The read-side gating
+  mechanism the original bullet anticipated landed instead via Phase 46's
+  `DialogueChoice.requires.requiresAlignment?: AlignmentGate` keyed off
+  `philosophicalAlignment` (Phase 42's 3-axis cube), not `moralMeter`.
+  `visibleChoices` hides gated choices when the alignment is missing or
+  the gate is unmet; `DialogueContext.alignment?` carries the player's
+  current cube position. Phase 63 added a reactive variant —
+  `requires.playerAlignmentCellChangedSince?: boolean` surfaces
+  observer-style branches that hide until the player has shifted cells
+  since the last interaction with the tree.
+
+See [`specs/08-world-content-and-hazards.md`](../specs/08-world-content-and-hazards.md)
++ [`specs/14-philosophical-alignment.md`](../specs/14-philosophical-alignment.md).
