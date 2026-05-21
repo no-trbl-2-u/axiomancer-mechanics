@@ -200,7 +200,13 @@ The package's public API is documented at the source level.
       shipped the 10 `GameEventType` topics; Phase 21 (`a3f1693`) added
       `EnginePayload` + typed aliases + guards; Phase 30 unit 2
       (`6097001`) extended the envelope with `unlockedSkills?` on
-      level-up.
+      level-up; Phase 66 (`25e3c28`) added a `synergy-fired` variant on
+      the `SkillEvent` / `SkillPhaseEvent` discriminated unions
+      surfaced via `combat:round` (carries `bonusDamage`,
+      `consumedEffectIds`, `consumedAllResources`, `consumedTokens`,
+      `clearedAllEffects` for UI / agent rendering). The `GameEventType`
+      registry itself is unchanged — Phase 66's addition lives one
+      level deeper inside the existing `combat:round` envelope.
 - [ ] CLI rendered output is unchanged from before the refactor (run a
       seeded combat before/after — same transcript). — Pre-refactor
       transcript was never captured; the Phase 26 walkthrough harness
@@ -211,7 +217,16 @@ The package's public API is documented at the source level.
 - [x] `docs/api.md` lists the public API. — Last rewritten at
       `353933f`; Phase 34 unit 3 (`18f0038`) added the Phase 29 + 30
       surface (stat allocation, runtime skill learning,
-      `EnginePayload.unlockedSkills`).
+      `EnginePayload.unlockedSkills`); Phase 50 (`19f2015` + `57c06ab`)
+      promoted `skillLibrary` + `getSkillById` to the top-level barrel
+      and emitted matching `types.d.ts` files (engine handoff for
+      `axiomancer-mobile`); Phase 53 (`6e9d4f6` + siblings) introduced
+      the `scripts/public-surface.expected.json` snapshot fixture +
+      deploy-gate drift detection; subsequent additive type additions
+      (Phase 60 `FriendshipReward` 158 → 159; Phase 66 `SkillSynergy` +
+      `SynergyPredicate` 159 → 161; Phase 68 `BefriendabilityConfig`
+      161 → 162) ship through the same fixture-bump discipline. Runtime
+      export count has held at 233 across the whole 0.10.x line.
 - [x] `package.json` `exports` field reflects the agreed subpath
       layout. — Verified: `"."` and `"./node"` subpaths are present
       with the standard types / import / require triples.
