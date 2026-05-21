@@ -14,17 +14,11 @@
 
 ## Pending
 
-### [LOW] `specs/02-combat-round-resolver.md` doesn't document Phase 68's per-enemy friendship-eligibility override
-- pass: critique-31 (commit 0c14a75)
-- area: docs / spec-gap
-- observation: Phase 68 changed the resolver's combat-end behaviour: `determineCombatEnd` now consults `Enemy.befriendabilityConfig` via the new internal `isFriendshipEligible` helper instead of branching on `friendshipCounter >= FRIENDSHIP_COUNTER_MAX` directly. `src/Combat/index.ts:149-153` is the new dispatch. The combat-round resolver spec (Spec 02) is the canonical engine description — it mentions `incrementFriendship` (line 41) but nothing about the per-enemy override or the new helper. Equivalent of the post-Phase-66 spec-04b update at iterate `52b8ac2`.
-- evidence: `specs/02-combat-round-resolver.md` (no `Phase 68` / `BefriendabilityConfig` / `isFriendshipEligible` matches).
-- suggested_fix: append a "Phase 68 — per-enemy friendship eligibility" subsection (or note) covering: (a) `Enemy.befriendabilityConfig?` field shape (4 axes + `defaultFallback`); (b) `isFriendshipEligible` as the internal predicate that `determineCombatEnd` and `isCombatOngoing` both call (lockstep guarantee); (c) late-resolution semantics — counter still increments freely; friendship triggers only when all predicates pass. Cross-link `docs/combat.md` § "Per-enemy predicate (Phase 68 — BefriendabilityConfig)" for the consumer-facing schema.
-- source: critique
-
 ---
 
 ## Done
+
+- [x] **[LOW] `specs/02-combat-round-resolver.md` doesn't document Phase 68's per-enemy friendship-eligibility override** — resolved at iterate commit `96b4bfc` (2026-05-21). Mirror of the Spec 04 SkillSynergy drain at iterate `3d4ae6e`: appended a "Post-spec engine extensions" section after Out of scope, with a "Phase 68 — Per-enemy friendship eligibility (BefriendabilityConfig)" subsection documenting the `BefriendabilityConfig` type shape (code-fenced; all 5 axes), `isFriendshipEligible` as the single decision point (with the D11 note that the helper is intentionally NOT on the public barrel; engine consumers read through `determineCombatEnd` / `isCombatOngoing`), late-resolution semantics (counter increments freely; friendship triggers only when ALL predicates pass), an updated combat-end return table mirroring `docs/combat.md`, the Coastal Tyrant authored config example, and the hermetic test pins (`src/Enemy/e2e/befriendability-config.engine.test.ts` + the Phase 68 describe block in `src/Game/e2e/befriend.engine.test.ts`). Phase 68 acceptance commits (`99a0cc9` + `73105dc` + `79722ec`) cited for traceability. Pure docs change; 674/674 tests stay green. Impact 3 × Ease 7 / 10 = 2.1. Source: critique-31 row 1 (commit `94c2fab`).
 
 - [x] **[LOW] `specs/04-skills-engine.md` doesn't document Phase 66's `Skill.synergy?: SkillSynergy` clause** — resolved at iterate commit `3d4ae6e` (2026-05-21). Appended a new "Post-spec engine extensions" section after the "Out of scope" block; the "Phase 66 — Tier 2 synergy clause" subsection documents `SkillSynergy` + `SynergyPredicate` type shapes (code-fenced), the evaluation order inside `executeSkill` (after `calculateSkillDamage`, before `combatEffects`), the synergy damage formula (bonusDamage + intensity/duration/token multipliers), the `synergy-fired` `SkillEvent` / `SkillPhaseEvent` variant for UI / agent rendering, and the test pin at `src/Skills/e2e/synergy-skills.engine.test.ts`. Cross-links to `docs/skills.md` § "Tier 2 synergy (Phase 66)" + `specs/04b` Tier 2 table for the per-skill content mapping. Phase 66 acceptance commits (`25e3c28` + `2f75ba0` + `d41d90b`) cited for traceability. Pure docs change; 674/674 tests stay green. Impact 4 × Ease 7 / 10 = 2.8. Source: critique-31 row 2 (commit `94c2fab`).
 
