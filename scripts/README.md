@@ -26,12 +26,22 @@ fixture IS the gesture for "I'm changing the public barrel"; deploy
 gate fails on any PR that adds/removes/renames a top-level export
 without refreshing the fixture.
 
-Current shape (HEAD, post-Phase-60): 233 runtime exports + 159 type
-exports across the 13 module sections. The `v0.10.2` tag shipped at
-233 + 158; Phase 60 added one type (`FriendshipReward`) over that
-baseline. `0.10.1` and `0.10.2` otherwise added no new public surface
-vs `0.10.0`; the next bump (post-Phase-60) flips the `[unreleased]`
-heading and ships the type addition.
+Current shape (HEAD, post-Phase-68): 233 runtime exports + 162 type
+exports across the 13 module sections. Per-tag history of additive
+public-API surface (deriveable via `node scripts/diff-public-surface.mjs
+<ref-A> <ref-B>`):
+
+- `v0.10.0`: baseline (post-loop-era first publish).
+- `v0.10.1` + `v0.10.2`: no new public surface vs `v0.10.0`.
+- `v0.10.3` (post-Phase-60 + Phase 66): added one type at Phase 60
+  (`FriendshipReward`, 158 → 159), added two more at Phase 66
+  (`SkillSynergy` + `SynergyPredicate`, 159 → 161). Tag shipped at
+  233 + 161.
+- `[unreleased]` (post-Phase-68): adds one more type at Phase 68
+  (`BefriendabilityConfig`, 161 → 162). Ships with the next bump.
+
+Runtime export count has held at 233 across the whole 0.10.x line;
+only the type-export count has grown.
 
 ## When to add a new tool here
 
