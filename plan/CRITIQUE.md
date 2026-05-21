@@ -6,13 +6,21 @@
 > by `/iterate`.
 
 <!-- Metadata (updated by /critique after each pass):
-> Last pass: 2026-05-21 at commit c7617eb
-> Pass count: 32
+> Last pass: 2026-05-21 at commit 34881ca
+> Pass count: 33
 -->
 
 ---
 
 ## Pending
+
+### [LOW] AUDIT bias "tooling" has been a no-op multiplier across critique passes 28-32 — consider clearing at next /oversight
+- pass: critique-33 (commit 34881ca)
+- area: bias / oversight
+- observation: `plan/AUDIT.md:10` carries `> Bias: tooling (set via oversight 2026-05-20)`. Per `skills/iterate.md` §3 "User-set bias", this multiplies the `tooling` category's scores by 1.5×. Reviewing the last 5 critique passes (28 → 32): zero filed findings carry `area: tooling`. Pass 28 = 1 LOW docs row; Pass 29 = 2 LOW docs rows; Pass 30 = 3 LOW docs rows; Pass 31 = 2 LOW docs/spec-gap rows; Pass 32 = 2 LOW structure/dead-code rows. The multiplier hasn't bumped a single finding into priority across that window. The bias-history comment block (line 12) itself acknowledged "tooling driver queue stayed empty across the entire 2026-05-20 session" — and that statement still holds.
+- evidence: `plan/AUDIT.md:10` (live bias line); `plan/AUDIT.md:12` (bias note acknowledges empty driver queue); critique-28 through critique-32 row categories in `plan/CRITIQUE.md ## Done` block (all `area: docs` / `area: docs/spec-gap` / `area: structure/dead-code` — zero `tooling`).
+- suggested_fix: at the next `/oversight` pass, **clear the bias** (`> Bias: <category> ...` line dropped or replaced with an empty bias marker per the `<!-- Bias line ... -->` template at line 7-9). Add a new entry to the bias-history comment block noting "CLEARED via oversight YYYY-MM-DD — zero multiplied findings across critique passes 28-32; the queue is naturally balanced." Alternatively, if `/oversight` judges that future tooling work is genuinely imminent (e.g. a release-engineering or CI phase getting promoted), keep the bias and document the anticipated weighting target. Either way, this is `/oversight`'s call to make — `/iterate` cannot edit the bias autonomously.
+- source: critique
 
 ---
 
