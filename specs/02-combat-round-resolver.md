@@ -208,3 +208,72 @@ RNG is *not* part of this spec — it lives in Spec 11.
 - Tier 2/3 effect procs on action — Spec 03.
 - Skill/item actions — Specs 04/05.
 - Seeded RNG library — Spec 11.
+
+## Post-spec engine extensions
+
+### Phase 68 — Per-enemy friendship eligibility (`BefriendabilityConfig`)
+
+Phase 68 (`99a0cc9` engine primitive + `73105dc` Coastal Tyrant
+content + `79722ec` docs) changed the resolver's combat-end behaviour.
+The `friendship` outcome is no longer gated solely on
+`friendshipCounter >= FRIENDSHIP_COUNTER_MAX`; when the active enemy
+carries an optional `Enemy.befriendabilityConfig?: BefriendabilityConfig`,
+ALL of the config's named predicates AND-compose to govern eligibility.
+
+```typescript
+export interface BefriendabilityConfig {
+    /** Per-enemy override of FRIENDSHIP_COUNTER_MAX (defaults to the
+     *  global constant when absent). */
+    roundsThreshold?: number;
+    /** Enemy HP fraction must be at or below `belowPct` at the
+     *  eligibility check (snapshot — healing back above un-qualifies). */
+    hpGate?: { belowPct: number };
+    /** Player must have used at least one named stance during combat
+     *  (existential; derived from state.log[].playerAction.stance). */
+    requiredStances?: Stance[];
+    /** Player must have cast at least one named skill ID during combat
+     *  (existential; derived from state.log[].playerAction). */
+    requiredSkillUse?: string[];
+    /** Explicit "fall through to Phase 36" — other fields ignored. */
+    defaultFallback?: 'both-defend-cap';
+}
+```
+
+The new internal helper
+`isFriendshipEligible(state: CombatState): boolean` in
+`src/Combat/index.ts:106` is the single decision point. Both
+`determineCombatEnd` and `isCombatOngoing` call it so the two
+predicates stay in lockstep — there are no silent contradictions
+where the counter caps but the friendship outcome doesn't trigger
+(or vice versa). `store.endCombat()` in `src/Game/store.ts:314` also
+routes through the helper for outcome classification.
+
+Per Phase 68 D11 the helper is intentionally NOT exported from the
+top-level barrel (`src/index.ts`) — engine consumers read combat-end
+state through `determineCombatEnd` and `isCombatOngoing`; the
+predicate is an implementation detail.
+
+`friendshipCounter` itself still increments freely on both-defend
+rounds (per Phase 36); the increment in
+`src/Combat/phases/scenario.ts` is unchanged. **Late-resolution**:
+a player can "bank" defends past `roundsThreshold`, and friendship
+triggers only once all named predicates pass together — e.g. damage
+progress brings the enemy below `hpGate.belowPct`. Updated combat-end
+table:
+
+| Return | Condition |
+|--------|-----------|
+| `'player'` | Enemy HP ≤ 0 |
+| `'ko'` | Player HP ≤ 0 |
+| `'friendship'` | `isFriendshipEligible(state)` — Phase 36 cap by default; overridden per Phase 68 when `enemy.befriendabilityConfig` is set |
+| `'ongoing'` | None of the above |
+
+CoastalTyrant is the first authored boss-tier config
+(`{ hpGate: { belowPct: 0.4 }, requiredStances: ['heart'],
+roundsThreshold: 5 }`) — see `src/Enemy/enemy.library.ts` and
+`docs/combat.md` § "Per-enemy predicate (Phase 68 — BefriendabilityConfig)"
+for the consumer-facing schema, AND-composition rule, and authoring
+guidance. Hermetic coverage at
+`src/Enemy/e2e/befriendability-config.engine.test.ts` (8 cases) +
+`src/Game/e2e/befriend.engine.test.ts` Phase 68 describe block
+(4 Coastal Tyrant integration cases).
