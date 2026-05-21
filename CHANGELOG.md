@@ -17,6 +17,9 @@ Phase 36 friendship-eligibility check) + first boss-tier authored
 config on CoastalTyrant. Phase 69 — `FriendshipReward.alignmentDelta`
 extension (closes Spec 14 Q4 — the friendship-victory ↔ alignment-cube
 intersection is now opt-in per encounter rather than orthogonal).
+Phase 70 — boss-tier `friendshipReward` content authoring on
+CoastalTyrant (closes Phase 60's most-named follow-up; demonstrates
+the full Phase 60+62+68+69 stack on one encounter).
 
 ### Added
 - **`FriendshipReward.alignmentDelta` extension (Phase 69 — closes Spec
@@ -80,6 +83,23 @@ intersection is now opt-in per encounter rather than orthogonal).
   build is unaffected.
 
 ### Changed
+- **CoastalTyrant gains a Phase 70 boss-tier `friendshipReward`.**
+  First boss-tier authored reward; demonstrates the full
+  Phase 60+62+68+69 stack on a single high-stakes encounter. `items`:
+  Paradox Loop (unique circlet, `requiredLevel: 15` — endgame-aspirational
+  reward the player can hold from this encounter onward) + healing-potion
+  + heart-draught. `xpBonus: +75` (boss-tier weight vs the normal-tier
+  +10/+15). Multi-paragraph narrative — the magistrate-fallen-priest's
+  recognition + release ("you have made me a man with nothing to be king
+  of"). `alignmentDelta: { outlook: +3, scope: -2 }` — recognition +
+  release shift matching the archetype, inside the Phase 43 ±1..±5
+  authoring band. `flagSet: 'befriended-coastal-tyrant'` (Phase 62
+  convention; downstream dialogue / quest content can gate on this flag).
+  The unique-item spawn uses a fixed-RNG `dropItem('paradox-loop', 15,
+  'unique', () => 0.5)` so the reward is deterministic across reloads.
+  Phase 70 commit: this commit. Closes the Boss-tier befriendable enemy
+  candidate (Phase 60's most-named follow-up).
+
 - **CoastalTyrant gains a Phase 68 befriend predicate.** First boss-tier
   authored `BefriendabilityConfig` (`hpGate: { belowPct: 0.4 }`,
   `requiredStances: ['heart']`, `roundsThreshold: 5`) — the

@@ -23,6 +23,7 @@
 import { createEnemy } from './index';
 import { LootTableEntry } from './types';
 import { consumableLibrary, getConsumableById } from '../Items/consumable.library';
+import { dropItem } from '../Items/item.factory';
 import { Consumable } from '../Items/types';
 import { getSkillById } from '../Skills/skill.library';
 import type { Skill } from '../Skills/types';
@@ -350,12 +351,50 @@ export const CoastalTyrant = createEnemy({
     // Phase 68 — boss-tier befriend predicate: the fallen-priest's friendship arc
     // opens only after he's been brought low (hpGate 40%), the player has shown
     // empathy at least once (heart stance), and 5 both-defend rounds have passed.
-    // The friendshipReward content side lands in the boss-tier befriendable enemy
-    // follow-up phase (currently blocked-by Phase 68).
     befriendabilityConfig: {
         hpGate: { belowPct: 0.4 },
         requiredStances: ['heart'],
         roundsThreshold: 5,
+    },
+    // Phase 70 — boss-tier friendshipReward demonstrating the full Phase 60
+    // + 62 + 68 + 69 stack on one high-stakes encounter. The fallen-priest's
+    // recognition + release: he gives up the regalia (Paradox Loop — "a
+    // sentence which forever ends without finishing", thematically matching
+    // his never-resolved despair) and a pair of healing tokens; the player
+    // walks away tilted slightly toward optimism (he gave up his despair)
+    // AND toward the individual scope (he saw a person, not a doctrine).
+    // Uses a fixed RNG seed (() => 0.5) for the unique spawn so the reward
+    // is deterministic across reloads. The unique's `requiredLevel: 15`
+    // means the player can hold it from this encounter onward and equip it
+    // at endgame — a long-tail reward in addition to the immediate
+    // consumables + alignmentShift.
+    friendshipReward: {
+        items: [
+            dropItem('paradox-loop', 15, 'unique', () => 0.5),
+            { ...getConsumableById('healing-potion')! },
+            { ...getConsumableById('heart-draught')! },
+        ],
+        xpBonus: 75,
+        narrative:
+            'For five rounds the magistrate has refused to strike. The sword stays low. ' +
+            'You think at first he is preparing some final motion, but his shoulders are ' +
+            'wrong for it — they have already given up the weight.\n\n' +
+            '"You have not killed me," he says, as though that itself is a verdict he ' +
+            'cannot quite parse. "I came here expecting to be killed."\n\n' +
+            'He lifts the circlet from his brow and holds it out. The sentence on its ' +
+            'inner band keeps ending and starting again, exactly as the old texts said it ' +
+            'would. He does not seem surprised that you do not know what to do with it.\n\n' +
+            '"Take this. Take the rest." He sets the potion and the draught beside the ' +
+            'circlet. "I was the king of nothing. You have made me a man with nothing to ' +
+            'be king of. That is closer to honest."',
+        flagSet: 'befriended-coastal-tyrant',
+        // Phase 70 — combined-axis shift matching the magistrate-fallen-priest
+        // archetype's release. He gave up his despair (outlook nudges
+        // optimistic +3) and saw a person rather than a doctrine (scope
+        // pulls toward the individual -2). Inside the Phase 43 ±1..±5
+        // authoring band; the combined-axis weight is heavier than the
+        // normal-tier single-axis deltas, befitting boss-tier.
+        alignmentDelta: { outlook: +3, scope: -2 },
     },
 });
 

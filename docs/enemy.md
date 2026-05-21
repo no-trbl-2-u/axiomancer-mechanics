@@ -267,19 +267,24 @@ Three enemies ship authored predicates / rewards today:
 |---|---|---|---|---|---|---|---|
 | **MournfulGull** | normal | `fv-15` gull crag (Harbor District dead-end via `fv-11` → `fv-14`) | 1 × heart-draught | +10 | `{ outlook: +3 }` — wistful-empathy nudge toward optimistic | default Phase 36 mechanic (no config) | Heart-attuned remembrance gift; the gull stops circling. Sets flag `befriended-mournful-gull` (Phase 62) — Coastal Beggar's dialogue surfaces a new branch acknowledging the gull's silence. |
 | **HollowEyedBeggar** | normal | `fv-18` back alley (Inland Streets, on the way to the abandoned-shack loop via `fv-5` → `fv-18` or `fv-3` → `fv-16` → `fv-17` → `fv-18`) | 1 × healing-potion + 1 × antidote | +15 | `{ scope: -3 }` — re-grounds toward the relational individual | default Phase 36 mechanic (no config) | Reversal of the begging dynamic; they offer what they carry. |
-| **CoastalTyrant** | boss | `coastal-continent` fishing-village boss tile | (deferred — boss-tier follow-up) | (deferred) | (deferred — boss-tier follow-up) | `{ hpGate: { belowPct: 0.4 }, requiredStances: ['heart'], roundsThreshold: 5 }` | Magistrate-fallen-priest; friendship opens only after he's been brought low, the player has shown empathy at least once, and 5 both-defend rounds have passed. Reward content lands in the boss-tier follow-up phase. |
+| **CoastalTyrant** | boss | `coastal-continent` fishing-village boss tile | `paradox-loop` (unique circlet, requiredLevel 15) + healing-potion + heart-draught | +75 | `{ outlook: +3, scope: -2 }` — recognition + release; he gave up his despair toward optimism, and saw a person rather than a doctrine | `{ hpGate: { belowPct: 0.4 }, requiredStances: ['heart'], roundsThreshold: 5 }` | Magistrate-fallen-priest; friendship opens only after he's been brought low, the player has shown empathy at least once, and 5 both-defend rounds have passed. The fallen-priest hands over his regalia (Paradox Loop unique — "a sentence which forever ends without finishing") + healing tokens; multi-paragraph narrative captures the recognition + release. Sets flag `befriended-coastal-tyrant` (Phase 62) for downstream dialogue / quest gates. Demonstrates the full Phase 60+62+68+69 stack on a single high-stakes encounter (Phase 70). |
 
 The 2 normal-tier enemies are picked from the fishing-village
 (level 2-3), where the player's first deliberate befriending
 attempts are likeliest to land. CoastalTyrant is the first boss-tier
-authored predicate (Phase 68) — its `friendshipReward` content
-(multi-paragraph narrative + items + possibly `alignmentDelta`) is
-deferred to the boss-tier befriendable-enemy follow-up phase. The
-quest-branch wire-in on `outcome === 'friendship'` (vs `'victory'`)
-shipped in Phase 62 (`FriendshipReward.flagSet` → `state.flags`); the
-predicate-override mechanism shipped in Phase 68
-(`Enemy.befriendabilityConfig`); the boss-tier reward authoring is
-the only remaining piece.
+authored predicate (Phase 68) AND the first boss-tier authored
+reward (Phase 70). Phase 70 demonstrates the full Phase 60+62+68+69
+stack on a single high-stakes encounter — `befriendabilityConfig`
+predicate, `friendshipReward` with items + xpBonus + multi-paragraph
+narrative + `alignmentDelta` + `flagSet`, the
+`applyAlignmentDelta`-routed alignment shift, and the +1 moralMeter
+fire from Phase 36. The quest-branch wire-in on
+`outcome === 'friendship'` (vs `'victory'`) shipped in Phase 62
+(`FriendshipReward.flagSet` → `state.flags`); the predicate-override
+mechanism shipped in Phase 68 (`Enemy.befriendabilityConfig`); the
+alignment-shift mechanism shipped in Phase 69
+(`FriendshipReward.alignmentDelta`); the boss-tier reward authoring
+landed at Phase 70.
 
 Hermetic e2e coverage at
 [`src/Game/e2e/befriend.engine.test.ts`](../src/Game/e2e/befriend.engine.test.ts)

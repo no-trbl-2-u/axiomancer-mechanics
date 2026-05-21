@@ -346,6 +346,76 @@ describe('Phase 69 — FriendshipReward.alignmentDelta', () => {
     });
 });
 
+describe('Phase 70 — Coastal Tyrant boss-tier friendshipReward (full Phase 60+62+68+69 stack)', () => {
+    function driveCoastalTyrantToFriendship(store: ReturnType<typeof createGameStore>) {
+        const combat = store.getState().combat!;
+        store.getState().updateCombat({
+            ...combat,
+            friendshipCounter: 5,
+            log: [logEntry(1, 'heart'), logEntry(2, 'heart'), logEntry(3, 'body')],
+            enemy: {
+                ...combat.enemy,
+                health: Math.floor(combat.enemy.maxHealth * 0.3),
+            },
+        });
+    }
+
+    it('threads items + xpBonus + narrative + alignmentShift + flagSet on the friendship path', () => {
+        const store = createGameStore(nullAdapter);
+        store.getState().startCombat(CoastalTyrant);
+        const beforeAlignment = store.getState().philosophicalAlignment;
+        const initialMeter = selectMoralMeter(store.getState());
+        driveCoastalTyrantToFriendship(store);
+
+        const report = store.getState().endCombat();
+        expect(report.outcome).toBe('friendship');
+
+        // Items thread — boss-tier reward includes the Paradox Loop unique
+        // + two consumables (healing-potion + heart-draught).
+        const lootIds = report.loot.map(i => i.id);
+        expect(lootIds).toContain('paradox-loop');
+        expect(lootIds).toContain('healing-potion');
+        expect(lootIds).toContain('heart-draught');
+
+        // xpBonus — Phase 70 D2 sets +75 on top of the half-XP base for the
+        // boss tier (7 * 200 / 2 = 700; +75 = 775).
+        expect(report.xpGained).toBe(Math.floor(7 * 200 * 0.5) + 75);
+
+        // narrative — the magistrate-fallen-priest's recognition + release.
+        expect(report.friendshipReward?.narrative).toMatch(/magistrate/);
+        expect(report.friendshipReward?.narrative).toMatch(/circlet/);
+
+        // alignmentShift — { outlook: +3, scope: -2 } applied via clamp.
+        const expectedAlignment = {
+            epistemology: beforeAlignment.epistemology,
+            outlook: beforeAlignment.outlook + 3,
+            scope: beforeAlignment.scope - 2,
+        };
+        expect(report.friendshipReward?.alignmentShift).toEqual(expectedAlignment);
+        expect(store.getState().philosophicalAlignment).toEqual(expectedAlignment);
+
+        // flagSet — Phase 62 convention; downstream content can gate on the flag.
+        expect(store.getState().flags).toContain('befriended-coastal-tyrant');
+
+        // Phase 36 baseline still fires — moral meter +1.
+        expect(selectMoralMeter(store.getState())).toBe(initialMeter + 1);
+    });
+
+    it('does NOT thread the friendshipReward content on victory outcome (drives enemy to 0 HP)', () => {
+        const store = createGameStore(nullAdapter);
+        store.getState().startCombat(CoastalTyrant);
+        const combat = store.getState().combat!;
+        store.getState().updateCombat({
+            ...combat,
+            enemy: { ...combat.enemy, health: 0 },
+        });
+        const report = store.getState().endCombat();
+        expect(report.outcome).toBe('victory');
+        expect(report.friendshipReward).toBeUndefined();
+        expect(store.getState().flags).not.toContain('befriended-coastal-tyrant');
+    });
+});
+
 function clamp(v: number): number {
     return Math.max(-100, Math.min(100, v));
 }
