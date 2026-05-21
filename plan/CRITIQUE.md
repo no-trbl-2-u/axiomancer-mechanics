@@ -14,14 +14,6 @@
 
 ## Pending
 
-### [LOW] Knowledge-Gaps Q5 + header summary missing Phase 69
-- pass: critique-34 (commit 7ade4b6)
-- area: docs
-- observation: Phase 69 (`a42709f` + `9b7787d`, 2026-05-21) shipped `FriendshipReward.alignmentDelta?: Partial<PhilosophicalAlignment>` + the `alignmentShift` report surface — closes Spec 14 Q4. `Knowledge-Gaps.md` was last refreshed at iterate `34881ca` (resolution-sweep summary) and iterate `7b018b9` (Q5 body) — both BEFORE Phase 69 shipped. Q5's body now states "**Remaining follow-up:** boss-tier `friendshipReward` content (multi-paragraph narrative + items + maybe `alignmentDelta` extension on `FriendshipReward`) — the engine fields are ready" — the parenthetical "maybe `alignmentDelta` extension" is stale; Phase 69 shipped the extension. The header rollup summary lists Q5 as "Phase 36 + Phase 60 + Phase 62 + Phase 68" — should include "+ Phase 69".
-- evidence: `Knowledge-Gaps.md:47` Q5 body ("maybe `alignmentDelta` extension on `FriendshipReward`"); `Knowledge-Gaps.md:13-15` rollup ("Phase 36 mechanics + Phase 60 ... + Phase 62 ... + Phase 68 ..."). `grep -n 'Phase 69' Knowledge-Gaps.md` returns 0 hits.
-- suggested_fix: refresh Q5 body to flip "+ maybe `alignmentDelta` extension" → "+ Phase 69 (`a42709f` + `9b7787d`) shipped the `FriendshipReward.alignmentDelta` extension + `alignmentShift` report surface, fully closing Spec 14 Q4". The remaining follow-up shrinks to boss-tier content authoring only (narrative + items; the engine fields including alignmentDelta are all ready). Refresh the header rollup line for Q5 to append "+ Phase 69 `FriendshipReward.alignmentDelta`". Mirror of the post-Phase-68 Q5 refresh at iterate `7b018b9`.
-- source: critique
-
 ### [LOW] Boss-tier befriendable enemy candidate scope is stale — Phase 69's alignmentDelta extension shipped
 - pass: critique-34 (commit 7ade4b6)
 - area: docs / candidate-refresh
@@ -33,6 +25,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] Knowledge-Gaps Q5 + header summary missing Phase 69** — resolved at iterate commit `63604ed` (2026-05-21). Q5 body extended to name Phase 69 (`a42709f` + `9b7787d`) explicitly + the new `FriendshipReward.alignmentDelta` + `alignmentShift` surfaces + the `applyAlignmentDelta` wiring + the Spec 14 Q4 close note + the first authored deltas (MournfulGull `{ outlook: +3 }` / HollowEyedBeggar `{ scope: -3 }`). The "Remaining follow-up" line refined — drops the "maybe `alignmentDelta` extension" hypothetical; only the boss-tier content authoring (narrative + items + an authored `alignmentDelta` value) remains; all engine fields now ready (no engine blockers remaining for the boss-tier candidate). Header rollup line for Q5 appended "+ Phase 69 `FriendshipReward.alignmentDelta` (also closes Spec 14 Q4)". Pure docs change; 678/678 tests stay green. Impact 3 × Ease 9 / 10 = 2.7. Source: critique-34 row 1 (commit `7ade4b6`).
 
 - [x] **[LOW] AUDIT bias "tooling" has been a no-op multiplier across critique passes 28-32 — consider clearing at next /oversight** — resolved at oversight 2026-05-21 (twelfth of session). Picked path (a) from the suggested_fix: bias cleared in `plan/AUDIT.md` (`> Bias: tooling ...` line dropped). Bias-history comment block extended with the CLEARED entry citing the empty driver queue across passes 28-32 + this oversight's user-attended Phase 69 promotion (FriendshipReward.alignmentDelta extension). /iterate now weights all categories evenly until signals re-cluster naturally. Impact 3 × Ease 9 / 10 = 2.7. Source: critique-33 row 1 (commit `34881ca`).
 
