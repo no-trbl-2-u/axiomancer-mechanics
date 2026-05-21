@@ -69,12 +69,25 @@ gameState.shiftMoralMeter(delta, { max: -10 }); // Requires meter ≤ -10
 
 ### Combat: Friendship Victories
 
-When combat ends with a friendship victory (both combatants defend until 
-`friendshipCounter >= 3`), the player gains **+1** to the moral meter,
-representing the compassion shown in finding peaceful resolution.
+When combat ends with a friendship victory, the player gains **+1** to
+the moral meter, representing the compassion shown in finding peaceful
+resolution.
+
+The default friendship trigger (Phase 36) is `friendshipCounter >= 3`
+(`FRIENDSHIP_COUNTER_MAX`) — both combatants defending on the same
+round increments the counter. Phase 68 added a per-enemy override:
+when the befriended enemy carries `Enemy.befriendabilityConfig`, the
+trigger is the AND-composed predicate set (`roundsThreshold` /
+`hpGate` / `requiredStances` / `requiredSkillUse`), not the global
+counter cap. The +1 moralMeter shift fires the same way regardless of
+which trigger path resolved — `outcome === 'friendship'` is the only
+condition this module reads. See `docs/combat.md` § "Friendship Path"
+and § "Per-enemy predicate (Phase 68 — `BefriendabilityConfig`)" for
+the eligibility-check details.
 
 ```ts
 // Triggered automatically in END_COMBAT when determineCombatEnd() === 'friendship'
+// (Phase 36 cap by default; Enemy.befriendabilityConfig overrides per Phase 68).
 if (outcome === 'friendship') {
     return shiftMoralMeter(baseState, 1);
 }
