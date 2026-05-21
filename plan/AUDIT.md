@@ -33,6 +33,16 @@
 
 ## Pending
 
+> **Audit status (2026-05-21):** Pending queue empty. The recent docs / spec sweep
+> drained the post-Phase-68 drift across both engine specs (01 / 02 / 04 / 07 /
+> 12 / 23), front-door docs (api.md / README.md / quickstart.md), CHANGELOG
+> migration paragraphs, Knowledge-Gaps Q5 resolution rollup, agents.md skill
+> table, and the Combat-reducer JSDoc surface. Critique pass 33 filed one
+> remaining LOW row (AUDIT bias `tooling` has been a no-op multiplier across
+> passes 28-32) — that row is `/oversight`-routed (iterate cannot edit the bias
+> autonomously). With expand rate-limited until commit 7ac2b07+20, the next
+> couple `/march` ticks will likely surface only sub-3.0 derivable findings;
+> after that, expand pass 19 should refresh the candidate pool.
 
 ---
 
