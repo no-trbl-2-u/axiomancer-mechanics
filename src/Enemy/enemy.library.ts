@@ -184,6 +184,10 @@ export const MournfulGull = createEnemy({
             'The gull stops circling. It settles on the rail beside you. ' +
             'For a long moment, neither of you speaks the slights you remember.',
         flagSet: 'befriended-mournful-gull',
+        // Phase 69 — wistful empathy reading nudges outlook one notch
+        // toward optimistic (per the gull's circling-then-settling beat).
+        // Inside the Phase 43 ±1..±5 authoring band.
+        alignmentDelta: { outlook: +3 },
     },
 });
 

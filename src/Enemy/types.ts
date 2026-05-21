@@ -126,6 +126,19 @@ export interface FriendshipReward {
      * (e.g. `'befriended-mournful-gull'`). De-duplicated on append.
      */
     flagSet?: string;
+    /**
+     * Phase 69 — optional shift applied to the player's philosophical
+     * alignment cube on the friendship outcome. The END_COMBAT reducer
+     * routes the delta through `applyAlignmentDelta(state.philosophicalAlignment,
+     * delta)` (Phase 42's clamp helper at `src/Philosophy/alignment.engine.ts`);
+     * each named axis clamps to `[-100, +100]`, missing axes pass through
+     * unchanged. Authoring band mirrors Phase 43's dialogue / map-event
+     * `alignmentDelta` convention (±1..±5 per axis; ±10 reserved for endgame).
+     * Closes Spec 14 Q4 — the friendship-victory ↔ alignment-cube
+     * intersection is now opt-in per encounter rather than orthogonal by
+     * default.
+     */
+    alignmentDelta?: Partial<PhilosophicalAlignment>;
 }
 
 /**

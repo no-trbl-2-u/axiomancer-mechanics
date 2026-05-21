@@ -279,3 +279,73 @@ describe('Phase 68 — Coastal Tyrant BefriendabilityConfig integration', () => 
         expect(FRIENDSHIP_COUNTER_MAX).toBeLessThan(5);
     });
 });
+
+describe('Phase 69 — FriendshipReward.alignmentDelta', () => {
+    it('applies the per-enemy alignmentDelta to state.philosophicalAlignment on friendship', () => {
+        const store = createGameStore(nullAdapter);
+        store.getState().startCombat(MournfulGull);
+        const before = store.getState().philosophicalAlignment;
+        driveToFriendship(store);
+        const report = store.getState().endCombat();
+
+        expect(report.outcome).toBe('friendship');
+        const mournfulDelta = MournfulGull.friendshipReward?.alignmentDelta;
+        if (!mournfulDelta) {
+            throw new Error('Phase 69 test premise: MournfulGull must carry alignmentDelta');
+        }
+        const expected = {
+            epistemology: clamp(before.epistemology + (mournfulDelta.epistemology ?? 0)),
+            outlook: clamp(before.outlook + (mournfulDelta.outlook ?? 0)),
+            scope: clamp(before.scope + (mournfulDelta.scope ?? 0)),
+        };
+        expect(store.getState().philosophicalAlignment).toEqual(expected);
+        expect(report.friendshipReward?.alignmentShift).toEqual(expected);
+    });
+
+    it('does NOT shift alignment on victory even when the enemy carries alignmentDelta', () => {
+        const store = createGameStore(nullAdapter);
+        store.getState().startCombat(MournfulGull);
+        const before = store.getState().philosophicalAlignment;
+        const combat = store.getState().combat!;
+        store.getState().updateCombat({ ...combat, enemy: { ...combat.enemy, health: 0 } });
+        const report = store.getState().endCombat();
+
+        expect(report.outcome).toBe('victory');
+        expect(store.getState().philosophicalAlignment).toEqual(before);
+        expect(report.friendshipReward).toBeUndefined();
+    });
+
+    it('clamps each axis to [-100, +100] at the eligibility check', () => {
+        const store = createGameStore(nullAdapter);
+        // Pre-load the player near the +100 ceiling on outlook so the
+        // delta exercises the clamp.
+        store.getState().shiftPhilosophicalAlignment({ outlook: 100 });
+        const cap = store.getState().philosophicalAlignment.outlook;
+        expect(cap).toBe(100);
+
+        store.getState().startCombat(MournfulGull);
+        driveToFriendship(store);
+        const report = store.getState().endCombat();
+
+        expect(report.outcome).toBe('friendship');
+        // outlook would have overshot 100 + positive delta; clamp pins it at 100.
+        expect(store.getState().philosophicalAlignment.outlook).toBeLessThanOrEqual(100);
+        expect(report.friendshipReward?.alignmentShift?.outlook).toBeLessThanOrEqual(100);
+    });
+
+    it('omits friendshipReward.alignmentShift when the enemy has no alignmentDelta', () => {
+        const store = createGameStore(nullAdapter);
+        store.getState().startCombat(TidepoolCrab);
+        driveToFriendship(store);
+        const report = store.getState().endCombat();
+
+        expect(report.outcome).toBe('friendship');
+        // TidepoolCrab carries no friendshipReward at all; alignmentShift should
+        // remain undefined.
+        expect(report.friendshipReward).toBeUndefined();
+    });
+});
+
+function clamp(v: number): number {
+    return Math.max(-100, Math.min(100, v));
+}

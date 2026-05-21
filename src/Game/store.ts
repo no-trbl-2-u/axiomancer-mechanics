@@ -44,6 +44,7 @@ import {
 } from '../Items/types';
 import { DialogueTree, DialogueChoice } from '../NPCs/types';
 import { PhilosophicalAlignment } from '../Philosophy/types';
+import { applyAlignmentDelta } from '../Philosophy/alignment.engine';
 import { GameState } from './types';
 import { GameAction } from './actions.types';
 import { gameReducer, createNewGameState } from './game.reducer';
@@ -104,9 +105,16 @@ export interface CombatEndReport {
      * `friendshipReward`. The engine has already applied the reward's
      * `items` to `loot` and `xpBonus` to `xpGained` by the time this
      * surfaces; `narrative` is here for the CLI / UI to render.
+     * Phase 69 — `alignmentShift` carries the post-clamp
+     * `PhilosophicalAlignment` for the consumer to render (the
+     * END_COMBAT reducer has already written the new cell to
+     * `state.philosophicalAlignment` by the time this surfaces).
+     * Mirrors the way `applyDialogueChoice` returns
+     * `effects.philosophicalShift`.
      */
     friendshipReward?: {
         narrative?: string;
+        alignmentShift?: PhilosophicalAlignment;
     };
 }
 
@@ -339,10 +347,23 @@ export function createGameStore(
                 // Phase 60 — surface the narrative on the report so the CLI /
                 // UI can render it. Items + xpBonus already reach the consumer
                 // through report.loot / report.xpGained.
-                if (outcome === 'friendship' && pre.combat.enemy.friendshipReward?.narrative) {
-                    report.friendshipReward = {
-                        narrative: pre.combat.enemy.friendshipReward.narrative,
-                    };
+                // Phase 69 — surface the post-clamp PhilosophicalAlignment so
+                // the CLI / UI can render the shift; the reducer applies the
+                // delta to state.philosophicalAlignment under the dispatch
+                // below.
+                if (outcome === 'friendship') {
+                    const fr = pre.combat.enemy.friendshipReward;
+                    if (fr?.narrative || fr?.alignmentDelta) {
+                        const friendshipReport: { narrative?: string; alignmentShift?: PhilosophicalAlignment } = {};
+                        if (fr.narrative) friendshipReport.narrative = fr.narrative;
+                        if (fr.alignmentDelta) {
+                            friendshipReport.alignmentShift = applyAlignmentDelta(
+                                pre.philosophicalAlignment,
+                                fr.alignmentDelta,
+                            );
+                        }
+                        report.friendshipReward = friendshipReport;
+                    }
                 }
                 dispatch(
                     { type: 'END_COMBAT', payload: { grantedLoot: loot, grantedXp: xpGained } },

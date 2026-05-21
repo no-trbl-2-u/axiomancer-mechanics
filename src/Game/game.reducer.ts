@@ -234,12 +234,28 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
                 }
             }
 
+            // Phase 69 — friendship resolutions apply the per-enemy
+            // `alignmentDelta` to state.philosophicalAlignment via the
+            // Phase 42 `applyAlignmentDelta` clamp helper. Each axis
+            // clamps to [-100, +100]; missing axes pass through. Closes
+            // Spec 14 Q4. Combined with the Phase 62 flag-set above so the
+            // friendship outcome can carry world flags AND alignment
+            // shifts independently.
+            let nextAlignment = state.philosophicalAlignment;
+            if (outcome === 'friendship') {
+                const delta = combat.enemy.friendshipReward?.alignmentDelta;
+                if (delta) {
+                    nextAlignment = applyAlignmentDelta(nextAlignment, delta);
+                }
+            }
+
             // Friendship victories grant +1 to moral meter (compassion)
             const baseState = {
                 ...state,
                 player: nextPlayer,
                 quests: nextQuests,
                 flags: nextFlags,
+                philosophicalAlignment: nextAlignment,
                 combat: null,
                 currentEncounter: undefined,
             };
