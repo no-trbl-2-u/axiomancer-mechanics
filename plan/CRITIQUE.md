@@ -14,14 +14,6 @@
 
 ## Pending
 
-### [LOW] Phase 66 surfaces (SkillSynergy + SynergyPredicate + 5 new skills + synergy-fired event) missing from docs/api.md + README.md + plan/bearings.md; agents.md doesn't cross-link to Phase 67 docs/quickstart.md
-- pass: critique-29 (commit 53cb9a1)
-- area: docs
-- observation: Two phases shipped public-API + docs surface since pass 28 (Phase 66 at `25e3c28`/`2f75ba0`/`d41d90b`; Phase 67 at `5c0e0c5`). Front-door discoverability lags: (1) **docs/api.md** doesn't mention `SkillSynergy` / `SynergyPredicate` / the 5 new Tier 2 synergy skills / the `synergy-fired` SkillEvent + SkillPhaseEvent variant — the Skills section (line 191) stops at Phase 33 / Phase 44 surface. (2) **README.md Skills row** doesn't list the synergy primitive. (3) **plan/bearings.md** Public-API Skills entry doesn't carry the synergy surface. (4) **agents.md** (the autonomous-loop entry-point + new-contributor landing doc) doesn't cross-link to the freshly-shipped `docs/quickstart.md` (Phase 67) — `README.md` got the link per Phase 67's brief, but `agents.md` was missed and that's the file the /march dispatcher reads at session boot. Same front-door currency pattern as critique-24 row 2, critique-25 row 3, critique-27 row 1, critique-28 row 1 — front-door readers lag the public-surface ships by a tick. The CHANGELOG `[unreleased]` `### Added` block (Phase 66) + `### Docs` block (Phase 67) have the canonical phrasing.
-- evidence: `grep -nE "SkillSynergy|SynergyPredicate|resonance-bleed|intensity-feedback|bat-swarm-thoughtform|resonance-burst|resonance-detonation|synergy-fired" docs/api.md README.md plan/bearings.md` returns 0 hits. `grep -n "quickstart" agents.md` returns 0 hits. `scripts/public-surface.expected.json` is updated (159 → 161 types per Phase 66) so the deploy gate is green; the drift is purely in prose / quick-reference annotation.
-- suggested_fix: One pass-through commit. (a) `docs/api.md` Skills section gains a "Tier 2 synergy (Phase 66)" subsection naming the two new types + the 5 authored skills + the `synergy-fired` event variant; cross-link to `docs/skills.md` Tier 2 synergy section. (b) `README.md` Public API Skills row gains a clause: "; Tier 2 synergy primitive (`SkillSynergy` + `SynergyPredicate` types; 5 authored skills — Phase 66)". (c) `plan/bearings.md` Public-API Skills entry gains a line mentioning the Phase 66 surface (mirrors the existing Enemy entry that lists `FriendshipReward (+ Enemy.friendshipReward? — Phase 60; + flagSet? extension — Phase 62)`). (d) `agents.md` gains a top-level pointer to `docs/quickstart.md` (placed near the existing standing-rules / verify-gate references so a /march re-read of the file surfaces the link). Pure docs change; 653/653 tests stay green; no fixture change.
-- source: critique
-
 ### [LOW] `specs/04b-skills-library-and-e2e.md` still says "Tier 2 — Resonance Required (3 skills)" — Phase 66 added 5 more, total is now 8
 - pass: critique-29 (commit 53cb9a1)
 - area: spec-drift
@@ -33,6 +25,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] Phase 66 surfaces (SkillSynergy + SynergyPredicate + 5 new skills + synergy-fired event) missing from docs/api.md + README.md + plan/bearings.md; agents.md doesn't cross-link to Phase 67 docs/quickstart.md** — resolved at iterate commit `4a2d835` (2026-05-20). All four readers updated in a single pass-through commit per the suggested_fix: docs/api.md Skills section gained a "Tier 2 synergy (Phase 66)" subsection naming the types + 5 skills + synergy-fired event; README.md Skills row extended with the Phase 66 surface clause; plan/bearings.md gained a brand-new Skills entry (Skills was implicit in the Public-API block before; now explicit with the Phase 66 synergy line); agents.md gained a top-level docs/quickstart.md pointer. Pure docs change; 653/653 tests stay green. Impact 3 × Ease 8 / 10 = 2.4. Source: critique-29 row 1 (commit `53cb9a1`).
 
 - [x] **[LOW] `docs/enemy.md` "Befriendable enemies (Phase 60)" table doesn't cross-link to the Phase 65 world placements (fv-15 gull crag + fv-18 back alley)** — resolved at iterate commit `0444d7d` (2026-05-20). `docs/enemy.md:256` Befriendable enemies table gained a "World placement (Phase 65)" column with both reachable paths to fv-18 spelled out. `docs/combat.md:209-210` befriendable table cells extended with a bracketed (at fv-N <area>, Phase 65) annotation alongside the enemy name (per the suggested_fix's optional combat.md cross-link). 643/643 tests stay green; pure docs change. Impact 3 × Ease 9 / 10 = 2.7. Source: critique-28 row 1 (commit `17479e7`).
 
