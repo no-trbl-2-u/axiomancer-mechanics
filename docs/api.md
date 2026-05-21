@@ -121,6 +121,40 @@ See `docs/combat.md` § "Friendship Path" + § "Befriendable-enemy
 content (Phase 60)" and `docs/enemy.md` § "Befriendable enemies
 (Phase 60)".
 
+**Per-enemy befriend predicate (Phase 68).** Optional
+`Enemy.befriendabilityConfig?: BefriendabilityConfig` overrides the
+Phase 36 friendship-eligibility check on a per-enemy basis. When
+absent, the Phase 36 mechanic (`friendshipCounter >=
+FRIENDSHIP_COUNTER_MAX`) is unchanged; when present, ALL named
+predicates AND-compose:
+
+- `roundsThreshold?: number` — per-enemy override of the global
+  counter cap (default `FRIENDSHIP_COUNTER_MAX`).
+- `hpGate?: { belowPct: number }` — enemy HP fraction must be at or
+  below `belowPct` at the eligibility check (snapshot; healing back
+  above the threshold un-qualifies).
+- `requiredStances?: Stance[]` — player must have used at least one
+  of the named stances during combat (existential; derived from
+  `state.log[].playerAction.stance`).
+- `requiredSkillUse?: string[]` — player must have cast at least one
+  of the named skill IDs during combat (existential; derived from
+  `state.log[].playerAction` entries with `action === 'skill'`).
+- `defaultFallback?: 'both-defend-cap'` — explicit escape hatch that
+  treats other fields as no-ops and uses the global counter cap.
+
+Counter still increments freely on both-defend rounds (Phase 36
+unchanged); friendship triggers only when all predicates pass
+together — late-resolution semantics. The new internal helper
+`isFriendshipEligible(state)` is the single decision point;
+`determineCombatEnd` and `isCombatOngoing` both call it so the two
+predicates stay in lockstep. Helper is **not** on the public barrel
+per Phase 68 D11 — engine consumers read combat-end state through
+`determineCombatEnd`. First boss-tier authored config:
+`CoastalTyrant` ships `{ hpGate: { belowPct: 0.4 }, requiredStances:
+['heart'], roundsThreshold: 5 }`. See `docs/combat.md` § "Per-enemy
+predicate (Phase 68 — `BefriendabilityConfig`)" for the full schema
+and authoring guidance.
+
 **Reactive NPCs — alignment observers (Phase 63).** Tree-level
 observer machinery — Beta:
 
