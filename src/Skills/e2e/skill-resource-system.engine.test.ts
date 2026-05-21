@@ -4,7 +4,7 @@
  * Drives the resource → skill → philosophical-token chain end-to-end through
  * `resolveCombatRound` + `executeSkill` — the public entry points UI clients
  * use today. Follows the canonical shape from
- * `src/Combat/e2e/combat.resolver.test.ts`:
+ * `src/Combat/e2e/combat.resolver.engine.test.ts`:
  *
  *   - Self-contained: no disk I/O (uses `nullAdapter` indirectly via fixtures
  *     and never touches the game store), no network, no TTY.

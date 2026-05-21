@@ -23,7 +23,7 @@
  *     `nullAdapter` with a `vi.spyOn(nullAdapter, 'save')` assertion.
  *
  * Reference test (canonical structure to copy):
- *   `src/Combat/e2e/combat.resolver.test.ts`.
+ *   `src/Combat/e2e/combat.resolver.engine.test.ts`.
  */
 
 import { afterEach, describe, it, expect, vi } from 'vitest';
