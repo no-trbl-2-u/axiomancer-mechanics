@@ -6,18 +6,31 @@
 > includes the questions it depends on so you can answer them in context. This
 > file is now the catch-all for cross-cutting questions.
 
-> **Iterate sweep 2026-05-15:** several questions below were silently
-> answered by phases 09–24 of the autonomous loop. Where a spec
-> shipped, the relevant question is annotated RESOLVED inline. The
-> following Qs are now closed even where their spec-cross-reference
-> hasn't been re-edited: Q4 (defense asymmetry fixed by Phase 15
-> scenario phase), Q5 (friendship rewards by Phase 10), Q6 (simultaneous
-> action stayed), Q8 (stat modifiers via `getEffectiveStats` in
-> `Combat/effect-modifiers.ts`), Q11 (`processWorldEffectTick`
-> shipped), Q17 (mana replaced by Spec 04 combat resources), Q22
-> (Map vs MapState split, Spec 08), Q23 + Q24 + Q25 (RN + zustand +
-> events all answered by Phase 12 / 21), Q27 (moral choice by
-> Phase 10).
+> **Resolution sweep summary (last updated 2026-05-21):** the
+> following Qs are now closed; each Q's body carries the full
+> resolution context with shipping commits.
+>
+> - **Q4** (defense asymmetry) — Phase 15 scenario phase.
+> - **Q5** (friendship mechanic) — Phase 36 mechanics + Phase 60
+>   per-enemy reward content + Phase 62 `FriendshipReward.flagSet`
+>   quest-branch wiring + Phase 68 per-enemy `BefriendabilityConfig`
+>   predicate.
+> - **Q6** (simultaneous action) — stayed as the canonical model.
+> - **Q8** + **Q9** (stat modifiers / intensity scaling) — Spec 01
+>   pre-loop; verified at Phase 48.
+> - **Q11** (`processWorldEffectTick`) — Spec 08 pre-loop.
+> - **Q14** (stat allocation per level) — Phase 29.
+> - **Q17** (mana economy) — Spec 04 replaced mana with the 5-resource
+>   `CombatResources` system.
+> - **Q22** (Map vs MapState split) — Spec 08 / Phase 23-25.
+> - **Q23** + **Q24** + **Q25** (RN + zustand + events) — Phase 12
+>   + Phase 21.
+> - **Q27** (moral choice integration) — Phase 10 moralMeter
+>   (narrative-only per Spec 10 Q4) + Phase 42-46 philosophical
+>   alignment cube + `requiresAlignment` gates.
+>
+> Genuinely-deferred Qs (game-design tuning, not engine work): Q26
+> (lethal-swingy tuning), Q28 (multiple endings).
 
 ---
 
