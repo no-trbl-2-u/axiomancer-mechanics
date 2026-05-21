@@ -22,17 +22,11 @@
 - suggested_fix: append a "Phase 68 — per-enemy friendship eligibility" subsection (or note) covering: (a) `Enemy.befriendabilityConfig?` field shape (4 axes + `defaultFallback`); (b) `isFriendshipEligible` as the internal predicate that `determineCombatEnd` and `isCombatOngoing` both call (lockstep guarantee); (c) late-resolution semantics — counter still increments freely; friendship triggers only when all predicates pass. Cross-link `docs/combat.md` § "Per-enemy predicate (Phase 68 — BefriendabilityConfig)" for the consumer-facing schema.
 - source: critique
 
-### [LOW] `specs/04-skills-engine.md` doesn't document Phase 66's `Skill.synergy?: SkillSynergy` clause
-- pass: critique-31 (commit 0c14a75)
-- area: docs / spec-gap
-- observation: Phase 66 added a new optional payload field `Skill.synergy?: SkillSynergy` (with matching `SynergyPredicate`) that the skills engine evaluates inside `executeSkill` after `calculateSkillDamage` and before `combatEffects` apply. `src/Skills/types.ts` carries the types; `src/Skills/skill.engine.ts` carries the evaluation path. Spec 04 is the engine-level skills spec — it documents `Skill`, `executeSkill`, `canUseSkill`, `calculateSkillDamage`, etc., but doesn't mention the synergy clause or the `synergy-fired` `SkillEvent` variant. Spec 04b (the content/library spec) WAS updated post-Phase-66 (at iterate `52b8ac2`) to flip the Tier 2 row count 3 → 8; Spec 04 (the engine spec) was not.
-- evidence: `specs/04-skills-engine.md` (no `synergy` / `SkillSynergy` / `Phase 66` matches).
-- suggested_fix: append a "Phase 66 — Tier 2 synergy clause" subsection covering: (a) `SkillSynergy` field shape (`predicate?` + damage scalars + side-effect flags + `applyEffectOnFire?`); (b) `SynergyPredicate` (effectId / on side / intensityMin / durationMin); (c) evaluation order in `executeSkill` (after damage, before combatEffects); (d) the new `synergy-fired` event surface. Cross-link `docs/skills.md` § "Tier 2 synergy (Phase 66)" for the per-skill content table.
-- source: critique
-
 ---
 
 ## Done
+
+- [x] **[LOW] `specs/04-skills-engine.md` doesn't document Phase 66's `Skill.synergy?: SkillSynergy` clause** — resolved at iterate commit `3d4ae6e` (2026-05-21). Appended a new "Post-spec engine extensions" section after the "Out of scope" block; the "Phase 66 — Tier 2 synergy clause" subsection documents `SkillSynergy` + `SynergyPredicate` type shapes (code-fenced), the evaluation order inside `executeSkill` (after `calculateSkillDamage`, before `combatEffects`), the synergy damage formula (bonusDamage + intensity/duration/token multipliers), the `synergy-fired` `SkillEvent` / `SkillPhaseEvent` variant for UI / agent rendering, and the test pin at `src/Skills/e2e/synergy-skills.engine.test.ts`. Cross-links to `docs/skills.md` § "Tier 2 synergy (Phase 66)" + `specs/04b` Tier 2 table for the per-skill content mapping. Phase 66 acceptance commits (`25e3c28` + `2f75ba0` + `d41d90b`) cited for traceability. Pure docs change; 674/674 tests stay green. Impact 4 × Ease 7 / 10 = 2.8. Source: critique-31 row 2 (commit `94c2fab`).
 
 - [x] **[LOW] CHANGELOG.md `[0.10.3]` Migration notes "post-v0.10.2 delta vs HEAD" pointer is historical-section-stale** — resolved at iterate commit `4aa6034` (2026-05-21). Re-anchored the paragraph per the suggested_fix: "post-v0.10.2 delta vs HEAD" → "v0.10.2 → v0.10.3 delta" (frozen-section framing); the single-change "Phase 60 `FriendshipReward` 158 → 159" phrasing extended to fold in the Phase 66 `SkillSynergy` + `SynergyPredicate` additions (159 → 161) — `v0.10.3` shipped with 233 + 161; closing sentence makes clear Phase 68's `BefriendabilityConfig` (+1 → 162) is a post-`v0.10.3` `[unreleased]` item, not part of `[0.10.3]`. Pure prose annotation change; 674/674 tests stay green; verify + deploy:check clean. Impact 2 × Ease 9 / 10 = 1.8. Source: critique-30 row 3 (commit `0520115`).
 
