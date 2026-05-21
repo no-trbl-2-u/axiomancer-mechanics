@@ -142,6 +142,17 @@ a bump — see the Migration notes below.
   Not a public-surface change; test entry-point only.
 
 ### Docs
+- **`docs/quickstart.md` (Phase 67).** New single-page entry-point
+  doc for someone landing on the repo without context. Covers
+  module-by-module what's shipped (with Phase numbers), how to drive
+  the CLI (tabs + scripted mode + walkthroughs), key in-game flows
+  (combat / friendship path / map exploration / save-load /
+  alignment gates), verify + deploy gates, and a "where to look when
+  you want depth" table cross-linking to `docs/api.md`,
+  `docs/testing.md`, `RELEASING.md`, the per-phase briefs, and
+  `CHANGELOG.md` `[unreleased]` Migration notes for stale-consumer
+  re-grounding. `README.md` adds a top-level cross-link. Pure docs
+  assembly; no engine touch. Phase 67 single-commit.
 - **Phase 64 endgame-loadout walkthrough** —
   `automation/scripts/walkthroughs/endgame-loadout.{json,goal.md}`.
   Demonstration-grade agent-graded script driving the Sage preset
