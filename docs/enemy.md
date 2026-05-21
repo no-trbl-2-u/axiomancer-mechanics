@@ -241,23 +241,33 @@ interface FriendshipReward {
     /** Phase 62 — optional world flag appended to state.flags on
      *  friendship. Convention: `befriended-<enemy-id-stem>`. */
     flagSet?: string;
+    /** Phase 69 — optional shift applied to the player's
+     *  philosophical alignment cube on the friendship outcome.
+     *  Routed through applyAlignmentDelta (Phase 42 clamp helper).
+     *  Authoring band: ±1..±5 per axis (matches Phase 43 dialogue
+     *  / map-event delta convention). Closes Spec 14 Q4. */
+    alignmentDelta?: Partial<PhilosophicalAlignment>;
 }
 ```
 
 Engine wiring lives in `src/Game/store.ts#endCombat`: in the
 `outcome === 'friendship'` branch, the reward's `items` append to
-`report.loot`, `xpBonus` adds to `report.xpGained`, and `narrative`
-surfaces on `CombatEndReport.friendshipReward.narrative`. None of
+`report.loot`, `xpBonus` adds to `report.xpGained`, `narrative`
+surfaces on `CombatEndReport.friendshipReward.narrative`, and
+(Phase 69) `alignmentDelta` is folded into `state.philosophicalAlignment`
+via `applyAlignmentDelta` — the post-clamp value also surfaces on
+`CombatEndReport.friendshipReward.alignmentShift?: PhilosophicalAlignment`
+for the consumer to render. None of
 the FriendshipReward fields REPLACE the Phase 36 grants; they
 augment them.
 
 Three enemies ship authored predicates / rewards today:
 
-| Enemy | Difficulty | World placement (Phase 65) | Items | xpBonus | BefriendabilityConfig (Phase 68) | Narrative tone |
-|---|---|---|---|---|---|---|
-| **MournfulGull** | normal | `fv-15` gull crag (Harbor District dead-end via `fv-11` → `fv-14`) | 1 × heart-draught | +10 | default Phase 36 mechanic (no config) | Heart-attuned remembrance gift; the gull stops circling. Sets flag `befriended-mournful-gull` (Phase 62) — Coastal Beggar's dialogue surfaces a new branch acknowledging the gull's silence. |
-| **HollowEyedBeggar** | normal | `fv-18` back alley (Inland Streets, on the way to the abandoned-shack loop via `fv-5` → `fv-18` or `fv-3` → `fv-16` → `fv-17` → `fv-18`) | 1 × healing-potion + 1 × antidote | +15 | default Phase 36 mechanic (no config) | Reversal of the begging dynamic; they offer what they carry. |
-| **CoastalTyrant** | boss | `coastal-continent` fishing-village boss tile | (deferred — boss-tier follow-up) | (deferred) | `{ hpGate: { belowPct: 0.4 }, requiredStances: ['heart'], roundsThreshold: 5 }` | Magistrate-fallen-priest; friendship opens only after he's been brought low, the player has shown empathy at least once, and 5 both-defend rounds have passed. Reward content lands in the boss-tier follow-up phase. |
+| Enemy | Difficulty | World placement (Phase 65) | Items | xpBonus | alignmentDelta (Phase 69) | BefriendabilityConfig (Phase 68) | Narrative tone |
+|---|---|---|---|---|---|---|---|
+| **MournfulGull** | normal | `fv-15` gull crag (Harbor District dead-end via `fv-11` → `fv-14`) | 1 × heart-draught | +10 | `{ outlook: +3 }` — wistful-empathy nudge toward optimistic | default Phase 36 mechanic (no config) | Heart-attuned remembrance gift; the gull stops circling. Sets flag `befriended-mournful-gull` (Phase 62) — Coastal Beggar's dialogue surfaces a new branch acknowledging the gull's silence. |
+| **HollowEyedBeggar** | normal | `fv-18` back alley (Inland Streets, on the way to the abandoned-shack loop via `fv-5` → `fv-18` or `fv-3` → `fv-16` → `fv-17` → `fv-18`) | 1 × healing-potion + 1 × antidote | +15 | `{ scope: -3 }` — re-grounds toward the relational individual | default Phase 36 mechanic (no config) | Reversal of the begging dynamic; they offer what they carry. |
+| **CoastalTyrant** | boss | `coastal-continent` fishing-village boss tile | (deferred — boss-tier follow-up) | (deferred) | (deferred — boss-tier follow-up) | `{ hpGate: { belowPct: 0.4 }, requiredStances: ['heart'], roundsThreshold: 5 }` | Magistrate-fallen-priest; friendship opens only after he's been brought low, the player has shown empathy at least once, and 5 both-defend rounds have passed. Reward content lands in the boss-tier follow-up phase. |
 
 The 2 normal-tier enemies are picked from the fishing-village
 (level 2-3), where the player's first deliberate befriending

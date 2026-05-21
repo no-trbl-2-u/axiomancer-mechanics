@@ -186,9 +186,13 @@ the returned `CombatEndReport` carries:
 - `loot: rollEncounterLoot(encounter) ++ friendshipReward?.items` —
   the full weighted-loot roll with any per-enemy guaranteed items
   appended (Phase 60)
-- `friendshipReward?: { narrative? }` (Phase 60) — present only when
-  the befriended enemy carries an authored `friendshipReward` and a
-  `narrative` string. Engine doesn't interpret; CLI / UI renders.
+- `friendshipReward?: { narrative?, alignmentShift? }` (Phase 60 + 69)
+  — present only when the befriended enemy carries an authored
+  `friendshipReward` with a `narrative` OR `alignmentDelta`. Engine
+  doesn't interpret `narrative`; CLI / UI renders. `alignmentShift`
+  (Phase 69) carries the post-clamp `PhilosophicalAlignment` the
+  reducer just wrote to `state.philosophicalAlignment` — surface
+  parity for consumers that don't subscribe separately.
 - **State side effect (Phase 62)** — when the befriended enemy carries
   `friendshipReward.flagSet?: string`, the END_COMBAT reducer appends
   the flag to `state.flags` (de-duped). Downstream dialogue choices /
@@ -196,6 +200,14 @@ the returned `CombatEndReport` carries:
   `DialogueChoice.requires.flag` machinery — no new engine surface
   for the consumer. Convention is `befriended-<enemy-id-stem>` (e.g.
   `befriended-mournful-gull`). The flag does NOT surface on the report.
+- **State side effect (Phase 69)** — when the befriended enemy carries
+  `friendshipReward.alignmentDelta?: Partial<PhilosophicalAlignment>`,
+  the END_COMBAT reducer applies the delta to
+  `state.philosophicalAlignment` via `applyAlignmentDelta` (Phase 42
+  clamp helper; each axis clamps to `[-100, +100]`, missing axes pass
+  through). Closes Spec 14 Q4. Authoring band: ±1..±5 per axis (matches
+  the Phase 43 dialogue / map-event delta convention). The post-clamp
+  cell surfaces on `CombatEndReport.friendshipReward.alignmentShift`.
 
 The reducer side (Phase 10) also shifts the moral meter `+1` (see
 `docs/morality.md` § "Combat: Friendship Victories") and routes the player

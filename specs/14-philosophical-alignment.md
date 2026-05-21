@@ -48,6 +48,7 @@ Five phases of engine + content work shipped against the cube:
 | **44** | `87cfa7e` + `06f5ffe` + closing | `Skill.sourcedFromCell?: string` + `Effect.sourcedFromCell?: string` cross-link. 4 new Tier 3 fallacy skills (`appeal-to-consequences`, `nirvana-fallacy`, `pascals-wager`, `appeal-to-fear`) + 3 new fallacy status effects (`debuff_no_true_scotsman`, `buff_special_pleading`, `debuff_category_error`), all linked to their originating cell. `docs/skills.md` + `docs/effects.md` "Philosophical fallacy payloads (Phase 44)" subsections. |
 | **45** | `b185fe2` + `cb526a1` | `Enemy.philosophicalAlignment?: PhilosophicalAlignment` field. All 16 `ENEMY_REGISTRY` entries backfilled with thematic cell pins (13 distinct cells used of 27). `applyOutlookBias(action, enemy)` flip rule wired into `decideEnemyAction`: pessimistic enemies (outlook ≤ -34) flip `attack` → `defend` at 25% / round; optimistic enemies (outlook ≥ 34) flip `defend` → `attack` at 25% / round; mid-bucket / no-alignment / non-`attack`/`defend` actions pass through unchanged. |
 | **46** | `49b02f6` + `fb319cb` + `3765c31` | `AlignmentGate` predicate type (`{ axis, op: 'gte' \| 'lte', value }`). `DialogueChoice.requires.requiresAlignment?: AlignmentGate` + `SkillLearningRequirement.requiresAlignment?: AlignmentGate`. `visibleChoices` / `meetsLearningRequirement` / `getAvailableSkills` / `learnSkill` extended with optional `alignment` parameter. `DialogueContext.alignment?` field. First-pass authored gates: `nirvana-fallacy` requires `outlook ≤ -34`; `appeal-to-fear` requires `scope ≥ 34`; Old Marrow + Coastal Beggar trees gain alignment-gated branches. |
+| **69** | `a42709f` + closing | `FriendshipReward.alignmentDelta?: Partial<PhilosophicalAlignment>` field on `src/Enemy/types.ts`. END_COMBAT reducer applies the delta to `state.philosophicalAlignment` via `applyAlignmentDelta` on the `outcome === 'friendship'` branch (alongside the Phase 36 +1 `moralMeter` shift). `CombatEndReport.friendshipReward.alignmentShift?: PhilosophicalAlignment` surfaces the post-clamp value for consumers. First authored deltas: MournfulGull `{ outlook: +3 }` (wistful empathy); HollowEyedBeggar `{ scope: -3 }` (re-grounds toward the relational individual). Closes Q4. |
 
 Public-API surface (top-level barrel, `src/index.ts`):
 
@@ -114,19 +115,27 @@ Hermetic test coverage:
 
 4. **How does the alignment cube intersect with the friendship-
    victory mechanic?**
-   > Your answer: It doesn't, by design. Friendship-victory shifts
-   > `moralMeter` +1 (Phase 36's `endCombat` path in
-   > `src/Game/store.ts`) and grants `floor(totalEncounterXp * 0.5)`
-   > XP + full loot, but no `philosophicalAlignment` axis moves and
-   > no cell carries a friendship-counter trigger. If a future
-   > content phase wants befriending a philosopher-themed enemy to
-   > nudge alignment (e.g. befriending the Coastal Tyrant
-   > [`faith-pessimistic-transcendent`] could nudge the player
-   > slightly toward that cell), the per-encounter
-   > `MapEventPoolEntry.alignmentDelta` (Phase 43) is the
-   > authoring surface — wire a `combat:befriended`-triggered
-   > MapEvent rather than touching the engine. Document the
-   > orthogonality + the authoring path here; no Spec 14 action.
+   > **Resolved at Phase 69** (closes the orthogonality deferral).
+   > Phase 69 (`a42709f`) extended `FriendshipReward` with an optional
+   > `alignmentDelta?: Partial<PhilosophicalAlignment>` field on
+   > `src/Enemy/types.ts`. When present, the END_COMBAT reducer at
+   > `src/Game/game.reducer.ts` applies the delta to
+   > `state.philosophicalAlignment` via the Phase 42
+   > `applyAlignmentDelta` clamp helper (each axis clamps to
+   > `[-100, +100]`, missing axes pass through). The post-clamp
+   > `PhilosophicalAlignment` surfaces on
+   > `CombatEndReport.friendshipReward.alignmentShift` for the
+   > consumer to render. Phase 36's +1 `moralMeter` shift remains
+   > unchanged on top — friendship resolutions now optionally shift
+   > BOTH axes, but the engine doesn't require it. Authoring band
+   > mirrors Phase 43's dialogue / map-event delta convention
+   > (±1..±5 per axis; ±10 reserved for endgame). First authored
+   > deltas: `MournfulGull` ships `{ outlook: +3 }` (wistful empathy);
+   > `HollowEyedBeggar` ships `{ scope: -3 }` (re-grounds toward
+   > the relational individual). Per-encounter MapEvent-style
+   > authoring (the original "no engine work" answer) is still
+   > available via Phase 43 for non-friendship-tied shifts; the
+   > Phase 69 surface is the direct friendship-victory hook.
 
 ## Proposed approach
 
@@ -177,9 +186,12 @@ NPC-observer wiring) get their own briefs.
   see Q2's answer for the extension shape.
 - **Alignment-gated endings.** Q3 — deferred to the eventual endgame
   phase; see Q3's answer for the pre-shaped slot.
-- **Friendship-victory alignment shifts.** Q4 — orthogonal; future
-  content can wire per-encounter `alignmentDelta` via Phase 43's
-  authoring surface without engine work.
+- ~~**Friendship-victory alignment shifts.** Q4~~ — **Resolved at
+  Phase 69** (`a42709f`). `FriendshipReward.alignmentDelta?:
+  Partial<PhilosophicalAlignment>` is the canonical surface; the
+  END_COMBAT reducer threads it through `applyAlignmentDelta`. The
+  Phase 43 `MapEventPoolEntry.alignmentDelta` authoring surface stays
+  available for non-friendship-tied shifts.
 - **Compound moralMeter ∧ alignment gates.** Sequential checking
   works today; if/when content needs compound gates, that's a
   follow-up spec extension.

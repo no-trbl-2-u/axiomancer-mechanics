@@ -234,6 +234,10 @@ export const HollowEyedBeggar = createEnemy({
             'They pull a folded cloth from somewhere inside the rags. ' +
             'Two phials, both still cold. "I was carrying these for someone," ' +
             'they say. "But you stopped. So."',
+        // Phase 69 — gravity pulls toward the individual (the moment of
+        // reciprocation re-grounds the player on the relational axis).
+        // Inside the Phase 43 ±1..±5 authoring band.
+        alignmentDelta: { scope: -3 },
     },
 });
 

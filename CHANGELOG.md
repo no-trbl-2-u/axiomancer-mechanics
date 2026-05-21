@@ -14,9 +14,32 @@ deep imports are part of the supported surface.
 
 Phase 68 — per-enemy `BefriendabilityConfig` predicate (override of the
 Phase 36 friendship-eligibility check) + first boss-tier authored
-config on CoastalTyrant.
+config on CoastalTyrant. Phase 69 — `FriendshipReward.alignmentDelta`
+extension (closes Spec 14 Q4 — the friendship-victory ↔ alignment-cube
+intersection is now opt-in per encounter rather than orthogonal).
 
 ### Added
+- **`FriendshipReward.alignmentDelta` extension (Phase 69 — closes Spec
+  14 Q4).** New optional `alignmentDelta?: Partial<PhilosophicalAlignment>`
+  field on the existing `FriendshipReward` type. When present, the
+  END_COMBAT reducer applies the delta to `state.philosophicalAlignment`
+  via the Phase 42 `applyAlignmentDelta` clamp helper (each axis
+  clamps to `[-100, +100]`; missing axes pass through). The post-clamp
+  `PhilosophicalAlignment` surfaces on
+  `CombatEndReport.friendshipReward.alignmentShift?: PhilosophicalAlignment`
+  for consumers to render (mirrors how `applyDialogueChoice` returns
+  `effects.philosophicalShift`). Phase 36's +1 `moralMeter` shift remains
+  unchanged on top — friendship resolutions now optionally shift BOTH
+  axes per encounter. Authoring band: ±1..±5 per axis (matches Phase
+  43's dialogue / map-event delta convention). First authored deltas:
+  MournfulGull `{ outlook: +3 }` (wistful empathy); HollowEyedBeggar
+  `{ scope: -3 }` (re-grounds toward the relational individual). No
+  public-surface fixture change (additive optional field; no new
+  exported type). Phase 69 commits: `a42709f` (Unit 1 — engine
+  primitive + MournfulGull authoring + 4-case hermetic e2e) +
+  Unit 2 (this commit — HollowEyedBeggar authoring + docs/combat +
+  docs/enemy + Spec 14 Q4 flip + bearings + CHANGELOG).
+
 - **Per-enemy befriend predicate (Phase 68 — `BefriendabilityConfig`).**
   New public type `BefriendabilityConfig` (`{ roundsThreshold?,
   hpGate?, requiredStances?, requiredSkillUse?, defaultFallback? }`)
