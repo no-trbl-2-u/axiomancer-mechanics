@@ -46,14 +46,23 @@ a React Native UI can wrap without pulling in any additional game-logic:
 
 ## 6-month horizon (queued but not blocking v1)
 
-- Story content: named NPCs with moral dialogue trees.
+- Story content: named NPCs with moral dialogue trees. *(Partial —
+  Spec 14 + Phase 42-46/58 shipped the philosophical-alignment cube
+  + alignment-gated dialogue; Phase 63 added reactive observers.
+  More named NPCs still queued.)*
 - Second+ enemy class families.
-- Additional skill tiers (Tier 2+).
-- Additional world content (biomes, continent 2+).
+- ~~Additional skill tiers (Tier 2+).~~ **Shipped — Tier 2 carries
+  8 skills (Phase 66 added 5 to the original 3); Tier 3 carries 7
+  (Phase 44 added 4 fallacies-as-spells to the original 3). Total
+  shipped library: 21 skills across all three tiers.** See
+  `specs/04b-skills-library-and-e2e.md` for the canonical inventory.
+- Additional world content (biomes, continent 2+). *(Partial — Phase
+  65 expanded the fishing-village starting map from 10 → 25 nodes
+  with three sub-areas. Continent 2 still a candidate.)*
 - ~~Published npm release.~~ **Shipped 2026-05-08 (`0.2.0`).** First
   release under the autonomous-loop era was `0.10.0` (2026-05-19);
-  current is `0.10.2`. See `CHANGELOG.md` + `RELEASING.md` for the
-  per-tag history and the manual publish flow.
+  current is `0.10.3` (2026-05-20). See `CHANGELOG.md` + `RELEASING.md`
+  for the per-tag history and the manual publish flow.
 
 ## Stack
 
