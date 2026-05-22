@@ -123,7 +123,7 @@ via `getResistStat()` in `Combat/stats.ts`:
 
 | Preset       | Level | Base Stats | Equipment                            | Skills                |
 |--------------|-------|------------|--------------------------------------|-----------------------|
-| `apprentice` | 1     | 3 / 2 / 2  | —                                    | 6 Tier-1 known        |
+| `apprentice` | 1     | 5 / 5 / 5  | —                                    | 6 Tier-1 known        |
 | `wanderer`   | 8     | 5 / 4 / 4  | iron-blade, hide-vest, leather-cap   | 6 T1 + 3 T2 known     |
 | `sage`       | 15    | 7 / 6 / 6  | steel-blade, chain-mail, chain-coif  | all 12 skills known   |
 

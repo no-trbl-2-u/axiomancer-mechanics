@@ -7,7 +7,7 @@
 1. The session opens, the Apprentice preset is built, and the resulting
    character is logged with the expected starting fields:
    - `level: 1`
-   - `baseStats: { heart: 3, body: 2, mind: 2 }`
+   - `baseStats: { heart: 5, body: 5, mind: 5 }`
    - `knownSkills` length = 6 (all Tier-1 skills)
    - `equippedSkills` length = 4
    - `inventory` includes `minor-healing-potion ×3`

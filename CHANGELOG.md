@@ -83,6 +83,12 @@ the full Phase 60+62+68+69 stack on one encounter).
   build is unaffected.
 
 ### Changed
+- **Apprentice preset `baseStats` buffed 3/2/2 → 5/5/5 (`ff53ea0`).** User-attended
+  balance tuning ("just for now") — fishing-village early encounters were
+  tuning out too punishing for the default starter. Lifts the baseline so the
+  first map is approachable without a full enemy-side rebalance. Affects only
+  `apprenticePreset` in `src/Character/presets.ts`; Wanderer (5/4/4) and Sage
+  (7/6/6) unchanged. Revisit when enemy-side tuning is reconsidered.
 - **CoastalTyrant gains a Phase 70 boss-tier `friendshipReward`.**
   First boss-tier authored reward; demonstrates the full
   Phase 60+62+68+69 stack on a single high-stakes encounter. `items`:
