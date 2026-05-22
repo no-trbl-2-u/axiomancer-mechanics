@@ -38,7 +38,7 @@ describe('buildCharacterFromPreset', () => {
         const player = buildCharacterFromPreset(apprenticePreset);
         expect(player.name).toBe('Apprentice');
         expect(player.level).toBe(1);
-        expect(player.baseStats).toEqual({ heart: 3, body: 2, mind: 2 });
+        expect(player.baseStats).toEqual({ heart: 5, body: 5, mind: 5 });
         expect(player.equipment).toEqual({});
         expect(player.knownSkills).toHaveLength(6);
         expect(player.equippedSkills).toHaveLength(4);

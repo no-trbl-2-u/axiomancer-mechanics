@@ -72,7 +72,7 @@ export const apprenticePreset: CharacterPreset = {
     name: 'Apprentice',
     summary: 'Just stepping out — balanced stats, basic skills, no gear.',
     level: 1,
-    baseStats: { heart: 3, body: 2, mind: 2 },
+    baseStats: { heart: 5, body: 5, mind: 5 },
     equipment: [],
     knownSkills: [...TIER_1_SKILLS],
     equippedSkills: TIER_1_SKILLS.slice(0, 4),
