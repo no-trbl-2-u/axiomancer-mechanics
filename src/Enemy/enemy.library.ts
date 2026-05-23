@@ -207,6 +207,17 @@ export const MournfulGull = createEnemy({
         broken: 'The slights accumulate. Eventually you are one of them.',
         quiet:  'It catalogues a last grievance and you do not stand up from it.',
     },
+    // Phase 71 voice continued — Codex entry body extends the catalogue thread
+    // into long-form chronicle (GH#65 ask 3).
+    journalEntry: {
+        id: 'codex-mournful-gull',
+        title: 'The Catalogue of Slights',
+        body:
+            'It keeps the list aloud. Some entries are recent, some predate the harbour wall. ' +
+            'It does not insist you remember every one — only that one exists. ' +
+            'When you stopped speaking, it stopped circling. ' +
+            'That, too, is on the list now, in a different column.',
+    },
 });
 
 export const ForestSprite = createEnemy({
@@ -273,6 +284,17 @@ export const HollowEyedBeggar = createEnemy({
         brutal: 'They wanted what you carried. They take it from where you fall.',
         broken: 'You carry less and less. Eventually you carry nothing, including yourself.',
         quiet:  'They wait until you have set everything down before they kneel beside you.',
+    },
+    // Phase 71 voice continued — Codex entry body extends the reversal-of-
+    // begging thread (GH#65 ask 3).
+    journalEntry: {
+        id: 'codex-hollow-eyed-beggar',
+        title: 'They Carry What You Set Down',
+        body:
+            'They were carrying the phials for someone. They no longer say who. ' +
+            'The folded cloth came from somewhere inside the rags — there is more in there. ' +
+            'They want what you carry, but they also keep what you abandon. ' +
+            'There is a difference between the two and they will not explain it to you.',
     },
 });
 
@@ -447,6 +469,18 @@ export const CoastalTyrant = createEnemy({
         brutal: 'The old blade was older than the village charter, and it remembers its work.',
         broken: 'You hold the line as long as a man can hold a line. The magistrate holds longer.',
         quiet:  'The verdict is read out in your name. There is no appeal from the bay.',
+    },
+    // Phase 71 voice continued — Codex entry body extends the magistrate-
+    // fallen-priest thread into long-form chronicle (GH#65 ask 3).
+    journalEntry: {
+        id: 'codex-coastal-tyrant',
+        title: 'The Magistrate Who Set Down the Circlet',
+        body:
+            'He was the magistrate of the bay before he was the king of it. ' +
+            'The blade is older than the village charter; the circlet older than the blade. ' +
+            'The sentence on the inner band keeps ending and starting again — old texts ' +
+            'said it would. He held the line for as long as a man can hold a line. ' +
+            'Then he set it down and called that closer to honest.',
     },
 });
 
