@@ -26,7 +26,7 @@ fixture IS the gesture for "I'm changing the public barrel"; deploy
 gate fails on any PR that adds/removes/renames a top-level export
 without refreshing the fixture.
 
-Current shape (HEAD, post-Phase-68): 233 runtime exports + 162 type
+Current shape (HEAD, post-Phase-73): 235 runtime exports + 167 type
 exports across the 13 module sections. Per-tag history of additive
 public-API surface (deriveable via `node scripts/diff-public-surface.mjs
 <ref-A> <ref-B>`):
@@ -37,11 +37,18 @@ public-API surface (deriveable via `node scripts/diff-public-surface.mjs
   (`FriendshipReward`, 158 → 159), added two more at Phase 66
   (`SkillSynergy` + `SynergyPredicate`, 159 → 161). Tag shipped at
   233 + 161.
-- `[unreleased]` (post-Phase-68): adds one more type at Phase 68
-  (`BefriendabilityConfig`, 161 → 162). Ships with the next bump.
+- `[unreleased]` (post-Phase-68 / 71 / 72 / 73): Phase 68 added
+  `BefriendabilityConfig` (161 → 162); Phase 71 added three aftermath
+  prose types (`FinalBlowLines`, `PactLines`, `CauseLines`,
+  162 → 165); Phase 72 added two run-loop runtime exports
+  (`generateRunId`, `STARTING_REGION`, 233 → 235) — type count
+  unchanged because the `runId` field is on the existing `GameState`
+  shape rather than a new top-level type; Phase 73 added two codex
+  types (`CodexEntry`, `CodexState`, 165 → 167). Ships with the next
+  bump at 235 + 167.
 
-Runtime export count has held at 233 across the whole 0.10.x line;
-only the type-export count has grown.
+Phase 72 was the first runtime-export-count change in the 0.10.x line;
+type-export count grew across Phase 60 / 66 / 68 / 71 / 73.
 
 ## When to add a new tool here
 
