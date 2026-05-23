@@ -12,10 +12,37 @@ deep imports are part of the supported surface.
 
 ## [unreleased]
 
-_No changes since `0.11.0`. New `### Added` / `### Changed` /
-`### Docs` entries land here as the loop ships them; flip the
-heading to `[<next-version>] — <ISO date>` at the next tag cut
-per `RELEASING.md` step 7._
+Post-`0.11.0` content sweep closing the Phase 71 / 73 follow-up.
+
+### Added
+- **Phase 74 — Post-GH#65 per-foe content sweep.** Authored
+  `finalBlowLines` + `causeLines` chronicle prose on the 12
+  non-sandbox enemies that Phase 71 + 73 had left to a follow-up
+  sweep: TidepoolCrab, SeaMistWisp, LullabyMoth, Disatree_01,
+  WetHound, ForestSprite, ArgumentativeCrow, TideflukeReaver,
+  HushWraith, HollowSaint, TheDisagreement, EchoOfPyrrhonia.
+  6 strings per enemy × 12 enemies = **72 new chronicle lines**;
+  each enemy's voice extends its existing `description` + Phase 45
+  alignment archetype + Phase 49 skill rotation where present.
+  Total authored coverage: **15 of 16** enemies (only `Sandbag_01`
+  remains un-authored per Phase 74 D1 — test sandbox with no
+  narrative weight). Per D2, no new befriendable enemies promoted
+  this phase (breadth-before-depth; Tier-2 befriendable promotion
+  is a separate candidate); per D3, `pactLines` not authored on
+  non-befriendable enemies (only meaningful when the enemy carries
+  a `friendshipReward`). Pure content; no engine touch; no
+  public-surface change (fixture stays 235 + 167). Hermetic e2e at
+  `src/Enemy/e2e/aftermath-lines.engine.test.ts` extended:
+  registration shape pin now covers all 15 authored enemies (split
+  into separate `finalBlowLines + causeLines` shape case + a
+  `pactLines befriendable-only` case); regression case re-keyed
+  from TidepoolCrab (now authored) to Sandbag_01 (the new
+  un-authored control). Mobile presenter's `derive*Phrase`
+  fallback now only fires on Sandbag_01 — the player-visible
+  roster all renders engine-authored prose. Phase 74 commits:
+  `fae92ff` (Unit 1 — content authoring on 12 enemies) + Unit 2
+  (this commit — e2e regression case shift + docs/enemy.md sweep
+  paragraph + CHANGELOG bullet).
 
 ## [0.11.0] — 2026-05-23
 

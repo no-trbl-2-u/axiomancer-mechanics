@@ -322,10 +322,19 @@ befriendable enemies — **MournfulGull** (heart-aspected wistful,
 thread; reversal-of-begging carries into pact + cause variants),
 and **CoastalTyrant** (magistrate-fallen-priest, "verdict" /
 "regalia" / "magistrate" thread; pact lines echo the existing
-4-paragraph `friendshipReward.narrative`). The remaining 13 enemies
-in the library leave all three fields undefined — consumer-side
-fallback (e.g. mobile's `derive*Phrase` helpers) continues to apply
-to those encounters until a future content-sweep phase authors them.
+4-paragraph `friendshipReward.narrative`).
+
+**Sweep coverage (Phase 74):** the remaining 12 non-sandbox enemies
+in the library gained `finalBlowLines` + `causeLines` (Phase 74
+D3 — `pactLines` skipped on non-befriendable enemies; only
+meaningful when the enemy also carries a `friendshipReward`).
+Total authored: **15 of 16** enemies; the only un-authored entry
+is `Sandbag_01` (Phase 74 D1 — test sandbox with no narrative
+weight). Each new sweep voice extends the existing enemy
+identity (description + Phase 45 alignment archetype + Phase 49
+skill rotation where present). Mobile presenter's `derive*Phrase`
+fallback now only fires on the test sandbox — the player-visible
+roster all renders engine-authored prose.
 
 **Naming note:** GH#65 source text used the hyphenated `set-down`;
 the field is `pactLines.setDown` (TS-identifier convention).
