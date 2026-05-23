@@ -352,6 +352,56 @@ export function dropItem(
 export const rarityWeightTable: ReadonlyArray<readonly [ItemRarity, number]> =
     RARITY_WEIGHTS_WITH_UNIQUE;
 
+/**
+ * Phase 75 — preview what a template's runtime `Equipment` instance
+ * would look like if rolled at the specified rarity for the specified
+ * player level. Closes the user-jot at `b5c8165` (refined at
+ * oversight-15 `077979e`) — mobile item-library view was showing
+ * zero modifiers per entry because `equipmentTemplates` carries only
+ * `baseStatModifiers` by design; rolled mods only exist on runtime
+ * `Equipment` from `dropItem`.
+ *
+ * Mobile UI (and any future inventory-detail / loot-preview /
+ * vendor-stock surface) calls this helper per (template, rarity,
+ * playerLevel) cell to render the player-visible mod stack.
+ *
+ * Default `rng` is `() => 0.5` so previews are deterministic per
+ * tuple — same shape as the Phase 70 Coastal Tyrant
+ * deterministic-drop pattern. Pass a custom rng for randomised
+ * previews.
+ *
+ * Returns `undefined` instead of throwing for any failure mode
+ * (UI-tier safety — UI code looping templates × rarities cannot wrap
+ * every call in try/catch):
+ * - unknown `templateId`
+ * - `playerLevel < template.requiredLevel`
+ * - `rarity === 'unique'` against a non-unique template
+ *
+ * Unique templates soft-coerce their rarity to `'unique'`
+ * regardless of the caller's input (caller may not know the
+ * template is unique; the preview should still be useful — same
+ * coercion as `dropItem`).
+ *
+ * @see {@link dropItem} — the runtime drop entry point this helper
+ * wraps. The only semantic difference is soft-error vs throw posture.
+ */
+export function previewTemplateAtRarity(
+    templateId: string,
+    rarity: ItemRarity,
+    playerLevel: number,
+    rng: () => number = () => 0.5,
+): Equipment | undefined {
+    const template = getEquipmentTemplate(templateId) ?? getUniqueTemplate(templateId);
+    if (!template) return undefined;
+    if (playerLevel < template.requiredLevel) return undefined;
+
+    const isUniqueTpl = isUnique(template);
+    if (rarity === 'unique' && !isUniqueTpl) return undefined;
+
+    const finalRarity: ItemRarity = isUniqueTpl ? 'unique' : rarity;
+    return dropItem(templateId, playerLevel, finalRarity, rng);
+}
+
 // Re-export the unique-pool shape so tests / loot tables can introspect it
 // without reaching into `modifier.catalogue.ts` directly.
 export { uniqueModPool };

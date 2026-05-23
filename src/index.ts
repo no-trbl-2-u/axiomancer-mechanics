@@ -111,6 +111,7 @@ export {
     equipmentTemplates, getEquipmentTemplate, getTemplatesBySlot,
     uniqueTemplates, getUniqueTemplate,
     dropItem, rollModifiers, resolveModifiers, rarityWeightTable,
+    previewTemplateAtRarity,
     consumableLibrary, getConsumableById,
     buyItem, sellItem, defaultSellPrice,
     getActiveSetBonuses, getActiveSetBonusesForCharacter,
