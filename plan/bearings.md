@@ -58,7 +58,9 @@ Enemy:      createEnemy, Enemy, EnemyLogic, decideEnemyAction, randomLogic,
             + alignmentDelta? extension — Phase 69 closes Spec 14 Q4),
             BefriendabilityConfig (+ Enemy.befriendabilityConfig? — Phase 68),
             FinalBlowLines / PactLines / CauseLines (+ Enemy.{finalBlowLines,
-            pactLines, causeLines}? — Phase 71 closes GH#65 ask 1)
+            pactLines, causeLines}? — Phase 71 closes GH#65 ask 1),
+            CodexEntry (+ Enemy.journalEntry? — Phase 73 closes GH#65
+            ask 3; auto-unlocks on friendship outcome)
 Combat:     determineAdvantage, getAttackStat, getDefenseStat, getSaveStat,
             getResistStat, applyDamage, heal, tickAllEffects, applyRegen,
             getActiveRollModifier, getThornsReflect, resolveEffectApplication,
@@ -78,7 +80,12 @@ Game:       createGameStore, GameState, nullAdapter, persistence adapters
             (+ store.resetRun({ keepCharacter }) + GameState.runId
             (required string) + generateRunId + STARTING_REGION
             constant — Phase 72 closes GH#65 ask 2;
-            GAME_STATE_VERSION bumped 5 → 6 with migrateV5toV6)
+            GAME_STATE_VERSION bumped 5 → 6 with migrateV5toV6),
+            (+ CodexState + required GameState.codex slice +
+            store.unlockCodexEntry + UNLOCK_CODEX_ENTRY action +
+            CombatEndReport.friendshipReward.codexEntryUnlocked? —
+            Phase 73 closes GH#65 ask 3; GAME_STATE_VERSION bumped
+            6 → 7 with migrateV6toV7)
 World:      createStartingWorld, world reducer, WorldState, MapState, MapDefinition
 Utils:      clamp, randomInt, deepClone, deriveStats, calculateMaxHealth,
             createDieRoll, isCharacter, isEnemy

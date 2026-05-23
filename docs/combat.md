@@ -186,13 +186,17 @@ the returned `CombatEndReport` carries:
 - `loot: rollEncounterLoot(encounter) ++ friendshipReward?.items` —
   the full weighted-loot roll with any per-enemy guaranteed items
   appended (Phase 60)
-- `friendshipReward?: { narrative?, alignmentShift? }` (Phase 60 + 69)
-  — present only when the befriended enemy carries an authored
-  `friendshipReward` with a `narrative` OR `alignmentDelta`. Engine
-  doesn't interpret `narrative`; CLI / UI renders. `alignmentShift`
-  (Phase 69) carries the post-clamp `PhilosophicalAlignment` the
-  reducer just wrote to `state.philosophicalAlignment` — surface
-  parity for consumers that don't subscribe separately.
+- `friendshipReward?: { narrative?, alignmentShift?, codexEntryUnlocked? }`
+  (Phase 60 + 69 + 73) — present only when the befriended enemy
+  carries an authored `friendshipReward` with `narrative` /
+  `alignmentDelta`, OR a `journalEntry` that wasn't already
+  unlocked. Engine doesn't interpret `narrative`; CLI / UI renders.
+  `alignmentShift` (Phase 69) carries the post-clamp
+  `PhilosophicalAlignment` the reducer just wrote to
+  `state.philosophicalAlignment` — surface parity for consumers
+  that don't subscribe separately. `codexEntryUnlocked` (Phase 73)
+  carries `{ id, title }` for the newly-unlocked codex entry;
+  body is looked up against the source `Enemy.journalEntry`.
 - **State side effect (Phase 62)** — when the befriended enemy carries
   `friendshipReward.flagSet?: string`, the END_COMBAT reducer appends
   the flag to `state.flags` (de-duped). Downstream dialogue choices /
@@ -208,6 +212,18 @@ the returned `CombatEndReport` carries:
   through). Closes Spec 14 Q4. Authoring band: ±1..±5 per axis (matches
   the Phase 43 dialogue / map-event delta convention). The post-clamp
   cell surfaces on `CombatEndReport.friendshipReward.alignmentShift`.
+- **State side effect (Phase 73 — closes GH#65 ask 3)** — when the
+  befriended enemy carries `journalEntry?: CodexEntry`
+  (`{ id, title, body }`), the END_COMBAT reducer appends the
+  entry's id to `state.codex.unlockedEntries` (de-duped). The
+  store layer surfaces `{ id, title }` on
+  `CombatEndReport.friendshipReward.codexEntryUnlocked` only when
+  the entry wasn't already unlocked — repeat befriends don't
+  re-fire the report field. Body is recovered at consumer render
+  time via lookup against the source `Enemy` (or a future
+  `CodexLibrary` registry). Victory / defeat / flee outcomes do
+  NOT unlock the entry; future content can grant entries outside
+  combat via `store.unlockCodexEntry(entryId)`.
 
 The reducer side (Phase 10) also shifts the moral meter `+1` (see
 `docs/morality.md` § "Combat: Friendship Victories") and routes the player

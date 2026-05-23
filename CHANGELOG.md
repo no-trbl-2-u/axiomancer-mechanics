@@ -27,9 +27,64 @@ authored enemies). Phase 72 — run-loop semantics
 (`store.resetRun({ keepCharacter })` + required `GameState.runId` +
 `generateRunId` + `STARTING_REGION`; `GAME_STATE_VERSION` bumped
 5 → 6 with `migrateV5toV6` defaulting `runId` for legacy saves).
-Closes GH#65 ask 2.
+Closes GH#65 ask 2. Phase 73 — Codex / journal-entry surface
+(`CodexState` slice + per-foe `journalEntry?` + auto-firing wire on
+friendship outcomes + `unlockCodexEntry` dispatchable; `GAME_STATE_VERSION`
+bumped 6 → 7 with `migrateV6toV7` defaulting `codex` for legacy
+saves). Closes GH#65 ask 3.
 
 ### Added
+- **Codex / journal-entry surface (Phase 73 — closes GH#65 ask 3).**
+  Unblocks the mobile `<CombatFriendshipPanel>` "A NEW ENTRY" card
+  which previously never mounted because the engine didn't expose
+  any codex surface. New required state slice
+  `GameState.codex: CodexState` (`{ unlockedEntries: string[] }`;
+  wrapper around the array so future per-entry metadata —
+  unlock-timestamp, read-status — can land additive-optionally;
+  same pattern as `QuestLog`). New optional per-foe metadata
+  `Enemy.journalEntry?: CodexEntry` (`{ id: string; title: string;
+  body: string }`). `store.endCombat()` auto-fires the unlock on
+  `outcome === 'friendship'` when the befriended enemy carries a
+  `journalEntry`: the END_COMBAT reducer appends the entry's id to
+  `state.codex.unlockedEntries` (de-duped via `includes()`) and the
+  store surfaces `{ id, title }` as
+  `CombatEndReport.friendshipReward.codexEntryUnlocked` only when
+  the entry wasn't already unlocked (mirrors the Phase 69
+  `alignmentShift` surfacing pattern; body is recovered at
+  consumer render time via lookup against the source `Enemy`).
+  New action variant `{ type: 'UNLOCK_CODEX_ENTRY'; payload: {
+  entryId } }` + store method `store.unlockCodexEntry(entryId)` so
+  future dialogue / map-event content can grant codex entries
+  outside combat; added to `DURABLE_ACTIONS` so unlocks persist
+  immediately. Phase 72 `RESET_RUN` reducer extended to preserve
+  `state.codex` on `keepCharacter: true` (codex unlocks are
+  character knowledge — carry across runs alongside
+  `philosophicalAlignment` + `moralMeter`). `GAME_STATE_VERSION`
+  bumped 6 → 7; `migrateV6toV7` defaults `codex = { unlockedEntries:
+  [] }` on legacy v6 saves. Initial author coverage:
+  MournfulGull (`codex-mournful-gull` — "The Catalogue of Slights";
+  extends the Phase 71 list / catalogue thread), HollowEyedBeggar
+  (`codex-hollow-eyed-beggar` — "They Carry What You Set Down";
+  reversal-of-begging chronicle), CoastalTyrant
+  (`codex-coastal-tyrant` — "The Magistrate Who Set Down the
+  Circlet"; magistrate-fallen-priest chronicle). The remaining 13
+  enemies in the library leave `journalEntry` undefined and don't
+  unlock anything on friendship; future content sweeps author
+  entries on additional enemies. Fixture bump: +2 type exports
+  (`CodexEntry` + `CodexState`); 165 → 167; runtime unchanged at
+  235. Hermetic e2e at `src/Game/e2e/codex.engine.test.ts` (6
+  cases: empty default + friendship unlocks + de-dupe +
+  no-journalEntry no-op + victory-outcome no-op + migration).
+  Mobile callsite cleanup (`<CombatFriendshipPanel>` reads
+  `report.friendshipReward.codexEntryUnlocked` and mounts the NEW
+  ENTRY card) is consumer-side and ships post-engine-release.
+  Phase 73 commits: `0dea5f5` (Unit 1 — Codex slice + journalEntry
+  type + reducer + action + store + barrels + fixture + Phase 72
+  RESET_RUN cross-phase update) + `3492a15` (Unit 2 — 3 authored
+  journal entries on the befriendable trio) + Unit 3 (this commit
+  — 6-case hermetic e2e + docs/api + docs/combat Friendship Path
+  + docs/enemy Codex section + README + bearings + CHANGELOG).
+
 - **Run-loop semantics (Phase 72 — closes GH#65 ask 2).** New
   store surface for "begin again at the hearth" flows. Mobile
   BEGIN AGAIN's full-heal + dismiss band-aid drops in favour of

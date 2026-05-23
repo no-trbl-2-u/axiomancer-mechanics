@@ -70,6 +70,37 @@ unchanged, but the absolute semver guarantee starts at 1.0.
   Exports below.)
 - `nullAdapter` — Stable.
 
+**Codex slice (Phase 73 — closes GH#65 ask 3).** New state slice +
+per-foe content surface + auto-firing wire for the post-parley
+"NEW ENTRY" card on the mobile aftermath panel.
+
+- `GameState.codex: CodexState` — required state slice
+  (`CodexState = { unlockedEntries: string[] }`). Append-only;
+  de-duped. Defaults to `{ unlockedEntries: [] }` on new games.
+- `Enemy.journalEntry?: CodexEntry` — optional per-foe metadata
+  (`CodexEntry = { id: string; title: string; body: string }`).
+- `store.endCombat()` auto-fires the unlock on
+  `outcome === 'friendship'` when the befriended enemy carries a
+  `journalEntry`: the id is appended to
+  `state.codex.unlockedEntries` (de-duped) and surfaced as
+  `report.friendshipReward.codexEntryUnlocked: { id, title }`
+  (body recovered via content-registry lookup at consumer render
+  time — mirrors Phase 69 `alignmentShift` pattern).
+- `store.unlockCodexEntry(entryId)` — dispatchable surface so
+  future dialogue / map-event content can grant codex entries
+  outside combat.
+- `GAME_STATE_VERSION` bumped 6 → 7; `migrateV6toV7` defaults
+  `codex = { unlockedEntries: [] }` on legacy v6 saves.
+
+Initial author coverage: MournfulGull (`codex-mournful-gull` —
+"The Catalogue of Slights"), HollowEyedBeggar
+(`codex-hollow-eyed-beggar` — "They Carry What You Set Down"),
+CoastalTyrant (`codex-coastal-tyrant` — "The Magistrate Who Set
+Down the Circlet"). Bodies extend the chronicle voices from
+Phase 71. The remaining 13 enemies leave `journalEntry`
+undefined and don't unlock anything on friendship; future content
+sweeps author entries on additional enemies.
+
 **Run-loop semantics (Phase 72 — closes GH#65 ask 2).** New store
 method + supporting exports:
 

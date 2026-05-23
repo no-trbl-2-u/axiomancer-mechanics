@@ -335,3 +335,27 @@ Hermetic e2e coverage at
 pins registration shape across the 3 authored enemies + voice
 signatures + a regression case (TidepoolCrab leaves all three
 fields undefined). Source: GH#65 ask 1 (filed 2026-05-22).
+
+## Codex entries (Phase 73)
+
+Optional per-foe `journalEntry?: CodexEntry` (`{ id, title, body }`)
+holds chronicle prose that the engine auto-unlocks when the player
+befriends the enemy. The unlock fires inside the END_COMBAT reducer
+on `outcome === 'friendship'`: the entry's id is appended to
+`state.codex.unlockedEntries` (de-duped) and surfaced as
+`{ id, title }` on `CombatEndReport.friendshipReward.codexEntryUnlocked`
+for the consumer's after-action UI (mobile
+`<CombatFriendshipPanel>` NEW ENTRY card). Body is recovered via
+lookup against the source enemy.
+
+Initial author coverage (Phase 73): MournfulGull ("The Catalogue of
+Slights"), HollowEyedBeggar ("They Carry What You Set Down"),
+CoastalTyrant ("The Magistrate Who Set Down the Circlet"). Bodies
+extend the Phase 71 chronicle voices.
+
+Victory / defeat / flee outcomes do NOT unlock the entry. Future
+dialogue / map-event content can grant codex entries outside combat
+by dispatching `store.unlockCodexEntry(entryId)`. See
+`docs/combat.md` § "Friendship Path" for the engine-side semantics
+and `docs/api.md` § "Codex slice (Phase 73)" for the public-surface
+shape. Source: GH#65 ask 3 (filed 2026-05-22).
