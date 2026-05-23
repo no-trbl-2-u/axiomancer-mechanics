@@ -190,6 +190,23 @@ export const MournfulGull = createEnemy({
         // Inside the Phase 43 ±1..±5 authoring band.
         alignmentDelta: { outlook: +3 },
     },
+    // Phase 71 — heart-aspected wistful voice; "slights" / "list" /
+    // "catalogue" thread runs across all three line groups (GH#65 ask 1).
+    finalBlowLines: {
+        brutal: 'The gull falls mid-cry. The list of slights ends on a half-syllable.',
+        quiet:  'It folds its wings and lands once, gently, before it stops.',
+        ironic: 'A slight it had not catalogued yet, delivered by the listener.',
+    },
+    pactLines: {
+        quiet:   'For a long moment, neither of you speaks the slights you remember.',
+        setDown: 'It settles on the rail beside you. The catalogue, for now, is closed.',
+        heavy:   'The list goes on inside it. You are listed too. It lands anyway.',
+    },
+    causeLines: {
+        brutal: 'The list resolves in your name. You go down to the next item on it.',
+        broken: 'The slights accumulate. Eventually you are one of them.',
+        quiet:  'It catalogues a last grievance and you do not stand up from it.',
+    },
 });
 
 export const ForestSprite = createEnemy({
@@ -239,6 +256,23 @@ export const HollowEyedBeggar = createEnemy({
         // reciprocation re-grounds the player on the relational axis).
         // Inside the Phase 43 ±1..±5 authoring band.
         alignmentDelta: { scope: -3 },
+    },
+    // Phase 71 — faith-pessimistic-relational voice; "carrying" / "rags" /
+    // "phials" thread; reversal-of-begging carries into pact + cause (GH#65 ask 1).
+    finalBlowLines: {
+        brutal: 'You leave them with nothing more to carry.',
+        quiet:  'They do not flinch. The rags settle as if they had been waiting.',
+        ironic: 'They take what you are. It costs you what you carried.',
+    },
+    pactLines: {
+        quiet:   'They stop reaching. The cloth in their hand is for you now.',
+        setDown: 'They lay the phials on the stones between you, slowly, as if returning them.',
+        heavy:   '"I was carrying these for someone." A pause. "But you stopped. So."',
+    },
+    causeLines: {
+        brutal: 'They wanted what you carried. They take it from where you fall.',
+        broken: 'You carry less and less. Eventually you carry nothing, including yourself.',
+        quiet:  'They wait until you have set everything down before they kneel beside you.',
     },
 });
 
@@ -395,6 +429,24 @@ export const CoastalTyrant = createEnemy({
         // authoring band; the combined-axis weight is heavier than the
         // normal-tier single-axis deltas, befitting boss-tier.
         alignmentDelta: { outlook: +3, scope: -2 },
+    },
+    // Phase 71 — magistrate-fallen-priest voice; "verdict" / "regalia" /
+    // "magistrate" thread; pact lines echo the existing 4-paragraph
+    // friendshipReward.narrative voice (boss-tier line length per D11).
+    finalBlowLines: {
+        brutal: 'The magistrate falls in full regalia. The blade lands beside him, still cold.',
+        quiet:  'He lowers the sword before the strike. The strike still arrives.',
+        ironic: 'A verdict pronounced on the magistrate, in the magistrate\'s own court.',
+    },
+    pactLines: {
+        quiet:   'The sword stays low. The shoulders are wrong for striking — they have given up the weight.',
+        setDown: 'He sets the circlet between you and steps back from it. The sentence on its inner band keeps ending and starting again.',
+        heavy:   '"I was the king of nothing. You have made me a man with nothing to be king of. That is closer to honest."',
+    },
+    causeLines: {
+        brutal: 'The old blade was older than the village charter, and it remembers its work.',
+        broken: 'You hold the line as long as a man can hold a line. The magistrate holds longer.',
+        quiet:  'The verdict is read out in your name. There is no appeal from the bay.',
     },
 });
 
