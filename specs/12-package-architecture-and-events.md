@@ -313,6 +313,33 @@ tools, but the per-phase narrative belongs here.
   — additive-optional fields on `Enemy.{finalBlowLines, pactLines,
   causeLines}?`; legacy save loads are unaffected.
 
+### Phase 75 — `previewTemplateAtRarity` helper (closes user-jot at `b5c8165`)
+
+- **New runtime export** (1): `previewTemplateAtRarity(templateId,
+  rarity, playerLevel, rng?): Equipment | undefined` from
+  `src/Items/item.factory.ts`. Second runtime-count change in the
+  0.10.x → 0.11.x line (235 → 236; Phase 72 was the first).
+  Re-exported through `src/Items/index.ts` + top-level barrel.
+- **No new type exports** — helper signature uses existing
+  `ItemRarity` (Spec 05c) + `Equipment` (Spec 05). Types stay at
+  167.
+- **No new action variants, no save-format bump, no event verbs,
+  no GameState shape change** — purely a consumer-tier read
+  surface around the existing `dropItem` factory; reuses
+  `rollModifiers` / `resolveModifiers` / `dropItem` machinery with
+  rng + rarity pinned.
+- **Soft-error semantics** distinguish this helper from `dropItem`:
+  returns `undefined` for any failure (unknown templateId, level-
+  too-low, unique-rarity on regular template) rather than throwing.
+  UI code looping templates × rarities cannot wrap every call in
+  try/catch; the soft-error shape mirrors the existing
+  `getEquipmentTemplate(...): T | undefined` lookup-style convention.
+- **Mobile UI callsite** (post-engine-release): the item-library
+  matrix view renders `equipmentTemplates × ItemRarity` cells by
+  calling `previewTemplateAtRarity(tpl.id, rarity, playerLevel)`
+  per cell. Default rng `() => 0.5` (Phase 70 deterministic-drop
+  pattern) keeps the same cell stable across re-renders.
+
 ### Cross-phase: GAME_STATE_VERSION ceremony
 
 The 0.10.x cycle bumped the save format twice (5 → 6 at Phase 72;
