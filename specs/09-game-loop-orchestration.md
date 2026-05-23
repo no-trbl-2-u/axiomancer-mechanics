@@ -219,7 +219,7 @@ entry wasn't already unlocked (mirrors the Phase 69 `alignmentShift`
 surfacing pattern; body is recovered at consumer render time via
 content-registry lookup against `Enemy.journalEntry` — see
 `specs/07` § "Post-spec engine extensions" Phase 73 block for the
-per-foe content shape).
+per-foe content shape **and author coverage**).
 
 **Cross-phase coupling with Phase 72:** the `RESET_RUN`
 `keepCharacter: true` branch preserves `state.codex` — codex unlocks
