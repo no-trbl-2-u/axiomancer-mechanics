@@ -74,6 +74,18 @@ Skills:     executeSkill, canUseSkill, learnSkill, getAvailableSkills,
             (+ SkillSynergy, SynergyPredicate types + Skill.synergy?
             field driving 5 authored Tier 2 synergy skills — Phase 66)
 Items:      addItem, removeItem, useConsumable, stackItem, Item (and variants)
+            (+ buyItem / sellItem / defaultSellPrice + ShopWare /
+            ShopInventory types — Phase 37 shop economy),
+            (+ rarityWeightTable + dropItem / rollModifiers /
+            resolveModifiers — Spec 05c/d/e rolled-items pipeline,
+            re-exported through public-surface fixture at Phase 53),
+            (+ getActiveSetBonuses + 5 siblings + itemSetLibrary /
+            getItemSetById + SetBonus / ItemSet types — Phase 54 set
+            items),
+            (+ previewTemplateAtRarity — Phase 75 UI-tier wrapper
+            around dropItem with soft-error semantics; closes the
+            user-jot at b5c8165 for mobile item-library
+            mod-visibility)
 Game:       createGameStore, GameState, nullAdapter, persistence adapters
             (+ GameState.lastSeenAlignmentCells? — Phase 63 alignment-observer
             cache, additive optional, no GAME_STATE_VERSION bump),
