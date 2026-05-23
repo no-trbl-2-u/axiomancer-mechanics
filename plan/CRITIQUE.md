@@ -6,8 +6,8 @@
 > by `/iterate`.
 
 <!-- Metadata (updated by /critique after each pass):
-> Last pass: 2026-05-23 at commit 4dee78e
-> Pass count: 36
+> Last pass: 2026-05-23 at commit 3a44412
+> Pass count: 37
 -->
 <!-- Pass 36 (2026-05-23 at commit 4dee78e): 1 finding (0H/0M/1L). Post-GH#65-trio audit walked A-F across the 17 commits between pass 35 (b5c8165) and pass 36 (4dee78e) — Phase 71 (per-foe aftermath prose) + Phase 72 (run-loop semantics + runId + STARTING_REGION + GAME_STATE_VERSION 5→6) + Phase 73 (Codex slice + journalEntry + GAME_STATE_VERSION 6→7). Public-API surface aligned (5 new types + 2 new runtime exports on src/index.ts; bearings.md + docs/api.md both annotate; fixture refreshed twice — 162 → 165 (Phase 71) → 167 (Phase 73); runtime 233 → 235 (Phase 72)). Hermetic coverage strong (17 new test cases across 3 e2e files: aftermath-lines.engine.test.ts, run-loop.engine.test.ts, codex.engine.test.ts). Module-structure consistent (new run-loop.ts module follows pure-helper convention; new reducer cases follow established switch-case pattern; cross-phase Phase-72 RESET_RUN extension for codex preservation per Phase 73 D12 wired cleanly). Docs current (gameloop.md Phase 72 Run-loop reset section; enemy.md Phase 71 Aftermath + Phase 73 Codex sections; combat.md Friendship Path codex bullet; CHANGELOG [unreleased] all three phase bullets present + lede extended thrice). Zero type-safety drift (no new @ts-ignore / as any). Zero dead-code surfaces. **Only finding: scripts/README.md fixture-state annotation is stale** — says "233 runtime + 162 types" (Phase-68 baseline) but current is 235 runtime + 167 types. The fixture file itself is current; only the prose annotation drifts. /iterate will drain. -->
 
@@ -15,6 +15,48 @@
 ---
 
 ## Pending
+
+### [LOW] CHANGELOG.md [unreleased] lede has grown to a 6-Phase wall of text
+- pass: critique-37 (commit 3a44412)
+- area: docs
+- observation: The `[unreleased]` lede paragraph chains Phase 68 + 69 + 70 + 71 + 72 + 73 summaries in one ~20-line block before pivoting to the sectioned `### Added`. Each phase ship extended the lede; readability has decayed. The per-phase detail in the lede is mostly redundant with the `### Added` bullets immediately below.
+- evidence: CHANGELOG.md:13-34 — the `[unreleased]` paragraph
+- suggested_fix: Reshape the lede to a terse 2-3 line summary (e.g. "Five engine extensions across the friendship + run-loop arcs (Phases 68/69/70/71/72/73) — see ### Added for per-phase detail.") + drop the chained per-phase sentences. The detail stays in the `### Added` bullets where it's authored.
+
+### [LOW] `CodexEntry` defined in src/Enemy/types.ts but semantically a Game-loop type
+- pass: critique-37 (commit 3a44412)
+- area: structure
+- observation: `CodexEntry { id, title, body }` lives at `src/Enemy/types.ts:175` but pairs with `CodexState` on `src/Game/types.ts:50` — both are part of the Game-loop persistence surface, not enemy-specific behaviour. The Enemy block re-exports `CodexEntry` because the field rides on `Enemy.journalEntry`, but that's a "where it travels" concern rather than a "where it's defined" concern. The CHANGELOG Phase 73 entry acknowledges this asymmetry.
+- evidence: src/Enemy/types.ts:175 (CodexEntry definition); src/Game/types.ts:50 (CodexState definition); src/index.ts:38 (CodexEntry re-exported through Enemy block)
+- suggested_fix: Move `CodexEntry` from `src/Enemy/types.ts` to `src/Game/types.ts` (alongside `CodexState`); have `src/Enemy/types.ts` import + re-export it for the `Enemy.journalEntry?` decoration. Top-level barrel re-exports `CodexEntry` from Game block; Enemy block can still re-export for convenience. Verify the fixture stays at 167 types (no count change — same export count, different physical location).
+
+### [LOW] `agents.md` + `RELEASING.md` silent on Phase 71/72/73 surfaces
+- pass: critique-37 (commit 3a44412)
+- area: docs
+- observation: Both foundational orientation docs predate GH#65 and don't reference any of the three new surfaces (per-foe aftermath prose, run-loop semantics, Codex slice). A first-time reader hitting either doc has no breadcrumbs to the new capabilities. `RELEASING.md` specifically doesn't mention the GAME_STATE_VERSION bump pattern that's now landed twice (5→6 Phase 72; 6→7 Phase 73) — useful release-engineering context for the next tag.
+- evidence: agents.md (no `Phase 7[123]` mention; no link to docs/gameloop.md Run-loop reset section); RELEASING.md (no GAME_STATE_VERSION bump ceremony note)
+- suggested_fix: agents.md gains a 1-2 line surface phrasing in the "Where to look" table or recent-shipping section pointing at the Phase 71/72/73 docs sections. RELEASING.md gains a small subsection or sentence about the version-bump ceremony (when to flip the v# in CHANGELOG vs when the migrate ladder needs a new step).
+
+### [LOW] Phase 71 aftermath-lines e2e doesn't exercise the consumer-side variant-selection pipeline
+- pass: critique-37 (commit 3a44412)
+- area: tests
+- observation: `src/Enemy/e2e/aftermath-lines.engine.test.ts` pins (a) all three authored enemies carry the 9 sub-keys non-empty, (b) voice signatures spot-check, (c) TidepoolCrab un-authored regression — these are correct as DATA pins. But the test doesn't cover the full "consumer reads the field, picks a variant, renders the string" pipeline. The engine ships the data and explicitly does NO selection (Phase 71 D4); a mock consumer in the test would document the intended consumption shape (e.g. "given a final-blow outcome where damage was overkill, the brutal variant is the right pick").
+- evidence: src/Enemy/e2e/aftermath-lines.engine.test.ts (registration + voice + regression cases only; no consumer-side pipeline drive)
+- suggested_fix: Add a 4th `it()` block driving a mock variant-selection helper (e.g. `pickFinalBlowVariant(report): 'brutal' | 'quiet' | 'ironic'`) that reads the report shape and selects from `enemy.finalBlowLines`. Doesn't have to ship the helper as public API — just exercise the pattern in the test so the intended consumption is documented + future engine-side helper proposals have a sketch to lean on.
+
+### [LOW] No walkthrough exercises Phase 71 aftermath prose + Phase 73 codex unlock
+- pass: critique-37 (commit 3a44412)
+- area: tests
+- observation: `automation/scripts/walkthroughs/` inventory carries 10 scripted surfaces but nothing exercises the GH#65 trio's friendship-aftermath path end-to-end. The Phase 64 `endgame-loadout` walkthrough is the closest precedent (Sage preset → Coastal Tyrant → bootstrap-paradox); a sibling "friendship-aftermath" walkthrough (Apprentice preset → MournfulGull befriend → assert aftermath narrative + codex unlock in the state log) would be the natural Phase 71/73 demonstration. The existing "Walkthrough catalog expansion" candidate (Phase 65/66/68 coverage) could absorb the Phase 71/72/73 walkthroughs OR they could ship as a small dedicated phase.
+- evidence: automation/scripts/walkthroughs/ — 10 .json/.goal.md pairs; none drive the new aftermath prose / codex unlock surfaces
+- suggested_fix: Either (a) extend the existing "Walkthrough catalog expansion" PHASE_CANDIDATES.md row to include a Phase 71/73 friendship-aftermath walkthrough scope, OR (b) ship a single-walkthrough iterate-tier follow-up if the test framework allows hermetic isolation without the Phase 26 walkthrough-grader infrastructure (likely needs to be phase-tier). Recommend (a) — extend the existing candidate at the next oversight.
+
+### [LOW] specs/09 → specs/07 cross-link wording is slightly asymmetric
+- pass: critique-37 (commit 3a44412)
+- area: structure
+- observation: Specs 07 ↔ 09 Phase 73 cross-links are semantically correct but asymmetric in emphasis. specs/07 Phase 73 block says "The matching Game-side slice (`GameState.codex: CodexState`) + the engine wiring live in the Spec 09 game-loop area — this spec's slice is the per-foe content extension" (line 301) — clear. specs/09 Phase 73 block says "see `specs/07` § Post-spec engine extensions Phase 73 block for the per-foe content shape" — doesn't explicitly name "author coverage" lives there too. Readers hitting Spec 09 first would need to infer that the full per-foe content (the 3 authored journalEntries) is documented in Spec 07 rather than Spec 09.
+- evidence: specs/09-game-loop-orchestration.md:220-221 (the "see specs/07" cross-link)
+- suggested_fix: Append "and author coverage" to the specs/09 Phase 73 block's cross-link, so it reads: "see `specs/07` § Post-spec engine extensions Phase 73 block for the per-foe content shape **and author coverage**". 1-line edit.
 
 ---
 
