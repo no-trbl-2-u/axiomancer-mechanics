@@ -6,15 +6,23 @@
 > by `/iterate`.
 
 <!-- Metadata (updated by /critique after each pass):
-> Last pass: 2026-05-23 at commit 3a44412
-> Pass count: 37
+> Last pass: 2026-05-23 at commit 877930c
+> Pass count: 38
 -->
+<!-- Pass 38 (2026-05-23 at commit 877930c): 1 finding (0H/0M/1L). Post-iterate-saturation audit walked the deep docs landscape (spec.md horizon, specs/README order, bearings standing decisions, all 9 module docs, comment cross-references in src/, JSDoc @see/@link, headline counts). 7 iterate drains since pass 37 absorbed everything visible at the front-door cluster + the next layer down (CHANGELOG lede / agents.md / RELEASING.md / CodexEntry semantic home / Phase 71 e2e consumer pipeline / Spec 09 cross-link wording / walkthrough gap drain / docs/testing.md Examples table). Only the spec.md 6-month horizon section remains stale — it acknowledges npm publishing + Tier 2/3 skills + fishing-village expansion + Continent 2 partial but doesn't mention the GH#65 trio (aftermath narrative / run-loop / Codex) as player-facing shipping milestones. 1-line bullet addition. /iterate will drain. -->
 <!-- Pass 36 (2026-05-23 at commit 4dee78e): 1 finding (0H/0M/1L). Post-GH#65-trio audit walked A-F across the 17 commits between pass 35 (b5c8165) and pass 36 (4dee78e) — Phase 71 (per-foe aftermath prose) + Phase 72 (run-loop semantics + runId + STARTING_REGION + GAME_STATE_VERSION 5→6) + Phase 73 (Codex slice + journalEntry + GAME_STATE_VERSION 6→7). Public-API surface aligned (5 new types + 2 new runtime exports on src/index.ts; bearings.md + docs/api.md both annotate; fixture refreshed twice — 162 → 165 (Phase 71) → 167 (Phase 73); runtime 233 → 235 (Phase 72)). Hermetic coverage strong (17 new test cases across 3 e2e files: aftermath-lines.engine.test.ts, run-loop.engine.test.ts, codex.engine.test.ts). Module-structure consistent (new run-loop.ts module follows pure-helper convention; new reducer cases follow established switch-case pattern; cross-phase Phase-72 RESET_RUN extension for codex preservation per Phase 73 D12 wired cleanly). Docs current (gameloop.md Phase 72 Run-loop reset section; enemy.md Phase 71 Aftermath + Phase 73 Codex sections; combat.md Friendship Path codex bullet; CHANGELOG [unreleased] all three phase bullets present + lede extended thrice). Zero type-safety drift (no new @ts-ignore / as any). Zero dead-code surfaces. **Only finding: scripts/README.md fixture-state annotation is stale** — says "233 runtime + 162 types" (Phase-68 baseline) but current is 235 runtime + 167 types. The fixture file itself is current; only the prose annotation drifts. /iterate will drain. -->
 
 
 ---
 
 ## Pending
+
+### [LOW] spec.md 6-month horizon section silent on GH#65 mobile aftermath trio (Phase 71/72/73)
+- pass: critique-38 (commit 877930c)
+- area: docs
+- observation: spec.md "6-month horizon" section (lines 47-65) acknowledges npm publishing + Tier 2/3 skill shipping + fishing-village 25-node expansion + Continent 2 partial + story-content NPC progress, but doesn't mention the GH#65 mobile aftermath trio (Phase 71 per-foe narrative prose + Phase 72 run-loop semantics + Phase 73 Codex journal-entry surface). These are player-facing shipping milestones that close mobile-consumer gaps; they merit an entry alongside the existing parenthetical progress callouts (e.g. the story-content NPC line already cites "Phase 42-46/58/63"). Same shape as the existing partial-completion bullets — fold-in not a structural rewrite.
+- evidence: spec.md:47-65 (no `aftermath` / `journal` / `codex` / `Phase 7[1-3]` mention); compare to README.md + bearings.md which cite all three explicitly
+- suggested_fix: Append a bullet to the horizon section in the established parenthetical-progress format: "Mobile aftermath & codex surfaces. *(Complete — Phases 71/72/73 shipped per-foe narrative prose + run-loop reset semantics + Codex journal-entry surface; closes GH#65.)*". 2-line edit.
 
 ---
 
