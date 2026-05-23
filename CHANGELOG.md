@@ -12,26 +12,15 @@ deep imports are part of the supported surface.
 
 ## [unreleased]
 
-Phase 68 — per-enemy `BefriendabilityConfig` predicate (override of the
-Phase 36 friendship-eligibility check) + first boss-tier authored
-config on CoastalTyrant. Phase 69 — `FriendshipReward.alignmentDelta`
-extension (closes Spec 14 Q4 — the friendship-victory ↔ alignment-cube
-intersection is now opt-in per encounter rather than orthogonal).
-Phase 70 — boss-tier `friendshipReward` content authoring on
-CoastalTyrant (closes Phase 60's most-named follow-up; demonstrates
-the full Phase 60+62+68+69 stack on one encounter). Phase 71 —
-per-foe aftermath narrative prose (`finalBlowLines` / `pactLines`
-/ `causeLines`) on the Enemy type (closes GH#65 ask 1; the mobile
-aftermath presenter can drop its `derive*Phrase` fallback for
-authored enemies). Phase 72 — run-loop semantics
-(`store.resetRun({ keepCharacter })` + required `GameState.runId` +
-`generateRunId` + `STARTING_REGION`; `GAME_STATE_VERSION` bumped
-5 → 6 with `migrateV5toV6` defaulting `runId` for legacy saves).
-Closes GH#65 ask 2. Phase 73 — Codex / journal-entry surface
-(`CodexState` slice + per-foe `journalEntry?` + auto-firing wire on
-friendship outcomes + `unlockCodexEntry` dispatchable; `GAME_STATE_VERSION`
-bumped 6 → 7 with `migrateV6toV7` defaulting `codex` for legacy
-saves). Closes GH#65 ask 3.
+Six engine extensions across two arcs: the friendship-mechanic
+expansion (Phases 68/69/70 — per-enemy `BefriendabilityConfig`
+predicate + `FriendshipReward.alignmentDelta` closing Spec 14 Q4 +
+boss-tier `friendshipReward` content on CoastalTyrant) and the
+GH#65 mobile aftermath trio (Phases 71/72/73 — per-foe narrative
+prose + run-loop semantics + Codex / journal-entry surface).
+`GAME_STATE_VERSION` bumped twice in the cycle (5 → 6 at Phase 72;
+6 → 7 at Phase 73) — both required-field additions with matching
+migrators. Per-phase detail in the `### Added` section below.
 
 ### Added
 - **Codex / journal-entry surface (Phase 73 — closes GH#65 ask 3).**
