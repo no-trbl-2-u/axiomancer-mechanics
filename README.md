@@ -10,9 +10,11 @@ the CLI through every major surface, the walkthrough catalog, key
 in-game flows (combat / friendship path / map exploration / save-load),
 verify gates, and pointers to deeper docs.
 
-See [`CHANGELOG.md`](./CHANGELOG.md) for version history and
-[`RELEASING.md`](./RELEASING.md) for the publish flow + deprecation
-lifecycle policy.
+See [`RELEASES.md`](./RELEASES.md) for short-form per-version
+summaries (at-a-glance "what shipped in 0.X.Y?"),
+[`CHANGELOG.md`](./CHANGELOG.md) for the full per-phase detail per
+release, and [`RELEASING.md`](./RELEASING.md) for the publish flow +
+deprecation lifecycle policy.
 
 ---
 

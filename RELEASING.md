@@ -75,14 +75,22 @@ step by design — `oversight` Q2 on 2026-05-19 explicitly picked
 
 ## Post-publish
 
-1. **CHANGELOG.md prep next version.** Add a new
-   `[<next-version>] — unreleased` heading at the top of CHANGELOG.md
-   for the next round of work. Commit + push.
-2. **Notify consumers.** If a downstream consumer (e.g.
+1. **CHANGELOG.md prep next version.** Flip the previous
+   `[unreleased]` heading to `[<version>] — <ISO date>` (this is
+   what the deploy-gate's git-tag/CHANGELOG-disagreement check
+   guards). Then add a fresh `[unreleased]` heading at the top of
+   `CHANGELOG.md` for the next round of work. Commit + push.
+2. **RELEASES.md prep next version.** Add a new
+   `## <version> — <ISO date>` short-form section at the top of
+   `RELEASES.md` summarising the bump in 5-10 bullet lines (per-phase
+   ticks + the public-surface delta + the fixture count flip + any
+   `GAME_STATE_VERSION` bump). `RELEASES.md` is the at-a-glance
+   complement to `CHANGELOG.md`'s full per-phase detail.
+3. **Notify consumers.** If a downstream consumer (e.g.
    `axiomancer-mobile`) needs the bump, update its upgrade-doc /
    pinned-version PR. For mobile specifically, the canonical
    handshake is `axiomancer-mobile/docs/engine-upgrade-<from>-to-<to>.md`.
-3. **No-op for the loop.** The autonomous-beast loop keeps shipping
+4. **No-op for the loop.** The autonomous-beast loop keeps shipping
    phases into `main` against the published tag's HEAD. The next
    bump simply repeats this flow when the user calls for it.
 
