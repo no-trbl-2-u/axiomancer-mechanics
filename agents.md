@@ -209,4 +209,7 @@ tokens.
 | Critique queue | `plan/CRITIQUE.md` |
 | Testing standard | `docs/testing.md` |
 | Existing module docs | `docs/<module>.md` |
+| Run-loop semantics + Codex slice (Phase 72/73) | `docs/gameloop.md` § "Run-loop reset (Phase 72)" + `docs/api.md` § "Codex slice (Phase 73)" |
+| Per-foe aftermath narrative + codex entries (Phase 71/73) | `docs/enemy.md` § "Aftermath narrative (Phase 71)" + § "Codex entries (Phase 73)" |
+| One-page tour of what's shipped | `docs/quickstart.md` |
 | Caveats (ESLint, CLIs) | `AGENTS.md` (Cursor rule book — also applies here) |

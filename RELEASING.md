@@ -27,6 +27,16 @@ Run all of these locally before cutting a tag. Each must be green.
    at the top of `CHANGELOG.md` describes everything the bump ships.
    No `(unreleased)` markers on entries that aren't actually
    shipping.
+7. **`GAME_STATE_VERSION` ceremony.** If `[unreleased]` mentions a
+   `GAME_STATE_VERSION` bump (additive-required field on `GameState`),
+   verify (a) `src/Game/game.reducer.ts` exports the bumped constant,
+   (b) `src/Game/game.migrate.ts` ships the matching
+   `migrateV<N>toV<N+1>` step + wires it into the `migrate()` funnel
+   + extends `assertGameState` with the new required field, (c) the
+   bump is mirrored in `docs/gameloop.md` § "Save versioning +
+   migration" and `docs/quickstart.md` save/load paragraph. The 0.10.x
+   cycle bumped twice — `5 → 6` at Phase 72 (`runId`) and `6 → 7` at
+   Phase 73 (`codex`). Future bumps follow the same pattern.
 
 ## Cut the tag
 
