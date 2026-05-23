@@ -89,6 +89,17 @@ export const TidepoolCrab = createEnemy({
     loot: [none(80), drop('minor-healing-potion', 20)],
     // Phase 45 — mid-mid-individual (Montaigne / Ishmael archetype).
     philosophicalAlignment: { epistemology: 0, outlook: 0, scope: -67 },
+    // Phase 74 — territorial / "grievances are mostly territorial" voice.
+    finalBlowLines: {
+        brutal: 'The claim breaks before the claw does. The piling stays.',
+        quiet:  'It folds itself back into the tidepool, smaller than it pinched.',
+        ironic: 'A grievance pressed too hard. It pinched itself loose.',
+    },
+    causeLines: {
+        brutal: 'The claw closes on a part of you that does not let go again.',
+        broken: 'You wear down on the pinch and the pinch does not.',
+        quiet:  'A small grip in a wrong place. You sit down and do not stand.',
+    },
 });
 
 export const SeaMistWisp = createEnemy({
@@ -104,6 +115,17 @@ export const SeaMistWisp = createEnemy({
     loot: [none(75), drop('clarity-serum', 20), drop('focus-vial', 5)],
     // Phase 45 — mid-mid-transcendent (Lao Tzu / Siddhartha archetype).
     philosophicalAlignment: { epistemology: 0, outlook: 0, scope: 67 },
+    // Phase 74 — confused-thought / "will leave if you let it speak" voice.
+    finalBlowLines: {
+        brutal: 'The fog parts around a sound that was not there.',
+        quiet:  'It dissipates mid-sentence. The fog keeps its half.',
+        ironic: 'It came to be spoken to. You answered with a closing.',
+    },
+    causeLines: {
+        brutal: 'The fog thickens until the question is the only thing left.',
+        broken: 'You speak to it for too long. The fog gets into the speaking.',
+        quiet:  'You forget what you were going to say. The wisp remembers.',
+    },
 });
 
 export const LullabyMoth = createEnemy({
@@ -119,6 +141,17 @@ export const LullabyMoth = createEnemy({
     loot: [none(80), drop('heart-draught', 18), drop('minor-healing-potion', 2)],
     // Phase 45 — faith-optimistic-individual (Kierkegaard / Alyosha archetype).
     philosophicalAlignment: { epistemology: -67, outlook: 67, scope: -67 },
+    // Phase 74 — half-remembered-song / lullaby voice.
+    finalBlowLines: {
+        brutal: 'The hum ends on the wrong note. The wings settle anyway.',
+        quiet:  'It lands once on your sleeve. The song was almost finished.',
+        ironic: 'You hummed back. The moth took that as permission.',
+    },
+    causeLines: {
+        brutal: 'The song wraps you in a sleep you did not choose.',
+        broken: 'The hum is patient. You stop noticing it long before it stops.',
+        quiet:  'A lullaby for one. You answer it the only way a lullaby asks to be answered.',
+    },
 });
 
 // ─── Normal (6) — level 2-3 ───────────────────────────────────────────────────
@@ -142,6 +175,17 @@ export const Disatree_01 = createEnemy({
     loot: [none(70), drop('minor-healing-potion', 25), drop('healing-potion', 5)],
     // Phase 45 — mid-pessimistic-relational (Zapffe / Ahab archetype).
     philosophicalAlignment: { epistemology: 0, outlook: -67, scope: 0 },
+    // Phase 74 — tree-who-disagrees / "argument is mostly bark" voice.
+    finalBlowLines: {
+        brutal: 'The argument resolves in splinters. The bark does not get the last word.',
+        quiet:  'A branch lowers. The tree concedes a small point and leaves it there.',
+        ironic: 'You convinced it. It fell over to make its position clear.',
+    },
+    causeLines: {
+        brutal: 'The bark wins by being bark. You were softer than the argument required.',
+        broken: 'The disagreement goes on. Eventually the tree is the part still standing.',
+        quiet:  'You sit down to think it over and the tree mistakes that for surrender.',
+    },
 });
 
 export const WetHound = createEnemy({
@@ -157,6 +201,17 @@ export const WetHound = createEnemy({
     loot: [none(60), drop('body-elixir', 30), drop('healing-potion', 10)],
     // Phase 45 — logic-pessimistic-individual (Schopenhauer / Underground Man archetype).
     philosophicalAlignment: { epistemology: 67, outlook: -67, scope: -67 },
+    // Phase 74 — half-feral-half-pitiful / "trembles between bite and beg" voice.
+    finalBlowLines: {
+        brutal: 'The bite finishes the trembling. The hound goes still in your name.',
+        quiet:  'It lowers its head and does not get up. The fur was always going to be wet.',
+        ironic: 'You meant to feed it. The hound made a different choice with the offering.',
+    },
+    causeLines: {
+        brutal: 'The bite arrives before the beg finishes. Both were honest in their way.',
+        broken: 'You wear down on the trembling. The trembling does not wear down on you.',
+        quiet:  'It curls beside you when you stop moving. The fur is still wet.',
+    },
 });
 
 export const MournfulGull = createEnemy({
@@ -233,6 +288,17 @@ export const ForestSprite = createEnemy({
     loot: [none(55), drop('clarity-serum', 30), drop('focus-vial', 15)],
     // Phase 45 — mid-optimistic-individual (Rorty / Huck Finn archetype).
     philosophicalAlignment: { epistemology: 0, outlook: 67, scope: -67 },
+    // Phase 74 — lattice-of-opinions / arguing-itself-in-and-out voice.
+    finalBlowLines: {
+        brutal: 'The lattice unweaves. Several opinions go quiet at once.',
+        quiet:  'It argues itself out of visibility one last time and stays gone.',
+        ironic: 'You agreed with one of its opinions. The lattice did not survive the agreement.',
+    },
+    causeLines: {
+        brutal: 'A whole lattice of small wrongnesses adds up to a single large one.',
+        broken: 'The opinions outnumber you. The lattice closes around the difference.',
+        quiet:  'A single careful argument lands. You sit down to refute it and do not rise.',
+    },
 });
 
 export const HollowEyedBeggar = createEnemy({
@@ -313,6 +379,17 @@ export const ArgumentativeCrow = createEnemy({
     philosophicalAlignment: { epistemology: 67, outlook: 67, scope: -67 },
     // Phase 49 — mind-aspected fallacy skill matches the crow's "sequence of premises" voice.
     skills: [skill('false-dilemma')],
+    // Phase 74 — sequence-of-premises / "resolve infuriatingly in your defeat" voice.
+    finalBlowLines: {
+        brutal: 'The premises resolve, infuriatingly, in its own defeat.',
+        quiet:  'The conclusion lands soft. The crow nods at it once and does not caw again.',
+        ironic: 'It had the argument. You won by interrupting at the right syllable.',
+    },
+    causeLines: {
+        brutal: 'The premises were never about you. The conclusion was.',
+        broken: 'Premise after premise. You go down somewhere in the third repetition.',
+        quiet:  'It caws once more, gently. You did not see how that one followed.',
+    },
 });
 
 // ─── Elite (3) — level 4-5 ────────────────────────────────────────────────────
@@ -335,6 +412,17 @@ export const TideflukeReaver = createEnemy({
     philosophicalAlignment: { epistemology: 67, outlook: -67, scope: 0 },
     // Phase 57 — body-aspected tier-3 fallacy matches the reaver's "built threat → strike" trope.
     skills: [skill('straw-giant')],
+    // Phase 74 — salt-bound / shore-cursed / "faster than the surf retreats" voice.
+    finalBlowLines: {
+        brutal: 'The reaver falls in a wash of salt. The fists were faster than the surf retreated; the strike was faster than the fists.',
+        quiet:  'A single quiet strike to the salt-bound chest. The shore does not curse louder.',
+        ironic: 'The reaver swung at the surf and you stepped between. The surf still arrived; the reaver did not.',
+    },
+    causeLines: {
+        brutal: 'The fists arrive in a sequence the surf is too slow to retreat from.',
+        broken: 'You hold for as long as the tide allows. The reaver holds longer.',
+        quiet:  'A clean strike from salt-bound hands. The shore claims you on the way down.',
+    },
 });
 
 export const HushWraith = createEnemy({
@@ -355,6 +443,17 @@ export const HushWraith = createEnemy({
     philosophicalAlignment: { epistemology: 0, outlook: -67, scope: 67 },
     // Phase 57 — mind-aspected paradox; gradual-undoing matches "listens until you doubt the answer".
     skills: [skill('sorites-cascade')],
+    // Phase 74 — silence-after-a-question / "listens until you doubt" voice.
+    finalBlowLines: {
+        brutal: 'The silence breaks first. Then the wraith. Then the question stays.',
+        quiet:  'You stop answering. The wraith fades into the room the silence left.',
+        ironic: 'You doubted out loud. The wraith took your doubt as its undoing.',
+    },
+    causeLines: {
+        brutal: 'The silence thickens until the answer you would have given does not arrive.',
+        broken: 'You answer once, twice, the third time you are not sure. The wraith is patient.',
+        quiet:  'The question is the last thing left in the room. You let it have the room.',
+    },
 });
 
 export const HollowSaint = createEnemy({
@@ -375,6 +474,17 @@ export const HollowSaint = createEnemy({
     philosophicalAlignment: { epistemology: -67, outlook: 0, scope: 67 },
     // Phase 57 — heart self-heal paradox for the martyr-without-cause seeking a wound to claim.
     skills: [skill('pascals-wager')],
+    // Phase 74 — martyr-without-a-cause / "the wound it offers is your own" voice.
+    finalBlowLines: {
+        brutal: 'The wound it offered was yours; you returned it with interest.',
+        quiet:  'The saint accepts the strike like it was a cause. The cause was not yours.',
+        ironic: 'You declined to be its martyr. It found the role anyway, by other means.',
+    },
+    causeLines: {
+        brutal: 'The wound it offered was yours. You took it. It still belongs to you.',
+        broken: 'You decline the martyrdom round after round. Eventually you accept it.',
+        quiet:  'The saint kneels beside where you fall. The cause it was looking for is here now.',
+    },
 });
 
 // ─── Boss (2) — level 7-8 ─────────────────────────────────────────────────────
@@ -510,6 +620,17 @@ export const TheDisagreement = createEnemy({
     philosophicalAlignment: { epistemology: 67, outlook: 0, scope: -67 },
     // Phase 57 — mind-mark paradox matches the rehearsed-argument boss whose phases are deliberate.
     skills: [skill('liars-echo')],
+    // Phase 74 — unresolved-argument-with-thorns-and-teeth / "rehearsed your defeat" voice.
+    finalBlowLines: {
+        brutal: 'The argument is over because one party is no longer present to make it. The thorns retract slowly, as if the silence is what they were always for.',
+        quiet:  'A point lands that the disagreement had not rehearsed. The thorns fold. The teeth retract. The argument leaves the body it had been wearing.',
+        ironic: 'You agreed with one of its phases. The agreement did the work the strikes had not — the disagreement could not survive being agreed with.',
+    },
+    causeLines: {
+        brutal: 'The phases were rehearsed. Your defeat was the conclusion of an argument prepared without you.',
+        broken: 'You hold against one phase, then the next. The disagreement has more phases than you have rounds.',
+        quiet:  'A single thorn lands in a small place. The argument was not loud about it. You go down quietly anyway.',
+    },
 });
 
 // ─── Unique (1) — level 10 signature fight ────────────────────────────────────
@@ -542,6 +663,17 @@ export const EchoOfPyrrhonia = createEnemy({
     // skeptic move (every claim demands a deeper claim ad infinitum); the
     // Echo's recurrence theme fits.
     skills: [skill('eternal-regress')],
+    // Phase 74 — Pyrrhonian-regress / "speaks first in your own voice" tone.
+    finalBlowLines: {
+        brutal: 'The regress closes on itself. The echo stops being able to ask whether it has stopped.',
+        quiet:  'A small certainty lands in the middle of the doubt. The echo cannot accommodate it; the echo falls silent.',
+        ironic: 'You doubted whether the strike had landed. The echo doubted with you, and then did not recover.',
+    },
+    causeLines: {
+        brutal: 'The regress takes one of your claims and unmakes it. Then the next. Then the body the claims were standing on.',
+        broken: 'Every certainty you offered came back as a question. Eventually you ran out of certainties to be questioned.',
+        quiet:  'The echo asks once whether you are still standing. You are not sure, and then you are not.',
+    },
 });
 
 // ─── Test fixture (legacy, NOT counted toward Spec 07's 15) ───────────────────
