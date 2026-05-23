@@ -16,14 +16,6 @@
 
 ## Pending
 
-### [LOW] scripts/README.md fixture-state annotation is stale (says 233+162; current 235+167)
-- pass: critique-36 (commit 4dee78e)
-- area: docs
-- observation: `scripts/README.md` line 29 still says "Current shape (HEAD, post-Phase-68): 233 runtime exports + 162 type exports". Phase 71 added 3 types (FinalBlowLines, PactLines, CauseLines — 162 → 165); Phase 72 added 2 runtime exports (generateRunId, STARTING_REGION — 233 → 235); Phase 73 added 2 types (CodexEntry, CodexState — 165 → 167). The fixture file `scripts/public-surface.expected.json` is correctly at 235 runtime + 167 types (verified via `grep -c` against the JSON). Only the prose annotation drifts. Same shape as the critique-24 row-5 → iterate-9bed952 drain pattern; same shape as critique-30 row-2 → iterate-cbc658b drain. The bullet-list per-version history in the surrounding paragraph also wants the Phase 71/72/73 ticks folded in.
-- evidence: scripts/README.md:29 (the stale annotation); scripts/public-surface.expected.json line counts match the new totals
-- suggested_fix: Flip "post-Phase-68: 233 runtime + 162 type exports" → "post-Phase-73: 235 runtime + 167 type exports" and extend the per-version bullet list with the Phase 71 (+3 types) / Phase 72 (+2 runtime) / Phase 73 (+2 types) additions.
-- source: critique
-
 ### [MED] Items/Equipment — `equipmentTemplates` export carries no rolled mods; UI has no preview helper
 - pass: user-jot (commit b5c8165) — refined at oversight-15 2026-05-23
 - file: src/Items/equipment.templates.ts + src/Items/index.ts (export site)
@@ -36,6 +28,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] scripts/README.md fixture-state annotation is stale (says 233+162; current 235+167)** — resolved at iterate commit `fe0eca1` (2026-05-23). Flipped "post-Phase-68: 233 runtime + 162 type" → "post-Phase-73: 235 runtime + 167 type" per the suggested_fix; per-version bullet list extended to fold in Phase 68 BefriendabilityConfig (+1 type), Phase 71 FinalBlowLines + PactLines + CauseLines (+3 types), Phase 72 generateRunId + STARTING_REGION (+2 runtime — first runtime-count change in the 0.10.x line), Phase 73 CodexEntry + CodexState (+2 types). Closing paragraph re-framed to acknowledge the runtime-count change at Phase 72 (the prior "runtime held at 233" claim was the v0.10.3-era invariant; the loop broke it at Phase 72's resetRun surface). Pure prose annotation change; 697/697 tests stay green; verify + deploy:check clean. Same shape as the critique-24 row-5 → iterate-`9bed952` drain pattern + critique-30 row-2 → iterate-`cbc658b` drain. Impact 2 × Ease 10 / 10 = 2.0. Source: critique-36 row 1 (commit `4dee78e`).
 
 - [x] **[LOW] Boss-tier befriendable enemy candidate scope is stale — Phase 69's alignmentDelta extension shipped** — resolved at oversight 2026-05-21 (thirteenth of session). User picked path (a): promoted the candidate as Phase 70 + applied the scope-refresh in the same oversight commit. The Pending candidate body was moved to the Promoted section with the refreshed scope per the suggested_fix: dropped "Optionally extend `FriendshipReward` shape" framing; reframed Unit 1 as pure content authoring (Coastal Tyrant's `friendshipReward: { items, xpBonus, narrative, alignmentDelta, flagSet }` — all engine fields ready post-Phase-60+62+68+69). Scope locks: 2-3 items (consumables + one unique equipment piece), `xpBonus: 50+` (boss-tier weight), multi-paragraph narrative matching the magistrate-fallen-priest archetype, `alignmentDelta` thematic combined-axis shift (brief picks values inside the Phase 43 ±1..±5 band), `flagSet: 'befriended-coastal-tyrant'`. Phase 70 row added to `plan/steps/01_build_plan.md`. Impact 3 × Ease 8 / 10 = 2.4. Source: critique-34 row 2 (commit `7ade4b6`).
 
