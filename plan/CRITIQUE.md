@@ -16,14 +16,14 @@
 
 ## Pending
 
-### [MED] Items/Equipment — modifiers not implemented; user asks to fast-track
-- pass: user-jot (commit b5c8165)
-- file: unspecified
+### [MED] Items/Equipment — `equipmentTemplates` export carries no rolled mods; UI has no preview helper
+- pass: user-jot (commit b5c8165) — refined at oversight-15 2026-05-23
+- file: src/Items/equipment.templates.ts + src/Items/index.ts (export site)
 - category: spec-gap
-- observation: it appears there are no "modifiers" implemented on equipment yet. Can we fast track those?
-- evidence: user-spotted at 2026-05-23
-- suggested_fix: [user has not specified — iterate to determine]
-- source: user
+- observation: User-reported UI gap — the mobile item-library view shows zero modifiers on every item. Independent verification confirms modifiers ARE implemented (Spec 05d shipped pre-loop: `modifier.catalogue.ts` 537 lines / `modifier.types.ts` 85 lines / `rollModifiers` + `resolveModifiers` real at `item.factory.ts:140,:197` and wired into `dropItem` at `:333-334` / 369-line `modifier.catalogue.engine.test.ts` / `docs/items.md` Modifier-catalogue section / Spec 05d acceptance all `[x]`). The real gap: `equipmentTemplates` (exported on `src/index.ts:106`) is what mobile UI consumes for the "all items" library view, and templates by-design carry only `baseStatModifiers` (the floor) — rolled mods only exist on runtime `Equipment` instances from `dropItem(template, playerLevel, rng)`. The file comment at the top of `equipment.templates.ts` confirms the design intent. Mobile UI has no engine surface to ask "what would this template look like rolled at Uncommon / Rare / Unique?" — so the library view is mechanically truthful but player-experience misleading.
+- evidence: user-spotted at 2026-05-23; verified at oversight-15 against src/Items/equipment.templates.ts:1-15 (design comment) + src/Items/index.ts:22 + src/index.ts:106 (export site) + src/Items/item.factory.ts:140,:197,:333-334 (rollModifiers/resolveModifiers + dropItem wiring) + specs/05d-modifier-catalogue.md:240-248 (acceptance all `[x]`).
+- suggested_fix: New `previewTemplateAtRarity(templateId: string, rarity: ItemRarity, playerLevel: number, rng?: () => number): Equipment` helper on the Items public surface. Default rng to a fixed seed (e.g. `() => 0.5` per the Phase 70 Coastal Tyrant pattern) so the preview is deterministic per (template, rarity, level) tuple. Mobile UI then calls it per-template-per-rarity-tier to render the library with rolled mods visible. Alternative shape: `getTemplatePreviewModifiers(template, rarity, playerLevel): RolledModifier[]` (returns just the mod list; UI composes the display). Folds cleanly into a phase candidate (filed at oversight-15 in PHASE_CANDIDATES.md Pending).
+- source: user (oversight-15 refined)
 
 ---
 
