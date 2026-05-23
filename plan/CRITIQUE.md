@@ -16,13 +16,6 @@
 
 ## Pending
 
-### [LOW] CHANGELOG.md [unreleased] lede has grown to a 6-Phase wall of text
-- pass: critique-37 (commit 3a44412)
-- area: docs
-- observation: The `[unreleased]` lede paragraph chains Phase 68 + 69 + 70 + 71 + 72 + 73 summaries in one ~20-line block before pivoting to the sectioned `### Added`. Each phase ship extended the lede; readability has decayed. The per-phase detail in the lede is mostly redundant with the `### Added` bullets immediately below.
-- evidence: CHANGELOG.md:13-34 — the `[unreleased]` paragraph
-- suggested_fix: Reshape the lede to a terse 2-3 line summary (e.g. "Five engine extensions across the friendship + run-loop arcs (Phases 68/69/70/71/72/73) — see ### Added for per-phase detail.") + drop the chained per-phase sentences. The detail stays in the `### Added` bullets where it's authored.
-
 ### [LOW] `CodexEntry` defined in src/Enemy/types.ts but semantically a Game-loop type
 - pass: critique-37 (commit 3a44412)
 - area: structure
@@ -61,6 +54,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] CHANGELOG.md [unreleased] lede has grown to a 6-Phase wall of text** — resolved at iterate commit `326c42f` (2026-05-23). The ~20-line wall chaining Phase 68 + 69 + 70 + 71 + 72 + 73 summaries reshaped into a 9-line 2-arc summary: friendship-mechanic expansion (Phases 68/69/70 — predicate + alignmentDelta + boss-tier content) + GH#65 mobile aftermath trio (Phases 71/72/73 — narrative prose + run-loop + Codex), plus a single sentence on the twice-bumped GAME_STATE_VERSION ceremony (5→6 Phase 72; 6→7 Phase 73), plus a closing pointer to the `### Added` section for per-phase detail. The `### Added` bullets are preserved unchanged — the lede is strictly a summary surface now. Same shape as iterate-`c15d3fa`-era prior lede maintenance: the lede grows naturally as phases ship; periodic reshapes when readability decays. Pure docs change; 697/697 tests stay green. Impact 3 × Ease 9 / 10 = 2.7. Source: critique-37 row 1 (commit `4f83854`).
 
 - [x] **[tracking] [MED] Items/Equipment — `equipmentTemplates` export carries no rolled mods; UI has no preview helper** — resolved at iterate 2026-05-23 (this commit) as a tracking-row drain. The finding is genuinely correct (mobile item-library view shows zero mods because `equipmentTemplates` are templates with `baseStatModifiers` only — rolled mods only exist on runtime `Equipment` instances from `dropItem`), but the fix shape is phase-tier rather than iterate-tier: the suggested `previewTemplateAtRarity(templateId, rarity, playerLevel, rng?): Equipment` helper folds cleanly into the matching candidate filed at oversight-15 2026-05-23 (`PHASE_CANDIDATES.md` Pending — `previewTemplateAtRarity` helper, score 3.0). Same pattern as the prior `[tracking] GH#64` AUDIT row (Phase 50 engine-handoff) and the `[tracking] GH#65` AUDIT row (Phases 71/72/73 GH#65 trio): row moved Pending → Done with the candidate citation so /iterate stops selecting it on every tick. The candidate stays Pending in PHASE_CANDIDATES.md awaiting `/oversight` promotion; once promoted + shipped, the original Done-row's "this is being tracked" framing becomes the historical breadcrumb. AUDIT bias "equipment/items" (set via oversight 2026-05-23) stays armed for the next /critique pass since the candidate's eventual phase work will surface follow-up findings the multiplier should weight. Source: user-jot at `b5c8165`, refined at oversight-15 (commit `077979e`); pre-bias score 5.5 × 1.0 = 5.5 (MED midpoint impact); post-bias `5.5 + 0.5 user + 1.5×items = 9.0` would have been the iterate priority if the fix were iterate-shippable, but D-drain is the correct iterate action for a phase-tier finding.
 
