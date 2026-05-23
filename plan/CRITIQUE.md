@@ -16,16 +16,11 @@
 
 ## Pending
 
-### [LOW] No walkthrough exercises Phase 71 aftermath prose + Phase 73 codex unlock
-- pass: critique-37 (commit 3a44412)
-- area: tests
-- observation: `automation/scripts/walkthroughs/` inventory carries 10 scripted surfaces but nothing exercises the GH#65 trio's friendship-aftermath path end-to-end. The Phase 64 `endgame-loadout` walkthrough is the closest precedent (Sage preset → Coastal Tyrant → bootstrap-paradox); a sibling "friendship-aftermath" walkthrough (Apprentice preset → MournfulGull befriend → assert aftermath narrative + codex unlock in the state log) would be the natural Phase 71/73 demonstration. The existing "Walkthrough catalog expansion" candidate (Phase 65/66/68 coverage) could absorb the Phase 71/72/73 walkthroughs OR they could ship as a small dedicated phase.
-- evidence: automation/scripts/walkthroughs/ — 10 .json/.goal.md pairs; none drive the new aftermath prose / codex unlock surfaces
-- suggested_fix: Either (a) extend the existing "Walkthrough catalog expansion" PHASE_CANDIDATES.md row to include a Phase 71/73 friendship-aftermath walkthrough scope, OR (b) ship a single-walkthrough iterate-tier follow-up if the test framework allows hermetic isolation without the Phase 26 walkthrough-grader infrastructure (likely needs to be phase-tier). Recommend (a) — extend the existing candidate at the next oversight.
-
 ---
 
 ## Done
+
+- [x] **[tracking] [LOW] No walkthrough exercises Phase 71 aftermath prose + Phase 73 codex unlock** — resolved at iterate 2026-05-23 (this commit) as a tracking-row drain. The finding is genuinely correct (no walkthrough in `automation/scripts/walkthroughs/` exercises the GH#65 trio's friendship-aftermath path end-to-end; Phase 64's `endgame-loadout` is the closest precedent) but the suggested_fix path (a) — "extend the existing Walkthrough catalog expansion PHASE_CANDIDATES.md row to include a Phase 71/73 friendship-aftermath walkthrough scope" — is candidate-extension at oversight rather than iterate-shippable. Path (b) (single-walkthrough iterate-tier follow-up) was considered and rejected because new walkthroughs need the Phase 26 walkthrough-grader infrastructure scaffolding (.json + .goal.md pair + agent-grader pass + automation/scripts/walkthroughs/README.md inventory row) which is phase-tier scope. Row moved Pending → Done with the candidate citation per the established `[tracking]` precedent (GH#64 / GH#65 / `previewTemplateAtRarity` MED). At the next oversight, the user can pick path (a) to extend the existing "Walkthrough catalog expansion — Phase 65/66/68 coverage" candidate (`plan/PHASE_CANDIDATES.md` Pending) to also include the Phase 71/72/73 surfaces; the CLI run-loop + Codex integration candidate (also Pending, filed at expand-20) naturally pairs with this since it ships a codex-unlock walkthrough as part of its Unit 3 already. Source: critique-37 row 5 (commit `4f83854`).
 
 - [x] **[LOW] specs/09 → specs/07 cross-link wording is slightly asymmetric** — resolved at iterate commit `3e74277` (2026-05-23). 1-line edit appending "and author coverage" to the specs/09 Phase 73 block's cross-link to specs/07; the reader's expectation now matches Spec 07's actual scope (shape + content + authored examples). 697/697 tests stay green; pure docs change. Impact 1 × Ease 10 / 10 = 1.0. Source: critique-37 row 6 (commit `4f83854`).
 
