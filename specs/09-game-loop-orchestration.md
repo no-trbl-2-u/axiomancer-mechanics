@@ -113,3 +113,132 @@ return to map → level up → quest progress → save / load → all driven by
   contract.
 - Multiple save slots.
 - Cloud sync.
+
+## Post-spec engine extensions
+
+Phases that extended the Game state shape, the `GameAction` union, or
+the `gameReducer` dispatch table after Spec 09's v2 baseline. All
+additions are additive on `GameState`; legacy saves continue to load
+via the `migrate()` ladder in `src/Game/game.migrate.ts`.
+
+### Phase 72 — Run-loop semantics (`resetRun` + `runId` + STARTING_REGION)
+
+Closes GH#65 ask 2. Mobile BEGIN AGAIN's full-heal + dismiss band-aid
+gets replaced with a proper engine primitive.
+
+**Shape additions on `GameState`:**
+
+```ts
+interface GameState {
+    version: number;
+    runId: string;   // Phase 72 — required UUID-shaped id; bumped per resetRun
+    // ... existing fields ...
+}
+```
+
+**Action union extension:**
+
+```ts
+type GameAction = /* ... existing variants ... */
+    | { type: 'RESET_RUN'; payload: { keepCharacter: boolean } };
+```
+
+**Store method:**
+
+```ts
+store.resetRun({ keepCharacter: boolean }): GameState
+```
+
+`keepCharacter: true` preserves the character ledger (player +
+philosophicalAlignment + moralMeter + rngState; Phase 73 added codex
+to this list), refills HP to maxHealth, clears `player.effects`
+defensively, and resets run-scoped state (world via
+`createStartingWorld()` → fishing-village starting node; combat;
+quests; flags; observer cache). `keepCharacter: false` performs a
+full new-game reset carrying only `rngState`. Every call assigns a
+fresh `runId` via `generateRunId(() => getRng().random())`.
+
+**Save format / migration:** `GAME_STATE_VERSION` bumped `5 → 6`;
+`migrateV5toV6` defaults `runId` for legacy v5 saves. `RESET_RUN`
+added to `DURABLE_ACTIONS` so the new state persists immediately.
+
+**New public-surface exports** (in `src/Game/run-loop.ts`):
+`generateRunId(rng: () => number): string` (16-char hex; Phase 35
+character-id generation pattern; no `crypto` dependency for React
+Native compatibility) + `STARTING_REGION: MapName = 'fishing-village'`
+(canonical starting region; reuses `MapDefinition.startingNode` —
+no new "hearth" type primitive). Fixture bump: +2 runtime exports.
+
+Hermetic pin at `src/Game/e2e/run-loop.engine.test.ts` (8 cases —
+preserve/reset matrix + migration + DURABLE_ACTIONS persistence).
+See `docs/gameloop.md` § "Run-loop reset (Phase 72)".
+
+### Phase 73 — Codex slice (`codex: CodexState` + `UNLOCK_CODEX_ENTRY` + auto-firing wire)
+
+Closes GH#65 ask 3. Mobile `<CombatFriendshipPanel>` NEW ENTRY card
+gets a typed surface to mount against.
+
+**Shape additions on `GameState`:**
+
+```ts
+interface CodexState {
+    unlockedEntries: string[];   // append-only; de-duped
+}
+
+interface GameState {
+    version: number;
+    runId: string;
+    // ... existing fields ...
+    codex: CodexState;   // Phase 73 — required slice; defaults [] on new games
+}
+```
+
+Wrapper shape (not flat `string[]`) so future per-entry metadata
+(unlock-timestamp, read-status) can land additive-optionally without
+breaking the existing surface. Same pattern as `QuestLog`.
+
+**Action union extension:**
+
+```ts
+type GameAction = /* ... existing variants ... */
+    | { type: 'UNLOCK_CODEX_ENTRY'; payload: { entryId: string } };
+```
+
+**Store method:**
+
+```ts
+store.unlockCodexEntry(entryId: string): void
+```
+
+**Auto-firing wire:** the `END_COMBAT` reducer appends the
+befriended enemy's `journalEntry.id` to `state.codex.unlockedEntries`
+(de-duped) on `outcome === 'friendship'`. `store.endCombat()`
+surfaces `{ id, title }` on
+`CombatEndReport.friendshipReward.codexEntryUnlocked` only when the
+entry wasn't already unlocked (mirrors the Phase 69 `alignmentShift`
+surfacing pattern; body is recovered at consumer render time via
+content-registry lookup against `Enemy.journalEntry` — see
+`specs/07` § "Post-spec engine extensions" Phase 73 block for the
+per-foe content shape).
+
+**Cross-phase coupling with Phase 72:** the `RESET_RUN`
+`keepCharacter: true` branch preserves `state.codex` — codex unlocks
+are character knowledge that carries across runs alongside
+`philosophicalAlignment` and `moralMeter`. `keepCharacter: false`
+drops to `createNewGameState()` which initializes empty codex.
+
+**Save format / migration:** `GAME_STATE_VERSION` bumped `6 → 7`;
+`migrateV6toV7` defaults `codex = { unlockedEntries: [] }` for
+legacy v6 saves. `UNLOCK_CODEX_ENTRY` added to `DURABLE_ACTIONS` so
+unlocks persist immediately.
+
+**New public-surface exports:** `CodexEntry` + `CodexState` types
+(both on `src/index.ts`; `CodexEntry` re-exported through the Enemy
+block since it travels on `Enemy.journalEntry`). Fixture bump: +2
+type exports.
+
+Hermetic pin at `src/Game/e2e/codex.engine.test.ts` (6 cases —
+empty default + friendship unlocks + de-dupe + no-journalEntry no-op
++ victory-outcome no-op + migration). See `docs/gameloop.md` and
+`docs/api.md` § "Codex slice (Phase 73)" for the consumer-facing
+surface.
