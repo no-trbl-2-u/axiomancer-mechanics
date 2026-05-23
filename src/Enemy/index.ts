@@ -8,6 +8,7 @@ import { PhilosophicalAlignment } from '../Philosophy/types';
 import {
     Enemy, EnemyLogic, EnemyDifficulty, Tier1EffectOverrides, LootTableEntry,
     FriendshipReward, BefriendabilityConfig,
+    FinalBlowLines, PactLines, CauseLines,
 } from './types';
 
 /**
@@ -38,6 +39,12 @@ export interface CreateEnemyOptions {
      * predicate. When undefined, the Phase 36 mechanic stays unchanged.
      */
     befriendabilityConfig?: BefriendabilityConfig;
+    /** Phase 71 — optional per-foe victory final-blow chronicle prose (GH#65 ask 1). */
+    finalBlowLines?: FinalBlowLines;
+    /** Phase 71 — optional per-foe friendship-pact chronicle prose (GH#65 ask 1). */
+    pactLines?: PactLines;
+    /** Phase 71 — optional per-foe defeat / cause-of-loss chronicle prose (GH#65 ask 1). */
+    causeLines?: CauseLines;
 }
 
 /**
@@ -64,6 +71,7 @@ export function createEnemy(options: CreateEnemyOptions): Enemy {
         difficulty, tier1Overrides, procUnlocks, procOverrides,
         skills, loot, xpReward, effects = [], philosophicalAlignment,
         friendshipReward, befriendabilityConfig,
+        finalBlowLines, pactLines, causeLines,
     } = options;
 
     const maxHealth = calculateMaxHealth(level, baseStats);
@@ -85,6 +93,9 @@ export function createEnemy(options: CreateEnemyOptions): Enemy {
         philosophicalAlignment,
         friendshipReward,
         befriendabilityConfig,
+        finalBlowLines,
+        pactLines,
+        causeLines,
     };
 }
 
@@ -98,4 +109,5 @@ export type { LootRng } from './loot';
 export type {
     Enemy, EnemyLogic, EnemyDifficulty, Tier1EffectOverrides, LootTableEntry,
     FriendshipReward, BefriendabilityConfig,
+    FinalBlowLines, PactLines, CauseLines,
 } from './types';

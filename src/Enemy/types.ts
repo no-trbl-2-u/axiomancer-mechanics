@@ -163,6 +163,50 @@ export interface LootTableEntry {
 }
 
 /**
+ * Phase 71 — chronicle-voice prose for the victory final-blow
+ * aftermath panel. Three variants; consumer (mobile presenter, CLI,
+ * etc.) picks which to render based on the outcome shape (typically
+ * damage-tier: brutal = overkill burst, quiet = exact cap, ironic =
+ * self-inflicted / mirror-effect KO). Strings are complete prose as
+ * authored; engine does no interpolation and no variant selection.
+ * Closes GH#65 ask 1.
+ */
+export interface FinalBlowLines {
+    brutal: string;
+    quiet: string;
+    ironic: string;
+}
+
+/**
+ * Phase 71 — chronicle-voice prose for the friendship-pact
+ * aftermath panel. Three variants matching how the parley landed
+ * (quiet = mutual silence, setDown = enemy lays down its weapon
+ * literally, heavy = recognition under weight). Only meaningful
+ * when the enemy also carries a `friendshipReward`; un-befriendable
+ * enemies leave this undefined.
+ *
+ * Naming note: GH#65 source text used "set-down"; this field is
+ * `setDown` (TS-identifier convention).
+ */
+export interface PactLines {
+    quiet: string;
+    setDown: string;
+    heavy: string;
+}
+
+/**
+ * Phase 71 — chronicle-voice prose for the defeat aftermath panel
+ * ("cause of loss"). Three variants matching how the player went
+ * down (brutal = enemy unloaded a burst, broken = attrition over
+ * many rounds, quiet = exact-cap or single-tick KO).
+ */
+export interface CauseLines {
+    brutal: string;
+    broken: string;
+    quiet: string;
+}
+
+/**
  * An adversary that can be encountered in combat.
  *
  * @property id           - Unique identifier (used for save/load and tracking).
@@ -231,4 +275,25 @@ export interface Enemy {
      * present, ALL named predicates AND-compose.
      */
     befriendabilityConfig?: BefriendabilityConfig;
+    /**
+     * Phase 71 — optional per-foe victory final-blow chronicle
+     * prose. See {@link FinalBlowLines}. Three variants; consumer
+     * picks based on damage-tier shape. Undefined falls through to
+     * consumer-side defaults (e.g. mobile presenter's
+     * derive*Phrase helpers). Closes GH#65 ask 1.
+     */
+    finalBlowLines?: FinalBlowLines;
+    /**
+     * Phase 71 — optional per-foe friendship-pact chronicle prose.
+     * See {@link PactLines}. Three variants matching parley
+     * posture. Only meaningful when the enemy also carries a
+     * `friendshipReward`. Closes GH#65 ask 1.
+     */
+    pactLines?: PactLines;
+    /**
+     * Phase 71 — optional per-foe defeat / cause-of-loss chronicle
+     * prose. See {@link CauseLines}. Three variants matching the
+     * KO shape. Closes GH#65 ask 1.
+     */
+    causeLines?: CauseLines;
 }

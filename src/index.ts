@@ -34,6 +34,7 @@ export type {
     LootTableEntry, CreateEnemyOptions,
     LootRng,
     FriendshipReward, BefriendabilityConfig,
+    FinalBlowLines, PactLines, CauseLines,
 } from './Enemy';
 export {
     EnemyLibrary, EnemiesByMap, ENEMY_REGISTRY,
