@@ -6,9 +6,10 @@
 > by `/iterate`.
 
 <!-- Metadata (updated by /critique after each pass):
-> Last pass: 2026-05-23 at commit 51cae43
-> Pass count: 39
+> Last pass: 2026-05-23 at commit a5060e1
+> Pass count: 40
 -->
+<!-- Pass 40 (2026-05-23 at commit a5060e1): 1 finding (0H/0M/1L). Post-Phase-75 + 4-iterate-drain audit found everything aligned EXCEPT one inconsistency: `plan/bearings.md` Items entry is uniquely terse vs the Game / Philosophy / Enemy entries which use multi-line per-phase fold-ins ("+ Phase 72 ... STARTING_REGION", "+ Phase 73 codex slice", etc.). The Phase 75 brief's D-decision explicitly skipped bearings.md ("no entry needed; leaf addition") but that contradicts the standing pattern in the same file. AUDIT bias `equipment/items` weights this finding 1.5×. -->
 <!-- Pass 39 (2026-05-23 at commit 51cae43): zero findings. Post-Phase-74 + post-0.11.0 audit walked the deep docs landscape across the 15 commits since pass 38: Phase 74 ship (+72 chronicle lines, no engine change, no public surface change), 0.11.0 release-tag cycle (CHANGELOG flip + new top-level RELEASES.md + README cross-link + RELEASING.md step 7 ceremony), iterate-drain sweep across Spec 10 / Spec 12 / spec.md horizon. Two agent-surfaced candidate findings inspected + rejected: (1) PHASE_CANDIDATES.md:205 references CHANGELOG [unreleased] Migration notes — but that text is inside a SHIPPED-candidate's frozen historical body (Phase 67 quickstart-doc candidate), not live actionable guidance; (2) RELEASING.md step 2 RELEASES.md prep — reads as ambiguous to the agent but is unambiguous in the numbered checklist (1: CHANGELOG flip; 2: RELEASES.md prep; 3: notify consumers; 4: no-op for loop). Pool resets to empty. /iterate falls through to expand-or-iterate (CRITIQUE empty; AUDIT empty; PHASE_CANDIDATES Pending has 12 candidates). -->
 <!-- Pass 36 (2026-05-23 at commit 4dee78e): 1 finding (0H/0M/1L). Post-GH#65-trio audit walked A-F across the 17 commits between pass 35 (b5c8165) and pass 36 (4dee78e) — Phase 71 (per-foe aftermath prose) + Phase 72 (run-loop semantics + runId + STARTING_REGION + GAME_STATE_VERSION 5→6) + Phase 73 (Codex slice + journalEntry + GAME_STATE_VERSION 6→7). Public-API surface aligned (5 new types + 2 new runtime exports on src/index.ts; bearings.md + docs/api.md both annotate; fixture refreshed twice — 162 → 165 (Phase 71) → 167 (Phase 73); runtime 233 → 235 (Phase 72)). Hermetic coverage strong (17 new test cases across 3 e2e files: aftermath-lines.engine.test.ts, run-loop.engine.test.ts, codex.engine.test.ts). Module-structure consistent (new run-loop.ts module follows pure-helper convention; new reducer cases follow established switch-case pattern; cross-phase Phase-72 RESET_RUN extension for codex preservation per Phase 73 D12 wired cleanly). Docs current (gameloop.md Phase 72 Run-loop reset section; enemy.md Phase 71 Aftermath + Phase 73 Codex sections; combat.md Friendship Path codex bullet; CHANGELOG [unreleased] all three phase bullets present + lede extended thrice). Zero type-safety drift (no new @ts-ignore / as any). Zero dead-code surfaces. **Only finding: scripts/README.md fixture-state annotation is stale** — says "233 runtime + 162 types" (Phase-68 baseline) but current is 235 runtime + 167 types. The fixture file itself is current; only the prose annotation drifts. /iterate will drain. -->
 
@@ -16,6 +17,14 @@
 ---
 
 ## Pending
+
+### [LOW] plan/bearings.md Items entry uniquely terse vs Game/Philosophy/Enemy per-phase fold-in convention
+- pass: critique-40 (commit a5060e1)
+- area: docs
+- observation: `plan/bearings.md:76` Items entry is a one-line listing: "Items: addItem, removeItem, useConsumable, stackItem, Item (and variants)". Compare to the Game entry at lines 75-82 (multi-line with explicit per-phase fold-ins: "+ GameState.lastSeenAlignmentCells? — Phase 63 ...", "+ store.resetRun({ keepCharacter }) + GameState.runId ... — Phase 72 ...", "+ CodexState + required GameState.codex slice ... — Phase 73 ..."), the Enemy entry at lines 55-62 (similar shape with Phase 60 / 62 / 68 / 69 / 71 / 73 per-extension annotations), and the Philosophy entry. The Items entry contradicts that convention — it had Phase 75 (`previewTemplateAtRarity` runtime export) and several prior Items-area additions (`previewTemplateAtRarity` + the Phase 37 shop economy + the Phase 54 set items + the Phase 53 `rarityWeightTable`) but doesn't enumerate any of them. Phase 75 brief's D-decision explicitly skipped bearings.md ("no entry needed (Items module already enumerated; the helper is a leaf addition)") but that decision contradicts the standing per-phase-fold-in convention in the same file.
+- evidence: plan/bearings.md:76 (the terse Items entry); compare to lines 55-62 (Enemy fold-ins) and 75-88 (Game fold-ins)
+- suggested_fix: Extend the Items entry to match the multi-line convention, folding in the Items-area phase extensions. At minimum: append `+ previewTemplateAtRarity (Phase 75 — UI-tier wrapper around dropItem; closes user-jot b5c8165)`. Optionally also retroactively fold in Phase 37 (shop economy) + Phase 53 (rarityWeightTable + diff-public-surface fixture) + Phase 54 (set items) for symmetry with Enemy / Game; brief at iterate-time picks how far back to fold.
+- source: critique (AUDIT bias `equipment/items` × 1.5 applies; effective score 3.75 → squarely LOW-MED border)
 
 ---
 
