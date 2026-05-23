@@ -221,4 +221,90 @@ for endgame). First authored deltas: MournfulGull `{ outlook: +3 }`
 toward the relational individual). The Boss-tier befriendable enemy
 candidate's reward-content scope (currently in
 `plan/PHASE_CANDIDATES.md`) will consume the same primitive at
-authoring time.
+authoring time. (Boss-tier authoring shipped at Phase 70 — see
+the per-section note below.)
+
+### Phase 70 — Coastal Tyrant boss-tier `friendshipReward` content
+
+Pure content authoring against the fully-shipped Phase 60 + 62 +
+68 + 69 stack. No engine change. CoastalTyrant
+(`src/Enemy/enemy.library.ts:326`) gains a boss-tier `friendshipReward`:
+3 items (`paradox-loop` unique circlet + `healing-potion` +
+`heart-draught`; the unique uses a fixed `() => 0.5` rng for
+reload-determinism), `xpBonus: 75` (boss-tier weight vs the
+normal-tier +10/+15), multi-paragraph narrative ("you have made me
+a man with nothing to be king of"), `alignmentDelta: { outlook: +3,
+scope: -2 }` combined-axis shift matching the magistrate-fallen-
+priest archetype, `flagSet: 'befriended-coastal-tyrant'`. First
+demonstration of the full Phase 60+62+68+69 stack on a single
+high-stakes encounter. Closes Phase 60's most-named follow-up.
+
+### Phase 71 — Per-foe aftermath narrative prose (GH#65 ask 1)
+
+Three new optional type interfaces on the public surface +
+three additive-optional fields on `Enemy`:
+
+```ts
+interface FinalBlowLines { brutal: string; quiet: string; ironic: string }
+interface PactLines      { quiet: string; setDown: string; heavy: string }
+interface CauseLines     { brutal: string; broken: string; quiet: string }
+
+interface Enemy {
+    // ... existing fields ...
+    finalBlowLines?: FinalBlowLines;
+    pactLines?: PactLines;
+    causeLines?: CauseLines;
+}
+```
+
+Engine does **no** variant selection between the three slots —
+fields are pure data; consumer (mobile presenter, CLI, future UI)
+picks `brutal` vs `quiet` vs `ironic` based on damage-tier shape or
+parley posture. Strings are complete chronicle prose as authored;
+no template interpolation. `pactLines` is only meaningful when the
+enemy also carries a `friendshipReward`. Naming note: GH#65 source
+text used hyphenated `set-down`; field is `pactLines.setDown`
+(TS-identifier convention). Initial author coverage at Phase 71:
+MournfulGull, HollowEyedBeggar, CoastalTyrant — the three
+currently-authored befriendable enemies. Remaining 13 enemies in
+the library leave the three fields undefined; consumer-side
+fallback (mobile presenter's `derive*Phrase` helpers) covers them
+until a future content-sweep phase authors them. Hermetic pin at
+`src/Enemy/e2e/aftermath-lines.engine.test.ts`. Fixture bump
+162 → 165 types; runtime exports unchanged at 233. See
+`docs/enemy.md` § "Aftermath narrative (Phase 71)".
+
+### Phase 73 — `Enemy.journalEntry?: CodexEntry` (GH#65 ask 3)
+
+Adds optional per-foe codex / journal entry metadata + auto-firing
+wire on the friendship outcome:
+
+```ts
+interface CodexEntry { id: string; title: string; body: string }
+
+interface Enemy {
+    // ... existing fields ...
+    journalEntry?: CodexEntry;
+}
+```
+
+When combat resolves via `outcome === 'friendship'` and the
+befriended enemy carries a `journalEntry`, the END_COMBAT reducer
+appends the entry's id to `state.codex.unlockedEntries` (de-duped)
+and `store.endCombat()` surfaces `{ id, title }` on
+`CombatEndReport.friendshipReward.codexEntryUnlocked` only when the
+entry wasn't already unlocked (mirrors the Phase 69 `alignmentShift`
+surfacing pattern; body is recovered at consumer render time via
+content-registry lookup). Victory / defeat / flee outcomes do NOT
+unlock the entry; future content can grant entries outside combat
+via `store.unlockCodexEntry(entryId)`. The matching Game-side
+slice (`GameState.codex: CodexState`) + the engine wiring live in
+the Spec 09 game-loop area — this spec's slice is the per-foe
+content extension. Initial author coverage at Phase 73:
+MournfulGull (`codex-mournful-gull` — "The Catalogue of Slights"),
+HollowEyedBeggar (`codex-hollow-eyed-beggar` — "They Carry What
+You Set Down"), CoastalTyrant (`codex-coastal-tyrant` — "The
+Magistrate Who Set Down the Circlet"). Hermetic pin at
+`src/Game/e2e/codex.engine.test.ts`. Fixture bump 165 → 167 types
+(CodexEntry + CodexState). See `docs/enemy.md` § "Codex entries
+(Phase 73)".
