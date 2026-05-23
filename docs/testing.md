@@ -42,7 +42,8 @@ Examples of e2e entry points by module:
 | ---------------- | ------------------------------------------------------------------------------------- |
 | `Combat`         | `resolveCombatRound` (in `Combat/combat.resolver.ts`) + the `createGameStore` lifecycle |
 | `Effects`        | `applyEffect` / `applyTier1CombatEffect` / `tickAllEffects` driving an effect to expiry |
-| `Game`           | `createGameStore(nullAdapter, …)` driven through `startCombat` / `updateCombat` / `endCombat` |
+| `Enemy`          | `createEnemy` + AI / strategy assertions in `enemy.engine.test.ts`; per-enemy content pins in `alignment.engine.test.ts` (Phase 45), `befriendability-config.engine.test.ts` (Phase 68), `aftermath-lines.engine.test.ts` (Phase 71) |
+| `Game`           | `createGameStore(nullAdapter, …)` driven through `startCombat` / `updateCombat` / `endCombat`; run-loop semantics in `run-loop.engine.test.ts` (Phase 72); codex unlocks in `codex.engine.test.ts` (Phase 73) |
 | `World`          | World reducer chained through map → node → continent transitions                      |
 | `Items`          | Item reducer chained through `addItem` → `useConsumable` → `removeItem`               |
 | `Character`      | `createCharacter` → `deriveStats` → `calculateMaxHealth` round-trip                   |
