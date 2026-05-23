@@ -308,6 +308,13 @@ reality.
   `getUniqueTemplate`) — Stable.
 - `dropItem`, `rollModifiers`, `resolveModifiers`,
   `rarityWeightTable` — Stable.
+- `previewTemplateAtRarity(templateId, rarity, playerLevel, rng?)` —
+  Beta (Phase 75). Wraps `dropItem` with rng + rarity pinned; soft-
+  errors to `undefined` for UI-tier consumption (unknown templateId,
+  level-too-low, unique-rarity on regular template). Default rng =
+  `() => 0.5` for deterministic per-tuple previews. See
+  `docs/items.md` § "Previewing rolled mods (library / catalog
+  views — Phase 75)".
 - Inventory management (`addItem`, `removeItem`, `useConsumable`,
   `stackItem`, `addItemToInventory`, `removeItemFromInventory`) — Stable.
 - Item types (`Item`, `Equipment`, `Consumable`, `Material`,

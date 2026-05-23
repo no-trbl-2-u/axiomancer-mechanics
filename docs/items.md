@@ -44,6 +44,38 @@ modifier; `pickValueTier` resolves a `HiddenModRarity` into a value
 band; `allModifiers` is the flat union for tooling. See Spec 05d for
 the design.
 
+### Previewing rolled mods (library / catalog views — Phase 75)
+
+`previewTemplateAtRarity(templateId, rarity, playerLevel, rng?):
+Equipment | undefined` is the consumer-facing read surface for
+UI tiers that render `equipmentTemplates × ItemRarity` cells.
+Mobile item-library / inventory-detail / loot-preview / vendor-stock
+views call it per (template, rarity, playerLevel) cell to render
+the player-visible mod stack — `equipmentTemplates` itself carries
+only `baseStatModifiers` by design (rolled mods only exist on
+runtime `Equipment` instances from `dropItem`).
+
+The helper wraps `dropItem` with the rng + rarity pinned. Default
+`rng` is `() => 0.5` (Phase 70 Coastal Tyrant deterministic-drop
+pattern) so previews are reproducible per tuple — same cell across
+re-renders returns identical Equipment. Pass a custom rng for
+randomised previews.
+
+**UI-tier soft-error semantics:** returns `undefined` instead of
+throwing for any failure mode — unknown `templateId`, `playerLevel <
+template.requiredLevel`, or `rarity === 'unique'` against a
+non-unique template. UI code looping templates × rarities cannot
+wrap every call in try/catch; the soft-error shape lets the caller
+render an empty cell + move on. Unique templates soft-coerce
+their rarity to `'unique'` regardless of caller input (caller may
+not know the template is unique; the preview should still be
+useful).
+
+Hermetic pin at
+[`src/Items/e2e/preview-template.engine.test.ts`](../src/Items/e2e/preview-template.engine.test.ts).
+Closes the user-jot at `b5c8165` (refined at oversight-15
+2026-05-23) about mobile item-library mod-visibility.
+
 ## Loot factory
 
 The factory is the only sanctioned way to produce a rolled Equipment

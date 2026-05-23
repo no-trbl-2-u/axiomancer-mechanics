@@ -12,9 +12,41 @@ deep imports are part of the supported surface.
 
 ## [unreleased]
 
-Post-`0.11.0` content sweep closing the Phase 71 / 73 follow-up.
+Post-`0.11.0` content sweep closing the Phase 71 / 73 follow-up +
+the mobile item-library mod-visibility helper closing the
+oversight-15 user-jot.
 
 ### Added
+- **Phase 75 — `previewTemplateAtRarity` helper (mobile item-library
+  mod-visibility).** Closes the user-jot at `b5c8165` (refined at
+  oversight-15 `077979e`): mobile UI rendering `equipmentTemplates`
+  shows zero modifiers per entry because templates carry only
+  `baseStatModifiers` by design — rolled mods only exist on runtime
+  `Equipment` from `dropItem`. New
+  `previewTemplateAtRarity(templateId: string, rarity: ItemRarity, playerLevel: number, rng?: () => number): Equipment | undefined`
+  helper on `src/Items/item.factory.ts` wraps `dropItem` with rng +
+  rarity pinned + UI-tier soft-error semantics (returns `undefined`
+  for unknown templateId / level-too-low / unique-rarity-on-regular-
+  template, instead of throwing — UI code looping templates ×
+  rarities cannot wrap every call in try/catch per D1). Default
+  `rng = () => 0.5` (Phase 70 Coastal Tyrant deterministic-drop
+  pattern) so previews are reproducible per (template, rarity,
+  playerLevel) tuple — same cell across re-renders returns identical
+  Equipment per D2. Unique templates soft-coerce rarity to
+  `'unique'` regardless of caller input per D4. Re-exported through
+  `src/Items/index.ts` + top-level barrel; fixture +1 runtime export
+  (235 → 236; types unchanged at 167 per D7). Hermetic e2e at
+  `src/Items/e2e/preview-template.engine.test.ts` (5 cases per D3 —
+  rolled-mod count matches rarity tier; determinism per default
+  rng; the three soft-error paths). Mobile UI callsite post-engine-
+  release: replace the zero-mod render in the item-library matrix
+  view with
+  `equipmentTemplates.flatMap(tpl => itemRarities.map(r => previewTemplateAtRarity(tpl.id, r, playerLevel)))`.
+  Phase 75 commits: `6e04b50` (Unit 1 — engine helper + e2e +
+  barrel re-exports + fixture refresh) + Unit 2 (this commit —
+  docs/items.md "Previewing rolled mods" subsection + docs/api.md
+  Items block + README.md Items row + CHANGELOG bullet).
+
 - **Phase 74 — Post-GH#65 per-foe content sweep.** Authored
   `finalBlowLines` + `causeLines` chronicle prose on the 12
   non-sandbox enemies that Phase 71 + 73 had left to a follow-up
