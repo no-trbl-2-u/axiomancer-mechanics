@@ -34,7 +34,8 @@ export type GameAction =
     | { type: 'SHIFT_MORAL_METER'; payload: { delta: number; gating?: { min?: number; max?: number } } }
     | { type: 'SHIFT_PHILOSOPHICAL_ALIGNMENT'; payload: { delta: Partial<PhilosophicalAlignment> } }
     | { type: 'SAVE_GAME';      payload?: undefined }
-    | { type: 'LOAD_GAME';      payload?: undefined };
+    | { type: 'LOAD_GAME';      payload?: undefined }
+    | { type: 'RESET_RUN';      payload: { keepCharacter: boolean } };
 
 /** Narrowed action type, extracted by `type` discriminator. */
 export type GameActionOf<T extends GameAction['type']> = Extract<GameAction, { type: T }>;

@@ -134,11 +134,16 @@ describe('Philosophy — v4 → v5 save migrator', () => {
             rngState: 12345,
         };
         const migrated = migrate(v4Payload, 4);
-        expect(migrated.version).toBe(5);
+        // Phase 72 — migrate() funnels all the way to current
+        // (GAME_STATE_VERSION = 6 post-runId bump); the v4→v5 step still
+        // applies and defaults philosophicalAlignment, and the v5→v6 step
+        // defaults runId on top.
+        expect(migrated.version).toBe(GAME_STATE_VERSION);
         expect(migrated.philosophicalAlignment).toEqual({
             epistemology: 0, outlook: 0, scope: 0,
         });
         expect(migrated.moralMeter).toBe(7); // pre-existing field survives
+        expect(migrated.runId).toMatch(/^[0-9a-f]{16}$/); // Phase 72 — defaulted by v5→v6
     });
 });
 

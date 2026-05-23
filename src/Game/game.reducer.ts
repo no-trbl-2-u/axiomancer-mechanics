@@ -42,17 +42,23 @@ import { EXPERIENCE_PER_LEVEL, STAT_POINTS_PER_LEVEL } from './game-mechanics.co
 import { addItemStacking, rollEncounterLoot, totalEncounterXp } from './combat-grants';
 import { getRng } from '../Utils/rng';
 import { applyAlignmentDelta, defaultAlignment } from '../Philosophy';
+import { generateRunId } from './run-loop';
 
 /**
  * Increment when GameState's shape changes. Save loaders branch on this so
  * old saves can be migrated rather than corrupted.
+ *
+ * Phase 72 — bumped 5 → 6 to add the required `runId: string` field.
+ * `migrateV5toV6` defaults the id via `generateRunId(() => getRng().random())`
+ * for legacy saves.
  */
-export const GAME_STATE_VERSION = 5;
+export const GAME_STATE_VERSION = 6;
 
 /** Builds a brand-new GameState with default player and world. */
 export function createNewGameState(): GameState {
     return {
         version: GAME_STATE_VERSION,
+        runId: generateRunId(() => getRng().random()),
         player: createCharacter({
             name: 'Player',
             level: 1,
@@ -340,5 +346,43 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         case 'LOAD_GAME':
             // Side effects owned by the store layer; reducer is pure.
             return state;
+
+        case 'RESET_RUN': {
+            // Phase 72 — closes GH#65 ask 2. See plan/phases/phase_72_run_loop_semantics.md.
+            const { keepCharacter } = action.payload;
+            const freshRunId = generateRunId(() => getRng().random());
+
+            if (!keepCharacter) {
+                // Full new-game reset; carry rngState forward (D2 — don't
+                // reset the seed mid-session, that breaks deterministic
+                // replay) and assign a fresh runId.
+                const fresh = createNewGameState();
+                return { ...fresh, runId: freshRunId, rngState: state.rngState };
+            }
+
+            // keepCharacter: true — preserve persistent character ledger
+            // (player + philosophicalAlignment + moralMeter + rngState per
+            // D1); reset run-scoped state. HP refills to maxHealth; effects
+            // clears defensively (already empty between combats).
+            return {
+                version: GAME_STATE_VERSION,
+                runId: freshRunId,
+                player: {
+                    ...state.player,
+                    health: state.player.maxHealth,
+                    effects: [],
+                },
+                world: createStartingWorld(),
+                combat: null,
+                quests: emptyQuestLog(),
+                flags: [],
+                moralMeter: state.moralMeter,
+                rngState: state.rngState,
+                philosophicalAlignment: state.philosophicalAlignment,
+                // lastSeenAlignmentCells intentionally dropped (D12 —
+                // observer cache resets; fresh run, fresh observation
+                // history).
+            };
+        }
     }
 }

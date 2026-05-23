@@ -150,6 +150,7 @@ export {
     STAT_POINTS_PER_LEVEL,
     DEFENSE_MULTIPLIERS, PASSIVE_DEFENSE_MULTIPLIER,
     MAX_EFFECT_INTENSITY, MAX_EFFECT_DURATION, FRIENDSHIP_COUNTER_MAX,
+    generateRunId, STARTING_REGION,
 } from './Game';
 export type {
     GameState, GameStore, GameActions, PersistenceAdapter, StoreApi,

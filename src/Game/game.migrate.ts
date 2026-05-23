@@ -12,6 +12,7 @@ import { GameState } from './types';
 import { GAME_STATE_VERSION } from './game.reducer';
 import { getRng } from '../Utils/rng';
 import { defaultAlignment } from '../Philosophy';
+import { generateRunId } from './run-loop';
 
 /** GameState shape before v3 (before moralMeter field was added). */
 interface GameStateV2 extends Omit<GameState, 'moralMeter' | 'rngState' | 'philosophicalAlignment'> {
@@ -24,8 +25,13 @@ interface GameStateV3 extends Omit<GameState, 'rngState' | 'philosophicalAlignme
 }
 
 /** GameState shape before v5 (before philosophicalAlignment field was added). */
-interface GameStateV4 extends Omit<GameState, 'philosophicalAlignment'> {
+interface GameStateV4 extends Omit<GameState, 'philosophicalAlignment' | 'runId'> {
     version: 4;
+}
+
+/** GameState shape before v6 (before Phase 72 runId field was added). */
+interface GameStateV5 extends Omit<GameState, 'runId'> {
+    version: 5;
 }
 
 /**
@@ -57,11 +63,27 @@ function migrateV3toV4(v3: GameStateV3): GameStateV4 {
  * neutral on every axis. v4 saves had no philosophical alignment tracking;
  * the new field defaults to `{0, 0, 0}` so existing saves continue to load.
  */
-function migrateV4toV5(v4: GameStateV4): GameState {
+function migrateV4toV5(v4: GameStateV4): GameStateV5 {
     return {
         ...v4,
         version: 5,
         philosophicalAlignment: defaultAlignment(),
+    };
+}
+
+/**
+ * Migrate from v5 to v6: add `runId: string` field defaulting to a fresh
+ * Phase 72 hex id via `generateRunId(() => getRng().random())`. Legacy saves
+ * have no run identity; the migration assigns one at load time so consumers
+ * always read a non-empty runId. The default is collision-free in the limit
+ * (16 hex chars = 64 bits of entropy) and matches the `/^[0-9a-f]{16}$/`
+ * shape `generateRunId` produces for fresh saves.
+ */
+function migrateV5toV6(v5: GameStateV5): GameState {
+    return {
+        ...v5,
+        version: 6,
+        runId: generateRunId(() => getRng().random()),
     };
 }
 
@@ -109,6 +131,10 @@ export function migrate(
         migrated = migrateV4toV5(migrated as GameStateV4);
     }
 
+    if (fromVersion < 6) {
+        migrated = migrateV5toV6(migrated as GameStateV5);
+    }
+
     return assertGameState(migrated);
 }
 
@@ -120,6 +146,7 @@ export function migrate(
 function assertGameState(raw: unknown): GameState {
     const r = raw as Partial<GameState>;
     if (typeof r.version !== 'number'
+        || typeof r.runId !== 'string'
         || r.player == null
         || r.world == null
         || !('combat' in r)

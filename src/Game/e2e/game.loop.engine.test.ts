@@ -105,6 +105,7 @@ describe('Game loop — full transcript through gameReducer', () => {
         // 6. Snapshot for round-trip.
         const preSave: GameState = JSON.parse(JSON.stringify({
             version:    store.getState().version,
+            runId:      store.getState().runId,
             player:     store.getState().player,
             world:      store.getState().world,
             combat:     store.getState().combat,

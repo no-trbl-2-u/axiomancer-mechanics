@@ -12,6 +12,8 @@ export type { GameStore, GameActions, StoreApi, CombatEndReport } from './store'
 export { createNewGameState, GAME_STATE_VERSION, gameReducer } from './game.reducer';
 export type { GameState } from './types';
 
+export { generateRunId, STARTING_REGION } from './run-loop';
+
 export type { GameAction, GameActionOf } from './actions.types';
 
 export { migrate } from './game.migrate';

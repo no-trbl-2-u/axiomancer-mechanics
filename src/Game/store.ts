@@ -76,6 +76,7 @@ const DURABLE_ACTIONS: ReadonlySet<GameAction['type']> = new Set<GameAction['typ
     'MOVE_TO_NODE',
     'APPLY_DIALOGUE',
     'SAVE_GAME',
+    'RESET_RUN', // Phase 72 — persist new runId + reset world immediately.
 ]);
 
 /**
@@ -166,6 +167,17 @@ export interface GameActions {
     shiftMoralMeter: (delta: number, gating?: { min?: number; max?: number }) => void;
     // ── Philosophical alignment ──────────────────────────────────────────────
     shiftPhilosophicalAlignment: (delta: Partial<PhilosophicalAlignment>) => void;
+    // ── Run loop (Phase 72) ──────────────────────────────────────────────────
+    /**
+     * Phase 72 — resets the playthrough back to the starting hearth (closes
+     * GH#65 ask 2). `keepCharacter: true` preserves the character ledger
+     * (player + philosophicalAlignment + moralMeter + rngState) and refills
+     * HP; world / combat / quests / flags / observer cache reset.
+     * `keepCharacter: false` performs a full new-game reset. Every call
+     * assigns a fresh `runId`. Dispatches `RESET_RUN`; persists via the
+     * standard DURABLE_ACTIONS pipeline. Returns the post-reset GameState.
+     */
+    resetRun: (opts: { keepCharacter: boolean }) => GameState;
 }
 
 /** Full store type — state + actions. */
@@ -263,12 +275,12 @@ export function createGameStore(
             // load (Spec 07).
             if (DURABLE_ACTIONS.has(action.type)) {
                 const {
-                    currentEncounter: _drop, version, player, world, combat, quests, flags,
+                    currentEncounter: _drop, version, runId, player, world, combat, quests, flags,
                     moralMeter, rngState, philosophicalAlignment,
                     lastSeenAlignmentCells,
                 } = next;
                 adapter.save({
-                    version, player, world, combat, quests, flags,
+                    version, runId, player, world, combat, quests, flags,
                     moralMeter, rngState, philosophicalAlignment,
                     lastSeenAlignmentCells,
                 });
@@ -300,12 +312,12 @@ export function createGameStore(
                     },
                 });
                 const {
-                    currentEncounter: _drop, version, player, world, combat: cb, quests, flags,
+                    currentEncounter: _drop, version, runId, player, world, combat: cb, quests, flags,
                     moralMeter, rngState, philosophicalAlignment,
                     lastSeenAlignmentCells,
                 } = next;
                 adapter.save({
-                    version, player, world, combat: cb, quests, flags,
+                    version, runId, player, world, combat: cb, quests, flags,
                     moralMeter, rngState, philosophicalAlignment,
                     lastSeenAlignmentCells,
                 });
@@ -436,12 +448,12 @@ export function createGameStore(
             save() {
                 const next = get();
                 const {
-                    currentEncounter: _drop, version, player, world, combat, quests, flags,
+                    currentEncounter: _drop, version, runId, player, world, combat, quests, flags,
                     moralMeter, rngState, philosophicalAlignment,
                     lastSeenAlignmentCells,
                 } = next;
                 adapter.save({
-                    version, player, world, combat, quests, flags,
+                    version, runId, player, world, combat, quests, flags,
                     moralMeter, rngState, philosophicalAlignment,
                     lastSeenAlignmentCells,
                 });
@@ -456,6 +468,11 @@ export function createGameStore(
             // ── Philosophical alignment ──────────────────────────────────────
             shiftPhilosophicalAlignment(delta: Partial<PhilosophicalAlignment>) {
                 dispatch({ type: 'SHIFT_PHILOSOPHICAL_ALIGNMENT', payload: { delta } });
+            },
+
+            // ── Run loop (Phase 72) ──────────────────────────────────────────
+            resetRun(opts: { keepCharacter: boolean }) {
+                return dispatch({ type: 'RESET_RUN', payload: opts });
             },
         };
     });
