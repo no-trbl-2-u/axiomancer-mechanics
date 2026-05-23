@@ -35,7 +35,10 @@ export type {
     LootRng,
     FriendshipReward, BefriendabilityConfig,
     FinalBlowLines, PactLines, CauseLines,
-    CodexEntry,
+    // CodexEntry moved to ./Game block — Phase 73 type's semantic home
+    // is the Game-loop persistence surface; the Enemy module re-exports
+    // it via `src/Enemy/types.ts` for the per-foe content site, but the
+    // top-level barrel now pulls from Game alongside CodexState.
 } from './Enemy';
 export {
     EnemyLibrary, EnemiesByMap, ENEMY_REGISTRY,
@@ -157,7 +160,7 @@ export type {
     GameState, GameStore, GameActions, PersistenceAdapter, StoreApi,
     GameAction, GameActionOf,
     GameEvent, GameEventEmitter, GameEventHandler, GameEventType,
-    CodexState,
+    CodexEntry, CodexState,
 } from './Game';
 
 // Legacy combat-action constants (use Action type instead).

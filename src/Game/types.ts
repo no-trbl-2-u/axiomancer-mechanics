@@ -36,6 +36,30 @@ import { PhilosophicalAlignment } from '../Philosophy/types';
  *                              Orthogonal to `moralMeter` — see docs/philosophy.md.
  */
 /**
+ * Phase 73 — per-foe codex / journal entry unlocked when the player
+ * befriends an enemy (`outcome === 'friendship'`). The engine
+ * auto-appends `journalEntry.id` to `state.codex.unlockedEntries`
+ * (de-duped) and surfaces `{ id, title }` on
+ * `CombatEndReport.friendshipReward.codexEntryUnlocked`; the consumer
+ * (mobile Codex tab, future CLI surface) looks up the entry body via
+ * the source `Enemy` (or a future `CodexLibrary` registry). Closes
+ * GH#65 ask 3.
+ *
+ * Semantically a Game-loop type (paired with `CodexState`); the
+ * field rides on `Enemy.journalEntry?` which re-exports `CodexEntry`
+ * from this module for the per-foe content site (see
+ * `src/Enemy/types.ts` for the import + re-export shape).
+ */
+export interface CodexEntry {
+    /** Stable id; consumed by Codex-tab UI as the row key. */
+    id: string;
+    /** Short label rendered on the unlock toast + Codex row header. */
+    title: string;
+    /** Long-form chronicle prose for the Codex entry body. */
+    body: string;
+}
+
+/**
  * Phase 73 — codex slice on `GameState` (closes GH#65 ask 3).
  * Append-only collection of unlocked entry IDs. Each entry id maps
  * back to a `CodexEntry` on the source `Enemy` (or a future

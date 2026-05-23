@@ -6,6 +6,14 @@ import { ActiveEffect } from '../Effects/types';
 import { ProcOverrides, ProcUnlocks } from '../Combat/combat-effects';
 import { Item } from '../Items/types';
 import { PhilosophicalAlignment } from '../Philosophy/types';
+// Phase 73 — CodexEntry's semantic home is src/Game/types.ts (alongside
+// CodexState + the Game-loop persistence surface). It's re-exported here
+// so `Enemy.journalEntry?: CodexEntry` decoration works at the per-foe
+// content site without import churn for consumers reading from the Enemy
+// barrel. See critique-37 row 2 → iterate-`d0f0d73`-era drain for the
+// reasoning trail.
+import type { CodexEntry } from '../Game/types';
+export type { CodexEntry };
 
 /**
  * Phase 68 — per-enemy override on the Phase 36 friendship-eligibility
@@ -160,25 +168,6 @@ export interface LootTableEntry {
     item: Item | null;
     /** Positive integer weight; normalised across the table at roll time. */
     weight: number;
-}
-
-/**
- * Phase 73 — per-foe codex / journal entry unlocked when the player
- * befriends this enemy (`outcome === 'friendship'`). The engine
- * auto-appends `journalEntry.id` to `state.codex.unlockedEntries`
- * (de-duped) and surfaces `{ id, title }` on
- * `CombatEndReport.friendshipReward.codexEntryUnlocked`; the consumer
- * (mobile Codex tab, future CLI surface) looks up the entry body via
- * the source `Enemy` (or a future `CodexLibrary` registry). Closes
- * GH#65 ask 3.
- */
-export interface CodexEntry {
-    /** Stable id; consumed by Codex-tab UI as the row key. */
-    id: string;
-    /** Short label rendered on the unlock toast + Codex row header. */
-    title: string;
-    /** Long-form chronicle prose for the Codex entry body. */
-    body: string;
 }
 
 /**
