@@ -225,8 +225,14 @@ The package's public API is documented at the source level.
       deploy-gate drift detection; subsequent additive type additions
       (Phase 60 `FriendshipReward` 158 → 159; Phase 66 `SkillSynergy` +
       `SynergyPredicate` 159 → 161; Phase 68 `BefriendabilityConfig`
-      161 → 162) ship through the same fixture-bump discipline. Runtime
-      export count has held at 233 across the whole 0.10.x line.
+      161 → 162; Phase 71 `FinalBlowLines` + `PactLines` + `CauseLines`
+      162 → 165; Phase 73 `CodexEntry` + `CodexState` 165 → 167) ship
+      through the same fixture-bump discipline. Runtime export count
+      held at 233 across the v0.10.0 / v0.10.1 / v0.10.2 / v0.10.3
+      tags; Phase 72 broke that hold (the first runtime-count change
+      in the 0.10.x line) by adding `generateRunId` + `STARTING_REGION`
+      for run-loop semantics — current `[unreleased]` shape is 235 +
+      167 (see also `scripts/README.md` fixture-state annotation).
 - [x] `package.json` `exports` field reflects the agreed subpath
       layout. — Verified: `"."` and `"./node"` subpaths are present
       with the standard types / import / require triples.
@@ -236,3 +242,85 @@ The package's public API is documented at the source level.
 - The actual React Native UI implementation.
 - A graphical asset pipeline.
 - Bundle-size optimisation (tree-shaking, code-splitting).
+
+## Post-spec engine extensions
+
+Phases that grew the public package surface (new exports, new event
+verbs, new action variants, save-format bumps) after the v2 baseline.
+This section is the canonical pointer for "what changed about the
+package contract since the spec acceptance" — the deploy-gate fixture
++ `scripts/diff-public-surface.mjs` are the authoritative diff
+tools, but the per-phase narrative belongs here.
+
+### Phase 72 — Run-loop semantics surface (closes GH#65 ask 2)
+
+- **New runtime exports** (2): `generateRunId(rng: () => number): string`
+  and `STARTING_REGION: MapName = 'fishing-village'`, both from
+  `src/Game/run-loop.ts`. First runtime-count change in the 0.10.x
+  line (233 → 235).
+- **New action variant**: `{ type: 'RESET_RUN'; payload: { keepCharacter: boolean } }`
+  on the `GameAction` union. Added to `DURABLE_ACTIONS` (the
+  autosave gate from Phase 51) so the new state persists
+  immediately.
+- **New store method**: `store.resetRun({ keepCharacter }): GameState`
+  on the `GameActions` interface (Zustand vanilla store
+  consumer-facing surface).
+- **GameState shape**: required `runId: string` field added to
+  `GameState`. Persisted by the save adapter (all 3 `adapter.save()`
+  call sites updated).
+- **Save format**: `GAME_STATE_VERSION` bumped `5 → 6`;
+  `migrateV5toV6` defaults `runId` for legacy v5 saves via
+  `generateRunId(() => getRng().random())`.
+- **No new event verbs** — `RESET_RUN` dispatches go through the
+  standard `gameReducer` → `set` → `emit` → autosave pipeline; the
+  emitted event remains `game:saved` (via the autosave hook).
+
+### Phase 73 — Codex slice surface (closes GH#65 ask 3)
+
+- **New type exports** (2): `CodexEntry { id, title, body }` and
+  `CodexState { unlockedEntries: string[] }`. `CodexEntry` lives in
+  `src/Game/types.ts` (semantic home alongside `CodexState`) and is
+  re-exported through `src/Enemy/types.ts` for the
+  `Enemy.journalEntry?: CodexEntry` decoration (so the per-foe
+  content site doesn't take a cross-module import). 165 → 167
+  types.
+- **New action variant**: `{ type: 'UNLOCK_CODEX_ENTRY'; payload: { entryId: string } }`
+  on the `GameAction` union. Added to `DURABLE_ACTIONS`.
+- **New store method**: `store.unlockCodexEntry(entryId: string): void`.
+- **GameState shape**: required `codex: CodexState` slice added to
+  `GameState`. Persisted by the save adapter.
+- **Save format**: `GAME_STATE_VERSION` bumped `6 → 7`;
+  `migrateV6toV7` defaults `codex = { unlockedEntries: [] }` for
+  legacy v6 saves.
+- **CombatEndReport extension**: optional `codexEntryUnlocked?: { id, title }`
+  on `friendshipReward` — surfaces only when the friendship outcome
+  unlocked a new entry (de-duped against `state.codex.unlockedEntries`).
+- **No new event verbs** — same as Phase 72; consumers subscribe to
+  `combat:ended` and read `report.friendshipReward.codexEntryUnlocked`,
+  or to `game:saved` for the autosaved post-unlock state.
+
+### Phase 71 — Per-foe aftermath narrative surface (closes GH#65 ask 1)
+
+- **New type exports** (3): `FinalBlowLines { brutal, quiet, ironic }`,
+  `PactLines { quiet, setDown, heavy }`, `CauseLines { brutal,
+  broken, quiet }`. All three live in `src/Enemy/types.ts` and are
+  re-exported through both the Enemy barrel and the top-level
+  package barrel. 162 → 165 types.
+- **No new runtime exports** — pure data fields on the existing
+  `Enemy` type; consumer (mobile presenter / CLI / future UI) owns
+  variant-selection.
+- **No new action variants, no save-format bump, no event verbs**
+  — additive-optional fields on `Enemy.{finalBlowLines, pactLines,
+  causeLines}?`; legacy save loads are unaffected.
+
+### Cross-phase: GAME_STATE_VERSION ceremony
+
+The 0.10.x cycle bumped the save format twice (5 → 6 at Phase 72;
+6 → 7 at Phase 73). Both followed the same ceremony: required
+field added to `GameState` + matching `migrateV<N>toV<N+1>` step +
+migration wired into the `migrate()` funnel + extended
+`assertGameState` validation + mirror in `docs/gameloop.md` § "Save
+versioning + migration" and `docs/quickstart.md` save/load
+paragraph. Future bumps follow the same pattern — see
+`RELEASING.md` Pre-release checklist step 7 for the bump-ceremony
+checklist.
