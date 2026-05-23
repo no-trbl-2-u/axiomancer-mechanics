@@ -16,6 +16,15 @@
 
 ## Pending
 
+### [MED] Items/Equipment — modifiers not implemented; user asks to fast-track
+- pass: user-jot (commit b5c8165)
+- file: unspecified
+- category: spec-gap
+- observation: it appears there are no "modifiers" implemented on equipment yet. Can we fast track those?
+- evidence: user-spotted at 2026-05-23
+- suggested_fix: [user has not specified — iterate to determine]
+- source: user
+
 ---
 
 ## Done
