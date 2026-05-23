@@ -12,6 +12,13 @@ deep imports are part of the supported surface.
 
 ## [unreleased]
 
+_No changes since `0.11.0`. New `### Added` / `### Changed` /
+`### Docs` entries land here as the loop ships them; flip the
+heading to `[<next-version>] — <ISO date>` at the next tag cut
+per `RELEASING.md` step 7._
+
+## [0.11.0] — 2026-05-23
+
 Six engine extensions across two arcs: the friendship-mechanic
 expansion (Phases 68/69/70 — per-enemy `BefriendabilityConfig`
 predicate + `FriendshipReward.alignmentDelta` closing Spec 14 Q4 +
