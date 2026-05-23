@@ -23,16 +23,11 @@
 - evidence: automation/scripts/walkthroughs/ — 10 .json/.goal.md pairs; none drive the new aftermath prose / codex unlock surfaces
 - suggested_fix: Either (a) extend the existing "Walkthrough catalog expansion" PHASE_CANDIDATES.md row to include a Phase 71/73 friendship-aftermath walkthrough scope, OR (b) ship a single-walkthrough iterate-tier follow-up if the test framework allows hermetic isolation without the Phase 26 walkthrough-grader infrastructure (likely needs to be phase-tier). Recommend (a) — extend the existing candidate at the next oversight.
 
-### [LOW] specs/09 → specs/07 cross-link wording is slightly asymmetric
-- pass: critique-37 (commit 3a44412)
-- area: structure
-- observation: Specs 07 ↔ 09 Phase 73 cross-links are semantically correct but asymmetric in emphasis. specs/07 Phase 73 block says "The matching Game-side slice (`GameState.codex: CodexState`) + the engine wiring live in the Spec 09 game-loop area — this spec's slice is the per-foe content extension" (line 301) — clear. specs/09 Phase 73 block says "see `specs/07` § Post-spec engine extensions Phase 73 block for the per-foe content shape" — doesn't explicitly name "author coverage" lives there too. Readers hitting Spec 09 first would need to infer that the full per-foe content (the 3 authored journalEntries) is documented in Spec 07 rather than Spec 09.
-- evidence: specs/09-game-loop-orchestration.md:220-221 (the "see specs/07" cross-link)
-- suggested_fix: Append "and author coverage" to the specs/09 Phase 73 block's cross-link, so it reads: "see `specs/07` § Post-spec engine extensions Phase 73 block for the per-foe content shape **and author coverage**". 1-line edit.
-
 ---
 
 ## Done
+
+- [x] **[LOW] specs/09 → specs/07 cross-link wording is slightly asymmetric** — resolved at iterate commit `3e74277` (2026-05-23). 1-line edit appending "and author coverage" to the specs/09 Phase 73 block's cross-link to specs/07; the reader's expectation now matches Spec 07's actual scope (shape + content + authored examples). 697/697 tests stay green; pure docs change. Impact 1 × Ease 10 / 10 = 1.0. Source: critique-37 row 6 (commit `4f83854`).
 
 - [x] **[LOW] Phase 71 aftermath-lines e2e doesn't exercise the consumer-side variant-selection pipeline** — resolved at iterate commit `f4f2f7c` (2026-05-23). Added a 4th `it()` block to `src/Enemy/e2e/aftermath-lines.engine.test.ts` driving an inline `pickFinalBlowVariant({ overkillRatio, sourceIsSelf })` mock helper that returns `'brutal' | 'quiet' | 'ironic'` per a toy damage-shape heuristic (self-source → ironic; overkill ≥ 2× → brutal; default → quiet). The test drives all three variants against MournfulGull's authored `finalBlowLines` and asserts the right string surfaces for each shape. The helper is intentionally NOT shipped as engine API per Phase 71 D4 (engine does NO variant selection — the pick lives entirely on the consumer); the test serves as canonical documentation of intent so future engine-side helper proposals (Phase 71 Follow-ups names a hypothetical `pickAftermathVariant(report, enemy)` if multiple consumers converge) have a concrete sketch. 698/698 tests (+1 net from the new case); verify clean. Impact 3 × Ease 7 / 10 = 2.1. Source: critique-37 row 4 (commit `4f83854`).
 
