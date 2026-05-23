@@ -16,13 +16,6 @@
 
 ## Pending
 
-### [LOW] `CodexEntry` defined in src/Enemy/types.ts but semantically a Game-loop type
-- pass: critique-37 (commit 3a44412)
-- area: structure
-- observation: `CodexEntry { id, title, body }` lives at `src/Enemy/types.ts:175` but pairs with `CodexState` on `src/Game/types.ts:50` — both are part of the Game-loop persistence surface, not enemy-specific behaviour. The Enemy block re-exports `CodexEntry` because the field rides on `Enemy.journalEntry`, but that's a "where it travels" concern rather than a "where it's defined" concern. The CHANGELOG Phase 73 entry acknowledges this asymmetry.
-- evidence: src/Enemy/types.ts:175 (CodexEntry definition); src/Game/types.ts:50 (CodexState definition); src/index.ts:38 (CodexEntry re-exported through Enemy block)
-- suggested_fix: Move `CodexEntry` from `src/Enemy/types.ts` to `src/Game/types.ts` (alongside `CodexState`); have `src/Enemy/types.ts` import + re-export it for the `Enemy.journalEntry?` decoration. Top-level barrel re-exports `CodexEntry` from Game block; Enemy block can still re-export for convenience. Verify the fixture stays at 167 types (no count change — same export count, different physical location).
-
 ### [LOW] Phase 71 aftermath-lines e2e doesn't exercise the consumer-side variant-selection pipeline
 - pass: critique-37 (commit 3a44412)
 - area: tests
@@ -47,6 +40,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] `CodexEntry` defined in src/Enemy/types.ts but semantically a Game-loop type** — resolved at iterate commit `5ec829b` (2026-05-23). Definition moved from `src/Enemy/types.ts` → `src/Game/types.ts` (immediately before `CodexState`; JSDoc preserved + extended with the re-export trail). `src/Enemy/types.ts` gained `import type { CodexEntry } from '../Game/types'` + `export type { CodexEntry }` re-export so the `Enemy.journalEntry?: CodexEntry` decoration continues to work without import churn for consumers reading from the Enemy barrel. `src/Game/index.ts` extended its types export to include CodexEntry. `src/index.ts` flipped the top-level CodexEntry export from the Enemy block to the Game block (alongside CodexState); Enemy block keeps an inline comment naming the move + the re-export path. Public surface unchanged at 235 + 167 (same export count, different physical home — external consumers importing `CodexEntry` from `'axiomancer-mechanics'` continue to work). 697/697 tests stay green; verify + deploy:check clean. Impact 3 × Ease 6 / 10 = 1.8. Source: critique-37 row 2 (commit `4f83854`).
 
 - [x] **[LOW] `agents.md` + `RELEASING.md` silent on Phase 71/72/73 surfaces** — resolved at iterate commit `d0f0d73` (2026-05-23). agents.md "Where to look" table gained three new rows (Run-loop semantics + Codex slice → docs/gameloop.md + docs/api.md; Per-foe aftermath narrative + codex entries → docs/enemy.md; One-page tour → docs/quickstart.md — the quickstart pointer was missing entirely despite Phase 67 shipping the doc). RELEASING.md Pre-release checklist gained step 7 — the `GAME_STATE_VERSION` ceremony note naming the three guard sites (reducer constant export + migrate.ts step+funnel+assert + docs mirror in gameloop.md + quickstart.md), with the 0.10.x cycle's two bumps (5→6 Phase 72 runId; 6→7 Phase 73 codex) as concrete references. Pure docs change; 697/697 tests stay green. Impact 3 × Ease 9 / 10 = 2.7. Source: critique-37 row 3 (commit `4f83854`).
 
