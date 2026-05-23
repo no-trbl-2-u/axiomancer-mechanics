@@ -16,13 +16,6 @@
 
 ## Pending
 
-### [LOW] Phase 71 aftermath-lines e2e doesn't exercise the consumer-side variant-selection pipeline
-- pass: critique-37 (commit 3a44412)
-- area: tests
-- observation: `src/Enemy/e2e/aftermath-lines.engine.test.ts` pins (a) all three authored enemies carry the 9 sub-keys non-empty, (b) voice signatures spot-check, (c) TidepoolCrab un-authored regression — these are correct as DATA pins. But the test doesn't cover the full "consumer reads the field, picks a variant, renders the string" pipeline. The engine ships the data and explicitly does NO selection (Phase 71 D4); a mock consumer in the test would document the intended consumption shape (e.g. "given a final-blow outcome where damage was overkill, the brutal variant is the right pick").
-- evidence: src/Enemy/e2e/aftermath-lines.engine.test.ts (registration + voice + regression cases only; no consumer-side pipeline drive)
-- suggested_fix: Add a 4th `it()` block driving a mock variant-selection helper (e.g. `pickFinalBlowVariant(report): 'brutal' | 'quiet' | 'ironic'`) that reads the report shape and selects from `enemy.finalBlowLines`. Doesn't have to ship the helper as public API — just exercise the pattern in the test so the intended consumption is documented + future engine-side helper proposals have a sketch to lean on.
-
 ### [LOW] No walkthrough exercises Phase 71 aftermath prose + Phase 73 codex unlock
 - pass: critique-37 (commit 3a44412)
 - area: tests
@@ -40,6 +33,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] Phase 71 aftermath-lines e2e doesn't exercise the consumer-side variant-selection pipeline** — resolved at iterate commit `f4f2f7c` (2026-05-23). Added a 4th `it()` block to `src/Enemy/e2e/aftermath-lines.engine.test.ts` driving an inline `pickFinalBlowVariant({ overkillRatio, sourceIsSelf })` mock helper that returns `'brutal' | 'quiet' | 'ironic'` per a toy damage-shape heuristic (self-source → ironic; overkill ≥ 2× → brutal; default → quiet). The test drives all three variants against MournfulGull's authored `finalBlowLines` and asserts the right string surfaces for each shape. The helper is intentionally NOT shipped as engine API per Phase 71 D4 (engine does NO variant selection — the pick lives entirely on the consumer); the test serves as canonical documentation of intent so future engine-side helper proposals (Phase 71 Follow-ups names a hypothetical `pickAftermathVariant(report, enemy)` if multiple consumers converge) have a concrete sketch. 698/698 tests (+1 net from the new case); verify clean. Impact 3 × Ease 7 / 10 = 2.1. Source: critique-37 row 4 (commit `4f83854`).
 
 - [x] **[LOW] `CodexEntry` defined in src/Enemy/types.ts but semantically a Game-loop type** — resolved at iterate commit `5ec829b` (2026-05-23). Definition moved from `src/Enemy/types.ts` → `src/Game/types.ts` (immediately before `CodexState`; JSDoc preserved + extended with the re-export trail). `src/Enemy/types.ts` gained `import type { CodexEntry } from '../Game/types'` + `export type { CodexEntry }` re-export so the `Enemy.journalEntry?: CodexEntry` decoration continues to work without import churn for consumers reading from the Enemy barrel. `src/Game/index.ts` extended its types export to include CodexEntry. `src/index.ts` flipped the top-level CodexEntry export from the Enemy block to the Game block (alongside CodexState); Enemy block keeps an inline comment naming the move + the re-export path. Public surface unchanged at 235 + 167 (same export count, different physical home — external consumers importing `CodexEntry` from `'axiomancer-mechanics'` continue to work). 697/697 tests stay green; verify + deploy:check clean. Impact 3 × Ease 6 / 10 = 1.8. Source: critique-37 row 2 (commit `4f83854`).
 
