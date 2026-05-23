@@ -6,15 +6,23 @@
 > by `/iterate`.
 
 <!-- Metadata (updated by /critique after each pass):
-> Last pass: 2026-05-23 at commit c33b5b8
-> Pass count: 35
+> Last pass: 2026-05-23 at commit 4dee78e
+> Pass count: 36
 -->
-<!-- Pass 35 (2026-05-23 at commit c33b5b8): zero findings. Post-Phase-70 audit walked A–F clean. Phase 70 shipped content-only (no new public exports — dropItem was already exported in Phase 66; new content uses fully-shipped engine fields from Phase 60+62+68+69); hermetic e2e for the boss-tier reward already exists (2 cases in src/Game/e2e/befriend.engine.test.ts); docs/CHANGELOG/Knowledge-Gaps/README all front-door-current (the two iterate drains 1cefcec + f94b712 between pass 34 and this one absorbed the reader drift); no @ts-ignore drift, no dead-code surfaces, no module-structure inconsistency. The 13 commits between pass 34 (7ade4b6) and pass 35 (c33b5b8) were: 1 phase ship + 2 iterate drains + 1 user balance commit + 2 oversight commits + 1 triage commit — all small surface footprints with clean follow-through. Pool resets to empty; /iterate falls through to expand-or-iterate (no pending in CRITIQUE; AUDIT also empty barring the [tracking] GH#65 row). -->
+<!-- Pass 36 (2026-05-23 at commit 4dee78e): 1 finding (0H/0M/1L). Post-GH#65-trio audit walked A-F across the 17 commits between pass 35 (b5c8165) and pass 36 (4dee78e) — Phase 71 (per-foe aftermath prose) + Phase 72 (run-loop semantics + runId + STARTING_REGION + GAME_STATE_VERSION 5→6) + Phase 73 (Codex slice + journalEntry + GAME_STATE_VERSION 6→7). Public-API surface aligned (5 new types + 2 new runtime exports on src/index.ts; bearings.md + docs/api.md both annotate; fixture refreshed twice — 162 → 165 (Phase 71) → 167 (Phase 73); runtime 233 → 235 (Phase 72)). Hermetic coverage strong (17 new test cases across 3 e2e files: aftermath-lines.engine.test.ts, run-loop.engine.test.ts, codex.engine.test.ts). Module-structure consistent (new run-loop.ts module follows pure-helper convention; new reducer cases follow established switch-case pattern; cross-phase Phase-72 RESET_RUN extension for codex preservation per Phase 73 D12 wired cleanly). Docs current (gameloop.md Phase 72 Run-loop reset section; enemy.md Phase 71 Aftermath + Phase 73 Codex sections; combat.md Friendship Path codex bullet; CHANGELOG [unreleased] all three phase bullets present + lede extended thrice). Zero type-safety drift (no new @ts-ignore / as any). Zero dead-code surfaces. **Only finding: scripts/README.md fixture-state annotation is stale** — says "233 runtime + 162 types" (Phase-68 baseline) but current is 235 runtime + 167 types. The fixture file itself is current; only the prose annotation drifts. /iterate will drain. -->
 
 
 ---
 
 ## Pending
+
+### [LOW] scripts/README.md fixture-state annotation is stale (says 233+162; current 235+167)
+- pass: critique-36 (commit 4dee78e)
+- area: docs
+- observation: `scripts/README.md` line 29 still says "Current shape (HEAD, post-Phase-68): 233 runtime exports + 162 type exports". Phase 71 added 3 types (FinalBlowLines, PactLines, CauseLines — 162 → 165); Phase 72 added 2 runtime exports (generateRunId, STARTING_REGION — 233 → 235); Phase 73 added 2 types (CodexEntry, CodexState — 165 → 167). The fixture file `scripts/public-surface.expected.json` is correctly at 235 runtime + 167 types (verified via `grep -c` against the JSON). Only the prose annotation drifts. Same shape as the critique-24 row-5 → iterate-9bed952 drain pattern; same shape as critique-30 row-2 → iterate-cbc658b drain. The bullet-list per-version history in the surrounding paragraph also wants the Phase 71/72/73 ticks folded in.
+- evidence: scripts/README.md:29 (the stale annotation); scripts/public-surface.expected.json line counts match the new totals
+- suggested_fix: Flip "post-Phase-68: 233 runtime + 162 type exports" → "post-Phase-73: 235 runtime + 167 type exports" and extend the per-version bullet list with the Phase 71 (+3 types) / Phase 72 (+2 runtime) / Phase 73 (+2 types) additions.
+- source: critique
 
 ### [MED] Items/Equipment — `equipmentTemplates` export carries no rolled mods; UI has no preview helper
 - pass: user-jot (commit b5c8165) — refined at oversight-15 2026-05-23
