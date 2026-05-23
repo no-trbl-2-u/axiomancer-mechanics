@@ -19,9 +19,44 @@ extension (closes Spec 14 Q4 — the friendship-victory ↔ alignment-cube
 intersection is now opt-in per encounter rather than orthogonal).
 Phase 70 — boss-tier `friendshipReward` content authoring on
 CoastalTyrant (closes Phase 60's most-named follow-up; demonstrates
-the full Phase 60+62+68+69 stack on one encounter).
+the full Phase 60+62+68+69 stack on one encounter). Phase 71 —
+per-foe aftermath narrative prose (`finalBlowLines` / `pactLines`
+/ `causeLines`) on the Enemy type (closes GH#65 ask 1; the mobile
+aftermath presenter can drop its `derive*Phrase` fallback for
+authored enemies).
 
 ### Added
+- **Per-foe aftermath narrative prose (Phase 71 — closes GH#65 ask
+  1).** Three new optional type interfaces on the public surface:
+  `FinalBlowLines` (`{ brutal, quiet, ironic }`) — victory final-blow
+  chronicle, picked by damage-tier shape; `PactLines` (`{ quiet,
+  setDown, heavy }`) — friendship-pact chronicle, picked by parley
+  posture (only meaningful when the enemy also carries a
+  `friendshipReward`); `CauseLines` (`{ brutal, broken, quiet }`)
+  — defeat / cause-of-loss chronicle. Three new additive-optional
+  fields on `Enemy`: `finalBlowLines?` / `pactLines?` / `causeLines?`.
+  Engine performs no variant selection or interpolation — fields
+  are pure data; consumer (mobile presenter, CLI, future UI tabs)
+  picks which variant to render based on outcome shape. Naming
+  note: GH#65 source text used hyphenated `set-down`; field is
+  `pactLines.setDown` (TS-identifier convention). Initial author
+  coverage: MournfulGull (heart-aspected wistful — "slights" / "list"
+  / "catalogue" thread), HollowEyedBeggar
+  (faith-pessimistic-relational — "carrying" / "rags" / "phials"
+  reversal thread), CoastalTyrant (magistrate-fallen-priest —
+  "verdict" / "regalia" / "magistrate" thread). The remaining 13
+  enemies in the library leave the three fields undefined and fall
+  through to consumer-side defaults (e.g. mobile's `derive*Phrase`
+  helpers); a future content-sweep phase will author them. Fixture
+  bump: 162 → 165 type exports; runtime exports unchanged at 233.
+  Hermetic e2e at `src/Enemy/e2e/aftermath-lines.engine.test.ts`
+  (3 cases: registration shape + voice signatures + TidepoolCrab
+  un-authored regression). Phase 71 commits: `61aa06c` (Unit 1 —
+  types + barrels + fixture refresh) + `9365bb6` (Unit 2 —
+  content authoring on the befriendable trio) + Unit 3 (this
+  commit — hermetic e2e + docs/enemy + docs/api + README + bearings
+  + CHANGELOG).
+
 - **`FriendshipReward.alignmentDelta` extension (Phase 69 — closes Spec
   14 Q4).** New optional `alignmentDelta?: Partial<PhilosophicalAlignment>`
   field on the existing `FriendshipReward` type. When present, the

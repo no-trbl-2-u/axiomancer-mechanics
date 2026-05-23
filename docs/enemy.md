@@ -295,3 +295,43 @@ regression case (TidepoolCrab) + a victory-outcome regression case
 See `docs/combat.md` § "Friendship Path" for the engine-side
 semantics + `docs/morality.md` § "Combat: Friendship Victories" for
 the moralMeter shift that fires alongside.
+
+## Aftermath narrative (Phase 71)
+
+Three optional per-foe line sets carry chronicle-voice prose for
+the post-combat aftermath panel. The engine stores the data and
+emits it on the encounter; consumer surfaces (mobile presenter,
+CLI, future UI tabs) pick which variant to render based on the
+outcome shape.
+
+| Field | Type | When meaningful | Variants |
+| --- | --- | --- | --- |
+| `finalBlowLines` | `FinalBlowLines` | Victory outcome | `brutal` (overkill burst), `quiet` (exact-cap), `ironic` (mirror / self-inflicted) |
+| `pactLines` | `PactLines` | Friendship outcome (paired with `friendshipReward`) | `quiet` (mutual silence), `setDown` (literal weapon laid down), `heavy` (recognition under weight) |
+| `causeLines` | `CauseLines` | Defeat outcome | `brutal` (enemy burst), `broken` (attrition), `quiet` (single-tick KO) |
+
+**Engine does NO variant selection** — fields are pure data; the
+consumer (mobile presenter etc.) picks `brutal` vs `quiet` vs
+`ironic` based on damage-tier shape or parley posture. Strings are
+complete chronicle prose; the engine performs no interpolation.
+
+**Initial author coverage (Phase 71):** the three currently-authored
+befriendable enemies — **MournfulGull** (heart-aspected wistful,
+"slights" / "list" / "catalogue" thread), **HollowEyedBeggar**
+(faith-pessimistic-relational, "carrying" / "rags" / "phials"
+thread; reversal-of-begging carries into pact + cause variants),
+and **CoastalTyrant** (magistrate-fallen-priest, "verdict" /
+"regalia" / "magistrate" thread; pact lines echo the existing
+4-paragraph `friendshipReward.narrative`). The remaining 13 enemies
+in the library leave all three fields undefined — consumer-side
+fallback (e.g. mobile's `derive*Phrase` helpers) continues to apply
+to those encounters until a future content-sweep phase authors them.
+
+**Naming note:** GH#65 source text used the hyphenated `set-down`;
+the field is `pactLines.setDown` (TS-identifier convention).
+
+Hermetic e2e coverage at
+[`src/Enemy/e2e/aftermath-lines.engine.test.ts`](../src/Enemy/e2e/aftermath-lines.engine.test.ts)
+pins registration shape across the 3 authored enemies + voice
+signatures + a regression case (TidepoolCrab leaves all three
+fields undefined). Source: GH#65 ask 1 (filed 2026-05-22).

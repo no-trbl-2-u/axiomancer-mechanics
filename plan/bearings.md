@@ -56,7 +56,9 @@ Enemy:      createEnemy, Enemy, EnemyLogic, decideEnemyAction, randomLogic,
             FriendshipReward (+ Enemy.friendshipReward? — Phase 60;
             + flagSet? extension — Phase 62;
             + alignmentDelta? extension — Phase 69 closes Spec 14 Q4),
-            BefriendabilityConfig (+ Enemy.befriendabilityConfig? — Phase 68)
+            BefriendabilityConfig (+ Enemy.befriendabilityConfig? — Phase 68),
+            FinalBlowLines / PactLines / CauseLines (+ Enemy.{finalBlowLines,
+            pactLines, causeLines}? — Phase 71 closes GH#65 ask 1)
 Combat:     determineAdvantage, getAttackStat, getDefenseStat, getSaveStat,
             getResistStat, applyDamage, heal, tickAllEffects, applyRegen,
             getActiveRollModifier, getThornsReflect, resolveEffectApplication,

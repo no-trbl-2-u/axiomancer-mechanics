@@ -171,6 +171,28 @@ per Phase 68 D11 — engine consumers read combat-end state through
 predicate (Phase 68 — `BefriendabilityConfig`)" for the full schema
 and authoring guidance.
 
+**Aftermath narrative prose (Phase 71 — GH#65 ask 1).** Three
+optional per-foe line sets carry chronicle-voice prose for the
+post-combat aftermath panel. Pure data; engine performs no variant
+selection or interpolation — consumer (mobile presenter, CLI, etc.)
+picks which variant to render based on outcome shape.
+
+- `FinalBlowLines { brutal: string; quiet: string; ironic: string }`
+  — victory final-blow chronicle, picked by damage-tier shape.
+- `PactLines { quiet: string; setDown: string; heavy: string }` —
+  friendship-pact chronicle, picked by parley posture. Only
+  meaningful when the enemy also carries a `friendshipReward`.
+  Naming note: GH#65 source text used `set-down`; field is
+  `setDown` (TS-identifier convention).
+- `CauseLines { brutal: string; broken: string; quiet: string }` —
+  defeat / cause-of-loss chronicle, picked by KO shape.
+
+`Enemy.finalBlowLines?` / `Enemy.pactLines?` / `Enemy.causeLines?`
+are all additive-optional; undefined falls through to consumer
+defaults. Initial author coverage at Phase 71: MournfulGull,
+HollowEyedBeggar, CoastalTyrant. See `docs/enemy.md` § "Aftermath
+narrative (Phase 71)" for variant semantics + voice guidance.
+
 **Reactive NPCs — alignment observers (Phase 63).** Tree-level
 observer machinery — Beta:
 
