@@ -244,6 +244,79 @@ When `GAME_STATE_VERSION` next bumps, add a `migrateV5toV6` step and call it
 from `migrate()` for `fromVersion < 6`. Each step is a pure
 `(prev) => next` function — no I/O, no defaults pulled at call time.
 
+**Phase 72 update:** `GAME_STATE_VERSION` is now `6`. The ladder gained
+`migrateV5toV6` which defaults the required `runId: string` field on
+legacy v5 saves via `generateRunId(() => getRng().random())`.
+
+## Run-loop reset (Phase 72)
+
+Closes GH#65 ask 2. Mobile BEGIN AGAIN currently full-heals + dismisses
+as a band-aid; this surface replaces that with a proper engine
+primitive.
+
+```ts
+store.resetRun({ keepCharacter: true }): GameState
+```
+
+`resetRun` dispatches a `RESET_RUN` action through the standard
+`gameReducer` → `set` → `emit` → autosave pipeline. The action is in
+`DURABLE_ACTIONS` so the new state persists immediately.
+
+### Preserve / reset matrix
+
+| Field | `keepCharacter: true` | `keepCharacter: false` |
+| --- | --- | --- |
+| `player` | preserved (id, name, level, baseStats, equipment, knownSkills, inventory) | fresh `createCharacter` (level 1) |
+| `player.health` | refilled to `maxHealth` | new character → full health |
+| `player.effects` | cleared (defensive — already empty between combats) | empty |
+| `philosophicalAlignment` | preserved (character ledger) | `defaultAlignment()` |
+| `moralMeter` | preserved (character ledger) | `0` |
+| `rngState` | preserved (don't reset mid-session — breaks deterministic replay) | preserved |
+| `runId` | NEW (always bumped) | NEW |
+| `world` | `createStartingWorld()` (back to fishing-village `fv-1`) | `createStartingWorld()` |
+| `combat` | `null` | `null` |
+| `currentEncounter` | `undefined` | `undefined` |
+| `quests` | `emptyQuestLog()` | `emptyQuestLog()` |
+| `flags` | `[]` | `[]` |
+| `lastSeenAlignmentCells` | `undefined` (observer cache resets) | `undefined` |
+
+### Starting hearth
+
+The "hearth" reuses `MapDefinition.startingNode` — no new type
+primitive. `STARTING_REGION: MapName = 'fishing-village'` constant
+names the canonical run-start region; `resetRun` routes the world
+through `createStartingWorld()` which already lands on that region's
+starting node (`fv-1`). Per-region custom hearths defer to a future
+phase when regions other than fishing-village become viable
+start points.
+
+### runId
+
+```ts
+export function generateRunId(rng: () => number): string
+```
+
+16-char hex id (e.g. `"a3f2c1b9d4e0f1a2"`), matching `/^[0-9a-f]{16}$/`.
+Generated at `createNewGameState()` time AND bumped on every
+`resetRun()` call. Persists in save data so future runs-history features
+can key off per-run identity. The supplied `rng` is invoked 16 times;
+engine internals always pass `() => getRng().random()`, but consumers
+can supply their own rng for deterministic tests. No `crypto`
+dependency — the engine ships into React Native and the core barrel
+avoids Node-only imports.
+
+### Mobile callsite (post-engine release)
+
+`axiomancer-mobile`'s `state/combat-mode.tsx` BEGIN AGAIN handler will
+drop its full-heal + dismiss band-aid in favour of:
+
+```ts
+store.resetRun({ keepCharacter: true });
+```
+
+When the engine wants to model death + character lockout in the
+future, the same surface handles it with `keepCharacter: false`.
+
 ## game.cli.ts
 
 `src/CLI/game.cli.ts` is the demonstrational driver. It is **wiring only** —

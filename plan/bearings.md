@@ -74,7 +74,11 @@ Skills:     executeSkill, canUseSkill, learnSkill, getAvailableSkills,
 Items:      addItem, removeItem, useConsumable, stackItem, Item (and variants)
 Game:       createGameStore, GameState, nullAdapter, persistence adapters
             (+ GameState.lastSeenAlignmentCells? — Phase 63 alignment-observer
-            cache, additive optional, no GAME_STATE_VERSION bump)
+            cache, additive optional, no GAME_STATE_VERSION bump),
+            (+ store.resetRun({ keepCharacter }) + GameState.runId
+            (required string) + generateRunId + STARTING_REGION
+            constant — Phase 72 closes GH#65 ask 2;
+            GAME_STATE_VERSION bumped 5 → 6 with migrateV5toV6)
 World:      createStartingWorld, world reducer, WorldState, MapState, MapDefinition
 Utils:      clamp, randomInt, deepClone, deriveStats, calculateMaxHealth,
             createDieRoll, isCharacter, isEnemy

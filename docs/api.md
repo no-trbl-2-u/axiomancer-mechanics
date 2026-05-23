@@ -70,6 +70,33 @@ unchanged, but the absolute semver guarantee starts at 1.0.
   Exports below.)
 - `nullAdapter` — Stable.
 
+**Run-loop semantics (Phase 72 — closes GH#65 ask 2).** New store
+method + supporting exports:
+
+- `store.resetRun({ keepCharacter: boolean }): GameState` — rewinds the
+  playthrough back to the starting hearth. `keepCharacter: true`
+  preserves the character ledger (player + philosophicalAlignment +
+  moralMeter + rngState) and refills HP to maxHealth; world /
+  combat / quests / flags / observer cache reset.
+  `keepCharacter: false` performs a full new-game reset carrying only
+  `rngState`. Every call assigns a fresh `runId`. Dispatches
+  `RESET_RUN`; persists via the standard `DURABLE_ACTIONS` pipeline.
+- `GameState.runId: string` — required field (16-char hex; matches
+  `/^[0-9a-f]{16}$/`). Generated at `createNewGameState()` time AND
+  bumped on every `resetRun()` call.
+- `generateRunId(rng: () => number): string` — 16-char hex id helper;
+  Phase 35 character-id generation pattern. Supply your own rng for
+  deterministic tests, or pass `() => getRng().random()` for the
+  global seeded source.
+- `STARTING_REGION: MapName = 'fishing-village'` — canonical
+  starting region for `resetRun`; the hearth concept reuses
+  `MapDefinition.startingNode` (no new "hearth" type primitive).
+- `GAME_STATE_VERSION` bumped 5 → 6; `migrateV5toV6` defaults `runId`
+  on legacy v5 saves.
+
+See `docs/gameloop.md` § "Run-loop reset (Phase 72)" for the
+preserve / reset matrix and lifecycle.
+
 ### Events (Beta)
 
 The engine emits a single uniform envelope on every `GameEvent`:

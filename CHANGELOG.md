@@ -23,9 +23,53 @@ the full Phase 60+62+68+69 stack on one encounter). Phase 71 —
 per-foe aftermath narrative prose (`finalBlowLines` / `pactLines`
 / `causeLines`) on the Enemy type (closes GH#65 ask 1; the mobile
 aftermath presenter can drop its `derive*Phrase` fallback for
-authored enemies).
+authored enemies). Phase 72 — run-loop semantics
+(`store.resetRun({ keepCharacter })` + required `GameState.runId` +
+`generateRunId` + `STARTING_REGION`; `GAME_STATE_VERSION` bumped
+5 → 6 with `migrateV5toV6` defaulting `runId` for legacy saves).
+Closes GH#65 ask 2.
 
 ### Added
+- **Run-loop semantics (Phase 72 — closes GH#65 ask 2).** New
+  store surface for "begin again at the hearth" flows. Mobile
+  BEGIN AGAIN's full-heal + dismiss band-aid drops in favour of
+  a proper engine primitive. New
+  `store.resetRun({ keepCharacter: boolean }): GameState` method.
+  `keepCharacter: true` preserves the character ledger (player +
+  philosophicalAlignment + moralMeter + rngState), refills HP to
+  maxHealth, clears `player.effects` defensively, and resets
+  run-scoped state (world via `createStartingWorld()` → fishing-
+  village starting node; combat null; quests empty; flags empty;
+  `lastSeenAlignmentCells` undefined — observer cache resets).
+  `keepCharacter: false` performs a full new-game reset carrying
+  only `rngState` (don't reset the seed mid-session — that breaks
+  deterministic replay). Every call assigns a fresh `runId`.
+  Dispatches `RESET_RUN` through the standard
+  `gameReducer → set → emit → autosave` pipeline; `RESET_RUN`
+  added to `DURABLE_ACTIONS` so the new state persists
+  immediately. New required `GameState.runId: string` field
+  (16-char hex, matches `/^[0-9a-f]{16}$/`; Phase 35 character-id
+  generation pattern; no `crypto` dependency for React Native
+  compatibility). New helpers on the public surface:
+  `generateRunId(rng: () => number): string` (consumers can
+  supply their own rng for deterministic tests) and
+  `STARTING_REGION: MapName = 'fishing-village'` (canonical
+  run-start region; reuses `MapDefinition.startingNode` — no new
+  "hearth" type primitive). `GAME_STATE_VERSION` bumped 5 → 6;
+  `migrateV5toV6` defaults `runId` via
+  `generateRunId(() => getRng().random())` on legacy v5 saves.
+  Fixture bump: +2 runtime exports (`generateRunId` +
+  `STARTING_REGION`); types unchanged at 165. Hermetic e2e at
+  `src/Game/e2e/run-loop.engine.test.ts` (8 cases pinning the
+  preserve / reset matrix + migration). Mobile callsite cleanup
+  (drop the band-aid in `state/combat-mode.tsx`) is consumer-side
+  and ships post-engine-release. Phase 72 commits: `013c0af`
+  (Unit 1 — types + reducer + migration + action + store method
+  + run-loop.ts + barrels + fixture; two pre-existing tests
+  updated to expect version 6) + `66c8822` (Unit 2 — 8-case
+  hermetic e2e) + Unit 3 (this commit — docs/api + docs/gameloop
+  Run-loop reset section + README + bearings + CHANGELOG).
+
 - **Per-foe aftermath narrative prose (Phase 71 — closes GH#65 ask
   1).** Three new optional type interfaces on the public surface:
   `FinalBlowLines` (`{ brutal, quiet, ironic }`) — victory final-blow
