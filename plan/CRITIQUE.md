@@ -23,13 +23,6 @@
 - evidence: src/Enemy/types.ts:175 (CodexEntry definition); src/Game/types.ts:50 (CodexState definition); src/index.ts:38 (CodexEntry re-exported through Enemy block)
 - suggested_fix: Move `CodexEntry` from `src/Enemy/types.ts` to `src/Game/types.ts` (alongside `CodexState`); have `src/Enemy/types.ts` import + re-export it for the `Enemy.journalEntry?` decoration. Top-level barrel re-exports `CodexEntry` from Game block; Enemy block can still re-export for convenience. Verify the fixture stays at 167 types (no count change — same export count, different physical location).
 
-### [LOW] `agents.md` + `RELEASING.md` silent on Phase 71/72/73 surfaces
-- pass: critique-37 (commit 3a44412)
-- area: docs
-- observation: Both foundational orientation docs predate GH#65 and don't reference any of the three new surfaces (per-foe aftermath prose, run-loop semantics, Codex slice). A first-time reader hitting either doc has no breadcrumbs to the new capabilities. `RELEASING.md` specifically doesn't mention the GAME_STATE_VERSION bump pattern that's now landed twice (5→6 Phase 72; 6→7 Phase 73) — useful release-engineering context for the next tag.
-- evidence: agents.md (no `Phase 7[123]` mention; no link to docs/gameloop.md Run-loop reset section); RELEASING.md (no GAME_STATE_VERSION bump ceremony note)
-- suggested_fix: agents.md gains a 1-2 line surface phrasing in the "Where to look" table or recent-shipping section pointing at the Phase 71/72/73 docs sections. RELEASING.md gains a small subsection or sentence about the version-bump ceremony (when to flip the v# in CHANGELOG vs when the migrate ladder needs a new step).
-
 ### [LOW] Phase 71 aftermath-lines e2e doesn't exercise the consumer-side variant-selection pipeline
 - pass: critique-37 (commit 3a44412)
 - area: tests
@@ -54,6 +47,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] `agents.md` + `RELEASING.md` silent on Phase 71/72/73 surfaces** — resolved at iterate commit `d0f0d73` (2026-05-23). agents.md "Where to look" table gained three new rows (Run-loop semantics + Codex slice → docs/gameloop.md + docs/api.md; Per-foe aftermath narrative + codex entries → docs/enemy.md; One-page tour → docs/quickstart.md — the quickstart pointer was missing entirely despite Phase 67 shipping the doc). RELEASING.md Pre-release checklist gained step 7 — the `GAME_STATE_VERSION` ceremony note naming the three guard sites (reducer constant export + migrate.ts step+funnel+assert + docs mirror in gameloop.md + quickstart.md), with the 0.10.x cycle's two bumps (5→6 Phase 72 runId; 6→7 Phase 73 codex) as concrete references. Pure docs change; 697/697 tests stay green. Impact 3 × Ease 9 / 10 = 2.7. Source: critique-37 row 3 (commit `4f83854`).
 
 - [x] **[LOW] CHANGELOG.md [unreleased] lede has grown to a 6-Phase wall of text** — resolved at iterate commit `326c42f` (2026-05-23). The ~20-line wall chaining Phase 68 + 69 + 70 + 71 + 72 + 73 summaries reshaped into a 9-line 2-arc summary: friendship-mechanic expansion (Phases 68/69/70 — predicate + alignmentDelta + boss-tier content) + GH#65 mobile aftermath trio (Phases 71/72/73 — narrative prose + run-loop + Codex), plus a single sentence on the twice-bumped GAME_STATE_VERSION ceremony (5→6 Phase 72; 6→7 Phase 73), plus a closing pointer to the `### Added` section for per-phase detail. The `### Added` bullets are preserved unchanged — the lede is strictly a summary surface now. Same shape as iterate-`c15d3fa`-era prior lede maintenance: the lede grows naturally as phases ship; periodic reshapes when readability decays. Pure docs change; 697/697 tests stay green. Impact 3 × Ease 9 / 10 = 2.7. Source: critique-37 row 1 (commit `4f83854`).
 
