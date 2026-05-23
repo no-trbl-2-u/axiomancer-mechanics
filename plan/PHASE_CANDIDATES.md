@@ -5,9 +5,10 @@
 > `## Promoted` or `## Rejected`.
 
 <!-- Metadata (updated by /expand after each pass):
-> Last pass: 2026-05-23 at commit 1c344a1
-> Pass count: 20
+> Last pass: 2026-05-23 at commit 12c35c7
+> Pass count: 21
 -->
+<!-- Pass 21 (2026-05-23 at commit 12c35c7): 0 candidates proposed. Walked signal sources A-G: AUDIT.md Pending empty; CRITIQUE.md Pending carries 1 LOW (spec.md 6-month horizon fold-in — iterate-tier single-tick work, not phase-tier); Knowledge-Gaps mostly resolved (18 closed; Q27 difficulty-meter still open + already a Pending candidate); specs/ unstarted: none new (Spec 14 closed at Phase 58); braindump/ — no fresh items since 2026-05-12 rarity-modifiers note (Spec 05d/e both shipped); spec.md 6-month horizon — Continent 2 stub already a Pending candidate, story-content NPCs partial but no specific new ask. Recent commits show smooth iterate-drain pattern, no rework signals warranting a cleanup phase. The existing 13 Pending candidates cover all currently-actionable phase scope; filing fluff would dilute the pool. Pool stays at 13 Pending (Northern-forest expansion / Walkthrough catalog expansion / CHANGELOG public-surface diff autogen / Difficulty-meter gameplay scaling / incrementsFriendship calming skills / Tier 3 synergy expansion / Continent 2 stub / Deprecation lifecycle / Agent verify reporter polish / Combat sub-event surfacing / previewTemplateAtRarity / post-GH#65 per-foe sweep / CLI run-loop + Codex integration). -->
 
 ---
 
