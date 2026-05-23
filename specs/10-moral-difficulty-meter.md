@@ -109,7 +109,12 @@ exercises a moral choice.
       round-trip in `src/Game/e2e/game.loop.engine.test.ts` ("new
       game → combat → victory → level up → move → save → load
       round-trips identically"). Pinned by
-      `src/Game/e2e/moral.meter.engine.test.ts`.
+      `src/Game/e2e/moral.meter.engine.test.ts`. Phase 72 D13
+      (`013c0af`) further pins `moralMeter` as character-ledger state:
+      `store.resetRun({ keepCharacter: true })` preserves the meter
+      across run resets (alongside `philosophicalAlignment` +
+      `rngState` + the Phase 73 `codex` slice). `keepCharacter: false`
+      resets to 0 with the rest of the new-game baseline.
 - [x] Sample event in the demo content shifts the meter; choosing
       differently gives a different outcome. — Spec 10 (pre-loop)
       shipped `shiftMoralMeter` (`src/Game/game.reducer.ts:108`); the
