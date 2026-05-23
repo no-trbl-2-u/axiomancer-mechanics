@@ -49,10 +49,11 @@ import { generateRunId } from './run-loop';
  * old saves can be migrated rather than corrupted.
  *
  * Phase 72 — bumped 5 → 6 to add the required `runId: string` field.
- * `migrateV5toV6` defaults the id via `generateRunId(() => getRng().random())`
- * for legacy saves.
+ * Phase 73 — bumped 6 → 7 to add the required `codex: CodexState` slice.
+ * `migrateV6toV7` defaults the slice to `{ unlockedEntries: [] }` for
+ * legacy v6 saves.
  */
-export const GAME_STATE_VERSION = 6;
+export const GAME_STATE_VERSION = 7;
 
 /** Builds a brand-new GameState with default player and world. */
 export function createNewGameState(): GameState {
@@ -71,6 +72,7 @@ export function createNewGameState(): GameState {
         moralMeter: 0,
         rngState: getRng().getState(),
         philosophicalAlignment: defaultAlignment(),
+        codex: { unlockedEntries: [] },
     };
 }
 
@@ -255,6 +257,23 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
                 }
             }
 
+            // Phase 73 — friendship resolutions auto-fire the per-enemy
+            // codex unlock. The entry's id is appended to
+            // state.codex.unlockedEntries (de-duped); the store layer
+            // surfaces { id, title } on
+            // CombatEndReport.friendshipReward.codexEntryUnlocked. Closes
+            // GH#65 ask 3.
+            let nextCodex = state.codex;
+            if (outcome === 'friendship') {
+                const entry = combat.enemy.journalEntry;
+                if (entry && !nextCodex.unlockedEntries.includes(entry.id)) {
+                    nextCodex = {
+                        ...nextCodex,
+                        unlockedEntries: [...nextCodex.unlockedEntries, entry.id],
+                    };
+                }
+            }
+
             // Friendship victories grant +1 to moral meter (compassion)
             const baseState = {
                 ...state,
@@ -262,6 +281,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
                 quests: nextQuests,
                 flags: nextFlags,
                 philosophicalAlignment: nextAlignment,
+                codex: nextCodex,
                 combat: null,
                 currentEncounter: undefined,
             };
@@ -362,8 +382,10 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
             // keepCharacter: true — preserve persistent character ledger
             // (player + philosophicalAlignment + moralMeter + rngState per
-            // D1); reset run-scoped state. HP refills to maxHealth; effects
-            // clears defensively (already empty between combats).
+            // Phase 72 D1; codex per Phase 73 D12 — codex unlocks are
+            // character knowledge, carry across runs); reset run-scoped
+            // state. HP refills to maxHealth; effects clears defensively
+            // (already empty between combats).
             return {
                 version: GAME_STATE_VERSION,
                 runId: freshRunId,
@@ -379,9 +401,23 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
                 moralMeter: state.moralMeter,
                 rngState: state.rngState,
                 philosophicalAlignment: state.philosophicalAlignment,
-                // lastSeenAlignmentCells intentionally dropped (D12 —
-                // observer cache resets; fresh run, fresh observation
-                // history).
+                codex: state.codex,
+                // lastSeenAlignmentCells intentionally dropped (Phase 72
+                // D12 — observer cache resets; fresh run, fresh
+                // observation history).
+            };
+        }
+
+        case 'UNLOCK_CODEX_ENTRY': {
+            // Phase 73 — closes GH#65 ask 3. See plan/phases/phase_73_codex_journal_surface.md.
+            const { entryId } = action.payload;
+            if (state.codex.unlockedEntries.includes(entryId)) return state;
+            return {
+                ...state,
+                codex: {
+                    ...state.codex,
+                    unlockedEntries: [...state.codex.unlockedEntries, entryId],
+                },
             };
         }
     }

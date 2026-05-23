@@ -35,6 +35,22 @@ import { PhilosophicalAlignment } from '../Philosophy/types';
  *                              one of 27 cells in `philosophicalAlignmentLibrary`.
  *                              Orthogonal to `moralMeter` — see docs/philosophy.md.
  */
+/**
+ * Phase 73 — codex slice on `GameState` (closes GH#65 ask 3).
+ * Append-only collection of unlocked entry IDs. Each entry id maps
+ * back to a `CodexEntry` on the source `Enemy` (or a future
+ * dialogue / map-event surface that grants codex entries directly).
+ * Consumers (mobile Codex tab, future CLI surface) render entry
+ * bodies by looking up the id against the content registry.
+ *
+ * Wrapper shape (not flat `string[]`) so future per-entry metadata
+ * (unlock-timestamp, read-status) can land additive-optionally
+ * without breaking the existing surface. Same pattern as `QuestLog`.
+ */
+export interface CodexState {
+    unlockedEntries: string[];
+}
+
 export interface GameState {
     version: number;
     /**
@@ -65,4 +81,10 @@ export interface GameState {
      * case). Trees without an `id` are never written to the cache.
      */
     lastSeenAlignmentCells?: Record<string, string>;
+    /**
+     * Phase 73 — codex slice (closes GH#65 ask 3). Required state
+     * slice; defaults to `{ unlockedEntries: [] }` on new games.
+     * `migrateV6toV7` defaults the slice for legacy v6 saves.
+     */
+    codex: CodexState;
 }

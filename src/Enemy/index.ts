@@ -9,6 +9,7 @@ import {
     Enemy, EnemyLogic, EnemyDifficulty, Tier1EffectOverrides, LootTableEntry,
     FriendshipReward, BefriendabilityConfig,
     FinalBlowLines, PactLines, CauseLines,
+    CodexEntry,
 } from './types';
 
 /**
@@ -45,6 +46,8 @@ export interface CreateEnemyOptions {
     pactLines?: PactLines;
     /** Phase 71 — optional per-foe defeat / cause-of-loss chronicle prose (GH#65 ask 1). */
     causeLines?: CauseLines;
+    /** Phase 73 — optional per-foe codex / journal entry (GH#65 ask 3). */
+    journalEntry?: CodexEntry;
 }
 
 /**
@@ -72,6 +75,7 @@ export function createEnemy(options: CreateEnemyOptions): Enemy {
         skills, loot, xpReward, effects = [], philosophicalAlignment,
         friendshipReward, befriendabilityConfig,
         finalBlowLines, pactLines, causeLines,
+        journalEntry,
     } = options;
 
     const maxHealth = calculateMaxHealth(level, baseStats);
@@ -96,6 +100,7 @@ export function createEnemy(options: CreateEnemyOptions): Enemy {
         finalBlowLines,
         pactLines,
         causeLines,
+        journalEntry,
     };
 }
 
@@ -110,4 +115,5 @@ export type {
     Enemy, EnemyLogic, EnemyDifficulty, Tier1EffectOverrides, LootTableEntry,
     FriendshipReward, BefriendabilityConfig,
     FinalBlowLines, PactLines, CauseLines,
+    CodexEntry,
 } from './types';

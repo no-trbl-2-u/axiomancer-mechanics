@@ -77,6 +77,7 @@ const DURABLE_ACTIONS: ReadonlySet<GameAction['type']> = new Set<GameAction['typ
     'APPLY_DIALOGUE',
     'SAVE_GAME',
     'RESET_RUN', // Phase 72 — persist new runId + reset world immediately.
+    'UNLOCK_CODEX_ENTRY', // Phase 73 — persist codex unlock immediately.
 ]);
 
 /**
@@ -116,6 +117,16 @@ export interface CombatEndReport {
     friendshipReward?: {
         narrative?: string;
         alignmentShift?: PhilosophicalAlignment;
+        /**
+         * Phase 73 — when the befriended enemy carries a `journalEntry`
+         * and the entry wasn't already unlocked, the engine appends its
+         * id to `state.codex.unlockedEntries` and surfaces
+         * `{ id, title }` here for the consumer's after-action UI
+         * (mobile `<CombatFriendshipPanel>` NEW ENTRY card). Body is
+         * recovered via lookup against the source `Enemy` (or a future
+         * `CodexLibrary` registry). Closes GH#65 ask 3.
+         */
+        codexEntryUnlocked?: { id: string; title: string };
     };
 }
 
@@ -171,13 +182,23 @@ export interface GameActions {
     /**
      * Phase 72 — resets the playthrough back to the starting hearth (closes
      * GH#65 ask 2). `keepCharacter: true` preserves the character ledger
-     * (player + philosophicalAlignment + moralMeter + rngState) and refills
-     * HP; world / combat / quests / flags / observer cache reset.
+     * (player + philosophicalAlignment + moralMeter + rngState + codex) and
+     * refills HP; world / combat / quests / flags / observer cache reset.
      * `keepCharacter: false` performs a full new-game reset. Every call
      * assigns a fresh `runId`. Dispatches `RESET_RUN`; persists via the
      * standard DURABLE_ACTIONS pipeline. Returns the post-reset GameState.
      */
     resetRun: (opts: { keepCharacter: boolean }) => GameState;
+    // ── Codex (Phase 73) ─────────────────────────────────────────────────────
+    /**
+     * Phase 73 — append a codex entry id to `state.codex.unlockedEntries`
+     * (de-duped). Closes GH#65 ask 3. Friendship outcomes auto-fire the
+     * unlock when the befriended enemy carries a `journalEntry`; this
+     * method exists so future dialogue / map-event content can grant
+     * codex entries directly. Dispatches `UNLOCK_CODEX_ENTRY` through the
+     * standard DURABLE_ACTIONS pipeline.
+     */
+    unlockCodexEntry: (entryId: string) => void;
 }
 
 /** Full store type — state + actions. */
@@ -277,12 +298,12 @@ export function createGameStore(
                 const {
                     currentEncounter: _drop, version, runId, player, world, combat, quests, flags,
                     moralMeter, rngState, philosophicalAlignment,
-                    lastSeenAlignmentCells,
+                    lastSeenAlignmentCells, codex,
                 } = next;
                 adapter.save({
                     version, runId, player, world, combat, quests, flags,
                     moralMeter, rngState, philosophicalAlignment,
-                    lastSeenAlignmentCells,
+                    lastSeenAlignmentCells, codex,
                 });
             }
             return next;
@@ -314,12 +335,12 @@ export function createGameStore(
                 const {
                     currentEncounter: _drop, version, runId, player, world, combat: cb, quests, flags,
                     moralMeter, rngState, philosophicalAlignment,
-                    lastSeenAlignmentCells,
+                    lastSeenAlignmentCells, codex,
                 } = next;
                 adapter.save({
                     version, runId, player, world, combat: cb, quests, flags,
                     moralMeter, rngState, philosophicalAlignment,
-                    lastSeenAlignmentCells,
+                    lastSeenAlignmentCells, codex,
                 });
             },
 
@@ -365,14 +386,32 @@ export function createGameStore(
                 // below.
                 if (outcome === 'friendship') {
                     const fr = pre.combat.enemy.friendshipReward;
-                    if (fr?.narrative || fr?.alignmentDelta) {
-                        const friendshipReport: { narrative?: string; alignmentShift?: PhilosophicalAlignment } = {};
-                        if (fr.narrative) friendshipReport.narrative = fr.narrative;
-                        if (fr.alignmentDelta) {
+                    const entry = pre.combat.enemy.journalEntry;
+                    const codexAlreadyKnown = entry
+                        ? pre.codex.unlockedEntries.includes(entry.id)
+                        : true;
+                    const willUnlockCodex = entry && !codexAlreadyKnown;
+                    if (fr?.narrative || fr?.alignmentDelta || willUnlockCodex) {
+                        const friendshipReport: {
+                            narrative?: string;
+                            alignmentShift?: PhilosophicalAlignment;
+                            codexEntryUnlocked?: { id: string; title: string };
+                        } = {};
+                        if (fr?.narrative) friendshipReport.narrative = fr.narrative;
+                        if (fr?.alignmentDelta) {
                             friendshipReport.alignmentShift = applyAlignmentDelta(
                                 pre.philosophicalAlignment,
                                 fr.alignmentDelta,
                             );
+                        }
+                        if (willUnlockCodex && entry) {
+                            // Phase 73 — surface the unlocked entry's id +
+                            // title on the report (the END_COMBAT reducer
+                            // has appended the id to state.codex.unlockedEntries).
+                            friendshipReport.codexEntryUnlocked = {
+                                id: entry.id,
+                                title: entry.title,
+                            };
                         }
                         report.friendshipReward = friendshipReport;
                     }
@@ -450,12 +489,12 @@ export function createGameStore(
                 const {
                     currentEncounter: _drop, version, runId, player, world, combat, quests, flags,
                     moralMeter, rngState, philosophicalAlignment,
-                    lastSeenAlignmentCells,
+                    lastSeenAlignmentCells, codex,
                 } = next;
                 adapter.save({
                     version, runId, player, world, combat, quests, flags,
                     moralMeter, rngState, philosophicalAlignment,
-                    lastSeenAlignmentCells,
+                    lastSeenAlignmentCells, codex,
                 });
                 if (emitter) emitter.emit({ type: 'game:saved', payload: { state: next } });
             },
@@ -473,6 +512,11 @@ export function createGameStore(
             // ── Run loop (Phase 72) ──────────────────────────────────────────
             resetRun(opts: { keepCharacter: boolean }) {
                 return dispatch({ type: 'RESET_RUN', payload: opts });
+            },
+
+            // ── Codex (Phase 73) ─────────────────────────────────────────────
+            unlockCodexEntry(entryId: string) {
+                dispatch({ type: 'UNLOCK_CODEX_ENTRY', payload: { entryId } });
             },
         };
     });

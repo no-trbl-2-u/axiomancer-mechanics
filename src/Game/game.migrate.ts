@@ -30,8 +30,13 @@ interface GameStateV4 extends Omit<GameState, 'philosophicalAlignment' | 'runId'
 }
 
 /** GameState shape before v6 (before Phase 72 runId field was added). */
-interface GameStateV5 extends Omit<GameState, 'runId'> {
+interface GameStateV5 extends Omit<GameState, 'runId' | 'codex'> {
     version: 5;
+}
+
+/** GameState shape before v7 (before Phase 73 codex slice was added). */
+interface GameStateV6 extends Omit<GameState, 'codex'> {
+    version: 6;
 }
 
 /**
@@ -79,11 +84,25 @@ function migrateV4toV5(v4: GameStateV4): GameStateV5 {
  * (16 hex chars = 64 bits of entropy) and matches the `/^[0-9a-f]{16}$/`
  * shape `generateRunId` produces for fresh saves.
  */
-function migrateV5toV6(v5: GameStateV5): GameState {
+function migrateV5toV6(v5: GameStateV5): GameStateV6 {
     return {
         ...v5,
         version: 6,
         runId: generateRunId(() => getRng().random()),
+    };
+}
+
+/**
+ * Migrate from v6 to v7 (Phase 73 — closes GH#65 ask 3): add the required
+ * `codex: CodexState` slice defaulting to `{ unlockedEntries: [] }`. Legacy
+ * v6 saves have no codex tracking; the migration defaults the slice at load
+ * time so consumers always read a non-null value.
+ */
+function migrateV6toV7(v6: GameStateV6): GameState {
+    return {
+        ...v6,
+        version: 7,
+        codex: { unlockedEntries: [] },
     };
 }
 
@@ -135,6 +154,10 @@ export function migrate(
         migrated = migrateV5toV6(migrated as GameStateV5);
     }
 
+    if (fromVersion < 7) {
+        migrated = migrateV6toV7(migrated as GameStateV6);
+    }
+
     return assertGameState(migrated);
 }
 
@@ -158,6 +181,8 @@ function assertGameState(raw: unknown): GameState {
         || typeof r.philosophicalAlignment.epistemology !== 'number'
         || typeof r.philosophicalAlignment.outlook !== 'number'
         || typeof r.philosophicalAlignment.scope !== 'number'
+        || r.codex == null
+        || !Array.isArray(r.codex.unlockedEntries)
     ) {
         throw new Error('migrate: payload missing required GameState fields.');
     }

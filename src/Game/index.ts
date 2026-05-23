@@ -10,7 +10,7 @@ export {
 export type { GameStore, GameActions, StoreApi, CombatEndReport } from './store';
 
 export { createNewGameState, GAME_STATE_VERSION, gameReducer } from './game.reducer';
-export type { GameState } from './types';
+export type { GameState, CodexState } from './types';
 
 export { generateRunId, STARTING_REGION } from './run-loop';
 

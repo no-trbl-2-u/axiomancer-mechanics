@@ -163,6 +163,25 @@ export interface LootTableEntry {
 }
 
 /**
+ * Phase 73 — per-foe codex / journal entry unlocked when the player
+ * befriends this enemy (`outcome === 'friendship'`). The engine
+ * auto-appends `journalEntry.id` to `state.codex.unlockedEntries`
+ * (de-duped) and surfaces `{ id, title }` on
+ * `CombatEndReport.friendshipReward.codexEntryUnlocked`; the consumer
+ * (mobile Codex tab, future CLI surface) looks up the entry body via
+ * the source `Enemy` (or a future `CodexLibrary` registry). Closes
+ * GH#65 ask 3.
+ */
+export interface CodexEntry {
+    /** Stable id; consumed by Codex-tab UI as the row key. */
+    id: string;
+    /** Short label rendered on the unlock toast + Codex row header. */
+    title: string;
+    /** Long-form chronicle prose for the Codex entry body. */
+    body: string;
+}
+
+/**
  * Phase 71 — chronicle-voice prose for the victory final-blow
  * aftermath panel. Three variants; consumer (mobile presenter, CLI,
  * etc.) picks which to render based on the outcome shape (typically
@@ -296,4 +315,13 @@ export interface Enemy {
      * KO shape. Closes GH#65 ask 1.
      */
     causeLines?: CauseLines;
+    /**
+     * Phase 73 — optional per-foe codex / journal entry. Auto-fires
+     * on `outcome === 'friendship'`: the engine appends the entry's
+     * id to `state.codex.unlockedEntries` (de-duped) and surfaces
+     * `{ id, title }` on
+     * `CombatEndReport.friendshipReward.codexEntryUnlocked`. See
+     * {@link CodexEntry}. Closes GH#65 ask 3.
+     */
+    journalEntry?: CodexEntry;
 }

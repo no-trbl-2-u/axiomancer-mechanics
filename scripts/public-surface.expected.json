@@ -261,6 +261,8 @@
     "Character",
     "CharacterPreset",
     "CharacterPresetEquipmentEntry",
+    "CodexEntry",
+    "CodexState",
     "CombatAction",
     "CombatActionName",
     "CombatActor",

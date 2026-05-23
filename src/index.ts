@@ -35,6 +35,7 @@ export type {
     LootRng,
     FriendshipReward, BefriendabilityConfig,
     FinalBlowLines, PactLines, CauseLines,
+    CodexEntry,
 } from './Enemy';
 export {
     EnemyLibrary, EnemiesByMap, ENEMY_REGISTRY,
@@ -156,6 +157,7 @@ export type {
     GameState, GameStore, GameActions, PersistenceAdapter, StoreApi,
     GameAction, GameActionOf,
     GameEvent, GameEventEmitter, GameEventHandler, GameEventType,
+    CodexState,
 } from './Game';
 
 // Legacy combat-action constants (use Action type instead).
