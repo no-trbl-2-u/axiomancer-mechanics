@@ -122,6 +122,7 @@ reducer.
 | Function | Description |
 |----------|-------------|
 | `dropItem(template, rarity?, rng?)` | Roll a fresh Equipment from a template + rarity. |
+| `previewTemplateAtRarity(templateId, rarity, playerLevel, rng?)` | Phase 75 — UI-tier preview wrapper around `dropItem`. Returns `Equipment \| undefined` (soft-errors instead of throwing). Default `rng = () => 0.5` for deterministic per-tuple previews. See § "Previewing rolled mods" above. |
 | `rollModifiers(template, rarity, rng?)` | Roll the modifier slots a rarity tier allows. |
 | `resolveModifiers(modifiers)` | Collapse a `RolledModifier[]` into the aggregated stat payload. |
 | `addItem` / `removeItem` / `stackItem` / `useConsumable` | Inventory reducers on a `Character`. |
