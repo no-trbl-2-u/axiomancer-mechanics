@@ -17,16 +17,11 @@
 
 ## Pending
 
-### [LOW] spec.md 6-month horizon section silent on GH#65 mobile aftermath trio (Phase 71/72/73)
-- pass: critique-38 (commit 877930c)
-- area: docs
-- observation: spec.md "6-month horizon" section (lines 47-65) acknowledges npm publishing + Tier 2/3 skill shipping + fishing-village 25-node expansion + Continent 2 partial + story-content NPC progress, but doesn't mention the GH#65 mobile aftermath trio (Phase 71 per-foe narrative prose + Phase 72 run-loop semantics + Phase 73 Codex journal-entry surface). These are player-facing shipping milestones that close mobile-consumer gaps; they merit an entry alongside the existing parenthetical progress callouts (e.g. the story-content NPC line already cites "Phase 42-46/58/63"). Same shape as the existing partial-completion bullets — fold-in not a structural rewrite.
-- evidence: spec.md:47-65 (no `aftermath` / `journal` / `codex` / `Phase 7[1-3]` mention); compare to README.md + bearings.md which cite all three explicitly
-- suggested_fix: Append a bullet to the horizon section in the established parenthetical-progress format: "Mobile aftermath & codex surfaces. *(Complete — Phases 71/72/73 shipped per-foe narrative prose + run-loop reset semantics + Codex journal-entry surface; closes GH#65.)*". 2-line edit.
-
 ---
 
 ## Done
+
+- [x] **[LOW] spec.md 6-month horizon section silent on GH#65 mobile aftermath trio (Phase 71/72/73)** — resolved at iterate commit `6afc95e` (2026-05-23). Appended a strikethrough-shipped bullet in the established parenthetical-progress format naming all three sub-surfaces (Phase 71 per-foe narrative prose + Phase 72 run-loop semantics + Phase 73 Codex slice with each phase's headline surface phrases) + the GH#65 closure callout + the post-engine-release mobile-callsite-cleanup note (lives in axiomancer-mobile). Spec-level alignment with v0.10.3 actual shipping state. 698/698 tests stay green; pure docs change. Impact 3 × Ease 9 / 10 = 2.7. Source: critique-38 row 1 (commit `877930c`).
 
 - [x] **[tracking] [LOW] No walkthrough exercises Phase 71 aftermath prose + Phase 73 codex unlock** — resolved at iterate 2026-05-23 (this commit) as a tracking-row drain. The finding is genuinely correct (no walkthrough in `automation/scripts/walkthroughs/` exercises the GH#65 trio's friendship-aftermath path end-to-end; Phase 64's `endgame-loadout` is the closest precedent) but the suggested_fix path (a) — "extend the existing Walkthrough catalog expansion PHASE_CANDIDATES.md row to include a Phase 71/73 friendship-aftermath walkthrough scope" — is candidate-extension at oversight rather than iterate-shippable. Path (b) (single-walkthrough iterate-tier follow-up) was considered and rejected because new walkthroughs need the Phase 26 walkthrough-grader infrastructure scaffolding (.json + .goal.md pair + agent-grader pass + automation/scripts/walkthroughs/README.md inventory row) which is phase-tier scope. Row moved Pending → Done with the candidate citation per the established `[tracking]` precedent (GH#64 / GH#65 / `previewTemplateAtRarity` MED). At the next oversight, the user can pick path (a) to extend the existing "Walkthrough catalog expansion — Phase 65/66/68 coverage" candidate (`plan/PHASE_CANDIDATES.md` Pending) to also include the Phase 71/72/73 surfaces; the CLI run-loop + Codex integration candidate (also Pending, filed at expand-20) naturally pairs with this since it ships a codex-unlock walkthrough as part of its Unit 3 already. Source: critique-37 row 5 (commit `4f83854`).
 
