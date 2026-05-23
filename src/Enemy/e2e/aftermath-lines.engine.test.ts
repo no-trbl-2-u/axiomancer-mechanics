@@ -50,4 +50,36 @@ describe('Phase 71 — per-foe aftermath narrative lines', () => {
         expect(TidepoolCrab.pactLines).toBeUndefined();
         expect(TidepoolCrab.causeLines).toBeUndefined();
     });
+
+    // Phase 71 D4 — engine does NO variant selection between the three
+    // slots. The variant pick lives entirely on the consumer (mobile
+    // presenter, CLI, etc.) based on the outcome shape. This case
+    // documents the intended consumption pattern with an inline
+    // mock-consumer helper so future engine-side helper proposals have
+    // a concrete sketch to lean on (e.g. if multiple consumers converge
+    // on the same selection heuristic, the engine could ship a
+    // `pickFinalBlowVariant(report, enemy)` helper — see Phase 71
+    // brief Follow-ups).
+    it('consumer-side variant selection — mock pickFinalBlowVariant pattern', () => {
+        // Toy consumer-side selection heuristic: damage-tier shape →
+        // variant key. Brutal = overkill burst (damage ≥ 2× cap);
+        // ironic = mirror / self-inflicted (sourceId === enemy.id);
+        // quiet = exact-cap default.
+        const pickFinalBlowVariant = (report: {
+            overkillRatio?: number;
+            sourceIsSelf?: boolean;
+        }): 'brutal' | 'quiet' | 'ironic' => {
+            if (report.sourceIsSelf) return 'ironic';
+            if (report.overkillRatio !== undefined && report.overkillRatio >= 2) return 'brutal';
+            return 'quiet';
+        };
+
+        // Drive each variant against MournfulGull's authored lines.
+        expect(MournfulGull.finalBlowLines![pickFinalBlowVariant({ overkillRatio: 3 })])
+            .toMatch(/half-syllable/); // brutal
+        expect(MournfulGull.finalBlowLines![pickFinalBlowVariant({ overkillRatio: 1 })])
+            .toMatch(/lands once/);    // quiet
+        expect(MournfulGull.finalBlowLines![pickFinalBlowVariant({ sourceIsSelf: true })])
+            .toMatch(/listener/);      // ironic
+    });
 });
