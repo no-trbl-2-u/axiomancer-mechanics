@@ -63,6 +63,19 @@ a React Native UI can wrap without pulling in any additional game-logic:
   release under the autonomous-loop era was `0.10.0` (2026-05-19);
   current is `0.10.3` (2026-05-20). See `CHANGELOG.md` + `RELEASING.md`
   for the per-tag history and the manual publish flow.
+- ~~Mobile aftermath + codex surfaces.~~ **Shipped across Phases
+  71/72/73 (closes GH#65).** Per-foe narrative prose
+  (`finalBlowLines` / `pactLines` / `causeLines` on Enemy — Phase 71);
+  run-loop semantics (`store.resetRun({ keepCharacter })` + required
+  `GameState.runId` + `STARTING_REGION` + `GAME_STATE_VERSION` bumped
+  5 → 6 with `migrateV5toV6` — Phase 72); Codex / journal-entry
+  surface (`GameState.codex: CodexState` slice + per-foe
+  `Enemy.journalEntry?: CodexEntry` + `store.unlockCodexEntry` +
+  auto-firing wire on friendship outcomes + `GAME_STATE_VERSION`
+  bumped 6 → 7 with `migrateV6toV7` — Phase 73). Mobile consumer
+  callsite cleanup (drop `derive*Phrase` fallback helpers; replace
+  BEGIN AGAIN full-heal band-aid; mount NEW ENTRY card) is
+  post-engine-release and lives in `axiomancer-mobile`.
 
 ## Stack
 
