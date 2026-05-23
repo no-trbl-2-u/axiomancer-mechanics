@@ -22,7 +22,7 @@ canonical entry points. Cross-link to the per-module doc for depth.
 | **Combat** | `resolveCombatRound`, per-phase split (`Combat/phases/*`), stat accessors, advantage / crit / friendship | 9, 15, 32, 36, 38 | [combat.md](./combat.md) |
 | **Effects** | `applyEffect`, Tier 1-3 procs, `statModifiers` + intensity scaling, fallacy payloads | 1, 3, 38, 44, 48 | [effects.md](./effects.md) |
 | **Enemy** | `createEnemy`, AI strategies + outlook-bias (Phase 45), enemy-skill caster path (Phase 49), per-enemy alignment + `friendshipReward` (+ Phase 69 `alignmentDelta`) + Phase 68 `BefriendabilityConfig` | 7, 45, 49, 57, 60, 62, 68, 69 | [enemy.md](./enemy.md) |
-| **Game** | `createGameStore`, save/load + migrators (`GAME_STATE_VERSION` 5), event surface, autosave throttling, persistence adapters | 9, 11, 12, 21, 35, 38, 50, 51, 55 | [gameloop.md](./gameloop.md) |
+| **Game** | `createGameStore`, save/load + migrators (`GAME_STATE_VERSION` 7), event surface, autosave throttling, persistence adapters, run-loop semantics (`resetRun` + `runId`), Codex slice | 9, 11, 12, 21, 35, 38, 50, 51, 55, 72, 73 | [gameloop.md](./gameloop.md) |
 | **Items** | `addItem` / shop reducers (`buyItem`/`sellItem`/`defaultSellPrice` — Phase 37), set items engine (Phase 54) | 5, 5b, 37, 54 | [items.md](./items.md), [equipment.md](./equipment.md) |
 | **NPCs** | `getDialogueNode` + `visibleChoices`, alignment gates (Phase 46), tree-id observer cache (Phase 63) | 14, 22, 46, 63 | [npcs.md](./npcs.md) |
 | **Philosophy** | 3-axis alignment cube + 27-cell library, `alignmentDelta` authoring, fallacies-as-spells (Phase 44), enemy alignment + AI bias (Phase 45), alignment-gated content (Phase 46) | 42-46 | [philosophy.md](./philosophy.md) |
@@ -179,10 +179,13 @@ for the full layout.
 
 `store.save()` writes the current `GameState` (Phase 51 throttled to
 durable actions only — `COMBAT_ROUND`, `LEVEL_UP`, `END_COMBAT`,
-`MOVE_TO_NODE`, `APPLY_DIALOGUE`, `SAVE_GAME`). `store.load()`
+`MOVE_TO_NODE`, `APPLY_DIALOGUE`, `SAVE_GAME`; Phase 72 added
+`RESET_RUN`; Phase 73 added `UNLOCK_CODEX_ENTRY`). `store.load()`
 restores via the configured `PersistenceAdapter` + `migrate()` ladder
-(`GAME_STATE_VERSION = 5`; `migrateV4toV5` defaults
-`philosophicalAlignment` to `{0,0,0}`).
+(`GAME_STATE_VERSION = 7`; `migrateV4toV5` defaults
+`philosophicalAlignment` to `{0,0,0}`; `migrateV5toV6` defaults
+`runId` via `generateRunId(() => getRng().random())`; `migrateV6toV7`
+defaults `codex` to `{ unlockedEntries: [] }`).
 
 For Node consumers, `'axiomancer-mechanics/node'` exports
 `createNodeAdapter(filePath)` to persist to a JSON file.

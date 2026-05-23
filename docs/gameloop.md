@@ -10,7 +10,8 @@
 
 ```ts
 interface GameState {
-  version: number;                   // GAME_STATE_VERSION (current: 5)
+  version: number;                   // GAME_STATE_VERSION (current: 7)
+  runId: string;                     // Phase 72 — UUID per run; bumped by resetRun
   player: Character;
   world: WorldState;
   combat: CombatState | null;        // null when out of combat
@@ -20,6 +21,8 @@ interface GameState {
   moralMeter: number;                // Spec 10 — clamped to [-100, +100]
   rngState: number;                  // Spec 11 — LCG seed snapshot
   philosophicalAlignment: PhilosophicalAlignment;  // Phase 42 — 3-axis cube
+  lastSeenAlignmentCells?: Record<string, string>; // Phase 63 — observer cache
+  codex: CodexState;                 // Phase 73 — unlocked journal entries
 }
 ```
 
