@@ -26,7 +26,7 @@ documents in [`docs/effects/`](./effects/).
 
 ## Audit summary (Phase 79)
 
-Audit shipped at Phase 79 (commit `<this-commit>` 2026-05-24) walked
+Audit shipped at Phase 79 (commit `3d213bd` 2026-05-24) walked
 all 88 effects (40 buffs + 48 debuffs) against four axes: per-effect
 test coverage, doc coverage, spec acceptance, and engine resolution
 shape. Full per-tier / per-category verdict tables in

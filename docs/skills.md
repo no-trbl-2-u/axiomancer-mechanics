@@ -161,7 +161,7 @@ the snake_case effect IDs (`tier1_body_attack`, `debuff_bleed`, …).
 
 ### Audit summary (Phase 78)
 
-Audit shipped at Phase 78 (commit `<this-commit>` 2026-05-24) walked
+Audit shipped at Phase 78 (commit `44d3827` 2026-05-24) walked
 every skill in `src/Skills/skill.library.ts` (21 entries) against four
 axes: per-skill test coverage, doc coverage, spec acceptance alignment,
 engine resolution shape. Full per-skill verdict table in
