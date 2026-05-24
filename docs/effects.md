@@ -72,9 +72,10 @@ D2 (caster-side variance is not target-resist). The damage-side of
 direction (a) ("damage rolls separately + applies resistance") is
 **deferred to a follow-up phase** per Phase 80 D1 — `calculateSkillDamage`
 stays deterministic for now; the damage-resist primitive lives in a
-new Pending candidate. `effect-resisted` / `effect-rebounded`
-SkillEvent variants remain in the discriminated union as dead-code
-emitters; Phase 84 (UX scrub) prunes them. The revisit-if-unbalanced
+new Pending candidate. Phase 84 removed the dead-code
+`effect-rebounded` variant and renamed `effect-resisted` to
+`buff-fumbled` (only fires on Tier 2 buff caster fumble).
+The revisit-if-unbalanced
 caveat lives at `plan/PHASE_CANDIDATES.md` Promoted Phase 80 row +
 the brief at `plan/phases/phase_80_skills_always_land_pure_split.md`.
 
@@ -119,26 +120,15 @@ Each effect carries two resist fields (copied onto the `ActiveEffect` for fast l
 | Natural 20 | Crit focus — buff applies at **2× intensity**. |
 | Any other | Auto-succeeds.                                  |
 
-### Tier 2 — Debuff (target rolls to resist)
+### Tier 2 — Debuff (always lands)
 
-```
-DR   = effect.resistDR + attacker.baseStats.heart + equipmentBonus
-Roll = d20 + target.baseStats[resistedBy]
-```
+Post-Phase-80: no target-resist roll. No rebound. No overwhelmed.
+The debuff lands unconditionally at its authored intensity + duration.
 
-| Result         | Outcome                                                              |
-|----------------|----------------------------------------------------------------------|
-| Natural 20     | Rebound — debuff bounces to the **attacker** at **2× intensity**.   |
-| Natural 1      | Overwhelmed — effect lands at **2× duration**.                       |
-| Roll ≥ DR      | Resisted — no effect.                                                |
-| Roll < DR      | Lands normally.                                                      |
+### Tier 3 (always lands)
 
-### Tier 3
-
-| Result     | Outcome                   |
-|------------|---------------------------|
-| Natural 20 | Repelled (miracle).       |
-| Any other  | Inescapable — always lands. |
+Post-Phase-80: no Nat-20 escape. Inescapable — always lands at
+authored intensity + duration.
 
 ---
 

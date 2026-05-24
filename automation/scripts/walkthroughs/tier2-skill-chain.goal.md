@@ -76,10 +76,11 @@ event stream):**
   indicate a regression on the two-effect compound application
   path (the Phase 78 MED row was filed exactly to surface this
   invariant).
-- An `effect-resisted` event fires for either effect — would
-  indicate Phase 80's always-land contract regressed; the
-  effect-resisted SkillEvent variant should be dead-code emitter
-  per Phase 80 D5 + Phase 84 prunes it later.
+- A `buff-fumbled` event fires for either effect — would
+  indicate a regression; post-Phase-80 debuffs always land so
+  `buff-fumbled` should only fire on Tier 2 buff caster fumble
+  (Phase 84 renamed `effect-resisted` → `buff-fumbled` and removed
+  the dead `effect-rebounded` variant).
 
 **Diagnostic notes for the agent:**
 

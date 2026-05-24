@@ -20,14 +20,6 @@
 
 ## Pending
 
-### [HIGH] docs/combat.md "Effect Resistance Rules" table is factually wrong post-Phase-80
-- pass: critique-42 (commit `3155e03`)
-- area: docs
-- observation: `docs/combat.md:159-169` carries the section heading "Effect Resistance Rules (`resolveEffectApplication`)" with a per-tier table describing Tier 2 Debuff as "Target rolls d20 + resistStat vs DR = resistDR + attackerHeartBonus + equipBonus. Natural 20 = rebound … Natural 1 = overwhelmed … Total ≥ DR = resisted" and Tier 3 as "Only natural 20 repels it." Phase 80 (commit `3155e03`) removed the Tier 2 debuff target-resist roll entirely + removed the Tier 3 Nat-20 escape; the docs/combat.md table describes a behaviour the engine no longer implements. The DR formula + resist-stat bullets under the table (lines 168-169) are similarly stale (DR is no longer used on the debuff/Tier 3 path). docs/combat.md is a front-door reader doc; mobile / external consumers reading the resist rules will be misled.
-- evidence: `docs/combat.md:159-169` (the per-tier table + DR formula). `docs/combat.md:142` also mentions `resolveEffectApplication` in the "Application path" paragraph — Tier 1 auto-apply phrasing still correct; "Tier 2 / 3 resist contest, rebound, crit-resist" phrasing is stale. `docs/combat.md:383` (Combat Reducer API table) row "Full tier-based resist logic" is also stale.
-- suggested_fix: Rewrite the "Effect Resistance Rules" section to reflect the post-Phase-80 contract: Tier 1 unchanged (auto-applies); Tier 2 Buff caster d20 fumble/crit (KEPT per Phase 79 D8); Tier 2 Debuff **always lands** (no target-resist roll; no Nat-20 rebound; no Nat-1 overwhelmed); Tier 3 **always lands** (no Nat-20 escape). Update line 142 prose + line 383 API table row in the same commit. Cross-link to `docs/effects.md` "Phase 80 status (shipped)" subsection (line 33-area) for context. Pure docs change; expected to drain in a single iterate tick.
-- source: critique
-
 ### [MED] `<this-commit>` placeholder strings never replaced post-ship across docs + CRITIQUE rows
 - pass: critique-42 (commit `3155e03`)
 - area: docs / operations
@@ -73,6 +65,8 @@
 ---
 
 ## Done
+
+- [x] **[HIGH] docs/combat.md "Effect Resistance Rules" table is factually wrong post-Phase-80** — resolved at Phase 84 (this commit). Section heading renamed "Effect Application Rules"; Tier 2 Debuff row rewritten to "Always lands" with Phase 80 citation; Tier 3 row rewritten; DR formula + resist-stat bullets removed; line 142 application-path phrasing + line 382 API table row updated. Also `docs/effects.md` Tier 2 Debuff + Tier 3 subsections rewritten. Source: critique-42 (commit `3155e03`).
 
 - [x] **[MED] Tier 2 debuff resolution path: 28 of 43 effects uncovered by direct id reference (load-bearing Phase 80 surface)** — resolved at Phase 83 (this commit). Representative always-land coverage shipped in `src/Combat/e2e/phase83-tier2-debuff-categories.engine.test.ts` (5 categories × 3 d20 values = 15 parameterized cases asserting Tier 2 debuffs always land with no roll, no rebound under any legacy d20 value). Full 28-effect per-effect coverage deferred to the 5 Phase 79 LOW aggregate rows (iterate drains them category-by-category). Source: Phase 79 audit.
 

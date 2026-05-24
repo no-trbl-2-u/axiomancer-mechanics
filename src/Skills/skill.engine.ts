@@ -273,13 +273,9 @@ export type SkillEvent =
         appliedTo: 'self' | 'enemy';
         effect: Effect;
         message: string }
-    | { kind: 'effect-resisted';
+    | { kind: 'buff-fumbled';
         skillId: string;
         appliedTo: 'self' | 'enemy';
-        effect: Effect;
-        message: string }
-    | { kind: 'effect-rebounded';
-        skillId: string;
         effect: Effect;
         message: string }
     | { kind: 'buff-stripped';
@@ -603,27 +599,9 @@ function applySkillEffect(
         };
     };
 
-    if (result.rebounded && result.activeEffect) {
-        const reboundIntensity = result.activeEffect.intensity ?? intensityOverride ?? 1;
-        const reboundDuration  = result.activeEffect.remainingDuration ?? durationOverride ?? effect.duration;
-        // Rebound always lands on the caster (the side that originated the skill).
-        const reboundedEffects = applyEffect(
-            caster.effects, effect, round,
-            { ...buildApplyOptions(reboundIntensity, reboundDuration), sourceId: caster.id },
-        );
-        events.push({
-            kind: 'effect-rebounded', skillId: skill.id, effect, message: result.message,
-        });
-        return {
-            caster: { ...caster, effects: reboundedEffects.activeEffects } as Combatant,
-            target,
-            events,
-        };
-    }
-
     if (!result.success) {
         events.push({
-            kind: 'effect-resisted', skillId: skill.id,
+            kind: 'buff-fumbled', skillId: skill.id,
             appliedTo: targetIsSelf ? 'self' : 'enemy',
             effect, message: result.message,
         });

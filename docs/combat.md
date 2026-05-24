@@ -139,7 +139,7 @@ Clamped to [0, 1].
 
 **Fumble (nat 1 attack roll)** — applies the cell's `fumbleEffectId` to the actor as a self-debuff and skips other procs for that cell.
 
-**Application path** — procs hand off to `applyEffect` (to materialise the ActiveEffect with the right intensity / duration) and then `resolveEffectApplication` (Tier 2 / 3 resist contest, rebound, crit-resist). Tier 1 procs auto-apply via `applyEffect` alone.
+**Application path** — procs hand off to `applyEffect` (to materialise the ActiveEffect with the right intensity / duration) and then `resolveEffectApplication` (Tier 2 buff caster fumble/crit; Tier 2 debuff + Tier 3 always land post-Phase-80). Tier 1 procs auto-apply via `applyEffect` alone.
 
 **Default proc matrix:**
 
@@ -156,17 +156,16 @@ Clamped to [0, 1].
 
 **Switching (Q5)** — out of scope for this spec. The skill engine (Spec 04) will hook switching into a different effect pool; basic procs do not currently apply a switching multiplier.
 
-## Effect Resistance Rules (`resolveEffectApplication`)
+## Effect Application Rules (`resolveEffectApplication`)
 
 | Tier | Rule |
 |------|------|
 | **Tier 1** | Auto-applies. No roll made. |
-| **Tier 2 Buff** | Only natural 1 (fumble) stops it. Natural 20 = crit focus → 2× intensity. |
-| **Tier 2 Debuff** | Target rolls `d20 + resistStat` vs `DR = resistDR + attackerHeartBonus + equipBonus`. Natural 20 = rebound (effect bounces to attacker at 2× intensity). Natural 1 = overwhelmed (lands at 2× duration). Total ≥ DR = resisted. |
-| **Tier 3** | Only natural 20 repels it. Everything else lands. |
+| **Tier 2 Buff** | Caster d20: natural 1 = fumble (buff fails, `buff-fumbled` event). Natural 20 = crit focus → 2× intensity. Any other = auto-succeeds. |
+| **Tier 2 Debuff** | **Always lands.** No target-resist roll. No rebound. No overwhelmed. (Phase 80 — direction (a) pure split.) |
+| **Tier 3** | **Always lands.** Inescapable. (Phase 80 — Nat-20 escape removed.) |
 
-DR formula: `effect.resistDR + attacker.baseStats.heart + equipmentBonus`
-Resist stat: `target.baseStats[resistedBy]` (via `getResistStat()` in `Combat/stats.ts`).
+See `docs/effects.md` for the full per-tier breakdown and stacking rules.
 
 ## Friendship Path
 
@@ -380,7 +379,7 @@ round-resolution entry point used by every UI client.
 | `selectCritDamage(base, reduction, bonus)` | Phase 32 — returns `{ style, damage }` for the crit auto-selection in isolation, useful for tests / future damage previews. |
 | `applyDamage(entity, damage)` | Reduces HP (clamps to 0) |
 | `heal(entity, amount)` (alias `healCharacter`) | Restores HP (clamps to max) |
-| `resolveEffectApplication(target, effect, type, heart, equip)` | Full tier-based resist logic |
+| `resolveEffectApplication(target, effect, type, heart, equip)` | Effect application (Tier 2 buff fumble/crit; Tier 2 debuff + Tier 3 always land) |
 | `tickAllEffects(target)` | Decrements all effect durations |
 | `getStudyMarkIntensity(target)` | Mind mark bonus for damage |
 | `getThornsReflect(bearer)` | Thorns reflect damage total |

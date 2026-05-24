@@ -19,6 +19,17 @@ shift** (Phase 80 direction (a) pure split, with Phase 78 + 79
 audit pre-work).
 
 ### Changed
+- **Phase 84 — Skill "fizzle" event + UX scrub post-Phase-80.**
+  `SkillEvent` discriminated union cleaned up: dead-code
+  `effect-rebounded` variant removed (zero emit path post-Phase-80);
+  `effect-resisted` renamed to `buff-fumbled` (only fires on Tier 2
+  buff caster fumble). `SkillPhaseEvent` mirror updated. Dead rebound
+  emit block removed from `applySkillEffect`. Docs reframed
+  (combat.md Effect Resistance Rules rewritten, effects.md Tier 2/3
+  tables updated). **BREAKING:** consumers pattern-matching on
+  `SkillEvent.kind === 'effect-resisted'` or `'effect-rebounded'`
+  must update.
+
 - **Phase 80 — Skills always-land effects (direction (a) pure split).**
   `src/Combat/resist.ts:resolveEffectApplication` rewritten so Tier 2
   debuffs + Tier 3 effects **always land**. Target-resist roll

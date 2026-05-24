@@ -724,12 +724,9 @@ function toRoundEvent(ev: SkillEvent): SkillPhaseEvent {
         case 'effect-applied':
             return { phase: 'skill', kind: 'effect-applied', skillId: ev.skillId,
                      appliedTo: ev.appliedTo, effect: ev.effect, message: ev.message };
-        case 'effect-resisted':
-            return { phase: 'skill', kind: 'effect-resisted', skillId: ev.skillId,
+        case 'buff-fumbled':
+            return { phase: 'skill', kind: 'buff-fumbled', skillId: ev.skillId,
                      appliedTo: ev.appliedTo, effect: ev.effect, message: ev.message };
-        case 'effect-rebounded':
-            return { phase: 'skill', kind: 'effect-rebounded', skillId: ev.skillId,
-                     effect: ev.effect, message: ev.message };
         case 'buff-stripped':
             return { phase: 'skill', kind: 'buff-stripped', skillId: ev.skillId,
                      target: ev.target, effect: ev.effect };

@@ -131,11 +131,9 @@ export type SkillPhaseEvent =
     | { phase: 'skill'; kind: 'effect-applied';
         skillId: string; appliedTo: 'self' | 'enemy';
         effect: Effect; message: string }
-    | { phase: 'skill'; kind: 'effect-resisted';
+    | { phase: 'skill'; kind: 'buff-fumbled';
         skillId: string; appliedTo: 'self' | 'enemy';
         effect: Effect; message: string }
-    | { phase: 'skill'; kind: 'effect-rebounded';
-        skillId: string; effect: Effect; message: string }
     | { phase: 'skill'; kind: 'buff-stripped';
         skillId: string; target: 'self' | 'enemy';
         effect: Effect | null }
