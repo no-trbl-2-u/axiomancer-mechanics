@@ -358,37 +358,8 @@ export function applyProcOutcome(
         return { actorEffects, opponentEffects: finalised, appliedTo, result: resolveResult };
     }
 
-    // Resist or rebound: remove the staged effect from the target.
+    // Fumble: revert the staged effect from the target.
     const reverted = stagedEffects.filter(ae => ae.effectId !== effect.id);
-
-    if (resolveResult.rebounded && resolveResult.activeEffect) {
-        // Rebound debuff onto the attacker. Same logic, opposite target.
-        const reboundTarget = appliedTo === 'opponent' ? 'self' : 'opponent';
-        const reboundEffects = reboundTarget === 'self' ? actorEffects : opponentEffects;
-        const { activeEffects: withRebound } = applyEffect(
-            reboundEffects, effect, round,
-            {
-                intensityDelta: resolveResult.activeEffect.intensity ?? intensityDelta,
-                durationMode: 'additive',
-                durationDelta,
-                sourceId: actor.id,
-            },
-        );
-        if (reboundTarget === 'self') {
-            return {
-                actorEffects: withRebound,
-                opponentEffects: appliedTo === 'opponent' ? reverted : opponentEffects,
-                appliedTo: reboundTarget,
-                result: resolveResult,
-            };
-        }
-        return {
-            actorEffects: appliedTo === 'self' ? reverted : actorEffects,
-            opponentEffects: withRebound,
-            appliedTo: reboundTarget,
-            result: resolveResult,
-        };
-    }
 
     if (appliedTo === 'self') {
         return { actorEffects: reverted, opponentEffects, appliedTo, result: resolveResult };
