@@ -62,13 +62,20 @@ Enemy:      createEnemy, Enemy, EnemyLogic, decideEnemyAction, randomLogic,
             CodexEntry (+ Enemy.journalEntry? — Phase 73 closes GH#65
             ask 3; auto-unlocks on friendship outcome)
 Combat:     determineAdvantage, getAttackStat, getDefenseStat, getSaveStat,
-            getResistStat, applyDamage, heal, tickAllEffects, applyRegen,
-            getActiveRollModifier, getThornsReflect, resolveEffectApplication,
-            Stance, Action, CombatState, Combatant
+            getResistStat (deprecated), applyDamage, heal, tickAllEffects,
+            applyRegen, getActiveRollModifier, getThornsReflect,
+            resolveEffectApplication, Stance, Action, CombatState, Combatant
+            (+ Phase 80 always-land: Tier 2 debuff + Tier 3 always land;
+            target-resist roll removed; only Tier 2 buff caster fumble/crit
+            survives. SkillEvent `effect-resisted` renamed `buff-fumbled`,
+            `effect-rebounded` removed — Phase 84)
 Combat reducer: initializeCombat, setPhase, setPlayerStance, setPlayerAction,
                 appendLog, incrementFriendship, endCombat
 Effects:    applyEffect, applyTier1CombatEffect, clearTier1EffectsForStance,
             lookupEffect, Effect, ActiveEffect, EffectTier
+            (+ Phase 80 always-land contract on resolveEffectApplication;
+            EffectApplicationResult.rebounded removed; roll field only
+            surfaces on Tier 2 buff path)
 Skills:     executeSkill, canUseSkill, learnSkill, getAvailableSkills,
             skillLibrary, getSkillById, Skill, SkillEvent
             (+ SkillSynergy, SynergyPredicate types + Skill.synergy?

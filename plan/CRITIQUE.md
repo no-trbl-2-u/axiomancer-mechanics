@@ -22,16 +22,6 @@
 ## Pending
 
 
-### [LOW] README.md + docs/api.md + plan/bearings.md don't reflect Phase 80 yet
-- pass: critique-42 (commit `3155e03`)
-- area: docs
-- observation: Phase 80 shipped a load-bearing mechanic shift (skills always-land effects + Tier 2 debuff target-resist removed + Tier 3 Nat-20 escape removed). `docs/effects.md` was updated with a "Phase 80 status (shipped)" paragraph at the bottom of the Audit summary subsection. But three other front-door reader surfaces don't mention Phase 80: `README.md` (Public API table — Combat row or Effects row), `docs/api.md` (Combat / Effects sections), `plan/bearings.md` (Effects + Combat entries — the plan-side mirror of the public API + per-phase fold-in tradition). `agents.md` "Where to look" table similarly silent on the mechanic shift.
-- evidence: `grep -n "Phase 80\|always-land" README.md docs/api.md plan/bearings.md` returns 0. `grep -n "resist" README.md docs/api.md` shows the existing resist references that should be qualified post-Phase-80.
-- suggested_fix: Single iterate commit folding the Phase 80 mechanic shift into the four front-door surfaces. README.md Combat row gains a "Phase 80 — Tier 2 debuff + Tier 3 always-land contract" phrase; docs/api.md Effects / Combat sections gain a short callout; plan/bearings.md Effects + Combat entries gain a `+ Phase 80 always-land` fold-in line; agents.md "Where to look" table gains a row pointing at docs/effects.md "Phase 80 status" for the mechanic shift. Same shape as the prior Phase 71/72/73/76 fold-in drains.
-- source: critique
-
-
-
 
 
 
@@ -48,6 +38,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] README.md + docs/api.md + plan/bearings.md don't reflect Phase 80 yet** — resolved at iterate (this commit). README.md Combat row gains `(deprecated)` on getResistStat + Phase 80 always-land callout on resolveEffectApplication; Effects row gains Phase 80 contract summary. docs/api.md Combat section gains a Phase 80 always-land bullet. plan/bearings.md Combat + Effects entries gain Phase 80 fold-in lines. Source: critique-42.
 
 - [x] **[LOW] `getResistStat` export has zero in-repo callers post-Phase-80** — resolved at iterate (this commit). Added `@deprecated` JSDoc per the Phase 51 pattern. Removal scheduled at next minor bump after verifying zero external callers. Source: critique-43.
 

@@ -47,6 +47,10 @@ unchanged, but the absolute semver guarantee starts at 1.0.
 - Combat state management (`initializeCombat`, `endCombat`, etc.) — Stable.
 - Combat types (`CombatState`, `Action`, `Stance`, `RoundEvent`,
   `RoundResolution`, etc.) — Stable.
+- **Phase 80 always-land contract:** `resolveEffectApplication` rewritten —
+  Tier 2 debuffs + Tier 3 always land (no target-resist roll); only Tier 2
+  buff caster fumble/crit survives. `EffectApplicationResult.rebounded`
+  removed; `getResistStat` deprecated. See [`effects.md`](./effects.md).
 - **Effect aggregators (iterate `7ee0745`):** `getActiveEffectModifiers`,
   `getEffectiveStats`, `canAct`, `resolveEffectiveAdvantage` — Stable.
   The four Combat-tier aggregators `docs/effects.md` "API at a glance"
