@@ -162,18 +162,15 @@ export interface ActiveEffect {
  *
  * @property success     - True if the effect successfully landed on its intended target.
  * @property activeEffect - The resulting ActiveEffect (if produced).
- *                         For a rebound, this is the version to apply to the ATTACKER.
  * @property message     - Human-readable description for battle logs.
  * @property stackedWith - Previous intensity/duration when reapplied.
- * @property rebounded   - True when a debuff was rebounded by a critical resist.
- * @property roll        - Roll details, present only for tier 2/3 effects.
+ * @property roll        - Roll details, present only for Tier 2 buff effects (caster fumble/crit).
  */
 export interface EffectApplicationResult {
     success: boolean;
     activeEffect?: ActiveEffect;
     message: string;
     stackedWith?: { previousIntensity: number; previousDuration: number };
-    rebounded?: boolean;
     roll?: {
         rolled: number;
         resistStat: number;

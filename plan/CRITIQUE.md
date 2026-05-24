@@ -32,13 +32,6 @@
 
 
 
-### [LOW] `EffectApplicationResult.rebounded` is dead type surface
-- pass: critique-43 (commit `7fada36`)
-- area: types
-- observation: `src/Effects/types.ts:176` defines `rebounded?: boolean` on `EffectApplicationResult`. Post-Phase-80+84+86, no code path sets this field to `true` — the Tier 2 debuff rebound mechanic was removed at Phase 80, and all emit/consume sites that read it were removed at Phase 84 (`skill.engine.ts`) and Phase 86 (`combat-effects.ts`). The field is dead weight on a public type. The JSDoc at `:168` ("True when a debuff was rebounded by a critical resist") describes behaviour that no longer exists.
-- evidence: `src/Effects/types.ts:176`. `grep -rn "rebounded" src/ --include="*.ts"` returns only the type definition + a comment in `resist.ts:24`.
-- suggested_fix: Remove the `rebounded?: boolean` field from `EffectApplicationResult` and the corresponding JSDoc line. This is a minor breaking change (pre-1.0.0 acceptable per RELEASING.md). Single-line iterate.
-- source: critique
 
 ### [LOW] `getResistStat` export has zero in-repo callers post-Phase-80
 - pass: critique-43 (commit `7fada36`)
@@ -48,13 +41,6 @@
 - suggested_fix: Add `/** @deprecated Unused post-Phase-80; scheduled for removal at next minor. */` JSDoc (same pattern as Phase 51's deprecated aliases). Removal at the next minor bump after verifying zero external callers.
 - source: critique
 
-### [LOW] `EffectApplicationResult.roll` JSDoc is partial-stale post-Phase-80
-- pass: critique-43 (commit `7fada36`)
-- area: types
-- observation: `src/Effects/types.ts:169` documents the `roll` field as "present only for tier 2/3 effects". Post-Phase-80, `roll` is only present for **Tier 2 buffs** (the caster fumble/crit path). Tier 2 debuffs and Tier 3 now return `roll: undefined`. The JSDoc misleads consumers into expecting roll data on debuff/Tier-3 results.
-- evidence: `src/Effects/types.ts:169`. `src/Combat/resist.ts:92-101` (Tier 2 debuff path returns no roll); `src/Combat/resist.ts:104-111` (Tier 3 path returns no roll).
-- suggested_fix: One-line edit: "present only for tier 2/3 effects" → "present only for Tier 2 buff effects (caster fumble/crit roll — Tier 2 debuff + Tier 3 always-land without rolling post-Phase-80)". Single-line iterate.
-- source: critique
 
 - **[LOW] Stat-band buffs uncovered (mind/heart attack-up + body/mind/heart defense-up + 3 resistance bands)** — source: Phase 79 audit (commit `3d213bd`). Specifically uncovered: `buff_mind_attack_up`, `buff_heart_attack_up`, `buff_body_defense_up`, `buff_mind_defense_up`, `buff_heart_defense_up`, `buff_resistance_body`, `buff_resistance_mind`, `buff_resistance_heart`, `buff_all_stats_up`, `buff_buff_duration_up`, `buff_status_chance_up`, `buff_cleanse`. All share the `applyStatModifiers` aggregation path (Phase 48 verified clean for the path). **Suggested fix:** one parameterised test in `src/Effects/e2e/` walking the per-aspect stat-band variants; each row asserts the post-`getEffectiveStats` delta matches the band. Single hermetic file, ~12 cases. Score 4 × 7 / 10 = 2.8.
 
@@ -69,6 +55,10 @@
 ---
 
 ## Done
+
+- [x] **[LOW] `EffectApplicationResult.rebounded` is dead type surface** — resolved at iterate (this commit). Removed `rebounded?: boolean` field from `EffectApplicationResult` + JSDoc line. Updated `resist.ts` comment. Minor breaking change (pre-1.0.0 acceptable). Source: critique-43.
+
+- [x] **[LOW] `EffectApplicationResult.roll` JSDoc is partial-stale post-Phase-80** — resolved at iterate (this commit). JSDoc updated: "present only for tier 2/3 effects" → "present only for Tier 2 buff effects (caster fumble/crit)". Source: critique-43.
 
 - [x] **[LOW] Phase 79 MED row's suggested-fix bullet (b) references Phase 80's damage-side** — resolved at iterate (this commit). The underlying MED row was moved to Done at Phase 83; the stale bullet (b) text no longer exists in Pending. No edit needed. Source: critique-42.
 

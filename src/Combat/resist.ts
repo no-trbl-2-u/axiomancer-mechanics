@@ -20,10 +20,9 @@
  * Tier 3 — **Always lands.** No Nat-20 miraculous escape. (Phase 80 change —
  *   uniform always-land across debuff tiers per direction (a).)
  *
- * Pre-Phase-80 behaviour preserved in git history; the `EffectApplicationResult`
- * shape (incl. `roll` / `rebounded` fields) stays unchanged so consumer surfaces
- * (skill.engine.ts, combat-effects.ts) don't churn. The dead-code branches
- * inside those callers (resist, rebound) get pruned at Phase 84 (UX scrub).
+ * Pre-Phase-80 behaviour preserved in git history. Dead-code branches
+ * (resist, rebound) pruned at Phase 84 + Phase 86. The `rebounded` field
+ * removed from `EffectApplicationResult` at this iterate drain.
  *
  * Direction (a)'s damage-side text ("damage rolls separately + applies its
  * own resistance") requires a damage-resist primitive that doesn't exist
