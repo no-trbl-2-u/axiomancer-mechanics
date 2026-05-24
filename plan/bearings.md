@@ -85,7 +85,10 @@ Items:      addItem, removeItem, useConsumable, stackItem, Item (and variants)
             (+ previewTemplateAtRarity — Phase 75 UI-tier wrapper
             around dropItem with soft-error semantics; closes the
             user-jot at b5c8165 for mobile item-library
-            mod-visibility)
+            mod-visibility),
+            (+ previewTemplateAtAllRarities — Phase 76 batch wrapper
+            returning Record<ItemRarity, Equipment | undefined> for
+            UI tooltip / item-detail rarity-strip views)
 Game:       createGameStore, GameState, nullAdapter, persistence adapters
             (+ GameState.lastSeenAlignmentCells? — Phase 63 alignment-observer
             cache, additive optional, no GAME_STATE_VERSION bump),

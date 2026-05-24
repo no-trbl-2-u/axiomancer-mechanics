@@ -13,10 +13,30 @@ deep imports are part of the supported surface.
 ## [unreleased]
 
 Post-`0.11.0` content sweep closing the Phase 71 / 73 follow-up +
-the mobile item-library mod-visibility helper closing the
-oversight-15 user-jot.
+the mobile item-library mod-visibility helpers (single-cell at
+Phase 75 + batch at Phase 76).
 
 ### Added
+- **Phase 76 — `previewTemplateAtAllRarities` batch helper (Phase
+  75 follow-up).** Convenience wrapper around `previewTemplateAtRarity`
+  for UI tooltip / item-detail views that render every-rarity-for-
+  this-template comparison strips. New `previewTemplateAtAllRarities(templateId: string, playerLevel: number, rng?: () => number): Record<ItemRarity, Equipment | undefined>`
+  in `src/Items/item.factory.ts`. Calls `previewTemplateAtRarity`
+  four times internally and zips into a record; each rarity-cell
+  uses the same `rng` so mod values across the rarity strip are
+  stable per seed. Same soft-error + deterministic-rng convention
+  as the Phase 75 single-cell helper (default `rng = () => 0.5`).
+  Unique templates return the unique-rolled Equipment in every cell
+  (Phase 75 D4 soft-coerce — caller may not know the template is
+  unique). Re-exported through `src/Items/index.ts` + top-level
+  barrel (+1 runtime export; fixture 236 → 237; types unchanged at
+  167). Hermetic e2e at `src/Items/e2e/preview-template.engine.test.ts`
+  extended (3 new cases — regular-template happy path; level-too-low
+  yields all-undefined; unique template populates every cell with
+  unique-rolled Equipment). Phase 76 commits: `4c6d54e` (Unit 1 —
+  engine + e2e + barrels + fixture) + Unit 2 (this commit —
+  docs/items + docs/api + README + bearings + CHANGELOG).
+
 - **Phase 75 — `previewTemplateAtRarity` helper (mobile item-library
   mod-visibility).** Closes the user-jot at `b5c8165` (refined at
   oversight-15 `077979e`): mobile UI rendering `equipmentTemplates`

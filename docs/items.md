@@ -76,6 +76,19 @@ Hermetic pin at
 Closes the user-jot at `b5c8165` (refined at oversight-15
 2026-05-23) about mobile item-library mod-visibility.
 
+**Batch helper — Phase 76.** `previewTemplateAtAllRarities(templateId,
+playerLevel, rng?): Record<ItemRarity, Equipment | undefined>` is
+the convenience wrapper around the single-cell helper for UI
+surfaces that render every-rarity-for-this-template comparison
+strips (item-detail tooltips, "Common / Uncommon / Rare / Unique"
+stat-ladder views). Calls `previewTemplateAtRarity` four times
+internally and zips into a record; each rarity-cell uses the same
+`rng` so mod values across the rarity strip are stable per seed.
+Same soft-error semantics as the single-cell helper — `undefined`
+cells signal "this template can't roll at that rarity at this
+level". Unique templates return the unique-rolled Equipment in
+every cell (Phase 75 D4 soft-coerce).
+
 ## Loot factory
 
 The factory is the only sanctioned way to produce a rolled Equipment
@@ -123,6 +136,7 @@ reducer.
 |----------|-------------|
 | `dropItem(template, rarity?, rng?)` | Roll a fresh Equipment from a template + rarity. |
 | `previewTemplateAtRarity(templateId, rarity, playerLevel, rng?)` | Phase 75 — UI-tier preview wrapper around `dropItem`. Returns `Equipment \| undefined` (soft-errors instead of throwing). Default `rng = () => 0.5` for deterministic per-tuple previews. See § "Previewing rolled mods" above. |
+| `previewTemplateAtAllRarities(templateId, playerLevel, rng?)` | Phase 76 — batch wrapper around `previewTemplateAtRarity`. Returns `Record<ItemRarity, Equipment \| undefined>` so UI tooltip / detail views can render the full rarity strip in one call. Same soft-error + deterministic-rng convention as the single-cell helper. |
 | `rollModifiers(template, rarity, rng?)` | Roll the modifier slots a rarity tier allows. |
 | `resolveModifiers(modifiers)` | Collapse a `RolledModifier[]` into the aggregated stat payload. |
 | `addItem` / `removeItem` / `stackItem` / `useConsumable` | Inventory reducers on a `Character`. |

@@ -315,6 +315,12 @@ reality.
   `() => 0.5` for deterministic per-tuple previews. See
   `docs/items.md` § "Previewing rolled mods (library / catalog
   views — Phase 75)".
+- `previewTemplateAtAllRarities(templateId, playerLevel, rng?)` —
+  Beta (Phase 76). Batch wrapper around `previewTemplateAtRarity`
+  returning `Record<ItemRarity, Equipment | undefined>` for UI
+  tooltip / item-detail views rendering the full rarity strip in
+  one call. Same soft-error + deterministic-rng convention as the
+  single-cell helper.
 - Inventory management (`addItem`, `removeItem`, `useConsumable`,
   `stackItem`, `addItemToInventory`, `removeItemFromInventory`) — Stable.
 - Item types (`Item`, `Equipment`, `Consumable`, `Material`,
