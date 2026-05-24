@@ -23,7 +23,8 @@ import fs from 'fs';
 import { parseArgv, prompt, emit, log, logState, setIoMode, setOutputMode, setStateLogPath } from './io';
 
 import { characterPresets, getPresetById, buildCharacterFromPreset } from '../Character';
-import { ENEMY_REGISTRY, type EnemySlug } from '../Enemy/enemy.library';
+import { ENEMY_REGISTRY, EnemyLibrary, type EnemySlug } from '../Enemy/enemy.library';
+import type { CodexEntry } from '../Game/types';
 import { createGameStore } from '../Game/store';
 import { createEventEmitter } from '../Game/events';
 import { nullAdapter } from '../Game/persistence/null.adapter';
@@ -43,11 +44,26 @@ import { getConsumableById } from '../Items/consumable.library';
 import { bucketAxis, getAlignmentCell } from '../Philosophy';
 import { CombatEndReport } from '../Game/store';
 
-type Tab = 'map' | 'combat' | 'journal' | 'skills' | 'inventory' | 'character' | 'debug' | 'save' | 'load' | 'quit';
+type Tab = 'map' | 'combat' | 'journal' | 'skills' | 'codex' | 'inventory' | 'character' | 'debug' | 'reset' | 'save' | 'load' | 'quit';
 
 type GameStoreHandle = ReturnType<typeof createGameStore>;
 
 const skillLookup = (id: string) => getSkillById(id);
+
+// Phase 82 — Codex lookup. Walks EnemyLibrary once at module load to build
+// an id → CodexEntry map. Future dialogue-driven codex entries will need a
+// centralised codexRegistry export on the public barrel; today the
+// Phase-73-only origin (Enemy.journalEntry?) makes this in-CLI walk correct
+// per the brief D2.
+const codexLookup: Map<string, CodexEntry> = (() => {
+    const map = new Map<string, CodexEntry>();
+    for (const enemy of EnemyLibrary) {
+        if (enemy.journalEntry) {
+            map.set(enemy.journalEntry.id, enemy.journalEntry);
+        }
+    }
+    return map;
+})();
 
 async function bootstrapStore(adapter: PersistenceAdapter): Promise<GameStoreHandle> {
     const events = createEventEmitter();
@@ -88,9 +104,11 @@ async function pickTab(canFight: boolean): Promise<Tab> {
         ...(canFight ? [{ name: 'Combat     — resume the active fight', value: 'combat' as Tab }] : []),
         { name: 'Journal    — quests + alignment', value: 'journal' },
         { name: 'Skills     — known + equipped', value: 'skills' },
+        { name: 'Codex      — unlocked journal entries from befriended foes (Phase 73)', value: 'codex' },
         { name: 'Inventory  — items in pack', value: 'inventory' },
         { name: 'Character  — full stats + equipment + effects sheet', value: 'character' },
         { name: 'Debug      — spawn any enemy into combat', value: 'debug' },
+        { name: 'Begin again — reset to starting hearth, full or keep-character (Phase 72)', value: 'reset' },
         { name: 'Save       — write the current state to the save file', value: 'save' },
         { name: 'Load       — restore state from the save file', value: 'load' },
         { name: 'Quit',                                 value: 'quit' },
@@ -389,6 +407,48 @@ function skillsTab(store: GameStoreHandle): void {
     }
 }
 
+function codexTab(store: GameStoreHandle): void {
+    const { codex } = store.getState();
+    log('\n— Codex —');
+    if (codex.unlockedEntries.length === 0) {
+        log('Your codex is empty — befriend a foe with a journal entry to start filling it.');
+        return;
+    }
+    for (const entryId of codex.unlockedEntries) {
+        const entry = codexLookup.get(entryId);
+        if (!entry) {
+            log(`  • ${entryId}  (unknown entry — source may have been removed from the library)`);
+            continue;
+        }
+        log(`  • ${entry.title}`);
+        log(`    ${entry.body}`);
+        log('');
+    }
+}
+
+async function resetTab(store: GameStoreHandle): Promise<void> {
+    const { mode } = await prompt<{ mode: 'full' | 'keep' | 'cancel' }>([
+        {
+            type: 'rawlist',
+            name: 'mode',
+            message: 'Begin again — how?',
+            choices: [
+                { name: 'Full reset — new character + new world', value: 'full' },
+                { name: 'Keep character — fresh world, same character ledger', value: 'keep' },
+                { name: 'Cancel — back to the main menu', value: 'cancel' },
+            ],
+        },
+    ]);
+    if (mode === 'cancel') return;
+    const keepCharacter = mode === 'keep';
+    const before = store.getState();
+    const after = store.getState().resetRun({ keepCharacter });
+    log(`\nBegan again. (keepCharacter: ${keepCharacter})`);
+    log(`Run id     : ${after.runId}`);
+    log(`Hearth node: ${after.world.currentMap.currentNode}`);
+    logState('resetRun', before, after, { keepCharacter });
+}
+
 function inventoryTab(store: GameStoreHandle): void {
     const { inventory } = store.getState().player;
     log('\n— Inventory —');
@@ -641,9 +701,11 @@ async function main(): Promise<void> {
                 case 'combat':    await combatTab(store);                    break;
                 case 'journal':   journalTab(store);                         break;
                 case 'skills':    skillsTab(store);                          break;
+                case 'codex':     codexTab(store);                           break;
                 case 'inventory': inventoryTab(store);                       break;
                 case 'character': await characterTab(store);                 break;
                 case 'debug':     await debugTab(store);                     break;
+                case 'reset':     await resetTab(store);                     break;
                 case 'save':      saveTab(store, snapshotAdapter);           break;
                 case 'load':      loadTab(store, snapshotAdapter);           break;
                 case 'quit':

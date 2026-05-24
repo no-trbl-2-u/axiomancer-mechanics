@@ -331,9 +331,11 @@ all math lives in the resolvers/reducers. Tabs:
 | Combat     | Resumes any active fight. Drives `resolveCombatRound` round by round; offers `attack` / `defend` / `skill` / `item` actions when affordable. |
 | Journal    | Read-only: active / completed quests + flags + alignment stub.   |
 | Skills     | Read-only: known + equipped skills.                              |
+| Codex      | **(Phase 82)** Read-only render of `state.codex.unlockedEntries` (Phase 73). Looks up each entry id via a one-time `EnemyLibrary` walk (`codexLookup` at module load); renders title + body per entry. Empty-state copy: "Your codex is empty — befriend a foe with a journal entry to start filling it." |
 | Inventory  | Read-only listing of carried items.                              |
 | Character  | Full stats + equipment + effects sheet (Phase 26 unit 3). When `availableStatPoints > 0`, prompts the player to spend points into heart / body / mind via `allocateStatPoint` (Phase 29). |
 | Debug      | Spawns any enemy from `ENEMY_REGISTRY` directly into combat (Phase 19). |
+| Begin again | **(Phase 82)** Prompts the player to reset to the starting hearth via `store.resetRun({ keepCharacter })` (Phase 72). Three options: **full reset** (`keepCharacter: false` — new character + new world), **keep character** (`keepCharacter: true` — fresh world, character ledger preserved per the Phase 72 D-decisions: `philosophicalAlignment` + `moralMeter` + `rngState` + `codex` survive), and **cancel** (no-op return). Logs the post-reset `runId` + hearth node id. |
 | Save       | Writes the current state to the `--save-file` snapshot slot via a dedicated `PersistenceAdapter` (Phase 27 unit 2). Decoupled from dispatch-time autosave so Load is a real rollback. |
 | Load       | Restores the snapshot via `setState`. Emits `game:loaded`. |
 | Quit       | Emits `cli:exit` with reason `'quit'` and returns. |

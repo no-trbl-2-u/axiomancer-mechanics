@@ -44,6 +44,31 @@ audit pre-work).
   (effects, `3d213bd`).
 
 ### Added
+- **Phase 82 — CLI run-loop + Codex integration (Phase 72 + 73
+  consumer surfaces).** `src/CLI/game.cli.ts` Tab union extended
+  with `'codex'` + `'reset'`:
+  - **Codex tab** — `codexTab(store)` renders
+    `state.codex.unlockedEntries` (Phase 73). Looks up each entry
+    id via a one-time `codexLookup: Map<string, CodexEntry>` built
+    from `EnemyLibrary` at module load (per brief D2 — no new
+    public-barrel export needed since the only authored codex
+    entries today live on `Enemy.journalEntry?`). Empty-state copy:
+    "Your codex is empty — befriend a foe with a journal entry to
+    start filling it." (verbatim from the candidate).
+  - **Begin again** — `resetTab(store)` prompts full reset / keep
+    character / cancel; dispatches `store.resetRun({ keepCharacter })`
+    (Phase 72); surfaces the post-reset `runId` + hearth node id.
+    `logState('resetRun', ...)` for walkthrough visibility per D6.
+
+  New agent-graded walkthrough at
+  `automation/scripts/walkthroughs/codex-unlock.{json,goal.md}`:
+  Apprentice → fv-11 → fv-14 → fv-15 (MournfulGull) → 5 heart-defends
+  → Codex tab → quit. Grades on either friendship-fires-and-codex-renders
+  OR script-exhausted-with-empty-codex (per brief D3 — MournfulGull's
+  AI is non-deterministic on the both-defend pattern). README inventory
+  + docs/gameloop.md § "game.cli.ts" extended. No public-surface change
+  (fixture stays 237 runtime + 167 types per D8).
+
 - **Phase 81 — Walkthrough catalog expansion (Phase 65 / 80 / 68
   coverage).** Three new walkthrough pairs ship under
   `automation/scripts/walkthroughs/`:
