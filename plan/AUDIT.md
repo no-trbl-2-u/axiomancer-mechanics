@@ -44,7 +44,7 @@
 
 ## Done
 
-- [x] **[VERIFIED-CLEAN] Phase 77 audit — base-action token generation (Spec 04 token economy)** — resolved at iterate commit `<this-commit>` (2026-05-23). User-flagged at oversight-18 with suspected regression: "base attack/defend may not be generating the tokens it was supposed to." Walked the full path end-to-end:
+- [x] **[VERIFIED-CLEAN] Phase 77 audit — base-action token generation (Spec 04 token economy)** — resolved at audit commit `73ab7de` (2026-05-23). User-flagged at oversight-18 with suspected regression: "base attack/defend may not be generating the tokens it was supposed to." Walked the full path end-to-end:
   - **Spec 04 contract** (`specs/04-skills-engine.md:224`): basic actions generate stance tokens `miss=1, hit=3, defend=5`.
   - **Constants** (`src/Game/game-mechanics.constants.ts:90-94`): `RESOURCE_GENERATION = { ATTACK_HIT: 3, ATTACK_MISS: 1, DEFEND: 5 }` — exact match to spec.
   - **Helper** (`src/Skills/skill.engine.ts:58-75`): `generateBasicActionResources(resources, stance, outcome, equipment?)` reads the constants + adds the amount to the matching stance + folds equipment generation bonuses on top (Spec 05 Q10 / Phase 50/54).
