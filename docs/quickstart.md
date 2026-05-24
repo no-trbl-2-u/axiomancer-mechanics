@@ -243,7 +243,21 @@ npm run verify:agent
 
 ---
 
-## 6. Where to look when you want depth
+## 6. Per-module quickstarts
+
+Focused guides with runnable code samples for each major module:
+
+| Module | Quickstart | Covers |
+|--------|-----------|--------|
+| Character | [quickstart-character.md](./quickstart-character.md) | `createCharacter`, presets, stat allocation, skill learning |
+| Combat | [quickstart-combat.md](./quickstart-combat.md) | `initializeCombat`, `resolveCombatRound`, event stream, friendship path |
+| Items | [quickstart-items.md](./quickstart-items.md) | `dropItem`, `previewTemplateAtRarity`, equip, shop, set bonuses |
+| Skills | [quickstart-skills.md](./quickstart-skills.md) | `executeSkill`, resource generation, synergy events, Tier 1/2/3 |
+| World | [quickstart-world.md](./quickstart-world.md) | `resolveMapEvent`, MapEventPool authoring, `alignmentDelta` |
+
+---
+
+## 7. Where to look when you want depth
 
 | If you're trying to... | Look at |
 |---|---|
