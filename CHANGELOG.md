@@ -50,9 +50,8 @@ audit pre-work).
   damage-resist primitive doesn't exist today; introducing it would
   expand scope. Filed as a new Pending candidate at ship-time. No
   public-surface change (fixture stays 237 runtime + 167 types);
-  `GAME_STATE_VERSION` unchanged. `effect-resisted` /
-  `effect-rebounded` SkillEvent variants remain in the discriminated
-  union as dead-code; Phase 84 (UX scrub) prunes them. Hermetic
+  `GAME_STATE_VERSION` unchanged. `effect-resisted` renamed to
+  `buff-fumbled` and `effect-rebounded` removed at Phase 84. Hermetic
   contract pinned at `src/Combat/e2e/phase80-always-land.engine.test.ts`
   (+6 tests: 713 net). **Revisit-if-unbalanced caveat preserved** per
   oversight-19 user note: if direction (a) feels off in playtest,
