@@ -44,6 +44,15 @@ audit pre-work).
   (effects, `3d213bd`).
 
 ### Added
+- **Phase 83 — Post-Phase-80 effect-application test sweep.**
+  Two new hermetic test files covering the post-Phase-80 always-land
+  contract: `src/Skills/e2e/phase83-skill-coverage.engine.test.ts`
+  (10 cases across 8 skills + 3 primitives) and
+  `src/Combat/e2e/phase83-tier2-debuff-categories.engine.test.ts`
+  (15 parameterized cases: 5 Tier 2 debuff categories x 3 d20 rolls).
+  Drains 12 CRITIQUE Pending rows (3 MED + 8 LOW from Phase 78 audit
+  + 1 MED from Phase 79 audit).
+
 - **Phase 82 — CLI run-loop + Codex integration (Phase 72 + 73
   consumer surfaces).** `src/CLI/game.cli.ts` Tab union extended
   with `'codex'` + `'reset'`:
