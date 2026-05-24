@@ -63,6 +63,21 @@ primary surface for Phase 83 (post-Phase-80 effect-application test
 sweep). /iterate drains the 5 LOW aggregate rows category-by-category
 between now and Phase 83.
 
+**Phase 80 status (shipped 2026-05-24).** Direction (a) pure split
+shipped in `src/Combat/resist.ts`: Tier 2 debuffs + Tier 3 effects
+**always land**. Target-resist roll removed; Nat-20 rebound (Tier 2
+debuff) removed; Nat-1 overwhelmed-double-duration removed; Tier 3
+Nat-20 miraculous escape removed. Tier 1 + Tier 2 buffs unchanged per
+D2 (caster-side variance is not target-resist). The damage-side of
+direction (a) ("damage rolls separately + applies resistance") is
+**deferred to a follow-up phase** per Phase 80 D1 — `calculateSkillDamage`
+stays deterministic for now; the damage-resist primitive lives in a
+new Pending candidate. `effect-resisted` / `effect-rebounded`
+SkillEvent variants remain in the discriminated union as dead-code
+emitters; Phase 84 (UX scrub) prunes them. The revisit-if-unbalanced
+caveat lives at `plan/PHASE_CANDIDATES.md` Promoted Phase 80 row +
+the brief at `plan/phases/phase_80_skills_always_land_pure_split.md`.
+
 ---
 
 ## Overview

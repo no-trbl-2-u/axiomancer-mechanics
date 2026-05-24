@@ -85,6 +85,16 @@
 - score: 5 × 7 / 10 = 3.5
 - recommended-slot: after the cleanup-and-polish phases land
 
+### Candidate: Damage-resist primitive (Phase 80 direction (a) damage-side follow-up)
+- signal: Phase 80 (shipped today) implemented direction (a) pure split on the **effect-side only** per its D1 — the candidate body's "damage rolls separately + applies its own resistance" text requires defining (a) what "damage rolls" means for skills (today `calculateSkillDamage` is deterministic — no damage die) and (b) what resistance applies to the damage half (today there's no damage-resist primitive — `resistStat` was the effect-resist roll input, not a damage modifier). Adding both at Phase 80 would have expanded scope past the failure-mode-6 line. The damage-side belongs in its own phase.
+- scope: One phase, design-attended at brief drafting. Two open design directions:
+  - **(a) Per-band damage-resist subtraction.** Skill damage = `calculateSkillDamage(actor, skill) - target.derivedStats.<scalingStat>Defense`. Reuses the existing physical/mental/emotional defense bands. No new primitive; just a subtraction in the damage-application path. Lowest engine churn.
+  - **(b) New `damageResist` primitive.** Add `damageResistBody / Mind / Heart` to `derivedStats` (or per-stance); compute as a fraction (e.g. `damage × (1 - resist/100)`). Symmetric with the resist-stat surface the legacy effect-resist roll used. Higher churn (new derived-stat fields + fixture bump + every consumer).
+- unblocks: closes the damage-side of direction (a). After this phase, the full direction (a) shift is shipped end-to-end. Pairs with Phase 85 (combat-tuning audit) — which surfaces other deferred combat-math Qs that may want the same primitive.
+- blocked-by: Phase 80 must ship first (shipped today). Brief drafting wants user-attended oversight to pick (a) or (b).
+- score: 5 × 6 / 10 = 3.0 (medium-high impact — completes direction (a); medium ease — defined surface with clear callers; design pass at brief drafting). Source: Phase 80 D1 ship-time filing (commit `<this-commit>`).
+- recommended-slot: after Phase 80 ships + the post-Phase-80 audit trio (Phase 83 / 85 / 86) drains. Pairs naturally with Phase 85's combat-tuning Q1 / Q2 (single-roll-vs-separate-damage-roll model + damage-formula-with-defense-subtraction).
+
 ## Promoted
 
 ### Phase 83 — Post-Phase-80 effect-application test sweep (regression coverage)

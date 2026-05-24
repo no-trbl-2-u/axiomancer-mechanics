@@ -14,7 +14,34 @@ deep imports are part of the supported surface.
 
 Post-`0.11.0` content sweep closing the Phase 71 / 73 follow-up +
 the mobile item-library mod-visibility helpers (single-cell at
-Phase 75 + batch at Phase 76).
+Phase 75 + batch at Phase 76) + the **skills-always-land mechanic
+shift** (Phase 80 direction (a) pure split, with Phase 78 + 79
+audit pre-work).
+
+### Changed
+- **Phase 80 — Skills always-land effects (direction (a) pure split).**
+  `src/Combat/resist.ts:resolveEffectApplication` rewritten so Tier 2
+  debuffs + Tier 3 effects **always land**. Target-resist roll
+  removed on Tier 2 debuffs (no Nat-20 rebound; no Nat-1 overwhelmed
+  double-duration). Tier 3 Nat-20 miraculous escape removed. Tier 1
+  unchanged (was already auto-apply). Tier 2 buff caster d20
+  fumble/crit KEPT per Phase 79 D8 (caster-side variance is not
+  target-resist; direction (a) only removes target-resist). The
+  damage-side of direction (a) — "damage rolls separately + applies
+  resistance" — is **deferred to a follow-up phase** per D1: the
+  damage-resist primitive doesn't exist today; introducing it would
+  expand scope. Filed as a new Pending candidate at ship-time. No
+  public-surface change (fixture stays 237 runtime + 167 types);
+  `GAME_STATE_VERSION` unchanged. `effect-resisted` /
+  `effect-rebounded` SkillEvent variants remain in the discriminated
+  union as dead-code; Phase 84 (UX scrub) prunes them. Hermetic
+  contract pinned at `src/Combat/e2e/phase80-always-land.engine.test.ts`
+  (+6 tests: 713 net). **Revisit-if-unbalanced caveat preserved** per
+  oversight-19 user note: if direction (a) feels off in playtest,
+  the candidate body retains the (b) intensity-scaling and (c)
+  split-resistance variants as fallback paths for a future re-author.
+  Audit pre-work shipped at Phase 78 (skills, `44d3827`) + Phase 79
+  (effects, `3d213bd`).
 
 ### Added
 - **Phase 76 — `previewTemplateAtAllRarities` batch helper (Phase
