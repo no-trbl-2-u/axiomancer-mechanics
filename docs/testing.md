@@ -89,6 +89,20 @@ equipped-skill rotation, enemy alignment AI bias, enemy-skill caster
 path, boss combat resolution) without requiring a kill-completion
 outcome.
 
+**Phase 81 catalog expansion (2026-05-24).** Three new walkthroughs
+ship for Phase 65 / 80 / 68 coverage: `fishing-village-exploration`
+(Apprentice Harbor District traversal → MournfulGull encounter at
+fv-15, Phase 60 befriendable placement), `tier2-skill-chain`
+(Wanderer casts Tier 2 `eternal-regress` two-effect compound under
+the **Phase 80 always-land contract**; closes one of Phase 78's MED
+zero-coverage primitives at the player-experience tier), and
+`coastal-tyrant-befriend` (Sage attempts the Phase 68
+`BefriendabilityConfig` AND-composition; grades on
+predicate-attempt visibility per the brief D3). The Phase 66 synergy
+walkthrough originally scoped for Phase 81 pivoted per brief D2 (the
+5 synergy skills aren't in any preset's `knownSkills`); a separate
+candidate ships the synergy walkthrough after a preset extension.
+
 ### Deploy gate — `npm run deploy:check`
 
 After `npm run verify` is green, `npm run deploy:check` runs four

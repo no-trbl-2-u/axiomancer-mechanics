@@ -44,6 +44,37 @@ audit pre-work).
   (effects, `3d213bd`).
 
 ### Added
+- **Phase 81 — Walkthrough catalog expansion (Phase 65 / 80 / 68
+  coverage).** Three new walkthrough pairs ship under
+  `automation/scripts/walkthroughs/`:
+  - `fishing-village-exploration.{json,goal.md}` — Apprentice
+    exploring the Phase 65 25-node grid via the Harbor District
+    sub-area (fv-1 → fv-11 → fv-14 → fv-15) to the guaranteed
+    MournfulGull encounter at fv-15 (Phase 60 befriendable
+    placement via the weight-1 `fvGullCrag` pool).
+  - `tier2-skill-chain.{json,goal.md}` — Wanderer casts Tier 2
+    `eternal-regress` in a debug-spawned combat, exercising the
+    two-effect compound application (`debuff_confusion` +
+    `debuff_slow`) under the **Phase 80 always-land contract**.
+    Closes one of Phase 78's MED zero-coverage primitives at the
+    player-experience tier. Originally scoped for Phase 66 synergy
+    skills per the candidate body; pivoted per brief D2 (none of
+    the 5 synergy skills ship in any preset's `knownSkills`).
+  - `coastal-tyrant-befriend.{json,goal.md}` — Sage attempts the
+    Phase 68 `BefriendabilityConfig` AND-composition (`hpGate:
+    { belowPct: 0.4 } + requiredStances: ['heart'] + roundsThreshold:
+    5`) via 9 heart-stance defends. Grades on predicate-attempt
+    visibility per brief D3 (the `hpGate` axis is RNG-dependent;
+    `requiredStances` + `roundsThreshold` axes are exercised
+    deterministically).
+
+  `automation/scripts/walkthroughs/README.md` inventory grew three
+  rows; `docs/testing.md` § "Agent-graded walkthroughs (Phase 26)"
+  gained a Phase 81 fold-in note. A new Pending candidate
+  (`Phase 66 synergy walkthrough (requires preset extension)`) is
+  filed at ship-time per brief D6 to close the original synergy
+  scope once the preset gap is addressed.
+
 - **Phase 76 — `previewTemplateAtAllRarities` batch helper (Phase
   75 follow-up).** Convenience wrapper around `previewTemplateAtRarity`
   for UI tooltip / item-detail views that render every-rarity-for-
