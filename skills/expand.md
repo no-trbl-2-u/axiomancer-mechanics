@@ -4,6 +4,9 @@
 > phase candidates. Posture-controlled: bold (default) files candidates
 > to `plan/PHASE_CANDIDATES.md`; strict is a no-op; autonomous writes
 > directly to the build plan.
+>
+> **Aggressive filing (set 2026-05-24):** score ≥ 2.5 files (was 3.0).
+> When in doubt, file — `/oversight` is the gate that filters.
 
 ## 1. Purpose
 
@@ -88,7 +91,20 @@ For each candidate worth filing, format as:
 - recommended-slot: after Phase <N>
 ```
 
-Cap: 5 candidates per pass. Quality > quantity.
+**Filing threshold (aggressive — set 2026-05-24):** file any candidate
+scoring **≥ 2.5**. Prior implicit floor was 3.0; the lower bar surfaces
+medium-impact / medium-ease candidates (small infrastructure polish,
+narrow content sweeps, near-miss audit pairings) that the loop has
+otherwise been letting drift. `/oversight` is the gate that decides
+what actually ships — `/expand`'s job is to surface, not to filter.
+
+**Broader signal interpretation:** weight signals generously.
+A single AUDIT row, a half-formed Knowledge-Gaps note, a one-line
+braindump entry, or a critique-pass rejection with a "but this related
+thing might be worth filing" comment all count. When in doubt, file.
+
+Cap: 5 candidates per pass. Quality > quantity still applies — the
+threshold drops, the cap does not.
 
 ### Step 3 — Update PHASE_CANDIDATES.md
 
