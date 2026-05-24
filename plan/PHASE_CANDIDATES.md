@@ -105,28 +105,18 @@
 - recommended-slot: after Phase 80 ships + the post-Phase-80 audit trio (Phase 83 / 85 / 86) drains. Pairs naturally with Phase 85's combat-tuning Q1 / Q2 (single-roll-vs-separate-damage-roll model + damage-formula-with-defense-subtraction).
 
 ### Candidate: Effect coverage sweep (drain 5 Phase 79 LOW aggregate rows)
+- promoted: 2026-05-24 (twenty-first oversight; user pick — "Effect coverage sweep + Front-door docs fold-in"). Becomes Phase 88.
 - signal: CRITIQUE Pending carries 5 Phase 79 LOW aggregate rows (stat-band buffs / advantage-category / control-category / damage-variants / fallacy-thread effects) — all uncovered-effect test gaps requiring per-effect hermetic cases. Together they represent ~50 new test cases across 4 new files. Too large for single iterate ticks; a dedicated phase bundles them into one focused test-authoring push.
 - scope: One phase, 4 commit units: (1) `src/Effects/e2e/stat-band-effects.engine.test.ts` (~12 parameterized cases for the 12 uncovered stat-band buffs); (2) `src/Effects/e2e/advantage-effects.engine.test.ts` (~13 cases for the 13 uncovered advantage-category effects); (3) `src/Effects/e2e/control-effects.engine.test.ts` (~10 per-effect describe blocks for control-category effects with unique action-restriction semantics); (4) `src/Effects/e2e/damage-variants.engine.test.ts` (~5 cases for the 5 uncovered DoT variants) + fallacy-thread pins folded into existing `fallacy-skills.engine.test.ts` (~8 cases). Drains all 5 Phase 79 LOW aggregate rows from CRITIQUE Pending.
-- unblocks: Closes the last CRITIQUE test-coverage cluster. After this phase, the effect library has comprehensive per-effect hermetic pins — future engine changes surface regressions immediately.
-- blocked-by: None. All engine surface shipped; this is pure test authoring.
-- score: 5 × 6 / 10 = 3.0 (medium-high impact — closes 5 Pending rows + comprehensive regression coverage; medium ease — parameterized test patterns established by Phase 83).
-- recommended-slot: next after Phase 87 (current queue head).
 
 ### Candidate: Post-Phase-80 type surface cleanup (`EffectApplicationResult.rebounded` + `getResistStat` deprecation)
-- signal: Critique-43 filed 3 LOWs: `EffectApplicationResult.rebounded` dead field (never set true post-Phase-80); `getResistStat` zero in-repo callers (dead public export); `EffectApplicationResult.roll` JSDoc partial-stale. All three are residual type-surface debris from the Phase 80 mechanic shift + Phase 84/86 dead-code removals.
-- scope: Single commit: remove `rebounded?: boolean` from `EffectApplicationResult` + JSDoc; add `@deprecated` to `getResistStat`; fix `roll` JSDoc wording. Minor breaking change on the type (pre-1.0.0 acceptable). CHANGELOG `### Changed` entry. Drains all 3 critique-43 findings.
-- unblocks: Cleans the last vestige of the removed resist-roll surface from the public type system. External consumers pattern-matching on `result.rebounded` (unlikely but possible) get a clear signal.
-- blocked-by: None.
-- score: 4 × 7 / 10 = 2.8 (medium impact — dead type cleanup + 3 findings drained; high ease — 3 one-line edits + CHANGELOG).
-- recommended-slot: any time. Iterate-tier but batching the 3 findings as one candidate makes intent clear for /oversight.
+- rejected: 2026-05-24 (oversight; drained by iterate)
+- reason: All 3 findings shipped via iterate ticks before this candidate reached oversight: `rebounded` field removed (commit `8a22512`), `getResistStat` deprecated (commit `74aaf6a`), `roll` JSDoc fixed (commit `8a22512`). No phase needed.
 
 ### Candidate: Front-door docs fold-in for Phases 80-87
+- promoted: 2026-05-24 (twenty-first oversight; user pick). Becomes Phase 89.
 - signal: Critique-42 LOW ("README.md + docs/api.md + plan/bearings.md don't reflect Phase 80 yet") is now 8 phases stale (Phases 80-87 all unreflected). Each phase added significant surface: Phase 80 mechanic shift, Phase 82 CLI codex+reset tabs, Phase 84 SkillEvent rename, Phase 85 combat Q resolution, Phase 87 quickstart pages. The front-door reader docs (README Public API table, docs/api.md per-module sections, plan/bearings.md per-phase fold-in lines) haven't been updated since Phase 73.
-- scope: One phase, 3 commit units: (1) README.md Public API table + feature highlights; (2) docs/api.md Combat / Effects / Skills sections + new Game subsections; (3) plan/bearings.md per-module fold-in lines for Phases 80-87. Drains the critique-42 LOW + extends it to cover the full 80-87 gap.
-- unblocks: External readers landing on README / api.md see the current engine state rather than pre-Phase-80 information.
-- blocked-by: None.
-- score: 4 × 7 / 10 = 2.8 (medium impact — front-door discoverability for 8 phases of work; high ease — pure docs, established fold-in pattern).
-- recommended-slot: any time. Natural pairing with Phase 87 (quickstart pages just shipped).
+- scope: One phase, 3 commit units: (1) README.md Public API table + feature highlights; (2) docs/api.md Combat / Effects / Skills sections + new Game subsections; (3) plan/bearings.md per-module fold-in lines for Phases 81-87 (Phase 80 fold-in already drained by iterate). Note: Phase 80 already folded in via iterate commit `779e40b`; this phase covers the remaining Phases 81-87.
 
 ### Candidate: v0.12.0 release cut (Phase 80-87 mechanic shift + audit sweep)
 - signal: The unreleased CHANGELOG section documents Phase 80 (BREAKING: SkillEvent changes + always-land mechanic shift) + Phases 81-87 (walkthroughs + CLI + tests + audits + docs). This is a major body of work (8 phases shipping a mechanic shift + its full audit/cleanup/documentation trail). The last tag was `v0.11.0` (2026-05-24). A new minor is appropriate per RELEASING.md: mechanic shift + breaking SkillEvent change + new quickstart pages.
