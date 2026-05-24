@@ -8,7 +8,7 @@
 > Bias: <category> (set via oversight <date>)
 -->
 
-> Bias: equipment/items (set via oversight 2026-05-23 — fifteenth oversight, post-Phase-70 ship + user jot exposing the mobile-UI item-library mod-visibility gap)
+<!-- Bias cleared via oversight 2026-05-24 (twentieth oversight, second of the day). Q3 user pick: "Clear — no live queue; let signals re-cluster naturally." AUDIT pending 0; CRITIQUE pending 0. The multiplier is a no-op until the next critique pass. With 10 phases now queued (78-87 — three audits + mechanic shift + four post-80 follow-ups + walkthroughs + CLI + docs) the post-ship critique passes are about to land a mixed signal across skills/effects/combat-tuning/equipment/docs; no single category dominates yet. Bias re-evaluates at next oversight after the audit-trio (78/79/86) lands and the critique queue surfaces a category cluster. -->
 
 <!-- Bias KEPT (equipment/items) via oversight 2026-05-24 (nineteenth oversight, post-Phase-76/77 ship). Q3 user pick: "Keep — armed for next critique pass". Phase 76 (previewTemplateAtAllRarities batch helper) shipped between oversight-18 and -19 and resolved the items-area work in the queue. With AUDIT pending = 0 and CRITIQUE pending = 0, the bias is currently a no-op multiplier — but it pre-positions weighting for any items-area findings that surface as the 5 newly-promoted phases (Phase 78 skills audit, 79 effects audit, 80 mechanic shift, 81 walkthroughs, 82 CLI run-loop+Codex) progress. The skills-always-land mechanic shift (Phase 80) will touch resolveEffectApplication + executeSkill + damage-roll pipelines; any items-area downstream drift (rolled-mod-on-damage interactions, set-bonus damage modifiers, equipment generation under the new resolution model) gets weighted. Re-evaluate at the next oversight if the bias still hasn't surfaced findings. -->
 
@@ -21,6 +21,7 @@
 <!-- Bias CLEARED via oversight 2026-05-20 (sixth oversight, post-Phase-55/56/57 ship + post-0.10.1 publish). The tooling driver queue stayed empty across the entire 2026-05-20 session (no Phase 55/56/57 follow-up findings landed in CRITIQUE that the tooling multiplier would have weighted). AUDIT pending is 0; CRITIQUE pending is 1 LOW (Spec 14 spec-gap, which is being promoted to a phase at this oversight). With no category dominating, /iterate should weight all categories evenly until signals re-cluster naturally. User also picked 0.10.2 publish now to ship the Phase 55/56/57 surface (mostly behaviour — CI gate + enemy rotations + PersistenceAdapter docs/test), and promoted three candidates as Phase 58 (Spec 14 — philosophical-alignment conversation-loop spec), Phase 59 (Docs gap audit + drain — re-scoped from the older Docs sweep candidate since most of its 9 row-groups have drained), Phase 60 (Befriendable-enemy content arc — closes Knowledge-Gaps Q5 fully). -->
 
 <!-- Bias history (most recent first):
+- 2026-05-24: equipment/items → CLEARED (twentieth oversight, second of day; 5 more candidates promoted as Phases 83-87; queue 10 phases deep; no category dominates pre-Phase-80)
 - 2026-05-24: equipment/items KEPT (nineteenth oversight; 5 candidates promoted as Phases 78-82; Phase 76 shipped post oversight-18)
 - 2026-05-23: equipment/items KEPT (eighteenth oversight; Phase 76 + 77 promoted)
 - 2026-05-23: equipment/items SET (fifteenth oversight; user jot at b5c8165)
