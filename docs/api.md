@@ -407,6 +407,10 @@ reality.
   apex burn — consume full combat-resource pool + clear all effects
   + damage proportional to consumed tokens). See `docs/skills.md` §
   "Tier 2 synergy (Phase 66)" for the schema + the per-skill table.
+- **Phase 84 SkillEvent cleanup:** `effect-resisted` renamed to
+  `buff-fumbled` (only fires on Tier 2 buff caster fumble); dead-code
+  `effect-rebounded` variant removed. **BREAKING** for consumers
+  pattern-matching on `SkillEvent.kind`.
 
 ### World & Quests
 
