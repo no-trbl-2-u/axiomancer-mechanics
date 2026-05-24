@@ -23,7 +23,7 @@ results in `tier1_mind_mark` reaching intensity 3.
 - All runtime randomness uses `Math.random()` directly:
   - `enemy.logic.ts` (`randomLogic`).
   - `Utils/index.ts` (`randomInt`, `createDieRoll`, `createDie`).
-  - `Combat/resist.ts` (Tier 2/3 resist contests and crit/fumble rolls).
+  - `Combat/resist.ts` (Tier 2 buff caster fumble/crit rolls — Tier 2 debuff + Tier 3 resist contests removed at Phase 80).
   - `Combat/effects.ts` (random buff strip / extend).
 - `src/test-utils/rng.ts` already provides hermetic stubs
   (`mockAlternatingRng`, `mockFixedRng`, `mockSequentialRng`) that wrap

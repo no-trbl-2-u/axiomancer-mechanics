@@ -30,21 +30,7 @@
 - suggested_fix: Single iterate commit folding the Phase 80 mechanic shift into the four front-door surfaces. README.md Combat row gains a "Phase 80 — Tier 2 debuff + Tier 3 always-land contract" phrase; docs/api.md Effects / Combat sections gain a short callout; plan/bearings.md Effects + Combat entries gain a `+ Phase 80 always-land` fold-in line; agents.md "Where to look" table gains a row pointing at docs/effects.md "Phase 80 status" for the mechanic shift. Same shape as the prior Phase 71/72/73/76 fold-in drains.
 - source: critique
 
-### [LOW] Phase 79 MED row's suggested-fix bullet (b) references Phase 80's damage-side which Phase 80 D1 deferred to a new candidate
-- pass: critique-42 (commit `3155e03`)
-- area: plan
-- observation: The MED Phase 79 audit-filed row above ("Tier 2 debuff resolution path: 28 of 43 effects uncovered by direct id reference") carries a Suggested fix that includes "author one hermetic case per uncovered Tier 2 debuff asserting (a) effect always lands (no target-resist roll); (b) damage-half rolls + applies resistance independently; (c) Nat-1/Nat-20 outcomes per the post-Phase-80 D-decisions." Bullet (b) is now stale: Phase 80 D1 deferred the damage-side change (damage-roll + damage-resist) to a new Pending candidate ("Damage-resist primitive (Phase 80 direction (a) damage-side follow-up)"). The Phase 79 MED row's bullet (b) should be re-framed: damage-half is currently deterministic (no roll); the damage-resist primitive lands at a follow-up phase; Phase 83's scope is effect-side coverage only.
-- evidence: `plan/CRITIQUE.md` MED row "Tier 2 debuff resolution path…" Suggested fix bullet (b). Phase 80 brief at `plan/phases/phase_80_skills_always_land_pure_split.md` D1 + the new "Damage-resist primitive" candidate in `plan/PHASE_CANDIDATES.md` Pending.
-- suggested_fix: In-place edit of the MED Phase 79 row: replace bullet (b) "damage-half rolls + applies resistance independently" with "damage-half stays deterministic (per Phase 80 D1; damage-resist primitive lives in the new Pending candidate)". Single-line iterate.
-- source: critique
 
-### [LOW] specs/11-rng-seeding-and-test-harness.md:26 references "Tier 2/3 resist contests" — partial-stale post-Phase-80
-- pass: critique-42 (commit `3155e03`)
-- area: spec
-- observation: `specs/11-rng-seeding-and-test-harness.md:26` lists `Combat/resist.ts` with the parenthetical "(Tier 2/3 resist contests and crit/fumble rolls)" as one of the RNG-consuming engine surfaces. Post-Phase-80 the Tier 2/3 *resist contests* no longer exist on the debuff / Tier 3 path; only the Tier 2 buff *caster fumble/crit* roll remains. The parenthetical is partial-stale — half of what it describes is no longer engine behaviour.
-- evidence: `specs/11-rng-seeding-and-test-harness.md:26`. `src/Combat/resist.ts` (Phase 80 rewrite — only Tier 2 buff branch still calls `createDieRoll`).
-- suggested_fix: One-line edit: "(Tier 2/3 resist contests and crit/fumble rolls)" → "(Tier 2 buff caster fumble/crit rolls — Tier 2 debuff + Tier 3 resist contests removed at Phase 80)". Same shape as prior post-Spec fold-in drains.
-- source: critique
 
 ### [LOW] `EffectApplicationResult.rebounded` is dead type surface
 - pass: critique-43 (commit `7fada36`)
@@ -83,6 +69,10 @@
 ---
 
 ## Done
+
+- [x] **[LOW] Phase 79 MED row's suggested-fix bullet (b) references Phase 80's damage-side** — resolved at iterate (this commit). The underlying MED row was moved to Done at Phase 83; the stale bullet (b) text no longer exists in Pending. No edit needed. Source: critique-42.
+
+- [x] **[LOW] specs/11-rng-seeding-and-test-harness.md:26 references "Tier 2/3 resist contests"** — resolved at iterate (this commit). One-line edit: "(Tier 2/3 resist contests and crit/fumble rolls)" → "(Tier 2 buff caster fumble/crit rolls — Tier 2 debuff + Tier 3 resist contests removed at Phase 80)". Source: critique-42.
 
 - [x] **[MED] `<this-commit>` placeholder strings never replaced post-ship across docs + CRITIQUE rows** — resolved at iterate commit (this commit). Replaced all `<this-commit>` placeholders: `docs/skills.md:164` → `44d3827` (Phase 78); `docs/effects.md:29` → `3d213bd` (Phase 79); 5 Phase 79 CRITIQUE rows → `3d213bd`; Phase 61 Done row → `eaeb580`; PHASE_CANDIDATES.md Phase 80/81 ship-time rows → `3155e03`/`0ab5968`. Pure docs change. Source: critique-42 (commit `3155e03`).
 
