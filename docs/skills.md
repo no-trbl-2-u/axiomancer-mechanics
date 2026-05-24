@@ -159,6 +159,39 @@ Lives in [`src/Skills/skill.library.ts`](../src/Skills/skill.library.ts).
 IDs follow **kebab-case** to keep the skill namespace visually distinct from
 the snake_case effect IDs (`tier1_body_attack`, `debuff_bleed`, …).
 
+### Audit summary (Phase 78)
+
+Audit shipped at Phase 78 (commit `<this-commit>` 2026-05-24) walked
+every skill in `src/Skills/skill.library.ts` (21 entries) against four
+axes: per-skill test coverage, doc coverage, spec acceptance alignment,
+engine resolution shape. Full per-skill verdict table in
+[`plan/phases/phase_78_general_skills_audit.md`](../plan/phases/phase_78_general_skills_audit.md).
+
+**Coverage gap surfaced.** 8 of 21 skills (38%) have **zero direct
+hermetic test references** by skill id across `src/Skills/e2e/` /
+`src/Combat/e2e/` / `src/Game/e2e/`: `false-dilemma`, `appeal-to-pity`,
+`liars-echo`, `ship-of-theseus` (Tier 1); `mob-appeal`,
+`undistributed-middle`, `eternal-regress` (Tier 2 originals);
+`bootstrap-paradox` (Tier 3 original). The 5 Phase 66 synergy skills,
+4 Phase 44 fallacy-as-spells, and the remaining 4 + 3 originals have
+direct pins.
+
+**Zero-coverage primitives.** Within the gap, three engine primitives
+ship in `src/Skills/skill.engine.ts` but no hermetic case asserts
+their behaviour: `convert_enemy_buff_to_self` (`ship-of-theseus`
+only), `secondary_heal_self` (`mob-appeal` only), and two-effect
+compound application (`eternal-regress` — `debuff_confusion` +
+`debuff_slow` in one cast). These warrant MED-priority drain.
+
+**Doc + spec.** All 21 skills appear in the Tier tables below. Spec
+04b acceptance ticks all rows; no library/spec divergence.
+
+**Phase 80 / 83 framing.** Audit findings filed as
+`plan/CRITIQUE.md` Pending rows (8 LOW + 3 MED) — drain via
+`/iterate` or fold into Phase 83 (post-Phase-80 effect-application
+test sweep) as part of its per-skill re-authoring scope.
+
+
 ### Resonance Pairs progression model
 
 Per `braindump/BRAINDUMP.md` (decided / leaning: Option C), the

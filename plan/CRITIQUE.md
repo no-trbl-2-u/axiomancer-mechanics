@@ -19,6 +19,28 @@
 
 ## Pending
 
+- **[MED] `convert_enemy_buff_to_self` special-mechanic has zero hermetic coverage** — source: Phase 78 audit (commit `<this-commit>`). The primitive ships in `src/Skills/skill.engine.ts` and is used only by `ship-of-theseus` (Tier 1, basePower 0 heart). No hermetic case in `src/Skills/e2e/` / `src/Combat/e2e/` / `src/Game/e2e/` exercises the buff-transfer path. **Risk:** engine primitive that mutates both caster and target effect lists; zero coverage means a regression at `executeSkill`'s special-mechanic dispatch wouldn't be caught by /verify. **Suggested fix:** add a 2-3 case `describe('ship-of-theseus — convert_enemy_buff_to_self', …)` block to `src/Skills/e2e/skill.engine.test.ts` covering (a) target has 1 buff → buff transfers; (b) target has 0 buffs → no-op (skill still consumes resources); (c) target has multiple buffs → only one transfers (or all — confirm semantics at brief-drafting). Score 5 × 6 / 10 = 3.0.
+
+- **[MED] `secondary_heal_self` special-mechanic has zero hermetic coverage** — source: Phase 78 audit (commit `<this-commit>`). The primitive ships in `src/Skills/skill.engine.ts` and is used only by `mob-appeal` (Tier 2, basePower 10 body + heart-stat secondary heal multiplier 1). No hermetic case asserts the secondary-heal-self path. **Risk:** same shape as `convert_enemy_buff_to_self` — engine primitive with zero pin. **Suggested fix:** add a 2-case block to `src/Skills/e2e/skill.engine.test.ts` covering (a) caster takes basePower 10 + heart × 1 healing; (b) caster at full HP still gets the damage portion through (heal is capped at maxHp, doesn't waste). Score 5 × 6 / 10 = 3.0.
+
+- **[MED] Two-effect compound application has zero hermetic coverage (`eternal-regress`)** — source: Phase 78 audit (commit `<this-commit>`). `eternal-regress` (Tier 2, basePower 6 heart) is the only library skill applying two `combatEffects` in one cast (`debuff_confusion` + `debuff_slow`, both on opponent). No hermetic case asserts the both-effects-land contract. **Risk:** Phase 80's pure-split mechanic shift may need both effects to always-land independently; without a baseline pin, the regression won't surface until manual testing. **Suggested fix:** add a 3-case block to `src/Skills/e2e/skill.engine.test.ts` covering (a) both effects land on the target after one cast; (b) cost (heart 2 + mind 2) debits correctly; (c) target already has one of the two effects → second still applies cleanly (stacking semantics). Score 5 × 6 / 10 = 3.0.
+
+- **[LOW] `false-dilemma` has zero direct hermetic test pin** — source: Phase 78 audit (commit `<this-commit>`). Tier 1, basePower 4 mind + `debuff_confusion` duration 2. Transitive coverage via `skill-resource-system.engine.test.ts` for the cost path; no per-skill behaviour assertion. **Suggested fix:** add a single `it('false-dilemma applies debuff_confusion for 2t', …)` case to `src/Skills/e2e/skill.engine.test.ts`. Score 3 × 8 / 10 = 2.4.
+
+- **[LOW] `appeal-to-pity` has zero direct hermetic test pin** — source: Phase 78 audit (commit `<this-commit>`). Tier 1, basePower 0 heart + scalingMultiplier 4 (heal). Self-heal formula `heart × 0.5 × 4 → heart × 2` not pinned anywhere. **Suggested fix:** add a single `it('appeal-to-pity heals caster heart × 2', …)` case to `src/Skills/e2e/skill.engine.test.ts` with a fixed heart-stat caster and assertion on post-cast HP. Score 3 × 8 / 10 = 2.4.
+
+- **[LOW] `liars-echo` has zero direct hermetic test pin** — source: Phase 78 audit (commit `<this-commit>`). Tier 1, basePower 3 mind + `tier1_mind_mark` intensity 2 duration 2. **Suggested fix:** add a single `it('liars-echo applies tier1_mind_mark intensity 2 duration 2', …)` case to `src/Skills/e2e/skill.engine.test.ts`. Score 3 × 8 / 10 = 2.4.
+
+- **[LOW] `ship-of-theseus` has zero direct hermetic test pin (skill-level — separate from the primitive finding above)** — source: Phase 78 audit (commit `<this-commit>`). Tier 1, basePower 0 heart + `convert_enemy_buff_to_self` special. Folds into the MED `convert_enemy_buff_to_self` row above — drain that one and this row drains transitively. Score 3 × 8 / 10 = 2.4 (low standalone priority; ride the MED).
+
+- **[LOW] `mob-appeal` has zero direct hermetic test pin (skill-level — separate from the primitive finding above)** — source: Phase 78 audit (commit `<this-commit>`). Tier 2, basePower 10 body + `secondary_heal_self` heart×1 multiplier. Folds into the MED `secondary_heal_self` row above. Score 3 × 8 / 10 = 2.4 (low standalone; ride the MED).
+
+- **[LOW] `undistributed-middle` has zero direct hermetic test pin** — source: Phase 78 audit (commit `<this-commit>`). Tier 2, basePower 8 mind + `tier1_mind_mark` intensity 3 duration 3. Same shape as `liars-echo`; can ship in the same iterate commit. **Suggested fix:** add a single `it()` case to `src/Skills/e2e/skill.engine.test.ts`. Score 3 × 8 / 10 = 2.4.
+
+- **[LOW] `eternal-regress` has zero direct hermetic test pin (skill-level — separate from the primitive finding above)** — source: Phase 78 audit (commit `<this-commit>`). Tier 2, basePower 6 heart + `debuff_confusion` + `debuff_slow`. Folds into the MED two-effect compound row above. Score 3 × 8 / 10 = 2.4 (low standalone; ride the MED).
+
+- **[LOW] `bootstrap-paradox` has zero direct hermetic test pin** — source: Phase 78 audit (commit `<this-commit>`). Tier 3, basePower 0 heart + scalingMultiplier 4 (heal). Self-heal formula `heart × 0.5 × 4 → heart × 2` not pinned — same shape as `appeal-to-pity`. **Suggested fix:** add a single `it('bootstrap-paradox heals caster heart × 2', …)` case to `src/Skills/e2e/skill.engine.test.ts`. Score 3 × 8 / 10 = 2.4.
+
 ---
 
 ## Done
