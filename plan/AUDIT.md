@@ -44,6 +44,8 @@
 
 ## Done
 
+- [x] **[LOW] docs/quickstart.md Items row missing Phase 76 previewTemplateAtAllRarities surface** — resolved at iterate commit `81b7cef` (2026-05-23). Same-tick discovery post-Phase-76 ship: Items row marquee surface omitted previewTemplateAtAllRarities; phases list missing 76. Same shape as the iterate-`469caf3` Phase 75 fold-in. Single-line edit. 707/707 tests stay green; pure docs change. Impact 3 × Ease 9 / 10 = 2.7 × 1.5 items bias = 4.05. Source: /iterate audit category E (docs) finding (same-tick discovery, surfaced by post-Phase-76 ship sweep).
+
 - [x] **[VERIFIED-CLEAN] Phase 77 audit — base-action token generation (Spec 04 token economy)** — resolved at audit commit `73ab7de` (2026-05-23). User-flagged at oversight-18 with suspected regression: "base attack/defend may not be generating the tokens it was supposed to." Walked the full path end-to-end:
   - **Spec 04 contract** (`specs/04-skills-engine.md:224`): basic actions generate stance tokens `miss=1, hit=3, defend=5`.
   - **Constants** (`src/Game/game-mechanics.constants.ts:90-94`): `RESOURCE_GENERATION = { ATTACK_HIT: 3, ATTACK_MISS: 1, DEFEND: 5 }` — exact match to spec.
