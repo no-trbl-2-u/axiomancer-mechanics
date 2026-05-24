@@ -11,7 +11,7 @@
  * file only pins the preview-helper-specific behaviour.
  */
 import { describe, it, expect } from 'vitest';
-import { previewTemplateAtRarity } from '../index';
+import { previewTemplateAtRarity, previewTemplateAtAllRarities } from '../index';
 
 describe('Phase 75 — previewTemplateAtRarity', () => {
     it('returns Equipment with rolled-mod count matching the rarity tier (common=0 / uncommon=1 / rare=2)', () => {
@@ -54,5 +54,47 @@ describe('Phase 75 — previewTemplateAtRarity', () => {
         // iron-blade is a regular EquipmentTemplate; unique rarity is reserved
         // for UniqueItemTemplate per Spec 05c §9.
         expect(previewTemplateAtRarity('iron-blade', 'unique', 5)).toBeUndefined();
+    });
+});
+
+describe('Phase 76 — previewTemplateAtAllRarities (batch helper)', () => {
+    it('returns the full Record<ItemRarity, Equipment | undefined> for a regular template', () => {
+        const record = previewTemplateAtAllRarities('iron-blade', 5);
+        // Three rarities populated (common / uncommon / rare); unique returns
+        // undefined because iron-blade is a regular template (Phase 75 D1).
+        expect(record.common).toBeDefined();
+        expect(record.uncommon).toBeDefined();
+        expect(record.rare).toBeDefined();
+        expect(record.unique).toBeUndefined();
+        // Each cell's rolled-mod count matches the rarity tier (Phase 75 contract).
+        expect(record.common!.rolledMods ?? []).toHaveLength(0);
+        expect(record.uncommon!.rolledMods).toHaveLength(1);
+        expect(record.rare!.rolledMods).toHaveLength(2);
+    });
+
+    it('returns all-undefined record when playerLevel < template.requiredLevel (D2)', () => {
+        // mithril-blade is requiredLevel 20; preview at level 5 fails for every rarity.
+        const record = previewTemplateAtAllRarities('mithril-blade', 5);
+        expect(record.common).toBeUndefined();
+        expect(record.uncommon).toBeUndefined();
+        expect(record.rare).toBeUndefined();
+        expect(record.unique).toBeUndefined();
+    });
+
+    it('unique template returns only the unique cell populated (D2)', () => {
+        // paradox-loop is a UniqueItemTemplate at requiredLevel 15; preview at
+        // level 20 (≥15) returns the unique-rolled Equipment in the `unique`
+        // cell only — non-unique rarities are reserved for UniqueItemTemplate
+        // per Spec 05c §9; previewTemplateAtRarity soft-coerces but the
+        // common/uncommon/rare cells still return undefined for these.
+        const record = previewTemplateAtAllRarities('paradox-loop', 20);
+        expect(record.unique).toBeDefined();
+        expect(record.unique!.rarity).toBe('unique');
+        // Phase 75 D4 says unique templates soft-coerce rarity → so all four
+        // cells return the unique-rolled Equipment (not just the `unique` cell).
+        // The other three cells are NOT undefined per D4 — they return the
+        // same unique-rolled Equipment.
+        expect(record.common).toBeDefined();
+        expect(record.common!.rarity).toBe('unique');
     });
 });

@@ -31,7 +31,7 @@ export {
 } from './modifier.catalogue';
 export {
     dropItem, rollModifiers, resolveModifiers, rarityWeightTable,
-    previewTemplateAtRarity,
+    previewTemplateAtRarity, previewTemplateAtAllRarities,
 } from './item.factory';
 export { consumableLibrary, getConsumableById } from './consumable.library';
 export { buyItem, sellItem, defaultSellPrice } from './shop.reducer';

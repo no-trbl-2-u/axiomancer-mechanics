@@ -402,6 +402,40 @@ export function previewTemplateAtRarity(
     return dropItem(templateId, playerLevel, finalRarity, rng);
 }
 
+/**
+ * Phase 76 — preview a template at every rarity tier in one call.
+ *
+ * Convenience wrapper around `previewTemplateAtRarity` for UI surfaces
+ * that render every-rarity-for-this-template comparison strips (mobile
+ * item-detail / tooltip / "Common / Uncommon / Rare / Unique" stat
+ * ladder views). Saves the boilerplate of four sequential calls + the
+ * record-zip step.
+ *
+ * Returns the full `Record<ItemRarity, Equipment | undefined>` shape;
+ * `undefined` cells signal "this template can't roll at that rarity at
+ * this player level" (per Phase 75's soft-error semantics — unknown
+ * templateId / level-too-low / unique-rarity-on-regular-template all
+ * surface as undefined). Each rarity-cell uses the same `rng` so the
+ * mod values across the rarity strip are stable per seed.
+ *
+ * Default `rng = () => 0.5` matches the Phase 75 + Phase 70
+ * deterministic-drop convention.
+ *
+ * @see {@link previewTemplateAtRarity} for the single-cell primitive.
+ */
+export function previewTemplateAtAllRarities(
+    templateId: string,
+    playerLevel: number,
+    rng: () => number = () => 0.5,
+): Record<ItemRarity, Equipment | undefined> {
+    return {
+        common:   previewTemplateAtRarity(templateId, 'common',   playerLevel, rng),
+        uncommon: previewTemplateAtRarity(templateId, 'uncommon', playerLevel, rng),
+        rare:     previewTemplateAtRarity(templateId, 'rare',     playerLevel, rng),
+        unique:   previewTemplateAtRarity(templateId, 'unique',   playerLevel, rng),
+    };
+}
+
 // Re-export the unique-pool shape so tests / loot tables can introspect it
 // without reaching into `modifier.catalogue.ts` directly.
 export { uniqueModPool };
