@@ -6,9 +6,10 @@
 > by `/iterate`.
 
 <!-- Metadata (updated by /critique after each pass):
-> Last pass: 2026-05-24 at commit 3155e03
-> Pass count: 42
+> Last pass: 2026-05-24 at commit 7fada36
+> Pass count: 43
 -->
+<!-- Pass 43 (2026-05-24 at commit 7fada36): 3 findings (0H/0M/3L). Post-Phase-81-through-86 audit. The 12 commits since pass 42 shipped Phases 81-86 (walkthroughs + CLI run-loop/codex + Phase 83 test sweep + Phase 84 event scrub + Phase 85 combat-tuning audit + Phase 86 equipment audit). Phase 84 removed dead `effect-rebounded` variant + renamed `effect-resisted` → `buff-fumbled`; Phase 86 removed the combat-effects.ts rebound block. This pass walks the residual type surface left behind: `EffectApplicationResult.rebounded` field is now dead (never set true); `getResistStat` export has zero in-repo callers; `EffectApplicationResult.roll` JSDoc is partial-stale. All LOW — dead type surface, no runtime impact. -->
 <!-- Pass 42 (2026-05-24 at commit 3155e03): 5 findings (1H/1M/3L). Post-Phase-78/79/80 audit. The 13 commits since pass 41 shipped the entire mechanic-shift bundle (Phase 78 skills audit + Phase 79 effects audit + Phase 80 direction (a) pure split). All three audits surfaced their findings in the same /ship-a-phase commit; this critique pass walks the secondary drift the mechanic shift exposes: docs/combat.md "Effect Resistance Rules" table is now factually wrong (HIGH — front-door docs describing behaviour the engine no longer implements); `<this-commit>` placeholder strings were never replaced post-ship across docs + CRITIQUE rows (MED — searchability + git archaeology issue); front-door reader docs (README, api.md, bearings.md) don't reflect Phase 80 yet (LOW — coverage gap); the Phase 79 MED row's suggested-fix bullet (b) cross-references Phase 80's damage-side which is now deferred to a new Pending candidate (LOW — stale plan-side reference); Spec 11 mentions "Tier 2/3 resist contests" partial-stale (LOW — spec drift). -->
 <!-- Pass 41 (2026-05-24 at commit 249345e): 1 finding (0H/0M/1L). Post-Phase-76 + Phase-77 audit + quickstart fold-in drain. The 12 commits since pass 40 cleared a productive cycle (oversight-18 promoted Phase 76 + Phase 77; Phase 77 audit verified clean — base-action token generation aligns with Spec 04 end-to-end with no regression; Phase 76 batch helper shipped + quickstart fold-in drained). Only residual: scripts/README.md fixture annotation stale post-Phase-76 (says 236+167; current 237+167). Same shape as the iterate-72867c0 post-Phase-75 drain. -->
 <!-- Pass 40 (2026-05-23 at commit a5060e1): 1 finding (0H/0M/1L). Post-Phase-75 + 4-iterate-drain audit found everything aligned EXCEPT one inconsistency: `plan/bearings.md` Items entry is uniquely terse vs the Game / Philosophy / Enemy entries which use multi-line per-phase fold-ins ("+ Phase 72 ... STARTING_REGION", "+ Phase 73 codex slice", etc.). The Phase 75 brief's D-decision explicitly skipped bearings.md ("no entry needed; leaf addition") but that contradicts the standing pattern in the same file. AUDIT bias `equipment/items` weights this finding 1.5×. -->
@@ -50,6 +51,30 @@
 - observation: `specs/11-rng-seeding-and-test-harness.md:26` lists `Combat/resist.ts` with the parenthetical "(Tier 2/3 resist contests and crit/fumble rolls)" as one of the RNG-consuming engine surfaces. Post-Phase-80 the Tier 2/3 *resist contests* no longer exist on the debuff / Tier 3 path; only the Tier 2 buff *caster fumble/crit* roll remains. The parenthetical is partial-stale — half of what it describes is no longer engine behaviour.
 - evidence: `specs/11-rng-seeding-and-test-harness.md:26`. `src/Combat/resist.ts` (Phase 80 rewrite — only Tier 2 buff branch still calls `createDieRoll`).
 - suggested_fix: One-line edit: "(Tier 2/3 resist contests and crit/fumble rolls)" → "(Tier 2 buff caster fumble/crit rolls — Tier 2 debuff + Tier 3 resist contests removed at Phase 80)". Same shape as prior post-Spec fold-in drains.
+- source: critique
+
+### [LOW] `EffectApplicationResult.rebounded` is dead type surface
+- pass: critique-43 (commit `7fada36`)
+- area: types
+- observation: `src/Effects/types.ts:176` defines `rebounded?: boolean` on `EffectApplicationResult`. Post-Phase-80+84+86, no code path sets this field to `true` — the Tier 2 debuff rebound mechanic was removed at Phase 80, and all emit/consume sites that read it were removed at Phase 84 (`skill.engine.ts`) and Phase 86 (`combat-effects.ts`). The field is dead weight on a public type. The JSDoc at `:168` ("True when a debuff was rebounded by a critical resist") describes behaviour that no longer exists.
+- evidence: `src/Effects/types.ts:176`. `grep -rn "rebounded" src/ --include="*.ts"` returns only the type definition + a comment in `resist.ts:24`.
+- suggested_fix: Remove the `rebounded?: boolean` field from `EffectApplicationResult` and the corresponding JSDoc line. This is a minor breaking change (pre-1.0.0 acceptable per RELEASING.md). Single-line iterate.
+- source: critique
+
+### [LOW] `getResistStat` export has zero in-repo callers post-Phase-80
+- pass: critique-43 (commit `7fada36`)
+- area: dead-code
+- observation: `src/Combat/stats.ts:64` exports `getResistStat(combatant, resistedBy)`. Pre-Phase-80 it was called by the target-resist roll in `resolveEffectApplication`; that call site was removed at Phase 80. The function is still exported through the public barrel (`src/index.ts:52`) but has zero in-repo callers. It may be consumed by `axiomancer-mobile` (external consumer) — verify before removal.
+- evidence: `grep -rn "getResistStat" src/ --include="*.ts"` returns only the definition + barrel re-export. Zero test or runtime callers.
+- suggested_fix: Add `/** @deprecated Unused post-Phase-80; scheduled for removal at next minor. */` JSDoc (same pattern as Phase 51's deprecated aliases). Removal at the next minor bump after verifying zero external callers.
+- source: critique
+
+### [LOW] `EffectApplicationResult.roll` JSDoc is partial-stale post-Phase-80
+- pass: critique-43 (commit `7fada36`)
+- area: types
+- observation: `src/Effects/types.ts:169` documents the `roll` field as "present only for tier 2/3 effects". Post-Phase-80, `roll` is only present for **Tier 2 buffs** (the caster fumble/crit path). Tier 2 debuffs and Tier 3 now return `roll: undefined`. The JSDoc misleads consumers into expecting roll data on debuff/Tier-3 results.
+- evidence: `src/Effects/types.ts:169`. `src/Combat/resist.ts:92-101` (Tier 2 debuff path returns no roll); `src/Combat/resist.ts:104-111` (Tier 3 path returns no roll).
+- suggested_fix: One-line edit: "present only for tier 2/3 effects" → "present only for Tier 2 buff effects (caster fumble/crit roll — Tier 2 debuff + Tier 3 always-land without rolling post-Phase-80)". Single-line iterate.
 - source: critique
 
 - **[LOW] Stat-band buffs uncovered (mind/heart attack-up + body/mind/heart defense-up + 3 resistance bands)** — source: Phase 79 audit (commit `<this-commit>`). Specifically uncovered: `buff_mind_attack_up`, `buff_heart_attack_up`, `buff_body_defense_up`, `buff_mind_defense_up`, `buff_heart_defense_up`, `buff_resistance_body`, `buff_resistance_mind`, `buff_resistance_heart`, `buff_all_stats_up`, `buff_buff_duration_up`, `buff_status_chance_up`, `buff_cleanse`. All share the `applyStatModifiers` aggregation path (Phase 48 verified clean for the path). **Suggested fix:** one parameterised test in `src/Effects/e2e/` walking the per-aspect stat-band variants; each row asserts the post-`getEffectiveStats` delta matches the band. Single hermetic file, ~12 cases. Score 4 × 7 / 10 = 2.8.
