@@ -24,6 +24,47 @@ documents in [`docs/effects/`](./effects/).
 
 ---
 
+## Audit summary (Phase 79)
+
+Audit shipped at Phase 79 (commit `<this-commit>` 2026-05-24) walked
+all 88 effects (40 buffs + 48 debuffs) against four axes: per-effect
+test coverage, doc coverage, spec acceptance, and engine resolution
+shape. Full per-tier / per-category verdict tables in
+[`plan/phases/phase_79_general_effects_audit.md`](../plan/phases/phase_79_general_effects_audit.md).
+
+**Coverage gap surfaced.** 56 of 88 (64%) effects carry **zero direct
+test-file references** by effect id. Larger gap than Phase 78's
+8-of-21 skills audit (38%), but structurally different: many of the 56
+uncovered effects share the same engine resolution path (`applyEffect`
++ `tickAllEffects` + tier-keyed `resolveEffectApplication` dispatch),
+so the per-case test cost is lower than per-skill cases. The gap
+concentrates by category — stat (20/25 uncovered), defense (14/19),
+advantage (13/14), control (10/17), damage (5/10); regeneration is
+100% covered.
+
+**Tier distribution snapshot (Phase 80 baseline).** Tier 1 (12
+effects, 8 buffs + 4 debuffs) auto-applies, no roll — Phase 80 no-op.
+Tier 2 buffs (30) use caster-side d20 fumble/crit. Tier 2 debuffs (43
+effects, the load-bearing surface) currently use target-roll-to-resist
+(DR = effect.resistDR + attackerHeartBonus + equipmentBonus) with
+Nat-20 rebound and Nat-1 double-duration. Tier 3 (3 effects) are
+"only Nat-20 escapes." Phase 80 direction (a) removes the target-resist
+roll on Tier 2 debuffs; keeps Tier 2 buff caster fumble/crit per the
+audit's D8 recommendation (final call lives with Phase 80's brief
+drafter).
+
+**Doc + spec.** Complete Effects Tables list all 88 IDs; headings
+"Buffs (40)" + "Debuffs (48)" match live counts. Spec 01 acceptance
+ticks all rows; no library/spec divergence.
+
+**Phase 80 / 83 framing.** 1 MED + 5 LOW aggregate findings filed in
+`plan/CRITIQUE.md` Pending — 28 of 43 Tier 2 debuffs uncovered is the
+primary surface for Phase 83 (post-Phase-80 effect-application test
+sweep). /iterate drains the 5 LOW aggregate rows category-by-category
+between now and Phase 83.
+
+---
+
 ## Overview
 
 Effects are temporary modifiers applied to combatants during battle. Every effect is stored
