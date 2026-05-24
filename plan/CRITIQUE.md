@@ -6,9 +6,10 @@
 > by `/iterate`.
 
 <!-- Metadata (updated by /critique after each pass):
-> Last pass: 2026-05-23 at commit a5060e1
-> Pass count: 40
+> Last pass: 2026-05-24 at commit 249345e
+> Pass count: 41
 -->
+<!-- Pass 41 (2026-05-24 at commit 249345e): 1 finding (0H/0M/1L). Post-Phase-76 + Phase-77 audit + quickstart fold-in drain. The 12 commits since pass 40 cleared a productive cycle (oversight-18 promoted Phase 76 + Phase 77; Phase 77 audit verified clean — base-action token generation aligns with Spec 04 end-to-end with no regression; Phase 76 batch helper shipped + quickstart fold-in drained). Only residual: scripts/README.md fixture annotation stale post-Phase-76 (says 236+167; current 237+167). Same shape as the iterate-72867c0 post-Phase-75 drain. -->
 <!-- Pass 40 (2026-05-23 at commit a5060e1): 1 finding (0H/0M/1L). Post-Phase-75 + 4-iterate-drain audit found everything aligned EXCEPT one inconsistency: `plan/bearings.md` Items entry is uniquely terse vs the Game / Philosophy / Enemy entries which use multi-line per-phase fold-ins ("+ Phase 72 ... STARTING_REGION", "+ Phase 73 codex slice", etc.). The Phase 75 brief's D-decision explicitly skipped bearings.md ("no entry needed; leaf addition") but that contradicts the standing pattern in the same file. AUDIT bias `equipment/items` weights this finding 1.5×. -->
 <!-- Pass 39 (2026-05-23 at commit 51cae43): zero findings. Post-Phase-74 + post-0.11.0 audit walked the deep docs landscape across the 15 commits since pass 38: Phase 74 ship (+72 chronicle lines, no engine change, no public surface change), 0.11.0 release-tag cycle (CHANGELOG flip + new top-level RELEASES.md + README cross-link + RELEASING.md step 7 ceremony), iterate-drain sweep across Spec 10 / Spec 12 / spec.md horizon. Two agent-surfaced candidate findings inspected + rejected: (1) PHASE_CANDIDATES.md:205 references CHANGELOG [unreleased] Migration notes — but that text is inside a SHIPPED-candidate's frozen historical body (Phase 67 quickstart-doc candidate), not live actionable guidance; (2) RELEASING.md step 2 RELEASES.md prep — reads as ambiguous to the agent but is unambiguous in the numbered checklist (1: CHANGELOG flip; 2: RELEASES.md prep; 3: notify consumers; 4: no-op for loop). Pool resets to empty. /iterate falls through to expand-or-iterate (CRITIQUE empty; AUDIT empty; PHASE_CANDIDATES Pending has 12 candidates). -->
 <!-- Pass 36 (2026-05-23 at commit 4dee78e): 1 finding (0H/0M/1L). Post-GH#65-trio audit walked A-F across the 17 commits between pass 35 (b5c8165) and pass 36 (4dee78e) — Phase 71 (per-foe aftermath prose) + Phase 72 (run-loop semantics + runId + STARTING_REGION + GAME_STATE_VERSION 5→6) + Phase 73 (Codex slice + journalEntry + GAME_STATE_VERSION 6→7). Public-API surface aligned (5 new types + 2 new runtime exports on src/index.ts; bearings.md + docs/api.md both annotate; fixture refreshed twice — 162 → 165 (Phase 71) → 167 (Phase 73); runtime 233 → 235 (Phase 72)). Hermetic coverage strong (17 new test cases across 3 e2e files: aftermath-lines.engine.test.ts, run-loop.engine.test.ts, codex.engine.test.ts). Module-structure consistent (new run-loop.ts module follows pure-helper convention; new reducer cases follow established switch-case pattern; cross-phase Phase-72 RESET_RUN extension for codex preservation per Phase 73 D12 wired cleanly). Docs current (gameloop.md Phase 72 Run-loop reset section; enemy.md Phase 71 Aftermath + Phase 73 Codex sections; combat.md Friendship Path codex bullet; CHANGELOG [unreleased] all three phase bullets present + lede extended thrice). Zero type-safety drift (no new @ts-ignore / as any). Zero dead-code surfaces. **Only finding: scripts/README.md fixture-state annotation is stale** — says "233 runtime + 162 types" (Phase-68 baseline) but current is 235 runtime + 167 types. The fixture file itself is current; only the prose annotation drifts. /iterate will drain. -->
@@ -17,6 +18,14 @@
 ---
 
 ## Pending
+
+### [LOW] scripts/README.md fixture-state annotation stale post-Phase-76 (says 236+167; current 237+167)
+- pass: critique-41 (commit 249345e)
+- area: docs
+- observation: Phase 76 Unit 1 (`4c6d54e`) added `previewTemplateAtAllRarities` (+1 runtime export — fixture refreshed 236 → 237). Phase 76 Unit 2 (`9e757e0`) updated docs but didn't update `scripts/README.md` (line 29 still says "post-Phase-75: 236 runtime + 167"). The fixture file itself is correctly at 237+167. Same shape as the iterate-`72867c0` post-Phase-75 drain.
+- evidence: scripts/README.md:29 (stale "post-Phase-75: 236 runtime"); scripts/public-surface.expected.json (correctly at 237+167)
+- suggested_fix: Flip "post-Phase-75: 236+167" → "post-Phase-76: 237+167". Extend per-tag history bullet list with a new `[unreleased]` (post-Phase-76) bullet naming previewTemplateAtAllRarities (+1 runtime; 236 → 237). Closing line note Phase 76 as the third runtime-count change in the 0.10.x → 0.11.x line (Phase 72 was first; Phase 75 was second).
+- source: critique (AUDIT bias `equipment/items` × 1.5 applies; effective score 1.8 × 1.5 = 2.7)
 
 ---
 
