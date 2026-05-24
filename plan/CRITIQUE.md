@@ -19,17 +19,11 @@
 
 ## Pending
 
-### [LOW] scripts/README.md fixture-state annotation stale post-Phase-76 (says 236+167; current 237+167)
-- pass: critique-41 (commit 249345e)
-- area: docs
-- observation: Phase 76 Unit 1 (`4c6d54e`) added `previewTemplateAtAllRarities` (+1 runtime export — fixture refreshed 236 → 237). Phase 76 Unit 2 (`9e757e0`) updated docs but didn't update `scripts/README.md` (line 29 still says "post-Phase-75: 236 runtime + 167"). The fixture file itself is correctly at 237+167. Same shape as the iterate-`72867c0` post-Phase-75 drain.
-- evidence: scripts/README.md:29 (stale "post-Phase-75: 236 runtime"); scripts/public-surface.expected.json (correctly at 237+167)
-- suggested_fix: Flip "post-Phase-75: 236+167" → "post-Phase-76: 237+167". Extend per-tag history bullet list with a new `[unreleased]` (post-Phase-76) bullet naming previewTemplateAtAllRarities (+1 runtime; 236 → 237). Closing line note Phase 76 as the third runtime-count change in the 0.10.x → 0.11.x line (Phase 72 was first; Phase 75 was second).
-- source: critique (AUDIT bias `equipment/items` × 1.5 applies; effective score 1.8 × 1.5 = 2.7)
-
 ---
 
 ## Done
+
+- [x] **[LOW] scripts/README.md fixture-state annotation stale post-Phase-76 (says 236+167; current 237+167)** — resolved at iterate commit `4f8ad8a` (2026-05-24). Three updates in one commit per the established post-phase-ship pattern: header flipped "post-Phase-75: 236+167" → "post-Phase-76: 237+167"; [unreleased] bullet extended to fold in Phase 76's previewTemplateAtAllRarities (+1 runtime alongside the existing Phase 75 entry); closing line extended noting Phase 76 as the third runtime-count change in the 0.10.x → 0.11.x line. Same shape as the iterate-`72867c0` post-Phase-75 prior drain. 707/707 tests stay green; pure prose annotation change. Impact 1.8 × 1.5 items bias = 2.7. Source: critique-41 row 1 (commit `4e9188a`).
 
 - [x] **[LOW] plan/bearings.md Items entry uniquely terse vs Game/Philosophy/Enemy per-phase fold-in convention** — resolved at iterate commit `8c94ada` (2026-05-23). Picked the maximal-fold-in path from the suggested_fix (retroactive fold-ins for symmetry with Enemy / Game / Skills entries): Items entry gained four per-phase extension blocks — Phase 37 (shop economy: `buyItem` / `sellItem` / `defaultSellPrice` + `ShopWare` / `ShopInventory` types), Phase 53 (rolled-items pipeline: `rarityWeightTable` + `dropItem` / `rollModifiers` / `resolveModifiers` re-exported through the public-surface fixture), Phase 54 (set items: `getActiveSetBonuses` + 5 siblings + `itemSetLibrary` / `getItemSetById` + `SetBonus` / `ItemSet` types), Phase 75 (`previewTemplateAtRarity` UI-tier wrapper around `dropItem`; closes user-jot `b5c8165`). Items entry now matches the multi-line per-phase fold-in style used by Game (Phase 63 / 72 / 73), Enemy (Phase 60 / 62 / 68 / 69 / 71 / 73), Philosophy, Skills (Phase 66). The Phase 75 brief's D-decision ("no entry needed; leaf addition") is hereby retroactively corrected — the convention IS to fold in. 704/704 tests stay green; pure docs change. Impact 2.5 × Ease 9 / 10 = 2.25 × 1.5 items bias = 3.375. Source: critique-40 row 1 (commit `7b9e23e`).
 
