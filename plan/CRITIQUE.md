@@ -33,13 +33,6 @@
 
 
 
-### [LOW] `getResistStat` export has zero in-repo callers post-Phase-80
-- pass: critique-43 (commit `7fada36`)
-- area: dead-code
-- observation: `src/Combat/stats.ts:64` exports `getResistStat(combatant, resistedBy)`. Pre-Phase-80 it was called by the target-resist roll in `resolveEffectApplication`; that call site was removed at Phase 80. The function is still exported through the public barrel (`src/index.ts:52`) but has zero in-repo callers. It may be consumed by `axiomancer-mobile` (external consumer) — verify before removal.
-- evidence: `grep -rn "getResistStat" src/ --include="*.ts"` returns only the definition + barrel re-export. Zero test or runtime callers.
-- suggested_fix: Add `/** @deprecated Unused post-Phase-80; scheduled for removal at next minor. */` JSDoc (same pattern as Phase 51's deprecated aliases). Removal at the next minor bump after verifying zero external callers.
-- source: critique
 
 
 - **[LOW] Stat-band buffs uncovered (mind/heart attack-up + body/mind/heart defense-up + 3 resistance bands)** — source: Phase 79 audit (commit `3d213bd`). Specifically uncovered: `buff_mind_attack_up`, `buff_heart_attack_up`, `buff_body_defense_up`, `buff_mind_defense_up`, `buff_heart_defense_up`, `buff_resistance_body`, `buff_resistance_mind`, `buff_resistance_heart`, `buff_all_stats_up`, `buff_buff_duration_up`, `buff_status_chance_up`, `buff_cleanse`. All share the `applyStatModifiers` aggregation path (Phase 48 verified clean for the path). **Suggested fix:** one parameterised test in `src/Effects/e2e/` walking the per-aspect stat-band variants; each row asserts the post-`getEffectiveStats` delta matches the band. Single hermetic file, ~12 cases. Score 4 × 7 / 10 = 2.8.
@@ -55,6 +48,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] `getResistStat` export has zero in-repo callers post-Phase-80** — resolved at iterate (this commit). Added `@deprecated` JSDoc per the Phase 51 pattern. Removal scheduled at next minor bump after verifying zero external callers. Source: critique-43.
 
 - [x] **[LOW] `EffectApplicationResult.rebounded` is dead type surface** — resolved at iterate (this commit). Removed `rebounded?: boolean` field from `EffectApplicationResult` + JSDoc line. Updated `resist.ts` comment. Minor breaking change (pre-1.0.0 acceptable). Source: critique-43.
 
