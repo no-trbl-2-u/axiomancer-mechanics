@@ -19,6 +19,13 @@ shift** (Phase 80 direction (a) pure split, with Phase 78 + 79
 audit pre-work).
 
 ### Changed
+- **`EffectApplicationResult.rebounded` removed; `getResistStat` deprecated.**
+  The `rebounded?: boolean` field on `EffectApplicationResult` is removed
+  (dead since Phase 80 — never set to `true`). The `roll` field JSDoc
+  corrected to "Tier 2 buff effects only." `getResistStat` marked
+  `@deprecated` (zero in-repo callers post-Phase-80; removal at next minor).
+  **BREAKING:** consumers reading `result.rebounded` must remove that access.
+
 - **Phase 84 — Skill "fizzle" event + UX scrub post-Phase-80.**
   `SkillEvent` discriminated union cleaned up: dead-code
   `effect-rebounded` variant removed (zero emit path post-Phase-80);
