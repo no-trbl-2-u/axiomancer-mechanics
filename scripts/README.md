@@ -26,7 +26,7 @@ fixture IS the gesture for "I'm changing the public barrel"; deploy
 gate fails on any PR that adds/removes/renames a top-level export
 without refreshing the fixture.
 
-Current shape (HEAD, post-Phase-75): **236 runtime exports + 167
+Current shape (HEAD, post-Phase-76): **237 runtime exports + 167
 type exports** across the 13 module sections. Per-tag history of
 additive public-API surface (deriveable via `node
 scripts/diff-public-surface.mjs <ref-A> <ref-B>`):
@@ -46,15 +46,18 @@ scripts/diff-public-surface.mjs <ref-A> <ref-B>`):
   shape rather than a new top-level type; Phase 73 added two codex
   types (`CodexEntry`, `CodexState`, 165 → 167). Tag shipped at
   235 + 167.
-- `[unreleased]` (post-Phase-75): Phase 75 added one runtime export
-  (`previewTemplateAtRarity` — UI-tier wrapper around `dropItem`
-  for mobile item-library mod-visibility, 235 → 236). Types
-  unchanged (helper signature uses existing `ItemRarity` /
-  `Equipment`). Ships with the next bump at 236 + 167.
+- `[unreleased]` (post-Phase-75 + Phase-76): Phase 75 added one
+  runtime export (`previewTemplateAtRarity` — UI-tier wrapper
+  around `dropItem` for mobile item-library mod-visibility,
+  235 → 236); Phase 76 added one more (`previewTemplateAtAllRarities`
+  — batch wrapper around the Phase 75 single-cell helper for UI
+  tooltip / item-detail rarity-strip views, 236 → 237). Types
+  unchanged (both helper signatures use existing `ItemRarity` /
+  `Equipment`). Ships with the next bump at 237 + 167.
 
 Phase 72 was the first runtime-export-count change in the 0.10.x
-line; Phase 75 is the second. Type-export count grew across Phase
-60 / 66 / 68 / 71 / 73.
+line; Phase 75 is the second; Phase 76 is the third. Type-export
+count grew across Phase 60 / 66 / 68 / 71 / 73.
 
 ## When to add a new tool here
 
