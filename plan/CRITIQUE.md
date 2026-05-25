@@ -25,20 +25,19 @@
 
 
 
-
-- **[LOW] Stat-band buffs uncovered (mind/heart attack-up + body/mind/heart defense-up + 3 resistance bands)** — source: Phase 79 audit (commit `3d213bd`). Specifically uncovered: `buff_mind_attack_up`, `buff_heart_attack_up`, `buff_body_defense_up`, `buff_mind_defense_up`, `buff_heart_defense_up`, `buff_resistance_body`, `buff_resistance_mind`, `buff_resistance_heart`, `buff_all_stats_up`, `buff_buff_duration_up`, `buff_status_chance_up`, `buff_cleanse`. All share the `applyStatModifiers` aggregation path (Phase 48 verified clean for the path). **Suggested fix:** one parameterised test in `src/Effects/e2e/` walking the per-aspect stat-band variants; each row asserts the post-`getEffectiveStats` delta matches the band. Single hermetic file, ~12 cases. Score 4 × 7 / 10 = 2.8.
-
-- **[LOW] Advantage-category effects (13 of 14 uncovered)** — source: Phase 79 audit (commit `3d213bd`). `buff_advantage_body` has a pin via the Phase 66 `intensity-feedback` synergy test; the remaining 13 (`buff_advantage_mind`, `buff_advantage_heart`, `buff_evasion_up`, `buff_accuracy_up`, `buff_damage_reduction`, `buff_invincibility`, `buff_taunt`, `buff_stealth`, `buff_counter`, `buff_life_steal`, `debuff_evasion_down`, `debuff_accuracy_down`, `debuff_defense_down`) are uncovered. All share the `resolveEffectiveAdvantage` path (Phase 50 aggregator). **Suggested fix:** one hermetic file in `src/Effects/e2e/advantage-effects.engine.test.ts` walking the per-stance advantage variants + the negative-side debuffs. Score 4 × 7 / 10 = 2.8.
-
-- **[LOW] Control-category effects (10 of 17 uncovered)** — source: Phase 79 audit (commit `3d213bd`). stun/petrify/charm/confusion/silence/slow/mark covered; `debuff_sleep`, `debuff_daze`, `debuff_fear`, `debuff_blind`, `debuff_berserk`, `debuff_fatigue`, `debuff_exhaustion`, `debuff_root`, `debuff_knockdown`, `debuff_dispel`, `debuff_hex`, `debuff_vulnerability_mind`, `debuff_vulnerability_heart` uncovered. Unlike stat-band these have **unique action-restriction semantics** per effect (sleep skips turn entirely; fear randomises action; blind drops accuracy; berserk forces attack; root prevents stance-change) — needs **per-effect pins, not parameterised**. **Suggested fix:** extend `src/Effects/e2e/control-effects.engine.test.ts` (or create) with one `describe` block per effect. ~10 cases. Score 4 × 6 / 10 = 2.4.
-
-- **[LOW] Damage-category variants uncovered (5 of 10)** — source: Phase 79 audit (commit `3d213bd`). poison/bleed/curse/disease/hp_decay/straw_man_echo/post_hoc_tremor covered; `debuff_strong_poison`, `debuff_burn`, `debuff_frostbite`, `debuff_shock`, `debuff_wound` uncovered. Likely share the DoT round-tick path with poison/bleed (covered) but flavour-distinct payloads (burn = fire-typed DoT scaling with caster stat; frostbite = stacking DoT with slow side-effect; shock = single-hit + stun chance) warrant individual pins. **Suggested fix:** one hermetic file `src/Effects/e2e/damage-variants.engine.test.ts` with one case per variant asserting the round-tick HP delta + any side-effects. ~5 cases. Score 4 × 6 / 10 = 2.4.
-
-- **[LOW] Fallacy-thread effects uncovered (8 effects from Phase 44 / fallacy authoring)** — source: Phase 79 audit (commit `3d213bd`). `buff_petitio_pulse`, `buff_gettiters_flicker`, `buff_ad_hoc_patch`, `debuff_moral_learning`, `debuff_transformative`, `debuff_rational_disagreement`, `debuff_affirming_consequent`, `debuff_causal_emergence` uncovered. Phase 44 fallacy-thread content extensions of standard payload shapes; many are referenced by `sourcedFromCell` on philosophical-alignment library entries. **Suggested fix:** quick pins via existing `fallacy-skills.engine.test.ts` extending the synergy-thread cases to assert the carrier-effect lands on its skill cast. ~8 cases. Score 3 × 7 / 10 = 2.1.
-
 ---
 
 ## Done
+
+- [x] **[LOW] Stat-band buffs uncovered (mind/heart attack-up + body/mind/heart defense-up + 3 resistance bands)** — resolved at Phase 88 (this commit). `src/Effects/e2e/stat-band-effects.engine.test.ts` ships 12 parameterized cases covering all 12 uncovered stat-band buffs via `getEffectiveStats` delta assertions. Source: Phase 79 audit (commit `3d213bd`).
+
+- [x] **[LOW] Advantage-category effects (13 of 14 uncovered)** — resolved at Phase 88 (this commit). `src/Effects/e2e/advantage-effects.engine.test.ts` ships 13+ cases covering all 13 uncovered advantage effects via `getActiveEffectModifiers` assertions. Source: Phase 79 audit (commit `3d213bd`).
+
+- [x] **[LOW] Control-category effects (10 of 17 uncovered)** — resolved at Phase 88 (this commit). `src/Effects/e2e/control-effects.engine.test.ts` ships 10 per-effect describe blocks covering the unique action-restriction semantics. Source: Phase 79 audit (commit `3d213bd`).
+
+- [x] **[LOW] Damage-category variants uncovered (5 of 10)** — resolved at Phase 88 (this commit). `src/Effects/e2e/damage-variants.engine.test.ts` ships 5 DoT variant cases asserting per-round HP delta + side-effects via `getActiveEffectModifiers`. Source: Phase 79 audit (commit `3d213bd`).
+
+- [x] **[LOW] Fallacy-thread effects uncovered (8 effects from Phase 44 / fallacy authoring)** — resolved at Phase 88 (this commit). Extended `src/Skills/e2e/fallacy-skills.engine.test.ts` with 8 cases pinning the standalone fallacy-thread effects via `applyEffect` + payload assertions. Source: Phase 79 audit (commit `3d213bd`).
 
 - [x] **[LOW] README.md + docs/api.md + plan/bearings.md don't reflect Phase 80 yet** — resolved at iterate (this commit). README.md Combat row gains `(deprecated)` on getResistStat + Phase 80 always-land callout on resolveEffectApplication; Effects row gains Phase 80 contract summary. docs/api.md Combat section gains a Phase 80 always-land bullet. plan/bearings.md Combat + Effects entries gain Phase 80 fold-in lines. Source: critique-42.
 
