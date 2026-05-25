@@ -68,7 +68,7 @@ jobs:
         if: steps.idle.outputs.skip != 'true'
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install dependencies
@@ -106,6 +106,7 @@ jobs:
           # leans on — keep the allowlist permissive in CI since the
           # workflow itself is the trust boundary.
           allowed_tools: "Bash,Read,Edit,Write,Glob,Grep,Agent,TodoWrite,WebFetch,WebSearch"
+          dangerously_skip_permissions: true
           timeout_minutes: '60'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
