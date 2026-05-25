@@ -45,13 +45,14 @@
 
 ## Pending
 
-- [ ] **[LOW] docs/testing.md e2e entry-point table missing Phase 88 test files** — Effects row doesn't mention the 5 new Phase 88 test files (`stat-band-effects`, `advantage-effects`, `control-effects`, `damage-variants` in Effects/e2e; `fallacy-skills` in Skills/e2e). Skills row also lacks the `fallacy-skills.engine.test.ts` reference. Impact 3 × Ease 9 / 10 = 2.7. Source: /iterate audit category E (docs) finding (same-tick discovery, surfaced by post-Phase-88 sweep).
 
 - [ ] **[LOW] `isBaseStatTarget` type guard in `src/Combat/effect-modifiers.ts:19` is dead code** — Exported helper with zero callers in the repo (not on public barrel). Impact 2 × Ease 10 / 10 = 2.0. Source: /iterate audit category D (dead code).
 
 ---
 
 ## Done
+
+- [x] **[LOW] docs/testing.md e2e entry-point table missing Phase 88 test files** — resolved at iterate commit `5b869c9` (2026-05-24). Effects row extended with the 4 Phase 88 test files (`stat-band-effects`, `advantage-effects`, `control-effects`, `damage-variants`); Skills row extended with `fallacy-skills.engine.test.ts` (Phase 88) + `phase83-skill-coverage.engine.test.ts` (Phase 83). 824/824 tests stay green; pure docs change. Impact 3 × Ease 9 / 10 = 2.7. Source: /iterate audit category E (docs) finding.
 
 - [x] **[LOW] CHANGELOG [unreleased] missing Phase 88 + Phase 89 entries** — resolved at iterate commit `3a19c2f` (2026-05-24). Phase 88 (effect coverage sweep — 5 new test files, 5 Phase 79 CRITIQUE LOWs drained) and Phase 89 (front-door docs fold-in for Phases 81-87) shipped at commits `6ea57dc` + `e77437a` but had no CHANGELOG entries. Added both under `### Added` with standard phase-entry format; lede extended to mention both phases. 824/824 tests stay green; pure docs change. Impact 4 × Ease 9 / 10 = 3.6. Source: /iterate audit category E (docs) finding (same-tick discovery, surfaced by post-Phase-89 sweep).
 
