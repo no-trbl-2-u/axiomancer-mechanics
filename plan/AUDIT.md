@@ -53,6 +53,8 @@
 
 ## Done
 
+- [x] **[LOW] CHANGELOG [unreleased] missing Phase 88 + Phase 89 entries** — resolved at iterate commit `3a19c2f` (2026-05-24). Phase 88 (effect coverage sweep — 5 new test files, 5 Phase 79 CRITIQUE LOWs drained) and Phase 89 (front-door docs fold-in for Phases 81-87) shipped at commits `6ea57dc` + `e77437a` but had no CHANGELOG entries. Added both under `### Added` with standard phase-entry format; lede extended to mention both phases. 824/824 tests stay green; pure docs change. Impact 4 × Ease 9 / 10 = 3.6. Source: /iterate audit category E (docs) finding (same-tick discovery, surfaced by post-Phase-89 sweep).
+
 - [x] **[LOW] docs/quickstart.md Items row missing Phase 76 previewTemplateAtAllRarities surface** — resolved at iterate commit `81b7cef` (2026-05-23). Same-tick discovery post-Phase-76 ship: Items row marquee surface omitted previewTemplateAtAllRarities; phases list missing 76. Same shape as the iterate-`469caf3` Phase 75 fold-in. Single-line edit. 707/707 tests stay green; pure docs change. Impact 3 × Ease 9 / 10 = 2.7 × 1.5 items bias = 4.05. Source: /iterate audit category E (docs) finding (same-tick discovery, surfaced by post-Phase-76 ship sweep).
 
 - [x] **[VERIFIED-CLEAN] Phase 77 audit — base-action token generation (Spec 04 token economy)** — resolved at audit commit `73ab7de` (2026-05-23). User-flagged at oversight-18 with suspected regression: "base attack/defend may not be generating the tokens it was supposed to." Walked the full path end-to-end:
