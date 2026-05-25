@@ -15,10 +15,6 @@ import { BaseStats, DerivedStats, NonCombatStats } from '../Character/types';
 import { deriveStats, deriveNonCombatStats } from '../Utils';
 import { isCharacter } from '../Utils/typeGuards';
 
-const STANCE_KEYS: ReadonlyArray<EffectStatTarget> = ['body', 'mind', 'heart'];
-export const isBaseStatTarget = (t: EffectStatTarget): t is Stance =>
-    (STANCE_KEYS as readonly string[]).includes(t);
-
 /**
  * Aggregated, intensity-scaled modifiers from every active effect on a combatant.
  *
