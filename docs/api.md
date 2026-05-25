@@ -132,6 +132,18 @@ method + supporting exports:
 See `docs/gameloop.md` § "Run-loop reset (Phase 72)" for the
 preserve / reset matrix and lifecycle.
 
+**CLI consumer surfaces (Phase 82).** `game.cli.ts` extended with
+Codex tab (renders `state.codex.unlockedEntries` via enemy library
+lookup) and Begin Again tab (`store.resetRun({ keepCharacter })`).
+Agent-graded walkthrough at `automation/scripts/walkthroughs/codex-unlock.*`.
+
+**Per-module quickstart pages (Phase 87).** Five focused guides with
+runnable code samples: [`quickstart-character.md`](./quickstart-character.md),
+[`quickstart-combat.md`](./quickstart-combat.md),
+[`quickstart-items.md`](./quickstart-items.md),
+[`quickstart-skills.md`](./quickstart-skills.md),
+[`quickstart-world.md`](./quickstart-world.md).
+
 ### Events (Beta)
 
 The engine emits a single uniform envelope on every `GameEvent`:

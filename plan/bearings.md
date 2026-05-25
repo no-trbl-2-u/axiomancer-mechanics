@@ -69,6 +69,8 @@ Combat:     determineAdvantage, getAttackStat, getDefenseStat, getSaveStat,
             target-resist roll removed; only Tier 2 buff caster fumble/crit
             survives. SkillEvent `effect-resisted` renamed `buff-fumbled`,
             `effect-rebounded` removed — Phase 84)
+            (+ Phase 82 CLI consumer: codexTab + resetTab in game.cli.ts;
+            Phase 85 combat-tuning audit confirmed Q1/Q2/Q4/Q6/Q26 canonical)
 Combat reducer: initializeCombat, setPhase, setPlayerStance, setPlayerAction,
                 appendLog, incrementFriendship, endCombat
 Effects:    applyEffect, applyTier1CombatEffect, clearTier1EffectsForStance,
@@ -76,6 +78,10 @@ Effects:    applyEffect, applyTier1CombatEffect, clearTier1EffectsForStance,
             (+ Phase 80 always-land contract on resolveEffectApplication;
             EffectApplicationResult.rebounded removed; roll field only
             surfaces on Tier 2 buff path)
+            (+ Phase 83 test sweep: 25 per-skill + tier-2-debuff cases;
+            Phase 86 equipment audit: zero drift confirmed;
+            Phase 88 effect coverage sweep: 86 new hermetic cases across
+            stat-band / advantage / control / damage-variant / fallacy)
 Skills:     executeSkill, canUseSkill, learnSkill, getAvailableSkills,
             skillLibrary, getSkillById, Skill, SkillEvent
             (+ SkillSynergy, SynergyPredicate types + Skill.synergy?

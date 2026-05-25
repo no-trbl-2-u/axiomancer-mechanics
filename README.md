@@ -84,6 +84,12 @@ The barrel exports are organised by domain:
 | Utils           | `clamp`/`inRange`/`average`/`sum`/`max`/`min`, `randomInt`, `deepClone`, `capitalize`/`formatPercent`, `createDie`/`createDieRoll`/`determineRollAdvantageModifier`, `deriveStats`/`deriveNonCombatStats`/`calculateMaxHealth`, type guards (`isCharacter`, `isEnemy`, `isCombatActive`) |
 | Utils — RNG     | `getRng`/`setRng`/`setSeed`, `Rng` interface (seedable LCG; Phase 11 routed all gameplay rolls through this singleton so saves are reproducible) |
 
+**Recent infrastructure (Phases 81-88):** 13 agent-graded walkthroughs
+in `automation/scripts/walkthroughs/` (Phase 81); CLI codex + reset tabs
+(Phase 82); 824 hermetic tests (Phase 83 skill coverage + Phase 88
+effect coverage sweep); 5 per-module quickstart pages at
+[`docs/quickstart-*.md`](./docs/) (Phase 87).
+
 ## CLIs
 
 The repo also ships a hands-on demo CLI. It is NOT part of the published package surface (`src/CLI` is excluded from the build):
