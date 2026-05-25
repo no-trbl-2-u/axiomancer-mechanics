@@ -45,6 +45,9 @@
 
 ## Pending
 
+- [ ] **[LOW] docs/testing.md e2e entry-point table missing Phase 88 test files** — Effects row doesn't mention the 5 new Phase 88 test files (`stat-band-effects`, `advantage-effects`, `control-effects`, `damage-variants` in Effects/e2e; `fallacy-skills` in Skills/e2e). Skills row also lacks the `fallacy-skills.engine.test.ts` reference. Impact 3 × Ease 9 / 10 = 2.7. Source: /iterate audit category E (docs) finding (same-tick discovery, surfaced by post-Phase-88 sweep).
+
+- [ ] **[LOW] `isBaseStatTarget` type guard in `src/Combat/effect-modifiers.ts:19` is dead code** — Exported helper with zero callers in the repo (not on public barrel). Impact 2 × Ease 10 / 10 = 2.0. Source: /iterate audit category D (dead code).
 
 ---
 
