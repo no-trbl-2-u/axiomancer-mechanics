@@ -32,41 +32,6 @@
 - score: 5 × 6 / 10 = 3.0 (medium impact — content-scale parity for early-mid game progression; medium-high ease — pure content authoring against the Phase 65 recipe with no engine change).
 - recommended-slot: after the Walkthrough catalog expansion candidate (above) since one of those walkthroughs would naturally cover the northern-forest path. Independent of the befriend-mechanic / Tier 3 / alignmentDelta candidates.
 
-### Candidate: CHANGELOG public-surface diff autogeneration
-- signal: The recent docs / spec drain cycle exposed a repeating maintenance burden: every additive type addition (Phase 60: `FriendshipReward`, Phase 66: `SkillSynergy` + `SynergyPredicate`, Phase 68: `BefriendabilityConfig`) requires manually flipping fixture counts and `[unreleased]` Added bullets across CHANGELOG.md + scripts/README.md + Spec 12 acceptance row + sometimes docs/api.md. Critique passes 24, 29, 30 each filed at least one row about stale fixture counts; iterate drained them at `9bed952`, `52b8ac2`, `4a2d835`, `cbc658b`, `0879800`, `4b26b1c`. The pattern is clear: this drift is **systemic** — the public-surface delta IS the changelog content. `scripts/diff-public-surface.mjs` already emits markdown-shaped Added / Removed / Changed-kind sections; it just isn't wired into the CHANGELOG flow.
-- scope: One phase, 2 commit units. **Unit 1 — CHANGELOG generation script.** New `scripts/changelog-additions.mjs` consumes `node scripts/diff-public-surface.mjs <last-tag> HEAD` and emits a ready-to-paste markdown block for the `[unreleased]` `### Added` section. Output format: one bullet per type/value added with the symbol name + a placeholder description slot ("**\<Name> (Phase NN).** _description-here_") that the human still authors. The script's job is the boilerplate floor (symbol names + counts + fixture-bump narrative), not the prose. Run it via `npm run changelog:additions` (new package.json script). **Unit 2 — RELEASING.md wire-in + verify gate.** RELEASING.md step 7 ("CHANGELOG ready") adds a "Run `npm run changelog:additions` and reconcile against the live `[unreleased]` block" sub-step. Verify gate / deploy-check stays unchanged (this is a content-aid tool, not a contract enforcer — the existing fixture-drift detector covers the contract side). Hermetic coverage at `scripts/e2e/changelog-additions.test.mjs` (or similar — wire to the existing `npm run agent:verify` flow if cleaner) pinning the output shape against a known git-ref delta.
-- unblocks: Cuts the docs/CHANGELOG fixture-drift drains by ~half. Future additive-type additions get a script-emitted bullet skeleton; humans fill prose. Pairs naturally with the [`scripts/public-surface.expected.json`](../scripts/public-surface.expected.json) fixture (Phase 53) and `diff-public-surface.mjs` (also Phase 53) by closing the per-tag-delta authoring loop.
-- blocked-by: None — the diff script exists; this candidate just shapes its output.
-- score: 5 × 5 / 10 = 2.5 (medium impact — cuts a recurring docs-drift category; medium ease — small scripts/ addition + RELEASING.md edit + hermetic snapshot pin).
-- recommended-slot: any time. Best paired with a release-process polish phase if one is queued.
-
-### Candidate: Difficulty-meter gameplay scaling (`moralMeter` → engine multipliers)
-- signal: Knowledge-Gaps Q27 names the design tension: braindump's "Difficulty meter driven by moral choices — moral choices increase difficulty, immoral choices decrease it" (line 36-44 of `braindump/BRAINDUMP.md`) vs Spec 10 Q4's locked answer "moralMeter is narrative-only — does NOT scale enemy stats." Today the meter shifts on friendship victories (+1) + dialogue choices (mapped via `MORAL_FLAG_EFFECTS`); it surfaces on the Character tab and gates one or two dialogue branches but doesn't change combat math. The braindump-Spec divergence has been deliberately deferred since Phase 10 / Phase 42-46. At some point a playtest pass will want to resolve it. The same Q26 "lethal-swingy combat tuning" deferral has also been waiting since pre-loop.
-- scope: One phase, **design-heavy** — wants user-attended oversight to lock direction. Brief at dispatch picks ONE of:
-  - **(a) Spec 10 Q4 stays — close the candidate.** The narrative-only stance is the standing decision; if the user still endorses it, the candidate is rejected and the braindump entry struck. Lowest-touch.
-  - **(b) Enemy-stat scaling tier.** `getMoralDifficultyMultiplier(state.moralMeter): number` multiplies enemy `baseStats` / `derivedStats` at `initializeCombat` time. Higher moralMeter → harder fights (per braindump). Engine touch: ~1 helper + 1 reducer hook. Hermetic e2e pins the multiplier curve.
-  - **(c) Encounter-density scaling.** moralMeter biases the `MapEventPool` weighted-roll toward `encounter` kind (harder world) or `loot-cache` / `village` (softer world). No combat-math touch; pure world-side. Pairs with Phase 23/24/43 authoring patterns.
-  - **(d) Skill / item availability gating.** Certain Tier 3 skills or boss-tier consumables become learnable only above a moralMeter threshold (mirrors Phase 46's `requiresAlignment` gates on the philosophical cube). Smallest combat-math touch; reuses the alignment-gate primitive.
-- unblocks: closes Knowledge-Gaps Q27 fully. Resolves the long-deferred braindump-vs-Spec-10 tension. Whichever direction wins becomes the canonical "moralMeter drives gameplay" mechanism; future content authoring (boss-tier befriend rewards, alignment-gated endings, etc.) can lean on it.
-- blocked-by: None on the engine side. Wants a **user-attended design pass via `/oversight`** before brief drafting — the four directions span "no engine change" to "moderate engine change"; a single phase ships one of them, not all.
-- score: 6 × 5 / 10 = 3.0 (high impact — closes a multi-spec deferral; medium ease — design pass + 1-3 commit units depending on direction).
-- recommended-slot: queue when the user is ready for an attended oversight; not a /loop-autonomous candidate.
-
-### Candidate: `incrementsFriendship?: number` skill payload + 2-3 calming skills
-- signal: Phase 66 follow-ups + Phase 68 D-considered-but-rejected named this as design path (c) for the Befriending mechanic v2. Path (a) shipped (Phase 68 `BefriendabilityConfig`), but the `incrementsFriendship` payload remains valuable as a third axis: it lets the player advance toward befriend via active skill use (not just both-defend) without authoring a per-enemy predicate. Pairs with Phase 68's `BefriendabilityConfig` rather than replacing it — the two stack (a skill that increments the counter on cast still has to satisfy the per-enemy predicate to trigger friendship). Authors who want a calming-skill arc gain a clean primitive.
-- scope: One phase, 3 commit units. **Unit 1 — engine primitive.** New `Skill.incrementsFriendship?: number` payload field on `src/Skills/types.ts`; `executeSkill` in `src/Skills/skill.engine.ts` increments `state.friendshipCounter` by the field value after damage + synergy + effects apply (only when the skill is cast in active combat). Hermetic coverage. **Unit 2 — author 2-3 calming skills.** New Tier 2 calming-style skills using the field (e.g. `compassionate-listen` heart-stance `{ heart: 2, mind: 1 }` → `incrementsFriendship: 1`; `de-escalation` mind-stance `{ mind: 2 }` → `incrementsFriendship: 1`; possibly a third). All carry `learningRequirement: { level: 5 }` matching the Tier 2 convention. **Unit 3 — docs + CHANGELOG.** `docs/skills.md` Tier 2 synergy section gains a "Calming skills (incrementsFriendship)" subsection; `docs/combat.md` Friendship Path mentions the new path-3 to friendship eligibility (defend / damage-then-defend / cast a calming skill); `CHANGELOG.md [unreleased] ### Added` entry.
-- unblocks: closes the Phase 66 + Phase 68 follow-up. Gives authors a third way to gate befriend (per-enemy predicates can require these skill IDs via `requiredSkillUse` — turning the two new primitives into a multiplier). Future "pacifist run" content has actual skills to lean on.
-- blocked-by: None.
-- score: 5 × 6 / 10 = 3.0 (medium impact — meaningful gameplay primitive but content footprint is modest; medium-high ease — small typed surface + 2-3 authored skills).
-- recommended-slot: after the `FriendshipReward.alignmentDelta` candidate above, but the two are independent.
-
-### Candidate: Tier 3 synergy / content expansion (mirror Phase 66 for Tier 3)
-- signal: Phase 66 expanded Tier 2 from 3 → 8 authored skills using the new `SkillSynergy` primitive. Tier 3 sits at 7 today (3 original philosophical-resource-gated + 4 Phase 44 fallacy-as-spell additions) but the original 3 don't use `SkillSynergy`, and Tier 3's "philosophical-resource gated" identity (mind + fallacy / paradox tokens) has barely been content-explored. The natural expansion is 5 new Tier 3 skills using the Phase 66 `SkillSynergy` primitive PLUS the Tier 3 philosophical-resource cost shape, demonstrating end-game skill design that combines resonance with token economy.
-- scope: One phase, 3 commit units. **Unit 1 — content design pass.** Pick the 5 new skills: each carries a Tier 3 cost (mind + fallacy OR mind + paradox), uses `SkillSynergy` with a heavier per-axis payoff than Tier 2 (e.g. higher `bonusDamage`, larger `intensityDamageMul`), and represents a known philosophical move ("dialectical reversal", "ad-absurdum cascade", "transcendental synthesis", etc.). Brief at dispatch locks the per-skill mapping. **Unit 2 — author the 5 skills.** Append to `src/Skills/skill.library.ts`; register in `skillLibrary`; all carry `learningRequirement: { level: 10 }` matching the Tier 3 convention. **Unit 3 — hermetic e2e + docs + CHANGELOG.** New `src/Skills/e2e/tier3-synergy-skills.engine.test.ts` (5+ cases); `docs/skills.md` Tier 3 subsection extended; `CHANGELOG.md [unreleased] ### Added` entry; `specs/04b-skills-library-and-e2e.md` Tier 3 row count flipped 7 → 12.
-- unblocks: end-game skill identity becomes "philosophical-resource + cross-stance resonance". Phase 33's declared `learningRequirement: { level: 10 }` on Tier 3 becomes mechanically meaningful; the 12-skill total matches the Resonance Pairs design vision more cleanly.
-- blocked-by: None — Phase 66's `SkillSynergy` primitive is ready; no engine changes required.
-- score: 6 × 5 / 10 = 3.0 (medium-high impact — closes a content scale gap at end-game tier; medium ease — pure content + e2e + docs, no new engine primitive).
-- recommended-slot: any time; independent of the befriend-mechanic candidates.
 
 ### Candidate: Second continent — Northern Continent stub
 - signal: `spec.md` 6-month horizon — "Additional world content
@@ -94,39 +59,26 @@
 - score: 4 × 7 / 10 = 2.8 (medium impact — closes a deferred-Phase-81-scope at the player-experience tier; high ease — small preset edit + a known walkthrough pattern). Aggressive 2.5+ threshold catches this. Source: Phase 81 D6 ship-time filing (commit `0ab5968`).
 - recommended-slot: any time. Pairs naturally with the Damage-resist primitive candidate (both are small Phase 80 follow-ups).
 
-### Candidate: Damage-resist primitive (Phase 80 direction (a) damage-side follow-up)
-- signal: Phase 80 (shipped today) implemented direction (a) pure split on the **effect-side only** per its D1 — the candidate body's "damage rolls separately + applies its own resistance" text requires defining (a) what "damage rolls" means for skills (today `calculateSkillDamage` is deterministic — no damage die) and (b) what resistance applies to the damage half (today there's no damage-resist primitive — `resistStat` was the effect-resist roll input, not a damage modifier). Adding both at Phase 80 would have expanded scope past the failure-mode-6 line. The damage-side belongs in its own phase.
-- scope: One phase, design-attended at brief drafting. Two open design directions:
-  - **(a) Per-band damage-resist subtraction.** Skill damage = `calculateSkillDamage(actor, skill) - target.derivedStats.<scalingStat>Defense`. Reuses the existing physical/mental/emotional defense bands. No new primitive; just a subtraction in the damage-application path. Lowest engine churn.
-  - **(b) New `damageResist` primitive.** Add `damageResistBody / Mind / Heart` to `derivedStats` (or per-stance); compute as a fraction (e.g. `damage × (1 - resist/100)`). Symmetric with the resist-stat surface the legacy effect-resist roll used. Higher churn (new derived-stat fields + fixture bump + every consumer).
-- unblocks: closes the damage-side of direction (a). After this phase, the full direction (a) shift is shipped end-to-end. Pairs with Phase 85 (combat-tuning audit) — which surfaces other deferred combat-math Qs that may want the same primitive.
-- blocked-by: Phase 80 must ship first (shipped today). Brief drafting wants user-attended oversight to pick (a) or (b).
-- score: 5 × 6 / 10 = 3.0 (medium-high impact — completes direction (a); medium ease — defined surface with clear callers; design pass at brief drafting). Source: Phase 80 D1 ship-time filing (commit `3155e03`).
-- recommended-slot: after Phase 80 ships + the post-Phase-80 audit trio (Phase 83 / 85 / 86) drains. Pairs naturally with Phase 85's combat-tuning Q1 / Q2 (single-roll-vs-separate-damage-roll model + damage-formula-with-defense-subtraction).
-
-### Candidate: Effect coverage sweep (drain 5 Phase 79 LOW aggregate rows)
-- promoted: 2026-05-24 (twenty-first oversight; user pick — "Effect coverage sweep + Front-door docs fold-in"). Becomes Phase 88.
-- signal: CRITIQUE Pending carries 5 Phase 79 LOW aggregate rows (stat-band buffs / advantage-category / control-category / damage-variants / fallacy-thread effects) — all uncovered-effect test gaps requiring per-effect hermetic cases. Together they represent ~50 new test cases across 4 new files. Too large for single iterate ticks; a dedicated phase bundles them into one focused test-authoring push.
-- scope: One phase, 4 commit units: (1) `src/Effects/e2e/stat-band-effects.engine.test.ts` (~12 parameterized cases for the 12 uncovered stat-band buffs); (2) `src/Effects/e2e/advantage-effects.engine.test.ts` (~13 cases for the 13 uncovered advantage-category effects); (3) `src/Effects/e2e/control-effects.engine.test.ts` (~10 per-effect describe blocks for control-category effects with unique action-restriction semantics); (4) `src/Effects/e2e/damage-variants.engine.test.ts` (~5 cases for the 5 uncovered DoT variants) + fallacy-thread pins folded into existing `fallacy-skills.engine.test.ts` (~8 cases). Drains all 5 Phase 79 LOW aggregate rows from CRITIQUE Pending.
-
-### Candidate: Post-Phase-80 type surface cleanup (`EffectApplicationResult.rebounded` + `getResistStat` deprecation)
-- rejected: 2026-05-24 (oversight; drained by iterate)
-- reason: All 3 findings shipped via iterate ticks before this candidate reached oversight: `rebounded` field removed (commit `8a22512`), `getResistStat` deprecated (commit `74aaf6a`), `roll` JSDoc fixed (commit `8a22512`). No phase needed.
-
-### Candidate: Front-door docs fold-in for Phases 80-87
-- promoted: 2026-05-24 (twenty-first oversight; user pick). Becomes Phase 89.
-- signal: Critique-42 LOW ("README.md + docs/api.md + plan/bearings.md don't reflect Phase 80 yet") is now 8 phases stale (Phases 80-87 all unreflected). Each phase added significant surface: Phase 80 mechanic shift, Phase 82 CLI codex+reset tabs, Phase 84 SkillEvent rename, Phase 85 combat Q resolution, Phase 87 quickstart pages. The front-door reader docs (README Public API table, docs/api.md per-module sections, plan/bearings.md per-phase fold-in lines) haven't been updated since Phase 73.
-- scope: One phase, 3 commit units: (1) README.md Public API table + feature highlights; (2) docs/api.md Combat / Effects / Skills sections + new Game subsections; (3) plan/bearings.md per-module fold-in lines for Phases 81-87 (Phase 80 fold-in already drained by iterate). Note: Phase 80 already folded in via iterate commit `779e40b`; this phase covers the remaining Phases 81-87.
-
-### Candidate: v0.12.0 release cut (Phase 80-87 mechanic shift + audit sweep)
-- signal: The unreleased CHANGELOG section documents Phase 80 (BREAKING: SkillEvent changes + always-land mechanic shift) + Phases 81-87 (walkthroughs + CLI + tests + audits + docs). This is a major body of work (8 phases shipping a mechanic shift + its full audit/cleanup/documentation trail). The last tag was `v0.11.0` (2026-05-24). A new minor is appropriate per RELEASING.md: mechanic shift + breaking SkillEvent change + new quickstart pages.
-- scope: One phase, 2 commit units: (1) CHANGELOG `[unreleased]` → `[0.12.0] — 2026-05-24` heading flip + version bump in `package.json`; (2) `git tag v0.12.0` + `npm publish` (manual + attended per RELEASING.md). Deploy-check's tag/CHANGELOG assertion validates.
-- unblocks: Mobile consumer can bump to the post-Phase-80 engine with a clear semver target. The SkillEvent breaking change gets a tagged boundary.
-- blocked-by: None (all audit/cleanup phases shipped). User-attended (npm publish is manual).
-- score: 5 × 7 / 10 = 3.5 (high impact — tagged release boundary for breaking changes; high ease — established ceremony per RELEASING.md).
-- recommended-slot: next user-attended oversight. User triggers the publish.
 
 ## Promoted
+
+### Phase 90 — v0.12.0 release cut (Phase 80-87 mechanic shift + audit sweep)
+- promoted: 2026-05-25 (twenty-second oversight). Two BREAKING changes in [unreleased] need semver minor. Score 3.5.
+
+### Phase 91 — `incrementsFriendship?: number` skill payload + 2-3 calming skills
+- promoted: 2026-05-25 (twenty-second oversight). New gameplay primitive. Score 3.0.
+
+### Phase 92 — Difficulty-meter gameplay scaling (`moralMeter` → engine multipliers)
+- promoted: 2026-05-25 (twenty-second oversight). Design-attended. Score 3.0.
+
+### Phase 93 — Damage-resist primitive (Phase 80 direction (a) damage-side follow-up)
+- promoted: 2026-05-25 (twenty-second oversight). Completes direction (a). Score 3.0.
+
+### Phase 94 — Tier 3 synergy / content expansion (mirror Phase 66 for Tier 3)
+- promoted: 2026-05-25 (twenty-second oversight). End-game content. Score 3.0.
+
+### Phase 95 — CHANGELOG public-surface diff autogeneration
+- promoted: 2026-05-25 (twenty-second oversight). Tooling. Score 2.5.
 
 ### Phase 83 — Post-Phase-80 effect-application test sweep (regression coverage)
 - promoted: 2026-05-24 (twentieth oversight; Q1 user pick — "All four post-80 follow-ups". Pre-staged immediately after Phase 80 per the candidate's recommended-slot.).
