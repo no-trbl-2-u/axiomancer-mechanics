@@ -441,9 +441,10 @@ here. Called once per combatant per round, before Tier 1 application.
 **Function:** `resolveEffectApplication(target, activeEffect, effectType, attackerHeartBonus, equipmentBonus)`
 — `src/Combat/index.ts`
 
-Uses `getResistStat(target, activeEffect.resistedBy)` (from
-`src/Combat/stats.ts`) to read the target's **base stat** for the resisting stance,
-then applies the Tier 2/3 resolution rules described above.
+Post-Phase-80 (direction (a) pure split): Tier 2 debuffs and Tier 3
+effects **always land** — no target-resist roll. Only Tier 2 buffs still
+roll (caster-side d20 for fumble/crit). `getResistStat` remains on the
+public barrel for consumer use but is no longer called by this pipeline.
 
 ---
 
@@ -601,7 +602,7 @@ Full per-effect documentation: [`docs/effects/debuffs/`](./effects/debuffs/)
 | `removeEffect(effects, effectId)` | `src/Effects/index.ts` | Removes the first ActiveEffect with the given ID |
 | `removeEffectsByType(effects, type, maxTier?)` | `src/Effects/index.ts` | Bulk strip by buff/debuff with optional tier cap (used by cleanse/dispel) |
 | `getResistStat(target, resistedBy)` | `src/Combat/stats.ts` | Target's effective base stat for the resisting stance |
-| `resolveEffectApplication(target, activeEffect, effectType, heartBonus, equipBonus)` | `src/Combat/index.ts` | Full Tier 2/3 resist resolution with roll details |
+| `resolveEffectApplication(target, activeEffect, effectType, heartBonus, equipBonus)` | `src/Combat/index.ts` | Effect application (Tier 2 debuff/Tier 3: always-land; Tier 2 buff: caster fumble/crit roll) |
 | `tickAllEffects(target)` | `src/Combat/effects.ts` | End-of-round duration decrement; returns expired list |
 | `updateEffectDuration(target, effectId)` | `src/Combat/effects.ts` | Tick one specific effect by ID |
 | `getActiveRollModifier(target)` | `src/Combat/effects.ts` | Sum of all `rollModifier` + `rollModifierPerIntensity × intensity` across active effects |
