@@ -46,11 +46,12 @@
 ## Pending
 
 
-- [ ] **[LOW] `isBaseStatTarget` type guard in `src/Combat/effect-modifiers.ts:19` is dead code** — Exported helper with zero callers in the repo (not on public barrel). Impact 2 × Ease 10 / 10 = 2.0. Source: /iterate audit category D (dead code).
 
 ---
 
 ## Done
+
+- [x] **[LOW] `isBaseStatTarget` type guard dead code removed** — resolved at iterate commit `a53400e` (2026-05-24). Removed `isBaseStatTarget` + `STANCE_KEYS` constant from `src/Combat/effect-modifiers.ts` — zero callers anywhere in the repo, not on public barrel. 824/824 tests stay green; type-check + lint clean. Impact 2 × Ease 10 / 10 = 2.0. Source: /iterate audit category D (dead code).
 
 - [x] **[LOW] docs/testing.md e2e entry-point table missing Phase 88 test files** — resolved at iterate commit `5b869c9` (2026-05-24). Effects row extended with the 4 Phase 88 test files (`stat-band-effects`, `advantage-effects`, `control-effects`, `damage-variants`); Skills row extended with `fallacy-skills.engine.test.ts` (Phase 88) + `phase83-skill-coverage.engine.test.ts` (Phase 83). 824/824 tests stay green; pure docs change. Impact 3 × Ease 9 / 10 = 2.7. Source: /iterate audit category E (docs) finding.
 
