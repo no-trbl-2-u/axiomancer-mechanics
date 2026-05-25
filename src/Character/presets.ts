@@ -1,5 +1,8 @@
 /**
- * Character presets — curated progression tiers selectable at boot.
+ * Character presets — pre-built characters for testing.
+ *
+ * @deprecated Scheduled for removal at v0.13.0. Use the DEV menu
+ * (`src/CLI/dev-tools.ts`) for testing, or `createCharacter()` directly.
  *
  * Each preset is a declarative recipe. `buildCharacterFromPreset` lifts
  * the recipe into a real `Character` by calling `createCharacter`
@@ -8,10 +11,6 @@
  * the same code combat uses, and consumables are cloned from the
  * shared `consumableLibrary` so the canonical library is never
  * mutated.
- *
- * Common rarity returns an empty rolled-modifier list (Spec 05d), so
- * shipped preset builds are deterministic. The `rng` parameter exists
- * for future presets that carry Uncommon+ equipment.
  */
 
 import { Character, BaseStats } from './types';
@@ -26,6 +25,7 @@ export interface CharacterPresetEquipmentEntry {
     slot: EquipmentSlot;
 }
 
+/** @deprecated Scheduled for removal at v0.13.0. Use dev-tools instead. */
 export interface CharacterPreset {
     id: string;
     name: string;
@@ -133,16 +133,19 @@ export const sagePreset: CharacterPreset = {
     currency: 75,
 };
 
+/** @deprecated Scheduled for removal at v0.13.0. */
 export const characterPresets: CharacterPreset[] = [
     apprenticePreset, wandererPreset, sagePreset,
 ];
 
+/** @deprecated Scheduled for removal at v0.13.0. */
 export function getPresetById(id: string): CharacterPreset | undefined {
     return characterPresets.find(p => p.id === id);
 }
 
 // ─── Builder ──────────────────────────────────────────────────────────────────
 
+/** @deprecated Scheduled for removal at v0.13.0. Use dev-tools instead. */
 export function buildCharacterFromPreset(
     preset: CharacterPreset,
     rng: () => number = Math.random,

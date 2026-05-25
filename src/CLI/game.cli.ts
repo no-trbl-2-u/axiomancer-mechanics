@@ -22,8 +22,15 @@
 import fs from 'fs';
 import { parseArgv, prompt, emit, log, logState, setIoMode, setOutputMode, setStateLogPath } from './io';
 
-import { characterPresets, getPresetById, buildCharacterFromPreset } from '../Character';
+import { createCharacter } from '../Character';
 import { ENEMY_REGISTRY, EnemyLibrary, type EnemySlug } from '../Enemy/enemy.library';
+import {
+    devSetLevel, devSetStats, devLearnSkills, devEquipSkills,
+    devGrantAllEquipment, devGrantAllConsumables, devEquipItem,
+    devGrantCurrency, devSetMoralMeter, devSetAlignment,
+    devSpawnEnemy, devMaxOut, getEnemySlugs, getSkillIds,
+    getEquipmentTemplateIds,
+} from './dev-tools';
 import type { CodexEntry } from '../Game/types';
 import { createGameStore } from '../Game/store';
 import { createEventEmitter } from '../Game/events';
@@ -44,7 +51,7 @@ import { getConsumableById } from '../Items/consumable.library';
 import { bucketAxis, getAlignmentCell } from '../Philosophy';
 import { CombatEndReport } from '../Game/store';
 
-type Tab = 'map' | 'combat' | 'journal' | 'skills' | 'codex' | 'inventory' | 'character' | 'debug' | 'reset' | 'save' | 'load' | 'quit';
+type Tab = 'map' | 'combat' | 'journal' | 'skills' | 'codex' | 'inventory' | 'character' | 'dev' | 'reset' | 'save' | 'load' | 'quit';
 
 type GameStoreHandle = ReturnType<typeof createGameStore>;
 
@@ -78,23 +85,15 @@ async function bootstrapStore(adapter: PersistenceAdapter): Promise<GameStoreHan
         }
     });
 
-    const { presetId } = await prompt<{ presetId: string }>([{
-        type: 'rawlist', name: 'presetId',
-        message: 'Pick a character preset:',
-        choices: characterPresets.map(p => ({
-            name: `${p.name} (lvl ${p.level}) — ${p.summary}`,
-            value: p.id,
-        })),
-    }]);
-
-    const preset = getPresetById(presetId);
-    if (!preset) throw new Error(`Unknown preset: ${presetId}`);
-
-    const player = buildCharacterFromPreset(preset);
-    log(`\nSelected: ${preset.name} (level ${preset.level}).\n`);
+    const player = createCharacter({
+        name: 'Player',
+        level: 1,
+        baseStats: { heart: 5, body: 5, mind: 5 },
+    });
+    log('\nStarting with a blank character (level 1, 5/5/5). Use the DEV menu to configure.\n');
 
     const store = createGameStore(adapter, { player }, events);
-    logState('bootstrap', null, store.getState(), { presetId: preset.id });
+    logState('bootstrap', null, store.getState(), { boot: 'blank' });
     return store;
 }
 
@@ -107,7 +106,7 @@ async function pickTab(canFight: boolean): Promise<Tab> {
         { name: 'Codex      — unlocked journal entries from befriended foes (Phase 73)', value: 'codex' },
         { name: 'Inventory  — items in pack', value: 'inventory' },
         { name: 'Character  — full stats + equipment + effects sheet', value: 'character' },
-        { name: 'Debug      — spawn any enemy into combat', value: 'debug' },
+        { name: 'DEV        — manipulate character, grant items/skills, spawn enemies', value: 'dev' },
         { name: 'Begin again — reset to starting hearth, full or keep-character (Phase 72)', value: 'reset' },
         { name: 'Save       — write the current state to the save file', value: 'save' },
         { name: 'Load       — restore state from the save file', value: 'load' },
@@ -648,19 +647,162 @@ function loadTab(store: GameStoreHandle, snapshotAdapter: PersistenceAdapter | n
     log('\nGame loaded.');
 }
 
-async function debugTab(store: GameStoreHandle): Promise<void> {
-    const slugs = Object.keys(ENEMY_REGISTRY) as EnemySlug[];
-    const { slug } = await prompt<{ slug: EnemySlug }>([{
-        type: 'rawlist', name: 'slug',
-        message: 'Spawn which enemy?',
-        choices: slugs.map(s => ({ name: `${s} — ${ENEMY_REGISTRY[s].name}`, value: s })),
+type DevAction = 'set-level' | 'set-stats' | 'learn-skills' | 'equip-skills'
+    | 'grant-equipment' | 'grant-consumables' | 'equip-item' | 'grant-currency'
+    | 'set-moral' | 'set-alignment' | 'spawn-enemy' | 'max-out' | 'back';
+
+async function devTab(store: GameStoreHandle): Promise<void> {
+    const { action } = await prompt<{ action: DevAction }>([{
+        type: 'rawlist', name: 'action',
+        message: 'DEV Menu:',
+        choices: [
+            { name: 'Set level',               value: 'set-level' },
+            { name: 'Set base stats',           value: 'set-stats' },
+            { name: 'Learn skills (pick/all)',   value: 'learn-skills' },
+            { name: 'Equip skills',             value: 'equip-skills' },
+            { name: 'Grant all equipment',       value: 'grant-equipment' },
+            { name: 'Grant all consumables',     value: 'grant-consumables' },
+            { name: 'Equip specific item',       value: 'equip-item' },
+            { name: 'Grant currency',           value: 'grant-currency' },
+            { name: 'Set moral meter',           value: 'set-moral' },
+            { name: 'Set philosophical alignment', value: 'set-alignment' },
+            { name: 'Spawn enemy',              value: 'spawn-enemy' },
+            { name: 'MAX OUT (level 20, all skills/items)', value: 'max-out' },
+            { name: '← Back',                  value: 'back' },
+        ],
     }]);
-    const enemy = ENEMY_REGISTRY[slug];
-    const before = store.getState();
-    store.getState().startCombat({ enemies: [enemy] });
-    logState('debugSpawn', before, store.getState(), { slug, enemyName: enemy.name });
-    log(`\nSpawned ${enemy.name}. Resolving combat...\n`);
-    await combatTab(store);
+
+    switch (action) {
+        case 'set-level': {
+            const { level } = await prompt<{ level: number }>([
+                { type: 'number', name: 'level', message: 'Target level:', default: 10 },
+            ]);
+            const r = devSetLevel(store, level);
+            log(`\n${r.detail}\n`);
+            break;
+        }
+        case 'set-stats': {
+            const { heart, body, mind } = await prompt<{ heart: number; body: number; mind: number }>([
+                { type: 'number', name: 'heart', message: 'Heart:', default: store.getState().player.baseStats.heart },
+                { type: 'number', name: 'body',  message: 'Body:',  default: store.getState().player.baseStats.body },
+                { type: 'number', name: 'mind',  message: 'Mind:',  default: store.getState().player.baseStats.mind },
+            ]);
+            const r = devSetStats(store, { heart, body, mind });
+            log(`\n${r.detail}\n`);
+            break;
+        }
+        case 'learn-skills': {
+            const { mode } = await prompt<{ mode: 'all' | 'pick' }>([{
+                type: 'rawlist', name: 'mode', message: 'Learn:',
+                choices: [
+                    { name: 'All skills', value: 'all' },
+                    { name: 'Pick specific', value: 'pick' },
+                ],
+            }]);
+            if (mode === 'all') {
+                const r = devLearnSkills(store, 'all');
+                log(`\n${r.detail}\n`);
+            } else {
+                const known = new Set(store.getState().player.knownSkills);
+                const available = getSkillIds().filter(id => !known.has(id));
+                if (available.length === 0) { log('\nAll skills already known.\n'); break; }
+                const { skills } = await prompt<{ skills: string[] }>([{
+                    type: 'checkbox', name: 'skills', message: 'Pick skills to learn:',
+                    choices: available.map(id => ({ name: id, value: id })),
+                }]);
+                const r = devLearnSkills(store, skills);
+                log(`\n${r.detail}\n`);
+            }
+            break;
+        }
+        case 'equip-skills': {
+            const known = store.getState().player.knownSkills;
+            if (known.length === 0) { log('\nNo skills known. Learn some first.\n'); break; }
+            const { skills } = await prompt<{ skills: string[] }>([{
+                type: 'checkbox', name: 'skills', message: 'Equip up to 4 skills:',
+                choices: known.map(id => ({
+                    name: id,
+                    value: id,
+                    checked: store.getState().player.equippedSkills.includes(id),
+                })),
+            }]);
+            const r = devEquipSkills(store, skills.slice(0, 4));
+            log(`\n${r.detail}\n`);
+            break;
+        }
+        case 'grant-equipment': {
+            const r = devGrantAllEquipment(store, 'common');
+            log(`\n${r.detail}\n`);
+            break;
+        }
+        case 'grant-consumables': {
+            const r = devGrantAllConsumables(store, 5);
+            log(`\n${r.detail}\n`);
+            break;
+        }
+        case 'equip-item': {
+            const templates = getEquipmentTemplateIds();
+            const { templateId } = await prompt<{ templateId: string }>([{
+                type: 'rawlist', name: 'templateId', message: 'Which template?',
+                choices: templates.map(id => ({ name: id, value: id })),
+            }]);
+            const slots: EquipmentSlot[] = ['weapon', 'armor', 'head', 'accessory'];
+            const { slot } = await prompt<{ slot: EquipmentSlot }>([{
+                type: 'rawlist', name: 'slot', message: 'Slot:',
+                choices: slots.map(s => ({ name: s, value: s })),
+            }]);
+            const r = devEquipItem(store, templateId, slot);
+            log(`\n${r.detail}\n`);
+            break;
+        }
+        case 'grant-currency': {
+            const { amount } = await prompt<{ amount: number }>([
+                { type: 'number', name: 'amount', message: 'Amount to add:', default: 100 },
+            ]);
+            const r = devGrantCurrency(store, amount);
+            log(`\n${r.detail}\n`);
+            break;
+        }
+        case 'set-moral': {
+            const { value } = await prompt<{ value: number }>([
+                { type: 'number', name: 'value', message: 'Moral meter value (-100 to 100):', default: 0 },
+            ]);
+            const r = devSetMoralMeter(store, value);
+            log(`\n${r.detail}\n`);
+            break;
+        }
+        case 'set-alignment': {
+            const cur = store.getState().philosophicalAlignment;
+            const { logic, outlook, scope } = await prompt<{ logic: number; outlook: number; scope: number }>([
+                { type: 'number', name: 'logic',   message: 'Logic (-100 to 100):',   default: cur.logic },
+                { type: 'number', name: 'outlook',  message: 'Outlook (-100 to 100):', default: cur.outlook },
+                { type: 'number', name: 'scope',    message: 'Scope (-100 to 100):',   default: cur.scope },
+            ]);
+            const r = devSetAlignment(store, { logic, outlook, scope });
+            log(`\n${r.detail}\n`);
+            break;
+        }
+        case 'spawn-enemy': {
+            const slugs = getEnemySlugs();
+            const { slug } = await prompt<{ slug: EnemySlug }>([{
+                type: 'rawlist', name: 'slug', message: 'Spawn which enemy?',
+                choices: slugs.map(s => ({ name: `${s} — ${ENEMY_REGISTRY[s].name}`, value: s })),
+            }]);
+            const before = store.getState();
+            const r = devSpawnEnemy(store, slug);
+            logState('debugSpawn', before, store.getState(), { slug, enemyName: ENEMY_REGISTRY[slug].name });
+            log(`\n${r.detail}. Resolving combat...\n`);
+            await combatTab(store);
+            break;
+        }
+        case 'max-out': {
+            const r = devMaxOut(store);
+            log(`\n${r.detail}\n`);
+            break;
+        }
+        case 'back':
+            break;
+    }
 }
 
 async function main(): Promise<void> {
@@ -704,7 +846,7 @@ async function main(): Promise<void> {
                 case 'codex':     codexTab(store);                           break;
                 case 'inventory': inventoryTab(store);                       break;
                 case 'character': await characterTab(store);                 break;
-                case 'debug':     await debugTab(store);                     break;
+                case 'dev':       await devTab(store);                       break;
                 case 'reset':     await resetTab(store);                     break;
                 case 'save':      saveTab(store, snapshotAdapter);           break;
                 case 'load':      loadTab(store, snapshotAdapter);           break;
