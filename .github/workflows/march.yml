@@ -16,6 +16,8 @@ name: march
 # operations. No PAT needed unless you want cross-repo behaviour.
 
 on:
+  schedule:
+    - cron: '*/30 * * * *'   # every 30 minutes
   workflow_dispatch:
     inputs:
       args:
@@ -45,21 +47,42 @@ jobs:
           fetch-depth: 0
           persist-credentials: true
 
+      - name: Idle check (scheduled runs only)
+        if: github.event_name == 'schedule'
+        id: idle
+        run: |
+          # Skip if the march bot hasn't committed in the last 3 hours.
+          # This prevents burning CI minutes when there's no work to do.
+          # A manual workflow_dispatch always runs regardless.
+          SINCE=$(date -u -d '3 hours ago' '+%Y-%m-%dT%H:%M:%S')
+          COUNT=$(git log --since="$SINCE" --author="axiomancer-march\[bot\]" --oneline | wc -l)
+          if [ "$COUNT" -eq 0 ]; then
+            echo "No bot commits in the last 3 hours — skipping idle tick."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Found $COUNT bot commit(s) since $SINCE — march is active."
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Setup Node
+        if: steps.idle.outputs.skip != 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
 
       - name: Install dependencies
+        if: steps.idle.outputs.skip != 'true'
         run: npm ci
 
       - name: Configure git identity
+        if: steps.idle.outputs.skip != 'true'
         run: |
           git config user.name  "axiomancer-march[bot]"
           git config user.email "41898282+axiomancer-march[bot]@users.noreply.github.com"
 
       - name: Provision .env for nexus skills
+        if: steps.idle.outputs.skip != 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -73,6 +96,7 @@ jobs:
           EOF
 
       - name: Run /march
+        if: steps.idle.outputs.skip != 'true'
         uses: anthropics/claude-code-base-action@beta
         with:
           prompt: "/march ${{ github.event.inputs.args }}"
