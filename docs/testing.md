@@ -41,13 +41,13 @@ Examples of e2e entry points by module:
 | Module           | Hermetic e2e entry point                                                             |
 | ---------------- | ------------------------------------------------------------------------------------- |
 | `Combat`         | `resolveCombatRound` (in `Combat/combat.resolver.ts`) + the `createGameStore` lifecycle |
-| `Effects`        | `applyEffect` / `applyTier1CombatEffect` / `tickAllEffects` driving an effect to expiry |
+| `Effects`        | `applyEffect` / `applyTier1CombatEffect` / `tickAllEffects` driving an effect to expiry; Phase 88 coverage sweep: `stat-band-effects.engine.test.ts`, `advantage-effects.engine.test.ts`, `control-effects.engine.test.ts`, `damage-variants.engine.test.ts` |
 | `Enemy`          | `createEnemy` + AI / strategy assertions in `enemy.engine.test.ts`; per-enemy content pins in `alignment.engine.test.ts` (Phase 45), `befriendability-config.engine.test.ts` (Phase 68), `aftermath-lines.engine.test.ts` (Phase 71) |
 | `Game`           | `createGameStore(nullAdapter, …)` driven through `startCombat` / `updateCombat` / `endCombat`; run-loop semantics in `run-loop.engine.test.ts` (Phase 72); codex unlocks in `codex.engine.test.ts` (Phase 73) |
 | `World`          | World reducer chained through map → node → continent transitions                      |
 | `Items`          | Item reducer chained through `addItem` → `useConsumable` → `removeItem`               |
 | `Character`      | `createCharacter` → `deriveStats` → `calculateMaxHealth` round-trip                   |
-| `Skills`         | `executeSkill` driving a SkillLookup against the live `skillLibrary`; `learnSkill` / `getAvailableSkills` for the Phase 30 runtime path |
+| `Skills`         | `executeSkill` driving a SkillLookup against the live `skillLibrary`; `learnSkill` / `getAvailableSkills` for the Phase 30 runtime path; `fallacy-skills.engine.test.ts` (Phase 88), `phase83-skill-coverage.engine.test.ts` (Phase 83) |
 | `NPCs`           | `getDialogueNode` + `visibleChoices` walking a `DialogueTree`; `applyDialogueChoice` through the Game store |
 | `CLI`            | `parseArgv`, `logState`, `setStateLogPath`, `prompt` (script mode) in `src/CLI/e2e/io.engine.test.ts` — covers the Phase 20 scripted surface |
 
