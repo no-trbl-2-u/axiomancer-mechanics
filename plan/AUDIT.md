@@ -51,6 +51,8 @@
 
 ## Done
 
+- [x] **[MED] verify.yml still on Node 20 while march.yml bumped to 22 + lockfileVersion 3** — resolved at iterate commit `702a50e` (2026-05-24). `verify.yml:50` node-version bumped 20 → 22 to match the march.yml change + the lockfileVersion 3 lock file. `docs/testing.md:124` CI pipeline description updated from "Node 20" to "Node 22". Impact 5 × Ease 9 / 10 = 4.5. Source: /iterate audit category H (commit-hygiene) finding (same-tick discovery, surfaced when checking for stale Node version references after the march.yml bump earlier this session).
+
 - [x] **[LOW] `isBaseStatTarget` type guard dead code removed** — resolved at iterate commit `a53400e` (2026-05-24). Removed `isBaseStatTarget` + `STANCE_KEYS` constant from `src/Combat/effect-modifiers.ts` — zero callers anywhere in the repo, not on public barrel. 824/824 tests stay green; type-check + lint clean. Impact 2 × Ease 10 / 10 = 2.0. Source: /iterate audit category D (dead code).
 
 - [x] **[LOW] docs/testing.md e2e entry-point table missing Phase 88 test files** — resolved at iterate commit `5b869c9` (2026-05-24). Effects row extended with the 4 Phase 88 test files (`stat-band-effects`, `advantage-effects`, `control-effects`, `damage-variants`); Skills row extended with `fallacy-skills.engine.test.ts` (Phase 88) + `phase83-skill-coverage.engine.test.ts` (Phase 83). 824/824 tests stay green; pure docs change. Impact 3 × Ease 9 / 10 = 2.7. Source: /iterate audit category E (docs) finding.
