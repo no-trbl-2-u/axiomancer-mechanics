@@ -16,7 +16,8 @@ Post-`0.11.0` content sweep closing the Phase 71 / 73 follow-up +
 the mobile item-library mod-visibility helpers (single-cell at
 Phase 75 + batch at Phase 76) + the **skills-always-land mechanic
 shift** (Phase 80 direction (a) pure split, with Phase 78 + 79
-audit pre-work).
+audit pre-work) + Phase 88 effect coverage sweep + Phase 89
+front-door docs fold-in.
 
 ### Changed
 - **`EffectApplicationResult.rebounded` removed; `getResistStat` deprecated.**
@@ -61,6 +62,23 @@ audit pre-work).
   (effects, `3d213bd`).
 
 ### Added
+- **Phase 89 — Front-door docs fold-in for Phases 81-87.**
+  README gains a "Recent infrastructure (Phases 81-88)" paragraph
+  (walkthroughs, CLI codex/reset, 824 tests, per-module quickstart
+  pages). `docs/api.md` gains Phase 82 CLI consumer surfaces note
+  (codex + reset tabs) and Phase 87 per-module quickstart page links.
+  `plan/bearings.md` extended with Phase 82/83/85/86/88 fold-ins.
+  Pure docs; no engine changes.
+
+- **Phase 88 — Effect coverage sweep (5 Phase 79 LOWs drained).**
+  Five new hermetic test files expanding post-Phase-80 effect coverage:
+  `src/Effects/e2e/stat-band-effects.engine.test.ts` (~12 cases),
+  `src/Effects/e2e/advantage-effects.engine.test.ts` (~13 cases),
+  `src/Effects/e2e/control-effects.engine.test.ts` (~10 cases),
+  `src/Effects/e2e/damage-variants.engine.test.ts` (~5 cases), and
+  `src/Skills/e2e/fallacy-skills.engine.test.ts` (~8 cases). Drains
+  the 5 remaining Phase 79 LOW CRITIQUE rows. 824 tests total.
+
 - **Phase 83 — Post-Phase-80 effect-application test sweep.**
   Two new hermetic test files covering the post-Phase-80 always-land
   contract: `src/Skills/e2e/phase83-skill-coverage.engine.test.ts`
