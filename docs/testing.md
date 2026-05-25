@@ -121,7 +121,7 @@ Pipeline steps:
 
 1. Checkout with `fetch-depth: 0` (full history; `deploy:check` runs
    `git describe --tags --abbrev=0` for the tag/CHANGELOG assertion).
-2. Setup Node 20 + `npm ci` with the setup-node cache.
+2. Setup Node 22 + `npm ci` with the setup-node cache.
 3. `npm run verify` (`type-check` + tests + `build`).
 4. `npm run deploy:check` (the four structural assertions above).
 
