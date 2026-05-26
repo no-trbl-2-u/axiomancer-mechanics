@@ -10,7 +10,7 @@ Pre-1.0.0 status: minor bumps may carry breaking public-API changes
 map exposes `.` (top-level barrel) and `./node` (Node.js adapter); no
 deep imports are part of the supported surface.
 
-## [unreleased]
+## [0.12.0] — 2026-05-26
 
 Post-`0.11.0` content sweep closing the Phase 71 / 73 follow-up +
 the mobile item-library mod-visibility helpers (single-cell at
