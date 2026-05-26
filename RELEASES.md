@@ -4,6 +4,18 @@ Short-form per-version summaries. For per-phase detail see
 [`CHANGELOG.md`](./CHANGELOG.md); for the release-cut ceremony see
 [`RELEASING.md`](./RELEASING.md).
 
+## 0.12.0 — 2026-05-26
+
+Skills always-land mechanic shift + event system cleanup.
+
+- **Phase 80** — Skills always-land effects (direction (a) pure split): Tier 2 debuffs + Tier 3 effects always land, target-resist rolls removed
+- **Phase 84** — Skill "fizzle" event + UX scrub: `SkillEvent` cleanup with `effect-resisted` → `buff-fumbled` rename
+- **Phase 88** — Effect coverage audit sweep + library consolidation
+- **Phase 89** — Front-door docs fold-in for mobile consumer guidance
+- **BREAKING:** `EffectApplicationResult.rebounded` field removed, `SkillEvent` variant renames
+- Public-surface: 233 fixtures (+8 from v0.11.0), 158 types (stable)
+- 615/615 tests passing, verify + deploy gates clean
+
 ## 0.11.0 — 2026-05-23
 
 Friendship-mechanic expansion + GH#65 mobile aftermath trio.
