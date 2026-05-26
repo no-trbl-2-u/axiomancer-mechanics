@@ -48,6 +48,8 @@ export interface PlaytestRunSummary {
     skillsUsed: Record<string, number>;
     itemsUsed: Record<string, number>;
     enemyActions: Record<string, number>;
+    damageToPlayer: number;
+    damageToEnemy: number;
     endReport?: CombatEndReport;
     transcript: PlaytestRoundSummary[];
 }
@@ -60,6 +62,11 @@ export interface PlaytestPolicySummary {
     friendshipRate: number;
     timeoutRate: number;
     averageRounds: number;
+    averageFinalPlayerHp: number;
+    averageFinalEnemyHp: number;
+    averageDamageToPlayer: number;
+    averageDamageToEnemy: number;
+    maxFriendshipCounter: number;
 }
 
 export interface PlaytestMetrics {
@@ -71,6 +78,11 @@ export interface PlaytestMetrics {
     timeoutRate: number;
     averageRounds: number;
     medianRounds: number;
+    averageFinalPlayerHp: number;
+    averageFinalEnemyHp: number;
+    averageDamageToPlayer: number;
+    averageDamageToEnemy: number;
+    maxFriendshipCounter: number;
     stanceUse: Record<Stance, number>;
     actionUse: Record<string, number>;
     skillUse: Record<string, number>;

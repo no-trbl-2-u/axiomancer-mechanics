@@ -26,7 +26,7 @@
 
 import { ActiveEffect, Effect, EffectApplicationResult, EffectTier } from '../Effects/types';
 import { runRoundEndPhase } from './phases/round-end';
-import { CombatAction, CombatState, Stance, Action, Advantage } from './types';
+import { CombatAction, CombatState, Stance, Action, Advantage, BattleLogEntry } from './types';
 import {
     ResourceCost, SkillCategory, CombatResources,
 } from '../Skills/types';
@@ -211,6 +211,59 @@ export interface RoundResolution {
     combatEvents: RoundEvent[];
 }
 
+function buildBattleLogEntry(
+    state: CombatState,
+    playerAction: CombatAction,
+    enemyAction: CombatAction,
+    playerAdvantage: Advantage,
+    events: readonly RoundEvent[],
+    playerHPAfter: number,
+    enemyHPAfter: number,
+): BattleLogEntry {
+    const playerRoll = events.find(event =>
+        event.phase === 'scenario' && event.kind === 'attack-roll' && event.actor === 'player');
+    const enemyRoll = events.find(event =>
+        event.phase === 'scenario' && event.kind === 'attack-roll' && event.actor === 'enemy');
+    const damageToPlayer = events.reduce((total, event) => {
+        if (event.phase === 'scenario' && event.kind === 'damage-applied' && event.defender === 'player') {
+            return total + event.finalDamage;
+        }
+        if (event.phase === 'skill' && event.kind === 'damage' && event.target === 'self') {
+            return total + event.amount;
+        }
+        return total;
+    }, 0);
+    const damageToEnemy = events.reduce((total, event) => {
+        if (event.phase === 'scenario' && event.kind === 'damage-applied' && event.defender === 'enemy') {
+            return total + event.finalDamage;
+        }
+        if (event.phase === 'skill' && event.kind === 'damage' && event.target === 'enemy') {
+            return total + event.amount;
+        }
+        return total;
+    }, 0);
+
+    return {
+        round: state.round,
+        playerAction,
+        enemyAction,
+        advantage: playerAdvantage,
+        playerRoll: playerRoll && playerRoll.phase === 'scenario' && playerRoll.kind === 'attack-roll' ? playerRoll.total : 0,
+        playerRollDetails: playerRoll && playerRoll.phase === 'scenario' && playerRoll.kind === 'attack-roll'
+            ? `${playerRoll.rawRoll}+${playerRoll.statValue}${playerRoll.rollModifier >= 0 ? '+' : ''}${playerRoll.rollModifier}`
+            : '',
+        enemyRoll: enemyRoll && enemyRoll.phase === 'scenario' && enemyRoll.kind === 'attack-roll' ? enemyRoll.total : 0,
+        enemyRollDetails: enemyRoll && enemyRoll.phase === 'scenario' && enemyRoll.kind === 'attack-roll'
+            ? `${enemyRoll.rawRoll}+${enemyRoll.statValue}${enemyRoll.rollModifier >= 0 ? '+' : ''}${enemyRoll.rollModifier}`
+            : '',
+        damageToPlayer,
+        damageToEnemy,
+        playerHPAfter,
+        enemyHPAfter,
+        result: `Player ${playerAction.action}/${playerAction.stance}; enemy ${enemyAction.action}/${enemyAction.stance}.`,
+    };
+}
+
 // ─── Full Round ───────────────────────────────────────────────────────────────
 
 /**
@@ -291,10 +344,21 @@ export function resolveCombatRound(
     // 6. Round-end orchestration.
     ({ player, enemy } = runRoundEndPhase(player, enemy, events));
 
+    const logEntry = buildBattleLogEntry(
+        state,
+        playerAction,
+        enemyAction,
+        playerAdvantage,
+        events,
+        player.health,
+        enemy.health,
+    );
+
     const newCombat = {
         ...state,
         player, enemy, friendshipCounter, combatResources,
         round: state.round + 1,
+        log: [...state.log, logEntry],
     };
 
     // Debug state dump when COMBAT_DEBUG=1

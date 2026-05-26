@@ -4,7 +4,7 @@
   "preset": "sage",
   "enemy": "coastal-tyrant",
   "runs": 25,
-  "maxRounds": 30,
+  "maxRounds": 75,
   "seed": "late-game-coastal-tyrant-v0",
   "policies": ["aggressive", "defensive", "friendship", "resource-optimal", "random", "mixed"]
 }

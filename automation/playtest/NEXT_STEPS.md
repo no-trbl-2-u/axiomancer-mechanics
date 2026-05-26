@@ -6,6 +6,7 @@ Pinned by T after the first harness run. Return here before hiring The Kid or ex
 
 - Branch: `feat/automated-playtest-harness`
 - Commit at time of pin: `f39f89f feat(playtest): add automated encounter harness`
+- Resume pass: battle log capture restored for resolver-driven playtests, richer damage/end-state metrics added, scenario cap raised to `maxRounds: 75`.
 
 ## Current observed problem
 
@@ -27,48 +28,49 @@ Current report:
 automation/playtest/reports/late-game-coastal-tyrant.md
 ```
 
-Observed outcome:
+Observed outcome after resume pass:
 
-- 25 / 25 runs timed out.
-- 0% victory.
+- 25 runs at `maxRounds: 75`.
+- 44% victory.
 - 0% defeat.
-- 0% friendship.
-- `friendship` policy increases `friendshipCounter`, but still does not resolve into friendship before `maxRounds: 30`.
-- Aggressive/resource policies damage the enemy but do not end combat by round 30.
+- 32% friendship.
+- 24% timeout.
+- Pure `friendship` policy still times out: it builds sufficient counter, but never lowers The Coastal Tyrant below the HP gate.
+- `mixed` and `random` policies can now surface friendship outcomes because they combine damage with later mercy/defend behavior.
+- Resolver-driven playtests now preserve `CombatState.log`, so stance/skill-based friendship eligibility can be evaluated outside the reducer dispatch path.
 
 ## Why this matters
 
 This may indicate one or more of:
 
-- `coastal-tyrant` is too durable for `sage` under current policy behavior.
-- The policies are too naive to represent plausible late-game play.
-- Friendship eligibility may require conditions the current `friendship` policy does not satisfy.
-- `maxRounds: 30` may be too low for this encounter, or the encounter itself may be too slow.
-- Enemy defensive behavior may be causing stall loops.
-- Skill/resource policy may be selecting available skills but not the highest-leverage ones.
-- The harness may need richer instrumentation around damage, defense, friendship thresholds, and enemy state.
+- The Coastal Tyrant's HP gate is not reachable through a passive mercy policy; peaceful resolution currently requires first bringing him low.
+- `defensive` still times out in half its runs, suggesting defensive play lacks finishing pressure or mercy transition rules.
+- Pure `friendship` policy is useful as a diagnostic negative control, not as a realistic player route.
+- Next tuning should decide whether the desired peaceful route is “wound then spare” or “nonviolent patience.”
+- Enemy defensive behavior and Achilles Gambit still create long fights; keep watching timeout rate as more scenarios are added.
 
-## First investigation pass when we return
+## Investigation pass completed
 
-1. Inspect `coastal-tyrant` stats, logic, friendship requirements, and skill behavior.
-2. Inspect `isFriendshipEligible` and friendship counter thresholds/conditions.
-3. Inspect the first 1–3 replay seeds from the report, especially:
-   - `late-game-coastal-tyrant-v0:1`
-   - `late-game-coastal-tyrant-v0:3`
-   - `late-game-coastal-tyrant-v0:8`
-4. Add report fields for:
+1. Inspected `coastal-tyrant` stats, logic, friendship requirements, and skill behavior.
+2. Inspected `isFriendshipEligible`; boss friendship requires HP below 40%, heart stance evidence, and 5 both-defend rounds.
+3. Restored resolver-side battle log entries so direct harness runs satisfy log-derived eligibility checks.
+4. Added report fields for:
    - total player damage dealt
    - total enemy damage dealt
-   - damage prevented/defended if available
-   - final friendship counter vs required friendship threshold
-   - enemy defend count
-   - round-by-round hp deltas summary
-5. Decide whether to fix:
-   - scenario tuning,
-   - policy intelligence,
-   - encounter balance,
-   - friendship visibility/eligibility,
-   - or harness metrics.
+   - average final player HP
+   - average final enemy HP
+   - max friendship counter
+   - per-policy end-state/damage summaries
+5. Re-ran the report at `maxRounds: 75` and verified friendship can surface under mixed/random policies.
+
+## Remaining judgment
+
+Decide whether to tune:
+
+- policy intelligence: add an explicit “mercy” policy that damages until the HP gate, then defends in heart;
+- encounter balance: reduce Coastal Tyrant durability or defensive stall;
+- friendship design: allow nonviolent patience to satisfy the HP gate by some alternate surrender condition;
+- report depth: add damage prevented/defended and compact hp-delta traces.
 
 ## Useful commands
 
@@ -77,10 +79,10 @@ npm run playtest -- --no-json
 npm run verify
 ```
 
-To inspect the generated markdown:
+Use the file reader or open:
 
 ```bash
-sed -n '1,220p' automation/playtest/reports/late-game-coastal-tyrant.md
+automation/playtest/reports/late-game-coastal-tyrant.md
 ```
 
 ## Judge's pinned judgment

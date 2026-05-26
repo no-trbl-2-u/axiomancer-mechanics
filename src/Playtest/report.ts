@@ -23,6 +23,11 @@ export function renderPlaytestMarkdown(report: PlaytestReport): string {
         `- Timeout rate: ${formatPercent(report.metrics.timeoutRate)}`,
         `- Average rounds: ${formatNumber(report.metrics.averageRounds)}`,
         `- Median rounds: ${formatNumber(report.metrics.medianRounds)}`,
+        `- Average final player HP: ${formatNumber(report.metrics.averageFinalPlayerHp)}`,
+        `- Average final enemy HP: ${formatNumber(report.metrics.averageFinalEnemyHp)}`,
+        `- Average damage to player: ${formatNumber(report.metrics.averageDamageToPlayer)}`,
+        `- Average damage to enemy: ${formatNumber(report.metrics.averageDamageToEnemy)}`,
+        `- Max friendship counter: ${report.metrics.maxFriendshipCounter}`,
         '',
         '## Outcome Counts',
         '',
@@ -55,6 +60,11 @@ export function renderPlaytestMarkdown(report: PlaytestReport): string {
             `- Friendship rate: ${formatPercent(summary.friendshipRate)}`,
             `- Timeout rate: ${formatPercent(summary.timeoutRate)}`,
             `- Average rounds: ${formatNumber(summary.averageRounds)}`,
+            `- Average final player HP: ${formatNumber(summary.averageFinalPlayerHp)}`,
+            `- Average final enemy HP: ${formatNumber(summary.averageFinalEnemyHp)}`,
+            `- Average damage to player: ${formatNumber(summary.averageDamageToPlayer)}`,
+            `- Average damage to enemy: ${formatNumber(summary.averageDamageToEnemy)}`,
+            `- Max friendship counter: ${summary.maxFriendshipCounter}`,
             '',
         ]),
         '## Findings for Tobin',
@@ -69,7 +79,9 @@ export function renderPlaytestMarkdown(report: PlaytestReport): string {
         '',
         ...report.runs.map(run => (
             `- Run ${run.run}: outcome=${run.outcome}, policy=${run.policy}, seed=${run.seed}, ` +
-            `rounds=${run.rounds}, playerHp=${run.playerHp}, enemyHp=${run.enemyHp}, friendshipCounter=${run.friendshipCounter}`
+            `rounds=${run.rounds}, playerHp=${run.playerHp}, enemyHp=${run.enemyHp}, ` +
+            `damageToPlayer=${run.damageToPlayer}, damageToEnemy=${run.damageToEnemy}, ` +
+            `friendshipCounter=${run.friendshipCounter}`
         )),
         '',
     ].filter(line => line !== undefined).join('\n');

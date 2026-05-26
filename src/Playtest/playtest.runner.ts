@@ -57,6 +57,8 @@ function runSingleScenario(scenario: PlaytestScenario, runNumber: number): Playt
     const skillsUsed: Record<string, number> = {};
     const itemsUsed: Record<string, number> = {};
     const enemyActions: Record<string, number> = {};
+    let damageToPlayer = 0;
+    let damageToEnemy = 0;
 
     for (let i = 0; i < scenario.maxRounds; i++) {
         const combat = store.getState().combat;
@@ -76,6 +78,8 @@ function runSingleScenario(scenario: PlaytestScenario, runNumber: number): Playt
         if (playerAction.skillId) increment(skillsUsed, playerAction.skillId);
         if (playerAction.itemId) increment(itemsUsed, playerAction.itemId);
         increment(enemyActions, describeAction(enemyAction));
+        damageToPlayer += sumDamageToPlayer(combatEvents);
+        damageToEnemy += sumDamageToEnemy(combatEvents);
         transcript.push({
             round: combat.round,
             playerAction,
@@ -110,6 +114,8 @@ function runSingleScenario(scenario: PlaytestScenario, runNumber: number): Playt
         skillsUsed,
         itemsUsed,
         enemyActions,
+        damageToPlayer,
+        damageToEnemy,
         ...(endReport ? { endReport } : {}),
         transcript,
     };
@@ -153,6 +159,11 @@ export function aggregateMetrics(runs: PlaytestRunSummary[]): PlaytestMetrics {
         timeoutRate: rate(outcomes.timeout, totalRuns),
         averageRounds: average(rounds),
         medianRounds: median(rounds),
+        averageFinalPlayerHp: average(runs.map(run => run.playerHp)),
+        averageFinalEnemyHp: average(runs.map(run => run.enemyHp)),
+        averageDamageToPlayer: average(runs.map(run => run.damageToPlayer)),
+        averageDamageToEnemy: average(runs.map(run => run.damageToEnemy)),
+        maxFriendshipCounter: Math.max(0, ...runs.map(run => run.friendshipCounter)),
         stanceUse,
         actionUse,
         skillUse,
@@ -176,6 +187,11 @@ function summarizePolicies(runs: PlaytestRunSummary[]): PlaytestPolicySummary[] 
             friendshipRate: rate(outcomes.friendship, matching.length),
             timeoutRate: rate(outcomes.timeout, matching.length),
             averageRounds: average(matching.map(run => run.rounds)),
+            averageFinalPlayerHp: average(matching.map(run => run.playerHp)),
+            averageFinalEnemyHp: average(matching.map(run => run.enemyHp)),
+            averageDamageToPlayer: average(matching.map(run => run.damageToPlayer)),
+            averageDamageToEnemy: average(matching.map(run => run.damageToEnemy)),
+            maxFriendshipCounter: Math.max(0, ...matching.map(run => run.friendshipCounter)),
         };
     });
 }
@@ -187,6 +203,16 @@ function deriveFindings(metrics: PlaytestMetrics): string[] {
     if (metrics.defeatRate > 0.5) findings.push(`Defeat rate is high at ${percent(metrics.defeatRate)}.`);
     if (metrics.winRate > 0.85) findings.push(`Win rate is high at ${percent(metrics.winRate)}; encounter may be undertuned for these policies.`);
     if (metrics.friendshipRate === 0) findings.push('No friendship outcomes surfaced; Tobin should judge whether the peaceful route is too hidden or too costly.');
+    const stalledFriendshipPolicy = metrics.policySummaries.find(summary =>
+        summary.policy === 'friendship'
+        && summary.friendshipRate === 0
+        && summary.timeoutRate > 0
+        && summary.maxFriendshipCounter >= 5);
+    if (stalledFriendshipPolicy) {
+        findings.push(
+            `Friendship policy built enough counter (${stalledFriendshipPolicy.maxFriendshipCounter}) but never resolved; HP gate remains unmet at average final enemy HP ${formatFindingNumber(stalledFriendshipPolicy.averageFinalEnemyHp)}.`,
+        );
+    }
     const dominantAction = dominant(metrics.actionUse);
     if (dominantAction && dominantAction.share >= 0.7) findings.push(`Dominant player action: ${dominantAction.key} (${percent(dominantAction.share)} of actions).`);
     const dominantStance = dominant(metrics.stanceUse);
@@ -197,6 +223,30 @@ function deriveFindings(metrics: PlaytestMetrics): string[] {
 
 function describeAction(action: CombatAction): string {
     return action.skillId ? `${action.action}:${action.skillId}` : action.action;
+}
+
+function sumDamageToPlayer(events: PlaytestRunSummary['transcript'][number]['combatEvents']): number {
+    return events.reduce((total, event) => {
+        if (event.phase === 'scenario' && event.kind === 'damage-applied' && event.defender === 'player') {
+            return total + event.finalDamage;
+        }
+        if (event.phase === 'skill' && event.kind === 'damage' && event.target === 'self') {
+            return total + event.amount;
+        }
+        return total;
+    }, 0);
+}
+
+function sumDamageToEnemy(events: PlaytestRunSummary['transcript'][number]['combatEvents']): number {
+    return events.reduce((total, event) => {
+        if (event.phase === 'scenario' && event.kind === 'damage-applied' && event.defender === 'enemy') {
+            return total + event.finalDamage;
+        }
+        if (event.phase === 'skill' && event.kind === 'damage' && event.target === 'enemy') {
+            return total + event.amount;
+        }
+        return total;
+    }, 0);
 }
 
 function zeroOutcomeCounts(): Record<PlaytestOutcome, number> {
@@ -240,4 +290,8 @@ function dominant(record: Record<string, number>): { key: string; share: number 
 
 function percent(value: number): string {
     return `${Math.round(value * 100)}%`;
+}
+
+function formatFindingNumber(value: number): string {
+    return Number.isInteger(value) ? String(value) : value.toFixed(2);
 }
