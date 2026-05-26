@@ -45,6 +45,13 @@
 
 ## Pending
 
+### [feature] GH#78 — feat: previewStatAllocation API for level-up derived stats preview
+- category: feature
+- impact: 7
+- ease: 6
+- next: /ship-a-phase
+- notes: Export API to preview exact derived stats for stat allocation decisions, replacing mobile's inaccurate approximation
+
 ### [bug] GH#74 — BattleLogEntry type/runtime contract divergence — fields undefined at runtime despite required types
 - category: bug
 - impact: 7
