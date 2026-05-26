@@ -60,15 +60,11 @@
 - score: 4 × 7 / 10 = 2.8 (medium impact — closes a deferred-Phase-81-scope at the player-experience tier; high ease — small preset edit + a known walkthrough pattern). Aggressive 2.5+ threshold catches this. Source: Phase 81 D6 ship-time filing (commit `0ab5968`).
 - recommended-slot: any time. Pairs naturally with the Damage-resist primitive candidate (both are small Phase 80 follow-ups).
 
-### Candidate: GH#74 BattleLogEntry Type/Runtime Contract Fix
-- signal: AUDIT.md Pending — GH#74 BattleLogEntry type/runtime contract divergence causing mobile crashes on boss-skill killing blows
-- scope: Audit the BattleLogEntry type surface and fix combat resolution paths that leave required fields undefined at runtime. Identify all code paths that populate BattleLogEntry instances and ensure they fully populate fields marked as required in the TypeScript interface. Add runtime validation or adjust type definitions to match actual usage patterns.
-- unblocks: Mobile app stability on boss encounters with skill-based finishing moves; eliminates type/runtime contract violations
-- blocked-by: None — purely a correctness fix
-- score: 7 × 6 / 10 = 4.2
-- recommended-slot: after Phase 95
-
 ## Promoted
+
+### Phase 96 — GH#74 BattleLogEntry type/runtime contract fix
+- promoted: 2026-05-26 (twenty-third oversight). Bug fix — mobile crashes on boss-skill killing blows. Score 4.2.
+
 
 ### Phase 90 — v0.12.0 release cut (Phase 80-87 mechanic shift + audit sweep)
 - promoted: 2026-05-25 (twenty-second oversight). Two BREAKING changes in [unreleased] need semver minor. Score 3.5.

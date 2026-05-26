@@ -31,12 +31,13 @@ if (!existsSync(DIST)) {
 // Phase 50 guard — every src/<Module>/types.ts must emit a matching
 // dist/<Module>/types.d.ts. Catches the regression that filed GH#64
 // (mobile handoff Issue 2) cheaply, without enumerating every public name.
-function countModuleTypesFiles(root, declarationOnly) {
+function countModuleTypesFiles(root, declarationOnly, filterSet) {
   let count = 0
   const moduleDirs = readdirSync(root, { withFileTypes: true })
     .filter(d => d.isDirectory())
     .map(d => d.name)
   for (const mod of moduleDirs) {
+    if (filterSet && !filterSet.has(mod)) continue
     const file = declarationOnly
       ? join(root, mod, 'types.d.ts')
       : join(root, mod, 'types.ts')
@@ -47,13 +48,18 @@ function countModuleTypesFiles(root, declarationOnly) {
   return count
 }
 
-const srcTypesCount = countModuleTypesFiles(SRC, false)
+const distModuleDirs = new Set(
+  readdirSync(DIST, { withFileTypes: true })
+    .filter(d => d.isDirectory())
+    .map(d => d.name)
+)
+const srcTypesCount = countModuleTypesFiles(SRC, false, distModuleDirs)
 const distTypesCount = countModuleTypesFiles(DIST, true)
 
 if (distTypesCount < srcTypesCount) {
   console.error(
     `[deploy:check] dist/<Module>/types.d.ts emission shortfall: ` +
-    `expected ${srcTypesCount} (one per src/<Module>/types.ts), got ${distTypesCount}.`
+    `expected ${srcTypesCount} (one per barrel-reachable src/<Module>/types.ts), got ${distTypesCount}.`
   )
   console.error(
     '[deploy:check] A module-level types.ts was likely re-introduced as types.d.ts ' +
