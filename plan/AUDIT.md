@@ -45,6 +45,13 @@
 
 ## Pending
 
+### [bug] GH#74 — BattleLogEntry type/runtime contract divergence — fields undefined at runtime despite required types
+- category: bug
+- impact: 7
+- ease: 6
+- next: /iterate
+- notes: Combat resolution paths leave required BattleLogEntry fields undefined, causing mobile crashes on boss-skill killing blows
+
 
 
 ---
