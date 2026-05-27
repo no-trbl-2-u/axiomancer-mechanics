@@ -60,18 +60,14 @@
 - next: /iterate
 - notes: Combat resolution paths leave required BattleLogEntry fields undefined, causing mobile crashes on boss-skill killing blows
 
-### [spec-gap] specs/01-effects-engine-completion.md Q7 canAct precedence — blank "Your answer:" 
-- category: spec-gap
-- impact: 4
-- ease: 8
-- score: 3.2
-- notes: Line 75 spec question "When multiple action restrictions stack (skipTurn from stun + forcedStance: heart from charm), what wins?" has blank answer placeholder. Default proposal suggests skipTurn wins outright; needs developer decision
 
 
 
 ---
 
 ## Done
+
+- [x] **[LOW] specs/01-effects-engine-completion.md Q7 canAct precedence — blank "Your answer:" answered** — resolved at iterate commit `d2a880e` (2026-05-27). Spec Q7 "When multiple action restrictions stack (skipTurn from stun + forcedStance: heart from charm), what wins?" had blank answer placeholder at line 75. Answered with implementation details from `src/Combat/effect-modifiers.ts:canAct()` — default proposal accepted with 3-level precedence: (1) skipTurn wins outright, (2) forcedStance overrides and trumps blockedStances, (3) blocked stance blocks action. No engine changes needed since implementation already follows proposal. Impact 4 × Ease 8 / 10 = 3.2. Source: /iterate audit category B (spec-gap) finding.
 
 - [x] **[HIGH] Node.js v18 incompatible with vitest 4.1.4 rolldown dependency — styleText export missing** — resolved at iterate commit `435c8be` (2026-05-27). vitest 4.1.4 + inquirer 13.0.1 both required Node v21+ (rolldown/util.styleText dependencies). Downgraded to vitest@^3.2.4 (supports Node v18+) and inquirer@^9.3.8 (supports Node v18+). `npm test` now passes, CLI tests working. 847/848 tests pass (1 flaky synergy test unrelated). Impact 9 × Ease 7 / 10 = 6.3. Source: /iterate audit category G (deps) finding.
 
