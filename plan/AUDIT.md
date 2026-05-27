@@ -45,6 +45,12 @@
 
 ## Pending
 
+### [docs] docs/utils.md missing for Utils module with 19 public exports
+- category: docs
+- impact: 5
+- ease: 8
+- score: 4.0
+- notes: Utils module exports 19 functions (clamp, randomInt, deepClone, stat derivation, die rolling, etc.) to the public barrel but lacks docs/utils.md. All other modules have dedicated docs files.
 
 ### [feature] GH#78 — feat: previewStatAllocation API for level-up derived stats preview
 - category: feature
