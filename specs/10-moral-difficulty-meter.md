@@ -126,6 +126,13 @@ exercises a moral choice.
       Shipped as `docs/morality.md` (pre-loop); cross-linked from
       `docs/combat.md` Friendship Path (Phase 36 / iterate
       `7306111`).
+- [x] Moral meter affects combat difficulty through enemy stat scaling. —
+      Phase 92 implements the originally-intended scaling behavior from
+      the BRAINDUMP, resolving the Q4 "A (for now)" deferral.
+      `applyMoralMeterScaling` in `src/Combat/difficulty.ts` scales
+      enemy `baseStats` by 0.5x–2.0x based on moral meter (-100 to +100).
+      Applied in `START_COMBAT` via `src/Game/game.reducer.ts` before
+      `initializeCombat`. Tested in `src/Combat/e2e/difficulty.scaling.engine.test.ts`.
 
 ## Out of scope
 

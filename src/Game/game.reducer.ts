@@ -18,6 +18,7 @@ import { Encounter, QuestLog } from '../World/types';
 import { Enemy } from '../Enemy/types';
 import { initializeCombat } from '../Combat/combat.reducer';
 import { determineEnemyAction, determineCombatEnd } from '../Combat';
+import { applyMoralMeterScaling } from '../Combat/difficulty';
 import { resolveCombatRound } from '../Combat/combat.resolver';
 import { getSkillById } from '../Skills/skill.library';
 import {
@@ -157,9 +158,18 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
             if (encounter.enemies.length === 0) {
                 throw new Error('START_COMBAT: encounter has no enemies.');
             }
+            
+            // Apply moral meter scaling to enemy stats (Phase 92)
+            const enemy = encounter.enemies[0]!;
+            const scaledBaseStats = applyMoralMeterScaling(enemy.baseStats, state.moralMeter);
+            const scaledEnemy = {
+                ...enemy,
+                baseStats: scaledBaseStats,
+            };
+            
             return {
                 ...state,
-                combat: initializeCombat(state.player, encounter.enemies[0]),
+                combat: initializeCombat(state.player, scaledEnemy),
                 currentEncounter: encounter,
             };
         }

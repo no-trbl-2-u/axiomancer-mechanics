@@ -60,6 +60,7 @@ export {
     resolveEffectApplication,
     determineEnemyAction, isCombatOngoing, determineCombatEnd, isValidCombatAction,
     healCharacter,
+    calculateEnemyStatMultiplier, applyMoralMeterScaling,
 } from './Combat';
 export type {
     Stance, Action, Advantage, CritStyle, CombatAction, CombatPhase,

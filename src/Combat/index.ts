@@ -55,6 +55,7 @@ export type {
     CombatEffectTrigger, ProcUnlocks, ProcOverrides,
     ProcRollOutcome, FumbleOutcome, RollForCombatEffectsParams,
 } from './combat-effects';
+export { calculateEnemyStatMultiplier, applyMoralMeterScaling } from './difficulty';
 
 // ─── Round resolver ──────────────────────────────────────────────────────────
 // `resolveCombatRound` is the single entry point any UI client (CLI, future
