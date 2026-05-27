@@ -45,6 +45,13 @@
 
 ## Pending
 
+### [deps] Node.js v18 incompatible with vitest 4.1.4 rolldown dependency — styleText export missing
+- category: deps
+- impact: 9
+- ease: 7
+- next: /iterate
+- notes: `npm test` fails on startup with "SyntaxError: The requested module 'node:util' does not provide an export named 'styleText'" — blocks all testing/verification. Node v18.20.8 missing styleText added in v21.7.0. Need Node.js upgrade or vitest downgrade.
+
 ### [feature] GH#78 — feat: previewStatAllocation API for level-up derived stats preview
 - category: feature
 - impact: 7
