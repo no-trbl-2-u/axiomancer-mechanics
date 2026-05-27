@@ -59,14 +59,14 @@
     "@typescript-eslint/eslint-plugin": "^8.48.1",
     "eslint": "^9.39.1",
     "globals": "^16.5.0",
-    "inquirer": "^13.0.1",
+    "inquirer": "^9.3.8",
     "jiti": "^2.6.1",
     "ts-node": "^10.9.2",
     "tsc-alias": "^1.8.16",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.7.2",
     "typescript-eslint": "^8.48.1",
-    "vitest": "^4.1.4"
+    "vitest": "^3.2.4"
   },
   "dependencies": {
     "dotenv": "^17.4.2",
