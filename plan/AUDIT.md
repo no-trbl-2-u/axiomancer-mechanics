@@ -45,21 +45,6 @@
 
 ## Pending
 
-### [HIGH] Test isolation issue — tier3-synergy-skills test fails in full suite but passes individually
-- category: tests
-- impact: 8
-- ease: 7
-- score: 5.6
-- next: /iterate
-- notes: Test failure indicates global RNG state pollution between parallel tests, affecting test reliability. Likely needs RNG cleanup in afterEach hook.
-
-### [MED] TypeScript/ESLint dependencies have minor updates available  
-- category: deps
-- impact: 4
-- ease: 9
-- score: 3.6
-- next: /iterate
-- notes: @typescript-eslint packages can be updated from 8.59.4 to 8.60.0 for maintenance and security patches
 
 ### [feature] GH#78 — feat: previewStatAllocation API for level-up derived stats preview
 - category: feature
@@ -81,6 +66,8 @@
 ---
 
 ## Done
+
+- [x] **[MED] TypeScript/ESLint dependencies have minor updates available** — resolved at iterate commit `72fdb1e` (2026-05-27). Updated @typescript-eslint packages from 8.59.4 to 8.60.0 to address maintenance debt and include security patches. Minor version bump is safe to apply per iterate guidelines. All 885 tests pass, type-check and lint clean, build successful. Impact 4 × Ease 9 / 10 = 3.6. Source: /iterate audit category G (deps) finding.
 
 - [x] **[HIGH] Test isolation issue — transcendent-synthesis synergy test fails in full suite but passes individually** — resolved at iterate commit `ed435e6` (2026-05-27). The test failure occurred because multiple tests running in parallel were modifying the global RNG singleton (`globalRng` in `src/Utils/rng.ts`) without proper cleanup, causing state pollution between tests. Added `restoreOriginalRng()` function to `src/test-utils/rng.ts` that saves and restores the original RNG instance. Updated `src/Skills/e2e/tier3-synergy-skills.engine.test.ts` to call `restoreOriginalRng()` in its `afterEach` hook alongside `vi.restoreAllMocks()`. All 885 tests now pass in parallel execution. Impact 8 × Ease 7 / 10 = 5.6. Source: /iterate audit category A (tests) finding.
 
