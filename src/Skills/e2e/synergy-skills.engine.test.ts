@@ -75,7 +75,7 @@ describe('Phase 66 — Tier 2 synergy skills (5 patterns)', () => {
             expect(skill!.tier).toBe(2);
             expect(skill!.synergy, `${id} should carry a synergy clause`).toBeDefined();
         }
-        expect(skillLibrary.filter(s => s.synergy)).toHaveLength(5);
+        expect(skillLibrary.filter(s => s.synergy && s.tier === 2)).toHaveLength(5);
     });
 
     // ─── 1. resonance-bleed: cross-stance duration amp ────────────────────────

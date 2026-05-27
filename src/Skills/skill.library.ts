@@ -526,6 +526,143 @@ const empatheticUnderstanding: Skill = {
     incrementsFriendship: 2,
 };
 
+// ─── Tier 3 synergy (Phase 94) — 5 skills mirroring Phase 66 pattern ───────
+
+// Each skill carries a `synergy` clause with advanced Tier 3 mechanics.
+// Higher resource costs, complex predicates, and amplified damage over
+// Tier 2 synergy. See Phase 66 pattern for schema reference.
+
+const paradoxConvergence: Skill = {
+    id: 'paradox-convergence',
+    name: 'Paradox Convergence',
+    category: 'paradox',
+    philosophicalAspect: 'mind',
+    description:
+        'You gather every contradiction they carry and collapse them into ' +
+        'a single impossible instant. The logic breaks; the body follows ' +
+        'the argument down into the mathematical void.',
+    tier: 3,
+    resourceCost: { mind: 3, paradox: 2 },
+    targetType: 'enemy',
+    basePower: 15,
+    scalingStat: 'mind',
+    learningRequirement: { level: 10 },
+    synergy: {
+        predicate: { effectId: 'buff_haste', on: 'target', intensityMin: 1 },
+        bonusDamage: 8,
+        intensityDamageMul: 7,
+        durationDamageMul: 4,
+        consumeMatched: true,
+    },
+};
+
+const metaphysicalDrain: Skill = {
+    id: 'metaphysical-drain',
+    name: 'Metaphysical Drain',
+    category: 'paradox',
+    philosophicalAspect: 'heart',
+    description:
+        'Their strength becomes your sustenance. You consume the certainty ' +
+        'they built in themselves and weave it into your own flesh. What ' +
+        'made them invulnerable makes you whole.',
+    tier: 3,
+    resourceCost: { heart: 3, paradox: 2 },
+    targetType: 'self',
+    basePower: 0,
+    scalingStat: 'heart',
+    scalingMultiplier: 5,
+    learningRequirement: { level: 10 },
+    synergy: {
+        predicate: { effectId: 'buff_invincibility', on: 'target', durationMin: 1 },
+        bonusDamage: 10,
+        durationDamageMul: 6,
+        consumeMatched: true,
+    },
+};
+
+const logicalRecursion: Skill = {
+    id: 'logical-recursion',
+    name: 'Logical Recursion',
+    category: 'fallacy',
+    philosophicalAspect: 'mind',
+    description:
+        'The confusion you planted in yourself calls to the confusion ' +
+        'you placed in them. Like facing mirrors, the reflection bounces ' +
+        'between you until one of the glass breaks. It is not yours.',
+    tier: 3,
+    resourceCost: { mind: 2, fallacy: 2 },
+    targetType: 'enemy',
+    basePower: 12,
+    scalingStat: 'mind',
+    learningRequirement: { level: 10 },
+    synergy: {
+        predicate: { effectId: 'debuff_confusion', on: 'caster', durationMin: 2 },
+        bonusDamage: 6,
+        durationDamageMul: 5,
+        intensityDamageMul: 3,
+        applyEffectOnFire: {
+            effectId: 'buff_critical_rate_up',
+            appliedTo: 'self',
+            intensity: 2,
+            duration: 3,
+        },
+    },
+};
+
+const existentialCollapse: Skill = {
+    id: 'existential-collapse',
+    name: 'Existential Collapse',
+    category: 'fallacy',
+    philosophicalAspect: 'body',
+    description:
+        'You end the argument by ending the premise that arguments exist. ' +
+        'Every binding dissolves; every certainty becomes uncertain. In ' +
+        'the sudden emptiness, only your strike remains real.',
+    tier: 3,
+    resourceCost: { body: 4, fallacy: 2 },
+    targetType: 'enemy',
+    basePower: 18,
+    scalingStat: 'body',
+    learningRequirement: { level: 10 },
+    synergy: {
+        predicate: { effectId: 'debuff_petrify', on: 'target', durationMin: 1 },
+        bonusDamage: 12,
+        durationDamageMul: 8,
+        consumeMatched: true,
+        clearAllEffectsBothSides: true,
+    },
+};
+
+const transcendentSynthesis: Skill = {
+    id: 'transcendent-synthesis',
+    name: 'Transcendent Synthesis',
+    category: 'paradox',
+    philosophicalAspect: 'heart',
+    description:
+        'You weave every thread of certainty on the field into a new ' +
+        'pattern that transcends its components. The synthesis heals what ' +
+        'the analysis wounded; the whole exceeds its parts.',
+    tier: 3,
+    resourceCost: { heart: 3, mind: 2, paradox: 1 },
+    targetType: 'self',
+    basePower: 0,
+    scalingStat: 'heart',
+    scalingMultiplier: 4,
+    learningRequirement: { level: 10 },
+    synergy: {
+        // No predicate — unconditional synthesis on cast
+        bonusDamage: 15,
+        resourceTokenDamageMul: 6,
+        consumeAllResources: true,
+        applyEffectOnFire: {
+            effectId: 'buff_regeneration',
+            appliedTo: 'self',
+            intensity: 3,
+            duration: 4,
+        },
+    },
+};
+
 // ─── Library Export ──────────────────────────────────────────────────────────
 
 /**
@@ -560,6 +697,12 @@ export const skillLibrary: Skill[] = [
     nirvanaFallacy,
     pascalsWager,
     appealToFear,
+    // Tier 3 — Phase 94 synergy skills (5)
+    paradoxConvergence,
+    metaphysicalDrain,
+    logicalRecursion,
+    existentialCollapse,
+    transcendentSynthesis,
     // Phase 91 — friendship increment skills
     soothingWords,
     peacefulGesture,
