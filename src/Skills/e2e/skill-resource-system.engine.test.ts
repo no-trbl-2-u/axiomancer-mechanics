@@ -109,8 +109,8 @@ describe('Scenario 1 — Happy path: build Body resources then fire Ad Hominem S
             heart: 0, body: 0, mind: 0, fallacy: 1, paradox: 0,
         });
 
-        // Skill damage = basePower 8 + body 10 × 0.5 = 13.
-        expect(next.enemy.health).toBe(enemyHpAfterRound1 - 13);
+        // Skill damage = basePower 8 + body 10 × 0.5 = 13, reduced by sandbag body(1) resistance = 12.
+        expect(next.enemy.health).toBe(enemyHpAfterRound1 - 12);
         expect(next.enemy.health).toBeGreaterThan(0);
 
         // Exactly one buff was stripped from the enemy this round. The enemy
@@ -129,7 +129,7 @@ describe('Scenario 1 — Happy path: build Body resources then fire Ad Hominem S
         // Event stream must surface: damage, buff-stripped, resources-spent,
         // philosophical-generated (all with skillId 'ad-hominem-strike').
         expect(skillEvents.find(e => e.kind === 'damage')).toMatchObject({
-            skillId: 'ad-hominem-strike', target: 'enemy', amount: 13,
+            skillId: 'ad-hominem-strike', target: 'enemy', amount: 12,
         });
         expect(skillEvents.find(e => e.kind === 'resources-spent')).toMatchObject({
             skillId: 'ad-hominem-strike', cost: { body: 3 },

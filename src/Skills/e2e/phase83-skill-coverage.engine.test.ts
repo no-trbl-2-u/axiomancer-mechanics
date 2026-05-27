@@ -134,8 +134,8 @@ describe('mob-appeal — Tier 2 body + secondary_heal_self', () => {
 
         const { state: next, events } = executeSkill(state, 'mob-appeal', getSkillById);
 
-        // basePower 10 + body(6) x 0.5 = 13 damage
-        expect(next.enemy.health).toBe(enemyHpBefore - 13);
+        // basePower 10 + body(6) x 0.5 = 13 damage, reduced by enemy body(3) resistance = 10 damage
+        expect(next.enemy.health).toBe(enemyHpBefore - 10);
         // secondary_heal_self: heart(4) x 0.5 x 1 = 2
         expect(next.player.health).toBe(casterHpBefore + 2);
         expect(events.filter(e => e.kind === 'heal').length).toBeGreaterThanOrEqual(1);

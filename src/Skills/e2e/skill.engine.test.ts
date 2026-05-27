@@ -174,10 +174,10 @@ describe('executeSkill — damaging', () => {
         const enemyHpBefore = state.enemy.health;
         const { state: next, events } = executeSkill(state, damagingSkill.id, lookup);
 
-        expect(next.enemy.health).toBe(enemyHpBefore - 8);
+        expect(next.enemy.health).toBe(enemyHpBefore - 5); // 8 base damage - 3 body resistance
         expect(next.combatResources).toEqual({ ...zero, fallacy: 1 });
         expect(events.find(e => e.kind === 'damage')).toMatchObject({
-            target: 'enemy', amount: 8, hpBefore: enemyHpBefore, hpAfter: next.enemy.health,
+            target: 'enemy', amount: 5, hpBefore: enemyHpBefore, hpAfter: next.enemy.health,
         });
         expect(events.find(e => e.kind === 'philosophical-generated')).toMatchObject({
             category: 'fallacy',
@@ -248,13 +248,13 @@ describe('executeSkill — Phase 49 casterSide=enemy', () => {
 
         const { state: next, events } = executeSkill(state, damagingSkill.id, lookup, 'enemy');
 
-        // Damage formula: basePower 5 + body 3 × 0.5 = 6.5 → 7. Player is the target.
-        expect(next.player.health).toBe(playerHpBefore - 7);
+        // Damage formula: basePower 5 + body 3 × 0.5 = 6.5 → 7, reduced by player body(6) resistance = 1.
+        expect(next.player.health).toBe(playerHpBefore - 1);
         // Caster (enemy) is unchanged on HP.
         expect(next.enemy.health).toBe(state.enemy.health);
         // Damage event target=='enemy' is relative-to-caster — D3.
         expect(events.find(e => e.kind === 'damage')).toMatchObject({
-            target: 'enemy', amount: 7, hpBefore: playerHpBefore, hpAfter: next.player.health,
+            target: 'enemy', amount: 1, hpBefore: playerHpBefore, hpAfter: next.player.health,
         });
     });
 
@@ -296,7 +296,7 @@ describe('executeSkill — Phase 49 casterSide=enemy', () => {
         const enemyHpBefore = state.enemy.health;
         const { state: next } = executeSkill(state, damagingSkill.id, lookup);
 
-        expect(next.enemy.health).toBe(enemyHpBefore - 8);
+        expect(next.enemy.health).toBe(enemyHpBefore - 5); // 8 base damage - 3 body resistance
         // Player's resource pool spent + token granted (the canonical pre-49 contract).
         expect(next.combatResources).toEqual({ ...zero, fallacy: 1 });
     });
@@ -317,8 +317,8 @@ describe('resolveCombatRound — skill action integration', () => {
             lookup,
         );
 
-        // Player skill damage applied to enemy (8 from formula).
-        expect(next.enemy.health).toBeLessThanOrEqual(enemyHpBefore - 8);
+        // Player skill damage applied to enemy (5 after resistance: 8 base - 3 body).
+        expect(next.enemy.health).toBeLessThanOrEqual(enemyHpBefore - 5);
         // Spent body, gained 1 fallacy.
         expect(next.combatResources.body).toBe(0);
         expect(next.combatResources.fallacy).toBe(1);
