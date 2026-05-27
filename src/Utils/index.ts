@@ -143,7 +143,7 @@ export function createDie(sides: number, timesRolled: number, func?: (arr: numbe
  * @param advantage - The advantage to create a die roll for
  * @returns A function that returns the result of the die roll
  */
-export function createDieRoll(advantage: Advantage) {
+export function createDieRoll(advantage: Advantage): () => number {
   const rollCount = advantage === 'neutral' ? 1 : 2;
   return createDie(20, rollCount, determineRollAdvantageModifier(advantage));
 }
