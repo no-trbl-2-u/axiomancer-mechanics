@@ -60,6 +60,13 @@
 - next: /iterate
 - notes: Combat resolution paths leave required BattleLogEntry fields undefined, causing mobile crashes on boss-skill killing blows
 
+### [spec-gap] specs/01-effects-engine-completion.md Q7 canAct precedence — blank "Your answer:" 
+- category: spec-gap
+- impact: 4
+- ease: 8
+- score: 3.2
+- notes: Line 75 spec question "When multiple action restrictions stack (skipTurn from stun + forcedStance: heart from charm), what wins?" has blank answer placeholder. Default proposal suggests skipTurn wins outright; needs developer decision
+
 
 
 ---
