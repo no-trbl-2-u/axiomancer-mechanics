@@ -46,6 +46,13 @@
 ## Pending
 
 
+### [LOW] createDieRoll function missing return type annotation
+- category: types
+- impact: 3
+- ease: 9
+- score: 2.7
+- notes: src/Utils/index.ts:112 - createDieRoll exported function lacks return type annotation; should be `: () => number` based on createDie return type
+
 ### [feature] GH#78 — feat: previewStatAllocation API for level-up derived stats preview
 - category: feature
 - impact: 7
