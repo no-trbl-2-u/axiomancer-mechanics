@@ -109,3 +109,22 @@ export interface Character {
      */
     procUnlocks?: ProcUnlocks;
 }
+
+/**
+ * Hypothetical stat point allocation for previewing derived stats.
+ * Each field represents additional points to add to the corresponding base stat.
+ */
+export interface PreviewAllocation {
+    heart: number;
+    body: number;
+    mind: number;
+}
+
+/**
+ * Result of previewing stat allocation — computed stats without character mutation.
+ */
+export interface PreviewResult {
+    derivedStats: DerivedStats;
+    nonCombatStats: NonCombatStats;
+    maxHealth: number;
+}

@@ -1,4 +1,4 @@
-import { Character, BaseStats } from './types';
+import { Character, BaseStats, PreviewAllocation, PreviewResult } from './types';
 import { ActiveEffect } from '../Effects/types';
 import { ProcUnlocks } from '../Combat/combat-effects';
 import { Equipment, EquipmentSlot, Item } from '../Items/types';
@@ -133,7 +133,39 @@ export function allocateStatPoint(
     };
 }
 
-export type { Character, BaseStats, DerivedStats, NonCombatStats } from './types';
+/**
+ * Phase 97 — preview exact derived stats for hypothetical stat point allocation.
+ * Enables mobile level-up modal to show accurate cross-stat effects without
+ * duplicating the engine's stat derivation formula.
+ *
+ * Takes current base stats, character level, and allocation delta. Returns computed
+ * stats without mutating any character data. Pure function.
+ */
+export function previewStatAllocation(
+    baseStats: BaseStats,
+    level: number,
+    allocation: PreviewAllocation,
+): PreviewResult {
+    // Apply allocation deltas additively to base stats
+    const previewStats: BaseStats = {
+        heart: baseStats.heart + allocation.heart,
+        body: baseStats.body + allocation.body,
+        mind: baseStats.mind + allocation.mind,
+    };
+
+    // Compute derived stats using the same functions as allocateStatPoint
+    const derivedStats = deriveStats(previewStats);
+    const nonCombatStats = deriveNonCombatStats(previewStats);
+    const maxHealth = calculateMaxHealth(level, previewStats);
+
+    return {
+        derivedStats,
+        nonCombatStats,
+        maxHealth,
+    };
+}
+
+export type { Character, BaseStats, DerivedStats, NonCombatStats, PreviewAllocation, PreviewResult } from './types';
 export { equipItem, unequipItem, getEquipmentModifiers } from './equipment.reducer';
 export type { AggregatedEquipmentModifiers } from './equipment.reducer';
 export {
