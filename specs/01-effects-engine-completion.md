@@ -72,7 +72,7 @@ integration check via the combat CLI or vitest.
    (`skipTurn` from stun + `forcedStance: heart` from charm), what wins?
    - Default proposal: `skipTurn` wins outright. `forcedStance` and `blockedStances`
      are merged: forced stance wins; blocked stances are then filtered out.
-   > Your answer: 
+   > Your answer: Default proposal accepted. Implemented in `src/Combat/effect-modifiers.ts:canAct()` with precedence: (1) `skipTurn` wins outright — bearer loses action regardless of stance; (2) `forcedStance` overrides requested stance and trumps `blockedStances`; (3) if requested stance is blocked, action is blocked. This ensures reliable resolution when multiple restrictions stack. 
 
 8. **`advantageModifier` interaction with type advantage.** If a buff grants
    `advantage` on `body` rolls but the matchup gives `disadvantage`, do they cancel,
