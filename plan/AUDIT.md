@@ -45,19 +45,40 @@
 
 ## Pending
 
-<!-- iterate audit 2026-05-27: 0 new findings discovered across categories Z-H.
+<!-- iterate audit 2026-05-27: 3 new findings discovered across categories Z-H.
      Z. External critique: empty (CRITIQUE.md ## Pending confirmed empty)
      A. Test-quality gaps: all modules have hermetic e2e tests, no raw vi.spyOn usage except in test-utils/rng.ts helper
-     B. Spec-gap items: no open questions with blank "Your answer:" placeholders (template files excluded)
-     C. Type-safety: no unjustified @ts-ignore or as any, one justified @ts-ignore for .mjs import
-     D. Dead code: getResistStat has zero in-repo callers but marked @deprecated, no other dead exports found
-     E. Documentation gaps: CLI, Playtest, test-utils modules missing docs (score 1.8), all other major modules documented
+     B. Spec-gap items: no open questions with blank "Your answer:" placeholders (template files excluded)  
+     C. Type-safety: 84 exported functions missing return type annotations (impact 8, ease 6, score 4.8)
+     D. Dead code: deprecated functions in Character/presets.ts (impact 4, ease 8, score 3.2)
+     E. Documentation gaps: CLI and Playtest modules missing docs (impact 3, ease 6, score 1.8)
      F. ESLint fix: already shipped in Phase 13, npm run lint passes clean
      G. Dependency updates: all available updates are major version bumps (skip per guidelines)
      H. Commit-hygiene: git status clean, no uncommitted changes
      
-     Since no findings score ≥3.0, the iterate queue is empty. -->
+     Top finding: missing return type annotations (score 4.8). -->
 
+
+### [types] Missing return type annotations on 84 exported functions
+- category: types
+- impact: 8  
+- ease: 6
+- score: 4.8
+- source: iterate audit 2026-05-27
+
+### [dead-code] Deprecated functions in Character/presets.ts 
+- category: dead-code
+- impact: 4
+- ease: 8  
+- score: 3.2
+- source: iterate audit 2026-05-27
+
+### [docs] CLI and Playtest modules missing documentation
+- category: docs
+- impact: 3
+- ease: 6
+- score: 1.8
+- source: iterate audit 2026-05-27
 
 ### [feature] GH#78 — feat: previewStatAllocation API for level-up derived stats preview
 - category: feature
