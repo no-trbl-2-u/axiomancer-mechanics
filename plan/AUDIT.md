@@ -45,18 +45,20 @@
 
 ## Pending
 
-<!-- iterate audit 2026-05-27: 0 new findings discovered across categories Z-H.
+<!-- iterate audit 2026-05-27: 1 new finding discovered across categories Z-H.
      Z. External critique: empty (CRITIQUE.md ## Pending confirmed empty)
      A. Test-quality gaps: all modules have hermetic e2e tests, no raw vi.spyOn usage except in test-utils/rng.ts helper
      B. Spec-gap items: no open questions with blank "Your answer:" placeholders (template files excluded)
-     C. Type-safety: no unjustified @ts-ignore or as any, one justified @ts-ignore for .mjs import
+     C. Type-safety: 1 finding — src/Utils/index.ts missing return type annotations on 4 exported functions
      D. Dead code: getResistStat has zero in-repo callers but marked @deprecated, no other dead exports found
-     E. Documentation gaps: all major modules have corresponding docs files in docs/, README current
+     E. Documentation gaps: CLI, Playtest, test-utils modules missing docs (score 1.8), all other major modules documented
      F. ESLint fix: already shipped in Phase 13, npm run lint passes clean
      G. Dependency updates: all available updates are major version bumps (skip per guidelines)
      H. Commit-hygiene: git status clean, no uncommitted changes
      
-     Since no findings score ≥3.0, the iterate queue is empty. -->
+     Top finding scores 5.4, iterate queue has 1 item. -->
+
+- **[C] Utils module exported functions missing return type annotations** — src/Utils/index.ts lines 58, 61, 64, 129: sum, max, min, createDie functions lack explicit return type annotations. Public API functions should have explicit return types for better TypeScript support and documentation clarity. Impact 6 × Ease 9 / 10 = 5.4.
 
 ### [feature] GH#78 — feat: previewStatAllocation API for level-up derived stats preview
 - category: feature
