@@ -53,12 +53,6 @@
 - next: /ship-a-phase (promoted as Phase 97 at oversight-24 2026-05-27)
 - notes: Export API to preview exact derived stats for stat allocation decisions, replacing mobile's inaccurate approximation
 
-### [bug] GH#74 — BattleLogEntry type/runtime contract divergence — fields undefined at runtime despite required types
-- category: bug
-- impact: 7
-- ease: 6
-- next: /iterate
-- notes: Combat resolution paths leave required BattleLogEntry fields undefined, causing mobile crashes on boss-skill killing blows
 
 
 
@@ -66,6 +60,8 @@
 ---
 
 ## Done
+
+- [x] **[HIGH] GH#74 — BattleLogEntry type/runtime contract divergence — fields undefined at runtime despite required types** — resolved at Phase 96 commit `27b5815` (2026-05-27). Added defensive validation in both `resolveCombatRound` and `buildBattleLogEntry` functions to prevent undefined playerAction/enemyAction from reaching BattleLogEntry construction. Combat resolution now throws early with clear error messages if actions are missing stance/action fields, preventing mobile crashes on boss-skill killing blows. All 895 tests pass including new contract verification tests in `battlelogentry-contract.engine.test.ts`. Impact 7 × Ease 6 / 10 = 4.2. Source: GitHub issue #74 / AUDIT Pending.
 
 - [x] **[MED] TypeScript/ESLint dependencies have minor updates available** — resolved at iterate commit `72fdb1e` (2026-05-27). Updated @typescript-eslint packages from 8.59.4 to 8.60.0 to address maintenance debt and include security patches. Minor version bump is safe to apply per iterate guidelines. All 885 tests pass, type-check and lint clean, build successful. Impact 4 × Ease 9 / 10 = 3.6. Source: /iterate audit category G (deps) finding.
 
