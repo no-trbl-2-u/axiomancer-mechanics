@@ -21,6 +21,7 @@ import { lookupEffect, applyEffect } from '../Effects';
 import { applyDamage, heal } from '../Combat/health';
 import { removeRandomBuff } from '../Combat/effects';
 import { resolveEffectApplication } from '../Combat/resist';
+import { calculateDamageResistance, getSkillDamageType } from '../Combat/damage-resist';
 import { incrementFriendship } from '../Combat/combat.reducer';
 import { Combatant, CombatState, Stance } from '../Combat/types';
 import {
@@ -138,15 +139,27 @@ export function spendResources(
  * not the skill scaling path. `scalingMultiplier` lets individual skills like
  * Appeal to Pity amplify the stat term without warping `basePower`.
  */
-export function calculateSkillDamage(actor: Combatant, skill: Skill): number {
+export function calculateSkillDamage(
+    actor: Combatant, 
+    skill: Skill,
+    target?: Combatant,
+): number {
     const multiplier = skill.scalingMultiplier ?? 1;
-    return Math.max(
+    const baseDamage = Math.max(
         0,
         Math.round(
             skill.basePower
             + actor.baseStats[skill.scalingStat] * SKILL_STAT_MULTIPLIER * multiplier,
         ),
     );
+    
+    // Phase 93: Apply damage resistance if target provided
+    if (target && baseDamage > 0) {
+        const damageType = getSkillDamageType(skill.scalingStat);
+        return calculateDamageResistance(target, baseDamage, damageType);
+    }
+    
+    return baseDamage;
 }
 
 /**
@@ -385,7 +398,10 @@ export function executeSkill(
     let workingCaster: Combatant = caster;
     let workingTarget: Combatant = target;
 
-    const damage = calculateSkillDamage(workingCaster, skill);
+    // Phase 93: Only apply damage resistance for enemy-targeting skills
+    // Self-targeting skills (heals) shouldn't have resistance applied
+    const resistanceTarget = skill.targetType === 'enemy' ? workingTarget : undefined;
+    const damage = calculateSkillDamage(workingCaster, skill, resistanceTarget);
 
     // Phase 66 — synergy clause. Evaluate predicate against the
     // pre-damage effects pool (so the matched effect's intensity /

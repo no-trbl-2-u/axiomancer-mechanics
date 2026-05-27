@@ -58,6 +58,7 @@ export {
     removeRandomBuff, extendRandomBuffDuration, applyRegen,
     getActiveEffectModifiers, getEffectiveStats, canAct,
     resolveEffectApplication,
+    calculateDamageResistance, getSkillDamageType,
     determineEnemyAction, isCombatOngoing, determineCombatEnd, isValidCombatAction,
     healCharacter,
     calculateEnemyStatMultiplier, applyMoralMeterScaling,
@@ -65,7 +66,7 @@ export {
 export type {
     Stance, Action, Advantage, CritStyle, CombatAction, CombatPhase,
     BattleLogEntry, CombatState, Combatant,
-    AggregatedEffectModifiers, EffectiveStats,
+    AggregatedEffectModifiers, EffectiveStats, DamageType,
 } from './Combat';
 
 // ─── Combat reducer ───────────────────────────────────────────────────────────

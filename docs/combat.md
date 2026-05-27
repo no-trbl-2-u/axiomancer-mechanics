@@ -167,6 +167,30 @@ Clamped to [0, 1].
 
 See `docs/effects.md` for the full per-tier breakdown and stacking rules.
 
+## Damage Resistance (Phase 93)
+
+Phase 93 completes Phase 80's direction (a) "pure split": effects always land (Phase 80), damage applies resistance separately (Phase 93).
+
+Skills now apply damage resistance based on the target's stats:
+- **Physical damage** (body-scaling skills) → reduced by target's body stat
+- **Mental damage** (mind-scaling skills) → reduced by target's mind stat  
+- **Emotional damage** (heart-scaling skills) → reduced by target's heart stat
+
+**Linear resistance model:** Each point of resistance stat reduces damage by 1.
+**Minimum damage:** Damage is clamped to at least 1 (high resistance reduces but never completely negates damage).
+
+```typescript
+// Physical skill against high-body target
+const damage = calculateSkillDamage(caster, bodySkill, target);
+// If bodySkill would deal 10 damage, but target has 7 body stat,
+// final damage = 10 - 7 = 3
+
+// Very high resistance still allows minimum damage
+// If target has 15 body stat vs 10 damage, result = 1 (not 0)
+```
+
+This affects `calculateSkillDamage` when a target is provided. Calls without a target maintain backward compatibility (no resistance applied).
+
 ## Friendship Path
 
 Both combatants defending on the same round increments `friendshipCounter`.
@@ -377,6 +401,8 @@ round-resolution entry point used by every UI client.
 | `rollSkillCheck(baseStat, advantage)` | d20 + modifier with advantage/disadvantage |
 | `calculateFinalDamage(base, reduction, crit, bonus)` | Damage after reductions. On crit, picks the higher of `double` (2× base − defence) vs `pierce` (base, defence ignored) — Phase 32 auto-selection. |
 | `selectCritDamage(base, reduction, bonus)` | Phase 32 — returns `{ style, damage }` for the crit auto-selection in isolation, useful for tests / future damage previews. |
+| `calculateDamageResistance(target, baseDamage, damageType)` | Phase 93 — applies target's resistance to damage (linear reduction, minimum 1) |
+| `getSkillDamageType(scalingStat)` | Phase 93 — maps skill scaling stat to damage type for resistance calculation |
 | `applyDamage(entity, damage)` | Reduces HP (clamps to 0) |
 | `heal(entity, amount)` (alias `healCharacter`) | Restores HP (clamps to max) |
 | `resolveEffectApplication(target, effect, type, heart, equip)` | Effect application (Tier 2 buff fumble/crit; Tier 2 debuff + Tier 3 always land) |

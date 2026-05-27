@@ -47,6 +47,8 @@ export type {
     AggregatedEffectModifiers, EffectiveStats,
 } from './effect-modifiers';
 export { resolveEffectApplication } from './resist';
+export { calculateDamageResistance, getSkillDamageType } from './damage-resist';
+export type { DamageType } from './damage-resist';
 export {
     rollForCombatEffects, applyProcOutcome, applyFumbleOutcome,
     getEligibleTriggers, calculateProcChance, combatEffectsLibrary,
