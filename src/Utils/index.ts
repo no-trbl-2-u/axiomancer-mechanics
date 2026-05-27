@@ -55,13 +55,13 @@ export function average(...numbers: number[]): number {
 }
 
 /** Sums all numbers in an array */
-export const sum = (arr: number[]) => arr.reduce((a, b) => a + b, 0);
+export const sum = (arr: number[]): number => arr.reduce((a, b) => a + b, 0);
 
 /** Returns the largest number in an array */
-export const max = (arr: number[]) => Math.max(...arr);
+export const max = (arr: number[]): number => Math.max(...arr);
 
 /** Returns the smallest number in an array */
-export const min = (arr: number[]) => Math.min(...arr);
+export const min = (arr: number[]): number => Math.min(...arr);
 
 /**
  * Checks if a value is within a range (inclusive)
@@ -126,7 +126,7 @@ export const determineRollAdvantageModifier = (advantage: Advantage): (arr: numb
  * const advAtk = createDie(20, 2, max)   // roll 2d20, keep highest
  * const disadvAtk = createDie(20, 2, min) // roll 2d20, keep lowest
  */
-export function createDie(sides: number, timesRolled: number, func?: (arr: number[]) => number, rng?: Rng) {
+export function createDie(sides: number, timesRolled: number, func?: (arr: number[]) => number, rng?: Rng): () => number {
   const rngInstance = rng ?? getRng();
   return () => {
     const rolls = Array.from({ length: timesRolled }, () => 
