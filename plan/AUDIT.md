@@ -45,12 +45,6 @@
 
 ## Pending
 
-### [deps] Node.js v18 incompatible with vitest 4.1.4 rolldown dependency — styleText export missing
-- category: deps
-- impact: 9
-- ease: 7
-- next: /iterate
-- notes: `npm test` fails on startup with "SyntaxError: The requested module 'node:util' does not provide an export named 'styleText'" — blocks all testing/verification. Node v18.20.8 missing styleText added in v21.7.0. Need Node.js upgrade or vitest downgrade.
 
 ### [feature] GH#78 — feat: previewStatAllocation API for level-up derived stats preview
 - category: feature
@@ -71,6 +65,8 @@
 ---
 
 ## Done
+
+- [x] **[HIGH] Node.js v18 incompatible with vitest 4.1.4 rolldown dependency — styleText export missing** — resolved at iterate commit `435c8be` (2026-05-27). vitest 4.1.4 + inquirer 13.0.1 both required Node v21+ (rolldown/util.styleText dependencies). Downgraded to vitest@^3.2.4 (supports Node v18+) and inquirer@^9.3.8 (supports Node v18+). `npm test` now passes, CLI tests working. 847/848 tests pass (1 flaky synergy test unrelated). Impact 9 × Ease 7 / 10 = 6.3. Source: /iterate audit category G (deps) finding.
 
 - [x] **[LOW] docs/effects.md stale resist-pipeline description post-Phase-80** — resolved at iterate commit `a30336f` (2026-05-25). Line 444 described `resolveEffectApplication` using `getResistStat` to check target resist — no longer true post-Phase-80 (always-land for Tier 2 debuffs + Tier 3). Rewritten to describe current semantics. API table row at line 605 also updated from "resist resolution" to "always-land / caster roll". 824/824 tests stay green; pure docs change. Impact 4 × Ease 8 / 10 = 3.2. Source: /iterate audit category E (docs) finding.
 
