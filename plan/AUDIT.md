@@ -45,6 +45,21 @@
 
 ## Pending
 
+### [HIGH] Test isolation issue — tier3-synergy-skills test fails in full suite but passes individually
+- category: tests
+- impact: 8
+- ease: 7
+- score: 5.6
+- next: /iterate
+- notes: Test failure indicates global RNG state pollution between parallel tests, affecting test reliability. Likely needs RNG cleanup in afterEach hook.
+
+### [MED] TypeScript/ESLint dependencies have minor updates available  
+- category: deps
+- impact: 4
+- ease: 9
+- score: 3.6
+- next: /iterate
+- notes: @typescript-eslint packages can be updated from 8.59.4 to 8.60.0 for maintenance and security patches
 
 ### [feature] GH#78 — feat: previewStatAllocation API for level-up derived stats preview
 - category: feature
