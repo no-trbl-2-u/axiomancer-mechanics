@@ -55,6 +55,7 @@ Defined in [`src/Skills/types.d.ts`](../src/Skills/types.d.ts).
 | `basePower` | `number` | Pre-scaling damage (or heal, for self-targeted). |
 | `scalingStat` | `'body' \| 'mind' \| 'heart'` | Base stat the skill scales off. |
 | `combatEffects?` | `SkillCombatEffects[]` | Optional effect payloads to apply through Spec 03 resist. |
+| `incrementsFriendship?` | `number` | Phase 91 — Optional friendship counter increment without defend-stance requirement. |
 | `learningRequirement?` | `SkillLearningRequirement` | Level / stat / prerequisite gating. |
 
 `Character` carries `knownSkills: string[]` and `equippedSkills: string[]`.

@@ -150,6 +150,8 @@ export type SkillPhaseEvent =
         consumedAllResources: boolean;
         consumedTokens: number;
         clearedAllEffects: boolean }
+    | { phase: 'skill'; kind: 'friendship-incremented';
+        skillId: string; amount: number }
     /**
      * The player chose `action: 'skill'` but either the skill is missing
      * from the lookup or `canUseSkill` failed. The resolver does NOT execute

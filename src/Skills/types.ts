@@ -258,4 +258,10 @@ export interface Skill {
      * applying `combatEffects` / `specialMechanics`. See {@link SkillSynergy}.
      */
     synergy?: SkillSynergy;
+    /**
+     * Phase 91 — Optional friendship counter increment. When present, executeSkill
+     * increments the combat friendship counter by this amount after damage/effects
+     * but before resource costs. Does not require defend stance.
+     */
+    incrementsFriendship?: number;
 }

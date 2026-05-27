@@ -482,6 +482,50 @@ const resonanceDetonation: Skill = {
     },
 };
 
+// ─── Phase 91 — Friendship increment skills (3 skills) ──────────────────────
+
+const soothingWords: Skill = {
+    id: 'soothing-words',
+    name: 'Soothing Words',
+    category: 'fallacy',
+    philosophicalAspect: 'heart',
+    description: 'Gentle words that calm tensions without requiring defensive posture.',
+    tier: 1,
+    resourceCost: { heart: 2 },
+    targetType: 'self',
+    basePower: 0,
+    scalingStat: 'heart',
+    incrementsFriendship: 1,
+};
+
+const peacefulGesture: Skill = {
+    id: 'peaceful-gesture',
+    name: 'Peaceful Gesture',
+    category: 'fallacy', 
+    philosophicalAspect: 'body',
+    description: 'A calming physical gesture that builds trust through non-threatening movement.',
+    tier: 1,
+    resourceCost: { body: 2 },
+    targetType: 'self',
+    basePower: 0,
+    scalingStat: 'body',
+    incrementsFriendship: 1,
+};
+
+const empatheticUnderstanding: Skill = {
+    id: 'empathetic-understanding',
+    name: 'Empathetic Understanding',
+    category: 'paradox',
+    philosophicalAspect: 'mind',
+    description: 'Deep understanding that transcends conflict, building stronger bonds.',
+    tier: 2,
+    resourceCost: { mind: 3, heart: 1 },
+    targetType: 'self', 
+    basePower: 0,
+    scalingStat: 'mind',
+    incrementsFriendship: 2,
+};
+
 // ─── Library Export ──────────────────────────────────────────────────────────
 
 /**
@@ -516,6 +560,10 @@ export const skillLibrary: Skill[] = [
     nirvanaFallacy,
     pascalsWager,
     appealToFear,
+    // Phase 91 — friendship increment skills
+    soothingWords,
+    peacefulGesture,
+    empatheticUnderstanding,
 ];
 
 const skillRegistry: ReadonlyMap<string, Skill> = new Map(

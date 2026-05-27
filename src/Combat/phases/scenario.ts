@@ -746,5 +746,8 @@ function toRoundEvent(ev: SkillEvent): SkillPhaseEvent {
                      consumedAllResources: ev.consumedAllResources,
                      consumedTokens: ev.consumedTokens,
                      clearedAllEffects: ev.clearedAllEffects };
+        case 'friendship-incremented':
+            return { phase: 'skill', kind: 'friendship-incremented',
+                     skillId: ev.skillId, amount: ev.amount };
     }
 }

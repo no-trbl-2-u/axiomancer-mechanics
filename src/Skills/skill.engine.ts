@@ -21,6 +21,7 @@ import { lookupEffect, applyEffect } from '../Effects';
 import { applyDamage, heal } from '../Combat/health';
 import { removeRandomBuff } from '../Combat/effects';
 import { resolveEffectApplication } from '../Combat/resist';
+import { incrementFriendship } from '../Combat/combat.reducer';
 import { Combatant, CombatState, Stance } from '../Combat/types';
 import {
     RESOURCE_GENERATION,
@@ -304,7 +305,10 @@ export type SkillEvent =
         /** Total tokens consumed (sum of body+mind+heart before the zero). */
         consumedTokens: number;
         /** True if `clearAllEffectsBothSides` swept both sides. */
-        clearedAllEffects: boolean };
+        clearedAllEffects: boolean }
+    | { kind: 'friendship-incremented'; 
+        skillId: string; 
+        amount: number };
 
 /** Result of `executeSkill`. */
 export interface SkillResolution {
@@ -509,13 +513,30 @@ export function executeSkill(
         events.push(...result.events);
     }
 
+    // Phase 91 — friendship increment processing
+    let workingState = {
+        ...state,
+        player: (isPlayerCaster ? workingCaster : workingTarget) as Character,
+        enemy: (isPlayerCaster ? workingTarget : workingCaster) as Enemy,
+    };
+    if (skill.incrementsFriendship && skill.incrementsFriendship > 0) {
+        for (let i = 0; i < skill.incrementsFriendship; i++) {
+            workingState = incrementFriendship(workingState);
+        }
+        events.push({ 
+            kind: 'friendship-incremented', 
+            skillId, 
+            amount: skill.incrementsFriendship 
+        });
+    }
+
     const genCategory = philosophicalCategoryFor(skill);
     // Phase 66 — when synergy's `consumeAllResources` fired, the pool
     // is zeroed (no `spendResources` subtract needed). The philosophical-
     // category generation still fires per the existing skill-cost
     // economy.
     const baseAfterCost = synergyForceResources
-        ?? spendResources(state.combatResources, skill.resourceCost);
+        ?? spendResources(workingState.combatResources, skill.resourceCost);
     const nextResources = generatePhilosophicalResource(baseAfterCost, genCategory);
     events.push({ kind: 'resources-spent', skillId, cost: skill.resourceCost });
     events.push({ kind: 'philosophical-generated', skillId, category: genCategory });
@@ -525,7 +546,7 @@ export function executeSkill(
 
     return {
         state: {
-            ...state,
+            ...workingState,
             player: nextPlayer,
             enemy:  nextEnemy,
             combatResources: nextResources,
