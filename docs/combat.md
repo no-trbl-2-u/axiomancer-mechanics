@@ -355,6 +355,11 @@ via `store.updateCombat(next, combatEvents)`. `appendLog` remains on the
 public barrel for any consumer that wants the summary shape; the combat
 resolver itself never populates it.
 
+**Contract validation (Phase 96):** `resolveCombatRound` validates all
+required parameters at entry to prevent runtime contract divergence issues
+where BattleLogEntry fields might be undefined. If undefined `playerAction`
+or `enemyAction` are passed, the function throws early with descriptive errors.
+
 ## Combat Reducer API
 
 Defined in `src/Combat/combat.reducer.ts`. These are small, single-concept

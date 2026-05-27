@@ -222,6 +222,20 @@ function buildBattleLogEntry(
     playerHPAfter: number,
     enemyHPAfter: number,
 ): BattleLogEntry {
+    // Defensive validation: ensure required fields are never undefined
+    // (addresses GitHub issue #74 - runtime contract divergence)
+    if (!playerAction) {
+        throw new Error('buildBattleLogEntry: playerAction cannot be undefined');
+    }
+    if (!enemyAction) {
+        throw new Error('buildBattleLogEntry: enemyAction cannot be undefined');
+    }
+    if (!playerAction.stance || !playerAction.action) {
+        throw new Error('buildBattleLogEntry: playerAction must have stance and action');
+    }
+    if (!enemyAction.stance || !enemyAction.action) {
+        throw new Error('buildBattleLogEntry: enemyAction must have stance and action');
+    }
     const playerRoll = events.find(event =>
         event.phase === 'scenario' && event.kind === 'attack-roll' && event.actor === 'player');
     const enemyRoll = events.find(event =>
@@ -297,6 +311,20 @@ export function resolveCombatRound(
     enemyAction: CombatAction,
     skillLookup?: SkillLookup,
 ): RoundResolution {
+    // Early validation to catch contract violations (GitHub issue #74)
+    if (!playerAction) {
+        throw new Error('resolveCombatRound: playerAction cannot be undefined');
+    }
+    if (!enemyAction) {
+        throw new Error('resolveCombatRound: enemyAction cannot be undefined');
+    }
+    if (!playerAction.stance || !playerAction.action) {
+        throw new Error('resolveCombatRound: playerAction must have stance and action');
+    }
+    if (!enemyAction.stance || !enemyAction.action) {
+        throw new Error('resolveCombatRound: enemyAction must have stance and action');
+    }
+
     const events: RoundEvent[] = [];
 
     // 1. Round-start orchestration.
