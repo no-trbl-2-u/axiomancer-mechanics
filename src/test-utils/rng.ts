@@ -18,7 +18,7 @@
  */
 
 import { vi, type MockInstance } from 'vitest';
-import { setRng, type Rng } from '../Utils/rng';
+import { setRng, getRng, type Rng } from '../Utils/rng';
 
 class MathBackedRng implements Rng {
     private state = 0;
@@ -27,8 +27,26 @@ class MathBackedRng implements Rng {
     setState(state: number): void { this.state = state; }
 }
 
+// Store the original RNG instance to restore after each test
+let originalRng: Rng | null = null;
+
 function installMathBackedRng(): void {
+    // Save the original RNG instance if this is the first call
+    if (originalRng === null) {
+        originalRng = getRng();
+    }
     setRng(new MathBackedRng());
+}
+
+/**
+ * Restore the original RNG instance. This should be called in afterEach 
+ * alongside vi.restoreAllMocks() to ensure proper test isolation.
+ */
+export function restoreOriginalRng(): void {
+    if (originalRng !== null) {
+        setRng(originalRng);
+        originalRng = null;
+    }
 }
 
 /**

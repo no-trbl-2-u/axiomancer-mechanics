@@ -17,8 +17,12 @@ import { lookupEffect } from '../../Effects';
 import { CombatState } from '../../Combat/types';
 import { ActiveEffect } from '../../Effects/types';
 import type { CombatResources } from '../types';
+import { restoreOriginalRng } from '../../test-utils/rng';
 
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => {
+    vi.restoreAllMocks();
+    restoreOriginalRng();
+});
 
 const tier3SynergySkillIds = [
     'paradox-convergence',
