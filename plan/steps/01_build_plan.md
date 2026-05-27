@@ -113,7 +113,7 @@ shipped (with commit hash).
 - [x] Phase 92 — Difficulty-meter gameplay scaling (`moralMeter` → engine multipliers) per oversight-22 2026-05-25 promotion. Design-attended: resolve the braindump-vs-Spec-10 divergence on whether moralMeter scales combat. Score 3.0. (commit 50c538f)
 - [x] Phase 93 — Damage-resist primitive (Phase 80 direction (a) damage-side follow-up) per oversight-22 2026-05-25 promotion. Implement the damage-resistance half of direction (a): damage rolls separately + applies its own resistance. Score 3.0.
 - [x] Phase 94 — Tier 3 synergy / content expansion (mirror Phase 66 for Tier 3) per oversight-22 2026-05-25 promotion. Authored Tier 3 synergy skills + content mirroring Phase 66's Tier 2 pattern. Score 3.0. (commit d3f6209)
-- [ ] Phase 95 — CHANGELOG public-surface diff autogeneration per oversight-22 2026-05-25 promotion. New `scripts/changelog-additions.mjs` consuming `diff-public-surface.mjs` output. Score 2.5.
+- [x] Phase 95 — CHANGELOG public-surface diff autogeneration per oversight-22 2026-05-25 promotion. New `scripts/changelog-additions.mjs` consuming `diff-public-surface.mjs` output. Score 2.5. (a450843)
 - [ ] Phase 96 — GH#74 BattleLogEntry type/runtime contract fix per oversight-23 2026-05-26 promotion. Audit BattleLogEntry type surface and fix combat resolution paths that leave required fields undefined at runtime; mobile crashes on boss-skill killing blows. Score 4.2.
 - [ ] Phase 97 — GH#78 previewStatAllocation API per oversight-24 2026-05-27 promotion. Export API to preview exact derived stats for stat allocation decisions, replacing mobile's inaccurate approximation. Score 4.2.
 
