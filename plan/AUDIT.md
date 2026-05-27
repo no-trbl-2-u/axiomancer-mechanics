@@ -45,12 +45,6 @@
 
 ## Pending
 
-### [docs] docs/utils.md missing for Utils module with 19 public exports
-- category: docs
-- impact: 5
-- ease: 8
-- score: 4.0
-- notes: Utils module exports 19 functions (clamp, randomInt, deepClone, stat derivation, die rolling, etc.) to the public barrel but lacks docs/utils.md. All other modules have dedicated docs files.
 
 ### [feature] GH#78 — feat: previewStatAllocation API for level-up derived stats preview
 - category: feature
@@ -66,6 +60,8 @@
 ---
 
 ## Done
+
+- [x] **[MED] docs/utils.md missing for Utils module with 19 public exports** — resolved at iterate commit `a47d640` (2026-05-27). Created comprehensive docs/utils.md covering all public Utils API including math utilities (clamp, randomInt, average, sum, min/max, inRange), string utilities (capitalize, formatPercent), dice system (createDie, createDieRoll, advantage/disadvantage), stat derivation (deriveStats, deriveNonCombatStats, calculateMaxHealth), and general utilities (deepClone). All modules now have dedicated docs files. 895/895 tests stay green; pure docs addition. Impact 5 × Ease 8 / 10 = 4.0. Source: /iterate audit category E (docs) finding.
 
 - [x] **[HIGH] GH#74 — BattleLogEntry type/runtime contract divergence — fields undefined at runtime despite required types** — resolved at Phase 96 commit `27b5815` (2026-05-27). Added defensive validation in both `resolveCombatRound` and `buildBattleLogEntry` functions to prevent undefined playerAction/enemyAction from reaching BattleLogEntry construction. Combat resolution now throws early with clear error messages if actions are missing stance/action fields, preventing mobile crashes on boss-skill killing blows. All 895 tests pass including new contract verification tests in `battlelogentry-contract.engine.test.ts`. Impact 7 × Ease 6 / 10 = 4.2. Source: GitHub issue #74 / AUDIT Pending.
 
