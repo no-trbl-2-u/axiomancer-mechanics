@@ -46,13 +46,6 @@
 ## Pending
 
 
-### [LOW] createDieRoll function missing return type annotation
-- category: types
-- impact: 3
-- ease: 9
-- score: 2.7
-- notes: src/Utils/index.ts:112 - createDieRoll exported function lacks return type annotation; should be `: () => number` based on createDie return type
-
 ### [feature] GH#78 — feat: previewStatAllocation API for level-up derived stats preview
 - category: feature
 - impact: 7
@@ -67,6 +60,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] createDieRoll function missing return type annotation** — resolved at iterate commit `65cb0f4` (2026-05-27). Added `: () => number` return type annotation to `createDieRoll` function in `src/Utils/index.ts`. Exported functions should have explicit return type annotations for better type inference and documentation. 895/895 tests stay green; type-check clean. Impact 3 × Ease 9 / 10 = 2.7. Source: /iterate audit category C (type-safety) finding.
 
 - [x] **[MED] docs/utils.md missing for Utils module with 19 public exports** — resolved at iterate commit `a47d640` (2026-05-27). Created comprehensive docs/utils.md covering all public Utils API including math utilities (clamp, randomInt, average, sum, min/max, inRange), string utilities (capitalize, formatPercent), dice system (createDie, createDieRoll, advantage/disadvantage), stat derivation (deriveStats, deriveNonCombatStats, calculateMaxHealth), and general utilities (deepClone). All modules now have dedicated docs files. 895/895 tests stay green; pure docs addition. Impact 5 × Ease 8 / 10 = 4.0. Source: /iterate audit category E (docs) finding.
 
