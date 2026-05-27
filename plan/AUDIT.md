@@ -50,7 +50,7 @@
 - category: feature
 - impact: 7
 - ease: 6
-- next: /ship-a-phase
+- next: /ship-a-phase (promoted as Phase 97 at oversight-24 2026-05-27)
 - notes: Export API to preview exact derived stats for stat allocation decisions, replacing mobile's inaccurate approximation
 
 ### [bug] GH#74 — BattleLogEntry type/runtime contract divergence — fields undefined at runtime despite required types

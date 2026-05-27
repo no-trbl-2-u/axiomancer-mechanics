@@ -62,6 +62,9 @@
 
 ## Promoted
 
+### Phase 97 — GH#78 previewStatAllocation API
+- promoted: 2026-05-27 (twenty-fourth oversight). Feature — mobile needs exact derived-stats preview for stat allocation decisions. Score 4.2.
+
 ### Phase 96 — GH#74 BattleLogEntry type/runtime contract fix
 - promoted: 2026-05-26 (twenty-third oversight). Bug fix — mobile crashes on boss-skill killing blows. Score 4.2.
 
