@@ -14,6 +14,10 @@ Turn-based combat with rock-paper-scissors mechanics. All combat functions are p
   - `phases/scenario.ts` — skill / item / attack / defend resolution and stance-token generation (the largest phase).
   - `phases/round-end.ts` — end-phase DoT and effect expiry.
 
+For first-region tuning, read [`early-combat-balance.md`](./early-combat-balance.md)
+before changing player stats, starter enemies, stance math, damage formulas, or
+tutorial-facing combat behavior.
+
 ## Type System
 
 Each round both combatants choose a `Stance`: `heart`, `body`, or `mind`.

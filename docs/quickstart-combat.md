@@ -80,5 +80,6 @@ if (end) {
 ## Deep-dive
 
 - Event type reference: [`combat.md`](./combat.md) § Combat Reducer API
+- Early-game tuning doctrine: [`early-combat-balance.md`](./early-combat-balance.md)
 - Per-phase resolver: `src/Combat/phases/` (round-start, advantage, scenario, round-end)
 - Friendship path: [`combat.md`](./combat.md) § Friendship Path

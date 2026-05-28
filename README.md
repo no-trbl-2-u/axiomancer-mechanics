@@ -169,6 +169,7 @@ automation/                # standalone walkthrough script + replay fixtures
 - [`docs/testing.md`](./docs/testing.md) — **hermetic e2e testing standard (required for every implementation)**
 - [`specs/`](./specs) — implementation specs (`00-how-to-use-specs.md` is the template; `story/` / `world/` / `characters/` hold the Phase 22 narrative specs)
 - [`docs/`](./docs) — per-system references (combat, effects, character, world, etc.)
+- [`docs/early-combat-balance.md`](./docs/early-combat-balance.md) — Tobin's first-region combat tuning doctrine
 - [`docs/api.md`](./docs/api.md) — Public API reference (stability levels + RN integration recipe)
 - [`docs/effects/`](./docs/effects) — per-effect deep-dives (one file per buff/debuff; see `docs/effects/README.md` first)
 - [`docs/references/`](./docs/references) — source material (fallacies, paradoxes, pantheon, story)
