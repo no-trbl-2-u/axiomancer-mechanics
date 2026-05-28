@@ -49,21 +49,14 @@
      Z. External critique: empty (CRITIQUE.md ## Pending confirmed empty)
      A. Test-quality gaps: all modules have hermetic e2e tests, no raw vi.spyOn usage except in test-utils/rng.ts helper
      B. Spec-gap items: no open questions with blank "Your answer:" placeholders (template files excluded)  
-     C. Type-safety: prior 2026-05-27 finding of 84 missing return type annotations appears resolved - sampled functions now have proper return types
-     D. Dead code: deprecated functions in Character/presets.ts (impact 4, ease 8, score 3.2)
-     E. Documentation gaps: CLI docs already exist (docs/cli.md), Playtest docs now shipped (docs/playtest.md)
+     C. Type-safety: sampled exported functions have proper return type annotations
+     D. Dead code: prior finding about Character/presets.ts functions incorrect - they are still used by playtest system and tests
+     E. Documentation gaps: all major modules have docs in docs/ directory
      F. ESLint fix: already shipped in Phase 13, npm run lint passes clean
      G. Dependency updates: all available updates are major version bumps (skip per guidelines)
      H. Commit-hygiene: git status clean, no uncommitted changes
      
-     Top finding: deprecated functions in Character/presets.ts (score 3.2). -->
-
-### [dead-code] Deprecated functions in Character/presets.ts 
-- category: dead-code
-- impact: 4
-- ease: 8  
-- score: 3.2
-- source: iterate audit 2026-05-27
+     No findings scoring ≥3.0. Queue empty. -->
 
 ### [feature] GH#78 — feat: previewStatAllocation API for level-up derived stats preview
 - category: feature
