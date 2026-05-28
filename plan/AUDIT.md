@@ -45,26 +45,18 @@
 
 ## Pending
 
-<!-- iterate audit 2026-05-27: 3 new findings discovered across categories Z-H.
+<!-- iterate audit 2026-05-28: fresh audit with verification of prior findings.
      Z. External critique: empty (CRITIQUE.md ## Pending confirmed empty)
      A. Test-quality gaps: all modules have hermetic e2e tests, no raw vi.spyOn usage except in test-utils/rng.ts helper
      B. Spec-gap items: no open questions with blank "Your answer:" placeholders (template files excluded)  
-     C. Type-safety: 84 exported functions missing return type annotations (impact 8, ease 6, score 4.8)
+     C. Type-safety: prior 2026-05-27 finding of 84 missing return type annotations appears resolved - sampled functions now have proper return types
      D. Dead code: deprecated functions in Character/presets.ts (impact 4, ease 8, score 3.2)
-     E. Documentation gaps: CLI and Playtest modules missing docs (impact 3, ease 6, score 1.8)
+     E. Documentation gaps: CLI docs already exist (docs/cli.md), Playtest docs now shipped (docs/playtest.md)
      F. ESLint fix: already shipped in Phase 13, npm run lint passes clean
      G. Dependency updates: all available updates are major version bumps (skip per guidelines)
      H. Commit-hygiene: git status clean, no uncommitted changes
      
-     Top finding: missing return type annotations (score 4.8). -->
-
-
-### [types] Missing return type annotations on 84 exported functions
-- category: types
-- impact: 8  
-- ease: 6
-- score: 4.8
-- source: iterate audit 2026-05-27
+     Top finding: deprecated functions in Character/presets.ts (score 3.2). -->
 
 ### [dead-code] Deprecated functions in Character/presets.ts 
 - category: dead-code
@@ -87,6 +79,8 @@
 ---
 
 ## Done
+
+- [x] **[docs] Playtest module missing documentation** — resolved at iterate commit `0789399` (2026-05-28). Created comprehensive `docs/playtest.md` covering the automated combat simulation framework including core components (runner engine, policy system, CLI interface, report generation), all 6 policies (aggressive, defensive, friendship, resource-optimal, random, mixed), usage examples, data types, integration points, and automation support for CI/CD. Documented hermetic testing coverage and cross-linked to related modules. 895/895 tests stay green; pure docs addition. Impact 3 × Ease 6 / 10 = 1.8. Source: /iterate audit category E (docs) finding.
 
 - [x] **[docs] CLI module missing documentation** — resolved at iterate commit `931c872` (2026-05-27). Created comprehensive `docs/cli.md` covering the CLI module's three components: `game.cli.ts` (main game interface with tabbed inquirer), `dev-tools.ts` (development utilities), and `io.ts` (I/O abstraction). Documentation includes usage examples, command-line arguments, and integration guidance. Impact 3 × Ease 6 / 10 = 1.8. Source: /iterate audit category E (docs) finding.
 
