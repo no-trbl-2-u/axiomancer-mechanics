@@ -73,13 +73,6 @@
 - score: 3.2
 - source: iterate audit 2026-05-27
 
-### [docs] CLI and Playtest modules missing documentation
-- category: docs
-- impact: 3
-- ease: 6
-- score: 1.8
-- source: iterate audit 2026-05-27
-
 ### [feature] GH#78 — feat: previewStatAllocation API for level-up derived stats preview
 - category: feature
 - impact: 7
@@ -94,6 +87,8 @@
 ---
 
 ## Done
+
+- [x] **[docs] CLI module missing documentation** — resolved at iterate commit `931c872` (2026-05-27). Created comprehensive `docs/cli.md` covering the CLI module's three components: `game.cli.ts` (main game interface with tabbed inquirer), `dev-tools.ts` (development utilities), and `io.ts` (I/O abstraction). Documentation includes usage examples, command-line arguments, and integration guidance. Impact 3 × Ease 6 / 10 = 1.8. Source: /iterate audit category E (docs) finding.
 
 - [x] **[C] Utils module exported functions missing return type annotations** — resolved at iterate commit `910dc18` (2026-05-27). Added return type annotations to sum (`: number`), max (`: number`), min (`: number`), and createDie (`: () => number`) functions in `src/Utils/index.ts`. Public API functions should have explicit return types for better TypeScript support and documentation clarity. 895/895 tests stay green; type-check clean. Impact 6 × Ease 9 / 10 = 5.4. Source: /iterate audit category C (type-safety) finding.
 
