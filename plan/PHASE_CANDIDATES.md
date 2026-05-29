@@ -78,14 +78,6 @@
 - score: 7 × 6 / 10 = 4.2
 - recommended-slot: after Phase 97
 
-### Candidate: Item rarity system (Spec 05c)
-- signal: specs/05c-item-rarity.md unstarted + braindump/2026-05-12 complete design
-- scope: Replace the 50-item named library with EquipmentTemplate system and runtime instance creation. Replace Equipment.tier with rarity (Common/Uncommon/Rare/Unique) and requiredLevel for scaling. dropItem() creates instances with rolled mods based on rarity.
-- unblocks: Modifier system (05d), set items (05e), endgame itemization depth
-- blocked-by: none (design decisions locked in braindump)
-- score: 8 × 10 / 10 = 8.0
-- recommended-slot: after Phase 97
-
 ### Candidate: Modifier catalogue (Spec 05d)
 - signal: specs/05d-modifier-catalogue.md unstarted + braindump slot-specific pool decision
 - scope: Define modifier type system with slot-specific mod pools (weaponModPool, headModPool, etc). rollModifiers() selects mods with hidden rarity weights, resolveModifiers() merges into existing Equipment fields. No new Equipment fields, just data-layer convention.
@@ -111,6 +103,12 @@
 - recommended-slot: after Phase 97
 
 ## Promoted
+
+### Phase 98 — Item rarity system (Spec 05c)
+- promoted: 2026-05-29 (twenty-fifth oversight). T selected items as the mechanics top agenda. Score 8.0.
+- source: Candidate "Item rarity system (Spec 05c)".
+- scope: Replace the 50-item named library with an `EquipmentTemplate` system and runtime instance creation. Replace `Equipment.tier` with rarity (`Common` / `Uncommon` / `Rare` / `Unique`) and `requiredLevel` for scaling. `dropItem()` creates runtime equipment instances with rolled mods based on rarity.
+- unblocks: Modifier catalogue (Spec 05d), set items (Spec 05e), and endgame itemization depth.
 
 ### Phase 97 — GH#78 previewStatAllocation API
 - promoted: 2026-05-27 (twenty-fourth oversight). Feature — mobile needs exact derived-stats preview for stat allocation decisions. Score 4.2.
