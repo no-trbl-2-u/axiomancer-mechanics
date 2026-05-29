@@ -26,6 +26,42 @@
 
 
 
+### [HIGH] Combat recurrence suppressed after victory outcomes
+- pass: user-playthrough (commit `9822388`)
+- category: combat
+- observation: Losing the first fight and restarting allows a new fight to trigger, but both friendship victory and regular victory prevent later combat encounters from triggering.
+- evidence: user manual playthrough at 2026-05-29T21:55:12Z
+- expected: Resolving a combat encounter by loss/restart, friendship victory, or regular victory should only resolve that encounter/path and must not globally suppress future combat-capable nodes.
+- suggested_fix: add deterministic recurrence coverage for defeat/restart, friendship victory, and regular victory paths; inspect encounter-completion flags, active combat/prelude state, and victory aftermath reducers for over-broad exhaustion.
+- source: user
+
+### [HIGH] Token resources do not accumulate for skill casting
+- pass: user-playthrough (commit `9822388`)
+- category: skills
+- observation: The token resource system used to cast skills is not accumulating whatsoever.
+- evidence: user manual playthrough at 2026-05-29T21:55:12Z
+- expected: Base combat actions and/or round progression should accumulate the appropriate token resources according to the skills/combat rules, making learned usable skills castable.
+- suggested_fix: add a hermetic combat-round test that proves token gain across rounds/actions and a skill-casting test that consumes accumulated tokens.
+- source: user
+
+### [MED] Learned skills are blocked by equipped-skill state
+- pass: user-playthrough (commit `9822388`)
+- category: skills
+- observation: Skills fail because they are not equipped, but once a skill is learned it should be available; combat should show only learned skills usable at that moment.
+- evidence: user manual playthrough at 2026-05-29T21:55:12Z
+- expected: Learned skills form the available repertoire unless a future deliberate deck/loadout system is designed; combat presentation filters by current usability, not hidden equip state.
+- suggested_fix: audit knownSkills/equippedSkills semantics, decide whether equippedSkills should be removed/deprecated or converted into an optional loadout, and add tests for learned-skill availability plus current-token usability filtering.
+- source: user
+
+### [HIGH] Early-game difficulty curve overwhelms first playthrough
+- pass: user-playthrough (commit `9822388`)
+- category: balance
+- observation: The game is far too hard at the start; systems exist but have no ordered progression, and enemy scaling with the player feels rough despite being conceptually desirable.
+- evidence: user manual playthrough at 2026-05-29T21:55:12Z; mobile screenshot evidence includes level 1 player versus level 2 Wet Hound with 60 HP and a result capable of dropping player Vitae to 0/10 in one exchange.
+- expected: Start-game tuning should teach stance, tokens, skills, damage, friendship, items, and retreat before punishing the player at full force.
+- suggested_fix: create two deterministic playthrough lanes: (1) level 1 against easy enemies for onboarding balance, and (2) max level/max stats/all items/all skills for endgame system coverage. Use those lanes before tuning scaling multipliers.
+- source: user
+
 ---
 
 ## Done
