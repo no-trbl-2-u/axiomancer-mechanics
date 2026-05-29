@@ -33,6 +33,7 @@
 - evidence: user manual playthrough at 2026-05-29T21:55:12Z
 - expected: Resolving a combat encounter by loss/restart, friendship victory, or regular victory should only resolve that encounter/path and must not globally suppress future combat-capable nodes.
 - suggested_fix: add deterministic recurrence coverage for defeat/restart, friendship victory, and regular victory paths; inspect encounter-completion flags, active combat/prelude state, and victory aftermath reducers for over-broad exhaustion.
+- promoted: Phase 96 — `plan/phases/phase_96_combat_recurrence_victory_path_fix.md` (user-priority promotion 2026-05-29)
 - source: user
 
 ### [HIGH] Token resources do not accumulate for skill casting
@@ -42,6 +43,7 @@
 - evidence: user manual playthrough at 2026-05-29T21:55:12Z
 - expected: Base combat actions and/or round progression should accumulate the appropriate token resources according to the skills/combat rules, making learned usable skills castable.
 - suggested_fix: add a hermetic combat-round test that proves token gain across rounds/actions and a skill-casting test that consumes accumulated tokens.
+- promoted: Phase 97 — `plan/phases/phase_97_token_accumulation_restoration.md` (user-priority promotion 2026-05-29)
 - source: user
 
 ### [MED] Learned skills are blocked by equipped-skill state
