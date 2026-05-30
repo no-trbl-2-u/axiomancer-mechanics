@@ -6,9 +6,10 @@
 > by `/iterate`.
 
 <!-- Metadata (updated by /critique after each pass):
-> Last pass: 2026-05-25 at commit f0cdc65
-> Pass count: 45
+> Last pass: 2026-05-30 at commit 81ff3a5
+> Pass count: 46
 -->
+<!-- Pass 46 (2026-05-30 at commit 81ff3a5): 3 findings (0H/2M/1L). First pass since the v0.13.0 bump + oversight-26 (which rescoped Phase 98 to an items + skill-resource audit and cleared the phantom item-spec candidates). 52 commits since pass 45 (Phases 90-97 ship bundle + the item-rarity/modifier/set system + dev-tools + playtest harness + iterate drains). Deliberately did NOT re-file item-modifier / set-bonus / skill-resource findings — that surface is owned by the pending Phase 98 audit and filing here would duplicate it. The pass found the codebase clean on type-safety (zero as-any/ts-ignore in production; only a prose "any" in scenario.ts JSDoc), module structure (logic in resolvers/reducers, RNG stubbed via test-utils), and e2e coverage (every src/ module incl. NPCs/Philosophy/Playtest/CLI has an e2e file; quest.engine covered across world+spec08+oldmarrow e2e). The three findings are a docs gap (Phase 97 previewStatAllocation export undocumented) and a deprecation-lifecycle cluster that the v0.13.0 boundary exposed: presets.ts carries a now-unachievable "remove at v0.13.0" schedule (still live-used by the Playtest runner), and getResistStat + the three endCombat aliases were scheduled "removal at next minor bump" — that bump (0.12→0.13) has now happened, so they're eligible but un-removed and the [unreleased] ### Removed section is empty. -->
 <!-- Pass 45 (2026-05-25 at commit f0cdc65): 0 findings. Post-Phase-88/89 + iterate-drain window. The 13 commits since pass 44 shipped Phase 88 (effect coverage sweep — 5 new test files, 824 total tests), Phase 89 (front-door docs fold-in for Phases 81-87), march.yml CI workflow (30-min cron + idle-detection + dangerously_skip_permissions + Node 22 bump), verify.yml Node 20→22 bump, and 6 iterate-drain commits (CHANGELOG Phase 88/89 entries, testing.md table update, isBaseStatTarget dead-code removal, verify.yml sync). Zero engine logic changed. Public surface unchanged (237+167). No structural drift — the only code change was removing 4 lines of dead code (isBaseStatTarget + STANCE_KEYS). Type-safety clean (zero as-any / ts-ignore in production code). Module structure consistent. Docs current (testing.md e2e table, CHANGELOG, api.md, README all refreshed by Phase 89 + iterate). CI workflows now both on Node 22. -->
 <!-- Pass 44 (2026-05-24 at commit 6d89f8a): 0 findings. Post-iterate-drain + oversight pass. The 12 commits since pass 43 were purely docs/plan/type-cleanup iterate drains (6 CRITIQUE rows drained: 1 MED + 5 LOWs) + expand-24 + oversight-21 promoting Phases 88+89. Zero engine logic changed. Public surface unchanged (237+167). No structural drift, no dead code, no type-safety issues, no doc gaps beyond the Phase 79 aggregate LOWs (phase-tier, now promoted as Phase 88). Pool: 5 Phase 79 aggregate LOWs remain as the only Pending items; Phase 88 will drain them. -->
 <!-- Pass 43 (2026-05-24 at commit 7fada36): 3 findings (0H/0M/3L). Post-Phase-81-through-86 audit. The 12 commits since pass 42 shipped Phases 81-86 (walkthroughs + CLI run-loop/codex + Phase 83 test sweep + Phase 84 event scrub + Phase 85 combat-tuning audit + Phase 86 equipment audit). Phase 84 removed dead `effect-rebounded` variant + renamed `effect-resisted` → `buff-fumbled`; Phase 86 removed the combat-effects.ts rebound block. This pass walks the residual type surface left behind: `EffectApplicationResult.rebounded` field is now dead (never set true); `getResistStat` export has zero in-repo callers; `EffectApplicationResult.roll` JSDoc is partial-stale. All LOW — dead type surface, no runtime impact. -->
@@ -23,7 +24,29 @@
 
 ## Pending
 
+### [MED] docs — Phase 97 `previewStatAllocation` export undocumented
+- pass: critique-46 (commit 81ff3a5)
+- area: docs
+- observation: Phase 97 added `previewStatAllocation` to the public barrel (`src/index.ts:15`) — the feature mobile needs to preview exact derived stats for level-up allocation — but it is absent from every doc in `docs/`. The natural homes already exist and were not updated: `docs/api.md:25` has a "Stat allocation (Phase 29): `allocateStatPoint(character, stat)`" entry that lists only the older sibling, and `docs/character.md:78` has a "## Stat allocation" section that omits the new preview API. Front-door readers (api.md / character.md / quickstart-character.md) have no path to discover the export.
+- evidence: `src/index.ts:15` (export); `grep -rln previewStatAllocation docs/` → no matches; `docs/api.md:25`; `docs/character.md:78`.
+- suggested_fix: Add `previewStatAllocation` to `docs/api.md` Stat-allocation entry + `docs/character.md` "Stat allocation" section (signature + the "exact derived stats vs mobile's approximation" framing); optionally `docs/quickstart-character.md`.
+- source: critique
 
+### [MED] Character/presets — `@deprecated remove at v0.13.0` schedule now contradicts live use
+- pass: critique-46 (commit 81ff3a5)
+- area: dead-code
+- observation: `src/Character/presets.ts` carries multiple `@deprecated Scheduled for removal at v0.13.0` JSDoc tags (lines 4, 28, 136, 141, 148), and the package is now **at** `0.13.0` (`package.json`). The removal milestone has arrived, but the symbols (a) remain and (b) are still imported by **live runtime** code — `src/Playtest/playtest.runner.ts` builds characters from presets — plus the `src/Character/index.ts` barrel and two e2e files. So the stated deadline is unachievable: presets are load-bearing for the Playtest harness and cannot be removed at v0.13.0. The deprecation note and reality have diverged.
+- evidence: `src/Character/presets.ts:4,28,136,141,148` (JSDoc); `package.json` version `0.13.0`; live importer `src/Playtest/playtest.runner.ts`; barrel `src/Character/index.ts`.
+- suggested_fix: Reconcile the schedule — either bump the target past v0.13.0 (and name the Playtest-harness dependency as the blocker), or migrate the Playtest runner off presets to the DEV-tools path the JSDoc points at, then remove. Pick one at /iterate or flag for /oversight if it's a design call.
+- source: critique
+
+### [LOW] Combat — deprecation removals due at the v0.13.0 minor bump are un-actioned
+- pass: critique-46 (commit 81ff3a5)
+- area: dead-code
+- observation: `getResistStat` (`src/index.ts:54`, `src/Combat/stats.ts:64`) and the three `endCombat*` aliases (`src/index.ts:78`, `src/Combat/combat.reducer.ts:143/149/155`) are `@deprecated` with a "removal at the next minor bump" schedule recorded in `CHANGELOG.md:425` (### Deprecated). The 0.12.0 → 0.13.0 minor bump has now happened, so all four are eligible for removal — each has zero non-test in-repo callers (getResistStat: only `stats.ts` def + 2 tests; the aliases: only the barrel re-export + tests). Yet they remain on the public barrel and the `[unreleased] ### Removed` section (`CHANGELOG.md:23`) is empty, so the lifecycle stalled at the boundary it was scheduled to clear.
+- evidence: `src/index.ts:54,78`; `src/Combat/stats.ts:64`; `src/Combat/combat.reducer.ts:143,149,155`; `CHANGELOG.md:425` (Deprecated) vs `:23` (empty Removed); `package.json` `0.13.0`.
+- suggested_fix: Batch-remove the four symbols (verify zero external/mobile callers first), drop them from `src/index.ts` + `src/Combat/index.ts`, and add a `[unreleased] ### Removed` CHANGELOG entry; OR if external-consumer verification is pending, update the schedule note to the next bump. Note this is the per-instance counterpart to the presets MED above.
+- source: critique
 
 
 ---
