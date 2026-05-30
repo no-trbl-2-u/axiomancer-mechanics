@@ -58,20 +58,14 @@
      
      No findings scoring ≥3.0. Queue empty. -->
 
-### [feature] GH#78 — feat: previewStatAllocation API for level-up derived stats preview
-- category: feature
-- impact: 7
-- ease: 6
-- next: /ship-a-phase (promoted as Phase 97 at oversight-24 2026-05-27)
-- notes: Export API to preview exact derived stats for stat allocation decisions, replacing mobile's inaccurate approximation
-
-
-
+<!-- Pending queue empty. The GH#78 previewStatAllocation row was drained to Done at oversight-26 (2026-05-30) — it had been promoted as Phase 97 and shipped at commit 5ff7084, so the Pending row was stale. -->
 
 
 ---
 
 ## Done
+
+- [x] **[feature] GH#78 — previewStatAllocation API for level-up derived stats preview** — drained Pending → Done at oversight-26 (2026-05-30). Promoted as Phase 97 at oversight-24 (2026-05-27) and shipped at commit `5ff7084` ("feat(character): phase 97 — previewStatAllocation API"); the Pending row was a stale tracking leftover. Exports an API to preview exact derived stats for stat-allocation decisions, replacing mobile's inaccurate approximation. Impact 7 × Ease 6 / 10 = 4.2. Source: GH#78.
 
 - [x] **[docs] Playtest module missing documentation** — resolved at iterate commit `0789399` (2026-05-28). Created comprehensive `docs/playtest.md` covering the automated combat simulation framework including core components (runner engine, policy system, CLI interface, report generation), all 6 policies (aggressive, defensive, friendship, resource-optimal, random, mixed), usage examples, data types, integration points, and automation support for CI/CD. Documented hermetic testing coverage and cross-linked to related modules. 895/895 tests stay green; pure docs addition. Impact 3 × Ease 6 / 10 = 1.8. Source: /iterate audit category E (docs) finding.
 
