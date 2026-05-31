@@ -6,7 +6,13 @@ Turn-based combat with rock-paper-scissors mechanics. All combat functions are p
 
 - `Combat/index.ts` — module barrel + small mechanics helpers (advantage, stats, dice, damage, health, effect queries).
 - `Combat/combat.reducer.ts` — small `(state, …args) => newState` mutations on `CombatState`.
-- `Combat/combat.resolver.ts` — `resolveCombatRound`, the single round-resolution entry point. Returns `{ state, combatEvents }` so any UI client (CLI, future React Native UI, automated tester) can drive combat without re-implementing the math.
+- `Combat/combat.resolver.ts` — `resolveCombatRound`, the single round-resolution entry point. Returns `{ state, combatEvents }` so any UI client (CLI, future React Native UI, automated tester) can drive combat without re-implementing the math. The orchestrator delegates to per-phase helpers in `Combat/phases/`:
+  - `phases/round-start.ts` — regen / drain / start-phase DoT.
+  - `phases/action-restriction.ts` — `forcedStance` / `blockedStance` / `skipTurn`.
+  - `phases/advantage.ts` — type-advantage matchup + effect overrides.
+  - `phases/stance-effects.ts` — clear stale Tier 1 buffs; apply this round's Tier 1.
+  - `phases/scenario.ts` — skill / item / attack / defend resolution and stance-token generation (the largest phase).
+  - `phases/round-end.ts` — end-phase DoT and effect expiry.
 
 ## Type System
 
@@ -36,8 +42,8 @@ Advantage modifier (flat roll bonus/penalty from `getAdvantageModifier()`):
 |--------|-------------|
 | `attack` | Offensive — deals damage |
 | `defend` | Defensive — reduces incoming damage |
-| `skill` | Use an equipped skill (Phase 3) |
-| `item` | Use an inventory item (Phase 4) |
+| `skill` | Use an equipped skill (Spec 04 / 04b) |
+| `item` | Use an inventory consumable (Spec 05 / 05b) |
 | `flee` | Attempt to escape |
 
 ## Combat Phases
@@ -62,28 +68,30 @@ The multiplier depends on the defender's type-advantage over the attacker.
 
 ## Round Flow (Current Implementation)
 
-A single call to `resolveCombatRound(state, playerAction, enemyAction)` runs
-every phase below and returns `{ state, combatEvents }`. The CLI prints the
+A single call to `resolveCombatRound(state, playerAction, enemyAction, lookupSkill?)`
+runs every phase below and returns `{ state, combatEvents }`. The CLI prints the
 event stream via `renderRoundEvents` in `combat.display.ts`; the resolver
 itself never logs.
 
 ```
-resolveCombatRound(state, playerAction, enemyAction)
-├── 1. round-start          → processRoundStartEffects  → regen / mana / drain / start-phase DoT
+resolveCombatRound(state, playerAction, enemyAction, lookupSkill?)
+├── 1. round-start          → processRoundStartEffects  → regen / drain / start-phase DoT
 │                              (early exit if a combatant drops to 0 HP)
 ├── 2. action-restriction   → canAct                    → forced-stance / blocked-stance / skipTurn
 ├── 3. advantage            → resolveEffectiveAdvantage → matchup + per-side advantage label
 ├── 4. stance-effects       → clearTier1EffectsForStance + applyTier1CombatEffect
-├── 5. scenario             → attack-vs-attack / attack-vs-defend / both-defend / skip variants
-│                              (rolls, damage, thorns, heart specials, friendship tick)
+├── 5. scenario             → 'skill' routes through executeSkill (Spec 04);
+│                              otherwise attack-vs-attack / attack-vs-defend / etc.
+│                              Player basic actions also generate stance tokens
+│                              into `combatResources` (hit +3 / miss +1 / defend +5).
 └── 6. round-end            → end-phase DoT  → tickAllEffects  → log expired effects
                               + round counter increments
 ```
 
 Events are emitted in the order above, grouped by `phase`:
 `round-start` → `action-restriction` → `advantage` → `stance-effects` →
-`scenario` → `round-end`. UI consumers render each section from the typed
-`RoundEvent` union exported alongside the resolver.
+`skill` → `scenario` → `resources` → `round-end`. UI consumers render each
+section from the typed `RoundEvent` union exported alongside the resolver.
 
 ## Tier 1 Auto-Effects
 
@@ -131,7 +139,7 @@ Clamped to [0, 1].
 
 **Fumble (nat 1 attack roll)** — applies the cell's `fumbleEffectId` to the actor as a self-debuff and skips other procs for that cell.
 
-**Application path** — procs hand off to `applyEffect` (to materialise the ActiveEffect with the right intensity / duration) and then `resolveEffectApplication` (Tier 2 / 3 resist contest, rebound, crit-resist). Tier 1 procs auto-apply via `applyEffect` alone.
+**Application path** — procs hand off to `applyEffect` (to materialise the ActiveEffect with the right intensity / duration) and then `resolveEffectApplication` (Tier 2 buff caster fumble/crit; Tier 2 debuff + Tier 3 always land post-Phase-80). Tier 1 procs auto-apply via `applyEffect` alone.
 
 **Default proc matrix:**
 
@@ -148,22 +156,167 @@ Clamped to [0, 1].
 
 **Switching (Q5)** — out of scope for this spec. The skill engine (Spec 04) will hook switching into a different effect pool; basic procs do not currently apply a switching multiplier.
 
-## Effect Resistance Rules (`resolveEffectApplication`)
+## Effect Application Rules (`resolveEffectApplication`)
 
 | Tier | Rule |
 |------|------|
 | **Tier 1** | Auto-applies. No roll made. |
-| **Tier 2 Buff** | Only natural 1 (fumble) stops it. Natural 20 = crit focus → 2× intensity. |
-| **Tier 2 Debuff** | Target rolls `d20 + resistStat` vs `DR = resistDR + attackerHeartBonus + equipBonus`. Natural 20 = rebound (effect bounces to attacker at 2× intensity). Natural 1 = overwhelmed (lands at 2× duration). Total ≥ DR = resisted. |
-| **Tier 3** | Only natural 20 repels it. Everything else lands. |
+| **Tier 2 Buff** | Caster d20: natural 1 = fumble (buff fails, `buff-fumbled` event). Natural 20 = crit focus → 2× intensity. Any other = auto-succeeds. |
+| **Tier 2 Debuff** | **Always lands.** No target-resist roll. No rebound. No overwhelmed. (Phase 80 — direction (a) pure split.) |
+| **Tier 3** | **Always lands.** Inescapable. (Phase 80 — Nat-20 escape removed.) |
 
-DR formula: `effect.resistDR + attacker.baseStats.heart + equipmentBonus`
-Resist stat: `target.baseStats[resistedBy]` (via `getResistStat()` in `Combat/stats.ts`).
+See `docs/effects.md` for the full per-tier breakdown and stacking rules.
+
+## Damage Resistance (Phase 93)
+
+Phase 93 completes Phase 80's direction (a) "pure split": effects always land (Phase 80), damage applies resistance separately (Phase 93).
+
+Skills now apply damage resistance based on the target's stats:
+- **Physical damage** (body-scaling skills) → reduced by target's body stat
+- **Mental damage** (mind-scaling skills) → reduced by target's mind stat  
+- **Emotional damage** (heart-scaling skills) → reduced by target's heart stat
+
+**Linear resistance model:** Each point of resistance stat reduces damage by 1.
+**Minimum damage:** Damage is clamped to at least 1 (high resistance reduces but never completely negates damage).
+
+```typescript
+// Physical skill against high-body target
+const damage = calculateSkillDamage(caster, bodySkill, target);
+// If bodySkill would deal 10 damage, but target has 7 body stat,
+// final damage = 10 - 7 = 3
+
+// Very high resistance still allows minimum damage
+// If target has 15 body stat vs 10 damage, result = 1 (not 0)
+```
+
+This affects `calculateSkillDamage` when a target is provided. Calls without a target maintain backward compatibility (no resistance applied).
 
 ## Friendship Path
 
 Both combatants defending on the same round increments `friendshipCounter`.
-Reaching `FRIENDSHIP_COUNTER_MAX` (3) ends combat with the `friendship` outcome.
+Reaching `FRIENDSHIP_COUNTER_MAX` (3) ends combat with the `friendship`
+outcome — UNLESS the enemy carries a per-enemy `befriendabilityConfig`
+override (Phase 68), in which case ALL of its named predicates must pass
+simultaneously before friendship triggers. See § "Per-enemy predicate
+(Phase 68 — `BefriendabilityConfig`)" below for the override semantics.
+
+When the Game store's `endCombat()` resolves a friendship exit (Phase 36),
+the returned `CombatEndReport` carries:
+
+- `outcome: 'friendship'` (distinct from `'flee'`)
+- `xpGained: floor(totalEncounterXp * 0.5) + friendshipReward?.xpBonus` —
+  half the kill-win XP plus any per-enemy bonus (Phase 60)
+- `loot: rollEncounterLoot(encounter) ++ friendshipReward?.items` —
+  the full weighted-loot roll with any per-enemy guaranteed items
+  appended (Phase 60)
+- `friendshipReward?: { narrative?, alignmentShift?, codexEntryUnlocked? }`
+  (Phase 60 + 69 + 73) — present only when the befriended enemy
+  carries an authored `friendshipReward` with `narrative` /
+  `alignmentDelta`, OR a `journalEntry` that wasn't already
+  unlocked. Engine doesn't interpret `narrative`; CLI / UI renders.
+  `alignmentShift` (Phase 69) carries the post-clamp
+  `PhilosophicalAlignment` the reducer just wrote to
+  `state.philosophicalAlignment` — surface parity for consumers
+  that don't subscribe separately. `codexEntryUnlocked` (Phase 73)
+  carries `{ id, title }` for the newly-unlocked codex entry;
+  body is looked up against the source `Enemy.journalEntry`.
+- **State side effect (Phase 62)** — when the befriended enemy carries
+  `friendshipReward.flagSet?: string`, the END_COMBAT reducer appends
+  the flag to `state.flags` (de-duped). Downstream dialogue choices /
+  quest objectives can gate on the flag via the existing
+  `DialogueChoice.requires.flag` machinery — no new engine surface
+  for the consumer. Convention is `befriended-<enemy-id-stem>` (e.g.
+  `befriended-mournful-gull`). The flag does NOT surface on the report.
+- **State side effect (Phase 69)** — when the befriended enemy carries
+  `friendshipReward.alignmentDelta?: Partial<PhilosophicalAlignment>`,
+  the END_COMBAT reducer applies the delta to
+  `state.philosophicalAlignment` via `applyAlignmentDelta` (Phase 42
+  clamp helper; each axis clamps to `[-100, +100]`, missing axes pass
+  through). Closes Spec 14 Q4. Authoring band: ±1..±5 per axis (matches
+  the Phase 43 dialogue / map-event delta convention). The post-clamp
+  cell surfaces on `CombatEndReport.friendshipReward.alignmentShift`.
+- **State side effect (Phase 73 — closes GH#65 ask 3)** — when the
+  befriended enemy carries `journalEntry?: CodexEntry`
+  (`{ id, title, body }`), the END_COMBAT reducer appends the
+  entry's id to `state.codex.unlockedEntries` (de-duped). The
+  store layer surfaces `{ id, title }` on
+  `CombatEndReport.friendshipReward.codexEntryUnlocked` only when
+  the entry wasn't already unlocked — repeat befriends don't
+  re-fire the report field. Body is recovered at consumer render
+  time via lookup against the source `Enemy` (or a future
+  `CodexLibrary` registry). Victory / defeat / flee outcomes do
+  NOT unlock the entry; future content can grant entries outside
+  combat via `store.unlockCodexEntry(entryId)`.
+
+The reducer side (Phase 10) also shifts the moral meter `+1` (see
+`docs/morality.md` § "Combat: Friendship Victories") and routes the player
+through `applyLevelUps` if the (now possibly-bonused) XP crossed a threshold.
+
+### Befriendable-enemy content (Phase 60)
+
+Per-enemy `Enemy.friendshipReward?: FriendshipReward` lets authors
+attach bonus content to the friendship resolution. Two enemies ship
+authored rewards today:
+
+| Enemy | Items | xpBonus | Narrative |
+|---|---|---|---|
+| **MournfulGull** (at `fv-15` gull crag, Phase 65) | 1 × heart-draught | +10 | "The gull stops circling. It settles on the rail beside you. For a long moment, neither of you speaks the slights you remember." |
+| **HollowEyedBeggar** (at `fv-18` back alley, Phase 65) | 1 × healing-potion + 1 × antidote | +15 | "They pull a folded cloth from somewhere inside the rags. Two phials, both still cold. \"I was carrying these for someone,\" they say. \"But you stopped. So.\"" |
+
+`FriendshipReward` is `{ items?: Item[]; xpBonus?: number; narrative?:
+string }`. Items are appended to the weighted-loot roll, xpBonus is
+additive on top of the half-XP base, and `narrative` surfaces on
+`CombatEndReport.friendshipReward.narrative` for the consumer to
+render. Enemies without an authored `friendshipReward` resolve via the
+Phase 36 base only (the report's `friendshipReward` field is
+`undefined`). See `docs/enemy.md` § "Befriendable enemies (Phase 60)"
+for authoring guidance.
+
+### Per-enemy predicate (Phase 68 — `BefriendabilityConfig`)
+
+`Enemy.befriendabilityConfig?: BefriendabilityConfig` overrides the
+Phase 36 friendship-eligibility predicate per enemy. When absent, the
+Phase 36 mechanic stays unchanged. When present, ALL of its named
+fields AND-compose; eligibility requires every named predicate to pass
+simultaneously. Within a single list-valued predicate, the match is
+existential (at least one element).
+
+| Field | Semantics |
+|---|---|
+| `roundsThreshold?: number` | Per-enemy override of `FRIENDSHIP_COUNTER_MAX`. Defaults to the global value (3) when absent on a config that sets other fields. |
+| `hpGate?: { belowPct: number }` | Enemy HP fraction must be ≤ `belowPct` at the eligibility check. Pure snapshot — healing back above the threshold un-qualifies. Range [0, 1]. |
+| `requiredStances?: Stance[]` | Player must have used at least one of the named stances during combat (existential). Derived from `state.log[].playerAction.stance`. Empty array = no requirement. |
+| `requiredSkillUse?: string[]` | Player must have cast at least one of the named skill IDs during combat (existential). Derived from `state.log[].playerAction` entries with `action === 'skill'`. Empty array = no requirement. |
+| `defaultFallback?: 'both-defend-cap'` | Explicit "fall through to Phase 36". When set, other fields are ignored for THIS enemy; eligibility uses the global counter cap exactly. |
+
+The engine helper that evaluates the predicate is
+`isFriendshipEligible(state: CombatState): boolean` in
+`src/Combat/index.ts`. It is **not** on the public barrel — engine
+consumers read combat-end state through `determineCombatEnd` /
+`isCombatOngoing`, both of which call it so the two predicates stay in
+lockstep.
+
+The counter still increments freely on both-defend rounds (Phase 36
+unchanged); friendship triggers only when ALL config predicates pass
+together. A player can "bank" defends past `roundsThreshold` and have
+friendship trigger later (e.g. once `hpGate` clears via damage progress).
+
+Coastal Tyrant is the first boss-tier authored config (Phase 68):
+
+```typescript
+// CoastalTyrant (boss; alignment faith-pessimistic-transcendent)
+befriendabilityConfig: {
+    hpGate: { belowPct: 0.4 },
+    requiredStances: ['heart'],
+    roundsThreshold: 5,
+},
+```
+
+The fallen magistrate-priest opens his friendship arc only after he's
+been brought low (HP ≤ 40%), the player has shown empathy at least
+once (heart stance), and 5 both-defend rounds have passed. The
+authored `friendshipReward` content (multi-paragraph narrative + items)
+is deferred to the boss-tier befriendable-enemy follow-up phase.
 
 ## Combat End Conditions
 
@@ -173,12 +326,14 @@ Reaching `FRIENDSHIP_COUNTER_MAX` (3) ends combat with the `friendship` outcome.
 |--------|-----------|
 | `'player'` | Enemy HP ≤ 0 |
 | `'ko'` | Player HP ≤ 0 |
-| `'friendship'` | `friendshipCounter >= FRIENDSHIP_COUNTER_MAX` |
+| `'friendship'` | `isFriendshipEligible(state)` — Phase 36 cap by default, overridden by `enemy.befriendabilityConfig` per Phase 68 |
 | `'ongoing'` | None of the above |
 
 ## Battle Log
 
-Each resolved round can append a `BattleLogEntry` via `addBattleLogEntry()`:
+`CombatState.log: BattleLogEntry[]` is an opt-in coarse summary slot from
+the pre-Phase-9 combat design. `appendLog(state, entry)` is the reducer
+that pushes one row:
 
 ```typescript
 {
@@ -191,6 +346,20 @@ Each resolved round can append a `BattleLogEntry` via `addBattleLogEntry()`:
 }
 ```
 
+The live per-round signal that consumers actually subscribe to is the
+`RoundEvent[]` stream returned by `resolveCombatRound` — it carries every
+phase / kind / sub-event (attack-roll, damage-applied, effect-application,
+heal, resist, friendship-counter ticks, ...). The CLI threads that
+stream onto the `combat:round` event payload and the agent-e2e state log
+via `store.updateCombat(next, combatEvents)`. `appendLog` remains on the
+public barrel for any consumer that wants the summary shape; the combat
+resolver itself never populates it.
+
+**Contract validation (Phase 96):** `resolveCombatRound` validates all
+required parameters at entry to prevent runtime contract divergence issues
+where BattleLogEntry fields might be undefined. If undefined `playerAction`
+or `enemyAction` are passed, the function throws early with descriptive errors.
+
 ## Combat Reducer API
 
 Defined in `src/Combat/combat.reducer.ts`. These are small, single-concept
@@ -200,10 +369,10 @@ listed where they exist for backwards compatibility.
 | Function | Alias(es) | Description |
 |----------|-----------|-------------|
 | `initializeCombat(player, enemy)` | — | Creates fresh CombatState with deep-cloned combatants |
-| `setPhase(state, phase)` | `updateCombatPhase` | Transitions to a new combat phase |
+| `setPhase(state, phase)` | — | Transitions to a new combat phase |
 | `setPlayerStance(state, stance)` | — | Sets the player's stance choice |
 | `setPlayerAction(state, action)` | — | Sets the player's action choice |
-| `appendLog(state, entry)` | `addBattleLogEntry` | Appends a battle log entry |
+| `appendLog(state, entry)` | — | Appends a battle log entry |
 | `incrementFriendship(state)` | — | Increments the friendship counter |
 | `endCombat(state)` | `endCombatPlayerVictory`, `endCombatPlayerDefeat`, `endCombatWithFriendship` | Marks combat as ended; the reason is encoded in `determineCombatEnd(state)` |
 
@@ -235,10 +404,13 @@ round-resolution entry point used by every UI client.
 | `getSaveStat(entity, stance)` | Save stat for a stance (enemies fall back to defense) |
 | `getResistStat(entity, resistedBy)` | Base stat used when resisting an effect |
 | `rollSkillCheck(baseStat, advantage)` | d20 + modifier with advantage/disadvantage |
-| `calculateFinalDamage(base, reduction, crit, bonus)` | Damage after reductions |
+| `calculateFinalDamage(base, reduction, crit, bonus)` | Damage after reductions. On crit, picks the higher of `double` (2× base − defence) vs `pierce` (base, defence ignored) — Phase 32 auto-selection. |
+| `selectCritDamage(base, reduction, bonus)` | Phase 32 — returns `{ style, damage }` for the crit auto-selection in isolation, useful for tests / future damage previews. |
+| `calculateDamageResistance(target, baseDamage, damageType)` | Phase 93 — applies target's resistance to damage (linear reduction, minimum 1) |
+| `getSkillDamageType(scalingStat)` | Phase 93 — maps skill scaling stat to damage type for resistance calculation |
 | `applyDamage(entity, damage)` | Reduces HP (clamps to 0) |
 | `heal(entity, amount)` (alias `healCharacter`) | Restores HP (clamps to max) |
-| `resolveEffectApplication(target, effect, type, heart, equip)` | Full tier-based resist logic |
+| `resolveEffectApplication(target, effect, type, heart, equip)` | Effect application (Tier 2 buff fumble/crit; Tier 2 debuff + Tier 3 always land) |
 | `tickAllEffects(target)` | Decrements all effect durations |
 | `getStudyMarkIntensity(target)` | Mind mark bonus for damage |
 | `getThornsReflect(bearer)` | Thorns reflect damage total |
@@ -246,12 +418,15 @@ round-resolution entry point used by every UI client.
 | `extendRandomBuffDuration(target, amount)` | Extends one random buff |
 | `applyRegen(target)` | Sums and applies all regen effects |
 
-## Pending (Phase 2)
+## Pending
 
-- `createBattleLogEntry` / `formatAllBattleLogs` / `generateCombatResultMessage` — log utilities
-- Skill / item actions in the resolver pipeline — Specs 04 / 05
-- Spec 03 switching reward — currently out of scope; rolls into Spec 04's skill synergy work
-- Seedable RNG so the round resolver is fully deterministic without `vi.spyOn` — Spec 11
+The Spec 02 / 03 / 04 / 05 work this section used to track has
+shipped. Combat is exercised end-to-end via `resolveCombatRound`
+through the six `Combat/phases/` files; skill and item actions live in
+`phases/scenario.ts`; Tier 2/3 procs are in `Combat/combat-effects.ts`.
+The CLI log utilities were dropped when Phase 17 unified the CLI
+surface around `npm run game` — no log strings exist in the engine
+today; consumers render directly from the typed `RoundEvent` stream.
 
 ### Landed in Spec 02
 

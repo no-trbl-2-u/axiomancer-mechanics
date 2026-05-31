@@ -21,6 +21,14 @@ npm-debug.log*
 
 # Runtime state
 game-state.json
+.claude/scheduled_tasks.lock
+
+# Phase 26 CLI state-logs (--state-log <path>)
+logs/
+*.jsonl
+
+# Phase 39 agent verify reporter output
+/automation/last-verify-report.json
 
 # Environment
 .env

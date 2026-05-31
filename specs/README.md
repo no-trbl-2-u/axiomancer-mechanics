@@ -60,19 +60,22 @@ most other work. Feel free to override.
 
 | # | Spec | Why this order |
 |---|------|----------------|
-| 1 | [`01-effects-engine-completion.md`](./01-effects-engine-completion.md) | Many roadmap items reference unwired effect mechanics (DoT, stat mods, action restrictions). Finish them first. |
-| 2 | [`02-combat-round-resolver.md`](./02-combat-round-resolver.md) | Replaces the inline CLI loop with `resolveCombatRound`. Required before skills/items can plug in cleanly. |
-| 3 | [`03-tier2-tier3-effect-procs.md`](./03-tier2-tier3-effect-procs.md) | Phase 2b: `Stance × action` proc tables. Builds on (1) + (2). |
-| 4 | [`04-skills-engine.md`](./04-skills-engine.md) | Phase 3. Depends on (2) and (3) for combat integration. Ships types + engine only (no skill content). |
-| 4b | [`04b-skills-library-and-e2e.md`](./04b-skills-library-and-e2e.md) | Companion to (4). Ships 12 early-game skills and the hermetic e2e scripted test. Depends on (4). |
-| 5 | [`05-equipment-engine.md`](./05-equipment-engine.md) | Phase 4. Depends on (1) for stat-mod aggregation. |
-| 6 | [`06-character-progression.md`](./06-character-progression.md) | Phase 5. Depends on (4) for skill learning. |
-| 7 | [`07-enemy-content-and-ai.md`](./07-enemy-content-and-ai.md) | Phase 6. Depends on (3) for richer AI behaviour. |
-| 8 | [`08-world-content-and-hazards.md`](./08-world-content-and-hazards.md) | Phase 7. Depends on (1) for hazard ticks while exploring. |
-| 9 | [`09-game-loop-orchestration.md`](./09-game-loop-orchestration.md) | Phase 8. Top-level orchestration; depends on most of the above. |
-| 10 | [`10-moral-difficulty-meter.md`](./10-moral-difficulty-meter.md) | Touches multiple systems; OK to spec early, implement after (8) and (9). |
-| 11 | [`11-rng-seeding-and-test-harness.md`](./11-rng-seeding-and-test-harness.md) | Cross-cutting test infra. Doable any time; biggest payoff when (1) & (2) are landing. |
-| 12 | [`12-package-architecture-and-events.md`](./12-package-architecture-and-events.md) | Defines the engine ↔ React Native UI boundary. Pull this in before the UI consumer starts. |
+| 1 **DONE** | [`01-effects-engine-completion.md`](./01-effects-engine-completion.md) | Many roadmap items reference unwired effect mechanics (DoT, stat mods, action restrictions). Finish them first. |
+| 2 **DONE** | [`02-combat-round-resolver.md`](./02-combat-round-resolver.md) | Replaces the inline CLI loop with `resolveCombatRound`. Required before skills/items can plug in cleanly. |
+| 3 **DONE** | [`03-tier2-tier3-effect-procs.md`](./03-tier2-tier3-effect-procs.md) | Phase 2b: `Stance × action` proc tables. Builds on (1) + (2). |
+| 4 **DONE** | [`04-skills-engine.md`](./04-skills-engine.md) | Phase 3. Depends on (2) and (3) for combat integration. Ships types + engine only (no skill content). |
+| 4b **DONE** | [`04b-skills-library-and-e2e.md`](./04b-skills-library-and-e2e.md) | Companion to (4). Ships 12 early-game skills and the hermetic e2e scripted test. Depends on (4). |
+| 5 **DONE** | [`05-equipment-engine.md`](./05-equipment-engine.md) | Phase 4. Depends on (1) for stat-mod aggregation. Ships types + engine only (no library content). |
+| 5b **DONE** | [`05b-equipment-library.md`](./05b-equipment-library.md) | Companion to (5). Ships 50 equipment pieces + 12 consumables with resource economy interactions. Depends on (5). |
+| 6 **DONE** | [`06-character-progression.md`](./06-character-progression.md) | Phase 5. Depends on (4) for skill learning. |
+| 7 **DONE** | [`07-enemy-content-and-ai.md`](./07-enemy-content-and-ai.md) | Phase 6. Depends on (3) for richer AI behaviour. |
+| 8 **DONE** | [`08-world-content-and-hazards.md`](./08-world-content-and-hazards.md) | Phase 7. Depends on (1) for hazard ticks while exploring. |
+| 9 **DONE** | [`09-game-loop-orchestration.md`](./09-game-loop-orchestration.md) | Phase 8. Top-level orchestration + `createGameStore` wiring for world/exploration; depends on (8) and most of the above. |
+| 10 **DONE** | [`10-moral-difficulty-meter.md`](./10-moral-difficulty-meter.md) | Touches multiple systems; OK to spec early; implement after (9) (and (8) where it touches `MapEvent` / `processNode`). |
+| 11 **DONE** | [`11-rng-seeding-and-test-harness.md`](./11-rng-seeding-and-test-harness.md) | Cross-cutting test infra. Doable any time; biggest payoff when (1) & (2) are landing. |
+| 12 **DONE** | [`12-package-architecture-and-events.md`](./12-package-architecture-and-events.md) | Defines the engine ↔ React Native UI boundary. Pull this in before the UI consumer starts. |
+| 13 **DONE** | [`23-map-events.md`](./23-map-events.md) | Phase 23. MapEvents engine + pool authoring pattern; acceptance fully ticked at Phase 41 unit 3 + Phase 43 alignmentDelta extension. |
+| 14 **DONE** | [`14-philosophical-alignment.md`](./14-philosophical-alignment.md) | Phases 42–46. 3-axis alignment cube (Epistemology × Outlook × Scope) + 27-cell content registry; observable, payloadable, enemy-side, and gated. Spec authored retroactively at Phase 58 (engine shipped Phase 42 `bdfda00`; content surface filled through Phase 46). |
 
 ## Conventions
 

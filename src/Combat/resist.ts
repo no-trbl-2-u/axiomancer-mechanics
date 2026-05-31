@@ -1,39 +1,54 @@
 /**
- * Tier 2 / Tier 3 effect resist resolver.
+ * Effect application resolver.
  *
- * Tier 1 — Auto-applies, no roll.
+ * **Phase 80 — direction (a) pure split (2026-05-24).** Effect-application
+ * always lands for target-side resolution. Damage rolls separately + applies
+ * resistance independently (damage-side primitive is a Phase 80 follow-up).
  *
- * Tier 2 BUFF — Caster rolls d20 to apply to themselves.
+ * Tier 1 — Auto-applies, no roll. (Unchanged across Phase 80.)
+ *
+ * Tier 2 BUFF — Caster rolls d20 to apply to themselves. (Unchanged across
+ *   Phase 80 per Phase 79 D8 — caster-side variance is NOT target-resist;
+ *   direction (a) only removes target-resist on Tier 2 debuffs + Tier 3.)
  *   Nat 1:  Fumble — buff fails.
  *   Nat 20: Crit  — buff applies at double intensity.
  *
- * Tier 2 DEBUFF — Target rolls to RESIST.
- *   DR = effect.resistDR + attackerHeartBonus + equipmentBonus.
- *   Nat 20: Crit resist — effect rebounds onto attacker at double intensity.
- *   Nat 1:  Fumble resist — effect lands at double duration.
- *   roll + resistStat < DR → effect lands.
- *   roll + resistStat ≥ DR → resisted.
+ * Tier 2 DEBUFF — **Always lands.** No target-resist roll; no Nat-20 rebound;
+ *   no Nat-1 overwhelmed-double-duration. Effect applies unconditionally at
+ *   requested intensity + duration. (Phase 80 change.)
  *
- * Tier 3 — Inescapable. Only a natural 20 on the resist roll repels it.
+ * Tier 3 — **Always lands.** No Nat-20 miraculous escape. (Phase 80 change —
+ *   uniform always-land across debuff tiers per direction (a).)
+ *
+ * Pre-Phase-80 behaviour preserved in git history. Dead-code branches
+ * (resist, rebound) pruned at Phase 84 + Phase 86. The `rebounded` field
+ * removed from `EffectApplicationResult` at this iterate drain.
+ *
+ * Direction (a)'s damage-side text ("damage rolls separately + applies its
+ * own resistance") requires a damage-resist primitive that doesn't exist
+ * today; filed as a Pending candidate at Phase 80 ship-time.
  */
 
 import { createDieRoll } from '../Utils';
 import { ActiveEffect, EffectType, EffectApplicationResult } from '../Effects/types';
 import { Combatant } from './types';
-import { getResistStat } from './stats';
 
 /**
  * Resolves whether `activeEffect` lands on `target`. Returns a full
  * EffectApplicationResult so callers can render the battle log directly.
  *
- * @param attackerHeartBonus - Attacker's heart base stat (raises the DR).
- * @param equipmentBonus     - Optional bonus from gear or skill modifiers.
+ * Post-Phase-80: Tier 2 debuffs + Tier 3 always succeed; only Tier 2 buffs
+ * still roll (caster-side fumble/crit). The `attackerHeartBonus` /
+ * `equipmentBonus` parameters stay on the signature for call-site stability
+ * but are now unused on the load-bearing debuff path.
  */
 export function resolveEffectApplication(
     target: Combatant,
     activeEffect: ActiveEffect,
     effectType: EffectType,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     attackerHeartBonus = 0,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     equipmentBonus = 0,
 ): EffectApplicationResult {
     const tier = activeEffect.tier;
@@ -43,6 +58,7 @@ export function resolveEffectApplication(
     }
 
     if (tier === 2 && effectType === 'buff') {
+        // Phase 80 D2 — caster-side fumble/crit KEPT (Phase 79 D8 lock-in).
         const roll = createDieRoll('neutral')();
 
         if (roll === 1) {
@@ -73,64 +89,24 @@ export function resolveEffectApplication(
     }
 
     if (tier === 2 && effectType === 'debuff') {
-        const resistStat = activeEffect.resistedBy ? getResistStat(target, activeEffect.resistedBy) : 0;
-        const dr = (activeEffect.resistDR ?? 12) + attackerHeartBonus + equipmentBonus;
-        const roll = createDieRoll('neutral')();
-        const total = roll + resistStat;
-
-        if (roll === 20) {
-            const reboundEffect: ActiveEffect = {
-                ...activeEffect,
-                intensity: Math.min((activeEffect.intensity ?? 1) * 2, 6),
-            };
-            return {
-                success: false, activeEffect: reboundEffect, rebounded: true,
-                message: `Absolute resistance! The effect rebounds onto the attacker at double intensity.`,
-                roll: { rolled: roll, resistStat, total, dr, wasCrit: true, wasFumble: false },
-            };
-        }
-
-        if (roll === 1) {
-            const overwhelmedEffect: ActiveEffect = {
-                ...activeEffect,
-                remainingDuration: activeEffect.remainingDuration * 2,
-            };
-            return {
-                success: true, activeEffect: overwhelmedEffect,
-                message: `Overwhelmed! The target's resistance crumbled — effect digs in at double duration.`,
-                roll: { rolled: roll, resistStat, total, dr, wasCrit: false, wasFumble: true },
-            };
-        }
-
-        const resisted = total >= dr;
+        // Phase 80 direction (a) pure split — Tier 2 debuffs always land.
+        // Target-resist roll removed; Nat-20 rebound + Nat-1 overwhelmed
+        // semantics removed. Damage-resist primitive lives in a follow-up
+        // phase (filed at Phase 80 ship-time per D1).
         return {
-            success: !resisted,
-            activeEffect: resisted ? undefined : activeEffect,
-            message: resisted
-                ? `Resisted. (${roll} + ${resistStat} = ${total} vs DR ${dr})`
-                : `Effect lands. (${roll} + ${resistStat} = ${total} vs DR ${dr})`,
-            roll: { rolled: roll, resistStat, total, dr, wasCrit: false, wasFumble: false },
+            success: true,
+            activeEffect,
+            message: `Effect lands.`,
         };
     }
 
     if (tier === 3) {
-        const resistStat = activeEffect.resistedBy ? getResistStat(target, activeEffect.resistedBy) : 0;
-        const dr = (activeEffect.resistDR ?? 18) + attackerHeartBonus + equipmentBonus;
-        const roll = createDieRoll('neutral')();
-        const total = roll + resistStat;
-
-        if (roll === 20) {
-            return {
-                success: false,
-                message: `Miracle! An absolute will repelled the Tier 3 effect.`,
-                roll: { rolled: roll, resistStat, total, dr, wasCrit: true, wasFumble: false },
-            };
-        }
-
+        // Phase 80 D3 — Tier 3 always lands. Nat-20 miraculous escape removed
+        // for uniform always-land semantics across debuff tiers.
         return {
-            success: true, activeEffect,
-            message: `Inescapable. The Tier 3 effect takes hold. (${roll} + ${resistStat} = ${total} vs DR ${dr})`,
-            roll: { rolled: roll, resistStat, total, dr, wasCrit: false, wasFumble: false },
+            success: true,
+            activeEffect,
+            message: `Inescapable. The Tier 3 effect takes hold.`,
         };
     }
 

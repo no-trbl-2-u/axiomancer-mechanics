@@ -213,7 +213,7 @@ describe('Effects E2E: stun (skipTurn) prevents Tier 1 effect application', () =
 // ─── Game store lifecycle — nullAdapter (zero disk access) ───────────────────
 
 describe('Effects E2E: Game store lifecycle with active effects — nullAdapter', () => {
-    it('no disk access during a turn that processes start-phase DoT', () => {
+    it('start-phase DoT survives a store round-trip (autosave fires on each action — Spec 09 Q4)', () => {
         const saveSpy = vi.spyOn(nullAdapter, 'save');
 
         const store = createGameStore(nullAdapter, { player: Player });
@@ -235,8 +235,8 @@ describe('Effects E2E: Game store lifecycle with active effects — nullAdapter'
         store.getState().updateCombat(next);
         store.getState().endCombat();
 
-        // No file I/O should have occurred
-        expect(saveSpy).not.toHaveBeenCalled();
+        // Spec 09 Q4 — autosave on every action; nullAdapter still no-ops on disk.
+        expect(saveSpy).toHaveBeenCalled();
 
         // Poison actually fired — HP reduced
         expect(next.enemy.health).toBe(Disatree_01.maxHealth - 3);

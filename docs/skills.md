@@ -1,9 +1,8 @@
 # Skills & Resource Economy
 
-> **Implementation status:** Design locked (2026-05-11). Types and engine
-> pending Spec 04; skill library and e2e test pending Spec 04b.
-> This document is the single source of truth for how the resource economy
-> and skill system work. The specs contain the implementation checklist;
+> **Canonical source of truth:** Design locked (2026-05-11). This document
+> is the single source of truth for how Axiomancer's resource economy and
+> skill system work. The specs contain implementation history and checklists;
 > this document contains the canonical design.
 
 ## Overview
@@ -100,7 +99,7 @@ effect resist rules, but the cost object fully encodes the tier semantics.
 
 ## Skill Type Shape
 
-Defined in `src/Skills/types.d.ts`. The `manaCost` and `level` fields from the
+Defined in `src/Skills/types.ts`. The `manaCost` and `level` fields from the
 earlier type stub are removed.
 
 ```ts
@@ -166,7 +165,7 @@ Moral alignment gating is deferred to Spec 10.
 
 ## Engine API
 
-Defined in `src/Skills/skill.engine.ts` (pending Spec 04).
+Defined in `src/Skills/skill.engine.ts`.
 
 | Function | Signature | Description |
 |---|---|---|
@@ -180,7 +179,7 @@ Defined in `src/Skills/skill.engine.ts` (pending Spec 04).
 `executeSkill` emits `RoundEvent`s in the same stream as basic combat actions,
 so the CLI renderer requires no special cases.
 
-### Character fields (pending Spec 04)
+### Character fields
 
 ```ts
 interface Character {
@@ -195,7 +194,7 @@ interface Character {
 
 ## Early-Game Skill Library
 
-Defined in `src/Skills/skill.library.ts` (pending Spec 04b).
+Defined in `src/Skills/skill.library.ts`.
 Minimum 12 skills covering all `philosophicalAspect × category` cells.
 
 ### Tier 1 — Single Stance Cost

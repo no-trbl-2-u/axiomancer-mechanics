@@ -40,6 +40,26 @@ describe('calculateFinalDamage', () => {
   it('minimum 0', () => expect(calculateFinalDamage(2, 10, false)).toBe(0));
   it('doubles on crit', () => expect(calculateFinalDamage(10, 3, true)).toBe(17));
   it('adds damage bonus', () => expect(calculateFinalDamage(10, 3, false, 2)).toBe(9));
+
+  // ── Phase 32 — critStyle auto-selection ──
+  it('crit against low defense — double wins (10 → 2*10-3 = 17 vs 10)', () => {
+    // double = 17, pierce = 10 → max 17.
+    expect(calculateFinalDamage(10, 3, true)).toBe(17);
+  });
+  it('crit against high defense — pierce wins (8 → 2*8-12 = 4 vs 8)', () => {
+    // double = max(0, 16-12) = 4, pierce = 8 → max 8.
+    expect(calculateFinalDamage(8, 12, true)).toBe(8);
+  });
+  it('crit with bonus — bonus rides both paths', () => {
+    // base=5, defense=8, bonus=3.
+    // double = max(0, 2*5+3-8) = 5; pierce = 5+3 = 8 → max 8.
+    expect(calculateFinalDamage(5, 8, true, 3)).toBe(8);
+  });
+  it('crit with bonus enough to flip — double wins after bonus', () => {
+    // base=5, defense=8, bonus=10.
+    // double = max(0, 2*5+10-8) = 12; pierce = 5+10 = 15 → max 15.
+    expect(calculateFinalDamage(5, 8, true, 10)).toBe(15);
+  });
 });
 
 describe('applyDamage', () => {

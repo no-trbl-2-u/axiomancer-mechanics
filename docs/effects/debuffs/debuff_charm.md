@@ -33,7 +33,7 @@ with heart/emotional defence penalties. DR 14 reflects the power of stance contr
 The target must use the `heart` stance for all actions while charmed. They cannot
 choose Body or Mind.
 
-> **PENDING (Phase 2):** `forcedStance` is not yet enforced in `combat.cli.ts`. When
+> **PENDING (Phase 2):** `forcedStance` is not yet enforced in `src/Combat/phases/scenario.ts`. When
 > implemented, before action selection, check:
 > ```typescript
 > const forced = activeEffects.find(ae =>

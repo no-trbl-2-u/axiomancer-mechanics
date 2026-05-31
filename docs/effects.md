@@ -16,11 +16,68 @@ documents in [`docs/effects/`](./effects/).
 6. [Combat Consumption Map](#combat-consumption-map)
 7. [Round Order](#round-order)
 8. [Tier 1 Auto-Effects](#tier-1-auto-effects)
-9. [Complete Effects Table — Buffs (39)](#complete-effects-table--buffs-39)
-10. [Complete Effects Table — Debuffs (46)](#complete-effects-table--debuffs-46)
+9. [Complete Effects Table — Buffs (40)](#complete-effects-table--buffs-40)
+10. [Complete Effects Table — Debuffs (48)](#complete-effects-table--debuffs-48)
 11. [Effect Engine API](#effect-engine-api)
 12. [Implementation Status](#implementation-status)
 13. [Pending](#pending)
+
+---
+
+## Audit summary (Phase 79)
+
+Audit shipped at Phase 79 (commit `3d213bd` 2026-05-24) walked
+all 88 effects (40 buffs + 48 debuffs) against four axes: per-effect
+test coverage, doc coverage, spec acceptance, and engine resolution
+shape. Full per-tier / per-category verdict tables in
+[`plan/phases/phase_79_general_effects_audit.md`](../plan/phases/phase_79_general_effects_audit.md).
+
+**Coverage gap surfaced.** 56 of 88 (64%) effects carry **zero direct
+test-file references** by effect id. Larger gap than Phase 78's
+8-of-21 skills audit (38%), but structurally different: many of the 56
+uncovered effects share the same engine resolution path (`applyEffect`
++ `tickAllEffects` + tier-keyed `resolveEffectApplication` dispatch),
+so the per-case test cost is lower than per-skill cases. The gap
+concentrates by category — stat (20/25 uncovered), defense (14/19),
+advantage (13/14), control (10/17), damage (5/10); regeneration is
+100% covered.
+
+**Tier distribution snapshot (Phase 80 baseline).** Tier 1 (12
+effects, 8 buffs + 4 debuffs) auto-applies, no roll — Phase 80 no-op.
+Tier 2 buffs (30) use caster-side d20 fumble/crit. Tier 2 debuffs (43
+effects, the load-bearing surface) currently use target-roll-to-resist
+(DR = effect.resistDR + attackerHeartBonus + equipmentBonus) with
+Nat-20 rebound and Nat-1 double-duration. Tier 3 (3 effects) are
+"only Nat-20 escapes." Phase 80 direction (a) removes the target-resist
+roll on Tier 2 debuffs; keeps Tier 2 buff caster fumble/crit per the
+audit's D8 recommendation (final call lives with Phase 80's brief
+drafter).
+
+**Doc + spec.** Complete Effects Tables list all 88 IDs; headings
+"Buffs (40)" + "Debuffs (48)" match live counts. Spec 01 acceptance
+ticks all rows; no library/spec divergence.
+
+**Phase 80 / 83 framing.** 1 MED + 5 LOW aggregate findings filed in
+`plan/CRITIQUE.md` Pending — 28 of 43 Tier 2 debuffs uncovered is the
+primary surface for Phase 83 (post-Phase-80 effect-application test
+sweep). /iterate drains the 5 LOW aggregate rows category-by-category
+between now and Phase 83.
+
+**Phase 80 status (shipped 2026-05-24).** Direction (a) pure split
+shipped in `src/Combat/resist.ts`: Tier 2 debuffs + Tier 3 effects
+**always land**. Target-resist roll removed; Nat-20 rebound (Tier 2
+debuff) removed; Nat-1 overwhelmed-double-duration removed; Tier 3
+Nat-20 miraculous escape removed. Tier 1 + Tier 2 buffs unchanged per
+D2 (caster-side variance is not target-resist). The damage-side of
+direction (a) ("damage rolls separately + applies resistance") is
+**deferred to a follow-up phase** per Phase 80 D1 — `calculateSkillDamage`
+stays deterministic for now; the damage-resist primitive lives in a
+new Pending candidate. Phase 84 removed the dead-code
+`effect-rebounded` variant and renamed `effect-resisted` to
+`buff-fumbled` (only fires on Tier 2 buff caster fumble).
+The revisit-if-unbalanced
+caveat lives at `plan/PHASE_CANDIDATES.md` Promoted Phase 80 row +
+the brief at `plan/phases/phase_80_skills_always_land_pure_split.md`.
 
 ---
 
@@ -34,7 +91,9 @@ in-memory `Map` by `effect.id` via `src/Effects/effects.library.ts`.
 
 All effect application logic lives in `src/Effects/index.ts`. All combat-time helpers
 (resist resolution, tick, regen, roll modifiers, thorns, mark, Heart specials) live in
-`src/Combat/index.ts`. The interactive CLI wires these together in `src/CLI/combat.cli.ts`.
+`src/Combat/index.ts`. The round resolver (`src/Combat/combat.resolver.ts` and the
+per-phase files under `src/Combat/phases/`) wires them together; the interactive demo
+CLI (`src/CLI/game.cli.ts`) drives the resolver from a tabbed prompt.
 
 ---
 
@@ -61,26 +120,15 @@ Each effect carries two resist fields (copied onto the `ActiveEffect` for fast l
 | Natural 20 | Crit focus — buff applies at **2× intensity**. |
 | Any other | Auto-succeeds.                                  |
 
-### Tier 2 — Debuff (target rolls to resist)
+### Tier 2 — Debuff (always lands)
 
-```
-DR   = effect.resistDR + attacker.baseStats.heart + equipmentBonus
-Roll = d20 + target.baseStats[resistedBy]
-```
+Post-Phase-80: no target-resist roll. No rebound. No overwhelmed.
+The debuff lands unconditionally at its authored intensity + duration.
 
-| Result         | Outcome                                                              |
-|----------------|----------------------------------------------------------------------|
-| Natural 20     | Rebound — debuff bounces to the **attacker** at **2× intensity**.   |
-| Natural 1      | Overwhelmed — effect lands at **2× duration**.                       |
-| Roll ≥ DR      | Resisted — no effect.                                                |
-| Roll < DR      | Lands normally.                                                      |
+### Tier 3 (always lands)
 
-### Tier 3
-
-| Result     | Outcome                   |
-|------------|---------------------------|
-| Natural 20 | Repelled (miracle).       |
-| Any other  | Inescapable — always lands. |
+Post-Phase-80: no Nat-20 escape. Inescapable — always lands at
+authored intensity + duration.
 
 ---
 
@@ -142,13 +190,11 @@ Every effect's mechanical modifications live in its `payload` object.
       "tickPhase": "start"          // 'start' | 'end' (default 'start')
     },
 
-    // Per-round resource regen. LIVE:
-    //   healthPerRound > 0 → applyRegen()  (heals; clamped at maxHealth)
-    //   healthPerRound < 0 → applyDrain()  (raw HP loss; bypasses defense — Q6)
-    //   manaPerRound  > 0 → applyManaRegen() (clamped at maxMana — Q9)
+    // Per-round HP regen. LIVE:
+    //   healthPerRound > 0 → applyRegen() (heals; clamped at maxHealth)
+    //   healthPerRound < 0 → applyDrain() (raw HP loss; bypasses defense — Q6)
     "regeneration": {
-      "healthPerRound": 3,
-      "manaPerRound":   0
+      "healthPerRound": 3
     },
 
     // Damage per intensity reflected to attacker when bearer is hit.
@@ -176,6 +222,49 @@ Every effect's mechanical modifications live in its `payload` object.
 }
 ```
 
+### Runtime aggregation (pre-loop, verified at Phase 48)
+
+Active effects' `statModifiers` + `defenseModifier` are aggregated and
+applied to combatant stats at every stat-accessor call — the engine
+has never read raw `Character.derivedStats` in combat math. The
+pipeline:
+
+```
+applyEffect (rolls intensity / duration / resist)
+    → ActiveEffect attached to combatant.effects
+        → getActiveEffectModifiers(effects)        // one-pass aggregation
+            → { statFlat, statMultBonus, defenseDelta, ... }
+                → getEffectiveStats(combatant)     // folds into stats
+                    → { baseStats, derivedStats, nonCombatStats, defenseDelta }
+                        → getAttackStat / getDefenseStat / getResistStat
+                          getBaseStat / getSaveStat                    // src/Combat/stats.ts
+                            → resolveCombatRound (every stat read)
+```
+
+Aggregation rules:
+
+- **Intensity scaling is unconditional.** Every numeric modifier
+  contributes `value × intensity`. Multipliers contribute
+  `(value - 1) × intensity` to a stat-mult-bonus that composes
+  additively per Q3: `final = base × (1 + Σ bonus)`.
+- **Base-stat targets re-derive every dependent.** A `statModifiers:
+  [{ stat: 'body', value: 2 }]` buff bumps body, then `physicalAttack`,
+  `physicalSkill`, `physicalDefense`, `luck`, and (for Characters) the
+  `physicalSave` / `physicalTest` non-combat pair all re-derive from
+  the effective body.
+- **Derived-stat targets patch directly.** A `statModifiers: [{ stat:
+  'physicalDefense', value: -2 }]` debuff drops the derived defense
+  after re-derivation, without disturbing the base stat.
+- **`defenseModifier` is stance-agnostic.** Folded into `defenseDelta`
+  and added by `getDefenseStat` on top of the (effective) stance
+  defense.
+
+Verified at Phase 48 (`c892801`) via
+`src/Combat/e2e/effect-stat-modifiers.engine.test.ts` — 8 hermetic
+cases pin the public stat-accessor surface against the live
+library effects (`buff_body_attack_up`, `buff_max_hp_up`,
+`buff_barrier`, `debuff_all_stats_down`).
+
 ### Payload field implementation status
 
 | Field                     | Status   | Where consumed                              |
@@ -184,9 +273,8 @@ Every effect's mechanical modifications live in its `payload` object.
 | `rollModifierPerIntensity` | **LIVE** | `getActiveRollModifier()` — scaled by `intensity` |
 | `reflectDamage`           | **LIVE** | `getThornsReflect()` — `src/Combat/effects.ts` |
 | `regeneration.healthPerRound` | **LIVE** | `applyRegen()` (positive) / `applyDrain()` (negative) — `src/Combat/effects.ts` |
-| `regeneration.manaPerRound` | **LIVE** | `applyManaRegen()` — `src/Combat/effects.ts` |
 | `statModifiers`           | **LIVE** | `getEffectiveStats()` re-derives stats; consumed by `getAttackStat` / `getDefenseStat` / `getResistStat` / `getSaveStat` — `src/Combat/stats.ts` |
-| `defenseModifier`         | **LIVE** | `getEffectiveStats().defenseDelta`; folded into defending paths via `getDefenseStat` and into passive damage paths via `getPassiveDefense` — `src/Combat/stats.ts`, `src/CLI/combat.cli.ts` |
+| `defenseModifier`         | **LIVE** | `getEffectiveStats().defenseDelta`; folded into defending paths via `getDefenseStat` and into passive damage paths via the scenario phase — `src/Combat/stats.ts`, `src/Combat/phases/scenario.ts` |
 | `damageOverTime`          | **LIVE** | `processDamageOverTime()` — `src/Combat/effects.ts`, split by `tickPhase` (`'start'` / `'end'`) |
 | `advantageModifier`       | **LIVE** | `resolveEffectiveAdvantage()` — `src/Combat/advantage.ts` (grants override matchup per Q8) |
 | `actionRestriction`       | **LIVE** | `canAct()` — `src/Combat/effect-modifiers.ts` (skipTurn / forcedStance / blockedStances per Q7) |
@@ -207,9 +295,36 @@ combatant:
   tier:              1 | 2 | 3;
   resistedBy?:       Stance;            // copied from Effect for fast resist lookup
   resistDR?:         number;            // copied from Effect for fast resist lookup
-  sourceId?:         string;            // ID of who applied it (optional attribution)
+  sourceId?:         string;            // ID of who applied it (Phase 38 attribution)
 }
 ```
+
+### Attribution — `sourceId` (Phase 38)
+
+Every `applyEffect` call on the combat / skill path stamps the new
+`ActiveEffect` with a `sourceId` so consumers can answer "who applied
+this?" without inferring from context. The convention:
+
+| Surface | sourceId | Set by |
+|---|---|---|
+| Skill engine (skill caster on opponent or self) | `player.id` | `src/Skills/skill.engine.ts` |
+| Combat proc (primary application) | `actor.id` | `src/Combat/combat-effects.ts` |
+| Combat proc (rebound onto attacker) | `actor.id` (original attacker) | `src/Combat/combat-effects.ts` |
+| Combat fumble (self-application) | `actor.id` | `src/Combat/phases/scenario.ts` (passes `actor.id` to `applyFumbleOutcome`) |
+| Equipment passive | `item.id` | `src/Character/equipment.reducer.ts` |
+| Environmental hazard (MapEvents) | _undefined_ | `src/World/MapEvents/handlers.ts` (no combatant source — deliberate) |
+
+When an existing effect stacks (`intensity` or `duration`),
+`applyEffect` uses **last-writer-wins**: a fresh `applyEffect` call
+with a `sourceId` replaces the prior; an omitted `sourceId` preserves
+the existing one. Rationale: if enemy A stuns the player and enemy B
+re-stuns before the stun expires, the live attribution should be B
+(the most recent applier).
+
+`sourceId` round-trips through `JSON.stringify` / `JSON.parse`
+unchanged — pinned by
+`src/Effects/e2e/source-id.engine.test.ts` so a future state-shape
+migration cannot silently strip it.
 
 `remainingDuration` special values:
 
@@ -235,8 +350,9 @@ total = Σ (def.payload.rollModifier + def.payload.rollModifierPerIntensity × a
         for each ae in target.effects
 ```
 
-Called in `combat.cli.ts` to adjust attack and damage rolls before they are applied.
-Both fields are summed across **all** active effects simultaneously.
+Called from the scenario phase (`src/Combat/phases/scenario.ts`) to adjust attack and
+damage rolls before they are applied. Both fields are summed across **all** active
+effects simultaneously.
 
 ### `reflectDamage`
 
@@ -247,9 +363,9 @@ total = Σ (def.payload.reflectDamage × ae.intensity)
         for each ae in bearer.effects
 ```
 
-Called in `combat.cli.ts` after a successful hit on the bearer. The total is dealt as
-reflect damage back to the attacker. Scales with `intensity` — higher stacks deal
-more thorns.
+Called from the scenario phase (`src/Combat/phases/scenario.ts`) after a successful
+hit on the bearer. The total is dealt as reflect damage back to the attacker. Scales
+with `intensity` — higher stacks deal more thorns.
 
 ### `regeneration.healthPerRound`
 
@@ -262,9 +378,10 @@ healed = Σ (def.payload.regeneration.healthPerRound × ae.intensity)
 
 Called at the **start of each round** before the player makes a choice. Scales with
 `intensity` — stacking regen effects heal more per round. Negative
-`healthPerRound` values in the data (e.g. `debuff_disease`, `debuff_hp_decay`) are
-**skipped** by the current implementation (`perRound <= 0` check). The drain mechanic
-will be enabled in Phase 2.
+`healthPerRound` values in the data (e.g. `debuff_disease`, `debuff_hp_decay`)
+are routed through `applyDrain` (`src/Combat/effects.ts`) on the same round-start
+pass — drain ticks BEFORE start-of-round DoT and emits its own `round-start:drain`
+event.
 
 ### `tier1_mind_mark` intensity (Exposed Reasoning)
 
@@ -276,8 +393,8 @@ intensity = target.effects
               ?.intensity ?? 0
 ```
 
-Called in `combat.cli.ts` during Mind/Attack resolution. The mark's intensity is
-added as a flat damage bonus to the attack roll.
+Called from the scenario phase (`src/Combat/phases/scenario.ts`) during Mind/Attack
+resolution. The mark's intensity is added as a flat damage bonus to the attack roll.
 
 ### Buff stripping and extension (Heart/Attack special)
 
@@ -289,7 +406,8 @@ added as a flat damage bonus to the attack roll.
 - `extendRandomBuffDuration`: picks a random `buff`-typed active effect from the
   **player** and adds rounds (capped at `MAX_EFFECT_DURATION`).
 
-Both are called in `combat.cli.ts` when the player's Heart/Attack hits.
+Both are called from the scenario phase (`src/Combat/phases/scenario.ts`) when the
+player's Heart/Attack hits.
 
 ### Duration ticking
 
@@ -323,9 +441,10 @@ here. Called once per combatant per round, before Tier 1 application.
 **Function:** `resolveEffectApplication(target, activeEffect, effectType, attackerHeartBonus, equipmentBonus)`
 — `src/Combat/index.ts`
 
-Uses `getResistStat(target, activeEffect.resistedBy)` (from
-`src/Combat/stats.ts`) to read the target's **base stat** for the resisting stance,
-then applies the Tier 2/3 resolution rules described above.
+Post-Phase-80 (direction (a) pure split): Tier 2 debuffs and Tier 3
+effects **always land** — no target-resist roll. Only Tier 2 buffs still
+roll (caster-side d20 for fumble/crit). `getResistStat` remains on the
+public barrel for consumer use but is no longer called by this pipeline.
 
 ---
 
@@ -334,7 +453,7 @@ then applies the Tier 2/3 resolution rules described above.
 The combat CLI processes effects in this order each round:
 
 ```
-1. processRoundStartEffects   — applyRegen → applyManaRegen → applyDrain → start-phase DoT
+1. processRoundStartEffects   — applyRegen → applyDrain → start-phase DoT
 2. canAct                     — resolves skipTurn / forcedStance / blockedStances (Q7)
 3. resolveEffectiveAdvantage  — folds advantageModifier grants/denies into matchup (Q8)
 4. clearTier1EffectsForStance — Remove stale Tier 1 stance buffs
@@ -367,7 +486,7 @@ no resist roll. Switching stances removes the previous stance's self-buff immedi
 
 ---
 
-## Complete Effects Table — Buffs (39)
+## Complete Effects Table — Buffs (40)
 
 Full per-effect documentation: [`docs/effects/buffs/`](./effects/buffs/)
 
@@ -415,7 +534,7 @@ Full per-effect documentation: [`docs/effects/buffs/`](./effects/buffs/)
 
 ---
 
-## Complete Effects Table — Debuffs (46)
+## Complete Effects Table — Debuffs (48)
 
 Full per-effect documentation: [`docs/effects/debuffs/`](./effects/debuffs/)
 
@@ -483,7 +602,7 @@ Full per-effect documentation: [`docs/effects/debuffs/`](./effects/debuffs/)
 | `removeEffect(effects, effectId)` | `src/Effects/index.ts` | Removes the first ActiveEffect with the given ID |
 | `removeEffectsByType(effects, type, maxTier?)` | `src/Effects/index.ts` | Bulk strip by buff/debuff with optional tier cap (used by cleanse/dispel) |
 | `getResistStat(target, resistedBy)` | `src/Combat/stats.ts` | Target's effective base stat for the resisting stance |
-| `resolveEffectApplication(target, activeEffect, effectType, heartBonus, equipBonus)` | `src/Combat/index.ts` | Full Tier 2/3 resist resolution with roll details |
+| `resolveEffectApplication(target, activeEffect, effectType, heartBonus, equipBonus)` | `src/Combat/index.ts` | Effect application (Tier 2 debuff/Tier 3: always-land; Tier 2 buff: caster fumble/crit roll) |
 | `tickAllEffects(target)` | `src/Combat/effects.ts` | End-of-round duration decrement; returns expired list |
 | `updateEffectDuration(target, effectId)` | `src/Combat/effects.ts` | Tick one specific effect by ID |
 | `getActiveRollModifier(target)` | `src/Combat/effects.ts` | Sum of all `rollModifier` + `rollModifierPerIntensity × intensity` across active effects |
@@ -496,10 +615,9 @@ Full per-effect documentation: [`docs/effects/debuffs/`](./effects/debuffs/)
 | `removeRandomBuff(target)` | `src/Combat/effects.ts` | Strips one random buff (Heart/Attack special) |
 | `extendRandomBuffDuration(target, amount)` | `src/Combat/effects.ts` | Extends one random buff's duration (Heart/Attack special) |
 | `applyRegen(target)` | `src/Combat/effects.ts` | Applies positive per-round health regeneration |
-| `applyManaRegen(target)` | `src/Combat/effects.ts` | Applies positive per-round mana regeneration (clamped at maxMana) |
 | `applyDrain(target)` | `src/Combat/effects.ts` | Applies negative-regen drain as raw HP loss (bypasses defense) |
 | `processDamageOverTime(target, phase)` | `src/Combat/effects.ts` | Applies DoT damage routed by `tickPhase` (`'start'` / `'end'`) |
-| `processRoundStartEffects(target)` | `src/Combat/effects.ts` | Orchestrates regen → manaRegen → drain → start-phase DoT |
+| `processRoundStartEffects(target)` | `src/Combat/effects.ts` | Orchestrates regen → drain → start-phase DoT |
 | `processRoundEndEffects(target)` | `src/Combat/effects.ts` | Orchestrates end-phase DoT → tick & expire |
 | `applyCleanse(target, tier)` | `src/Combat/effects.ts` | Strip debuffs of `tier ≤ cleanseTier` (Q10) |
 | `applyDispel(target, tier)` | `src/Combat/effects.ts` | Strip buffs of `tier ≤ dispelTier` (Q10) |
@@ -535,7 +653,6 @@ Full per-effect documentation: [`docs/effects/debuffs/`](./effects/debuffs/)
 | `blockedStances` enforcement | `canAct()` |
 | `forcedStance` enforcement | `canAct()` |
 | `advantageModifier` wiring (Q8 — grants override matchup) | `resolveEffectiveAdvantage()` |
-| Mana regeneration (Q9) | `applyManaRegen()` |
 | Cleanse mechanic (tier-bounded — Q10) | `applyCleanse(target, tier)` |
 | Dispel mechanic (tier-bounded — Q10) | `applyDispel(target, tier)` |
 | Round-start orchestration | `processRoundStartEffects()` |
@@ -552,11 +669,33 @@ Full per-effect documentation: [`docs/effects/debuffs/`](./effects/debuffs/)
 
 ---
 
+## Philosophical fallacy payloads (Phase 44)
+
+Phase 44 promotes 3 marquee fallacies from the
+[Phase 42 27-cell library](./philosophy.md) into status-effect payloads.
+Each carries `sourcedFromCell?: string` on the `Effect` interface (a
+kebab-case `PhilosophicalAlignmentCell.id`) so consumers can trace the
+effect back to its philosophical origin via
+`philosophicalAlignmentLibrary`.
+
+| Effect id | Source cell (PDF #) | Tier | Payload |
+|---|---|---|---|
+| `debuff_no_true_scotsman` | Logic-Pessimistic-Transcendent / Gnostics (9) | 2 (resisted by mind, DR 12) | `statModifiers: physicalDefense -2/intensity`, dur 3 |
+| `buff_special_pleading` | Faith-Optimistic-Individual / Kierkegaard (19) | 1 | `defenseModifier +2/intensity`, dur 2 |
+| `debuff_category_error` | Agnostic-Pessimistic-Transcendent / Lovecraft (18) | 2 (resisted by heart, DR 11) | `rollModifierPerIntensity -2`, dur 3 |
+
+All three reuse existing `EffectPayload` primitives — no new payload
+kinds. The fallacy framing is purely thematic on top of the existing
+tier-1/2/3 application + resist machinery. See
+[docs/philosophy.md](./philosophy.md) for the full 27-cell map and
+[docs/skills.md](./skills.md#philosophical-fallacy-payloads-phase-44)
+for the matching skill payloads.
+
 ## Pending
 
-Engine stubs scheduled for later specs:
-
-- `processWorldEffectTick(player)` — DoT / regen / expiry outside combat per map node (Spec 08).
-- Skill-driven cleanse / dispel application — currently the helpers exist but are not invoked
-  by an effect-landing path. Wired in Spec 04.
-- Equipment passive-effect emission (Spec 05).
+The Specs 01 / 04 / 05 / 08 work that this section used to track has
+shipped. The remaining open work for the effects engine is tracked
+in `plan/AUDIT.md` and `plan/CRITIQUE.md`; per-effect doc placeholders
+(the "PENDING (Phase 2)" notes in `docs/effects/buffs/*.md` and
+`debuffs/*.md`) are a separate authoring cleanup that's deferred until
+a polish pass touches the relevant buff/debuff entries.

@@ -59,7 +59,7 @@ Flat +2 to all rolls. **LIVE** via `getActiveRollModifier`.
 Tier 2 buff apply path in `resolveEffectApplication`. Nat 1 fizzles; nat 20 → intensity 2;
 others → intensity 1. Reapplication increments intensity, resets duration.
 
-The +2 roll modifier immediately affects attack rolls in `combat.cli.ts`.
+The +2 roll modifier immediately affects attack rolls in `src/Combat/phases/scenario.ts`.
 
 ---
 

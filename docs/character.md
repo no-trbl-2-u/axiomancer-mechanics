@@ -11,8 +11,8 @@ Three core stats. All derived stats and resources scale from these.
 | Stat | Role |
 |------|------|
 | `body` | Physical strength. Governs HP, physical combat and skills, body-type advantage. |
-| `mind` | Intelligence and reflexes. Governs mana (shared with heart), mental combat and skills, mind-type advantage. |
-| `heart` | Willpower and emotion. Governs HP (shared with body), mana (shared with mind), emotional combat and skills, heart-type advantage. |
+| `mind` | Intelligence and reflexes. Governs mental combat and skills, mind-type advantage. |
+| `heart` | Willpower and emotion. Governs HP (shared with body), emotional combat and skills, heart-type advantage. |
 
 ## Derived Stats (`DerivedStats` — shared with Enemies)
 
@@ -51,10 +51,22 @@ these fields and fall back to their defense stats when a save is requested via
 
 ```
 maxHealth = level × average(body, heart) × HEALTH_PER_STAT (10)
-maxMana   = level × average(mind, heart) × MANA_PER_STAT  (10)
 ```
 
-Both start at max on character creation.
+Health starts at max on character creation. Skills run on the per-combat
+five-resource economy described in [`docs/skills.md`](./skills.md), tracked
+on `CombatState.combatResources` rather than the character itself.
+
+## Skills
+
+Characters track learned and equipped skills as ID arrays:
+
+```ts
+knownSkills: string[]      // every skill ever learned
+equippedSkills: string[]   // available in combat (cap 4 today)
+```
+
+Equipping is out-of-combat only; mid-fight swaps are intentionally forbidden.
 
 ## Experience
 
@@ -62,6 +74,25 @@ Both start at max on character creation.
 experience            = (level - 1) × EXPERIENCE_PER_LEVEL (1000)
 experienceToNextLevel = level × EXPERIENCE_PER_LEVEL       (1000)
 ```
+
+## Stat allocation
+
+`character.availableStatPoints: number` holds unspent points awaiting
+allocation. `applyLevelUps` (in `Game/game.reducer.ts`) grants
+`STAT_POINTS_PER_LEVEL = 3` on every level-up. The player spends them one
+at a time via:
+
+```ts
+allocateStatPoint(character, stat)   // 'body' | 'mind' | 'heart'
+```
+
+The helper raises the chosen base stat by 1, decrements
+`availableStatPoints`, and re-derives `derivedStats`, `nonCombatStats`, and
+`maxHealth` so the change is immediately visible. The Game reducer exposes
+this as the `ALLOCATE_STAT_POINT` action; the Character tab in
+`npm run game` walks the player through allocation while points are
+available. Shipped by Phase 29 (`9f2e3f6` + `121aea8` + `db7c26f`); closes
+`specs/06-character-progression.md` Q3 + Q8.
 
 ## Active Effects
 
@@ -84,10 +115,25 @@ via `getResistStat()` in `Combat/stats.ts`:
 |----------|-------------|
 | `createCharacter(options)` | Factory — creates a fully derived Character from name, level, and base stats |
 | `getResistStat(target, resistedBy)` | Base stat value for the resisting stance (lives in `Combat/stats.ts`) |
+| `characterPresets` / `getPresetById` / `buildCharacterFromPreset` | Curated progression-tier roster (apprentice / wanderer / sage). The builder lifts a declarative `CharacterPreset` into a `Character` via the canonical `createCharacter` + `dropItem` paths. `npm run game` prompts the player to pick one at boot. |
+
+## Character presets
+
+`src/Character/presets.ts` ships three curated progression tiers:
+
+| Preset       | Level | Base Stats | Equipment                            | Skills                |
+|--------------|-------|------------|--------------------------------------|-----------------------|
+| `apprentice` | 1     | 5 / 5 / 5  | —                                    | 6 Tier-1 known        |
+| `wanderer`   | 8     | 5 / 4 / 4  | iron-blade, hide-vest, leather-cap   | 6 T1 + 3 T2 known     |
+| `sage`       | 15    | 7 / 6 / 6  | steel-blade, chain-mail, chain-coif  | all 12 skills known   |
+
+All preset equipment is rolled at `'common'` rarity so the build is
+deterministic (Common returns an empty rolled-modifier list). Add more
+presets by exporting further `CharacterPreset` records and registering
+them in `characterPresets`.
 
 ## Pending
 
-- `availableStatPoints` — stat points earned per level (Phase 5)
-- `knownSkills` / `equippedSkills` — skill loadout (Phase 3)
-- Equipment slots and stat modifiers (Phase 4)
-- `id` field for multiplayer/effect attribution
+_No open items — `id` field shipped at Phase 35 (Knowledge-Gaps Q12);
+see the `id` JSDoc on `Character` in `src/Character/types.d.ts` and the
+auto-gen path in `createCharacter`._

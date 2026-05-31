@@ -1,0 +1,113 @@
+name: march
+
+# Manually fire the autonomous-beast loop: one tick of `/march`, which
+# dispatches to triage / critique / ship-a-phase / expand / iterate.
+#
+# Trigger: Actions tab → "march" → Run workflow. Pick the branch you want
+# the tick to commit against. The skill follows its normal contract — it
+# may push commits, open / close GitHub issues, and run the verify gate.
+#
+# Required secrets (Settings → Secrets and variables → Actions):
+#   CLAUDE_CODE_OAUTH_TOKEN — OAuth token from `claude setup-token`,
+#                             draws from your Claude Code subscription
+#                             instead of per-token API billing.
+#
+# The workflow uses the auto-provisioned GITHUB_TOKEN for `gh` and git
+# operations. No PAT needed unless you want cross-repo behaviour.
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'   # every 30 minutes
+  workflow_dispatch:
+    inputs:
+      args:
+        description: 'Optional argument passed to /march (e.g. "phase 10", "iterate")'
+        required: false
+        default: ''
+
+permissions:
+  contents: write        # git push commits the loop produces
+  issues: write          # /triage + phase-mirror issue ops
+  pull-requests: write   # /critique / /iterate may open PRs
+  id-token: write        # for Anthropic's auth proxy
+
+concurrency:
+  group: march-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  march:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Idle check (scheduled runs only)
+        if: github.event_name == 'schedule'
+        id: idle
+        run: |
+          # Skip if the march bot hasn't committed in the last 3 hours.
+          # This prevents burning CI minutes when there's no work to do.
+          # A manual workflow_dispatch always runs regardless.
+          SINCE=$(date -u -d '3 hours ago' '+%Y-%m-%dT%H:%M:%S')
+          COUNT=$(git log --since="$SINCE" --author="axiomancer-march\[bot\]" --oneline | wc -l)
+          if [ "$COUNT" -eq 0 ]; then
+            echo "No bot commits in the last 3 hours — skipping idle tick."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Found $COUNT bot commit(s) since $SINCE — march is active."
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup Node
+        if: steps.idle.outputs.skip != 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        if: steps.idle.outputs.skip != 'true'
+        run: npm ci
+
+      - name: Configure git identity
+        if: steps.idle.outputs.skip != 'true'
+        run: |
+          git config user.name  "axiomancer-march[bot]"
+          git config user.email "41898282+axiomancer-march[bot]@users.noreply.github.com"
+
+      - name: Provision .env for nexus skills
+        if: steps.idle.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # The nexus skills read GH_TOKEN / GH_REPO from a local .env via
+          # `awk -F=`. Provision a CI-scoped copy so /triage and the phase
+          # mirror (scripts/loop-issue.mjs) work out of the box.
+          umask 077
+          cat > .env <<EOF
+          GH_TOKEN=${GH_TOKEN}
+          GH_REPO=${{ github.repository }}
+          EOF
+
+      - name: Run /march
+        if: steps.idle.outputs.skip != 'true'
+        uses: anthropics/claude-code-base-action@beta
+        with:
+          prompt: "/march ${{ github.event.inputs.args }}"
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # The loop needs to: read everything, edit files, run npm / gh /
+          # git, and dispatch sub-agents. Bash is the broadest hammer it
+          # leans on — keep the allowlist permissive in CI since the
+          # workflow itself is the trust boundary.
+          allowed_tools: "Bash,Read,Edit,Write,Glob,Grep,Agent,TodoWrite,WebFetch,WebSearch"
+          dangerously_skip_permissions: true
+          timeout_minutes: '60'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}

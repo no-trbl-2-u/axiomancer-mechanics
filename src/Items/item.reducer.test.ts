@@ -3,7 +3,7 @@ import { addItem, removeItem, useConsumable, stackItem } from './item.reducer';
 import { Consumable, Item } from './types';
 
 const empty = (): Item[] => [];
-const potion: Consumable = { id: 'hp1', name: 'Potion', description: '', category: 'consumable', effect: 'heal', quantity: 3 };
+const potion: Consumable = { id: 'hp1', name: 'Potion', description: '', category: 'consumable', healAmount: 10, quantity: 3 };
 
 describe('addItem', () => {
     it('adds item', () => {

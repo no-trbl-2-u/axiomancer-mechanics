@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { clamp, average, sum, max, min, inRange, deriveStats, calculateMaxHealth, calculateMaxMana } from './index';
+import { clamp, average, sum, max, min, inRange, deriveStats, calculateMaxHealth } from './index';
 
 describe('clamp', () => {
   it('clamps above max', () => expect(clamp(15, 0, 10)).toBe(10));
@@ -47,8 +47,3 @@ describe('calculateMaxHealth', () => {
   });
 });
 
-describe('calculateMaxMana', () => {
-  it('level 1, mind 2 heart 4 → 1 × 3 × 10 = 30', () => {
-    expect(calculateMaxMana(1, { mind: 2, heart: 4 })).toBe(30);
-  });
-});

@@ -5,6 +5,7 @@
 import { Advantage } from "../Combat/types";
 import { STAT_MULTIPLIERS, RESOURCE_MULTIPLIERS } from "../Game/game-mechanics.constants";
 import { BaseStats, DerivedStats, NonCombatStats } from "../Character/types";
+import { getRng, Rng } from './rng';
 
 // ===============================================
 // MATH
@@ -30,7 +31,7 @@ export function clamp(value: number, min: number, max: number): number {
  * @example randomInt(1, 6) // a number between 1 and 6 (like a die roll)
  */
 export function randomInt(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+  return Math.floor(getRng().random() * (max - min + 1)) + min;
 }
 
 /**
@@ -54,13 +55,13 @@ export function average(...numbers: number[]): number {
 }
 
 /** Sums all numbers in an array */
-export const sum = (arr: number[]) => arr.reduce((a, b) => a + b, 0);
+export const sum = (arr: number[]): number => arr.reduce((a, b) => a + b, 0);
 
 /** Returns the largest number in an array */
-export const max = (arr: number[]) => Math.max(...arr);
+export const max = (arr: number[]): number => Math.max(...arr);
 
 /** Returns the smallest number in an array */
-export const min = (arr: number[]) => Math.min(...arr);
+export const min = (arr: number[]): number => Math.min(...arr);
 
 /**
  * Checks if a value is within a range (inclusive)
@@ -125,11 +126,14 @@ export const determineRollAdvantageModifier = (advantage: Advantage): (arr: numb
  * const advAtk = createDie(20, 2, max)   // roll 2d20, keep highest
  * const disadvAtk = createDie(20, 2, min) // roll 2d20, keep lowest
  */
-export function createDie(sides: number, timesRolled: number, func?: (arr: number[]) => number) {
+export function createDie(sides: number, timesRolled: number, func?: (arr: number[]) => number, rng?: Rng): () => number {
+  const rngInstance = rng ?? getRng();
   return () => {
-    const rolls = Array.from({ length: timesRolled }, () => randomInt(1, sides));
+    const rolls = Array.from({ length: timesRolled }, () => 
+      Math.floor(rngInstance.random() * sides) + 1
+    );
     return (func ?? sum)(rolls);
-  }
+  };
 }
 
 /**
@@ -139,7 +143,7 @@ export function createDie(sides: number, timesRolled: number, func?: (arr: numbe
  * @param advantage - The advantage to create a die roll for
  * @returns A function that returns the result of the die roll
  */
-export function createDieRoll(advantage: Advantage) {
+export function createDieRoll(advantage: Advantage): () => number {
   const rollCount = advantage === 'neutral' ? 1 : 2;
   return createDie(20, rollCount, determineRollAdvantageModifier(advantage));
 }
@@ -195,14 +199,3 @@ export function calculateMaxHealth(level: number, healthStats: Pick<BaseStats, '
   return level * avg * RESOURCE_MULTIPLIERS.HEALTH_PER_STAT;
 }
 
-/**
- * Calculates the maximum mana of an entity based on level and base stats.
- * Equation: level × average(mind, heart) × MANA_PER_STAT
- * @param level - The level of the entity
- * @param manaStats - The stats that contribute to max mana (mind and heart)
- * @returns The maximum mana value
- */
-export function calculateMaxMana(level: number, manaStats: Pick<BaseStats, 'mind' | 'heart'>): number {
-  const avg = (manaStats.mind + manaStats.heart) / 2;
-  return level * avg * RESOURCE_MULTIPLIERS.MANA_PER_STAT;
-}

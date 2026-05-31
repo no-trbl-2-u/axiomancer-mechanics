@@ -11,6 +11,7 @@ import { MAX_EFFECT_DURATION } from '../Game/game-mechanics.constants';
 import { Combatant } from './types';
 import { applyDamage, heal } from './health';
 import { getActiveEffectModifiers } from './effect-modifiers';
+import { getRng } from '../Utils/rng';
 
 /** ID of the Mind studying mark. Used by Mind/Attack to add bonus damage. */
 export const MIND_MARK_ID = 'tier1_mind_mark';
@@ -92,7 +93,7 @@ export function removeRandomBuff<T extends Combatant>(target: T): { target: T; r
     const buffs = target.effects.filter(ae => lookupEffect(ae.effectId)?.type === 'buff');
     if (buffs.length === 0) return { target, removed: null };
 
-    const removed = buffs[Math.floor(Math.random() * buffs.length)];
+    const removed = buffs[Math.floor(getRng().random() * buffs.length)];
     const updated = target.effects.filter(ae => ae !== removed);
     return { target: { ...target, effects: updated }, removed };
 }
@@ -108,7 +109,7 @@ export function extendRandomBuffDuration<T extends Combatant>(
     const buffs = target.effects.filter(ae => lookupEffect(ae.effectId)?.type === 'buff');
     if (buffs.length === 0) return { target, extended: null };
 
-    const original = buffs[Math.floor(Math.random() * buffs.length)];
+    const original = buffs[Math.floor(getRng().random() * buffs.length)];
     const extended: ActiveEffect = {
         ...original,
         remainingDuration: Math.min(original.remainingDuration + amount, MAX_EFFECT_DURATION),
@@ -126,20 +127,6 @@ export function applyRegen<T extends Combatant>(target: T): { target: T; healed:
     const mods = getActiveEffectModifiers(target.effects);
     if (mods.healthRegen <= 0) return { target, healed: 0 };
     return { target: heal(target, mods.healthRegen), healed: mods.healthRegen };
-}
-
-/**
- * Applies start-of-round mana regeneration from `regeneration.manaPerRound`
- * payloads (Q9). Mirrors `applyRegen` for HP and clamps at `maxMana`. Drain
- * (negative manaPerRound) is intentionally not supported — there is no
- * mana-tied effect today that wants it.
- */
-export function applyManaRegen<T extends Combatant>(target: T): { target: T; restored: number } {
-    const mods = getActiveEffectModifiers(target.effects);
-    if (mods.manaRegen <= 0) return { target, restored: 0 };
-    const restored = Math.min(mods.manaRegen, target.maxMana - target.mana);
-    if (restored <= 0) return { target, restored: 0 };
-    return { target: { ...target, mana: target.mana + restored }, restored };
 }
 
 /**
@@ -171,7 +158,7 @@ export function processDamageOverTime<T extends Combatant>(
 
 /**
  * Round-start orchestration. Order:
- *   1. Regen (HP, then mana)
+ *   1. HP regen
  *   2. Drain (negative regen)
  *   3. Start-phase DoT
  *
@@ -181,20 +168,17 @@ export function processDamageOverTime<T extends Combatant>(
 export function processRoundStartEffects<T extends Combatant>(target: T): {
     target: T;
     healed: number;
-    manaRestored: number;
     drained: number;
     dotDamage: number;
 } {
     const regen = applyRegen(target);
-    const mana  = applyManaRegen(regen.target);
-    const drain = applyDrain(mana.target);
+    const drain = applyDrain(regen.target);
     const dot   = processDamageOverTime(drain.target, 'start');
     return {
-        target:        dot.target,
-        healed:        regen.healed,
-        manaRestored:  mana.restored,
-        drained:       drain.drained,
-        dotDamage:     dot.damage,
+        target:    dot.target,
+        healed:    regen.healed,
+        drained:   drain.drained,
+        dotDamage: dot.damage,
     };
 }
 

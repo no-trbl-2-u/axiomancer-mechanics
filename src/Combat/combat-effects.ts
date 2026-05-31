@@ -33,8 +33,17 @@ import { Enemy } from '../Enemy/types';
 import { ActiveEffect, Effect, EffectApplicationResult, EffectTier } from '../Effects/types';
 import { lookupEffect } from '../Effects/effects.library';
 import { resolveEffectApplication } from './resist';
+import {
+    STAT_PROC_BONUS_PER_POINT,
+    STATUS_CHANCE_BUFF_BONUS,
+    STATUS_CHANCE_EFFECT_ID,
+    CRIT_INTENSITY_BONUS,
+    CRIT_DURATION_BONUS,
+} from './combat.constants';
 import { applyEffect } from '../Effects';
 import { getBaseStat } from './stats';
+import { EquipmentProcTrigger } from '../Items/types';
+import { getRng } from '../Utils/rng';
 
 /** A single Stance × action × tier proc candidate, as authored in JSON. */
 export interface CombatEffectTrigger {
@@ -77,16 +86,6 @@ export type ProcOverrides =
 const TRIGGER_TABLE: readonly CombatEffectTrigger[] =
     triggersLibrary.triggers as CombatEffectTrigger[];
 
-/** 2% per relevant stance base-stat point — caps proc inflation at reasonable values. */
-const STAT_PROC_BONUS_PER_POINT = 0.02;
-/** 5% per intensity stack of `buff_status_chance_up`. */
-const STATUS_CHANCE_BUFF_BONUS = 0.05;
-const STATUS_CHANCE_EFFECT_ID = 'buff_status_chance_up';
-
-/** Bonus intensity / duration granted on a crit-guaranteed proc. */
-const CRIT_INTENSITY_BONUS = 1;
-const CRIT_DURATION_BONUS  = 1;
-
 /** True on a natural 1 attack roll; mirrors `Combat/dice.ts` for clarity. */
 function isFumble(rawRoll: number): boolean { return rawRoll === 1; }
 /** True on a natural 20 attack roll. */
@@ -109,24 +108,59 @@ function unlockedTier(
 }
 
 /**
+ * Adapts an `EquipmentProcTrigger` into the `CombatEffectTrigger` shape the
+ * proc roller expects. Equipment triggers don't carry a `stance` of their own
+ * — they inherit the wearer's current stance — and they always pair with the
+ * action that surfaced them (`onHitEffects` ↔ attack, `onDefendEffects` ↔
+ * defend). Per Spec 05 Q6 (option A) these adapted entries share the same
+ * proc machinery as the JSON-defined Stance × action triggers.
+ */
+function adaptEquipmentTrigger(
+    eq: EquipmentProcTrigger,
+    stance: Stance,
+    action: 'attack' | 'defend',
+): CombatEffectTrigger {
+    return {
+        stance,
+        action,
+        tier:              eq.tier,
+        effectId:          eq.effectId,
+        target:            eq.target,
+        baseChance:        eq.baseChance,
+        intensityOverride: eq.intensityOverride,
+        durationOverride:  eq.durationOverride,
+        fumbleEffectId:    eq.fumbleEffectId,
+    };
+}
+
+/**
  * Pulls the proc entries the actor is allowed to roll for. Per-cell overrides
  * (boss / map-themed enemies) take precedence over the global table; otherwise
  * we filter the global table by Stance × action × tier ≤ unlocked cap.
+ *
+ * Per Spec 05 Q6 option A: `equipmentTriggers` (equipment-provided onHit /
+ * onDefend entries) are appended on top of the cell's eligible list, filtered
+ * by the same per-cell unlock cap so equipment can't sneak past tier gating.
  */
 export function getEligibleTriggers(
     stance: Stance,
     action: 'attack' | 'defend',
     unlocks?: ProcUnlocks,
     overrides?: ProcOverrides,
+    equipmentTriggers?: EquipmentProcTrigger[],
 ): CombatEffectTrigger[] {
     const cap = unlockedTier(unlocks, stance, action);
-    const override = overrides?.[stance]?.[action];
-    if (override) {
-        return override.filter(t => t.tier <= cap);
-    }
-    return TRIGGER_TABLE.filter(t =>
-        t.stance === stance && t.action === action && t.tier <= cap,
-    );
+    const base = overrides?.[stance]?.[action]
+        ? overrides[stance]![action]!.filter(t => t.tier <= cap)
+        : TRIGGER_TABLE.filter(t =>
+            t.stance === stance && t.action === action && t.tier <= cap,
+          );
+
+    if (!equipmentTriggers || equipmentTriggers.length === 0) return base;
+    const adapted = equipmentTriggers
+        .filter(eq => eq.tier <= cap)
+        .map(eq => adaptEquipmentTrigger(eq, stance, action));
+    return [...base, ...adapted];
 }
 
 /**
@@ -177,6 +211,12 @@ export interface RollForCombatEffectsParams {
     unlocks?: ProcUnlocks;
     overrides?: ProcOverrides;
     /**
+     * Equipment-provided proc triggers from the actor's currently-equipped
+     * items. Per Spec 05 Q6 option A these are folded into the eligible list
+     * before the proc roll, sharing the same chance / crit / fumble math.
+     */
+    equipmentTriggers?: EquipmentProcTrigger[];
+    /**
      * RNG used for the per-trigger proc roll. Defaults to `Math.random`.
      * Injected so tests can pin behavior deterministically alongside the
      * existing `mockFixedRng` flow used elsewhere in Combat.
@@ -196,8 +236,10 @@ export interface RollForCombatEffectsParams {
 export function rollForCombatEffects(
     p: RollForCombatEffectsParams,
 ): { procs: ProcRollOutcome[]; fumble: FumbleOutcome | null } {
-    const rng = p.rng ?? Math.random;
-    const eligible = getEligibleTriggers(p.stance, p.action, p.unlocks, p.overrides);
+    const rng = p.rng ?? (() => getRng().random());
+    const eligible = getEligibleTriggers(
+        p.stance, p.action, p.unlocks, p.overrides, p.equipmentTriggers,
+    );
 
     if (isFumble(p.rawAttackRoll)) {
         const fumbleId = eligible.find(t => t.fumbleEffectId)?.fumbleEffectId;
@@ -281,6 +323,7 @@ export function applyProcOutcome(
             intensityDelta,
             durationMode: 'additive',
             durationDelta,
+            sourceId: actor.id,
         },
     );
 
@@ -315,36 +358,8 @@ export function applyProcOutcome(
         return { actorEffects, opponentEffects: finalised, appliedTo, result: resolveResult };
     }
 
-    // Resist or rebound: remove the staged effect from the target.
+    // Fumble: revert the staged effect from the target.
     const reverted = stagedEffects.filter(ae => ae.effectId !== effect.id);
-
-    if (resolveResult.rebounded && resolveResult.activeEffect) {
-        // Rebound debuff onto the attacker. Same logic, opposite target.
-        const reboundTarget = appliedTo === 'opponent' ? 'self' : 'opponent';
-        const reboundEffects = reboundTarget === 'self' ? actorEffects : opponentEffects;
-        const { activeEffects: withRebound } = applyEffect(
-            reboundEffects, effect, round,
-            {
-                intensityDelta: resolveResult.activeEffect.intensity ?? intensityDelta,
-                durationMode: 'additive',
-                durationDelta,
-            },
-        );
-        if (reboundTarget === 'self') {
-            return {
-                actorEffects: withRebound,
-                opponentEffects: appliedTo === 'opponent' ? reverted : opponentEffects,
-                appliedTo: reboundTarget,
-                result: resolveResult,
-            };
-        }
-        return {
-            actorEffects: appliedTo === 'self' ? reverted : actorEffects,
-            opponentEffects: withRebound,
-            appliedTo: reboundTarget,
-            result: resolveResult,
-        };
-    }
 
     if (appliedTo === 'self') {
         return { actorEffects: reverted, opponentEffects, appliedTo, result: resolveResult };
@@ -356,13 +371,21 @@ export function applyProcOutcome(
  * Applies a fumble self-debuff to the actor. Mirrors `applyProcOutcome` for
  * the simpler "always lands on self" case — fumbles use Tier 1 auto-apply
  * semantics for predictable punishment.
+ *
+ * `actorId` (Phase 38) stamps `ActiveEffect.sourceId` so a self-fumble is
+ * attributable to the combatant who fumbled. Optional for back-compat with
+ * any caller that hasn't been threaded yet.
  */
 export function applyFumbleOutcome(
     fumble: FumbleOutcome,
     actorEffects: ActiveEffect[],
     round: number,
+    actorId?: string,
 ): { actorEffects: ActiveEffect[]; result: EffectApplicationResult } {
-    const { activeEffects, result } = applyEffect(actorEffects, fumble.effect, round);
+    const { activeEffects, result } = applyEffect(
+        actorEffects, fumble.effect, round,
+        actorId ? { sourceId: actorId } : undefined,
+    );
     return { actorEffects: activeEffects, result };
 }
 

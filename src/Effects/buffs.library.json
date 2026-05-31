@@ -939,6 +939,20 @@
         ]
       },
       "tier": 2
+    },
+    {
+      "id": "buff_special_pleading",
+      "name": "Special Pleading",
+      "description": "The bearer carves out the exception they need from the general rule. This case is sacred, this hour is the one the law forgot — and the blow that would have landed slides off the parenthesis.",
+      "type": "buff",
+      "category": "defense",
+      "duration": 2,
+      "stacking": "intensity",
+      "payload": {
+        "defenseModifier": 2
+      },
+      "tier": 1,
+      "sourcedFromCell": "faith-optimistic-individual"
     }
   ]
 }

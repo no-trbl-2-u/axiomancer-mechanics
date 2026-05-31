@@ -1,0 +1,723 @@
+/**
+ * Early-game skill library (Spec 04b).
+ *
+ * Twelve skills covering every philosophical-aspect × category × tier cell
+ * the Spec 04 economy can produce in the opening hours of the game:
+ *   - Tier 1 (6): single-stance cost, generates 1 philosophical token of
+ *     the skill's own category.
+ *   - Tier 2 (3): multi-key resonance cost, generates 1 token of category.
+ *   - Tier 3 (3): philosophical-resource gated, generates 1 token of the
+ *     OPPOSING category (Fallacy ↔ Paradox) to keep skill chains flowing in
+ *     the late combat.
+ *
+ * Skill IDs follow kebab-case per `specs/04b-skills-library-and-e2e.md` Q1
+ * (effect IDs in the library use snake_case; skills use kebab-case so the
+ * two namespaces stay visually distinct).
+ *
+ * This file is data-only. All runtime behaviour lives in
+ * `src/Skills/skill.engine.ts` and is driven by the discriminated unions
+ * declared on `Skill` (`combatEffects`, `specialMechanics`).
+ */
+
+import { Skill } from './types';
+
+// ─── Tier 1 — Single Stance Cost (6 skills) ──────────────────────────────────
+
+const adHominemStrike: Skill = {
+    id: 'ad-hominem-strike',
+    name: 'Ad Hominem Strike',
+    category: 'fallacy',
+    philosophicalAspect: 'body',
+    description:
+        'You don\'t refute the argument — you refute the arguer. The blow lands ' +
+        'where their composure was, scattering whatever fragile certainty they ' +
+        'had built. Their stance crumbles before their muscles do.',
+    tier: 1,
+    resourceCost: { body: 3 },
+    targetType: 'enemy',
+    basePower: 8,
+    scalingStat: 'body',
+    specialMechanics: [{ kind: 'strip_random_buff', appliedTo: 'enemy' }],
+};
+
+const falseDilemma: Skill = {
+    id: 'false-dilemma',
+    name: 'False Dilemma',
+    category: 'fallacy',
+    philosophicalAspect: 'mind',
+    description:
+        'Two doors. Only two. Either-or, your fault, no third option — except ' +
+        'every option is a door. The enemy hesitates between phantoms while you ' +
+        'walk straight through.',
+    tier: 1,
+    resourceCost: { mind: 3 },
+    targetType: 'enemy',
+    basePower: 4,
+    scalingStat: 'mind',
+    combatEffects: [
+        { effectId: 'debuff_confusion', appliedTo: 'opponent', duration: 2 },
+    ],
+};
+
+const appealToPity: Skill = {
+    id: 'appeal-to-pity',
+    name: 'Appeal to Pity',
+    category: 'fallacy',
+    philosophicalAspect: 'heart',
+    description:
+        'You let the wound show. The argument was never the point — your pain ' +
+        'is. Even your own body listens, and softens, and bends a little of ' +
+        'itself back together.',
+    tier: 1,
+    resourceCost: { heart: 3 },
+    targetType: 'self',
+    basePower: 0,
+    scalingStat: 'heart',
+    // heal = 0 + heart × 0.5 × 4  →  heart × 2 (per Spec 04b Q2-companion).
+    scalingMultiplier: 4,
+};
+
+const achillesGambit: Skill = {
+    id: 'achilles-gambit',
+    name: 'Achilles\' Gambit',
+    category: 'paradox',
+    philosophicalAspect: 'body',
+    description:
+        'You commit to the strike that should never land — the runner who can ' +
+        'never catch the tortoise, the heel that must be exposed. Paradox ' +
+        'collapses into a single, unanswerable blow.',
+    tier: 1,
+    resourceCost: { body: 3 },
+    targetType: 'enemy',
+    basePower: 12,
+    scalingStat: 'body',
+};
+
+const liarsEcho: Skill = {
+    id: 'liars-echo',
+    name: 'Liar\'s Echo',
+    category: 'paradox',
+    philosophicalAspect: 'mind',
+    description:
+        '"This sentence is false." Their next thought catches on the loop, ' +
+        'doubles back, and arrives more exposed than when it left. You read ' +
+        'every tell twice.',
+    tier: 1,
+    resourceCost: { mind: 3 },
+    targetType: 'enemy',
+    basePower: 3,
+    scalingStat: 'mind',
+    combatEffects: [
+        { effectId: 'tier1_mind_mark', appliedTo: 'opponent', intensity: 2, duration: 2 },
+    ],
+};
+
+const shipOfTheseus: Skill = {
+    id: 'ship-of-theseus',
+    name: 'Ship of Theseus',
+    category: 'paradox',
+    philosophicalAspect: 'heart',
+    description:
+        'A plank of their resolve replaces a plank of yours. They are still ' +
+        'themselves, technically; you are still yourself, technically. The ' +
+        'borrowed buff settles around your shoulders.',
+    tier: 1,
+    resourceCost: { heart: 3 },
+    targetType: 'enemy',
+    basePower: 0,
+    scalingStat: 'heart',
+    specialMechanics: [{ kind: 'convert_enemy_buff_to_self' }],
+};
+
+// ─── Tier 2 — Resonance Required (3 skills) ──────────────────────────────────
+
+const mobAppeal: Skill = {
+    id: 'mob-appeal',
+    name: 'Mob Appeal',
+    category: 'fallacy',
+    philosophicalAspect: 'body',
+    description:
+        'The crowd already believes you. So does the part of you that needed ' +
+        'convincing. A simultaneous blow and a small, dishonest reassurance — ' +
+        'and both work.',
+    tier: 2,
+    resourceCost: { body: 2, heart: 2 },
+    targetType: 'enemy',
+    basePower: 10,
+    scalingStat: 'body',
+    specialMechanics: [{ kind: 'secondary_heal_self', stat: 'heart', multiplier: 1 }],
+    learningRequirement: { level: 5 },
+};
+
+const undistributedMiddle: Skill = {
+    id: 'undistributed-middle',
+    name: 'Undistributed Middle',
+    category: 'paradox',
+    philosophicalAspect: 'mind',
+    description:
+        'All philosophers are mortal. You are mortal. Therefore you are a ' +
+        'philosopher — and your enemy is illegible. You watch them try to ' +
+        'follow the syllogism into a corner they cannot leave.',
+    tier: 2,
+    resourceCost: { body: 2, mind: 2 },
+    targetType: 'enemy',
+    basePower: 8,
+    scalingStat: 'mind',
+    combatEffects: [
+        { effectId: 'tier1_mind_mark', appliedTo: 'opponent', intensity: 3, duration: 3 },
+    ],
+    learningRequirement: { level: 5 },
+};
+
+const eternalRegress: Skill = {
+    id: 'eternal-regress',
+    name: 'Eternal Regress',
+    category: 'fallacy',
+    philosophicalAspect: 'heart',
+    description:
+        'Every answer they reach demands a previous answer; every previous ' +
+        'answer demands one more. You watch their certainty unspool itself — ' +
+        'and lay two distinct binds on the wreckage.',
+    tier: 2,
+    resourceCost: { heart: 2, mind: 2 },
+    targetType: 'enemy',
+    basePower: 6,
+    scalingStat: 'heart',
+    combatEffects: [
+        { effectId: 'debuff_confusion', appliedTo: 'opponent' },
+        { effectId: 'debuff_slow',      appliedTo: 'opponent' },
+    ],
+    learningRequirement: { level: 5 },
+};
+
+// ─── Tier 3 — Philosophical Resource Required (3 skills) ─────────────────────
+
+const soritesCascade: Skill = {
+    id: 'sorites-cascade',
+    name: 'Sorites\' Cascade',
+    category: 'paradox',
+    philosophicalAspect: 'mind',
+    description:
+        'A grain. Another grain. At what point did the heap of small wounds ' +
+        'become a mortal one? They cannot say. The bleeding stacks faster than ' +
+        'their definition of "alive."',
+    tier: 3,
+    resourceCost: { mind: 2, paradox: 1 },
+    targetType: 'enemy',
+    basePower: 5,
+    scalingStat: 'mind',
+    combatEffects: [
+        { effectId: 'debuff_bleed', appliedTo: 'opponent', intensity: 2, duration: 4 },
+    ],
+    learningRequirement: { level: 10 },
+};
+
+const strawGiant: Skill = {
+    id: 'straw-giant',
+    name: 'Straw Giant',
+    category: 'fallacy',
+    philosophicalAspect: 'body',
+    description:
+        'You build the version of them you can topple, then topple it — and the ' +
+        'real one comes with. There is no defence against the argument you ' +
+        'invented to win.',
+    tier: 3,
+    resourceCost: { body: 3, fallacy: 1 },
+    targetType: 'enemy',
+    basePower: 18,
+    scalingStat: 'body',
+    // Marker today; the engine already produces flat skill damage that does
+    // not route through defence. Preserved so a future damage path can branch.
+    specialMechanics: [{ kind: 'bypass_defense' }],
+    learningRequirement: { level: 10 },
+};
+
+const bootstrapParadox: Skill = {
+    id: 'bootstrap-paradox',
+    name: 'Bootstrap Paradox',
+    category: 'paradox',
+    philosophicalAspect: 'heart',
+    description:
+        'The healing comes from the version of you that survived. The version ' +
+        'of you that survived came from this healing. The loop is whole; the ' +
+        'wound, less so.',
+    tier: 3,
+    resourceCost: { heart: 2, paradox: 1 },
+    targetType: 'self',
+    basePower: 0,
+    scalingStat: 'heart',
+    // Fallback per spec out-of-scope note: until `RoundEvent` exposes a
+    // round-damage total, the heal is a flat heart × 0.5 × 4 → heart × 2.
+    scalingMultiplier: 4,
+    learningRequirement: { level: 10 },
+};
+
+// ─── Tier 3 — Phase 44 fallacies-as-spells (4 skills) ────────────────────────
+//
+// Each draws from a named fallacy on the Phase 42 27-cell library. The cell
+// id round-trips via `sourcedFromCell` so consumers can trace the skill back
+// to its philosophical origin via `philosophicalAlignmentLibrary`.
+
+const appealToConsequences: Skill = {
+    id: 'appeal-to-consequences',
+    name: 'Appeal to Consequences',
+    category: 'fallacy',
+    philosophicalAspect: 'body',
+    description:
+        'You strike, and the world tilts to validate the strike. The belief makes ' +
+        'you stronger, so the belief is true. They feel both the blow and the ' +
+        'argument arrive at once.',
+    tier: 3,
+    resourceCost: { body: 3, fallacy: 1 },
+    targetType: 'enemy',
+    basePower: 16,
+    scalingStat: 'body',
+    combatEffects: [
+        { effectId: 'tier1_body_attack', appliedTo: 'self', intensity: 2, duration: 3 },
+    ],
+    learningRequirement: { level: 10 },
+    sourcedFromCell: 'logic-optimistic-individual',
+};
+
+const nirvanaFallacy: Skill = {
+    id: 'nirvana-fallacy',
+    name: 'Nirvana Fallacy',
+    category: 'fallacy',
+    philosophicalAspect: 'mind',
+    description:
+        'You hold up the perfect outcome the world refused to grant them, and ' +
+        'their own existence falls short of it. The contrast disorders their ' +
+        'reasoning faster than the wound disorders their flesh.',
+    tier: 3,
+    resourceCost: { mind: 2, fallacy: 1 },
+    targetType: 'enemy',
+    basePower: 14,
+    scalingStat: 'mind',
+    combatEffects: [
+        { effectId: 'debuff_confusion', appliedTo: 'opponent' },
+    ],
+    // Phase 46 — only learnable by a sufficiently pessimistic character.
+    // The skill expresses Schopenhauer / Underground Man metaphysics; a
+    // hopeful caster wouldn't reach the contempt the wager requires.
+    learningRequirement: {
+        level: 10,
+        requiresAlignment: { axis: 'outlook', op: 'lte', value: -34 },
+    },
+    sourcedFromCell: 'logic-pessimistic-individual',
+};
+
+const pascalsWager: Skill = {
+    id: 'pascals-wager',
+    name: "Pascal's Wager",
+    category: 'paradox',
+    philosophicalAspect: 'heart',
+    description:
+        'You commit to the belief that costs nothing if you are wrong, and saves ' +
+        'you if you are right. The certainty is its own balm; the wound closes ' +
+        'around the wager.',
+    tier: 3,
+    resourceCost: { heart: 2, paradox: 1 },
+    targetType: 'self',
+    basePower: 0,
+    scalingStat: 'heart',
+    // Mirrors `bootstrap-paradox`: heart × 0.5 × 3 → heart × 1.5 healed.
+    scalingMultiplier: 3,
+    learningRequirement: { level: 10 },
+    sourcedFromCell: 'mid-optimistic-transcendent',
+};
+
+const appealToFear: Skill = {
+    id: 'appeal-to-fear',
+    name: 'Appeal to Fear',
+    category: 'fallacy',
+    philosophicalAspect: 'heart',
+    description:
+        'You whisper the indifferent cosmos into their ear — what waits beyond ' +
+        'them, what cares for them — and the dread lands before the strike does. ' +
+        'They move like something has already begun pulling at their feet.',
+    tier: 3,
+    resourceCost: { heart: 2, fallacy: 1 },
+    targetType: 'enemy',
+    basePower: 12,
+    scalingStat: 'heart',
+    combatEffects: [
+        { effectId: 'debuff_slow', appliedTo: 'opponent' },
+    ],
+    // Phase 46 — only learnable by a sufficiently transcendent character.
+    // The cosmic-dread whisper requires a caster whose attention is already
+    // tuned to the indifferent beyond (Lovecraft / Burroughs archetype).
+    learningRequirement: {
+        level: 10,
+        requiresAlignment: { axis: 'scope', op: 'gte', value: 34 },
+    },
+    sourcedFromCell: 'mid-pessimistic-transcendent',
+};
+
+// ─── Tier 2 synergy (Phase 66) — 5 skills rewarding stance-switching ────────
+//
+// Each skill carries a `synergy` clause evaluated after damage and before
+// combatEffects. Predicate misses → only the basePower fires. Match → the
+// synergy bonus / consumption / type-swap / detonation runs. See
+// `docs/skills.md` § "Tier 2 synergy (Phase 66)" for the schema.
+
+const resonanceBleed: Skill = {
+    id: 'resonance-bleed',
+    name: 'Resonance Bleed',
+    category: 'paradox',
+    philosophicalAspect: 'heart',
+    description:
+        'A heart-pitched lyric over the body\'s open wound. The bleeding ' +
+        'finds the lyric and the lyric finds your enemy, and the two ' +
+        'agree that it has further to go.',
+    tier: 2,
+    resourceCost: { heart: 2, mind: 2 },
+    targetType: 'enemy',
+    basePower: 4,
+    scalingStat: 'heart',
+    learningRequirement: { level: 5 },
+    synergy: {
+        predicate: { effectId: 'debuff_bleed', on: 'target', durationMin: 2 },
+        bonusDamage: 5,
+        durationDamageMul: 3,
+    },
+};
+
+const intensityFeedback: Skill = {
+    id: 'intensity-feedback',
+    name: 'Intensity Feedback',
+    category: 'paradox',
+    philosophicalAspect: 'mind',
+    description:
+        'You take the certainty you have been holding and let it ring back ' +
+        'into them. The louder it was for you, the louder it lands for them.',
+    tier: 2,
+    resourceCost: { mind: 2, heart: 2 },
+    targetType: 'enemy',
+    basePower: 5,
+    scalingStat: 'mind',
+    learningRequirement: { level: 5 },
+    synergy: {
+        predicate: { effectId: 'buff_critical_rate_up', on: 'caster', intensityMin: 1 },
+        bonusDamage: 4,
+        intensityDamageMul: 5,
+    },
+};
+
+const batSwarmThoughtform: Skill = {
+    id: 'bat-swarm-thoughtform',
+    name: 'Bat-Swarm Thoughtform',
+    category: 'paradox',
+    philosophicalAspect: 'heart',
+    description:
+        'Your defensive thorns lift off your skin in a heart-shape and ' +
+        'become a swarm of small attentive things. They feed on the ' +
+        'distance they remember as your edge.',
+    tier: 2,
+    resourceCost: { heart: 2, body: 2 },
+    targetType: 'self',
+    basePower: 0,
+    scalingStat: 'heart',
+    learningRequirement: { level: 5 },
+    synergy: {
+        // Body Thorns proxy — tier1_body_defend ships reflectDamage: 1 and
+        // is the closest existing buff to the braindump's "Body Thorns".
+        predicate: { effectId: 'tier1_body_defend', on: 'caster', durationMin: 5 },
+        consumeMatched: true,
+        applyEffectOnFire: {
+            effectId: 'buff_max_hp_up',
+            appliedTo: 'self',
+            intensity: 3,
+            duration: 5,
+        },
+    },
+};
+
+const resonanceBurst: Skill = {
+    id: 'resonance-burst',
+    name: 'Resonance Burst',
+    category: 'paradox',
+    philosophicalAspect: 'mind',
+    description:
+        'Burn the lattice; spend it. You collapse the confusion you placed ' +
+        'in them and the collapse itself is the strike — proportional to ' +
+        'how long they have already been losing their footing.',
+    tier: 2,
+    resourceCost: { mind: 2, heart: 1 },
+    targetType: 'enemy',
+    basePower: 3,
+    scalingStat: 'mind',
+    learningRequirement: { level: 5 },
+    synergy: {
+        predicate: { effectId: 'debuff_confusion', on: 'target', durationMin: 1 },
+        bonusDamage: 3,
+        intensityDamageMul: 2,
+        durationDamageMul: 3,
+        consumeMatched: true,
+    },
+};
+
+const resonanceDetonation: Skill = {
+    id: 'resonance-detonation',
+    name: 'Resonance Detonation',
+    category: 'paradox',
+    philosophicalAspect: 'heart',
+    description:
+        'You spend the whole shape you brought into the fight — every ' +
+        'token, every binding, every breath you were saving for after. ' +
+        'The release is the answer; what was on the field is no longer ' +
+        'on the field. Resetting the fight back to its first round in ' +
+        'exchange for one apex truth.',
+    tier: 2,
+    resourceCost: { heart: 3, body: 3, mind: 3 },
+    targetType: 'enemy',
+    basePower: 0,
+    scalingStat: 'heart',
+    learningRequirement: { level: 5 },
+    synergy: {
+        // No predicate — unconditional fire on cast (D6).
+        bonusDamage: 25,
+        resourceTokenDamageMul: 10,
+        consumeAllResources: true,
+        clearAllEffectsBothSides: true,
+    },
+};
+
+// ─── Phase 91 — Friendship increment skills (3 skills) ──────────────────────
+
+const soothingWords: Skill = {
+    id: 'soothing-words',
+    name: 'Soothing Words',
+    category: 'fallacy',
+    philosophicalAspect: 'heart',
+    description: 'Gentle words that calm tensions without requiring defensive posture.',
+    tier: 1,
+    resourceCost: { heart: 2 },
+    targetType: 'self',
+    basePower: 0,
+    scalingStat: 'heart',
+    incrementsFriendship: 1,
+};
+
+const peacefulGesture: Skill = {
+    id: 'peaceful-gesture',
+    name: 'Peaceful Gesture',
+    category: 'fallacy', 
+    philosophicalAspect: 'body',
+    description: 'A calming physical gesture that builds trust through non-threatening movement.',
+    tier: 1,
+    resourceCost: { body: 2 },
+    targetType: 'self',
+    basePower: 0,
+    scalingStat: 'body',
+    incrementsFriendship: 1,
+};
+
+const empatheticUnderstanding: Skill = {
+    id: 'empathetic-understanding',
+    name: 'Empathetic Understanding',
+    category: 'paradox',
+    philosophicalAspect: 'mind',
+    description: 'Deep understanding that transcends conflict, building stronger bonds.',
+    tier: 2,
+    resourceCost: { mind: 3, heart: 1 },
+    targetType: 'self', 
+    basePower: 0,
+    scalingStat: 'mind',
+    incrementsFriendship: 2,
+};
+
+// ─── Tier 3 synergy (Phase 94) — 5 skills mirroring Phase 66 pattern ───────
+
+// Each skill carries a `synergy` clause with advanced Tier 3 mechanics.
+// Higher resource costs, complex predicates, and amplified damage over
+// Tier 2 synergy. See Phase 66 pattern for schema reference.
+
+const paradoxConvergence: Skill = {
+    id: 'paradox-convergence',
+    name: 'Paradox Convergence',
+    category: 'paradox',
+    philosophicalAspect: 'mind',
+    description:
+        'You gather every contradiction they carry and collapse them into ' +
+        'a single impossible instant. The logic breaks; the body follows ' +
+        'the argument down into the mathematical void.',
+    tier: 3,
+    resourceCost: { mind: 3, paradox: 2 },
+    targetType: 'enemy',
+    basePower: 15,
+    scalingStat: 'mind',
+    learningRequirement: { level: 10 },
+    synergy: {
+        predicate: { effectId: 'buff_haste', on: 'target', intensityMin: 1 },
+        bonusDamage: 8,
+        intensityDamageMul: 7,
+        durationDamageMul: 4,
+        consumeMatched: true,
+    },
+};
+
+const metaphysicalDrain: Skill = {
+    id: 'metaphysical-drain',
+    name: 'Metaphysical Drain',
+    category: 'paradox',
+    philosophicalAspect: 'heart',
+    description:
+        'Their strength becomes your sustenance. You consume the certainty ' +
+        'they built in themselves and weave it into your own flesh. What ' +
+        'made them invulnerable makes you whole.',
+    tier: 3,
+    resourceCost: { heart: 3, paradox: 2 },
+    targetType: 'self',
+    basePower: 0,
+    scalingStat: 'heart',
+    scalingMultiplier: 5,
+    learningRequirement: { level: 10 },
+    synergy: {
+        predicate: { effectId: 'buff_invincibility', on: 'target', durationMin: 1 },
+        bonusDamage: 10,
+        durationDamageMul: 6,
+        consumeMatched: true,
+    },
+};
+
+const logicalRecursion: Skill = {
+    id: 'logical-recursion',
+    name: 'Logical Recursion',
+    category: 'fallacy',
+    philosophicalAspect: 'mind',
+    description:
+        'The confusion you planted in yourself calls to the confusion ' +
+        'you placed in them. Like facing mirrors, the reflection bounces ' +
+        'between you until one of the glass breaks. It is not yours.',
+    tier: 3,
+    resourceCost: { mind: 2, fallacy: 2 },
+    targetType: 'enemy',
+    basePower: 12,
+    scalingStat: 'mind',
+    learningRequirement: { level: 10 },
+    synergy: {
+        predicate: { effectId: 'debuff_confusion', on: 'caster', durationMin: 2 },
+        bonusDamage: 6,
+        durationDamageMul: 5,
+        intensityDamageMul: 3,
+        applyEffectOnFire: {
+            effectId: 'buff_critical_rate_up',
+            appliedTo: 'self',
+            intensity: 2,
+            duration: 3,
+        },
+    },
+};
+
+const existentialCollapse: Skill = {
+    id: 'existential-collapse',
+    name: 'Existential Collapse',
+    category: 'fallacy',
+    philosophicalAspect: 'body',
+    description:
+        'You end the argument by ending the premise that arguments exist. ' +
+        'Every binding dissolves; every certainty becomes uncertain. In ' +
+        'the sudden emptiness, only your strike remains real.',
+    tier: 3,
+    resourceCost: { body: 4, fallacy: 2 },
+    targetType: 'enemy',
+    basePower: 18,
+    scalingStat: 'body',
+    learningRequirement: { level: 10 },
+    synergy: {
+        predicate: { effectId: 'debuff_petrify', on: 'target', durationMin: 1 },
+        bonusDamage: 12,
+        durationDamageMul: 8,
+        consumeMatched: true,
+        clearAllEffectsBothSides: true,
+    },
+};
+
+const transcendentSynthesis: Skill = {
+    id: 'transcendent-synthesis',
+    name: 'Transcendent Synthesis',
+    category: 'paradox',
+    philosophicalAspect: 'heart',
+    description:
+        'You weave every thread of certainty on the field into a new ' +
+        'pattern that transcends its components. The synthesis heals what ' +
+        'the analysis wounded; the whole exceeds its parts.',
+    tier: 3,
+    resourceCost: { heart: 3, mind: 2, paradox: 1 },
+    targetType: 'self',
+    basePower: 0,
+    scalingStat: 'heart',
+    scalingMultiplier: 4,
+    learningRequirement: { level: 10 },
+    synergy: {
+        // No predicate — unconditional synthesis on cast
+        bonusDamage: 15,
+        resourceTokenDamageMul: 6,
+        consumeAllResources: true,
+        applyEffectOnFire: {
+            effectId: 'buff_regeneration',
+            appliedTo: 'self',
+            intensity: 3,
+            duration: 4,
+        },
+    },
+};
+
+// ─── Library Export ──────────────────────────────────────────────────────────
+
+/**
+ * The full early-game skill catalogue. Order is presentational only — the
+ * resolver looks skills up by ID via `getSkillById`. Keep cells balanced
+ * across `(philosophicalAspect × category × tier)` when adding entries here.
+ */
+export const skillLibrary: Skill[] = [
+    // Tier 1
+    adHominemStrike,
+    falseDilemma,
+    appealToPity,
+    achillesGambit,
+    liarsEcho,
+    shipOfTheseus,
+    // Tier 2
+    mobAppeal,
+    undistributedMiddle,
+    eternalRegress,
+    // Tier 2 — Phase 66 synergy skills (5)
+    resonanceBleed,
+    intensityFeedback,
+    batSwarmThoughtform,
+    resonanceBurst,
+    resonanceDetonation,
+    // Tier 3
+    soritesCascade,
+    strawGiant,
+    bootstrapParadox,
+    // Tier 3 — Phase 44 fallacies-as-spells
+    appealToConsequences,
+    nirvanaFallacy,
+    pascalsWager,
+    appealToFear,
+    // Tier 3 — Phase 94 synergy skills (5)
+    paradoxConvergence,
+    metaphysicalDrain,
+    logicalRecursion,
+    existentialCollapse,
+    transcendentSynthesis,
+    // Phase 91 — friendship increment skills
+    soothingWords,
+    peacefulGesture,
+    empatheticUnderstanding,
+];
+
+const skillRegistry: ReadonlyMap<string, Skill> = new Map(
+    skillLibrary.map(skill => [skill.id, skill]),
+);
+
+/**
+ * O(1) lookup by skill ID. Returns `undefined` if no skill matches — callers
+ * must handle that (the combat resolver emits a `skill-blocked` event with
+ * `reason: 'unknown-skill'` rather than throwing).
+ */
+export function getSkillById(id: string): Skill | undefined {
+    return skillRegistry.get(id);
+}

@@ -1,12 +1,31 @@
 /**
- * Skills module — types only for now.
+ * Skills module — types and runtime engine.
  *
- * Skills (fallacies and paradoxes) are defined but the runtime engine has
- * not been implemented. When skill execution lands it will live alongside
- * these types.
+ * Skills (fallacies and paradoxes) run on the five-resource resonance
+ * economy described in `specs/04-skills-engine.md`. The engine functions
+ * here are pure: callers thread state forward themselves.
+ *
+ * Skill content (the named library) lives in Spec 04b.
  */
 
 export type {
-    Skill, SkillCategory, SkillsStatType,
-    SkillLearningRequirement, SkillCombatEffects,
+    Skill, SkillCategory, SkillsStatType, SkillTier, SkillTarget,
+    ResourceCost, CombatResources,
+    SkillLearningRequirement, SkillCombatEffects, SkillSpecialMechanic,
+    SkillSynergy, SynergyPredicate,
 } from './types';
+
+export {
+    generateBasicActionResources, generatePhilosophicalResource,
+    canUseSkill, spendResources, calculateSkillDamage, executeSkill,
+    philosophicalCategoryFor,
+    meetsLearningRequirement, getAvailableSkills, learnSkill,
+} from './skill.engine';
+
+export type {
+    BasicActionOutcome, SkillEvent, SkillResolution, SkillLookup,
+} from './skill.engine';
+
+export {
+    skillLibrary, getSkillById,
+} from './skill.library';

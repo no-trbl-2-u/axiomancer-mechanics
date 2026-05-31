@@ -1206,6 +1206,44 @@
         }
       },
       "tier": 2
+    },
+    {
+      "id": "debuff_no_true_scotsman",
+      "name": "No True Scotsman",
+      "description": "Whatever the bearer is, they are told, they are not the true one. Each blow that lands is reframed as proof — they are not, by definition, who they claim to be — and their guard frays accordingly.",
+      "type": "debuff",
+      "category": "stat",
+      "duration": 3,
+      "stacking": "intensity",
+      "payload": {
+        "statModifiers": [
+          {
+            "stat": "physicalDefense",
+            "value": -2,
+            "isMultiplier": false
+          }
+        ]
+      },
+      "tier": 2,
+      "resistedBy": "mind",
+      "resistDR": 12,
+      "sourcedFromCell": "logic-pessimistic-transcendent"
+    },
+    {
+      "id": "debuff_category_error",
+      "name": "Category Error",
+      "description": "The bearer applies the wrong kind of logic to the wrong kind of moment, and every roll comes back canted. Cosmic categories were never meant for the wound at hand.",
+      "type": "debuff",
+      "category": "control",
+      "duration": 3,
+      "stacking": "intensity",
+      "payload": {
+        "rollModifierPerIntensity": -2
+      },
+      "tier": 2,
+      "resistedBy": "heart",
+      "resistDR": 11,
+      "sourcedFromCell": "mid-pessimistic-transcendent"
     }
   ]
 }

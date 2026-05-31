@@ -1,16 +1,28 @@
 {
   "name": "axiomancer-mechanics",
-  "version": "0.1.2",
+  "version": "0.13.0",
   "description": "Turn-based RPG combat mechanics with philosophical themes",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    },
+    "./node": {
+      "types": "./dist/node.d.ts",
+      "import": "./dist/node.js",
+      "require": "./dist/node.js"
+    }
+  },
   "scripts": {
     "build": "tsc && tsc-alias",
-    "character": "ts-node src/CLI/character.cli.ts",
     "check": "npm run lint && npm run type-check",
     "clean": "rm -rf dist",
-    "auto:combat": "python3 automation/combat-test.py",
-    "combat": "ts-node src/CLI/combat.cli.ts",
+    "game": "ts-node src/CLI/game.cli.ts",
+    "playtest": "ts-node src/Playtest/cli.ts",
+    "agent-e2e": "node automation/agent-e2e.mjs",
     "dev": "echo Please use check 'package.json' or README.md for available commands...\n ",
     "lint:fix": "eslint \"**/*.ts\" --fix",
     "lint": "eslint \"**/*.ts\"",
@@ -21,7 +33,10 @@
     "start": "echo Please use check 'package.json' or README.md for available commands...\n ",
     "test:watch": "vitest",
     "test": "vitest run",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "verify": "npm run type-check && npm run lint && npm test && npm run build",
+    "verify:agent": "npm run type-check && npm run lint && vitest run --reporter=default --reporter=./automation/agent-vitest-reporter.mjs && npm run build",
+    "deploy:check": "node scripts/deploy-check.mjs"
   },
   "keywords": [
     "rpg",
@@ -33,27 +48,28 @@
   "license": "ISC",
   "type": "commonjs",
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE"
   ],
   "devDependencies": {
     "@eslint/js": "^9.39.1",
-    "@types/commander": "^2.12.0",
     "@types/inquirer": "^9.0.9",
     "@types/node": "^22.10.2",
     "@typescript-eslint/eslint-plugin": "^8.48.1",
-    "commander": "^14.0.2",
     "eslint": "^9.39.1",
     "globals": "^16.5.0",
-    "inquirer": "^13.0.1",
+    "inquirer": "^9.3.8",
     "jiti": "^2.6.1",
     "ts-node": "^10.9.2",
     "tsc-alias": "^1.8.16",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.7.2",
     "typescript-eslint": "^8.48.1",
-    "vitest": "^4.1.4"
+    "vitest": "^3.2.4"
   },
   "dependencies": {
+    "dotenv": "^17.4.2",
     "eslint-plugin-typescript": "^0.14.0",
     "zustand": "^5.0.11"
   }

@@ -1,49 +1,80 @@
 /**
  * axiomancer-mechanics — public package surface.
+ * 
+ * Core game engine exports for React Native and other JavaScript consumers.
+ * For Node.js specific adapters, import from 'axiomancer-mechanics/node'.
  *
- * The library is consumed as the non-UI engine for an Axiomancer client
- * (e.g. a React Native app). Imports are organised by domain.
+ * The library is consumed as the non-UI engine for an Axiomancer client.
+ * Imports are organised by domain.
  */
 
 // ─── Character ────────────────────────────────────────────────────────────────
-export { createCharacter } from './Character';
+export {
+    createCharacter,
+    allocateStatPoint,
+    previewStatAllocation,
+    equipItem, unequipItem, getEquipmentModifiers,
+    characterPresets, getPresetById, buildCharacterFromPreset,
+} from './Character';
 export type {
     Character, BaseStats, DerivedStats, NonCombatStats,
-    CreateCharacterOptions,
+    PreviewAllocation, PreviewResult,
+    CreateCharacterOptions, AggregatedEquipmentModifiers,
+    CharacterPreset, CharacterPresetEquipmentEntry,
 } from './Character';
 
 // ─── Enemy ────────────────────────────────────────────────────────────────────
-export { createEnemy, randomLogic, decideEnemyAction } from './Enemy';
+export {
+    createEnemy, randomLogic, decideEnemyAction,
+    aggressiveLogic, defensiveLogic, balancedLogic, strategicLogic, bossLogic,
+    counterStanceOf, weakestStanceOf,
+    rollLoot, rollLootMany,
+    DEFAULT_XP_BY_DIFFICULTY,
+} from './Enemy';
 export type {
     Enemy, EnemyLogic, EnemyDifficulty, Tier1EffectOverrides,
-    CreateEnemyOptions,
+    LootTableEntry, CreateEnemyOptions,
+    LootRng,
+    FriendshipReward, BefriendabilityConfig,
+    FinalBlowLines, PactLines, CauseLines,
+    // CodexEntry moved to ./Game block — Phase 73 type's semantic home
+    // is the Game-loop persistence surface; the Enemy module re-exports
+    // it via `src/Enemy/types.ts` for the per-foe content site, but the
+    // top-level barrel now pulls from Game alongside CodexState.
 } from './Enemy';
+export {
+    EnemyLibrary, EnemiesByMap, ENEMY_REGISTRY,
+} from './Enemy/enemy.library';
+export type { EnemySlug } from './Enemy/enemy.library';
 
 // ─── Combat ───────────────────────────────────────────────────────────────────
 export {
     determineAdvantage, getAdvantageModifier, hasAdvantage,
+    resolveEffectiveAdvantage,
     getBaseStat, getAttackStat, getDefenseStat, getSaveStat, getResistStat,
     rollSkillCheck, isCriticalHit, isCriticalMiss,
-    applyCriticalMultiplier, calculateFinalDamage, isAttackSuccessful,
+    applyCriticalMultiplier, calculateFinalDamage, selectCritDamage, isAttackSuccessful,
     applyDamage, heal, isAlive, isDefeated, getHealthPercentage,
-    MIND_MARK_ID,
     getStudyMarkIntensity, getActiveRollModifier, getThornsReflect,
     updateEffectDuration, tickAllEffects,
     removeRandomBuff, extendRandomBuffDuration, applyRegen,
+    getActiveEffectModifiers, getEffectiveStats, canAct,
     resolveEffectApplication,
+    calculateDamageResistance, getSkillDamageType,
     determineEnemyAction, isCombatOngoing, determineCombatEnd, isValidCombatAction,
     healCharacter,
+    calculateEnemyStatMultiplier, applyMoralMeterScaling,
 } from './Combat';
 export type {
     Stance, Action, Advantage, CritStyle, CombatAction, CombatPhase,
     BattleLogEntry, CombatState, Combatant,
+    AggregatedEffectModifiers, EffectiveStats, DamageType,
 } from './Combat';
 
 // ─── Combat reducer ───────────────────────────────────────────────────────────
 export {
     initializeCombat, setPhase, setPlayerStance, setPlayerAction,
     appendLog, incrementFriendship, endCombat,
-    updateCombatPhase, addBattleLogEntry,
     endCombatPlayerVictory, endCombatPlayerDefeat, endCombatWithFriendship,
 } from './Combat/combat.reducer';
 
@@ -55,6 +86,7 @@ export type {
     RoundResolution, RoundEvent, CombatActor,
     RoundStartEvent, ActionRestrictionEvent, AdvantageEvent,
     StanceEffectEvent, ScenarioEvent, RoundEndEvent,
+    ItemPhaseEvent,
 } from './Combat';
 
 // ─── Effects ──────────────────────────────────────────────────────────────────
@@ -62,6 +94,7 @@ export {
     applyEffect, applyTier1CombatEffect,
     clearTier1EffectsForStance, clearTier1EffectsForType,
     lookupEffect, getEffectByName, getEffectsByType, effectsLibrary,
+    processWorldEffectTick, getActiveHazards,
 } from './Effects';
 export type {
     Effect, EffectType, EffectTier, EffectStacking, EffectCategory, EffectPayload,
@@ -69,6 +102,7 @@ export type {
     StatModifier, DamageOverTime, RegenerationConfig, ActionRestriction, AdvantageModifier,
     EffectStatTarget,
     ApplyEffectOptions, Tier1Outcome,
+    WorldTickResult, ActiveHazard,
 } from './Effects';
 
 // ─── Items ────────────────────────────────────────────────────────────────────
@@ -76,54 +110,150 @@ export {
     addItem, removeItem, useConsumable, stackItem,
     addItemToInventory, removeItemFromInventory,
     isEquipment, isConsumable, isMaterial, isQuestItem,
+    aggregateCombatStartTokens, applyEquipmentGenerationBonus,
+    getEquipmentProcTriggers, useConsumableEffect,
+    equipmentTemplates, getEquipmentTemplate, getTemplatesBySlot,
+    uniqueTemplates, getUniqueTemplate,
+    dropItem, rollModifiers, resolveModifiers, rarityWeightTable,
+    previewTemplateAtRarity, previewTemplateAtAllRarities,
+    consumableLibrary, getConsumableById,
+    buyItem, sellItem, defaultSellPrice,
+    getActiveSetBonuses, getActiveSetBonusesForCharacter,
+    aggregateSetStartTokens, applySetGenerationBonus,
+    getActiveSetPassiveEffectIds, getEquippedItemSets,
+    itemSetLibrary, getItemSetById,
 } from './Items';
 export type {
     Item, Equipment, Consumable, Material, QuestItem,
     ItemCategory, EquipmentSlot, BaseItem,
+    EquipmentProcTrigger, ResourceInteraction, ResourceGenerationBonus,
+    ItemRarity, RolledModifier, EquipmentTemplate, UniqueItemTemplate,
+    ConsumableUseResult,
+    ShopWare, ShopInventory,
+    SetBonus, ItemSet,
 } from './Items';
 
-// ─── Skills (types only) ──────────────────────────────────────────────────────
+// ─── Skills ───────────────────────────────────────────────────────────────────
 export type {
-    Skill, SkillCategory, SkillsStatType, SkillLearningRequirement,
+    Skill, SkillCategory, SkillsStatType, SkillTier, SkillTarget,
+    ResourceCost, CombatResources,
+    SkillLearningRequirement, SkillCombatEffects,
+    BasicActionOutcome, SkillEvent, SkillResolution, SkillLookup,
+    SkillSynergy, SynergyPredicate,
+} from './Skills';
+export {
+    generateBasicActionResources, generatePhilosophicalResource,
+    canUseSkill, spendResources, calculateSkillDamage, executeSkill,
+    meetsLearningRequirement, getAvailableSkills, learnSkill,
+    skillLibrary, getSkillById,
 } from './Skills';
 
 // ─── Game (state, store, persistence, constants) ──────────────────────────────
 export {
     createGameStore, createNewGameState, GAME_STATE_VERSION,
+    gameReducer, migrate, createEventEmitter,
     selectPlayer, selectCombat, selectCombatState, selectIsInCombat,
-    selectInventory, selectVersion,
-    nullAdapter, createNodeAdapter,
+    selectInventory, selectVersion, selectMoralMeter,
+    nullAdapter,
     STAT_MULTIPLIERS, RESOURCE_MULTIPLIERS, EXPERIENCE_PER_LEVEL,
+    STAT_POINTS_PER_LEVEL,
     DEFENSE_MULTIPLIERS, PASSIVE_DEFENSE_MULTIPLIER,
     MAX_EFFECT_INTENSITY, MAX_EFFECT_DURATION, FRIENDSHIP_COUNTER_MAX,
+    generateRunId, STARTING_REGION,
 } from './Game';
-export type { GameState, GameStore, GameActions, PersistenceAdapter, StoreApi } from './Game';
+export type {
+    GameState, GameStore, GameActions, PersistenceAdapter, StoreApi,
+    GameAction, GameActionOf,
+    GameEvent, GameEventEmitter, GameEventHandler, GameEventType,
+    CodexEntry, CodexState,
+} from './Game';
 
 // Legacy combat-action constants (use Action type instead).
 export { COMBAT_ACTION } from './Game/actions.constants';
 export type { CombatActionName } from './Game/actions.constants';
 
 // ─── World ────────────────────────────────────────────────────────────────────
-export { createStartingWorld, getCoastalMap, MapNotFoundError } from './World';
+export {
+    createStartingWorld, MapNotFoundError,
+    MAP_REGISTRY, getMapDefinition, createMapState,
+    moveToNode, completeCurrentNode, IllegalMoveError,
+    applyDialogueChoice,
+    emptyQuestLog, isQuestComplete, findActiveQuest, findQuest,
+    startQuest, progressQuest, completeQuest, discoverQuest,
+    reachableObjectives, killObjectives,
+} from './World';
 export {
     changeMap, completeMap, unlockMap,
     completeNode, unlockNode, changeContinent, completeUniqueEvent,
+    revealAdjacent, markNodeConsumed, unlockAdjacent,
 } from './World/world.reducer';
+export {
+    resolveMapEvent,
+    registerMapEventPool,
+    setDefaultMapEventPool,
+    setNodeEventPoolOverride,
+} from './World';
 export type {
-    WorldState, WorldMap, Continent, Quest, MapEvent, MapEventType, UniqueEvent,
-    Reward, MapNode, NodeId,
+    MapEventKind, MapEventPayload, MapEventPool, MapEventPoolEntry,
+    EncounterPayload, InteractionPayload, GatheringPayload, RestPayload,
+    VillagePayload, CutscenePayload, HazardPayload, LootCachePayload,
+    ResolvedEvent, ResolveMapEventResult,
+} from './World';
+export {
+    generateEncounter, scaleEnemyToLevel, scaledEncounterLevel,
+    DIFFICULTY_LEVEL_BANDS,
+} from './World';
+export type {
+    WorldState, Continent, Quest, UniqueEvent,
+    Reward, MapNode, NodeId, Encounter,
     MapName, ContinentName, QuestName,
+    MapDefinition, MapState, QuestObjective, QuestObjectiveType, QuestStatus, QuestLog,
+    GenerateEncounterOptions,
+    ApplyDialogueChoiceResult,
 } from './World';
 
-// ─── NPCs (types only) ────────────────────────────────────────────────────────
-export type { NPC, DialogueMap } from './NPCs';
+// ─── Philosophy (Phase 42 — 3-axis alignment cube + 27-cell registry) ────────
+export {
+    bucketAxis, getAlignmentCell, applyAlignmentDelta, defaultAlignment,
+    AXIS_HIGH_THRESHOLD, AXIS_LOW_THRESHOLD,
+    philosophicalAlignmentLibrary,
+} from './Philosophy';
+export type {
+    AxisBucket, PhilosophicalAlignment, AlignmentFallacy,
+    PhilosophicalAlignmentCell,
+} from './Philosophy';
+
+// ─── NPCs (types + dialogue helpers) ──────────────────────────────────────────
+export type {
+    NPC, DialogueMap, DialogueTree, DialogueNode, DialogueChoice, DialogueContext,
+    AlignmentGate,
+} from './NPCs';
+export { getDialogueNode, visibleChoices, isLeafNode } from './NPCs';
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 export {
     clamp, randomInt, deepClone, average, sum, max, min, inRange,
     capitalize, formatPercent,
     createDie, createDieRoll, determineRollAdvantageModifier,
-    deriveStats, deriveNonCombatStats, calculateMaxHealth, calculateMaxMana,
+    deriveStats, deriveNonCombatStats, calculateMaxHealth,
 } from './Utils';
+export { setRng, getRng, setSeed } from './Utils/rng';
+export type { Rng } from './Utils/rng';
 export { isCharacter, isEnemy, isCombatActive } from './Utils/typeGuards';
 export type { Image } from './Utils/types';
+
+// ── Events ─────────────────────────────────────────────────────────────────
+export type {
+    EnginePayload, TypedGameEvent,
+    TypedCombatStartedEvent, TypedCombatRoundEvent, TypedCombatEndedEvent,
+    TypedWorldMovedEvent, TypedWorldProcessedEvent,
+    TypedLevelUpEvent, TypedInventoryChangedEvent,
+    TypedDialogueAppliedEvent, TypedGameSavedEvent, TypedGameLoadedEvent,
+} from './Game/events.types';
+
+export {
+    isCombatStartedEvent, isCombatRoundEvent, isCombatEndedEvent,
+    isWorldMovedEvent, isWorldProcessedEvent,
+    isLevelUpEvent, isInventoryChangedEvent,
+    isDialogueAppliedEvent, isGameSavedEvent, isGameLoadedEvent,
+} from './Game/events.utils';

@@ -91,7 +91,7 @@ The mark expires naturally via `tickAllEffects` on the opponent.
 
 ### Damage bonus formula
 
-Called in `combat.cli.ts` during Mind/Attack resolution:
+Called in `src/Combat/phases/scenario.ts` during Mind/Attack resolution:
 
 ```typescript
 // src/Combat/index.ts
@@ -105,7 +105,7 @@ The returned intensity is added as a flat `damageBonus` parameter to
 `calculateFinalDamage`:
 
 ```typescript
-// combat.cli.ts (during Mind/Attack resolution)
+// src/Combat/phases/scenario.ts (during Mind/Attack resolution)
 const markBonus = getStudyMarkIntensity(enemy);
 const finalDamage = calculateFinalDamage(baseDamage, reduction, isCritical, markBonus);
 ```
@@ -157,7 +157,7 @@ The player must maintain pressure to keep the mark's damage bonus alive.
 ### 1. Verify mark is applied to opponent on Mind/Attack
 
 ```
-Run: npm run combat
+Run: npm run game
 Action: Mind + Attack
 Expected:
   - Combat log: "Exposed Reasoning applied." (first time) or "Exposed Reasoning intensified."
@@ -167,7 +167,7 @@ Expected:
 ### 2. Verify Mind/Defend applies +3 intensity/duration
 
 ```
-Run: npm run combat
+Run: npm run game
 Action: Mind + Defend
 Expected:
   - Enemy effects: Exposed Reasoning, intensity 3, duration 3 (first application).
@@ -177,7 +177,7 @@ Expected:
 ### 3. Verify intensity is used as damage bonus on Mind/Attack
 
 ```
-Run: npm run combat
+Run: npm run game
   Round 1: Mind + Defend → mark intensity 3
   Round 2: Mind + Attack → damage should include +3 bonus
            Combat log should show mark bonus in roll breakdown.

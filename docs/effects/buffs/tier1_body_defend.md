@@ -62,7 +62,7 @@ return bearer.effects.reduce((total, ae) => {
 }, 0);
 ```
 
-This is called in `combat.cli.ts` after every successful hit on the bearer. The returned
+This is called in `src/Combat/phases/scenario.ts` after every successful hit on the bearer. The returned
 value is dealt as damage to the attacker.
 
 **Status: LIVE** — fully implemented in the combat engine.
@@ -94,7 +94,7 @@ Default `intensityDelta: 1`, `durationMode: 'reset'`.
 
 ### When reflect triggers
 
-The thorns check occurs in `combat.cli.ts` after a successful attack resolution.
+The thorns check occurs in `src/Combat/phases/scenario.ts` after a successful attack resolution.
 It fires regardless of the **attacker's** stance. Any enemy hit that lands on a Briar
 Stance bearer triggers the reflect.
 
@@ -128,7 +128,7 @@ Stance bearer triggers the reflect.
 ### 1. Verify Briar Stance applies on Body/Defend
 
 ```
-Run: npm run combat
+Run: npm run game
 Action: Body + Defend
 
 Expected:
@@ -139,7 +139,7 @@ Expected:
 ### 2. Verify reflect damage fires on hit
 
 ```
-Run: npm run combat
+Run: npm run game
 Action: Body + Defend (intensity 1, reflect = 1)
 If enemy attacks and hits:
   Expected:
@@ -151,7 +151,7 @@ If enemy attacks and hits:
 ### 3. Verify reflect scales with intensity
 
 ```
-Run: npm run combat
+Run: npm run game
   Round 1: Body + Defend → Briar Stance intensity 1 (reflect 1/hit)
   Round 2: Body + Defend → Briar Stance intensity 2 (reflect 2/hit)
   Round 3: Body + Defend → Briar Stance intensity 3 (reflect 3/hit)
@@ -161,7 +161,7 @@ Run: npm run combat
 ### 4. Verify it clears on stance switch
 
 ```
-Run: npm run combat
+Run: npm run game
   Round 1: Body + Defend → Briar Stance applied
   Round 2: Heart + Attack → Briar Stance cleared, Fleeting Kindness applied
            Effects panel: Briar Stance gone.
