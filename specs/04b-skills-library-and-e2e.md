@@ -1,7 +1,7 @@
 # Spec 04b — Skills Library & E2E Test
 
 > Historical implementation spec. `docs/skills.md` is the live resource/skill doctrine.
-> Any examples below that equip skills are legacy implementation detail; Phase 98
+> Any examples below that equip skills are legacy implementation detail; Phase 99
 > removes the equipped-skill gate in favor of unlocked/affordable skill access.
 
 ## Goal

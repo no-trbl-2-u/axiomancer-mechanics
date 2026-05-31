@@ -36,7 +36,7 @@ Development utilities for testing and debugging the game engine.
 **Key Functions:**
 - `devSetLevel()` - Set character level
 - `devSetStats()` - Modify character base stats
-- `devLearnSkills()` / legacy `devEquipSkills()` - Manage skill progression (Phase 98 removes separate skill equipment)
+- `devLearnSkills()` / legacy `devEquipSkills()` - Manage skill progression (Phase 99 removes separate skill equipment)
 - `devGrantAllEquipment()` / `devGrantAllConsumables()` - Grant items
 - `devSpawnEnemy()` - Spawn specific enemies for testing
 - `devMaxOut()` - Max out character for endgame testing

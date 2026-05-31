@@ -76,7 +76,7 @@ most other work. Feel free to override.
 | 12 **DONE** | [`12-package-architecture-and-events.md`](./12-package-architecture-and-events.md) | Defines the engine ↔ React Native UI boundary. Pull this in before the UI consumer starts. |
 | 13 **DONE** | [`23-map-events.md`](./23-map-events.md) | Phase 23. MapEvents engine + pool authoring pattern; acceptance fully ticked at Phase 41 unit 3 + Phase 43 alignmentDelta extension. |
 | 14 **DONE** | [`14-philosophical-alignment.md`](./14-philosophical-alignment.md) | Phases 42–46. 3-axis alignment cube (Epistemology × Outlook × Scope) + 27-cell content registry; observable, payloadable, enemy-side, and gated. Spec authored retroactively at Phase 58 (engine shipped Phase 42 `bdfda00`; content surface filled through Phase 46). |
-| 15 **NEXT** | [`../plan/phases/phase_98_unlocked_skill_access.md`](../plan/phases/phase_98_unlocked_skill_access.md) | Removes the legacy equipped-skill/loadout gate. Learned/unlocked skills become combat-accessible; combat/CLI/playtest consumers show only currently affordable skills. |
+| 15 **NEXT** | [`../plan/phases/phase_99_unlocked_skill_access.md`](../plan/phases/phase_99_unlocked_skill_access.md) | Removes the legacy equipped-skill/loadout gate. Learned/unlocked skills become combat-accessible; combat/CLI/playtest consumers show only currently affordable skills. |
 
 ## Conventions
 

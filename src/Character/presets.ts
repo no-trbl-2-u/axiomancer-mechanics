@@ -37,7 +37,7 @@ export interface CharacterPreset {
     equipment: CharacterPresetEquipmentEntry[];
     /** Skill IDs the character knows. */
     knownSkills: string[];
-    /** Legacy active rotation (must be subset of knownSkills, ≤4); scheduled for removal in Phase 98. */
+    /** Legacy active rotation (must be subset of knownSkills, ≤4); scheduled for removal in Phase 99. */
     equippedSkills: string[];
     /** Consumable IDs (and quantities) to seed the inventory. */
     consumables: { id: string; quantity: number }[];

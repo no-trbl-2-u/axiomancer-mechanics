@@ -204,7 +204,7 @@ affordable skills at the moment of choice.
 
 Implementation status: current `main` still carries the legacy `equippedSkills`
 field and checks it in the CLI/combat scenario path. That is a known divergence,
-not doctrine. Phase 98 (`plan/phases/phase_98_unlocked_skill_access.md`) removes
+not doctrine. Phase 99 (`plan/phases/phase_99_unlocked_skill_access.md`) removes
 the equipped-skill gate and migrates consumers to unlocked/affordable skill
 access.
 
@@ -263,7 +263,7 @@ The combat CLI should present a Skills sub-prompt after the player selects
 `action: skill`, listing learned/unlocked skills that are currently affordable
 under `canUseSkill(combatResources, skill)`. The chosen `skillId` is threaded
 into `resolveCombatRound` as `playerAction.skillId`. Current `main` still uses
-the legacy `equippedSkills` list here; Phase 98 removes that gate.
+the legacy `equippedSkills` list here; Phase 99 removes that gate.
 
 ---
 

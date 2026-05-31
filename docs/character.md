@@ -69,7 +69,7 @@ Canonical design has no separate skill equipment/loadout gate. Once a skill is
 learned, it is part of the character's combat-accessible catalogue; combat
 selection filters `knownSkills` by current affordability. Current `main` still
 contains the legacy `equippedSkills` field for compatibility and CLI wiring.
-Phase 98 removes that divergence.
+Phase 99 removes that divergence.
 
 ## Experience
 
@@ -118,7 +118,7 @@ via `getResistStat()` in `Combat/stats.ts`:
 |----------|-------------|
 | `createCharacter(options)` | Factory — creates a fully derived Character from name, level, and base stats |
 | `getResistStat(target, resistedBy)` | Base stat value for the resisting stance (lives in `Combat/stats.ts`) |
-| `characterPresets` / `getPresetById` / `buildCharacterFromPreset` | Curated progression-tier roster (apprentice / wanderer / sage). The builder lifts a declarative `CharacterPreset` into a `Character` via the canonical `createCharacter` + `dropItem` paths. Presets should express skill progression as unlocked `knownSkills`; the legacy `equippedSkills` preset field is scheduled for removal in Phase 98. `npm run game` prompts the player to pick one at boot. |
+| `characterPresets` / `getPresetById` / `buildCharacterFromPreset` | Curated progression-tier roster (apprentice / wanderer / sage). The builder lifts a declarative `CharacterPreset` into a `Character` via the canonical `createCharacter` + `dropItem` paths. Presets should express skill progression as unlocked `knownSkills`; the legacy `equippedSkills` preset field is scheduled for removal in Phase 99. `npm run game` prompts the player to pick one at boot. |
 
 ## Character presets
 
@@ -137,7 +137,7 @@ them in `characterPresets`.
 
 ## Pending
 
-Open implementation gap: Phase 98 removes the legacy skill loadout gate
+Open implementation gap: Phase 99 removes the legacy skill loadout gate
 (`equippedSkills`) so learned/unlocked skills are available in combat and the
 combat UI shows only currently affordable skills. The `id` field shipped at
 Phase 35 (Knowledge-Gaps Q12); see the `id` JSDoc on `Character` in

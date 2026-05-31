@@ -330,7 +330,7 @@ all math lives in the resolvers/reducers. Tabs:
 | Map        | Lists reachable adjacents, dispatches `MOVE_TO_NODE`, then resolves the destination node's `MapEvent` via `resolveMapEvent` (Spec 23). Auto-pivots into Combat when the resolved event is an `encounter`. |
 | Combat     | Resumes any active fight. Drives `resolveCombatRound` round by round; offers `attack` / `defend` / `skill` / `item` actions when affordable. |
 | Journal    | Read-only: active / completed quests + flags + alignment stub.   |
-| Skills     | Read-only: learned/unlocked skills; legacy equipped view is removed by Phase 98. |
+| Skills     | Read-only: learned/unlocked skills; legacy equipped view is removed by Phase 99. |
 | Codex      | **(Phase 82)** Read-only render of `state.codex.unlockedEntries` (Phase 73). Looks up each entry id via a one-time `EnemyLibrary` walk (`codexLookup` at module load); renders title + body per entry. Empty-state copy: "Your codex is empty — befriend a foe with a journal entry to start filling it." |
 | Inventory  | Read-only listing of carried items.                              |
 | Character  | Full stats + equipment + effects sheet (Phase 26 unit 3). When `availableStatPoints > 0`, prompts the player to spend points into heart / body / mind via `allocateStatPoint` (Phase 29). |

@@ -1,4 +1,4 @@
-# Phase 98 — Unlocked skill access, no equipped-skill gate
+# Phase 99 — Unlocked skill access, no equipped-skill gate
 
 > Status: queued. Promoted from T correction on 2026-05-31: skills should not be "equipped"; once unlocked/learned, they should be available, and combat should show only skills usable at that moment.
 
