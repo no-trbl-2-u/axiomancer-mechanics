@@ -1,5 +1,9 @@
 # Spec 04b — Skills Library & E2E Test
 
+> Historical implementation spec. `docs/skills.md` is the live resource/skill doctrine.
+> Any examples below that equip skills are legacy implementation detail; Phase 98
+> removes the equipped-skill gate in favor of unlocked/affordable skill access.
+
 ## Goal
 
 Build the early-game skill library (≥12 skills across all stat × category × tier

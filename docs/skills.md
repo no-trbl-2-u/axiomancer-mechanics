@@ -7,10 +7,15 @@
 
 ## Overview
 
-Skills are learnable abilities aligned with one of three philosophical aspects
+Skills are unlockable abilities aligned with one of three philosophical aspects
 (`body` / `mind` / `heart`) and categorised as either a **fallacy** (logical)
 or a **paradox** (metaphysical). Using a skill is not free — it costs a specific
 combination of **resource tokens** accumulated during combat. There is no mana.
+
+Unlocked means usable: once a character has learned/unlocked a skill, that skill
+belongs to their combat-accessible catalogue. There is no separate equipped-skill
+loadout in the canonical design. Combat UIs should filter that unlocked catalogue
+to show only skills the current `combatResources` pool can pay for.
 
 Resources are earned through basic combat actions (attack and defend). Using a
 Tier 1 skill earns a philosophical resource token (Fallacy or Paradox), which
@@ -135,8 +140,9 @@ interface CombatResources {
 }
 ```
 
-`CombatResources` lives on `CombatState` and resets to all-zero on
-`initializeCombat`. It is not on the `Character` or `Enemy` types.
+`CombatResources` lives on `CombatState` and is seeded by `initializeCombat`
+from item/set combat-start grants; with no such gear it starts all-zero. It is
+not on the `Character` or `Enemy` types.
 
 ### Skill damage formula
 
@@ -179,16 +185,28 @@ Defined in `src/Skills/skill.engine.ts`.
 `executeSkill` emits `RoundEvent`s in the same stream as basic combat actions,
 so the CLI renderer requires no special cases.
 
-### Character fields
+### Character skill access
+
+Canonical design:
 
 ```ts
 interface Character {
   // ...existing fields...
-  knownSkills: string[];       // skill IDs the character has learned
-  equippedSkills: string[];    // active loadout, max 4
+  knownSkills: string[];       // skill IDs the character has learned/unlocked
   // mana and maxMana removed
+  // no equippedSkills loadout gate
 }
 ```
+
+`knownSkills` is the combat-accessible skill catalogue. The combat layer should
+filter this catalogue by `canUseSkill(combatResources, skill)` and present only
+affordable skills at the moment of choice.
+
+Implementation status: current `main` still carries the legacy `equippedSkills`
+field and checks it in the CLI/combat scenario path. That is a known divergence,
+not doctrine. Phase 98 (`plan/phases/phase_98_unlocked_skill_access.md`) removes
+the equipped-skill gate and migrates consumers to unlocked/affordable skill
+access.
 
 ---
 
@@ -241,10 +259,11 @@ When `playerAction.action === 'skill'`, the resolver routes to `executeSkill`
 instead of the attack/defend path. The `CombatEvents` stream is unchanged —
 skill events use the same `phase` and `actor` shape as basic action events.
 
-The combat CLI (`src/CLI/combat.cli.ts`) presents a Skills sub-prompt after
-the player selects `action: skill`, listing `equippedSkills` by name. The
-chosen `skillId` is threaded into `resolveCombatRound` as
-`playerAction.skillId`.
+The combat CLI should present a Skills sub-prompt after the player selects
+`action: skill`, listing learned/unlocked skills that are currently affordable
+under `canUseSkill(combatResources, skill)`. The chosen `skillId` is threaded
+into `resolveCombatRound` as `playerAction.skillId`. Current `main` still uses
+the legacy `equippedSkills` list here; Phase 98 removes that gate.
 
 ---
 

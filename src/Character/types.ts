@@ -72,8 +72,8 @@ export interface NonCombatStats {
  *                                    the character's `derivedStats` is
  *                                    already "post-equipment".
  * @property effects                - Active status effects on the character.
- * @property knownSkills            - IDs of skills the character has learned.
- * @property equippedSkills         - IDs of skills available in combat (max 4).
+ * @property knownSkills            - IDs of skills the character has learned/unlocked.
+ * @property equippedSkills         - Legacy active-rotation gate scheduled for removal in Phase 98; canonical combat access is knownSkills filtered by affordability.
  * @property availableStatPoints    - Unspent stat points awaiting allocation
  *                                    (Spec 06 Q3 + Q8). Granted on level-up,
  *                                    spent via `allocateStatPoint`. Defaults

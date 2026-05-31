@@ -42,7 +42,7 @@ Advantage modifier (flat roll bonus/penalty from `getAdvantageModifier()`):
 |--------|-------------|
 | `attack` | Offensive — deals damage |
 | `defend` | Defensive — reduces incoming damage |
-| `skill` | Use an equipped skill (Spec 04 / 04b) |
+| `skill` | Use a learned/unlocked skill that is currently affordable (Spec 04 / 04b; legacy equipped gate removed in Phase 98) |
 | `item` | Use an inventory consumable (Spec 05 / 05b) |
 | `flee` | Attempt to escape |
 

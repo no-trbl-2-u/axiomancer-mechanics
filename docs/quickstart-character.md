@@ -49,7 +49,7 @@ const available = getAvailableSkills(hero, hero.knownSkills);
 
 // Learn if requirements met
 const result = learnSkill(hero, 'false-dilemma');
-// result.character has the skill in knownSkills + equippedSkills
+// result.character has the skill in knownSkills; Phase 98 removes the legacy equippedSkills gate
 ```
 
 ## Equip items

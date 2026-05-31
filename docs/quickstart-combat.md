@@ -75,7 +75,7 @@ if (end) {
 |--------|--------|
 | `attack` | Roll contest against opponent; winner deals damage |
 | `defend` | Boost defense (3×/2×/1.5× by stance advantage); friendship +1 if both defend |
-| `skill` | Execute an equipped skill via `executeSkill` |
+| `skill` | Execute a learned/unlocked skill via `executeSkill`; UI should show only currently affordable skills |
 | `item` | Use a consumable from inventory |
 | `flee` | Attempt escape (not always successful) |
 

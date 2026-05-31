@@ -59,14 +59,17 @@ on `CombatState.combatResources` rather than the character itself.
 
 ## Skills
 
-Characters track learned and equipped skills as ID arrays:
+Characters track learned/unlocked skills as ID arrays:
 
 ```ts
-knownSkills: string[]      // every skill ever learned
-equippedSkills: string[]   // available in combat (cap 4 today)
+knownSkills: string[]      // every skill ever learned/unlocked
 ```
 
-Equipping is out-of-combat only; mid-fight swaps are intentionally forbidden.
+Canonical design has no separate skill equipment/loadout gate. Once a skill is
+learned, it is part of the character's combat-accessible catalogue; combat
+selection filters `knownSkills` by current affordability. Current `main` still
+contains the legacy `equippedSkills` field for compatibility and CLI wiring.
+Phase 98 removes that divergence.
 
 ## Experience
 
@@ -115,7 +118,7 @@ via `getResistStat()` in `Combat/stats.ts`:
 |----------|-------------|
 | `createCharacter(options)` | Factory — creates a fully derived Character from name, level, and base stats |
 | `getResistStat(target, resistedBy)` | Base stat value for the resisting stance (lives in `Combat/stats.ts`) |
-| `characterPresets` / `getPresetById` / `buildCharacterFromPreset` | Curated progression-tier roster (apprentice / wanderer / sage). The builder lifts a declarative `CharacterPreset` into a `Character` via the canonical `createCharacter` + `dropItem` paths. `npm run game` prompts the player to pick one at boot. |
+| `characterPresets` / `getPresetById` / `buildCharacterFromPreset` | Curated progression-tier roster (apprentice / wanderer / sage). The builder lifts a declarative `CharacterPreset` into a `Character` via the canonical `createCharacter` + `dropItem` paths. Presets should express skill progression as unlocked `knownSkills`; the legacy `equippedSkills` preset field is scheduled for removal in Phase 98. `npm run game` prompts the player to pick one at boot. |
 
 ## Character presets
 
@@ -134,6 +137,8 @@ them in `characterPresets`.
 
 ## Pending
 
-_No open items — `id` field shipped at Phase 35 (Knowledge-Gaps Q12);
-see the `id` JSDoc on `Character` in `src/Character/types.d.ts` and the
-auto-gen path in `createCharacter`._
+Open implementation gap: Phase 98 removes the legacy skill loadout gate
+(`equippedSkills`) so learned/unlocked skills are available in combat and the
+combat UI shows only currently affordable skills. The `id` field shipped at
+Phase 35 (Knowledge-Gaps Q12); see the `id` JSDoc on `Character` in
+`src/Character/types.d.ts` and the auto-gen path in `createCharacter`.

@@ -1,5 +1,10 @@
 # Spec 04 — Skills Engine
 
+> Historical implementation spec. `docs/skills.md` is the live resource/skill doctrine.
+> Any text below that treats `equippedSkills` as canonical is superseded by
+> Phase 98: learned/unlocked skills are combat-accessible, and combat surfaces
+> should show only currently affordable unlocked skills.
+
 ## Goal
 
 Build the skill runtime on top of a 5-resource resonance economy. Replace the

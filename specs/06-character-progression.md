@@ -1,5 +1,9 @@
 # Spec 06 — Character Progression
 
+> Historical implementation spec. Skill progression now treats learned/unlocked
+> skills (`knownSkills`) as the canonical access model; the legacy
+> `equippedSkills` gate is scheduled for removal in Phase 98.
+
 ## Goal
 
 Earn XP from combat, level up, allocate stat points, and learn skills. The

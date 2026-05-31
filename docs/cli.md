@@ -15,7 +15,7 @@ The primary CLI driver that provides a tabbed inquirer interface for playing the
 - **Map** - Navigate between nodes and trigger map events
 - **Combat** - Resolve combat rounds against active encounters  
 - **Journal** - View active/completed quests and philosophical alignment
-- **Skills** - View known and equipped skills
+- **Skills** - View learned/unlocked skills; combat should show only currently affordable skills
 - **Inventory** - View carried items and equipment
 
 **Usage:**
@@ -36,7 +36,7 @@ Development utilities for testing and debugging the game engine.
 **Key Functions:**
 - `devSetLevel()` - Set character level
 - `devSetStats()` - Modify character base stats
-- `devLearnSkills()` / `devEquipSkills()` - Manage skill progression
+- `devLearnSkills()` / legacy `devEquipSkills()` - Manage skill progression (Phase 98 removes separate skill equipment)
 - `devGrantAllEquipment()` / `devGrantAllConsumables()` - Grant items
 - `devSpawnEnemy()` - Spawn specific enemies for testing
 - `devMaxOut()` - Max out character for endgame testing
