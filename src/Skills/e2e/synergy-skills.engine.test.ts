@@ -7,7 +7,7 @@
  * brief's D2-D9 design locks.
  */
 
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createCharacter } from '../../Character';
 import { createEnemy } from '../../Enemy';
 import { initializeCombat } from '../../Combat/combat.reducer';
@@ -16,8 +16,10 @@ import { skillLibrary, getSkillById } from '../skill.library';
 import { lookupEffect } from '../../Effects';
 import { CombatState } from '../../Combat/types';
 import { ActiveEffect } from '../../Effects/types';
+import { setSeed } from '../../Utils/rng';
 import type { CombatResources } from '../types';
 
+beforeEach(() => setSeed('synergy-skills-engine-test'));
 afterEach(() => vi.restoreAllMocks());
 
 const synergySkillIds = [
