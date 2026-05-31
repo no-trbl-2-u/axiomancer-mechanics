@@ -19,7 +19,9 @@ const { state: next, events } = executeSkill(state, 'achilles-gambit', getSkillB
 
 ## Resource generation
 
-Resources build via basic actions each round:
+The player’s castable resource pool lives on `CombatState.combatResources`.
+It is seeded by `initializeCombat` from equipped item/set token grants, then
+builds via player basic actions each round:
 
 ```typescript
 import { generateBasicActionResources } from 'axiomancer-mechanics';
@@ -29,11 +31,21 @@ const after = generateBasicActionResources(pool, 'body', 'hit');
 // after.body === 3 (hit on matching stance grants +3)
 ```
 
-| Outcome | Matching stance | Off-stance |
-|---------|----------------|------------|
-| Hit | +3 | +1 |
-| Miss | +1 | +1 |
-| Defend | +5 | +3 |
+| Outcome | Tokens generated |
+|---------|------------------|
+| Attack hit | +3 of the player action's stance |
+| Attack miss | +1 of the player action's stance |
+| Defend | +5 of the player action's stance |
+
+There is no separate off-stance award in the base table. Items and set bonuses
+may add extra tokens through `resourceInteraction.generationBonus` / set
+`generationBonus`; consumables may add tokens through `resourceGrant` when used
+with the combat `item` action.
+
+Skills read and spend this same `combatResources` pool. If `canUseSkill` fails,
+the resolver emits `phase: 'skill', kind: 'blocked'` and the skill does not
+resolve. On successful player casts, the engine spends `resourceCost` and mints
+one Fallacy/Paradox token according to skill category/tier.
 
 ## Skill tiers
 

@@ -35,8 +35,39 @@ Basic-action generation:
 
 **Resonance** is implicit: a skill costing `{ body: 2, heart: 2 }` requires
 the player to hold ≥2 of each token simultaneously. Spending the cost
-dissolves the resonance state. Token pools start at zero each combat
-(`initializeCombat`) and have no upper cap today.
+dissolves the resonance state. The canonical player token pool lives on
+`CombatState.combatResources`, not on `Character`; out of combat there is no
+mana/resource carry-over. `initializeCombat` starts from the equipment/set
+seed values (`resourceInteraction.combatStartTokens` plus active set bonuses),
+which is zero for a character with no token-granting equipment. Token pools
+have no upper cap today.
+
+### Runtime resource state
+
+`Character` owns skill knowledge and loadout only:
+
+- `knownSkills: string[]` — skills learned by the player.
+- `equippedSkills: string[]` — skills available in combat, currently capped by
+  the equip reducer/loadout rules.
+
+`CombatState` owns the castable resource state:
+
+- `combatResources: { heart, body, mind, fallacy, paradox }` — the active
+  encounter's token pool.
+- Player `attack` / `defend` actions add stance tokens through
+  `generateBasicActionResources` and emit `phase: 'resources', kind:
+  'generated'` events.
+- Player `skill` actions check `canUseSkill(combatResources, skill)`, spend
+  `skill.resourceCost`, then generate one philosophical token via
+  `generatePhilosophicalResource` (Tier 3 skills generate the opposing
+  philosophical type; see `philosophicalCategoryFor`).
+- Player `item` actions can add `Consumable.resourceGrant` to the same pool.
+- Equipped items and active set bonuses can seed combat-start tokens and add
+  per-basic-action generation bonuses.
+
+Enemy-cast skills are intentionally different: the enemy path uses a sentinel
+resource pool internally, then discards it, so enemy skills do not spend or
+generate against the player's `combatResources`.
 
 ## Skill Type
 

@@ -17,7 +17,9 @@ const enemy = createEnemy({
 
 const combat = initializeCombat(player, enemy);
 // combat.player, combat.enemy, combat.round === 1
-// combat.combatResources === { heart: 0, body: 0, mind: 0, fallacy: 0, paradox: 0 }
+// combat.combatResources is the active player token pool:
+// { heart: 0, body: 0, mind: 0, fallacy: 0, paradox: 0 }
+// for an ungeared player; equipped item/set combat-start grants can seed it non-zero.
 ```
 
 ## Resolve a round
