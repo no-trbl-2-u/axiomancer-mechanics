@@ -46,18 +46,20 @@
 ## Pending
 
 <!-- iterate audit 2026-06-01: fresh audit with verification of prior findings.
-     Z. External critique: 1 HIGH finding in CRITIQUE.md — manual playtest: token system dead, combat re-trigger locked, difficulty too hard
+     Z. External critique: 1 MED + 1 LOW finding in CRITIQUE.md — Character presets deprecation schedule contradicts live use, Combat deprecation removals un-actioned
      A. Test-quality gaps: all modules have hermetic e2e tests, no raw vi.spyOn usage except in test-utils/rng.ts helper
      B. Spec-gap items: no open questions with blank "Your answer:" placeholders (template files excluded)  
-     C. Type-safety: sampled exported functions have proper return type annotations
+     C. Type-safety: sampled exported functions have proper return type annotations, 1 justified @ts-ignore in test file
      D. Dead code: no unused exports found on public barrel
      E. Documentation gaps: all major modules have docs in docs/ directory
      F. ESLint fix: already shipped in Phase 13, npm run lint passes clean
      G. Dependency updates: zustand patch update available (5.0.13 → 5.0.14), others are major version bumps
      H. Commit-hygiene: git status clean, no uncommitted changes
      
-     Top finding: External critique HIGH priority playtest issues. -->
+     Top finding: External critique MED Character presets deprecation schedule (score 4.8). -->
 
+
+- **[MED] Character presets deprecation schedule contradicts live use (oversight decision)** — src/Character/presets.ts carries "@deprecated Scheduled for removal at v0.13.0" JSDoc tags but package is now at v0.13.0 and presets are still load-bearing for Playtest runner. Oversight-27 decision: bump deadline + name blocker. Update JSDoc tags to later target (v0.14.0) and note src/Playtest/playtest.runner.ts as removal blocker. Impact 6 × Ease 8 / 10 = 4.8. Source: CRITIQUE.md pending.
 
 - **[LOW] zustand dependency has patch update available** — npm outdated shows zustand 5.0.13 → 5.0.14. Safe patch bump per iterate guidelines. Impact 3 × Ease 9 / 10 = 2.7.
 
