@@ -24,6 +24,8 @@ deep imports are part of the supported surface.
 
 ### Fixed
 
+- **Combat re-trigger lock cleared for all outcomes** (Phase 103): Fixed bug where players could not trigger new combat encounters after victory or friendship outcomes. All terminal combat outcomes (victory, friendship, defeat) now properly clear encounter state, allowing subsequent combat triggers to work correctly.
+
 ### Security
 
 ## [0.12.0] — 2026-05-26
