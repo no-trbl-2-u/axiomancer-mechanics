@@ -4,10 +4,17 @@
 > of the shipping skills. Designed for `/loop`. The
 > autonomous-beast entry point.
 >
-> **State hierarchy:** Before dispatch, respect durable decisions in
-> company CDRs (`~/Workspace/decisions/`), mechanics ADRs (`docs/adr/`),
-> the central ledger, and this repo's active plan. Stop if lower command
-> state contradicts higher decision law.
+> **State hierarchy:** Before dispatch, respect durable decisions per the
+> Glanton Nexus source-of-truth law (Phase 105):
+>
+> 1. T's latest explicit decision.
+> 2. Central SomberSoft ledger (`~/Workspace/SOMBERSOFT_COMMAND_LEDGER.md`).
+> 3. Active build plan (`plan/steps/01_build_plan.md`).
+> 4. Phase candidates (`plan/PHASE_CANDIDATES.md`).
+> 5. Critique/audit logs (`plan/CRITIQUE.md`, `plan/AUDIT.md`).
+> 6. Historical reports (`~/Workspace/reports/`).
+>
+> Stop if lower command state contradicts higher decision law.
 
 ## 1. Purpose
 
@@ -42,16 +49,18 @@ git pull --ff-only
 
 If divergence, stop per §5.
 
-### Step 0.5 — State-sanity preflight
+### Step 0.5 — State-sanity preflight (Glanton Nexus guardrail — Phase 105)
 
-Before dispatch, check for obvious command drift:
+Before dispatch, check for obvious command drift per the source-of-truth hierarchy:
 
-- `[deferred]` rows must not be selected as pending work.
-- A pending phase must not contradict CDRs/ADRs, the central ledger, or a newer T decision recorded in plan files.
-- A phase must not be both `[x]` shipped and `[ ]` pending.
-- Shipped-but-still-pending critique/audit rows should be surfaced as ledger drift before execution.
+- **Deferred rows excluded:** `[deferred]` rows must not be selected as pending work.
+- **Phase-plan consistency:** Top pending phase must not contradict newer T decisions, central ledger entries, or build-plan annotations.
+- **Shipped-pending conflicts:** No phase must be both `[x]` shipped and `[ ]` pending simultaneously.
+- **Critique/audit staleness:** Shipped-but-still-pending critique/audit rows must be surfaced as ledger drift before worker execution.
+- **Decision layer coherence:** Central ledger, active build plan, and phase candidates must not contradict each other on core scope/priority decisions.
+- **Historical drift detection:** Recently shipped phases must have corresponding commit hashes and status updates in the build plan.
 
-If drift is found, stop and surface the contradiction for `/oversight` or Glanton reconciliation.
+If any drift is detected, stop execution and surface the contradiction for `/oversight` or Glanton reconciliation rather than proceeding with stale command state.
 
 ### Step 1 — Triage gate (cheapest check)
 

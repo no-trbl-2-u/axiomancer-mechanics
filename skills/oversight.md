@@ -6,9 +6,17 @@
 > Every other skill is autonomous; this one is the exception.
 > `AskUserQuestion` is allowed here and ONLY here.
 >
-> **Decision records:** Durable decisions must be synced against company
-> CDRs (`~/Workspace/decisions/`), mechanics ADRs (`docs/adr/`), the
-> central ledger, and subordinate Nexus files before returning to `/march`.
+> **Decision records:** Durable decisions must be synced per the Glanton
+> Nexus source-of-truth law (Phase 105) before returning to `/march`:
+>
+> 1. T's latest explicit decision.
+> 2. Central SomberSoft ledger (`~/Workspace/SOMBERSOFT_COMMAND_LEDGER.md`).
+> 3. Active build plan (`plan/steps/01_build_plan.md`).
+> 4. Phase candidates (`plan/PHASE_CANDIDATES.md`).
+> 5. Critique/audit logs (`plan/CRITIQUE.md`, `plan/AUDIT.md`).
+> 6. Historical reports (`~/Workspace/reports/`).
+>
+> Sync decisions down the hierarchy and stop if contradictions remain.
 
 ## 1. Purpose
 
@@ -171,19 +179,20 @@ oversight complete. <N> adjustments applied.
 - next pending phase: Phase <N> (<topic>)
 ```
 
-## 6.5 Decision-sync checklist
+## 6.5 Decision-sync checklist (Glanton Nexus state reconciliation — Phase 105)
 
-Before handing back to `/march`, verify state consistency:
+Before handing back to `/march`, verify state consistency per the source-of-truth hierarchy:
 
-- [ ] Newly durable decisions are recorded in CDR/ADR if they outlive the current phase.
-- [ ] Newly deferred work is marked everywhere it appears.
-- [ ] Promoted candidates are moved/annotated in all relevant files.
-- [ ] Shipped phases drain or annotate matching critique/audit rows.
-- [ ] Central-ledger doctrine is mirrored into local operational files when needed.
-- [ ] Build plan status matches recent shipping decisions.
-- [ ] No contradictions between decision layers remain.
+- [ ] **T decisions synced:** Latest explicit T decisions are reflected in local plan files.
+- [ ] **Central ledger aligned:** Central SomberSoft ledger doctrine is mirrored into local operational files.
+- [ ] **Deferred work marked:** Newly deferred work is marked `[deferred]` everywhere it appears (build plan, candidates, critique rows).
+- [ ] **Promoted candidates moved:** Candidates promoted to phases are moved/annotated in `PHASE_CANDIDATES.md` and added to build plan.
+- [ ] **Shipped phases drained:** Completed phases drain or annotate matching critique/audit rows with resolution notes.
+- [ ] **Build plan current:** Phase status in `01_build_plan.md` matches recent shipping decisions and commit hashes.
+- [ ] **No layer contradictions:** Higher decision layers don't contradict lower operational state.
+- [ ] **Stale rows surfaced:** Any shipped-but-still-pending phase rows are flagged for reconciliation.
 
-If any checklist item fails, resolve it or surface it for T before declaring `/march` safe.
+If any checklist item fails, resolve the drift or surface it for T/Glanton reconciliation before declaring `/march` safe to resume.
 
 ## 7. Hard rules
 
