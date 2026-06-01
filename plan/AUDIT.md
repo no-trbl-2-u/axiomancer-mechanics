@@ -65,7 +65,7 @@
 
 ## Done
 
-- [x] **[VERIFIED-CLEAN] Phase 98 audit — items + skill-resource integration verification** — resolved at audit commit `<to-be-filled>` (2026-06-01). Read-only audit to verify the item-modifier + set-bonus + skill-resource systems work end-to-end in play. Three verification units completed:
+- [x] **[VERIFIED-CLEAN] Phase 98 audit — items + skill-resource integration verification** — resolved at audit commit `83c4a91` (2026-06-01). Read-only audit to verify the item-modifier + set-bonus + skill-resource systems work end-to-end in play. Three verification units completed:
 
   - **Item modifiers** [PASS]: `dropItem(id, level, rarity)` correctly rolls mod count per rarity (29/29 tests in `modifier.catalogue.engine.test.ts`), values fall within level-banded ranges, `resolveModifiers` merges rolled mods into Equipment combat stats, and rolled modifiers apply correctly in combat. Damage/defense/resist chains compose properly post-Phase-80 pure-split.
   
