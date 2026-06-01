@@ -26,14 +26,6 @@
 
 
 
-### [MED] Character/presets — `@deprecated remove at v0.13.0` schedule now contradicts live use
-- pass: critique-46 (commit 81ff3a5)
-- area: dead-code
-- observation: `src/Character/presets.ts` carries multiple `@deprecated Scheduled for removal at v0.13.0` JSDoc tags (lines 4, 28, 136, 141, 148), and the package is now **at** `0.13.0` (`package.json`). The removal milestone has arrived, but the symbols (a) remain and (b) are still imported by **live runtime** code — `src/Playtest/playtest.runner.ts` builds characters from presets — plus the `src/Character/index.ts` barrel and two e2e files. So the stated deadline is unachievable: presets are load-bearing for the Playtest harness and cannot be removed at v0.13.0. The deprecation note and reality have diverged.
-- evidence: `src/Character/presets.ts:4,28,136,141,148` (JSDoc); `package.json` version `0.13.0`; live importer `src/Playtest/playtest.runner.ts`; barrel `src/Character/index.ts`.
-- suggested_fix: Reconcile the schedule — either bump the target past v0.13.0 (and name the Playtest-harness dependency as the blocker), or migrate the Playtest runner off presets to the DEV-tools path the JSDoc points at, then remove. Pick one at /iterate or flag for /oversight if it's a design call.
-- oversight-27 decision (2026-06-01): **bump the deadline + name the blocker** (user pick). Presets stay — load-bearing for the Playtest runner; no symbol removal this cycle. /iterate to apply: update the `@deprecated` JSDoc tags in `src/Character/presets.ts` (lines 4, 28, 136, 141, 148) from "Scheduled for removal at v0.13.0" to a later target (e.g. "no earlier than v0.14.0, after the Playtest runner migrates off presets") and add a one-line note naming `src/Playtest/playtest.runner.ts` as the removal blocker. The actual Playtest-off-presets migration becomes a separate future candidate if/when desired.
-- source: critique
 
 ### [LOW] Combat — deprecation removals due at the v0.13.0 minor bump are un-actioned
 - pass: critique-46 (commit 81ff3a5)
@@ -48,6 +40,7 @@
 
 ## Done
 
+- [x] **[MED] Character/presets — `@deprecated remove at v0.13.0` schedule now contradicts live use** — resolved at commit `89e52e3` (2026-06-01). Updated JSDoc @deprecated tags in src/Character/presets.ts (lines 4, 28, 136, 141, 148) from "Scheduled for removal at v0.13.0" to "no earlier than v0.14.0, after the Playtest runner migrates off presets". Added note naming src/Playtest/playtest.runner.ts as removal blocker. Resolves contradiction where package reached v0.13.0 but presets remain load-bearing for Playtest harness.
 - [x] **[MED] docs — Phase 97 `previewStatAllocation` export undocumented** — resolved at commit `d46bfbd` (2026-06-01). Added `previewStatAllocation` to `docs/api.md` stat allocation section and `docs/character.md` "Stat allocation" section with signature, mobile preview framing, and pure function description. Front-door readers now have discovery path to the mobile preview API.
 - [x] **[HIGH] general — manual playtest: difficulty too hard (component)** — partially resolved at commit `557c7b2` (2026-06-01). Addressed difficulty scaling issue by reducing DEFENSE_MULTIPLIERS from advantage:3/neutral:2/disadvantage:1.5 to advantage:2/neutral:1.5/disadvantage:1.0. Fixes critical early game issue where level 1 players dealt 0 damage to weakest enemies. Other components (combat re-trigger bug, token system issues, skill access UX) remain for future /iterate or /oversight triage.
 

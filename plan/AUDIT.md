@@ -59,7 +59,6 @@
      Top finding: External critique MED Character presets deprecation schedule (score 4.8). -->
 
 
-- **[MED] Character presets deprecation schedule contradicts live use (oversight decision)** — src/Character/presets.ts carries "@deprecated Scheduled for removal at v0.13.0" JSDoc tags but package is now at v0.13.0 and presets are still load-bearing for Playtest runner. Oversight-27 decision: bump deadline + name blocker. Update JSDoc tags to later target (v0.14.0) and note src/Playtest/playtest.runner.ts as removal blocker. Impact 6 × Ease 8 / 10 = 4.8. Source: CRITIQUE.md pending.
 
 - **[LOW] zustand dependency has patch update available** — npm outdated shows zustand 5.0.13 → 5.0.14. Safe patch bump per iterate guidelines. Impact 3 × Ease 9 / 10 = 2.7.
 
@@ -69,6 +68,8 @@
 ---
 
 ## Done
+
+- [x] **[MED] Character presets deprecation schedule contradicts live use (oversight decision)** — resolved at commit `89e52e3` (2026-06-01). Updated JSDoc @deprecated tags in src/Character/presets.ts from "Scheduled for removal at v0.13.0" to "no earlier than v0.14.0, after the Playtest runner migrates off presets". Added note naming src/Playtest/playtest.runner.ts as removal blocker. Resolves contradiction where package is at v0.13.0 but presets are still load-bearing for Playtest runner. Score 6 × 8 / 10 = 4.8. Source: CRITIQUE.md pending.
 
 - [x] **[HIGH] manual playtest: difficulty too hard** — resolved at commit `557c7b2` (2026-06-01). Reduced DEFENSE_MULTIPLIERS from advantage:3/neutral:2/disadvantage:1.5 to advantage:2/neutral:1.5/disadvantage:1.0. Addresses critical early game issue where level 1 players dealt 0 damage to weakest enemies due to excessive defense scaling. More conservative reduction preserves existing skill/effect balance while making combat mathematically viable. Score 8 × 4 / 10 = 3.2.
 
