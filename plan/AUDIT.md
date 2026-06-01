@@ -65,6 +65,18 @@
 
 ## Done
 
+- [x] **[VERIFIED-CLEAN] Phase 98 audit — items + skill-resource integration verification** — resolved at audit commit `<to-be-filled>` (2026-06-01). Read-only audit to verify the item-modifier + set-bonus + skill-resource systems work end-to-end in play. Three verification units completed:
+
+  - **Item modifiers** [PASS]: `dropItem(id, level, rarity)` correctly rolls mod count per rarity (29/29 tests in `modifier.catalogue.engine.test.ts`), values fall within level-banded ranges, `resolveModifiers` merges rolled mods into Equipment combat stats, and rolled modifiers apply correctly in combat. Damage/defense/resist chains compose properly post-Phase-80 pure-split.
+  
+  - **Set bonuses** [PASS]: `getActiveSetBonuses` fires at correct thresholds (16/16 tests in `sets.engine.test.ts`), `initializeCombat` stacks set start-tokens, `applySetGenerationBonus` chains on basic actions, and set passive effects land and clean up combat-scoped as expected.
+  
+  - **Skills vs resource generation** [PASS]: Phase 77 token-economy contract verified end-to-end (11/11 tests in `skill-resource-system.engine.test.ts`). Basic attack/defend grant stance tokens per Spec 04 (`hit=+3, miss=+1, defend=+5`), skills consume correct resources, insufficient-resource skill attempts behave per spec. No regression since Phase 77.
+
+  All 895 tests passed in full `npm run verify`. No drift found, no bugs discovered. The item-modifier + set-bonus + skill-resource integration is working correctly end-to-end.
+
+  Score 4.2 (audit's promised score); shipped as audit-only Phase per oversight-26 rescoping.
+
 - [x] **[feature] GH#78 — previewStatAllocation API for level-up derived stats preview** — drained Pending → Done at oversight-26 (2026-05-30). Promoted as Phase 97 at oversight-24 (2026-05-27) and shipped at commit `5ff7084` ("feat(character): phase 97 — previewStatAllocation API"); the Pending row was a stale tracking leftover. Exports an API to preview exact derived stats for stat-allocation decisions, replacing mobile's inaccurate approximation. Impact 7 × Ease 6 / 10 = 4.2. Source: GH#78.
 
 - [x] **[docs] Playtest module missing documentation** — resolved at iterate commit `0789399` (2026-05-28). Created comprehensive `docs/playtest.md` covering the automated combat simulation framework including core components (runner engine, policy system, CLI interface, report generation), all 6 policies (aggressive, defensive, friendship, resource-optimal, random, mixed), usage examples, data types, integration points, and automation support for CI/CD. Documented hermetic testing coverage and cross-linked to related modules. 895/895 tests stay green; pure docs addition. Impact 3 × Ease 6 / 10 = 1.8. Source: /iterate audit category E (docs) finding.
