@@ -71,6 +71,12 @@
 
 ## Promoted
 
+### Phase 105 — Glanton Nexus state reconciliation guardrail
+- promoted: 2026-06-01 (T direct approval after Glanton hire). Runs before Phase 104/101/102 because stale Nexus state can cause workers to march under old orders. Score 8 × 7 / 10 = 5.6.
+- source: T concern that Hermes conversation decisions and Nexus (`/march`, `/oversight`) state collide; memory files, central ledger, build plans, and decisioning are often out of sync.
+- scope: Audit central ledger vs mechanics-local Nexus state, document source-of-truth hierarchy, add `/oversight` decision-sync checklist, add `/march` state-sanity preflight, and patch obvious stale rows discovered during the phase. Full row in `plan/steps/01_build_plan.md`.
+- unblocks: Prevents Phase 104/101/102 workers from acting on stale Pending rows, deferred continent work, or undrained critique ghosts.
+
 ### Phase 98 — Items + skill-resource integration AUDIT (RESCOPED at oversight-26)
 - promoted: 2026-05-29 (twenty-fifth oversight; original scope "Item rarity system / Spec 05c", score 8.0). **RESCOPED 2026-05-30 (twenty-sixth oversight).**
 - source: Candidate "Item rarity system (Spec 05c)" — but that candidate (and the sibling 05d/05e candidates) were filed by expand-26 against **already-shipped specs**. Verified at oversight-26: Spec 05c acceptance checklist all `[x]` (`EquipmentTemplate`/`ItemRarity`/`requiredLevel`/`dropItem()`/22 templates/archived 50-item library in `src/Items/`); Spec 05d all `[x]` (`modifier.catalogue.ts` + `rollModifiers`/`resolveModifiers`); Spec 05e shipped at Phase 54 (`set.engine.ts` + `getActiveSetBonuses`). No rewrite is needed.
