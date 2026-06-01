@@ -5,6 +5,10 @@
 >
 > Every other skill is autonomous; this one is the exception.
 > `AskUserQuestion` is allowed here and ONLY here.
+>
+> **Decision records:** Durable decisions must be synced against company
+> CDRs (`~/Workspace/decisions/`), mechanics ADRs (`docs/adr/`), the
+> central ledger, and subordinate Nexus files before returning to `/march`.
 
 ## 1. Purpose
 
@@ -13,6 +17,7 @@ When the user types `/oversight`:
 1. **Synthesis.** Read state files, recent commits, deploy state. ~25-line brief.
 2. **Questionnaire.** Based on observed flags, ask 1–4 targeted questions.
 3. **Adjustment.** Apply answers as edits to plan files. One commit.
+4. **Decision sync.** If the answer settles durable doctrine, update or create the relevant CDR/ADR and subordinate plan rows before handoff.
 
 After this, user re-invokes `/march` (or `/loop /march`) to resume.
 
@@ -165,6 +170,20 @@ oversight complete. <N> adjustments applied.
 - ready to resume: /march (or /loop /march)
 - next pending phase: Phase <N> (<topic>)
 ```
+
+## 6.5 Decision-sync checklist
+
+Before handing back to `/march`, verify state consistency:
+
+- [ ] Newly durable decisions are recorded in CDR/ADR if they outlive the current phase.
+- [ ] Newly deferred work is marked everywhere it appears.
+- [ ] Promoted candidates are moved/annotated in all relevant files.
+- [ ] Shipped phases drain or annotate matching critique/audit rows.
+- [ ] Central-ledger doctrine is mirrored into local operational files when needed.
+- [ ] Build plan status matches recent shipping decisions.
+- [ ] No contradictions between decision layers remain.
+
+If any checklist item fails, resolve it or surface it for T before declaring `/march` safe.
 
 ## 7. Hard rules
 

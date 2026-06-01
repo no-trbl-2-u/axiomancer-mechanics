@@ -13,8 +13,9 @@ verify gates, and pointers to deeper docs.
 See [`RELEASES.md`](./RELEASES.md) for short-form per-version
 summaries (at-a-glance "what shipped in 0.X.Y?"),
 [`CHANGELOG.md`](./CHANGELOG.md) for the full per-phase detail per
-release, and [`RELEASING.md`](./RELEASING.md) for the publish flow +
-deprecation lifecycle policy.
+release, [`RELEASING.md`](./RELEASING.md) for the publish flow +
+deprecation lifecycle policy, and [`docs/adr/`](./docs/adr/) for durable
+architecture and product decisions that govern mechanics work.
 
 ---
 

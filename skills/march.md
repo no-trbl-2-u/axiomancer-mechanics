@@ -3,6 +3,11 @@
 > **Outer dispatcher.** Reads project state and delegates to one
 > of the shipping skills. Designed for `/loop`. The
 > autonomous-beast entry point.
+>
+> **State hierarchy:** Before dispatch, respect durable decisions in
+> company CDRs (`~/Workspace/decisions/`), mechanics ADRs (`docs/adr/`),
+> the central ledger, and this repo's active plan. Stop if lower command
+> state contradicts higher decision law.
 
 ## 1. Purpose
 
@@ -36,6 +41,17 @@ git pull --ff-only
 ```
 
 If divergence, stop per §5.
+
+### Step 0.5 — State-sanity preflight
+
+Before dispatch, check for obvious command drift:
+
+- `[deferred]` rows must not be selected as pending work.
+- A pending phase must not contradict CDRs/ADRs, the central ledger, or a newer T decision recorded in plan files.
+- A phase must not be both `[x]` shipped and `[ ]` pending.
+- Shipped-but-still-pending critique/audit rows should be surfaced as ledger drift before execution.
+
+If drift is found, stop and surface the contradiction for `/oversight` or Glanton reconciliation.
 
 ### Step 1 — Triage gate (cheapest check)
 
