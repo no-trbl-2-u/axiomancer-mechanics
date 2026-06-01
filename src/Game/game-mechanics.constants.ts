@@ -56,9 +56,9 @@ export const STAT_POINTS_PER_LEVEL = 3;
 // a direct lookup: DEFENSE_MULTIPLIERS[advantage].
 
 export const DEFENSE_MULTIPLIERS: Record<'advantage' | 'neutral' | 'disadvantage', number> = {
-    advantage:    3,
-    neutral:      2,
-    disadvantage: 1.5,
+    advantage:    2,
+    neutral:      1.5,
+    disadvantage: 1.0,
 } as const;
 
 // Applied when a combatant did NOT choose the 'defend' action (i.e. they are
