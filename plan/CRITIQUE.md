@@ -25,13 +25,6 @@
 ## Pending
 
 
-### [MED] docs — Phase 97 `previewStatAllocation` export undocumented
-- pass: critique-46 (commit 81ff3a5)
-- area: docs
-- observation: Phase 97 added `previewStatAllocation` to the public barrel (`src/index.ts:15`) — the feature mobile needs to preview exact derived stats for level-up allocation — but it is absent from every doc in `docs/`. The natural homes already exist and were not updated: `docs/api.md:25` has a "Stat allocation (Phase 29): `allocateStatPoint(character, stat)`" entry that lists only the older sibling, and `docs/character.md:78` has a "## Stat allocation" section that omits the new preview API. Front-door readers (api.md / character.md / quickstart-character.md) have no path to discover the export.
-- evidence: `src/index.ts:15` (export); `grep -rln previewStatAllocation docs/` → no matches; `docs/api.md:25`; `docs/character.md:78`.
-- suggested_fix: Add `previewStatAllocation` to `docs/api.md` Stat-allocation entry + `docs/character.md` "Stat allocation" section (signature + the "exact derived stats vs mobile's approximation" framing); optionally `docs/quickstart-character.md`.
-- source: critique
 
 ### [MED] Character/presets — `@deprecated remove at v0.13.0` schedule now contradicts live use
 - pass: critique-46 (commit 81ff3a5)
@@ -55,6 +48,7 @@
 
 ## Done
 
+- [x] **[MED] docs — Phase 97 `previewStatAllocation` export undocumented** — resolved at commit `d46bfbd` (2026-06-01). Added `previewStatAllocation` to `docs/api.md` stat allocation section and `docs/character.md` "Stat allocation" section with signature, mobile preview framing, and pure function description. Front-door readers now have discovery path to the mobile preview API.
 - [x] **[HIGH] general — manual playtest: difficulty too hard (component)** — partially resolved at commit `557c7b2` (2026-06-01). Addressed difficulty scaling issue by reducing DEFENSE_MULTIPLIERS from advantage:3/neutral:2/disadvantage:1.5 to advantage:2/neutral:1.5/disadvantage:1.0. Fixes critical early game issue where level 1 players dealt 0 damage to weakest enemies. Other components (combat re-trigger bug, token system issues, skill access UX) remain for future /iterate or /oversight triage.
 
 - [x] **[LOW] Stat-band buffs uncovered (mind/heart attack-up + body/mind/heart defense-up + 3 resistance bands)** — resolved at Phase 88 (this commit). `src/Effects/e2e/stat-band-effects.engine.test.ts` ships 12 parameterized cases covering all 12 uncovered stat-band buffs via `getEffectiveStats` delta assertions. Source: Phase 79 audit (commit `3d213bd`).
