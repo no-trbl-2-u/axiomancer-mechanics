@@ -40,6 +40,31 @@ Command-line interface for running playtests interactively or in automation pipe
 
 Generates formatted output from playtest metrics for analysis and review.
 
+## Reference Fixtures (Phase 104)
+
+The Playtest module includes two canonical reference scenarios that anchor balance decisions with reproducible data:
+
+### Early-Game Reference
+
+- **Fixture**: `earlyGameFixture` 
+- **Character**: Level 1 apprentice preset (5/5/5 base stats)
+- **Enemy**: Tidepool Crab (weakest fishing village enemy)
+- **Purpose**: Tests start-of-game balance and progression gates
+
+### Endgame Reference
+
+- **Fixture**: `endgameFixture`
+- **Character**: Max-level (20/20/20 stats) with all skills and rare equipment
+- **Enemy**: Coastal Tyrant (primary boss encounter)
+- **Purpose**: Tests late-game balance and boss mercy routes
+
+These fixtures provide consistent baselines for:
+- Survivability analysis (win/friendship rates vs defeat/timeout)
+- Combat duration patterns (rounds-to-resolve distribution)  
+- Damage efficiency ratios (player vs enemy damage per round)
+
+Use these references when making balance changes to validate that early-game accessibility and endgame challenge remain appropriately tuned.
+
 ## Data Types
 
 ### Scenario Configuration

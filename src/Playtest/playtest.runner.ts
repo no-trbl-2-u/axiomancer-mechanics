@@ -1,11 +1,14 @@
 import { buildCharacterFromPreset, characterPresets, getPresetById } from '../Character/presets';
+import { createCharacter } from '../Character';
 import { determineEnemyAction, isCombatOngoing, resolveCombatRound } from '../Combat';
 import type { CombatAction, Stance } from '../Combat';
 import { ENEMY_REGISTRY, type EnemySlug } from '../Enemy/enemy.library';
 import { createGameStore } from '../Game/store';
 import { nullAdapter } from '../Game/persistence/null.adapter';
-import { getSkillById } from '../Skills';
+import { getSkillById, skillLibrary } from '../Skills';
 import { setSeed } from '../Utils/rng';
+import { equipmentTemplates } from '../Items/equipment.templates';
+import { dropItem } from '../Items/item.factory';
 import { selectPolicyAction } from './policies';
 import type {
     PlaytestMetrics,
@@ -15,6 +18,35 @@ import type {
     PlaytestRunSummary,
     PlaytestScenario,
 } from './types';
+
+/**
+ * Creates a maxed-out character for endgame testing (Phase 104).
+ * Replicates the dev-tools max-out functionality.
+ */
+function createMaxOutCharacter() {
+    const equipment = equipmentTemplates.map(template => 
+        dropItem(template.id, 20, 'rare')
+    );
+    
+    return createCharacter({
+        name: 'Maxed Test Character',
+        level: 20,
+        baseStats: { heart: 20, body: 20, mind: 20 },
+        currency: 999,
+        inventory: [],  // Equipment goes in equipment slots
+        equipment: {
+            weapon: equipment.find(item => item.slot === 'weapon'),
+            armor: equipment.find(item => item.slot === 'armor'),
+            accessory: equipment.find(item => item.slot === 'accessory'),
+            head: equipment.find(item => item.slot === 'head'),
+            body: equipment.find(item => item.slot === 'body'),
+            hands: equipment.find(item => item.slot === 'hands'),
+            feet: equipment.find(item => item.slot === 'feet'),
+        },
+        knownSkills: skillLibrary.map(skill => skill.id),
+        equippedSkills: skillLibrary.slice(0, 4).map(skill => skill.id),
+    });
+}
 
 export function runPlaytestScenario(scenario: PlaytestScenario): PlaytestReport {
     validateScenario(scenario);
@@ -41,13 +73,21 @@ export function runPlaytestScenario(scenario: PlaytestScenario): PlaytestReport 
 function runSingleScenario(scenario: PlaytestScenario, runNumber: number): PlaytestRunSummary {
     const runSeed = `${scenario.seed}:${runNumber}`;
     setSeed(runSeed);
-    const preset = getPresetById(scenario.preset);
-    if (!preset) throw new Error(`Unknown playtest preset: ${scenario.preset}`);
+    
+    // Handle special max-out preset for endgame testing (Phase 104)
+    let player;
+    if (scenario.preset === 'max-out') {
+        player = createMaxOutCharacter();
+    } else {
+        const preset = getPresetById(scenario.preset);
+        if (!preset) throw new Error(`Unknown playtest preset: ${scenario.preset}`);
+        player = buildCharacterFromPreset(preset);
+    }
+    
     const enemy = ENEMY_REGISTRY[scenario.enemy as EnemySlug];
     if (!enemy) throw new Error(`Unknown playtest enemy: ${scenario.enemy}`);
 
     const policy = scenario.policies[(runNumber - 1) % scenario.policies.length]!;
-    const player = buildCharacterFromPreset(preset);
     const store = createGameStore(nullAdapter, { player });
     store.getState().startCombat({ enemies: [enemy] });
 
@@ -127,7 +167,7 @@ function validateScenario(scenario: PlaytestScenario): void {
     if (!Number.isInteger(scenario.maxRounds) || scenario.maxRounds <= 0) throw new Error('Playtest scenario maxRounds must be a positive integer.');
     if (!scenario.seed) throw new Error('Playtest scenario requires seed.');
     if (scenario.policies.length === 0) throw new Error('Playtest scenario requires at least one policy.');
-    if (!characterPresets.some(preset => preset.id === scenario.preset)) throw new Error(`Unknown playtest preset: ${scenario.preset}`);
+    if (scenario.preset !== 'max-out' && !characterPresets.some(preset => preset.id === scenario.preset)) throw new Error(`Unknown playtest preset: ${scenario.preset}`);
     if (!(scenario.enemy in ENEMY_REGISTRY)) throw new Error(`Unknown playtest enemy: ${scenario.enemy}`);
 }
 
@@ -170,7 +210,60 @@ export function aggregateMetrics(runs: PlaytestRunSummary[]): PlaytestMetrics {
         itemUse,
         enemyActionUse,
         policySummaries: summarizePolicies(runs),
+        // Phase 104 enhanced metrics
+        survivabilityRate: rate(outcomes.victory + outcomes.friendship, totalRuns),
+        roundsToResolveDistribution: calculateDistribution(rounds),
+        damageRatio: calculateDamageRatios(runs),
     };
+}
+
+/**
+ * Calculates statistical distribution for rounds to resolve (Phase 104).
+ */
+function calculateDistribution(rounds: number[]) {
+    if (rounds.length === 0) {
+        return { min: 0, max: 0, q25: 0, q75: 0, stdDev: 0 };
+    }
+    
+    const sorted = [...rounds].sort((a, b) => a - b);
+    const mean = average(sorted);
+    const variance = sorted.reduce((sum, r) => sum + Math.pow(r - mean, 2), 0) / sorted.length;
+    
+    return {
+        min: sorted[0]!,
+        max: sorted[sorted.length - 1]!,
+        q25: percentile(sorted, 0.25),
+        q75: percentile(sorted, 0.75),
+        stdDev: Math.sqrt(variance),
+    };
+}
+
+/**
+ * Calculates damage efficiency ratios for balance analysis (Phase 104).
+ */
+function calculateDamageRatios(runs: PlaytestRunSummary[]) {
+    const avgDamageToPlayer = average(runs.map(r => r.damageToPlayer));
+    const avgDamageToEnemy = average(runs.map(r => r.damageToEnemy));
+    const avgRounds = average(runs.map(r => r.rounds));
+    
+    return {
+        playerToEnemy: avgDamageToPlayer > 0 ? avgDamageToEnemy / avgDamageToPlayer : 0,
+        playerEfficiency: avgRounds > 0 ? avgDamageToEnemy / avgRounds : 0,
+        enemyEfficiency: avgRounds > 0 ? avgDamageToPlayer / avgRounds : 0,
+    };
+}
+
+/**
+ * Calculates a percentile value from a sorted array.
+ */
+function percentile(sortedArray: number[], percentile: number): number {
+    const index = percentile * (sortedArray.length - 1);
+    const lower = Math.floor(index);
+    const upper = Math.ceil(index);
+    const weight = index % 1;
+    
+    if (upper >= sortedArray.length) return sortedArray[sortedArray.length - 1]!;
+    return sortedArray[lower]! * (1 - weight) + sortedArray[upper]! * weight;
 }
 
 function summarizePolicies(runs: PlaytestRunSummary[]): PlaytestPolicySummary[] {

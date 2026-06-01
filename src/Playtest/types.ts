@@ -89,6 +89,20 @@ export interface PlaytestMetrics {
     itemUse: Record<string, number>;
     enemyActionUse: Record<string, number>;
     policySummaries: PlaytestPolicySummary[];
+    // Phase 104 enhanced metrics for balance tuning
+    survivabilityRate: number;  // (wins + friendships) / totalRuns
+    roundsToResolveDistribution: {
+        min: number;
+        max: number;
+        q25: number;  // 25th percentile
+        q75: number;  // 75th percentile
+        stdDev: number;
+    };
+    damageRatio: {
+        playerToEnemy: number;     // averageDamageToEnemy / averageDamageToPlayer
+        playerEfficiency: number;  // damageDealt per round
+        enemyEfficiency: number;   // damageDealt per round
+    };
 }
 
 export interface PlaytestReport {

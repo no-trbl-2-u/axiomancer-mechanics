@@ -230,6 +230,16 @@ export type {
 } from './NPCs';
 export { getDialogueNode, visibleChoices, isLeafNode } from './NPCs';
 
+// ─── Playtest ─────────────────────────────────────────────────────────────────
+export {
+    runPlaytestScenario, aggregateMetrics, selectPolicyAction, renderPlaytestMarkdown,
+    earlyGameFixture, earlyGameWispFixture, endgameFixture, endgameDisagreementFixture,
+} from './Playtest';
+export type {
+    PlaytestScenario, PlaytestReport, PlaytestMetrics, PlaytestRunSummary,
+    PlaytestPolicy, PlaytestOutcome, PlaytestPolicySummary,
+} from './Playtest';
+
 // ─── Utilities ────────────────────────────────────────────────────────────────
 export {
     clamp, randomInt, deepClone, average, sum, max, min, inRange,
