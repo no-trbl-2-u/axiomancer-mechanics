@@ -87,14 +87,22 @@ at a time via:
 
 ```ts
 allocateStatPoint(character, stat)   // 'body' | 'mind' | 'heart'
+previewStatAllocation(baseStats, level, allocation)  // mobile preview helper
 ```
 
-The helper raises the chosen base stat by 1, decrements
+`allocateStatPoint` raises the chosen base stat by 1, decrements
 `availableStatPoints`, and re-derives `derivedStats`, `nonCombatStats`, and
 `maxHealth` so the change is immediately visible. The Game reducer exposes
 this as the `ALLOCATE_STAT_POINT` action; the Character tab in
 `npm run game` walks the player through allocation while points are
-available. Shipped by Phase 29 (`9f2e3f6` + `121aea8` + `db7c26f`); closes
+available.
+
+`previewStatAllocation` computes exact derived stats for mobile's
+level-up allocation preview without mutating character data. Takes current
+base stats, character level, and allocation delta; returns computed stats
+using the same derivation formulas as `allocateStatPoint`. Pure function
+for mobile's "what-if" preview. Added by Phase 97. `allocateStatPoint`
+shipped by Phase 29 (`9f2e3f6` + `121aea8` + `db7c26f`); closes
 `specs/06-character-progression.md` Q3 + Q8.
 
 ## Active Effects

@@ -22,11 +22,14 @@ unchanged, but the absolute semver guarantee starts at 1.0.
 - **Character presets (Phase 18):** `characterPresets`,
   `getPresetById`, `buildCharacterFromPreset` — Stable.
   `CharacterPreset`, `CharacterPresetEquipmentEntry` types — Stable.
-- **Stat allocation (Phase 29):** `allocateStatPoint(character, stat)`
-  — Stable. Spends one `availableStatPoints` to raise the chosen base
+- **Stat allocation (Phase 29):** `allocateStatPoint(character, stat)`,
+  `previewStatAllocation(baseStats, level, allocation)` — Stable. 
+  `allocateStatPoint` spends one `availableStatPoints` to raise the chosen base
   stat by 1 and re-derive `derivedStats` / `nonCombatStats` /
-  `maxHealth`. Pairs with `STAT_POINTS_PER_LEVEL = 3` (granted on
-  level-up via the game reducer) and the `ALLOCATE_STAT_POINT` action.
+  `maxHealth`. `previewStatAllocation` computes exact derived stats for
+  mobile's level-up allocation preview without mutating character data.
+  Pairs with `STAT_POINTS_PER_LEVEL = 3` (granted on level-up via the
+  game reducer) and the `ALLOCATE_STAT_POINT` action.
   `Character.availableStatPoints: number` is on the public type. Closes
   Spec 06 Q3 + Q8.
 - **Stable identity (Phase 35):** `Character.id: string` is now a
