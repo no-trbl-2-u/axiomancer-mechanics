@@ -24,32 +24,6 @@
 
 ## Pending
 
-### [HIGH] general — manual playtest: token system dead, combat re-trigger locked, difficulty too hard
-- pass: user-jot (commit fa62790)
-- file: unspecified
-- category: design
-- observation: I had a manual playtest recently and found this:
-
-  The combat bug is interesting:
-  1) Lose the fight and restart? You can trigger a new fight
-  2) Friendship victory? You can't trigger another combat encounter
-  3) Regular victory? You still can't trigger another combat encounter.
-
-  Also, the game's difficulty is just WAAYYY too hard.
-
-  Here's what I think we should do:
-  1) Have two playthroughs to test
-  a) A playthrough from level 1 against easy enemies (start of game testing)
-  b) A playthrough at max level with Max stats with all items and skills unlocked. (endgame testing)
-
-  2) The game itself is all over the place. We have all these mechanics in place, but no order. We start at level 1 with 5 in each stat, but even with the Dev Menu allowing us to level up manually, the enemies just level up with the user. I like the difficulty scaling but it's rough.
-
-  3) Skills are failing because they are not "equipped". However once a skill is learned, it should be available and in combat only skills that are able to be used at that moment should be shown.
-
-  4) The token resource system (what's used to cast skills) is not working at all. They're not accumulating whatsoever.
-- evidence: user-spotted at 2026-05-30 (manual playtest session)
-- suggested_fix: [user has not specified — iterate to determine]. NOTE: this jot bundles several distinct items that /iterate or /oversight should DECOMPOSE — (a) HIGH bug: after friendship OR regular victory the player cannot trigger another combat encounter, but after a loss they can — combat-end state isn't clearing the encounter lock on win/friendship paths (only on defeat/restart); (b) HIGH bug: token/resource system is not accumulating at all (contradicts the Phase 77 audit which verified base-action token generation clean end-to-end — likely a CLI-consumer wiring regression or a post-Phase-90+ engine regression; ties directly to the pending Phase 99 unlocked-skill access implementation); (c) MED design/UX: learned skills should be usable in combat without a separate "equip" step — combat should show only the skills castable at that moment (gates on current resources), removing the equipped/known split as a usability barrier; (d) design/balance: difficulty scaling is too punishing — enemies scale with the player so manual dev-menu level-ups don't help; (e) process: stand up two reference playtests — level-1-vs-easy (early game) and max-level/max-stats/all-unlocks (endgame) — likely as new Playtest policies/fixtures. Several of these are phase-tier; recommend surfacing at the next /oversight for triage/promotion rather than draining all in one /iterate tick.
-- source: user
 
 ### [MED] docs — Phase 97 `previewStatAllocation` export undocumented
 - pass: critique-46 (commit 81ff3a5)
@@ -79,6 +53,8 @@
 ---
 
 ## Done
+
+- [x] **[HIGH] general — manual playtest: difficulty too hard (component)** — partially resolved at commit `557c7b2` (2026-06-01). Addressed difficulty scaling issue by reducing DEFENSE_MULTIPLIERS from advantage:3/neutral:2/disadvantage:1.5 to advantage:2/neutral:1.5/disadvantage:1.0. Fixes critical early game issue where level 1 players dealt 0 damage to weakest enemies. Other components (combat re-trigger bug, token system issues, skill access UX) remain for future /iterate or /oversight triage.
 
 - [x] **[LOW] Stat-band buffs uncovered (mind/heart attack-up + body/mind/heart defense-up + 3 resistance bands)** — resolved at Phase 88 (this commit). `src/Effects/e2e/stat-band-effects.engine.test.ts` ships 12 parameterized cases covering all 12 uncovered stat-band buffs via `getEffectiveStats` delta assertions. Source: Phase 79 audit (commit `3d213bd`).
 

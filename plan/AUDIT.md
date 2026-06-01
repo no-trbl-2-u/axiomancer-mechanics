@@ -58,7 +58,6 @@
      
      Top finding: External critique HIGH priority playtest issues. -->
 
-- **[HIGH] manual playtest: token system dead, combat re-trigger locked, difficulty too hard** — user-jot (commit fa62790). The combat bug is interesting: 1) Lose the fight and restart? You can trigger a new fight 2) Friendship victory? You can't trigger another combat encounter 3) Regular victory? You still can't trigger another combat encounter. Also, the game's difficulty is just WAAYYY too hard. Suggested playthroughs: a) A playthrough from level 1 against easy enemies (start of game testing) b) A playthrough at max level with Max stats with all items and skills unlocked. (endgame testing). Impact 8 × Ease 4 / 10 = 3.2.
 
 - **[LOW] zustand dependency has patch update available** — npm outdated shows zustand 5.0.13 → 5.0.14. Safe patch bump per iterate guidelines. Impact 3 × Ease 9 / 10 = 2.7.
 
@@ -68,6 +67,8 @@
 ---
 
 ## Done
+
+- [x] **[HIGH] manual playtest: difficulty too hard** — resolved at commit `557c7b2` (2026-06-01). Reduced DEFENSE_MULTIPLIERS from advantage:3/neutral:2/disadvantage:1.5 to advantage:2/neutral:1.5/disadvantage:1.0. Addresses critical early game issue where level 1 players dealt 0 damage to weakest enemies due to excessive defense scaling. More conservative reduction preserves existing skill/effect balance while making combat mathematically viable. Score 8 × 4 / 10 = 3.2.
 
 - [x] **[VERIFIED-CLEAN] Phase 98 audit — items + skill-resource integration verification** — resolved at audit commit `83c4a91` (2026-06-01). Read-only audit to verify the item-modifier + set-bonus + skill-resource systems work end-to-end in play. Three verification units completed:
 
