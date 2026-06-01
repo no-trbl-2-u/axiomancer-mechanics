@@ -10,7 +10,7 @@ function pickStance(round: number): Stance {
 }
 
 function affordableSkills(combat: CombatState): string[] {
-    return combat.player.equippedSkills.filter(id => {
+    return combat.player.knownSkills.filter(id => {
         const skill = getSkillById(id);
         return skill !== undefined && canUseSkill(combat.combatResources, skill);
     });

@@ -5,7 +5,7 @@ import type { ItemRarity } from '../Items/types';
 import { dropItem } from '../Items/item.factory';
 import { equipmentTemplates } from '../Items/equipment.templates';
 import { consumableLibrary } from '../Items/consumable.library';
-import { skillLibrary } from '../Skills/skill.library';
+import { skillLibrary, getSkillById } from '../Skills/skill.library';
 import { ENEMY_REGISTRY, EnemySlug } from '../Enemy/enemy.library';
 import type { PhilosophicalAlignment } from '../Philosophy/types';
 import type { createGameStore } from '../Game/store';
@@ -80,19 +80,53 @@ export function devLearnSkills(store: Store, skillIds: string[] | 'all'): DevRes
     return { ok: true, detail: `${ids.length} skill(s) learned (total known: ${known.size})` };
 }
 
+/**
+ * @deprecated Phase 99 — use devUnlockSkills instead. Kept for backward compatibility.
+ * Now updates both knownSkills and equippedSkills for existing test compatibility.
+ */
 export function devEquipSkills(store: Store, skillIds: string[]): DevResult {
     const capped = skillIds.slice(0, 4);
     const state = store.getState();
     const known = new Set(state.player.knownSkills);
-    const invalid = capped.filter(id => !known.has(id));
+    
+    // Add all skills to known skills first
+    for (const id of capped) known.add(id);
+    
+    // Check if all skills exist
+    const invalid = capped.filter(id => {
+        const skill = getSkillById(id);
+        return !skill;
+    });
+    
     if (invalid.length > 0) {
-        return { ok: false, detail: `Unknown skills: ${invalid.join(', ')}. Learn them first.` };
+        return { ok: false, detail: `Unknown skills: ${invalid.join(', ')}.` };
     }
 
     store.setState({
-        player: { ...state.player, equippedSkills: capped },
+        player: { 
+            ...state.player, 
+            knownSkills: [...known],
+            equippedSkills: capped,
+        },
     });
     return { ok: true, detail: `Equipped: ${capped.join(', ')}` };
+}
+
+/**
+ * Grant/unlock named skills or all skills by writing knownSkills.
+ * Replaces the legacy devEquipSkills after Phase 99.
+ */
+export function devUnlockSkills(store: Store, skillIds: string[] | 'all'): DevResult {
+    const ids = skillIds === 'all'
+        ? skillLibrary.map(s => s.id)
+        : skillIds;
+    const state = store.getState();
+    const known = new Set(state.player.knownSkills);
+    for (const id of ids) known.add(id);
+    store.setState({
+        player: { ...state.player, knownSkills: [...known] },
+    });
+    return { ok: true, detail: `${ids.length} skill(s) unlocked (total known: ${known.size})` };
 }
 
 export function devGrantAllEquipment(store: Store, rarity: ItemRarity = 'common'): DevResult {
@@ -161,7 +195,7 @@ export function devSpawnEnemy(store: Store, slug: EnemySlug): DevResult {
 export function devMaxOut(store: Store): DevResult {
     devSetLevel(store, 20);
     devSetStats(store, { heart: 20, body: 20, mind: 20 });
-    devLearnSkills(store, 'all');
+    devUnlockSkills(store, 'all');
     const allSkills = skillLibrary.map(s => s.id);
     devEquipSkills(store, allSkills.slice(0, 4));
     devGrantAllEquipment(store, 'rare');

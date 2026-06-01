@@ -285,11 +285,11 @@ async function chooseCombatAction(
     ]);
 
     // Only offer the skill option when the player has at least one
-    // equipped skill they can afford. Only offer the item option when
+    // known skill they can afford. Only offer the item option when
     // the player carries at least one consumable. Keeps the prompt
     // clean for the common case.
     const player = combat.player;
-    const affordableSkillIds = player.equippedSkills.filter(id => {
+    const affordableSkillIds = player.knownSkills.filter(id => {
         const def = skillLookup(id);
         return def !== undefined && canUseSkill(combat.combatResources, def);
     });
@@ -524,8 +524,7 @@ async function characterTab(store: GameStoreHandle): Promise<void> {
     }
 
     log('\nSkills:');
-    log(`  Known:    ${p.knownSkills.length > 0 ? p.knownSkills.join(', ') : '(none)'}`);
-    log(`  Equipped: ${p.equippedSkills.length > 0 ? p.equippedSkills.join(', ') : '(none)'}`);
+    log(`  Known/Unlocked: ${p.knownSkills.length > 0 ? p.knownSkills.join(', ') : '(none)'}`);
 
     log('\nInventory summary:');
     const grouped = new Map<string, number>();

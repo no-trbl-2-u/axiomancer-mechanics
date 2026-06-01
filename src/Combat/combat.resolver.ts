@@ -161,7 +161,7 @@ export type SkillPhaseEvent =
      */
     | { phase: 'skill'; kind: 'blocked';
         skillId: string;
-        reason: 'insufficient-resources' | 'unknown-skill' | 'not-equipped' };
+        reason: 'insufficient-resources' | 'unknown-skill' | 'not-equipped' | 'not-known' };
 
 /** Stance-token generation from a player basic action (attack / defend). */
 export type ResourceEvent =

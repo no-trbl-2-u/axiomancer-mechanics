@@ -374,8 +374,8 @@ export function executeSkill(
     const target: Combatant = isPlayerCaster ? state.enemy : state.player;
 
     if (isPlayerCaster) {
-        if (!(caster as Character).equippedSkills.includes(skillId)) {
-            throw new Error(`Skill '${skillId}' is not equipped.`);
+        if (!(caster as Character).knownSkills.includes(skillId)) {
+            throw new Error(`Skill '${skillId}' is not known.`);
         }
     } else {
         const rotation = (caster as Enemy).skills ?? [];

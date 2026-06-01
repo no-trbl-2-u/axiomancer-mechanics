@@ -101,7 +101,7 @@ export function runScenarioPhase(
     let friendshipCounter = friendshipCounterIn;
 
     // 5a. Player picked `skill` → validate, then run the skill engine. If the
-    // skill is unknown, not equipped, or unaffordable, emit a `skill-blocked`
+    // skill is unknown, not known, or unaffordable, emit a `skill-blocked`
     // event, leave `combatResources` / HP untouched, and short-circuit the
     // rest of the scenario phase: the player whiffs their turn and no basic
     // exchange resolves. Round-start / round-end effects still tick.
@@ -120,8 +120,8 @@ export function runScenarioPhase(
         if (!skill) {
             events.push({ phase: 'skill', kind: 'blocked', skillId, reason: 'unknown-skill' });
             skillBlocked = true;
-        } else if (!player.equippedSkills.includes(skillId)) {
-            events.push({ phase: 'skill', kind: 'blocked', skillId, reason: 'not-equipped' });
+        } else if (!player.knownSkills.includes(skillId)) {
+            events.push({ phase: 'skill', kind: 'blocked', skillId, reason: 'not-known' });
             skillBlocked = true;
         } else if (!canUseSkill(combatResources, skill)) {
             events.push({ phase: 'skill', kind: 'blocked', skillId, reason: 'insufficient-resources' });

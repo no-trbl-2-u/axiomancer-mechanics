@@ -54,7 +54,7 @@ import { generateRunId } from './run-loop';
  * `migrateV6toV7` defaults the slice to `{ unlockedEntries: [] }` for
  * legacy v6 saves.
  */
-export const GAME_STATE_VERSION = 7;
+export const GAME_STATE_VERSION = 8;
 
 /** Builds a brand-new GameState with default player and world. */
 export function createNewGameState(): GameState {

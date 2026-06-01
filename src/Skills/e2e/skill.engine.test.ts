@@ -215,16 +215,16 @@ describe('executeSkill — debuff (effect application)', () => {
 });
 
 describe('executeSkill — guards', () => {
-    it('throws when skill is not equipped', () => {
+    it('throws when skill is not known', () => {
         const state = fixtureState({ body: 3 });
-        const player = { ...state.player, equippedSkills: [] };
+        const player = { ...state.player, knownSkills: [] };
         expect(() => executeSkill({ ...state, player }, damagingSkill.id, lookup))
-            .toThrow(/not equipped/);
+            .toThrow(/not known/);
     });
 
     it('throws when skill id is unknown', () => {
         const state = fixtureState({ body: 3 });
-        const player = { ...state.player, equippedSkills: ['sk_unknown'] };
+        const player = { ...state.player, knownSkills: ['sk_unknown'] };
         expect(() => executeSkill({ ...state, player }, 'sk_unknown', () => undefined))
             .toThrow(/not found/);
     });

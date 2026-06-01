@@ -39,6 +39,11 @@ interface GameStateV6 extends Omit<GameState, 'codex'> {
     version: 6;
 }
 
+/** GameState shape before v8 (before Phase 99 equippedSkills removal). */
+interface GameStateV7 extends GameState {
+    version: 7;
+}
+
 /**
  * Migrate from v2 to v3: add moralMeter field defaulting to 0 (neutral).
  * v2 saves had no moral tracking; new field allows existing saves to continue.
@@ -98,11 +103,35 @@ function migrateV5toV6(v5: GameStateV5): GameStateV6 {
  * v6 saves have no codex tracking; the migration defaults the slice at load
  * time so consumers always read a non-null value.
  */
-function migrateV6toV7(v6: GameStateV6): GameState {
+function migrateV6toV7(v6: GameStateV6): GameStateV7 {
     return {
         ...v6,
         version: 7,
         codex: { unlockedEntries: [] },
+    };
+}
+
+/**
+ * Migrate from v7 to v8 (Phase 99 — unlocked skill access): merge legacy
+ * `equippedSkills` into `knownSkills` so old saves don't lose access to skills.
+ * The equipped skills are merged into known skills to preserve game progress.
+ * Post-migration, combat uses knownSkills filtered by canUseSkill affordability.
+ */
+function migrateV7toV8(v7: GameStateV7): GameState {
+    const mergedKnown = new Set(v7.player.knownSkills);
+    // Merge equippedSkills into knownSkills
+    for (const skillId of v7.player.equippedSkills) {
+        mergedKnown.add(skillId);
+    }
+    
+    return {
+        ...v7,
+        version: 8,
+        player: {
+            ...v7.player,
+            knownSkills: [...mergedKnown],
+            // Keep equippedSkills for backward compatibility but it's no longer used
+        },
     };
 }
 
@@ -156,6 +185,10 @@ export function migrate(
 
     if (fromVersion < 7) {
         migrated = migrateV6toV7(migrated as GameStateV6);
+    }
+
+    if (fromVersion < 8) {
+        migrated = migrateV7toV8(migrated as GameStateV7);
     }
 
     return assertGameState(migrated);
