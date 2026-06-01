@@ -402,7 +402,7 @@ function skillsTab(store: GameStoreHandle): void {
     log('Known skills:');
     for (const id of player.knownSkills) {
         const s = getSkillById(id);
-        log(`  • ${s?.name ?? id}${player.equippedSkills.includes(id) ? '  (equipped)' : ''}`);
+        log(`  • ${s?.name ?? id}`);
     }
 }
 
@@ -658,7 +658,7 @@ async function devTab(store: GameStoreHandle): Promise<void> {
             { name: 'Set level',               value: 'set-level' },
             { name: 'Set base stats',           value: 'set-stats' },
             { name: 'Learn skills (pick/all)',   value: 'learn-skills' },
-            { name: 'Equip skills',             value: 'equip-skills' },
+            { name: 'Unlock skills (legacy)',   value: 'equip-skills' },
             { name: 'Grant all equipment',       value: 'grant-equipment' },
             { name: 'Grant all consumables',     value: 'grant-consumables' },
             { name: 'Equip specific item',       value: 'equip-item' },
@@ -715,10 +715,13 @@ async function devTab(store: GameStoreHandle): Promise<void> {
             break;
         }
         case 'equip-skills': {
+            log('\n[DEPRECATED] This tool is kept for backward compatibility.');
+            log('In Phase 99, all known skills are unlocked for combat use.');
+            log('Use \'Learn skills\' to add skills to your known catalogue.\n');
             const known = store.getState().player.knownSkills;
             if (known.length === 0) { log('\nNo skills known. Learn some first.\n'); break; }
             const { skills } = await prompt<{ skills: string[] }>([{
-                type: 'checkbox', name: 'skills', message: 'Equip up to 4 skills:',
+                type: 'checkbox', name: 'skills', message: 'Legacy equip (for testing only):',
                 choices: known.map(id => ({
                     name: id,
                     value: id,

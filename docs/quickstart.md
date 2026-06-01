@@ -53,7 +53,7 @@ tabs:
 
 | Tab | Surface |
 |---|---|
-| **Self** | View / equip items, allocate stat points (Phase 29), learn skills (Phase 30) |
+| **Self** | View items, allocate stat points (Phase 29), learn skills (Phase 30) |
 | **Map** | Walk available nodes, resolve MapEvents (`resolveMapEvent`), see discovered / consumed nodes |
 | **Combat** | When `state.combat !== null`, pick stance + action / skill / item per round (resolved through `resolveCombatRound`) |
 | **Save / Load** | Persistence via the configured `PersistenceAdapter` (default: file slot via `--save-file`) |

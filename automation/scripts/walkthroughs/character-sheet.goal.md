@@ -9,7 +9,7 @@
    - `level: 1`
    - `baseStats: { heart: 5, body: 5, mind: 5 }`
    - `knownSkills` length = 6 (all Tier-1 skills)
-   - `equippedSkills` length = 4
+   - `knownSkills` accessible in combat (Phase 99)
    - `inventory` includes `minor-healing-potion ×3`
    - `currency: 0`
 2. The Character tab is opened (visible in stderr / human-log output —

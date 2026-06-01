@@ -23,7 +23,7 @@ The walkthrough's value:
 
 **Originally scoped for Phase 66 synergy** per the Phase 81 candidate
 body, but per the brief D2 — none of the 5 Phase 66 synergy skills
-ship in any preset's `knownSkills` or `equippedSkills`. Exercising
+ship in any preset's `knownSkills`. Exercising
 them would require either preset extension or Learn + Equip
 workflow; pivoted to `eternal-regress` per D2.
 
@@ -32,7 +32,7 @@ event stream):**
 
 1. **Bootstrap** records the Wanderer preset (level 8, baseStats
    `{ heart: 5, body: 4, mind: 4 }`, `knownSkills.length === 9`,
-   `equippedSkills` includes `eternal-regress`).
+   `knownSkills` includes `eternal-regress`).
 
 2. **Debug-spawn** records a Wet Hound entry — state log shows a
    `debugSpawn` action with `event.slug === 'wet-hound'` and

@@ -55,12 +55,12 @@ const castableSkillIds = player.knownSkills.filter(id => {
 
 ## Acceptance
 
-- [ ] No player-facing runtime path requires a skill to be in `equippedSkills`.
-- [ ] Learned/unlocked skills become castable as soon as resources satisfy `resourceCost`.
-- [ ] Combat choice surfaces show only currently affordable unlocked skills.
-- [ ] Legacy saves/states with `equippedSkills` do not lose access to those skills.
-- [ ] `npm run verify` passes.
-- [ ] Docs no longer present equipped skills as the canonical model.
+- [x] No player-facing runtime path requires a skill to be in `equippedSkills`.
+- [x] Learned/unlocked skills become castable as soon as resources satisfy `resourceCost`.
+- [x] Combat choice surfaces show only currently affordable unlocked skills.
+- [x] Legacy saves/states with `equippedSkills` do not lose access to those skills.
+- [x] `npm run verify` passes.
+- [x] Docs no longer present equipped skills as the canonical model.
 
 ## Notes
 

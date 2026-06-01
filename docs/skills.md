@@ -202,11 +202,9 @@ interface Character {
 filter this catalogue by `canUseSkill(combatResources, skill)` and present only
 affordable skills at the moment of choice.
 
-Implementation status: current `main` still carries the legacy `equippedSkills`
-field and checks it in the CLI/combat scenario path. That is a known divergence,
-not doctrine. Phase 99 (`plan/phases/phase_99_unlocked_skill_access.md`) removes
-the equipped-skill gate and migrates consumers to unlocked/affordable skill
-access.
+Implementation status: Phase 99 complete. Legacy `equippedSkills` field is kept
+for backward compatibility but is no longer used in combat logic. All skill
+access uses `knownSkills` filtered by `canUseSkill(combatResources, skill)`.
 
 ---
 

@@ -10,7 +10,7 @@ fires `ad-hominem-strike` on round 2.
 event stream):**
 
 1. Bootstrap records the Wanderer preset (level 8, base stats
-   `5/4/4`, `equippedSkills` includes `ad-hominem-strike`).
+   `5/4/4`, `knownSkills` includes `ad-hominem-strike`).
 2. `debugSpawn` enters a Wet Hound encounter.
 3. At least one `combatRound` state-log record has
    `event.playerAction.action === 'skill'` with

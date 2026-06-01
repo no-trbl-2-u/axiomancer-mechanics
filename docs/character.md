@@ -135,10 +135,10 @@ deterministic (Common returns an empty rolled-modifier list). Add more
 presets by exporting further `CharacterPreset` records and registering
 them in `characterPresets`.
 
-## Pending
+## Recent Updates
 
-Open implementation gap: Phase 99 removes the legacy skill loadout gate
-(`equippedSkills`) so learned/unlocked skills are available in combat and the
+Phase 99 complete: The legacy skill loadout gate (`equippedSkills`) has been
+removed. All learned/unlocked skills are now available in combat, and the
 combat UI shows only currently affordable skills. The `id` field shipped at
 Phase 35 (Knowledge-Gaps Q12); see the `id` JSDoc on `Character` in
 `src/Character/types.d.ts` and the auto-gen path in `createCharacter`.
