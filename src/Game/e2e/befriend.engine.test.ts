@@ -257,16 +257,15 @@ describe('Phase 68 — Coastal Tyrant BefriendabilityConfig integration', () => 
         expect(report.outcome).not.toBe('friendship');
     });
 
-    it('does NOT befriend when counter is short of the per-enemy roundsThreshold (5)', () => {
+    it('does NOT befriend when counter is short of the per-enemy roundsThreshold (3)', () => {
         const store = createGameStore(nullAdapter);
         store.getState().startCombat(CoastalTyrant);
         const combat = store.getState().combat!;
         // Default FRIENDSHIP_COUNTER_MAX is 3 — but Coastal Tyrant overrides
-        // to 5. At counter = 4 a Phase-36 enemy would have already triggered
-        // friendship; Coastal Tyrant requires counter >= 5.
+        // to 3 (Phase 101 reduced from 5). At counter = 2 friendship should not trigger.
         store.getState().updateCombat({
             ...combat,
-            friendshipCounter: 4,
+            friendshipCounter: 2,
             log: [logEntry(1, 'heart')],
             enemy: {
                 ...combat.enemy,
@@ -276,7 +275,7 @@ describe('Phase 68 — Coastal Tyrant BefriendabilityConfig integration', () => 
 
         const report = store.getState().endCombat();
         expect(report.outcome).not.toBe('friendship');
-        expect(FRIENDSHIP_COUNTER_MAX).toBeLessThan(5);
+        // Phase 101: Coastal Tyrant now uses same threshold as base (3)
     });
 });
 

@@ -308,13 +308,13 @@ Coastal Tyrant is the first boss-tier authored config (Phase 68):
 befriendabilityConfig: {
     hpGate: { belowPct: 0.4 },
     requiredStances: ['heart'],
-    roundsThreshold: 5,
+    roundsThreshold: 3, // Phase 101 — reduced from 5 for mercy policy viability
 },
 ```
 
 The fallen magistrate-priest opens his friendship arc only after he's
 been brought low (HP ≤ 40%), the player has shown empathy at least
-once (heart stance), and 5 both-defend rounds have passed. The
+once (heart stance), and 3 both-defend rounds have passed. The
 authored `friendshipReward` content (multi-paragraph narrative + items)
 is deferred to the boss-tier befriendable-enemy follow-up phase.
 

@@ -100,6 +100,16 @@ function runSingleScenario(scenario: PlaytestScenario, runNumber: number): Playt
     let damageToPlayer = 0;
     let damageToEnemy = 0;
 
+    // Phase 101 — HP gate tracking for mercy policy
+    let hpGateTrace: PlaytestRunSummary['hpGateTrace'];
+    if (policy === 'mercy' && enemy.befriendabilityConfig?.hpGate) {
+        const hpThreshold = enemy.befriendabilityConfig.hpGate.belowPct;
+        hpGateTrace = {
+            hpThreshold,
+            finalEnemyHpPct: 0, // Will be set at the end
+        };
+    }
+
     for (let i = 0; i < scenario.maxRounds; i++) {
         const combat = store.getState().combat;
         if (!combat || !isCombatOngoing(combat)) break;
@@ -120,6 +130,15 @@ function runSingleScenario(scenario: PlaytestScenario, runNumber: number): Playt
         increment(enemyActions, describeAction(enemyAction));
         damageToPlayer += sumDamageToPlayer(combatEvents);
         damageToEnemy += sumDamageToEnemy(combatEvents);
+        
+        // Phase 101 — Track when enemy HP first drops below gate for mercy policy
+        if (hpGateTrace && !hpGateTrace.roundBelowGate) {
+            const enemyHpPct = nextCombat.enemy.health / nextCombat.enemy.maxHealth;
+            if (enemyHpPct <= hpGateTrace.hpThreshold) {
+                hpGateTrace.roundBelowGate = combat.round;
+            }
+        }
+        
         transcript.push({
             round: combat.round,
             playerAction,
@@ -136,6 +155,13 @@ function runSingleScenario(scenario: PlaytestScenario, runNumber: number): Playt
     if (finalCombat && !isCombatOngoing(finalCombat)) {
         endReport = store.getState().endCombat();
         outcome = endReport.outcome;
+    }
+
+    // Phase 101 — Set final enemy HP percentage for mercy policy
+    if (hpGateTrace) {
+        const finalEnemyHp = finalCombat?.enemy.health ?? 0;
+        const finalEnemyMaxHp = finalCombat?.enemy.maxHealth ?? enemy.maxHealth;
+        hpGateTrace.finalEnemyHpPct = finalEnemyHp / finalEnemyMaxHp;
     }
 
     return {
@@ -158,6 +184,7 @@ function runSingleScenario(scenario: PlaytestScenario, runNumber: number): Playt
         damageToEnemy,
         ...(endReport ? { endReport } : {}),
         transcript,
+        ...(hpGateTrace ? { hpGateTrace } : {}),
     };
 }
 

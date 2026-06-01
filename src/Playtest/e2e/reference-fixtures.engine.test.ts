@@ -8,6 +8,7 @@
 import { describe, it, expect } from 'vitest';
 import { runPlaytestScenario } from '../playtest.runner';
 import { earlyGameFixture, endgameFixture } from '../fixtures';
+import { renderPlaytestMarkdown } from '../report';
 
 describe('Reference Fixtures (Phase 104)', () => {
     describe('Early-game fixture', () => {
@@ -125,6 +126,38 @@ describe('Reference Fixtures (Phase 104)', () => {
             const friendshipSummary = report.metrics.policySummaries.find(s => s.policy === 'friendship');
             expect(friendshipSummary).toBeDefined();
             expect(friendshipSummary!.runs).toBe(6);
+        });
+
+        it('should test mercy policy with HP gate traces (Phase 101)', () => {
+            const report = runPlaytestScenario({
+                ...endgameFixture,
+                runs: 5,
+                maxRounds: 30,
+                policies: ['mercy'],  // Test the new mercy policy
+                seed: 'test-mercy-policy',
+            });
+
+            // Should execute mercy policy
+            expect(report.policies).toContain('mercy');
+            const mercySummary = report.metrics.policySummaries.find(s => s.policy === 'mercy');
+            expect(mercySummary).toBeDefined();
+            expect(mercySummary!.runs).toBe(5);
+
+            // Should have HP gate traces for mercy runs
+            const mercyRuns = report.runs.filter(run => run.policy === 'mercy');
+            expect(mercyRuns).toHaveLength(5);
+            
+            // All mercy runs should have HP gate traces
+            mercyRuns.forEach(run => {
+                expect(run.hpGateTrace).toBeDefined();
+                expect(run.hpGateTrace!.hpThreshold).toBe(0.4); // Coastal Tyrant's HP gate
+                expect(run.hpGateTrace!.finalEnemyHpPct).toBeGreaterThanOrEqual(0);
+                expect(run.hpGateTrace!.finalEnemyHpPct).toBeLessThanOrEqual(1);
+            });
+
+            // Should produce a report with HP gate analysis
+            const reportMarkdown = renderPlaytestMarkdown(report);
+            expect(reportMarkdown).toContain('HP Gate Analysis (Mercy Policy)');
         });
     });
 

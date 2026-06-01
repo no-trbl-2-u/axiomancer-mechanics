@@ -516,11 +516,12 @@ export const CoastalTyrant = createEnemy({
     skills: [skill('achilles-gambit')],
     // Phase 68 — boss-tier befriend predicate: the fallen-priest's friendship arc
     // opens only after he's been brought low (hpGate 40%), the player has shown
-    // empathy at least once (heart stance), and 5 both-defend rounds have passed.
+    // empathy at least once (heart stance), and 3 both-defend rounds have passed.
+    // Phase 101 — rounds reduced from 5→3 to improve mercy policy decisiveness.
     befriendabilityConfig: {
         hpGate: { belowPct: 0.4 },
         requiredStances: ['heart'],
-        roundsThreshold: 5,
+        roundsThreshold: 3, // Phase 101 — reduced from 5 to improve mercy policy viability
     },
     // Phase 70 — boss-tier friendshipReward demonstrating the full Phase 60
     // + 62 + 68 + 69 stack on one high-stakes encounter. The fallen-priest's

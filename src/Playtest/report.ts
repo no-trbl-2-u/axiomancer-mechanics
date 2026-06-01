@@ -67,6 +67,8 @@ export function renderPlaytestMarkdown(report: PlaytestReport): string {
             `- Max friendship counter: ${summary.maxFriendshipCounter}`,
             '',
         ]),
+        // Phase 101 — HP gate traces for mercy policy runs
+        ...renderMercyHpGateTraces(report),
         '## Findings for Tobin',
         '',
         ...report.findings.map(finding => `- ${finding}`),
@@ -99,4 +101,25 @@ function formatPercent(value: number): string {
 
 function formatNumber(value: number): string {
     return Number.isInteger(value) ? String(value) : value.toFixed(2);
+}
+
+function renderMercyHpGateTraces(report: PlaytestReport): string[] {
+    const mercyRuns = report.runs.filter(run => run.policy === 'mercy' && run.hpGateTrace);
+    if (mercyRuns.length === 0) return [];
+
+    const traces = mercyRuns.map(run => {
+        const trace = run.hpGateTrace!;
+        const gateReached = trace.roundBelowGate ? `round ${trace.roundBelowGate}` : 'never';
+        const finalHp = formatPercent(trace.finalEnemyHpPct);
+        return `- Run ${run.run}: HP gate (${formatPercent(trace.hpThreshold)}) reached ${gateReached}, final enemy HP ${finalHp}, outcome: ${run.outcome}`;
+    });
+
+    return [
+        '## HP Gate Analysis (Mercy Policy)',
+        '',
+        `HP gate traces for ${mercyRuns.length} mercy policy runs:`,
+        '',
+        ...traces,
+        '',
+    ];
 }

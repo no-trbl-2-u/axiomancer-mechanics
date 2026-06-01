@@ -8,7 +8,8 @@ export type PlaytestPolicy =
     | 'friendship'
     | 'resource-optimal'
     | 'random'
-    | 'mixed';
+    | 'mixed'
+    | 'mercy';
 
 export type PlaytestOutcome = CombatEndReport['outcome'] | 'timeout';
 
@@ -52,6 +53,12 @@ export interface PlaytestRunSummary {
     damageToEnemy: number;
     endReport?: CombatEndReport;
     transcript: PlaytestRoundSummary[];
+    // Phase 101 — HP gate tracking for mercy policy analysis
+    hpGateTrace?: {
+        hpThreshold: number;           // The HP gate threshold (e.g., 0.4 for 40%)
+        roundBelowGate?: number;       // Round when enemy HP first dropped below gate
+        finalEnemyHpPct: number;       // Final enemy HP as percentage
+    };
 }
 
 export interface PlaytestPolicySummary {

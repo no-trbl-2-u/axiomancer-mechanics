@@ -16,6 +16,11 @@ Phase 104 established two canonical balance probes that should be used as baseli
 - **Baseline**: Max-level character vs Coastal Tyrant
 - **Validation**: Changes should not make boss encounters trivial or impossible
 
+### Mercy Probe (Phase 101)
+- **Run**: `mercy` policy from `src/Playtest/policies.ts`  
+- **Baseline**: Wound-then-spare approach against Coastal Tyrant
+- **Validation**: Changes should maintain viable mercy route (timeout under 25%)
+
 ## Balance Change Workflow
 
 When modifying combat mechanics, enemy stats, or player progression:

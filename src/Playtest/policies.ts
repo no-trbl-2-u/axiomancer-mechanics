@@ -27,11 +27,25 @@ function randomIndex(maxExclusive: number): number {
 
 export function selectPolicyAction(policy: PlaytestPolicy, combat: CombatState): CombatAction {
     if (policy === 'mixed') {
-        const rotation: PlaytestPolicy[] = ['aggressive', 'defensive', 'friendship', 'resource-optimal', 'random'];
+        const rotation: PlaytestPolicy[] = ['aggressive', 'defensive', 'friendship', 'resource-optimal', 'random', 'mercy'];
         return selectPolicyAction(rotation[(combat.round - 1) % rotation.length]!, combat);
     }
 
     if (policy === 'friendship') {
+        return { stance: 'heart', action: 'defend' };
+    }
+
+    if (policy === 'mercy') {
+        const enemyHpPct = combat.enemy.health / combat.enemy.maxHealth;
+        // Check if enemy has befriendability config with HP gate
+        const hpGate = combat.enemy.befriendabilityConfig?.hpGate?.belowPct ?? 0.4;
+        
+        // If enemy is above HP gate, damage them
+        if (enemyHpPct > hpGate) {
+            return { stance: 'body', action: 'attack' };
+        }
+        
+        // Once below HP gate, switch to friendship behavior
         return { stance: 'heart', action: 'defend' };
     }
 
