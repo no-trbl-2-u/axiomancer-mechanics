@@ -58,11 +58,24 @@
 - scope: Remove the legacy player-facing `equippedSkills` loadout gate. `knownSkills` becomes the learned/unlocked combat-accessible catalogue; combat/CLI/playtest consumers filter by `canUseSkill(combatResources, skill)`; legacy `equippedSkills` saves/states are normalized into `knownSkills`; dev tools and docs stop treating skill equipment as canonical. Full brief: `plan/phases/phase_99_unlocked_skill_access.md`.
 - unblocks: Fixes the manual-playtest UX failure where learned skills are unavailable because they are not equipped, and aligns mobile/combat surfaces with the resource/resonance doctrine.
 
-### Phase 100 — Second continent — Northern Continent stub
+### Phase 103 — Combat re-trigger lock fix (playtest jot #89(a))
+- promoted: 2026-06-01 (twenty-seventh oversight; Q1 user pick — "Promote, run NEXT"). HIGH bug. Score 8 × 6 / 10 = 4.8.
+- source: User manual playtest jot #89 (commit `b88d6b2`), decomposed item (a). Not a /expand candidate — surfaced from the user's own playtest.
+- scope: After a WIN or FRIENDSHIP outcome the player cannot start another combat; after a LOSS (or restart) they can. Combat-end isn't clearing the encounter lock on win/friendship branches. Unit 1 — root-cause + fix in the combat-end / node-consumption path (store `endCombat` / END_COMBAT reducer / MapEvents combat-trigger gate); all three terminal outcomes must leave the next encounter startable. Unit 2 — hermetic e2e pinning victory/friendship/defeat → second-encounter-starts. Unit 3 — docs + CHANGELOG `### Fixed`. Full row in `plan/steps/01_build_plan.md`. Runs ahead of all other pending phases.
+- unblocks: Closes the last unaddressed engine item from playtest jot #89 (difficulty fixed at `557c7b2`; skill-equip at Phase 99; token-accumulation verified clean at Phase 77 + 98 → consumer-side).
+
+### Phase 104 — Reference playtests: early-game + endgame (playtest jot #89(e))
+- promoted: 2026-06-01 (twenty-seventh oversight; Q2 user pick — "Promote as a phase"). Score 6 × 6 / 10 = 3.6.
+- source: User manual playtest jot #89 (commit `b88d6b2`), decomposed item (e).
+- scope: Two reference Playtest fixtures — (1) level-1 / 5-5-5 vs easiest fishing-village enemies (early game); (2) max-level / max-stat / all-skills / all-items vs late-game/boss (endgame). Unit 1 — fixtures in `src/Playtest/` (reuse dev-tools max-out path). Unit 2 — report fields (survivability, rounds-to-resolve, damage bands) + hermetic playtest test. Unit 3 — docs (`docs/playtest.md`, `automation/playtest/NEXT_STEPS.md`). Pairs with Phase 101 (consumes the endgame probe). Full row in `plan/steps/01_build_plan.md`.
+- unblocks: Anchors balance testing on reproducible runs rather than ad-hoc manual sessions — addresses the "difficulty all over the place / no order" half of #89.
+
+### Phase 100 — Second continent — Northern Continent stub  [DEFERRED INDEFINITELY]
 - promoted: 2026-05-30 (twenty-sixth oversight; Q3 user pick). Score 5 × 7 / 10 = 3.5.
+- **DEFERRED INDEFINITELY at oversight-27 (2026-06-01; Q3 user call): "Hold off on adding another continent until we have the base mechanics working. Defer that indefinitely."** Build-plan row flipped `[ ]` → `[deferred]`; not abandoned. Revisit once Phase 103 (re-trigger fix) + Phase 104 (reference playtests) + Phase 101 (mercy/difficulty tuning) land and core combat/progression feels solid. Flip back to `[ ]` at a future oversight to re-queue.
 - source: Candidate "Second continent — Northern Continent stub".
 - scope: Stand up `src/World/Continents/Northern-Continent/` with 1-2 starter maps (e.g. `northern-city`, `island-village`), each wired into a registered `MapEventPool` covering ≥5 of the 8 `MapEventKind` values; add to `MAP_REGISTRY`; hermetic e2e walks the new nodes. Establishes the pattern for continent 3+. `content/story/story-overview.md` already sketches the Northern Continent.
-- unblocks: Actual story breadth — the coastal continent becomes an act-1 region rather than the whole game.
+- unblocks: Actual story breadth — the coastal continent becomes an act-1 region rather than the whole game. (Gated behind base-mechanics stabilisation per oversight-27.)
 
 ### Phase 101 — Coastal Tyrant mercy-route tuning + playtest policy/report depth
 - promoted: 2026-05-30 (twenty-sixth oversight; Q3 user pick). **Merges the two duplicate Pending rows** ("Coastal Tyrant mercy-route tuning + playtest policy/report depth" and the user-filed "Coastal Tyrant mercy tuning"). **Design-attended.** Score 6 × 5 / 10 = 3.0.
