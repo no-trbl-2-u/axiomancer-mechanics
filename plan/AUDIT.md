@@ -45,18 +45,22 @@
 
 ## Pending
 
-<!-- iterate audit 2026-05-28: fresh audit with verification of prior findings.
-     Z. External critique: empty (CRITIQUE.md ## Pending confirmed empty)
+<!-- iterate audit 2026-06-01: fresh audit with verification of prior findings.
+     Z. External critique: 1 HIGH finding in CRITIQUE.md — manual playtest: token system dead, combat re-trigger locked, difficulty too hard
      A. Test-quality gaps: all modules have hermetic e2e tests, no raw vi.spyOn usage except in test-utils/rng.ts helper
      B. Spec-gap items: no open questions with blank "Your answer:" placeholders (template files excluded)  
      C. Type-safety: sampled exported functions have proper return type annotations
-     D. Dead code: prior finding about Character/presets.ts functions incorrect - they are still used by playtest system and tests
+     D. Dead code: no unused exports found on public barrel
      E. Documentation gaps: all major modules have docs in docs/ directory
      F. ESLint fix: already shipped in Phase 13, npm run lint passes clean
-     G. Dependency updates: all available updates are major version bumps (skip per guidelines)
+     G. Dependency updates: zustand patch update available (5.0.13 → 5.0.14), others are major version bumps
      H. Commit-hygiene: git status clean, no uncommitted changes
      
-     No findings scoring ≥3.0. Queue empty. -->
+     Top finding: External critique HIGH priority playtest issues. -->
+
+- **[HIGH] manual playtest: token system dead, combat re-trigger locked, difficulty too hard** — user-jot (commit fa62790). The combat bug is interesting: 1) Lose the fight and restart? You can trigger a new fight 2) Friendship victory? You can't trigger another combat encounter 3) Regular victory? You still can't trigger another combat encounter. Also, the game's difficulty is just WAAYYY too hard. Suggested playthroughs: a) A playthrough from level 1 against easy enemies (start of game testing) b) A playthrough at max level with Max stats with all items and skills unlocked. (endgame testing). Impact 8 × Ease 4 / 10 = 3.2.
+
+- **[LOW] zustand dependency has patch update available** — npm outdated shows zustand 5.0.13 → 5.0.14. Safe patch bump per iterate guidelines. Impact 3 × Ease 9 / 10 = 2.7.
 
 <!-- Pending queue empty. The GH#78 previewStatAllocation row was drained to Done at oversight-26 (2026-05-30) — it had been promoted as Phase 97 and shipped at commit 5ff7084, so the Pending row was stale. -->
 
