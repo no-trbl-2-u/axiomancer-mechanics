@@ -36,20 +36,13 @@
 - suggested_fix: Add explanatory comment above the @ts-ignore describing why .mjs import bypasses TS module graph validation, or explore proper typing via ambient declaration.
 - source: critique
 
-### [LOW] Combat — deprecation removals due at the v0.13.0 minor bump are un-actioned
-- pass: critique-46 (commit 81ff3a5)
-- area: dead-code
-- observation: `getResistStat` (`src/index.ts:54`, `src/Combat/stats.ts:64`) and the three `endCombat*` aliases (`src/index.ts:78`, `src/Combat/combat.reducer.ts:143/149/155`) are `@deprecated` with a "removal at the next minor bump" schedule recorded in `CHANGELOG.md:425` (### Deprecated). The 0.12.0 → 0.13.0 minor bump has now happened, so all four are eligible for removal — each has zero non-test in-repo callers (getResistStat: only `stats.ts` def + 2 tests; the aliases: only the barrel re-export + tests). Yet they remain on the public barrel and the `[unreleased] ### Removed` section (`CHANGELOG.md:23`) is empty, so the lifecycle stalled at the boundary it was scheduled to clear.
-- evidence: `src/index.ts:54,78`; `src/Combat/stats.ts:64`; `src/Combat/combat.reducer.ts:143,149,155`; `CHANGELOG.md:425` (Deprecated) vs `:23` (empty Removed); `package.json` `0.13.0`.
-- suggested_fix: Batch-remove the four symbols (verify zero external/mobile callers first), drop them from `src/index.ts` + `src/Combat/index.ts`, and add a `[unreleased] ### Removed` CHANGELOG entry; OR if external-consumer verification is pending, update the schedule note to the next bump. Note this is the per-instance counterpart to the presets MED above.
-- status: **PROMOTED to Phase 106** via oversight-28 2026-06-02 (attended-approved public-API breaking removal). Owned by the phase; drains Pending → Done when Phase 106 ships. `/iterate` should skip this row meanwhile.
-- source: critique
 
 
 ---
 
 ## Done
 
+- [x] **[LOW] Combat — deprecation removals due at the v0.13.0 minor bump are un-actioned** — resolved at Phase 106 (this commit). Removed four `@deprecated` symbols scheduled for removal at v0.13.0 minor bump: `getResistStat` (replaced by `getEffectiveStats(target).baseStats[stance]`) and three `endCombat*` aliases (replaced by `endCombat`). Updated test files to use replacements, removed from public barrels, updated public surface fixture (-4 runtime exports), added CHANGELOG `### Removed` entries with migration guidance, cleared deprecated schedule row. Zero external callers documented assumption per build plan guidance. Source: critique-46 (commit `81ff3a5`).
 - [x] **[MED] Character/presets — `@deprecated remove at v0.13.0` schedule now contradicts live use** — resolved at commit `89e52e3` (2026-06-01). Updated JSDoc @deprecated tags in src/Character/presets.ts (lines 4, 28, 136, 141, 148) from "Scheduled for removal at v0.13.0" to "no earlier than v0.14.0, after the Playtest runner migrates off presets". Added note naming src/Playtest/playtest.runner.ts as removal blocker. Resolves contradiction where package reached v0.13.0 but presets remain load-bearing for Playtest harness.
 - [x] **[MED] docs — Phase 97 `previewStatAllocation` export undocumented** — resolved at commit `d46bfbd` (2026-06-01). Added `previewStatAllocation` to `docs/api.md` stat allocation section and `docs/character.md` "Stat allocation" section with signature, mobile preview framing, and pure function description. Front-door readers now have discovery path to the mobile preview API.
 - [x] **[HIGH] general — manual playtest: difficulty too hard (component)** — partially resolved at commit `557c7b2` (2026-06-01). Addressed difficulty scaling issue by reducing DEFENSE_MULTIPLIERS from advantage:3/neutral:2/disadvantage:1.5 to advantage:2/neutral:1.5/disadvantage:1.0. Fixes critical early game issue where level 1 players dealt 0 damage to weakest enemies. Other components (combat re-trigger bug, token system issues, skill access UX) remain for future /iterate or /oversight triage.

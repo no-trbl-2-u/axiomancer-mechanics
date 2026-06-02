@@ -379,7 +379,7 @@ listed where they exist for backwards compatibility.
 | `setPlayerAction(state, action)` | — | Sets the player's action choice |
 | `appendLog(state, entry)` | — | Appends a battle log entry |
 | `incrementFriendship(state)` | — | Increments the friendship counter |
-| `endCombat(state)` | `endCombatPlayerVictory`, `endCombatPlayerDefeat`, `endCombatWithFriendship` | Marks combat as ended; the reason is encoded in `determineCombatEnd(state)` |
+| `endCombat(state)` | — | Marks combat as ended; the reason is encoded in `determineCombatEnd(state)` |
 
 ## Combat Resolver API
 
@@ -407,7 +407,7 @@ round-resolution entry point used by every UI client.
 | `getAttackStat(entity, stance)` | Attack derived stat for a stance |
 | `getDefenseStat(entity, stance)` | Defense derived stat for a stance |
 | `getSaveStat(entity, stance)` | Save stat for a stance (enemies fall back to defense) |
-| `getResistStat(entity, resistedBy)` | Base stat used when resisting an effect |
+| `getEffectiveStats(entity).baseStats[resistedBy]` | Base stat used when resisting an effect |
 | `rollSkillCheck(baseStat, advantage)` | d20 + modifier with advantage/disadvantage |
 | `calculateFinalDamage(base, reduction, crit, bonus)` | Damage after reductions. On crit, picks the higher of `double` (2× base − defence) vs `pierce` (base, defence ignored) — Phase 32 auto-selection. |
 | `selectCritDamage(base, reduction, bonus)` | Phase 32 — returns `{ style, damage }` for the crit auto-selection in isolation, useful for tests / future damage previews. |

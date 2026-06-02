@@ -140,19 +140,3 @@ export function endCombat(state: CombatState): CombatState {
 // non-barrel aliases (`updateCombatPhase`, `addBattleLogEntry`) had zero
 // in-repo callers and were dropped at the Phase 35 follow-up iterate pass.
 
-/** @deprecated Use `endCombat` instead — this alias dispatches to it.
- *  The outcome is computed by `determineCombatEnd(state)`, not by the
- *  function name. Scheduled for removal at the next minor bump (track
- *  in `CHANGELOG.md` ### Removed). */
-export const endCombatPlayerVictory = endCombat;
-
-/** @deprecated Use `endCombat` instead — this alias dispatches to it.
- *  The outcome is computed by `determineCombatEnd(state)`, not by the
- *  function name. Calling this does NOT mark a defeat. Scheduled for
- *  removal at the next minor bump. */
-export const endCombatPlayerDefeat = endCombat;
-
-/** @deprecated Use `endCombat` instead — this alias dispatches to it.
- *  The outcome is computed by `determineCombatEnd(state)`, not by the
- *  function name. Scheduled for removal at the next minor bump. */
-export const endCombatWithFriendship = endCombat;

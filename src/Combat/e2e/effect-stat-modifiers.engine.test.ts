@@ -23,9 +23,9 @@ import type { ActiveEffect } from '../../Effects/types';
 import {
     getAttackStat,
     getDefenseStat,
-    getResistStat,
     getBaseStat,
 } from '../stats';
+import { getEffectiveStats } from '../effect-modifiers';
 
 function withEffects(effects: ActiveEffect[]) {
     return {
@@ -70,7 +70,7 @@ describe('Phase 48 — statModifiers runtime aggregation (KG Q8)', () => {
         expect(getAttackStat(c, 'body')).toBe(7);
         expect(getDefenseStat(c, 'body')).toBe(21);
         // Resist stat reads the (effective) base stat for the named stance.
-        expect(getResistStat(c, 'body')).toBe(7);
+        expect(getEffectiveStats(c).baseStats.body).toBe(7);
     });
 });
 

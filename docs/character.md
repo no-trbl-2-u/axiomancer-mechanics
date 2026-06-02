@@ -112,7 +112,7 @@ shipped by Phase 29 (`9f2e3f6` + `121aea8` + `db7c26f`); closes
 ## Resist Stat Lookup
 
 When resisting an effect, the target's **base stat** for the resisting stance is used
-via `getResistStat()` in `Combat/stats.ts`:
+via `getEffectiveStats(target).baseStats[stance]` in `Combat/effect-modifiers.ts`:
 
 | `resistedBy` | Stat used |
 |-------------|-----------|
@@ -125,7 +125,7 @@ via `getResistStat()` in `Combat/stats.ts`:
 | Function | Description |
 |----------|-------------|
 | `createCharacter(options)` | Factory — creates a fully derived Character from name, level, and base stats |
-| `getResistStat(target, resistedBy)` | Base stat value for the resisting stance (lives in `Combat/stats.ts`) |
+| `getEffectiveStats(target).baseStats[resistedBy]` | Base stat value for the resisting stance (lives in `Combat/effect-modifiers.ts`) |
 | `characterPresets` / `getPresetById` / `buildCharacterFromPreset` | Curated progression-tier roster (apprentice / wanderer / sage). The builder lifts a declarative `CharacterPreset` into a `Character` via the canonical `createCharacter` + `dropItem` paths. Presets should express skill progression as unlocked `knownSkills`; the legacy `equippedSkills` preset field is scheduled for removal in Phase 99. `npm run game` prompts the player to pick one at boot. |
 
 ## Character presets

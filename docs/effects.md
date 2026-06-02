@@ -601,7 +601,7 @@ Full per-effect documentation: [`docs/effects/debuffs/`](./effects/debuffs/)
 | `clearTier1EffectsForStance(effects, currentStance)` (alias `clearTier1EffectsForType`) | `src/Effects/index.ts` | Removes stale Tier 1 self-buffs on stance switch |
 | `removeEffect(effects, effectId)` | `src/Effects/index.ts` | Removes the first ActiveEffect with the given ID |
 | `removeEffectsByType(effects, type, maxTier?)` | `src/Effects/index.ts` | Bulk strip by buff/debuff with optional tier cap (used by cleanse/dispel) |
-| `getResistStat(target, resistedBy)` | `src/Combat/stats.ts` | Target's effective base stat for the resisting stance |
+| `getEffectiveStats(target).baseStats[resistedBy]` | `src/Combat/effect-modifiers.ts` | Target's effective base stat for the resisting stance |
 | `resolveEffectApplication(target, activeEffect, effectType, heartBonus, equipBonus)` | `src/Combat/index.ts` | Effect application (Tier 2 debuff/Tier 3: always-land; Tier 2 buff: caster fumble/crit roll) |
 | `tickAllEffects(target)` | `src/Combat/effects.ts` | End-of-round duration decrement; returns expired list |
 | `updateEffectDuration(target, effectId)` | `src/Combat/effects.ts` | Tick one specific effect by ID |

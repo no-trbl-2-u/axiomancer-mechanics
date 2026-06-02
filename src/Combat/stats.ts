@@ -56,15 +56,3 @@ export function getSaveStat(combatant: Combatant, stance: Stance): number {
     return getDefenseStat(combatant, stance);
 }
 
-/**
- * Returns the value used to resist an effect of the given stance.
- * Defenders' baseStats[stance] (after effect modifiers) is the canonical
- * resist stat.
- *
- * @deprecated Unused post-Phase-80 (target-resist roll removed). Zero in-repo
- * callers. Scheduled for removal at the next minor bump. External consumers
- * should use `getEffectiveStats(combatant).baseStats[stance]` directly.
- */
-export function getResistStat(combatant: Combatant, resistedBy: Stance): number {
-    return getEffectiveStats(combatant).baseStats[resistedBy];
-}

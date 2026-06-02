@@ -17,7 +17,7 @@ import {
     applyCleanse, applyDispel,
 } from './effects';
 import { resolveEffectiveAdvantage } from './advantage';
-import { getAttackStat, getDefenseStat, getResistStat } from './stats';
+import { getAttackStat, getDefenseStat } from './stats';
 
 const fixture = (effects: ActiveEffect[]) =>
     ({ ...createCharacter({ name: 't', level: 1, baseStats: { heart: 5, body: 5, mind: 5 } }), effects });
@@ -172,7 +172,7 @@ describe('stat lookup helpers honor effective stats and defenseDelta', () => {
 
     it('getResistStat returns effective base stat', () => {
         const t = fixture([ae('buff_body_attack_up')]); // +2 body
-        expect(getResistStat(t, 'body')).toBe(7);
+        expect(getEffectiveStats(t).baseStats.body).toBe(7);
     });
 });
 

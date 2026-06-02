@@ -23,6 +23,9 @@ deep imports are part of the supported surface.
 
 ### Removed
 
+- **getResistStat(combatant, stance)** — replaced by `getEffectiveStats(combatant).baseStats[stance]`. Unused post-Phase-80 target-resist roll removal.
+- **endCombatPlayerVictory / endCombatPlayerDefeat / endCombatWithFriendship aliases** — replaced by `endCombat()`. The outcome is computed by `determineCombatEnd(state)`, not by function name.
+
 ### Fixed
 
 - **Combat re-trigger lock cleared for all outcomes** (Phase 103): Fixed bug where players could not trigger new combat encounters after victory or friendship outcomes. All terminal combat outcomes (victory, friendship, defeat) now properly clear encounter state, allowing subsequent combat triggers to work correctly.
@@ -424,18 +427,6 @@ migrators. Per-phase detail in the `### Added` section below.
   Unit 3 (this commit — docs + bearings + CHANGELOG).
   `scripts/public-surface.expected.json` grows from 161 → 162 types
   (runtime exports unchanged at 233).
-
-### Deprecated
-- **Combat-reducer legacy aliases (`endCombatPlayerVictory` /
-  `endCombatPlayerDefeat` / `endCombatWithFriendship`).** All three are
-  now marked `@deprecated` in `src/Combat/combat.reducer.ts`. They
-  continue to dispatch to `endCombat` (zero behaviour change); the
-  outcome has always been computed by `determineCombatEnd(state)`, not
-  by the function name. Scheduled for removal at the next minor bump
-  (`v0.11.0` or later). Consumers calling them should switch to
-  `endCombat` directly. Tooling note: TypeScript-aware editors will
-  begin flagging the call sites with `@deprecated` strike-through; the
-  build is unaffected.
 
 ### Changed
 - **Apprentice preset `baseStats` buffed 3/2/2 → 5/5/5 (`ff53ea0`).** User-attended

@@ -51,7 +51,7 @@ export type { EnemySlug } from './Enemy/enemy.library';
 export {
     determineAdvantage, getAdvantageModifier, hasAdvantage,
     resolveEffectiveAdvantage,
-    getBaseStat, getAttackStat, getDefenseStat, getSaveStat, getResistStat,
+    getBaseStat, getAttackStat, getDefenseStat, getSaveStat,
     rollSkillCheck, isCriticalHit, isCriticalMiss,
     applyCriticalMultiplier, calculateFinalDamage, selectCritDamage, isAttackSuccessful,
     applyDamage, heal, isAlive, isDefeated, getHealthPercentage,
@@ -75,7 +75,6 @@ export type {
 export {
     initializeCombat, setPhase, setPlayerStance, setPlayerAction,
     appendLog, incrementFriendship, endCombat,
-    endCombatPlayerVictory, endCombatPlayerDefeat, endCombatWithFriendship,
 } from './Combat/combat.reducer';
 
 // ─── Combat resolver ──────────────────────────────────────────────────────────

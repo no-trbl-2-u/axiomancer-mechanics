@@ -28,7 +28,7 @@ export type {
 } from './types';
 
 export { determineAdvantage, hasAdvantage, getAdvantageModifier, resolveEffectiveAdvantage } from './advantage';
-export { getBaseStat, getAttackStat, getDefenseStat, getSaveStat, getResistStat } from './stats';
+export { getBaseStat, getAttackStat, getDefenseStat, getSaveStat } from './stats';
 export { rollSkillCheck, isCriticalHit, isCriticalMiss } from './dice';
 export { applyCriticalMultiplier, calculateFinalDamage, selectCritDamage, isAttackSuccessful } from './damage';
 export { applyDamage, heal, isAlive, isDefeated, getHealthPercentage } from './health';
