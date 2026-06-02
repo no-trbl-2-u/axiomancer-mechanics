@@ -5,10 +5,11 @@ import type { CombatEndReport } from '../Game/store';
 export type PlaytestPolicy =
     | 'aggressive'
     | 'defensive'
+    | 'strategist'
+    | 'mixed'
     | 'friendship'
     | 'resource-optimal'
     | 'random'
-    | 'mixed'
     | 'mercy';
 
 export type PlaytestOutcome = CombatEndReport['outcome'] | 'timeout';

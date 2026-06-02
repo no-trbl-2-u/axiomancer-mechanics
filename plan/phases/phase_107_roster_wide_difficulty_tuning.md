@@ -2,7 +2,7 @@
 
 ## Outcome
 
-Tune Axiomancer combat parameters against repeatable playtest evidence until the canonical roster-wide balance loop reaches approximately **70% win rate** without hiding broken skill/resource/status-effect systems behind stat changes.
+Tune Axiomancer combat parameters against repeatable playtest evidence until **every current playtest strategy** reaches approximately **70% win rate** without hiding broken skill/resource/status-effect systems behind stat changes. Combat is fundamentally status-effect-centered: basic attacking or pure friendliness may sometimes work, but players who ignore skills and status planning should face the harder road.
 
 This phase intentionally runs **before** a formal difficulty-curve doctrine spec. Doctrine follows measured battlefield truth.
 
@@ -14,7 +14,8 @@ T direct decision, 2026-06-02:
 - Use a fix → playthrough → fix → playthrough loop.
 - Before tuning, verify token resource generation, skill casting, and status-effect behavior are functioning correctly.
 - Only then adjust content/balance parameters.
-- Call the phase successful when playtest evidence reaches approximately 70% win rate.
+- Call the phase successful only when **every current strategy** reaches approximately 70% win rate, with evidence for AGGRESSIVE, DEFENSIVE, MIXED, and STRATEGIST play styles.
+- Treat STRATEGIST — skill/status-effect planning — as the witness for the intended mastery path.
 
 ## Preflight — must pass before tuning
 
@@ -37,7 +38,7 @@ If preflight finds a real engine bug, fix that bug first and rerun the preflight
 
 ## The loop
 
-Repeat until the current roster-wide report reaches approximately **70% win rate** and no dominant pathological policy remains:
+Repeat until every current strategy in the roster-wide report reaches approximately **70% win rate** and no dominant pathological policy remains. Required play styles are **AGGRESSIVE**, **DEFENSIVE**, **MIXED**, and **STRATEGIST**; any additional harness policy must either meet the target or be explicitly retired:
 
 1. **Adjust parameters.** Prefer smallest-change-first changes to authored parameters:
    - enemy stats / level
@@ -81,8 +82,9 @@ The authorized tuning surface is parameters first. Mechanics rewrites require di
 - Preserve authored identity: alignment pins, enemy fantasy, mercy-route predicates, and skill-role intent should survive unless evidence says they are the problem.
 
 **Unit 4 — closeout evidence**
-- Produce before/after report evidence showing approximately 70% win rate.
-- Include timeout, defeat, friendship, policy, skill-use, and resource-use summaries.
+- Produce before/after report evidence showing approximately 70% win rate for **every current strategy**.
+- Include timeout, defeat, friendship, policy, skill-use, resource-use, and status-effect summaries.
+- Confirm the STRATEGIST/status-effect path is viable and more expressive than basic attack repetition.
 - Append a sound-mechanics summary to `automation/playtest/BALANCE_LEDGER.md` comparing final stats against Marker M0.
 - Update `automation/playtest/NEXT_STEPS.md` if the loop reveals a new stable target or blind spot.
 
@@ -101,8 +103,9 @@ The authorized tuning surface is parameters first. Mechanics rewrites require di
 - [ ] Status-effect preflight evidence captured.
 - [ ] Baseline roster/playtest report captured before tuning.
 - [ ] Parameter adjustments made only inside the authorized surface unless T explicitly approves mechanics changes.
-- [ ] Current playtest report reaches approximately 70% win rate.
-- [ ] Timeout/friendship/policy pathologies are documented, fixed, or explicitly carried as follow-up.
+- [ ] Current playtest report reaches approximately 70% win rate for **every current strategy**, including AGGRESSIVE, DEFENSIVE, MIXED, and STRATEGIST.
+- [ ] STRATEGIST/status-effect evidence proves skill/status planning is viable and preferred over attack-only play.
+- [ ] Timeout/friendship/policy pathologies are documented, fixed, explicitly retired from the harness, or carried as follow-up.
 - [ ] Before/after evidence and exact commands are recorded in phase closeout.
 
 ## Follow-ups

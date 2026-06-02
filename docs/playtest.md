@@ -67,7 +67,9 @@ Use these references when making balance changes to validate that early-game acc
 
 ## Phase 107 tuning loop
 
-The current roster-wide difficulty mandate is empirical: verify the combat machinery, tune parameters, playtest, read the report, and repeat until the current report reaches approximately **70% win rate**.
+Axiomancer combat doctrine: status effects are central. A player may sometimes win by basic attacking or friendliness, but the intended mastery path is skill use, resource planning, status application, and status synergy. Playtest evidence must include AGGRESSIVE, DEFENSIVE, MIXED, and STRATEGIST styles; STRATEGIST is the witness for skill/status planning.
+
+The current roster-wide difficulty mandate is empirical: verify the combat machinery, tune parameters, playtest, read the report, and repeat until the current report reaches approximately **70% win rate for every current strategy**.
 
 Preflight before tuning:
 

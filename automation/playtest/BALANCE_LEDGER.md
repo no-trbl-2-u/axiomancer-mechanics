@@ -5,7 +5,7 @@ This ledger records balance markers and later sound-mechanics summaries for the 
 Purpose:
 
 - Preserve a **marker** before roster-wide tuning begins.
-- When workers judge mechanics sound, append a **sound-mechanics summary** comparing that state against the latest marker.
+- When workers judge mechanics sound, append a **sound-mechanics summary** comparing that state against the latest marker. Mechanics are sound only when every current strategy reaches the target band, not when the aggregate hides a weak strategy.
 - Record final stats so later doctrine is written from evidence rather than memory.
 
 ## Required entry shape
@@ -25,6 +25,7 @@ Every marker or closeout entry must include:
 - average damage to enemy
 - max friendship counter
 - policy-level abnormalities
+- status-effect evidence, especially STRATEGIST skill/status planning
 - summary difference from the prior marker, when applicable
 - next judgment: continue tuning / mechanics sound / discuss mechanics change
 
@@ -41,6 +42,7 @@ Every marker or closeout entry must include:
 - Max rounds: 75
 - Runs: 25
 - Policies: aggressive, defensive, friendship, resource-optimal, random, mixed
+- Required future canonical play styles: aggressive, defensive, mixed, strategist
 
 Stats:
 
@@ -100,12 +102,14 @@ Difference from prior marker:
 - Win rate:
 - Timeout rate:
 - Friendship rate:
+- Per-strategy win rates, including AGGRESSIVE / DEFENSIVE / MIXED / STRATEGIST:
 - Dominant policy changes:
-- Skill/resource/status-effect evidence:
+- Skill/resource/status-effect evidence, including whether STRATEGIST proves the intended mastery path:
 - Parameter changes made:
 - Mechanics changes discussed or rejected:
 
 Judgment:
 
 - Continue tuning / mechanics sound / discuss mechanics change:
+- Skill/status doctrine satisfied? yes / no:
 - Notes:

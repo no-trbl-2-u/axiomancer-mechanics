@@ -21,20 +21,20 @@ describe('Automated playtest harness', () => {
             description: 'Hermetic smoke scenario for the playtest harness.',
             preset: 'sage',
             enemy: 'coastal-tyrant',
-            runs: 3,
+            runs: 4,
             maxRounds: 8,
             seed: 'playtest-harness-e2e',
-            policies: ['aggressive', 'friendship'],
+            policies: ['aggressive', 'defensive', 'mixed', 'strategist'],
         };
 
         const report = runPlaytestScenario(scenario);
 
         expect(report.scenarioId).toBe(scenario.id);
-        expect(report.runs).toHaveLength(3);
-        expect(report.metrics.totalRuns).toBe(3);
-        expect(report.metrics.outcomes.victory + report.metrics.outcomes.defeat + report.metrics.outcomes.friendship + report.metrics.outcomes.timeout).toBe(3);
+        expect(report.runs).toHaveLength(4);
+        expect(report.metrics.totalRuns).toBe(4);
+        expect(report.metrics.outcomes.victory + report.metrics.outcomes.defeat + report.metrics.outcomes.friendship + report.metrics.outcomes.timeout).toBe(4);
         expect(report.metrics.averageRounds).toBeGreaterThan(0);
-        expect(report.metrics.policySummaries.map(summary => summary.policy).sort()).toEqual(['aggressive', 'friendship']);
+        expect(report.metrics.policySummaries.map(summary => summary.policy).sort()).toEqual(['aggressive', 'defensive', 'mixed', 'strategist']);
         expect(report.runs[0]).toMatchObject({
             run: 1,
             seed: 'playtest-harness-e2e:1',
