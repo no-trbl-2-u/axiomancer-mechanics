@@ -49,6 +49,12 @@ Repeat until every current strategy in the roster-wide report reaches approximat
 3. **Read the evidence.** Use win/defeat/friendship/timeout rates, policy summaries, rounds-to-resolve, skill use, resource events, item use, and stance/action distributions to decide the next adjustment.
 4. **Repeat.** Keep commits small enough that each tuning change can be explained by the prior report.
 
+## Mechanics-change proposal — Befriend as heart skill
+
+T's current friendship doctrine is recorded in `docs/adr/ADR-0007-befriend-is-heart-skill-with-mercy-choice.md` and company CDR-0005. The intended direction is not to fix Coastal Tyrant by merely lowering an HP threshold. Keep HP pressure, but make Befriend an explicit heart-based skill every player starts with, requiring 5 heart tokens to attempt. A successful Befriend opens a consequential choice: spare/befriend the encounter, or exploit the opening for a free guaranteed critical attack. Mechanics owns the CLI choice; Mobile owns the modal consumer once engine truth exists.
+
+Phase 107 should treat this as the leading mechanics-change proposal if parameter tuning cannot make STRATEGIST/friendship viable. The proposal still requires implementation details before code: whether the 5 heart is spent or only held, whether failed attempts consume tokens, how status effects modify success/eligibility, and what alignment/content consequences fire for spare vs exploit.
+
 ## Stop condition — mechanics discussion required
 
 Do **not** silently change core mechanics if parameter tuning cannot reach the target. Stop and ask T before adjusting rules such as:

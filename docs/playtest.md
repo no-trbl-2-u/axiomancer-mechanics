@@ -84,7 +84,7 @@ Authorized first-pass tuning surface:
 - player equipment
 - player skills
 
-Do not change core mechanics silently. If parameter tuning cannot reach the target, stop for T discussion before altering friendship semantics, token formulae, skill costs, damage/resistance, action economy, status-effect rules, or AI rules beyond authored enemy parameters.
+Do not change core mechanics silently. If parameter tuning cannot reach the target, stop for T discussion before altering friendship semantics, token formulae, skill costs, damage/resistance, action economy, status-effect rules, or AI rules beyond authored enemy parameters. Current accepted friendship proposal: do not merely lower boss HP gates; keep HP pressure and prototype Befriend as a starting heart-based skill requiring 5 heart tokens to attempt, followed by a player choice to spare/befriend or exploit the opening for a free guaranteed critical hit. See `docs/adr/ADR-0007-befriend-is-heart-skill-with-mercy-choice.md`.
 
 ## Data Types
 

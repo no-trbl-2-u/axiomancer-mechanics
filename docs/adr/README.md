@@ -20,3 +20,4 @@ ADRs capture durable mechanics-engine decisions. They sit above build plans and 
 - [ADR-0004 — Reference playtests anchor balance](./ADR-0004-reference-playtests-anchor-balance.md)
 - [ADR-0005 — New continents deferred until first continent is clean](./ADR-0005-new-continents-deferred-until-first-continent-clean.md)
 - [ADR-0006 — Nexus state reconciliation precedes feature work](./ADR-0006-nexus-state-reconciliation-precedes-feature-work.md)
+- [ADR-0007 — Befriend is a heart skill with a mercy choice](./ADR-0007-befriend-is-heart-skill-with-mercy-choice.md)

@@ -104,6 +104,7 @@ Phase 107 parameter tuning achieved partial success:
 - Sage preset: reverted to original baseStats after testing
 
 **Next iteration priorities:**
-1. Investigate STRATEGIST policy logic and friendship victory thresholds
-2. Slight difficulty increase to bring DEFENSIVE policy down from 100% to ~70%
-3. Verify friendship mechanics are working correctly (counters accumulate but victory never triggers)
+1. Investigate STRATEGIST policy logic and the Befriend-as-heart-skill proposal from `docs/adr/ADR-0007-befriend-is-heart-skill-with-mercy-choice.md`.
+2. Do **not** solve Coastal Tyrant by merely lowering the HP gate. Preserve HP pressure, but prototype explicit Befriend: starting heart skill, 5 heart tokens to attempt, then spare/befriend vs exploit/free-critical choice.
+3. Slight difficulty increase to bring DEFENSIVE policy down from 100% to ~70%.
+4. Verify friendship mechanics are working correctly (counters accumulate but victory never triggers under the current model).
