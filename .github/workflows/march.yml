@@ -29,6 +29,7 @@ permissions:
   contents: write        # git push commits the loop produces
   issues: write          # /triage + phase-mirror issue ops
   pull-requests: write   # /critique / /iterate may open PRs
+  actions: read          # idle gate parity with mobile / future run-history checks
   id-token: write        # for Anthropic's auth proxy
 
 concurrency:
@@ -50,18 +51,43 @@ jobs:
       - name: Idle check (scheduled runs only)
         if: github.event_name == 'schedule'
         id: idle
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Skip if the march bot hasn't committed in the last 3 hours.
-          # This prevents burning CI minutes when there's no work to do.
-          # A manual workflow_dispatch always runs regardless.
-          SINCE=$(date -u -d '3 hours ago' '+%Y-%m-%dT%H:%M:%S')
-          COUNT=$(git log --since="$SINCE" --author="axiomancer-march\[bot\]" --oneline | wc -l)
-          if [ "$COUNT" -eq 0 ]; then
-            echo "No bot commits in the last 3 hours — skipping idle tick."
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "Found $COUNT bot commit(s) since $SINCE — march is active."
+          # Scheduled runs should wake when there is recent repo activity OR
+          # explicit queued phase work. Manual workflow_dispatch always runs.
+          LOOKBACK="3 hours ago"
+
+          # 1. Bot commits in the lookback window → march is productive.
+          BOT=$(git log --oneline --after="$LOOKBACK" \
+                --author="axiomancer-march" | wc -l | tr -d ' ')
+
+          # 2. Human commits → new work for march to pick up.
+          HUMAN=$(git log --oneline --after="$LOOKBACK" \
+                  --invert-grep --author="axiomancer-march" | wc -l | tr -d ' ')
+
+          # 3. Issues created/updated recently → triage work.
+          CUTOFF=$(date -u -d "$LOOKBACK" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null \
+                || date -u -v-3H +%Y-%m-%dT%H:%M:%SZ)
+          ISSUES=$(gh issue list --state open --limit 5 \
+                   --search "updated:>=$CUTOFF" \
+                   --json number -q 'length' 2>/dev/null || echo "0")
+
+          # 4. Ready phase rows → known queued implementation work.
+          # Rows marked [x], [deferred], [skipped], [blocked], or [needs-*]
+          # are deliberately not counted as fuel.
+          PHASES=$(grep -E '^- \[ \] Phase [0-9]+' plan/steps/01_build_plan.md 2>/dev/null \
+                   | grep -Ev '\[(deferred|skipped|blocked|needs-[^]]+)\]' \
+                   | wc -l | tr -d ' ')
+
+          echo "bot=$BOT  human=$HUMAN  issues=$ISSUES  ready_phases=$PHASES"
+
+          if [ "$BOT" -gt 0 ] || [ "$HUMAN" -gt 0 ] || [ "$ISSUES" -gt 0 ] || [ "$PHASES" -gt 0 ]; then
+            echo "Activity or queued phase work detected — proceeding."
             echo "skip=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::No bot commits, human commits, updated issues, or ready phase rows. March is idle — skipping."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Setup Node
