@@ -378,8 +378,8 @@ describe('Phase 70 — Coastal Tyrant boss-tier friendshipReward (full Phase 60+
         expect(lootIds).toContain('heart-draught');
 
         // xpBonus — Phase 70 D2 sets +75 on top of the half-XP base for the
-        // boss tier (7 * 200 / 2 = 700; +75 = 775).
-        expect(report.xpGained).toBe(Math.floor(7 * 200 * 0.5) + 75);
+        // boss tier (6 * 200 / 2 = 600; +75 = 675).
+        expect(report.xpGained).toBe(Math.floor(6 * 200 * 0.5) + 75);
 
         // narrative — the magistrate-fallen-priest's recognition + release.
         expect(report.friendshipReward?.narrative).toMatch(/magistrate/);
