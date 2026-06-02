@@ -40,6 +40,8 @@ Then repeat the loop:
 
 If parameter tuning cannot reach the target, stop and bring T a mechanics proposal before changing friendship semantics, token formulae, skill costs, damage/resistance, action economy, status-effect rules, or AI rules beyond authored parameters.
 
+Marker M0 and future sound-mechanics closeouts are recorded in `automation/playtest/BALANCE_LEDGER.md`. When mechanics are deemed sound, append the summary difference against Marker M0 with final stats.
+
 ## Example Usage
 
 ```typescript

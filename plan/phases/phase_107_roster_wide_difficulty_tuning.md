@@ -83,6 +83,7 @@ The authorized tuning surface is parameters first. Mechanics rewrites require di
 **Unit 4 — closeout evidence**
 - Produce before/after report evidence showing approximately 70% win rate.
 - Include timeout, defeat, friendship, policy, skill-use, and resource-use summaries.
+- Append a sound-mechanics summary to `automation/playtest/BALANCE_LEDGER.md` comparing final stats against Marker M0.
 - Update `automation/playtest/NEXT_STEPS.md` if the loop reveals a new stable target or blind spot.
 
 ## Verify gate
