@@ -75,6 +75,10 @@ export interface ScenarioPhaseResult {
     enemy: Enemy;
     combatResources: CombatResources;
     friendshipCounter: number;
+    /** Phase 108 - when true, indicates mercy choice state is active */
+    mercyChoiceActive?: boolean;
+    /** Phase 108 - when set, indicates the phase should transition to this state */
+    phaseTransition?: 'mercy_choice';
 }
 
 export function runScenarioPhase(
@@ -135,6 +139,20 @@ export function runScenarioPhase(
             enemy  = resolution.state.enemy;
             combatResources = resolution.state.combatResources;
             for (const ev of resolution.events) events.push(toRoundEvent(ev));
+            
+            // Phase 108 — Handle mercy choice activation from successful Befriend
+            if (resolution.activateMercyChoice) {
+                // Early return to preserve mercy choice state - combat continues in mercy_choice phase
+                return {
+                    player,
+                    enemy,
+                    combatResources,
+                    friendshipCounter,
+                    // Set mercy choice active flag and transition to mercy_choice phase
+                    mercyChoiceActive: true,
+                    phaseTransition: 'mercy_choice' as const,
+                };
+            }
         }
     }
 
@@ -231,6 +249,27 @@ export function runScenarioPhase(
         }
     }
 
+    // Phase 108 — Handle mercy choice actions (spare/exploit)
+    if (playerActionFinal === 'spare') {
+        // Spare/befriend choice - immediately end combat with friendship outcome
+        events.push({
+            phase: 'scenario', kind: 'mercy-chosen',
+            choice: 'spare',
+            message: 'You chose mercy - the combat ends in friendship.',
+        });
+        // Force friendship state by setting friendshipCounter to max
+        friendshipCounter = 999; // Will trigger friendship end in determineCombatEnd
+        return { player, enemy, combatResources, friendshipCounter };
+    }
+    
+    if (playerActionFinal === 'exploit') {
+        // Exploit choice - guaranteed critical attack then continue combat
+        ({ player, enemy } = resolveExploitAttack(
+            player, enemy, playerStance, enemyStance, events, round,
+        ));
+        // Continue to resource generation after exploit attack
+    }
+
     const playerBasicAttacked = !skillBlocked && playerActionFinal === 'attack';
     const playerBasicDefended = !skillBlocked && playerActionFinal === 'defend';
 
@@ -296,6 +335,55 @@ export function runScenarioPhase(
     }
 
     return { player, enemy, combatResources, friendshipCounter };
+}
+
+// ─── Phase 108 — Mercy choice resolution ─────────────────────────────────────
+
+/** Exploit attack: guaranteed critical hit with pierce damage */
+function resolveExploitAttack(
+    player: Character,
+    enemy: Enemy,
+    playerStance: Stance,
+    enemyStance: Stance,
+    events: RoundEvent[],
+    round: number,
+): { player: Character; enemy: Enemy } {
+    // Calculate base attack values using derived stats
+    const playerAttack = getAttackStat(player, playerStance);
+    
+    // Simulate a critical roll (guaranteed)
+    events.push({
+        phase: 'scenario', kind: 'attack-roll',
+        actor: 'player', rawRoll: 20, statValue: playerAttack, advantage: 'advantage',
+        rollModifier: 0, total: 20 + playerAttack,
+    });
+    
+    // Calculate exploit damage (pierce crit - ignores all defense)
+    const baseDamage = getBaseStat(player, playerStance);
+    const exploitDamage = baseDamage * 2; // Double damage for crit
+    
+    events.push({
+        phase: 'scenario', kind: 'damage-roll',
+        actor: 'player', rawRoll: exploitDamage, statValue: playerAttack, advantage: 'advantage',
+        rollModifier: 0, total: exploitDamage,
+    });
+    
+    const hpBefore = enemy.health;
+    const nextEnemy = applyDamage(enemy, exploitDamage);
+    
+    events.push({
+        phase: 'scenario', kind: 'damage-applied',
+        attacker: 'player', defender: 'enemy',
+        attackStance: playerStance, defenseStance: enemyStance,
+        attackStatValue: playerAttack, damageRoll: exploitDamage, damageBonus: 0,
+        baseDefense: 0, defenseMultiplier: 0, // Pierce ignores defense
+        finalDamage: exploitDamage, hpBefore, hpAfter: nextEnemy.health,
+        defenderActed: false,
+        isCritical: true,
+        critStyle: 'pierce',
+    });
+    
+    return { player, enemy: nextEnemy };
 }
 
 // ─── Internal helpers (formerly in combat.resolver.ts) ────────────────────────
@@ -749,5 +837,8 @@ function toRoundEvent(ev: SkillEvent): SkillPhaseEvent {
         case 'friendship-incremented':
             return { phase: 'skill', kind: 'friendship-incremented',
                      skillId: ev.skillId, amount: ev.amount };
+        case 'befriend-attempted':
+            return { phase: 'skill', kind: 'befriend-attempted',
+                     skillId: ev.skillId, successful: ev.successful, message: ev.message };
     }
 }

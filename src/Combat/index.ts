@@ -59,6 +59,12 @@ export type {
 } from './combat-effects';
 export { calculateEnemyStatMultiplier, applyMoralMeterScaling } from './difficulty';
 
+// Phase 108 — Mercy choice functions and combat state management
+export {
+    initializeCombat, setPhase, setPlayerStance, setPlayerAction, 
+    appendLog, incrementFriendship, selectMercyChoice, endCombat
+} from './combat.reducer';
+
 // ─── Round resolver ──────────────────────────────────────────────────────────
 // `resolveCombatRound` is the single entry point any UI client (CLI, future
 // React Native UI, automated tester) calls to advance combat by one round.

@@ -98,6 +98,16 @@ export function setPlayerAction(state: CombatState, action: Action): CombatState
     return { ...state, playerChoice: { ...state.playerChoice, action } };
 }
 
+/** Phase 108 — Handle mercy choice selection from Befriend success */
+export function selectMercyChoice(state: CombatState, choice: 'spare' | 'exploit'): CombatState {
+    return {
+        ...state,
+        playerChoice: { stance: 'heart', action: choice },
+        mercyChoiceActive: false,
+        phase: 'resolving',
+    };
+}
+
 export function appendLog(state: CombatState, entry: BattleLogEntry): CombatState {
     return { ...state, log: [...state.log, entry] };
 }

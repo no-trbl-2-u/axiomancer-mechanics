@@ -133,12 +133,15 @@ export interface SkillCombatEffects {
  *   `calculateSkillDamage` already produces flat damage today, so this is a
  *   no-op marker; it is preserved so future damage paths can branch on it
  *   without changing the library.
+ * - `befriend_attempt`: Phase 108 - attempt to befriend the enemy, opening
+ *   a mercy choice state if successful (requires HP gate eligibility).
  */
 export type SkillSpecialMechanic =
     | { kind: 'strip_random_buff'; appliedTo: 'self' | 'enemy' }
     | { kind: 'convert_enemy_buff_to_self' }
     | { kind: 'secondary_heal_self'; stat: SkillsStatType; multiplier?: number }
-    | { kind: 'bypass_defense' };
+    | { kind: 'bypass_defense' }
+    | { kind: 'befriend_attempt' };
 
 /**
  * Phase 66 — synergy predicate. The matched ActiveEffect on `on`

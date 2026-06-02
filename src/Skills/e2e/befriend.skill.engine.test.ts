@@ -1,0 +1,224 @@
+/**
+ * Phase 108 — Befriend heart skill end-to-end tests.
+ *
+ * Tests the Befriend skill implementation:
+ * - Starting character skill acquisition
+ * - 5-heart cost requirement
+ * - HP gate eligibility 
+ * - Mercy choice state activation
+ * - Spare/exploit choice resolution
+ */
+
+import { describe, it, expect, beforeEach } from 'vitest';
+import { mockFixedRng } from '../../test-utils/rng';
+import { createCharacter } from '../../Character';
+import { executeSkill, canUseSkill } from '../skill.engine';
+import { getSkillById } from '../skill.library';
+import { initializeCombat, selectMercyChoice } from '../../Combat';
+import { createEnemy, randomLogic } from '../../Enemy';
+
+// Test enemy with befriendability config for HP gate testing
+const befriendableEnemy = createEnemy({
+    id: 'test-enemy',
+    name: 'Test Enemy',
+    description: 'Enemy for testing befriending',
+    level: 1,
+    baseStats: { heart: 5, body: 5, mind: 5 },
+    mapName: 'coastal-village',
+    logic: randomLogic,
+    befriendabilityConfig: {
+        hpGate: { belowPct: 0.5 }, // Can befriend when below 50% HP
+    }
+});
+
+describe('Befriend skill (Phase 108)', () => {
+    beforeEach(() => {
+        mockFixedRng(0.5); // Fixed RNG for deterministic tests
+    });
+
+    describe('Starting skill acquisition', () => {
+        it('new characters know Befriend skill', () => {
+            const character = createCharacter({
+                name: 'Test Character',
+                level: 1,
+                baseStats: { heart: 5, body: 5, mind: 5 },
+                knownSkills: ['befriend'] // Befriend should be in starting skills
+            });
+
+            expect(character.knownSkills).toContain('befriend');
+        });
+    });
+
+    describe('Heart token requirements', () => {
+        it('blocks Befriend when insufficient heart tokens', () => {
+            const character = createCharacter({
+                name: 'Test Character',
+                level: 1,
+                baseStats: { heart: 5, body: 5, mind: 5 },
+                knownSkills: ['befriend']
+            });
+
+            const enemy = createEnemy({
+                id: 'test-enemy-2',
+                name: 'Test Enemy',
+                description: 'Simple test enemy',
+                level: 1,
+                baseStats: { heart: 5, body: 5, mind: 5 },
+                mapName: 'coastal-village',
+                logic: randomLogic
+            });
+
+            const combatState = initializeCombat(character, enemy);
+            // State should have 0 heart tokens initially
+            expect(combatState.combatResources.heart).toBe(0);
+
+            const befriendSkill = getSkillById('befriend')!;
+            const canUse = canUseSkill(combatState.combatResources, befriendSkill);
+            expect(canUse).toBe(false);
+        });
+
+        it('allows Befriend when sufficient heart tokens', () => {
+            const character = createCharacter({
+                name: 'Test Character',
+                level: 1,
+                baseStats: { heart: 5, body: 5, mind: 5 },
+                knownSkills: ['befriend']
+            });
+
+            const enemy = { ...befriendableEnemy, health: 20 }; // Below 50% HP
+            
+            const combatState = {
+                ...initializeCombat(character, enemy),
+                combatResources: { heart: 5, body: 0, mind: 0, fallacy: 0, paradox: 0 }
+            };
+
+            const befriendSkill = getSkillById('befriend')!;
+            const canUse = canUseSkill(combatState.combatResources, befriendSkill);
+            expect(canUse).toBe(true);
+        });
+    });
+
+    describe('HP gate eligibility', () => {
+        it('fails befriend attempt when enemy HP too high', () => {
+            const character = createCharacter({
+                name: 'Test Character', 
+                level: 1,
+                baseStats: { heart: 5, body: 5, mind: 5 },
+                knownSkills: ['befriend']
+            });
+
+            const enemy = { ...befriendableEnemy, health: 40 }; // 80% HP - above threshold
+
+            const combatState = {
+                ...initializeCombat(character, enemy),
+                combatResources: { heart: 5, body: 0, mind: 0, fallacy: 0, paradox: 0 }
+            };
+
+            const resolution = executeSkill(combatState, 'befriend', getSkillById);
+            
+            const befriendEvent = resolution.events.find(e => e.kind === 'befriend-attempted');
+            expect(befriendEvent).toBeDefined();
+            expect(befriendEvent!.successful).toBe(false);
+            expect(befriendEvent!.message).toContain('not yet vulnerable');
+        });
+
+        it('succeeds befriend attempt when enemy HP below threshold', () => {
+            const character = createCharacter({
+                name: 'Test Character',
+                level: 1, 
+                baseStats: { heart: 5, body: 5, mind: 5 },
+                knownSkills: ['befriend']
+            });
+
+            // Create enemy and manually reduce health to below 50% 
+            const enemy = { ...befriendableEnemy };
+            enemy.health = Math.floor(enemy.maxHealth * 0.4); // 40% HP - below threshold
+
+            const baseState = initializeCombat(character, enemy);
+            const combatState = {
+                ...baseState,
+                enemy, // Use the modified enemy with low health
+                friendshipCounter: 15, // Above FRIENDSHIP_COUNTER_MAX to satisfy rounds threshold
+                combatResources: { heart: 5, body: 0, mind: 0, fallacy: 0, paradox: 0 }
+            };
+
+            const resolution = executeSkill(combatState, 'befriend', getSkillById);
+            
+            const befriendEvent = resolution.events.find(e => e.kind === 'befriend-attempted');
+            expect(befriendEvent).toBeDefined();
+            expect(befriendEvent!.successful).toBe(true);
+            expect(befriendEvent!.message).toContain('Choose mercy or exploitation');
+            expect(resolution.activateMercyChoice).toBe(true);
+        });
+    });
+
+    describe('Mercy choice state', () => {
+        it('activates mercy choice after successful Befriend', () => {
+            const character = createCharacter({
+                name: 'Test Character',
+                level: 1,
+                baseStats: { heart: 5, body: 5, mind: 5 },
+                knownSkills: ['befriend']
+            });
+
+            // Create enemy and manually reduce health to below 50%
+            const enemy = { ...befriendableEnemy };
+            enemy.health = Math.floor(enemy.maxHealth * 0.3); // 30% HP - below threshold
+
+            const baseState = initializeCombat(character, enemy);
+            const combatState = {
+                ...baseState,
+                enemy, // Use the modified enemy with low health
+                friendshipCounter: 15, // Above FRIENDSHIP_COUNTER_MAX to satisfy rounds threshold
+                combatResources: { heart: 5, body: 0, mind: 0, fallacy: 0, paradox: 0 }
+            };
+
+            const resolution = executeSkill(combatState, 'befriend', getSkillById);
+            expect(resolution.activateMercyChoice).toBe(true);
+        });
+    });
+
+    describe('Mercy choice resolution', () => {
+        it('selects spare choice correctly', () => {
+            const character = createCharacter({
+                name: 'Test Character',
+                level: 1,
+                baseStats: { heart: 5, body: 5, mind: 5 }
+            });
+
+            const combatState = {
+                ...initializeCombat(character, befriendableEnemy),
+                mercyChoiceActive: true,
+                phase: 'mercy_choice' as const
+            };
+
+            const result = selectMercyChoice(combatState, 'spare');
+
+            expect(result.playerChoice.action).toBe('spare');
+            expect(result.playerChoice.stance).toBe('heart');
+            expect(result.mercyChoiceActive).toBe(false);
+            expect(result.phase).toBe('resolving');
+        });
+
+        it('selects exploit choice correctly', () => {
+            const character = createCharacter({
+                name: 'Test Character',
+                level: 1,
+                baseStats: { heart: 5, body: 5, mind: 5 }
+            });
+
+            const combatState = {
+                ...initializeCombat(character, befriendableEnemy),
+                mercyChoiceActive: true,
+                phase: 'mercy_choice' as const
+            };
+
+            const result = selectMercyChoice(combatState, 'exploit');
+
+            expect(result.playerChoice.action).toBe('exploit');
+            expect(result.playerChoice.stance).toBe('heart');
+            expect(result.mercyChoiceActive).toBe(false);
+            expect(result.phase).toBe('resolving');
+        });
+    });
+});

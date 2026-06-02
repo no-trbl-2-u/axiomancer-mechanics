@@ -526,6 +526,25 @@ const empatheticUnderstanding: Skill = {
     incrementsFriendship: 2,
 };
 
+// ─── Phase 108 — Befriend heart skill ──────────────────────────────────────
+
+const befriend: Skill = {
+    id: 'befriend',
+    name: 'Befriend',
+    category: 'paradox',
+    philosophicalAspect: 'heart',
+    description:
+        'You extend genuine compassion toward your adversary, seeking understanding ' +
+        'over victory. When successful, you must choose between mercy and exploitation ' +
+        'of the vulnerable moment you have created.',
+    tier: 1,
+    resourceCost: { heart: 5 },
+    targetType: 'enemy',
+    basePower: 0,
+    scalingStat: 'heart',
+    specialMechanics: [{ kind: 'befriend_attempt' }],
+};
+
 // ─── Tier 3 synergy (Phase 94) — 5 skills mirroring Phase 66 pattern ───────
 
 // Each skill carries a `synergy` clause with advanced Tier 3 mechanics.
@@ -707,6 +726,8 @@ export const skillLibrary: Skill[] = [
     soothingWords,
     peacefulGesture,
     empatheticUnderstanding,
+    // Phase 108 — Befriend heart skill
+    befriend,
 ];
 
 const skillRegistry: ReadonlyMap<string, Skill> = new Map(

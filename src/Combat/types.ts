@@ -15,8 +15,10 @@ export type Stance = 'heart' | 'body' | 'mind';
  * - `skill`  uses a learned skill (spends `combatResources`).
  * - `item`   uses an item from the inventory.
  * - `flee`   attempts to leave combat.
+ * - `spare`  Phase 108 - mercy choice to spare/befriend the enemy.
+ * - `exploit` Phase 108 - mercy choice to exploit the opening for a free critical.
  */
-export type Action = 'attack' | 'defend' | 'skill' | 'item' | 'flee';
+export type Action = 'attack' | 'defend' | 'skill' | 'item' | 'flee' | 'spare' | 'exploit';
 
 /**
  * The advantage state of a roll, from the attacker's perspective.
@@ -61,6 +63,7 @@ export type PlayerCombatAction = CombatAction;
  * - `choosing_stance` — selecting heart/body/mind.
  * - `choosing_action` — selecting attack/defend/skill/item/flee.
  * - `choosing_skill`  — selecting a skill (when action is 'skill').
+ * - `mercy_choice`    — Phase 108 - choosing spare/befriend vs exploit after successful Befriend.
  * - `resolving`       — round resolution in progress.
  * - `ended`           — combat is over.
  */
@@ -68,6 +71,7 @@ export type CombatPhase =
     | 'choosing_stance'
     | 'choosing_action'
     | 'choosing_skill'
+    | 'mercy_choice'
     | 'resolving'
     | 'ended';
 
@@ -122,6 +126,8 @@ export interface CombatState {
     enemyChoice: Partial<CombatAction>;
     log: BattleLogEntry[];
     combatResources: CombatResources;
+    /** Phase 108 - when true, indicates a successful Befriend has opened mercy choice state */
+    mercyChoiceActive?: boolean;
 }
 
 /**

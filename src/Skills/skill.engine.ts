@@ -23,6 +23,7 @@ import { removeRandomBuff } from '../Combat/effects';
 import { resolveEffectApplication } from '../Combat/resist';
 import { calculateDamageResistance, getSkillDamageType } from '../Combat/damage-resist';
 import { incrementFriendship } from '../Combat/combat.reducer';
+import { isFriendshipEligible } from '../Combat/index';
 import { Combatant, CombatState, Stance } from '../Combat/types';
 import {
     RESOURCE_GENERATION,
@@ -321,12 +322,18 @@ export type SkillEvent =
         clearedAllEffects: boolean }
     | { kind: 'friendship-incremented'; 
         skillId: string; 
-        amount: number };
+        amount: number }
+    | { kind: 'befriend-attempted';
+        skillId: string;
+        successful: boolean;
+        message: string };
 
 /** Result of `executeSkill`. */
 export interface SkillResolution {
     state: CombatState;
     events: SkillEvent[];
+    /** Phase 108 - when true, indicates the skill triggered mercy choice activation */
+    activateMercyChoice?: boolean;
 }
 
 /** Lookup helper used by `executeSkill` to resolve a skill ID against an actor. */
@@ -522,7 +529,7 @@ export function executeSkill(
 
     for (const mechanic of skill.specialMechanics ?? []) {
         const result = applySpecialMechanic(
-            mechanic, skill, workingCaster, workingTarget, state.round,
+            mechanic, skill, workingCaster, workingTarget, state.round, state,
         );
         workingCaster = result.caster;
         workingTarget = result.target;
@@ -560,6 +567,12 @@ export function executeSkill(
     const nextPlayer = (isPlayerCaster ? workingCaster : workingTarget) as Character;
     const nextEnemy  = (isPlayerCaster ? workingTarget : workingCaster) as Enemy;
 
+    // Phase 108 — Check for successful befriend attempts to activate mercy choice
+    const successfulBefriend = events.find(
+        e => e.kind === 'befriend-attempted' && e.successful
+    );
+    const activateMercyChoice = Boolean(successfulBefriend);
+
     return {
         state: {
             ...workingState,
@@ -568,6 +581,7 @@ export function executeSkill(
             combatResources: nextResources,
         },
         events,
+        activateMercyChoice,
     };
 }
 
@@ -708,6 +722,7 @@ function applySpecialMechanic(
     caster: Combatant,
     target: Combatant,
     round: number,
+    state: CombatState,
 ): SkillEffectResult {
     const events: SkillEvent[] = [];
 
@@ -781,6 +796,30 @@ function applySpecialMechanic(
                 amount, hpBefore, hpAfter: nextCaster.health,
             });
             return { caster: nextCaster, target, events };
+        }
+
+        case 'befriend_attempt': {
+            // Phase 108 — Check if befriend attempt is valid
+            const isEligible = isFriendshipEligible(state);
+            
+            if (!isEligible) {
+                events.push({
+                    kind: 'befriend-attempted',
+                    skillId: skill.id,
+                    successful: false,
+                    message: 'Befriend failed: enemy not yet vulnerable to mercy.',
+                });
+                return { caster, target, events };
+            }
+
+            // Successful befriend attempt - opens mercy choice
+            events.push({
+                kind: 'befriend-attempted',
+                skillId: skill.id,
+                successful: true,
+                message: 'Befriend successful! Choose mercy or exploitation.',
+            });
+            return { caster, target, events };
         }
     }
 }

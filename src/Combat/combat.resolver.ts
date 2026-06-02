@@ -108,7 +108,10 @@ export type ScenarioEvent =
     | { phase: 'scenario'; kind: 'proc-fumbled';
         actor: CombatActor;
         effect: Effect;
-        result: EffectApplicationResult };
+        result: EffectApplicationResult }
+    | { phase: 'scenario'; kind: 'mercy-chosen';
+        choice: 'spare' | 'exploit';
+        message: string };
 
 /** End-phase DoT and ticked / expired effects. */
 export type RoundEndEvent =
@@ -152,6 +155,8 @@ export type SkillPhaseEvent =
         clearedAllEffects: boolean }
     | { phase: 'skill'; kind: 'friendship-incremented';
         skillId: string; amount: number }
+    | { phase: 'skill'; kind: 'befriend-attempted';
+        skillId: string; successful: boolean; message: string }
     /**
      * The player chose `action: 'skill'` but either the skill is missing
      * from the lookup or `canUseSkill` failed. The resolver does NOT execute
@@ -370,6 +375,25 @@ export function resolveCombatRound(
     enemy  = scenario.enemy;
     const combatResources = scenario.combatResources;
     const friendshipCounter = scenario.friendshipCounter;
+
+    // Phase 108 — Handle mercy choice transition from successful Befriend
+    if (scenario.phaseTransition === 'mercy_choice') {
+        // Early return with mercy choice state active
+        return {
+            state: {
+                ...state,
+                player,
+                enemy,
+                combatResources,
+                friendshipCounter,
+                mercyChoiceActive: true,
+                phase: 'mercy_choice',
+                // Clear player action to reset for mercy choice
+                playerChoice: {},
+            },
+            combatEvents: events,
+        };
+    }
 
     // 6. Round-end orchestration.
     ({ player, enemy } = runRoundEndPhase(player, enemy, events));

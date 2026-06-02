@@ -53,6 +53,7 @@ const TIER_1_SKILLS = [
     'achilles-gambit',
     'liars-echo',
     'ship-of-theseus',
+    'befriend', // Phase 108 — starting heart skill
 ];
 
 const TIER_2_SKILLS = [
