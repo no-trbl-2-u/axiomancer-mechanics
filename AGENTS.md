@@ -4,7 +4,7 @@
 
 ### Project overview
 
-Axiomancer Mechanics is a TypeScript TTRPG game engine (Node.js CLI). No databases, servers, or containers required. See `README.md` for architecture docs.
+Axiomancer Mechanics is a TypeScript TTRPG game engine (Node.js CLI). No databases, servers, or containers required. See `README.md` for architecture docs. Read `VISION.md` before major mechanics, combat, balance, friendship/mercy, alignment, or `/march` phase work.
 
 ### Key commands
 

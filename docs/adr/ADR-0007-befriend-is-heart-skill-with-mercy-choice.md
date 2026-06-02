@@ -23,6 +23,17 @@ Keep the HP gate, but move friendship initiation into an explicit skill path:
    - exploit the opening for a free guaranteed critical attack.
 5. The exploit option is not neutral flavor. It should be tracked as an ethically meaningful act and may affect alignment, future content, enemy state, or narrative consequence.
 
+## Anti-exploit rule candidate
+
+To prevent the exploit/free-critical choice from becoming a pure damage engine:
+
+- If the player exploits a Befriend opening against an elite or miniboss, that region's boss stops gathering friendship counters entirely.
+- If the player spares that elite or miniboss, that region's boss starts battle with `open-minded`.
+- `open-minded` may be a status effect with no mechanical effect except qualifying a later Befriend path.
+- Befriending a boss in one region should shift faction reputation: lose standing with one faction, gain with another.
+
+Preserve but do not implement by default yet: status effects modifying Befriend cost/success, alignment-changing cost/copy/consequence, boss-specific rites, failed-attempt token policy, exploit closing future mercy paths, and reward splits by spare/exploit.
+
 ## Mechanics obligations
 
 Implementation should expose:

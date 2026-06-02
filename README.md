@@ -10,6 +10,8 @@ the CLI through every major surface, the walkthrough catalog, key
 in-game flows (combat / friendship path / map exploration / save-load),
 verify gates, and pointers to deeper docs.
 
+See [`VISION.md`](./VISION.md) for T's current game vision and doctrine guardrail before major mechanics, combat, friendship, balance, or `/march` work.
+
 See [`RELEASES.md`](./RELEASES.md) for short-form per-version
 summaries (at-a-glance "what shipped in 0.X.Y?"),
 [`CHANGELOG.md`](./CHANGELOG.md) for the full per-phase detail per
