@@ -60,8 +60,6 @@
 
 
 
-- **[LOW] typescript-eslint packages have patch update available** — npm outdated shows @typescript-eslint/eslint-plugin 8.60.0 → 8.60.1 and typescript-eslint 8.60.0 → 8.60.1. Safe patch bump per iterate guidelines. Impact 4 × Ease 9 / 10 = 3.6.
-
 - **[LOW] zustand dependency has patch update available** — npm outdated shows zustand 5.0.13 → 5.0.14. Safe patch bump per iterate guidelines. Impact 3 × Ease 9 / 10 = 2.7.
 
 - **[LOW] vitest has minor update available** — npm outdated shows vitest 3.2.4 → 3.2.6. Safe minor version update per iterate guidelines. Impact 3 × Ease 8 / 10 = 2.4.
@@ -72,6 +70,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] TypeScript ESLint packages patch update available** — resolved at iterate commit `daf6ec9` (2026-06-02). Updated @typescript-eslint/eslint-plugin 8.60.0 → 8.60.1 and typescript-eslint 8.60.0 → 8.60.1. Safe patch updates include security patches and maintenance debt. npm run verify stays green (925/925 tests). Impact 4 × Ease 9 / 10 = 3.6. Source: /iterate audit category G (deps) finding.
 
 - [x] **[MED] Character presets deprecation schedule contradicts live use (oversight decision)** — resolved at commit `89e52e3` (2026-06-01). Updated JSDoc @deprecated tags in src/Character/presets.ts from "Scheduled for removal at v0.13.0" to "no earlier than v0.14.0, after the Playtest runner migrates off presets". Added note naming src/Playtest/playtest.runner.ts as removal blocker. Resolves contradiction where package is at v0.13.0 but presets are still load-bearing for Playtest runner. Score 6 × 8 / 10 = 4.8. Source: CRITIQUE.md pending.
 
