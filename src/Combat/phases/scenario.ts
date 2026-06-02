@@ -346,7 +346,7 @@ function resolveExploitAttack(
     playerStance: Stance,
     enemyStance: Stance,
     events: RoundEvent[],
-    round: number,
+    _round: number,
 ): { player: Character; enemy: Enemy } {
     // Calculate base attack values using derived stats
     const playerAttack = getAttackStat(player, playerStance);

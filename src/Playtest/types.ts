@@ -60,6 +60,14 @@ export interface PlaytestRunSummary {
         roundBelowGate?: number;       // Round when enemy HP first dropped below gate
         finalEnemyHpPct: number;       // Final enemy HP as percentage
     };
+    // Phase 108 — Befriend skill metrics
+    befriendMetrics?: {
+        attempts: number;              // Number of befriend attempts
+        successes: number;             // Number of successful befriends (opened mercy choice)
+        failures: number;              // Number of failed befriends (HP gate not met)
+        spareChoices: number;          // Number of times player chose spare/mercy
+        exploitChoices: number;        // Number of times player chose exploit
+    };
 }
 
 export interface PlaytestPolicySummary {

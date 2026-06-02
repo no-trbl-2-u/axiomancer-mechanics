@@ -110,6 +110,15 @@ function runSingleScenario(scenario: PlaytestScenario, runNumber: number): Playt
         };
     }
 
+    // Phase 108 — Track befriend skill metrics
+    let befriendMetrics: PlaytestRunSummary['befriendMetrics'] = {
+        attempts: 0,
+        successes: 0,
+        failures: 0,
+        spareChoices: 0,
+        exploitChoices: 0,
+    };
+
     for (let i = 0; i < scenario.maxRounds; i++) {
         const combat = store.getState().combat;
         if (!combat || !isCombatOngoing(combat)) break;
@@ -130,6 +139,25 @@ function runSingleScenario(scenario: PlaytestScenario, runNumber: number): Playt
         increment(enemyActions, describeAction(enemyAction));
         damageToPlayer += sumDamageToPlayer(combatEvents);
         damageToEnemy += sumDamageToEnemy(combatEvents);
+        
+        // Phase 108 — Track befriend skill usage and outcomes
+        combatEvents.forEach(event => {
+            if (event.kind === 'befriend-attempted') {
+                befriendMetrics.attempts++;
+                if (event.successful) {
+                    befriendMetrics.successes++;
+                } else {
+                    befriendMetrics.failures++;
+                }
+            }
+        });
+        
+        // Track mercy choices (spare/exploit actions)
+        if (playerAction.action === 'spare') {
+            befriendMetrics.spareChoices++;
+        } else if (playerAction.action === 'exploit') {
+            befriendMetrics.exploitChoices++;
+        }
         
         // Phase 101 — Track when enemy HP first drops below gate for mercy policy
         if (hpGateTrace && !hpGateTrace.roundBelowGate) {
@@ -185,6 +213,7 @@ function runSingleScenario(scenario: PlaytestScenario, runNumber: number): Playt
         ...(endReport ? { endReport } : {}),
         transcript,
         ...(hpGateTrace ? { hpGateTrace } : {}),
+        befriendMetrics,
     };
 }
 

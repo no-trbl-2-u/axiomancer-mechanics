@@ -41,7 +41,7 @@ import type { TypedLevelUpEvent } from '../Game/events.types';
 import { getMapDefinition } from '../World/map.registry';
 import { resolveMapEvent } from '../World';
 import type { ResolvedEvent } from '../World';
-import { isCombatOngoing, determineEnemyAction, resolveCombatRound } from '../Combat';
+import { isCombatOngoing, determineEnemyAction, resolveCombatRound, selectMercyChoice } from '../Combat';
 import { Stance, CombatState, CombatAction, Action } from '../Combat/types';
 import { getSkillById } from '../Skills/skill.library';
 import { canUseSkill, getAvailableSkills } from '../Skills/skill.engine';
@@ -279,6 +279,18 @@ async function chooseCombatAction(
     store: GameStoreHandle,
     combat: CombatState,
 ): Promise<CombatAction> {
+    // Phase 108 — Handle mercy choice state for successful Befriend
+    if (combat.mercyChoiceActive && combat.phase === 'mercy_choice') {
+        const { choice } = await prompt<{ choice: 'spare' | 'exploit' }>([
+            { type: 'rawlist', name: 'choice', message: 'Choose your response:',
+              choices: [
+                { name: 'Spare/Befriend — show mercy and preserve the opening for friendship', value: 'spare' },
+                { name: 'Exploit — use the vulnerability for a free guaranteed critical attack', value: 'exploit' }
+              ] },
+        ]);
+        return { stance: 'heart', action: choice };
+    }
+
     const { stance } = await prompt<{ stance: Stance }>([
         { type: 'rawlist', name: 'stance', message: 'Stance?',
           choices: ['heart', 'body', 'mind'] },

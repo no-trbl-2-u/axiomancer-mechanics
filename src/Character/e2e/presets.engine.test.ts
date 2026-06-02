@@ -40,7 +40,7 @@ describe('buildCharacterFromPreset', () => {
         expect(player.level).toBe(1);
         expect(player.baseStats).toEqual({ heart: 5, body: 5, mind: 5 });
         expect(player.equipment).toEqual({});
-        expect(player.knownSkills).toHaveLength(6);
+        expect(player.knownSkills).toHaveLength(7); // Phase 108 — includes Befriend starting skill
         expect(player.equippedSkills).toHaveLength(4);
         expect(player.inventory).toHaveLength(1);
         expect(player.inventory[0]?.id).toBe('minor-healing-potion');
@@ -53,7 +53,7 @@ describe('buildCharacterFromPreset', () => {
         const player = buildCharacterFromPreset(wandererPreset);
         expect(player.level).toBe(8);
         expect(player.baseStats).toEqual({ heart: 5, body: 4, mind: 4 });
-        expect(player.knownSkills).toHaveLength(9);
+        expect(player.knownSkills).toHaveLength(10); // Phase 108 — includes Befriend starting skill
         expect(player.equippedSkills).toHaveLength(4);
         expect(player.equipment.weapon?.id).toBe('iron-blade');
         expect(player.equipment.armor?.id).toBe('hide-vest');
@@ -66,7 +66,7 @@ describe('buildCharacterFromPreset', () => {
         const player = buildCharacterFromPreset(sagePreset);
         expect(player.level).toBe(15);
         expect(player.baseStats).toEqual({ heart: 7, body: 6, mind: 6 });
-        expect(player.knownSkills).toHaveLength(12);
+        expect(player.knownSkills).toHaveLength(13); // Phase 108 — includes Befriend starting skill
         expect(player.equippedSkills).toContain('bootstrap-paradox');
         expect(player.equipment.weapon?.id).toBe('steel-blade');
         expect(player.equipment.armor?.id).toBe('chain-mail');
