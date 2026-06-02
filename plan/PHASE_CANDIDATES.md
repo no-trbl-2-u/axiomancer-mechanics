@@ -45,29 +45,13 @@
 - score: TBD (unscored — needs design pass; parked to keep /expand and /march from auto-clustering it).
 - recommended-slot: after the user-attended brainstorm; not before.
 
-### Candidate: Phase 97 `previewStatAllocation` export documentation
-- signal: CRITIQUE.md Pending MED finding (critique-46) — Phase 97 export absent from docs/api.md + docs/character.md
-- scope: Add missing documentation entries for `previewStatAllocation` function to existing doc locations. Unit 1 — docs/api.md:25 Stat allocation section update (append to existing `allocateStatPoint` entry). Unit 2 — docs/character.md:78 "## Stat allocation" section expansion (document the preview API alongside allocation). Unit 3 — cross-reference in quickstart-character.md if applicable. Pure docs addition; no code changes.
-- unblocks: Front-door readers discover the stat preview API exported at Phase 97; mobile documentation parity
-- blocked-by: None (Phase 97 already shipped)
-- score: urgency 4 × value 7 / 10 = 2.8
-- recommended-slot: after Phase 99
-
-### Candidate: Character presets deprecation schedule cleanup
-- signal: CRITIQUE.md Pending MED finding (critique-46) — v0.13.0 deprecation deadline reached but presets still load-bearing
-- scope: Resolve JSDoc/reality divergence for Character presets. Either: (a) remove deprecated presets + update Playtest harness to build characters differently, or (b) update deprecation timeline to v0.14.0 to match actual removal feasibility. Audit live usage (playtest.runner.ts, Character/index.ts barrel, e2e files) before choosing path.
-- unblocks: Removes @deprecated contradiction at version milestone; clarifies presets lifecycle 
-- blocked-by: None
-- score: urgency 5 × value 6 / 10 = 3.0
-- recommended-slot: after Phase 99
-
 ### Candidate: Second continent content expansion
 - signal: spec.md 6-month horizon item + existing candidate pool coverage
 - scope: Author Continent 2 map definition with 15-25 nodes, enemy populations, location content following Phase 65 fishing-village expansion pattern. Unit 1 — map structure + node graph. Unit 2 — MapEventPool authoring (~60% alignmentDelta density). Unit 3 — hermetic e2e + docs integration. Establishes multi-continent world depth.
 - unblocks: Major content expansion for endgame progression; world exploration breadth beyond coastal continent
-- blocked-by: None (world engine complete; pattern established)
-- score: urgency 6 × value 8 / 10 = 4.8
-- recommended-slot: after Phase 99
+- blocked-by: **DEFERRED INDEFINITELY** per T decision 2026-06-01 ("Hold off on adding another continent until we have the base mechanics working. Defer that indefinitely.") — mirrors Phase 100 `[deferred]`. Confirmed at oversight-28 2026-06-02 (Q2: "Defer it / match Phase 100"). **Do NOT auto-promote under `/march` or `/expand`.** This candidate is the same continent-expansion direction as Phase 100; promoting it would contradict an explicit T decision (Glanton Nexus source-of-truth layer 1).
+- score: TBD (deferred — score withheld so `/expand` / `/march` cannot auto-cluster it; was 6 × 8 / 10 = 4.8). Revisit at a future oversight alongside the Phase 100 re-queue, once base-mechanics stabilisation feels solid.
+- recommended-slot: not before the Phase 100 re-queue.
 
 ## Promoted
 
@@ -1035,6 +1019,12 @@
 ---
 
 ## Rejected
+
+### Candidate: Character presets deprecation schedule cleanup
+- rejected: 2026-06-02 (oversight-28; Q1 user write-in: "remove phase item about presets. I'm trying to remove them"). The user is removing the deprecated Character presets directly, so the candidate is superseded by hands-on work. The underlying critique-46 MED ("presets deprecation schedule contradicts live use") was already drained at iterate `841d9ae` ("Character presets deprecation schedule updated"). No autonomous phase warranted — the preset-removal decision and execution sit with the user.
+
+### Candidate: Phase 97 `previewStatAllocation` export documentation
+- rejected: 2026-06-02 (oversight-28; resolved-by-iterate drift cleanup). The candidate's docs gap was closed by iterate: `d46bfbd` ("docs(character): add previewStatAllocation to API documentation") + plan drain `755e767` ("iterate finding resolved — previewStatAllocation documented"). The matching critique-46 MED row drained at the same time. Stale Pending candidate surfaced + cleared per the Phase 105 Glanton Nexus guardrail (§6.5 stale-row reconciliation). No work remains.
 
 ### Candidate: Modifier catalogue (Spec 05d)
 - rejected: 2026-05-30 (twenty-sixth oversight; already shipped). expand-26 filed this as an "unstarted spec" but Spec 05d is fully implemented: acceptance checklist all `[x]`; `src/Items/modifier.catalogue.ts` defines all 7 slot pools + `uniqueModPool`; `rollModifiers`/`resolveModifiers` in `src/Items/item.factory.ts`; `modifier.types.ts` exports `HiddenModRarity`/`ModValueTier`/`ModifierPayload`/`Modifier`; hermetic coverage in `src/Items/e2e/modifier.catalogue.engine.test.ts`. No work remains. End-to-end verification of the modifier system is folded into the rescoped Phase 98 audit (Unit 1).
