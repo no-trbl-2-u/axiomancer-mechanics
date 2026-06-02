@@ -42,6 +42,7 @@
 - observation: `getResistStat` (`src/index.ts:54`, `src/Combat/stats.ts:64`) and the three `endCombat*` aliases (`src/index.ts:78`, `src/Combat/combat.reducer.ts:143/149/155`) are `@deprecated` with a "removal at the next minor bump" schedule recorded in `CHANGELOG.md:425` (### Deprecated). The 0.12.0 → 0.13.0 minor bump has now happened, so all four are eligible for removal — each has zero non-test in-repo callers (getResistStat: only `stats.ts` def + 2 tests; the aliases: only the barrel re-export + tests). Yet they remain on the public barrel and the `[unreleased] ### Removed` section (`CHANGELOG.md:23`) is empty, so the lifecycle stalled at the boundary it was scheduled to clear.
 - evidence: `src/index.ts:54,78`; `src/Combat/stats.ts:64`; `src/Combat/combat.reducer.ts:143,149,155`; `CHANGELOG.md:425` (Deprecated) vs `:23` (empty Removed); `package.json` `0.13.0`.
 - suggested_fix: Batch-remove the four symbols (verify zero external/mobile callers first), drop them from `src/index.ts` + `src/Combat/index.ts`, and add a `[unreleased] ### Removed` CHANGELOG entry; OR if external-consumer verification is pending, update the schedule note to the next bump. Note this is the per-instance counterpart to the presets MED above.
+- status: **PROMOTED to Phase 106** via oversight-28 2026-06-02 (attended-approved public-API breaking removal). Owned by the phase; drains Pending → Done when Phase 106 ships. `/iterate` should skip this row meanwhile.
 - source: critique
 
 
