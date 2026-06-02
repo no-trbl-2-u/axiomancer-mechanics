@@ -6,8 +6,8 @@
 > by `/iterate`.
 
 <!-- Metadata (updated by /critique after each pass):
-> Last pass: 2026-06-01 at commit 461b9a1
-> Pass count: 47
+> Last pass: 2026-06-02 at commit fed2b01
+> Pass count: 48
 -->
 <!-- Pass 47 (2026-06-01 at commit 461b9a1): 0 findings. Post-Phases-98-through-101 window + 39 commits since pass 46 (Phase 98 migration+bugfix, Phase 99 skills+items audit, Phase 100 meta+CLI tools, Phase 101 coastal tyrant mercy-route tuning + misc commits). Exhaustive audit across all areas (A-F): **Public API surface** — zero new exports vs spec.md Contracts section; all src/index.ts exports align with bearings.md contract groups. **E2e coverage** — comprehensive across all 13 modules (Character, Combat, Effects, Enemy, Game, Items, Skills, World, Utils, NPCs, Philosophy, Playtest, CLI); each has *.engine.test.ts files with hermetic coverage. **Module structure** — clean consistency; logic in resolvers/reducers, constants in constants.ts files, test-utils/rng.ts properly stubbed (only acceptable vi.spyOn in test-utils), no scattered inline constants. **Documentation completeness** — docs/ folder current for all modules; no new exports since last doc refresh. **Type safety** — zero @ts-ignore except one expected case in agent-vitest-reporter.engine.test.ts for .mjs file import; zero `as any` casts; no implicit return types surfaced. **Dead code** — only finding is the existing LOW row from pass 46 (getResistStat + endCombat aliases eligible for v0.13.0 removal per CHANGELOG deprecation schedule, but un-removed with empty [unreleased] ### Removed section). Found the codebase in excellent structural health post-mega-phase content window. Pool: 1 existing LOW finding remains. -->
 <!-- Pass 46 (2026-05-30 at commit 81ff3a5): 3 findings (0H/2M/1L). First pass since the v0.13.0 bump + oversight-26 (which rescoped Phase 99 to an items + skill-resource audit and cleared the phantom item-spec candidates). 52 commits since pass 45 (Phases 90-97 ship bundle + the item-rarity/modifier/set system + dev-tools + playtest harness + iterate drains). Deliberately did NOT re-file item-modifier / set-bonus / skill-resource findings — that surface is owned by the pending Phase 99 audit and filing here would duplicate it. The pass found the codebase clean on type-safety (zero as-any/ts-ignore in production; only a prose "any" in scenario.ts JSDoc), module structure (logic in resolvers/reducers, RNG stubbed via test-utils), and e2e coverage (every src/ module incl. NPCs/Philosophy/Playtest/CLI has an e2e file; quest.engine covered across world+spec08+oldmarrow e2e). The three findings are a docs gap (Phase 97 previewStatAllocation export undocumented) and a deprecation-lifecycle cluster that the v0.13.0 boundary exposed: presets.ts carries a now-unachievable "remove at v0.13.0" schedule (still live-used by the Playtest runner), and getResistStat + the three endCombat aliases were scheduled "removal at next minor bump" — that bump (0.12→0.13) has now happened, so they're eligible but un-removed and the [unreleased] ### Removed section is empty. -->
@@ -27,6 +27,14 @@
 
 
 
+
+### [LOW] test-utils — @ts-ignore without explanatory comment violates type-safety standards
+- pass: critique-48 (commit fed2b01)
+- area: types
+- observation: `src/test-utils/e2e/agent-vitest-reporter.engine.test.ts:25` uses `@ts-ignore` to suppress TS module resolution for a .mjs import (`AgentVitestReporter`) without an explanatory comment describing why the suppress is necessary or safe.
+- evidence: `src/test-utils/e2e/agent-vitest-reporter.engine.test.ts:25-26`
+- suggested_fix: Add explanatory comment above the @ts-ignore describing why .mjs import bypasses TS module graph validation, or explore proper typing via ambient declaration.
+- source: critique
 
 ### [LOW] Combat — deprecation removals due at the v0.13.0 minor bump are un-actioned
 - pass: critique-46 (commit 81ff3a5)
