@@ -168,6 +168,7 @@ automation/                # standalone walkthrough script + replay fixtures
 - [`Knowledge-Gaps.md`](./Knowledge-Gaps.md) — open design and intent questions
 - [`braindump/BRAINDUMP.md`](./braindump/BRAINDUMP.md) — unorganised idea backlog
 - [`docs/testing.md`](./docs/testing.md) — **hermetic e2e testing standard (required for every implementation)**
+- [`docs/playtest.md`](./docs/playtest.md) — automated playtest module and Phase 107 fix/playthrough difficulty-tuning loop
 - [`specs/`](./specs) — implementation specs (`00-how-to-use-specs.md` is the template; `story/` / `world/` / `characters/` hold the Phase 22 narrative specs)
 - [`docs/`](./docs) — per-system references (combat, effects, character, world, etc.)
 - [`docs/api.md`](./docs/api.md) — Public API reference (stability levels + RN integration recipe)

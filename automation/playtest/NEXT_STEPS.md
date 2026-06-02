@@ -21,17 +21,24 @@ Phase 104 established two canonical balance probes that should be used as baseli
 - **Baseline**: Wound-then-spare approach against Coastal Tyrant
 - **Validation**: Changes should maintain viable mercy route (timeout under 25%)
 
-## Balance Change Workflow
+## Balance Change Workflow — Phase 107 loop
 
-When modifying combat mechanics, enemy stats, or player progression:
+T locked the current stabilization loop on 2026-06-02: fix first, then playthrough, then fix, then playthrough. The first success target is approximately **70% win rate** in the current roster/playtest evidence.
 
-1. **Baseline measurement**: Run both reference fixtures to capture current metrics
-2. **Apply changes**: Make your balance modifications
-3. **Impact analysis**: Re-run fixtures and compare:
-   - Survivability rate shifts
-   - Combat duration changes (rounds-to-resolve distribution)
-   - Damage efficiency ratio changes
-4. **Validation**: Ensure changes maintain intended difficulty curve
+Before tuning numbers, verify the machinery:
+
+1. Token resource generation works: attack/defend grants, equipment/set generation bonuses, and emitted resource events agree with combat state.
+2. Skills work: known/unlocked skills are available without an equipped-skill gate, only affordable skills are offered/cast, and `canUseSkill` / `spendResources` / `executeSkill` agree with playtest skill-use metrics.
+3. Status effects work: skill-applied effects land under the Phase 80 contract where applicable and tick/expire/modify stats correctly.
+
+Then repeat the loop:
+
+1. **Adjust parameters** smallest-change-first: enemy stats/level, player stats/level, player equipment, and player skills.
+2. **Playtest** with the Phase 104 probes plus the relevant roster scenario(s).
+3. **Read the evidence**: win/defeat/friendship/timeout rates, rounds-to-resolve, policy summaries, skill use, resource events, item use, and stance/action distributions.
+4. **Repeat** until the report reaches roughly 70% win rate and no obvious policy pathology remains.
+
+If parameter tuning cannot reach the target, stop and bring T a mechanics proposal before changing friendship semantics, token formulae, skill costs, damage/resistance, action economy, status-effect rules, or AI rules beyond authored parameters.
 
 ## Example Usage
 
@@ -70,12 +77,8 @@ console.log('Endgame survivability:',
 - Mid-game progression checkpoints
 - Policy-specific balance validation (friendship route viability)
 
-## Current Phase 101 Integration
+## Current Phase 107 Integration
 
-The endgame fixture specifically targets the Coastal Tyrant boss because Phase 101 (mercy-route tuning) needs systematic data rather than ad-hoc manual testing. The current evidence shows:
+Phase 101 proved one-boss tuning was not enough; the fresh roundtable evidence still showed the late-game Coastal Tyrant report at 16% win / 0% friendship / 84% timeout. Phase 107 consumes the Phase 104 probes roster-wide and treats Coastal Tyrant as the visible red signal until the loop proves otherwise.
 
-- 80% timeout rate indicates balance failure
-- 4% friendship rate suggests mercy route is too hidden/costly  
-- Endgame fixture provides reproducible data for tuning decisions
-
-Use the endgame probe as the primary data source for Phase 101 mercy route adjustments.
+Use the endgame probe as a primary data source for late-game tuning, but do not stop at one boss. The current mandate is roster-wide parameter tuning after resource/skill/status-effect preflight.

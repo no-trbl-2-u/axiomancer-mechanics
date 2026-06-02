@@ -65,6 +65,25 @@ These fixtures provide consistent baselines for:
 
 Use these references when making balance changes to validate that early-game accessibility and endgame challenge remain appropriately tuned.
 
+## Phase 107 tuning loop
+
+The current roster-wide difficulty mandate is empirical: verify the combat machinery, tune parameters, playtest, read the report, and repeat until the current report reaches approximately **70% win rate**.
+
+Preflight before tuning:
+
+- Token resource generation must be correct: basic-action grants, equipment/set generation bonuses, and resource events should match combat state.
+- Skills must be correct: known/unlocked skills are available without an equipped-skill gate, affordable-skill filtering is honest, and `canUseSkill` / `spendResources` / `executeSkill` agree with playtest skill-use metrics.
+- Status effects must be correct: applied effects land under the Phase 80 contract where applicable, tick/expire correctly, and modify stats as documented.
+
+Authorized first-pass tuning surface:
+
+- enemy stats and level
+- player stats and level
+- player equipment
+- player skills
+
+Do not change core mechanics silently. If parameter tuning cannot reach the target, stop for T discussion before altering friendship semantics, token formulae, skill costs, damage/resistance, action economy, status-effect rules, or AI rules beyond authored enemy parameters.
+
 ## Data Types
 
 ### Scenario Configuration
