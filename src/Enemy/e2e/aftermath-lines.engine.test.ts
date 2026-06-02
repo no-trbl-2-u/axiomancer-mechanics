@@ -33,12 +33,15 @@ import {
     Sandbag_01,
 } from '../enemy.library';
 
-describe('Phase 71 + 74 — per-foe aftermath narrative lines', () => {
-    const befriendable = [MournfulGull, HollowEyedBeggar, CoastalTyrant];
+describe('Phase 71 + 74 + 102 — per-foe aftermath narrative lines', () => {
+    // Phase 102 expands befriendable roster from 3 → 7
+    const befriendable = [
+        MournfulGull, HollowEyedBeggar, CoastalTyrant,
+        TideflukeReaver, HushWraith, HollowSaint, TheDisagreement
+    ];
     const sweepOnly = [
         TidepoolCrab, SeaMistWisp, LullabyMoth, Disatree_01, WetHound,
-        ForestSprite, ArgumentativeCrow, TideflukeReaver, HushWraith,
-        HollowSaint, TheDisagreement, EchoOfPyrrhonia,
+        ForestSprite, ArgumentativeCrow, EchoOfPyrrhonia,
     ];
     const authored = [...befriendable, ...sweepOnly];
 
@@ -56,7 +59,7 @@ describe('Phase 71 + 74 — per-foe aftermath narrative lines', () => {
         }
     });
 
-    it('pactLines only on the 3 befriendable enemies (Phase 71 D2 + Phase 74 D3)', () => {
+    it('pactLines only on the 7 befriendable enemies (Phase 71 D2 + Phase 74 D3 + Phase 102)', () => {
         for (const enemy of befriendable) {
             expect(enemy.pactLines).toBeDefined();
             expect(enemy.pactLines!.quiet).toMatch(/\S/);
@@ -72,6 +75,24 @@ describe('Phase 71 + 74 — per-foe aftermath narrative lines', () => {
         expect(MournfulGull.pactLines!.quiet).toMatch(/slights/);
         expect(HollowEyedBeggar.pactLines!.heavy).toMatch(/carrying these/);
         expect(CoastalTyrant.pactLines!.heavy).toMatch(/king of nothing/);
+    });
+
+    it('Phase 102 — new befriendable enemies carry pactLines + journalEntry', () => {
+        // TideflukeReaver voice signatures
+        expect(TideflukeReaver.pactLines!.heavy).toMatch(/shore cursed me/);
+        expect(TideflukeReaver.journalEntry!.title).toMatch(/Salt-Bound Oath/);
+        
+        // HushWraith voice signatures
+        expect(HushWraith.pactLines!.quiet).toMatch(/silence feels like rest/);
+        expect(HushWraith.journalEntry!.title).toMatch(/Question After Silence/);
+        
+        // HollowSaint voice signatures  
+        expect(HollowSaint.pactLines!.heavy).toMatch(/martyrdom was the only honest witness/);
+        expect(HollowSaint.journalEntry!.title).toMatch(/Witness Who Chose to Stay/);
+        
+        // TheDisagreement voice signatures
+        expect(TheDisagreement.pactLines!.heavy).toMatch(/argue in good faith/);
+        expect(TheDisagreement.journalEntry!.title).toMatch(/Art of Arguing in Good Faith/);
     });
 
     it('un-authored enemies (Sandbag_01 — test sandbox per Phase 74 D1) have all three fields undefined', () => {

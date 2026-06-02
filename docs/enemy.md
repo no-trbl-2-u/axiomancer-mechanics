@@ -261,30 +261,29 @@ for the consumer to render. None of
 the FriendshipReward fields REPLACE the Phase 36 grants; they
 augment them.
 
-Three enemies ship authored predicates / rewards today:
+Seven enemies ship authored predicates / rewards (Phase 102 expanded from 3 → 7):
 
-| Enemy | Difficulty | World placement (Phase 65) | Items | xpBonus | alignmentDelta (Phase 69) | BefriendabilityConfig (Phase 68) | Narrative tone |
+| Enemy | Difficulty | World placement | Items | xpBonus | alignmentDelta (Phase 69) | BefriendabilityConfig (Phase 68) | Narrative tone |
 |---|---|---|---|---|---|---|---|
 | **MournfulGull** | normal | `fv-15` gull crag (Harbor District dead-end via `fv-11` → `fv-14`) | 1 × heart-draught | +10 | `{ outlook: +3 }` — wistful-empathy nudge toward optimistic | default Phase 36 mechanic (no config) | Heart-attuned remembrance gift; the gull stops circling. Sets flag `befriended-mournful-gull` (Phase 62) — Coastal Beggar's dialogue surfaces a new branch acknowledging the gull's silence. |
 | **HollowEyedBeggar** | normal | `fv-18` back alley (Inland Streets, on the way to the abandoned-shack loop via `fv-5` → `fv-18` or `fv-3` → `fv-16` → `fv-17` → `fv-18`) | 1 × healing-potion + 1 × antidote | +15 | `{ scope: -3 }` — re-grounds toward the relational individual | default Phase 36 mechanic (no config) | Reversal of the begging dynamic; they offer what they carry. |
-| **CoastalTyrant** | boss | `coastal-continent` fishing-village boss tile | `paradox-loop` (unique circlet, requiredLevel 15) + healing-potion + heart-draught | +75 | `{ outlook: +3, scope: -2 }` — recognition + release; he gave up his despair toward optimism, and saw a person rather than a doctrine | `{ hpGate: { belowPct: 0.4 }, requiredStances: ['heart'], roundsThreshold: 5 }` | Magistrate-fallen-priest; friendship opens only after he's been brought low, the player has shown empathy at least once, and 5 both-defend rounds have passed. The fallen-priest hands over his regalia (Paradox Loop unique — "a sentence which forever ends without finishing") + healing tokens; multi-paragraph narrative captures the recognition + release. Sets flag `befriended-coastal-tyrant` (Phase 62) for downstream dialogue / quest gates. Demonstrates the full Phase 60+62+68+69 stack on a single high-stakes encounter (Phase 70). |
+| **TideflukeReaver** | elite | `fv-*` fishing-village elite encounters | 1 × body-elixir + 1 × healing-potion | +35 | `{ outlook: +2, scope: +1 }` — softens pessimism, opens to relationship | `{ hpGate: { belowPct: 0.3 }, requiredStances: ['heart'], roundsThreshold: 4 }` | Salt-bound reaver's chains dissolve; empathy required. Sets flag `befriended-tidefluke-reaver` (Phase 102). |
+| **HushWraith** | elite | `nf-*` northern-forest elite encounters | 1 × clarity-serum + 1 × antidote | +40 | `{ outlook: +1 }` — slight hope in cosmic indifference | `{ hpGate: { belowPct: 0.25 }, requiredStances: ['heart'], roundsThreshold: 6 }` | Transcendent silence breaks into whisper; patience required. Sets flag `befriended-hush-wraith` (Phase 102). |
+| **HollowSaint** | elite | `nf-*` northern-forest elite encounters | 1 × resonance-crystal + 1 × heart-draught + 1 × healing-potion | +45 | `{ scope: -2 }` — turns inward from transcendent to individual | `{ hpGate: { belowPct: 0.4 }, requiredStances: ['heart'], requiredSkillUse: ['prayer'], roundsThreshold: 3 }` | Martyr finds purpose in witness; prayer skill connection if available. Sets flag `befriended-hollow-saint` (Phase 102). |
+| **CoastalTyrant** | boss | `coastal-continent` fishing-village boss tile | `paradox-loop` (unique circlet, requiredLevel 15) + healing-potion + heart-draught | +75 | `{ outlook: +3, scope: -2 }` — recognition + release; he gave up his despair toward optimism, and saw a person rather than a doctrine | `{ hpGate: { belowPct: 0.4 }, requiredStances: ['heart'], roundsThreshold: 3 }` | Magistrate-fallen-priest; friendship opens only after he's been brought low, the player has shown empathy at least once, and 3 both-defend rounds have passed. The fallen-priest hands over his regalia (Paradox Loop unique — "a sentence which forever ends without finishing") + healing tokens; multi-paragraph narrative captures the recognition + release. Sets flag `befriended-coastal-tyrant` (Phase 62) for downstream dialogue / quest gates. Demonstrates the full Phase 60+62+68+69 stack on a single high-stakes encounter (Phase 70). |
+| **TheDisagreement** | boss | `coastal-continent` northern-forest boss tile | 1 × philosopher-tea + 1 × focus-vial + 1 × healing-potion + 1 × clarity-serum | +80 | `{ scope: +1 }` — opens to relational despite absurdism | `{ hpGate: { belowPct: 0.2 }, requiredStances: ['mind'], roundsThreshold: 8 }` | Disagreement resolves into dialogue; reasoned argumentation and boss patience required. Sets flag `befriended-the-disagreement` (Phase 102). |
 
-The 2 normal-tier enemies are picked from the fishing-village
-(level 2-3), where the player's first deliberate befriending
-attempts are likeliest to land. CoastalTyrant is the first boss-tier
-authored predicate (Phase 68) AND the first boss-tier authored
-reward (Phase 70). Phase 70 demonstrates the full Phase 60+62+68+69
-stack on a single high-stakes encounter — `befriendabilityConfig`
-predicate, `friendshipReward` with items + xpBonus + multi-paragraph
-narrative + `alignmentDelta` + `flagSet`, the
-`applyAlignmentDelta`-routed alignment shift, and the +1 moralMeter
-fire from Phase 36. The quest-branch wire-in on
-`outcome === 'friendship'` (vs `'victory'`) shipped in Phase 62
-(`FriendshipReward.flagSet` → `state.flags`); the predicate-override
-mechanism shipped in Phase 68 (`Enemy.befriendabilityConfig`); the
-alignment-shift mechanism shipped in Phase 69
-(`FriendshipReward.alignmentDelta`); the boss-tier reward authoring
-landed at Phase 70.
+The 2 normal-tier enemies (MournfulGull, HollowEyedBeggar) are 
+picked from the fishing-village (level 2-3), where the player's first 
+deliberate befriending attempts are likeliest to land. Phase 102 expands 
+the roster with 4 new enemies: 3 elite-tier (TideflukeReaver, HushWraith, 
+HollowSaint) and 1 boss-tier (TheDisagreement), bringing the total 
+befriendable count from 3 → 7. All carry the full Phase 60+62+68+69+71+73 
+stack: `befriendabilityConfig` predicates, `friendshipReward` content, 
+`pactLines` narrative, and `journalEntry` codex unlocks. CoastalTyrant 
+demonstrates the Phase 70 boss-tier reward integration; TheDisagreement 
+demonstrates boss-tier predicate complexity (full stance spectrum + 
+8-round patience threshold).
 
 Hermetic e2e coverage at
 [`src/Game/e2e/befriend.engine.test.ts`](../src/Game/e2e/befriend.engine.test.ts)
@@ -315,7 +314,7 @@ consumer (mobile presenter etc.) picks `brutal` vs `quiet` vs
 `ironic` based on damage-tier shape or parley posture. Strings are
 complete chronicle prose; the engine performs no interpolation.
 
-**Initial author coverage (Phase 71):** the three currently-authored
+**Initial author coverage (Phase 71):** the three original
 befriendable enemies — **MournfulGull** (heart-aspected wistful,
 "slights" / "list" / "catalogue" thread), **HollowEyedBeggar**
 (faith-pessimistic-relational, "carrying" / "rags" / "phials"
@@ -323,6 +322,14 @@ thread; reversal-of-begging carries into pact + cause variants),
 and **CoastalTyrant** (magistrate-fallen-priest, "verdict" /
 "regalia" / "magistrate" thread; pact lines echo the existing
 4-paragraph `friendshipReward.narrative`).
+
+**Phase 102 expansion:** four additional befriendable enemies gained
+`pactLines` — **TideflukeReaver** (salt-bound / shore-cursed / chains
+dissolving thread), **HushWraith** (silence / questions / patience
+thread), **HollowSaint** (martyrdom / witness / devotion thread),
+and **TheDisagreement** (argument / dialogue / good-faith thread).
+All carry the full befriendability stack (`befriendabilityConfig` +
+`friendshipReward` + `pactLines` + `journalEntry`).
 
 **Sweep coverage (Phase 74):** the remaining 12 non-sandbox enemies
 in the library gained `finalBlowLines` + `causeLines` (Phase 74
@@ -359,8 +366,13 @@ lookup against the source enemy.
 
 Initial author coverage (Phase 73): MournfulGull ("The Catalogue of
 Slights"), HollowEyedBeggar ("They Carry What You Set Down"),
-CoastalTyrant ("The Magistrate Who Set Down the Circlet"). Bodies
-extend the Phase 71 chronicle voices.
+CoastalTyrant ("The Magistrate Who Set Down the Circlet"). 
+
+Phase 102 expansion: TideflukeReaver ("The Salt-Bound Oath"),
+HushWraith ("The Question After Silence"), HollowSaint ("The Witness
+Who Chose to Stay"), TheDisagreement ("The Art of Arguing in Good Faith").
+All bodies extend their respective Phase 71 chronicle voices and
+philosophical archetypes.
 
 Victory / defeat / flee outcomes do NOT unlock the entry. Future
 dialogue / map-event content can grant codex entries outside combat

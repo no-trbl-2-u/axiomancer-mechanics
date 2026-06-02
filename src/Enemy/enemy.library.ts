@@ -412,6 +412,38 @@ export const TideflukeReaver = createEnemy({
     philosophicalAlignment: { epistemology: 67, outlook: -67, scope: 0 },
     // Phase 57 — body-aspected tier-3 fallacy matches the reaver's "built threat → strike" trope.
     skills: [skill('straw-giant')],
+    // Phase 102 — befriendability config: elite tier, empathy required
+    befriendabilityConfig: {
+        hpGate: { belowPct: 0.3 },
+        requiredStances: ['heart'], // empathy
+        roundsThreshold: 4
+    },
+    // Phase 102 — friendship reward: salt-bound reaver's chains dissolve
+    friendshipReward: {
+        items: [
+            { ...getConsumableById('body-elixir')! },
+            { ...getConsumableById('healing-potion')! }
+        ],
+        xpBonus: 35,
+        alignmentDelta: { outlook: +2, scope: +1 }, // softens pessimism, opens to relationship
+        narrative: "The salt-bound reaver's chains dissolve into foam. For the first time in memory, " +
+                  "its fists unclench. 'The surf retreats,' it says, voice rough as barnacles. " +
+                  "'But you... you stayed.'",
+        flagSet: 'befriended-tidefluke-reaver'
+    },
+    // Phase 102 — pact lines for friendship outcome
+    pactLines: {
+        quiet:   'The reaver stops mid-swing. The fists that moved faster than the surf drop to its sides.',
+        setDown: 'It sets something small and salt-crusted between you. A chain link, maybe, or a prayer bead worn smooth.',
+        heavy:   '"The shore cursed me for staying when I should have gone out with the tide. You stayed when you should have left. Maybe that makes us even."'
+    },
+    // Phase 102 — journal entry unlocked on befriending
+    journalEntry: {
+        id: 'codex-tidefluke-reaver',
+        title: 'The Salt-Bound Oath',
+        body: 'Some debts are paid in water, others in understanding. The reaver carried both ' +
+              'until someone showed it the difference between being bound and choosing to stay.'
+    },
     // Phase 74 — salt-bound / shore-cursed / "faster than the surf retreats" voice.
     finalBlowLines: {
         brutal: 'The reaver falls in a wash of salt. The fists were faster than the surf retreated; the strike was faster than the fists.',
@@ -443,6 +475,37 @@ export const HushWraith = createEnemy({
     philosophicalAlignment: { epistemology: 0, outlook: -67, scope: 67 },
     // Phase 57 — mind-aspected paradox; gradual-undoing matches "listens until you doubt the answer".
     skills: [skill('sorites-cascade')],
+    // Phase 102 — befriendability config: transcendent silence requires patience
+    befriendabilityConfig: {
+        hpGate: { belowPct: 0.25 },
+        requiredStances: ['heart'],
+        roundsThreshold: 6 // longer patience for transcendent silence
+    },
+    // Phase 102 — friendship reward: wraith's silence breaks into whisper
+    friendshipReward: {
+        items: [
+            { ...getConsumableById('clarity-serum')! },
+            { ...getConsumableById('antidote')! }
+        ],
+        xpBonus: 40,
+        alignmentDelta: { outlook: +1 }, // slight hope in cosmic indifference
+        narrative: "The wraith's silence breaks into whisper. 'I have been listening to the wrong questions,' " +
+                  "it says, voice like wind through forgotten spaces. 'Yours... yours had an answer all along.'",
+        flagSet: 'befriended-hush-wraith'
+    },
+    // Phase 102 — pact lines for friendship outcome
+    pactLines: {
+        quiet:   'The questions fade. For the first time, the silence feels like rest rather than waiting.',
+        setDown: 'The wraith draws something from the air between you — a word, perhaps, or the shape silence makes when it chooses to speak.',
+        heavy:   '"I have been the wrong kind of patient. Listening for doubt when I should have listened for certainty. You speak like someone who knows their answers."'
+    },
+    // Phase 102 — journal entry unlocked on befriending
+    journalEntry: {
+        id: 'codex-hush-wraith',
+        title: 'The Question After Silence',
+        body: 'Not all silences are the same. Some wait for answers; others wait for the right person ' +
+              'to stop asking. The wraith learned the difference between doubt and patience.'
+    },
     // Phase 74 — silence-after-a-question / "listens until you doubt" voice.
     finalBlowLines: {
         brutal: 'The silence breaks first. Then the wraith. Then the question stays.',
@@ -474,6 +537,39 @@ export const HollowSaint = createEnemy({
     philosophicalAlignment: { epistemology: -67, outlook: 0, scope: 67 },
     // Phase 57 — heart self-heal paradox for the martyr-without-cause seeking a wound to claim.
     skills: [skill('pascals-wager')],
+    // Phase 102 — befriendability config: faith-based empathy and prayer connection
+    befriendabilityConfig: {
+        hpGate: { belowPct: 0.4 },
+        requiredStances: ['heart'],
+        requiredSkillUse: ['prayer'], // if player has prayer skill
+        roundsThreshold: 3
+    },
+    // Phase 102 — friendship reward: hollow saint finds purpose in witness
+    friendshipReward: {
+        items: [
+            { ...getConsumableById('resonance-crystal')! },
+            { ...getConsumableById('heart-draught')! },
+            { ...getConsumableById('healing-potion')! }
+        ],
+        xpBonus: 45,
+        alignmentDelta: { scope: -2 }, // turns inward from transcendent to individual
+        narrative: "The hollow saint finds purpose in witness. 'I have been looking for a cause to die for,' " +
+                  "it says, voice clear for the first time. 'You showed me one to live for instead.'",
+        flagSet: 'befriended-hollow-saint'
+    },
+    // Phase 102 — pact lines for friendship outcome
+    pactLines: {
+        quiet:   'The saint lowers its hands. The wound it was offering closes.',
+        setDown: 'It places something blessed between you — not a relic, but a prayer made tangible.',
+        heavy:   '"I thought martyrdom was the only honest witness. You showed me that staying alive to witness another day might be the harder, truer choice."'
+    },
+    // Phase 102 — journal entry unlocked on befriending
+    journalEntry: {
+        id: 'codex-hollow-saint',
+        title: 'The Witness Who Chose to Stay',
+        body: 'There are two kinds of devotion: the kind that seeks an ending, and the kind that ' +
+              'chooses to continue. The saint learned that witness requires presence, not sacrifice.'
+    },
     // Phase 74 — martyr-without-a-cause / "the wound it offers is your own" voice.
     finalBlowLines: {
         brutal: 'The wound it offered was yours; you returned it with interest.',
@@ -621,6 +717,41 @@ export const TheDisagreement = createEnemy({
     philosophicalAlignment: { epistemology: 67, outlook: 0, scope: -67 },
     // Phase 57 — mind-mark paradox matches the rehearsed-argument boss whose phases are deliberate.
     skills: [skill('liars-echo')],
+    // Phase 102 — befriendability config: boss tier requires reasoned argumentation
+    befriendabilityConfig: {
+        hpGate: { belowPct: 0.2 },
+        requiredStances: ['mind'], // reasoned argumentation
+        roundsThreshold: 8 // boss-tier patience
+    },
+    // Phase 102 — friendship reward: disagreement resolves into dialogue
+    friendshipReward: {
+        items: [
+            { ...getConsumableById('philosopher-tea')! },
+            { ...getConsumableById('focus-vial')! },
+            { ...getConsumableById('healing-potion')! },
+            { ...getConsumableById('clarity-serum')! }
+        ],
+        xpBonus: 80,
+        alignmentDelta: { scope: +1 }, // opens to relational despite absurdism
+        narrative: "The disagreement resolves into dialogue. 'You argued back properly,' it says, thorns " +
+                  "retracting one by one. 'Every phase. You earned the right to disagree with the conclusion. " +
+                  "That makes this the first argument I have ever finished.'",
+        flagSet: 'befriended-the-disagreement'
+    },
+    // Phase 102 — pact lines for friendship outcome
+    pactLines: {
+        quiet:   'The thorns fold. The teeth retract. For the first time, the argument pauses to listen.',
+        setDown: 'It offers something paradoxical — not a token of agreement, but a respectful acknowledgment of disagreement.',
+        heavy:   '"I have been the same argument for too long. You showed me what it means to argue in good faith, to disagree without hatred. The difference is... illuminating."'
+    },
+    // Phase 102 — journal entry unlocked on befriending
+    journalEntry: {
+        id: 'codex-the-disagreement',
+        title: 'The Art of Arguing in Good Faith',
+        body: 'Not all arguments seek to win; some seek to understand. The disagreement learned ' +
+              'that resolution can come not from defeating an opponent, but from respecting the ' +
+              'process of disagreement itself.'
+    },
     // Phase 74 — unresolved-argument-with-thorns-and-teeth / "rehearsed your defeat" voice.
     finalBlowLines: {
         brutal: 'The argument is over because one party is no longer present to make it. The thorns retract slowly, as if the silence is what they were always for.',

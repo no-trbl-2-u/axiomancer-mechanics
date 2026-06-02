@@ -255,13 +255,18 @@ through `applyLevelUps` if the (now possibly-bonused) XP crossed a threshold.
 ### Befriendable-enemy content (Phase 60)
 
 Per-enemy `Enemy.friendshipReward?: FriendshipReward` lets authors
-attach bonus content to the friendship resolution. Two enemies ship
-authored rewards today:
+attach bonus content to the friendship resolution. Seven enemies ship
+authored rewards (Phase 102 expanded from 3 → 7):
 
 | Enemy | Items | xpBonus | Narrative |
 |---|---|---|---|
-| **MournfulGull** (at `fv-15` gull crag, Phase 65) | 1 × heart-draught | +10 | "The gull stops circling. It settles on the rail beside you. For a long moment, neither of you speaks the slights you remember." |
-| **HollowEyedBeggar** (at `fv-18` back alley, Phase 65) | 1 × healing-potion + 1 × antidote | +15 | "They pull a folded cloth from somewhere inside the rags. Two phials, both still cold. \"I was carrying these for someone,\" they say. \"But you stopped. So.\"" |
+| **MournfulGull** (normal) | 1 × heart-draught | +10 | "The gull stops circling. It settles on the rail beside you. For a long moment, neither of you speaks the slights you remember." |
+| **HollowEyedBeggar** (normal) | 1 × healing-potion + 1 × antidote | +15 | "They pull a folded cloth from somewhere inside the rags. Two phials, both still cold. \"I was carrying these for someone,\" they say. \"But you stopped. So.\"" |
+| **TideflukeReaver** (elite, Phase 102) | 1 × body-elixir + 1 × healing-potion | +35 | "The salt-bound reaver's chains dissolve into foam. For the first time in memory, its fists unclench." |
+| **HushWraith** (elite, Phase 102) | 1 × clarity-serum + 1 × antidote | +40 | "The wraith's silence breaks into whisper. 'I have been listening to the wrong questions,' it says..." |
+| **HollowSaint** (elite, Phase 102) | 1 × resonance-crystal + 1 × heart-draught + 1 × healing-potion | +45 | "The hollow saint finds purpose in witness. 'I have been looking for a cause to die for,' it says..." |
+| **CoastalTyrant** (boss) | paradox-loop + healing-potion + heart-draught | +75 | "For five rounds the magistrate has refused to strike. The sword stays low..." |
+| **TheDisagreement** (boss, Phase 102) | 1 × philosopher-tea + 1 × focus-vial + 1 × healing-potion + 1 × clarity-serum | +80 | "The disagreement resolves into dialogue. 'You argued back properly,' it says..." |
 
 `FriendshipReward` is `{ items?: Item[]; xpBonus?: number; narrative?:
 string }`. Items are appended to the weighted-loot roll, xpBonus is

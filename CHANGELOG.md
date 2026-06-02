@@ -14,6 +14,7 @@ deep imports are part of the supported surface.
 
 ### Added
 
+- **Befriendable-enemy Tier-2 expansion** (Phase 102): Expanded befriendable roster from 3 → 7 enemies. Added full befriendability stack (config + rewards + narrative + journal entries) to TideflukeReaver, HushWraith, HollowSaint, and TheDisagreement. Elite-tier enemies require specific stance combinations and patience; boss-tier TheDisagreement requires full stance spectrum and 8-round patience threshold.
 - **Damage resistance primitive** (Phase 93): Skills now apply damage resistance based on target's stats. Physical damage reduced by body stat, mental by mind stat, emotional by heart stat. Linear resistance model (1 stat point = 1 damage reduction) with minimum 1 damage. Completes Phase 80 direction (a) "damage rolls separately + applies resistance."
 
 ### Changed

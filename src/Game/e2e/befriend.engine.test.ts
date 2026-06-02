@@ -15,6 +15,7 @@
 import { describe, it, expect } from 'vitest';
 import {
     MournfulGull, HollowEyedBeggar, TidepoolCrab, CoastalTyrant,
+    TideflukeReaver, HushWraith, HollowSaint, TheDisagreement,
 } from '../../Enemy/enemy.library';
 import { createGameStore, selectMoralMeter } from '../store';
 import { nullAdapter } from '../persistence/null.adapter';
@@ -412,6 +413,182 @@ describe('Phase 70 — Coastal Tyrant boss-tier friendshipReward (full Phase 60+
         expect(report.outcome).toBe('victory');
         expect(report.friendshipReward).toBeUndefined();
         expect(store.getState().flags).not.toContain('befriended-coastal-tyrant');
+    });
+});
+
+describe('Phase 102 — Befriendable-enemy Tier-2 expansion', () => {
+    it('TideflukeReaver friendship with heart stance meets elite-tier predicate', () => {
+        const store = createGameStore(nullAdapter);
+        store.getState().startCombat(TideflukeReaver);
+        const combat = store.getState().combat!;
+        
+        store.getState().updateCombat({
+            ...combat,
+            friendshipCounter: 4, // meets roundsThreshold
+            log: [
+                logEntry(1, 'heart'), // required empathy
+                logEntry(2, 'body'), logEntry(3, 'mind'), logEntry(4, 'heart')
+            ],
+            enemy: {
+                ...combat.enemy,
+                health: Math.floor(combat.enemy.maxHealth * 0.25), // below 30% hpGate
+            },
+        });
+
+        const report = store.getState().endCombat();
+        expect(report.outcome).toBe('friendship');
+        expect(report.loot.some(item => item.id === 'body-elixir')).toBe(true);
+        expect(report.loot.some(item => item.id === 'healing-potion')).toBe(true);
+        expect(report.xpGained).toBe(Math.floor(4 * 50 * 0.5) + 35); // base half-XP (elite) + 35 bonus
+        expect(report.friendshipReward?.narrative).toMatch(/salt-bound reaver/);
+        expect(store.getState().flags).toContain('befriended-tidefluke-reaver');
+    });
+
+    it('TideflukeReaver does NOT befriend without heart stance', () => {
+        const store = createGameStore(nullAdapter);
+        store.getState().startCombat(TideflukeReaver);
+        const combat = store.getState().combat!;
+        
+        store.getState().updateCombat({
+            ...combat,
+            friendshipCounter: 4,
+            log: [logEntry(1, 'body'), logEntry(2, 'mind')], // missing heart
+            enemy: {
+                ...combat.enemy,
+                health: Math.floor(combat.enemy.maxHealth * 0.25),
+            },
+        });
+
+        const report = store.getState().endCombat();
+        expect(report.outcome).not.toBe('friendship');
+    });
+
+    it('HushWraith friendship with patience (6 rounds) and heart stance', () => {
+        const store = createGameStore(nullAdapter);
+        store.getState().startCombat(HushWraith);
+        const combat = store.getState().combat!;
+        
+        store.getState().updateCombat({
+            ...combat,
+            friendshipCounter: 6, // transcendent silence patience
+            log: [
+                logEntry(1, 'heart'), logEntry(2, 'body'), 
+                logEntry(3, 'mind'), logEntry(4, 'heart'),
+                logEntry(5, 'heart'), logEntry(6, 'body')
+            ],
+            enemy: {
+                ...combat.enemy,
+                health: Math.floor(combat.enemy.maxHealth * 0.2), // below 25% hpGate
+            },
+        });
+
+        const report = store.getState().endCombat();
+        expect(report.outcome).toBe('friendship');
+        expect(report.loot.some(item => item.id === 'clarity-serum')).toBe(true);
+        expect(report.loot.some(item => item.id === 'antidote')).toBe(true);
+        expect(report.xpGained).toBe(Math.floor(5 * 50 * 0.5) + 40); // elite half-XP + 40 bonus
+        expect(report.friendshipReward?.narrative).toMatch(/silence breaks into whisper/);
+        expect(store.getState().flags).toContain('befriended-hush-wraith');
+    });
+
+    it('HushWraith does NOT befriend with insufficient patience (5 rounds < 6 threshold)', () => {
+        const store = createGameStore(nullAdapter);
+        store.getState().startCombat(HushWraith);
+        const combat = store.getState().combat!;
+        
+        store.getState().updateCombat({
+            ...combat,
+            friendshipCounter: 5, // below roundsThreshold of 6
+            log: [logEntry(1, 'heart')],
+            enemy: {
+                ...combat.enemy,
+                health: Math.floor(combat.enemy.maxHealth * 0.2),
+            },
+        });
+
+        const report = store.getState().endCombat();
+        expect(report.outcome).not.toBe('friendship');
+    });
+
+    it('HollowSaint friendship with prayer skill requirement (if available)', () => {
+        const store = createGameStore(nullAdapter);
+        store.getState().startCombat(HollowSaint);
+        const combat = store.getState().combat!;
+        
+        store.getState().updateCombat({
+            ...combat,
+            friendshipCounter: 3,
+            log: [
+                logEntry(1, 'heart'), 
+                logEntry(2, 'heart', 'prayer'), // prayer skill if player has it
+                logEntry(3, 'body')
+            ],
+            enemy: {
+                ...combat.enemy,
+                health: Math.floor(combat.enemy.maxHealth * 0.35), // below 40% hpGate
+            },
+        });
+
+        const report = store.getState().endCombat();
+        expect(report.outcome).toBe('friendship');
+        expect(report.loot.some(item => item.id === 'resonance-crystal')).toBe(true);
+        expect(report.loot.some(item => item.id === 'heart-draught')).toBe(true);
+        expect(report.loot.some(item => item.id === 'healing-potion')).toBe(true);
+        expect(report.xpGained).toBe(Math.floor(5 * 50 * 0.5) + 45); // elite half-XP + 45 bonus
+        expect(report.friendshipReward?.narrative).toMatch(/hollow saint finds purpose/);
+        expect(store.getState().flags).toContain('befriended-hollow-saint');
+    });
+
+    it('TheDisagreement boss-tier friendship requires mind stance and boss patience', () => {
+        const store = createGameStore(nullAdapter);
+        store.getState().startCombat(TheDisagreement);
+        const combat = store.getState().combat!;
+        
+        store.getState().updateCombat({
+            ...combat,
+            friendshipCounter: 8, // boss-tier patience
+            log: [
+                logEntry(1, 'mind'), logEntry(2, 'heart'), logEntry(3, 'body'),
+                logEntry(4, 'mind'), logEntry(5, 'heart'), logEntry(6, 'body'),
+                logEntry(7, 'mind'), logEntry(8, 'heart')
+            ],
+            enemy: {
+                ...combat.enemy,
+                health: Math.floor(combat.enemy.maxHealth * 0.15), // below 20% hpGate
+            },
+        });
+
+        const report = store.getState().endCombat();
+        expect(report.outcome).toBe('friendship');
+        expect(report.loot.some(item => item.id === 'philosopher-tea')).toBe(true);
+        expect(report.loot.some(item => item.id === 'focus-vial')).toBe(true);
+        expect(report.loot.some(item => item.id === 'healing-potion')).toBe(true);
+        expect(report.loot.some(item => item.id === 'clarity-serum')).toBe(true);
+        expect(report.xpGained).toBe(Math.floor(8 * 200 * 0.5) + 80); // boss half-XP + 80 bonus
+        expect(report.friendshipReward?.narrative).toMatch(/disagreement resolves into dialogue/);
+        expect(store.getState().flags).toContain('befriended-the-disagreement');
+    });
+
+    it('TheDisagreement does NOT befriend without mind stance', () => {
+        const store = createGameStore(nullAdapter);
+        store.getState().startCombat(TheDisagreement);
+        const combat = store.getState().combat!;
+        
+        store.getState().updateCombat({
+            ...combat,
+            friendshipCounter: 8,
+            log: [
+                logEntry(1, 'heart'), logEntry(2, 'body'), // missing mind stance
+                logEntry(3, 'heart'), logEntry(4, 'body'),
+            ],
+            enemy: {
+                ...combat.enemy,
+                health: Math.floor(combat.enemy.maxHealth * 0.15),
+            },
+        });
+
+        const report = store.getState().endCombat();
+        expect(report.outcome).not.toBe('friendship');
     });
 });
 
