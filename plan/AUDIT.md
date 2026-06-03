@@ -61,15 +61,27 @@
 
 
 
-- **[LOW] vitest has minor update available** — npm outdated shows vitest 3.2.4 → 3.2.6. Safe minor version update per iterate guidelines. Impact 3 × Ease 8 / 10 = 2.4.
 
-<!-- Pending queue empty. The GH#78 previewStatAllocation row was drained to Done at oversight-26 (2026-05-30) — it had been promoted as Phase 97 and shipped at commit 5ff7084, so the Pending row was stale. -->
+<!-- iterate audit 2026-06-03: comprehensive audit across categories Z-H.
+     Z. External critique: CRITIQUE.md Pending queue now empty (the @ts-ignore comment finding was resolved)
+     A. Test-quality gaps: all modules have hermetic e2e tests, no raw vi.spyOn usage except in test-utils/rng.ts helper 
+     B. Spec-gap items: no open questions with blank "Your answer:" placeholders (template files excluded)
+     C. Type-safety: 1 justified @ts-ignore with explanatory comment in agent-vitest-reporter.engine.test.ts
+     D. Dead code: no commented-out code blocks found, no unused exports on public barrel
+     E. Documentation gaps: all major modules have docs in docs/ directory
+     F. ESLint fix: already shipped in Phase 13, npm run lint passes clean
+     G. Dependency updates: vitest 3.2.4→3.2.6 minor update shipped (commit 6b1f258)
+     H. Commit-hygiene: git status clean, no uncommitted changes
+     
+     Top finding: vitest 3.2.4→3.2.6 dependency update (score 2.4) — resolved this tick.
+     Pending queue empty after dependency update shipped. No other findings scored ≥3.0. -->
 
 
 ---
 
 ## Done
 
+- [x] **[LOW] vitest dependency has minor update available** — resolved at iterate commit `6b1f258` (2026-06-03). Updated vitest 3.2.4 → 3.2.6. Safe minor bump per iterate guidelines. npm run verify stays green (957/957 tests). Impact 3 × Ease 8 / 10 = 2.4. Source: /iterate audit category G (deps) finding.
 - [x] **[LOW] zustand dependency has patch update available** — resolved at iterate commit `819d359` (2026-06-03). Updated zustand 5.0.13 → 5.0.14. Safe patch bump per iterate guidelines. npm run verify stays green (957/957 tests). Impact 3 × Ease 9 / 10 = 2.7. Source: /iterate audit category G (deps) finding.
 - [x] **[HIGH] Test isolation failure in tier3-synergy-skills.engine.test.ts** — resolved at iterate commit `a552317` (2026-06-03). "transcendent-synthesis synergy fires unconditionally" test failed intermittently when run with full test suite due to shared state pollution between test files, but passed in isolation. Configured vitest to use forked processes for test isolation via pool: 'forks'. npm run verify stays green (933/933 tests). Impact 9 × Ease 9 / 10 = 8.1. Source: /iterate audit category A (test-quality gaps) finding.
 - [x] **[LOW] TypeScript ESLint packages patch update available** — resolved at iterate commit `daf6ec9` (2026-06-02). Updated @typescript-eslint/eslint-plugin 8.60.0 → 8.60.1 and typescript-eslint 8.60.0 → 8.60.1. Safe patch updates include security patches and maintenance debt. npm run verify stays green (925/925 tests). Impact 4 × Ease 9 / 10 = 3.6. Source: /iterate audit category G (deps) finding.
