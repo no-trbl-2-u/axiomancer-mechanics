@@ -5,6 +5,7 @@ import { createEnemy } from '../../Enemy';
 import { initializeCombat } from '../../Combat/combat.reducer';
 import { resolveCombatRound } from '../../Combat/combat.resolver';
 import { mockSequentialRng } from '../../test-utils';
+import { restoreOriginalRng } from '../../test-utils/rng';
 import {
     canUseSkill,
     spendResources,
@@ -16,7 +17,10 @@ import {
 import { CombatResources, Skill } from '../types';
 import { CombatState } from '../../Combat/types';
 
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => {
+    vi.restoreAllMocks();
+    restoreOriginalRng();
+});
 
 const zero: CombatResources = { heart: 0, body: 0, mind: 0, fallacy: 0, paradox: 0 };
 
