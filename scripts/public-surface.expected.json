@@ -374,6 +374,7 @@
     "QuestObjectiveType",
     "QuestStatus",
     "RegenerationConfig",
+    "RegionConsequences",
     "ResolveMapEventResult",
     "ResolvedEvent",
     "ResourceCost",
