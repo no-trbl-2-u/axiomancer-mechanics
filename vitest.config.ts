@@ -25,5 +25,8 @@ export default defineConfig({
     // Negligible cost: vitest computes by `new Error()` + stack-parse
     // at collection time.
     includeTaskLocation: true,
+    // Use forked processes for test isolation to prevent shared state pollution
+    // between test files (fixes intermittent tier3-synergy-skills.engine.test.ts failure)
+    pool: 'forks',
   },
 });
