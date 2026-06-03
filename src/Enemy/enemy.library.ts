@@ -736,7 +736,14 @@ export const TheDisagreement = createEnemy({
         narrative: "The disagreement resolves into dialogue. 'You argued back properly,' it says, thorns " +
                   "retracting one by one. 'Every phase. You earned the right to disagree with the conclusion. " +
                   "That makes this the first argument I have ever finished.'",
-        flagSet: 'befriended-the-disagreement'
+        flagSet: 'befriended-the-disagreement',
+        // Phase 110 — boss befriend faction tradeoff: sparing the Disagreement costs
+        // reputation with Merchant's Guild (they valued its philosophical constraints)
+        // but gains reputation with Forest Wardens (who appreciate dialectical harmony)
+        factionDeltas: {
+            'merchant-guild': -10,    // lose: they valued its philosophical constraints
+            'forest-wardens': +12,    // gain: appreciate dialectical harmony
+        }
     },
     // Phase 102 — pact lines for friendship outcome
     pactLines: {

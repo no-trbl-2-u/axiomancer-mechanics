@@ -222,6 +222,17 @@ export type {
     PhilosophicalAlignmentCell,
 } from './Philosophy';
 
+// ─── Faction (Phase 110 — faction reputation system for boss befriend consequences) ──
+export {
+    FACTION_REPUTATION_MIN, FACTION_REPUTATION_MAX, DEFAULT_FACTION_REPUTATION,
+    clampFactionReputation, createDefaultFactionReputations,
+    applyFactionReputationDeltas, getFactionReputation,
+    factionLibrary, getFactionInfo, getAllFactions,
+} from './Faction';
+export type {
+    FactionReputation, FactionReputations, FactionReputationDelta, FactionInfo,
+} from './Faction';
+
 // ─── NPCs (types + dialogue helpers) ──────────────────────────────────────────
 export type {
     NPC, DialogueMap, DialogueTree, DialogueNode, DialogueChoice, DialogueContext,

@@ -6,6 +6,7 @@ import { ActiveEffect } from '../Effects/types';
 import { ProcOverrides, ProcUnlocks } from '../Combat/combat-effects';
 import { Item } from '../Items/types';
 import { PhilosophicalAlignment } from '../Philosophy/types';
+import { FactionReputationDelta } from '../Faction/types';
 // Phase 73 — CodexEntry's semantic home is src/Game/types.ts (alongside
 // CodexState + the Game-loop persistence surface). It's re-exported here
 // so `Enemy.journalEntry?: CodexEntry` decoration works at the per-foe
@@ -147,6 +148,15 @@ export interface FriendshipReward {
      * default.
      */
     alignmentDelta?: Partial<PhilosophicalAlignment>;
+    /**
+     * Phase 110 — optional shift applied to the player's faction reputation
+     * standings on the friendship outcome. The END_COMBAT reducer routes
+     * the delta through `applyFactionReputationDeltas(state.factionReputations,
+     * factionDeltas)` (Phase 110's clamp helper); each faction clamps to
+     * `[-100, +100]`. Authoring band: ±5..±15 per faction for boss encounters
+     * (demonstrates lose-with-one / gain-with-another tradeoffs).
+     */
+    factionDeltas?: FactionReputationDelta;
 }
 
 /**

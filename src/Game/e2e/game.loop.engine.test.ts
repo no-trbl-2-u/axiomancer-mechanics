@@ -116,6 +116,7 @@ describe('Game loop — full transcript through gameReducer', () => {
             philosophicalAlignment: store.getState().philosophicalAlignment,
             codex:      store.getState().codex,
             regionConsequences: store.getState().regionConsequences,
+            factionReputations: store.getState().factionReputations,
         }));
 
         // 7. SAVE_GAME (autosave already fired through the dispatch chain).

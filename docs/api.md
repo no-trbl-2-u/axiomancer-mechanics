@@ -520,6 +520,32 @@ authoring; the first batch is live as of Phase 44.
 - `DialogueContext.alignment?: PhilosophicalAlignment` — Beta. Optional context field threaded through `visibleChoices` so callers can preview gates without committing dispatch.
 - 2 live gates authored on `nirvana-fallacy` (`outlook ≤ -34`) + `appeal-to-fear` (`scope ≥ 34`); 2 dialogue branches gated on Old Marrow + Coastal Beggar. See [docs/philosophy.md "Authoring gates (Phase 46)"](./philosophy.md) for operator semantics + authoring guidance.
 
+### Faction (Phase 110) — Beta
+
+Reputation system for boss befriend consequences. See
+[docs/faction.md](./faction.md) for authoring guidelines.
+
+- Types (`FactionReputation`, `FactionReputations`, 
+  `FactionReputationDelta`, `FactionInfo`) — Beta.
+- Engine (`clampFactionReputation`, `createDefaultFactionReputations`,
+  `applyFactionReputationDeltas`, `getFactionReputation`) — Beta.
+- Constants (`FACTION_REPUTATION_MIN`, `FACTION_REPUTATION_MAX`,
+  `DEFAULT_FACTION_REPUTATION`) — Beta.
+- Library (`factionLibrary`, `getFactionInfo`, `getAllFactions`) — Beta.
+  Registry of known factions with metadata (name, description).
+- State field `GameState.factionReputations` — Beta. Persists
+  across save/load and run resets when `keepCharacter: true`.
+
+**Boss befriend integration:**
+- `FriendshipReward.factionDeltas?: FactionReputationDelta` — Beta. Applied
+  by the `END_COMBAT` reducer on friendship outcomes via 
+  `applyFactionReputationDeltas`.
+- `CombatEndReport.friendshipReward.factionReputationShift?: { [factionId: string]: number }` — Beta. Surfaces post-clamp reputation values for changed factions.
+
+Boss befriend outcomes can demonstrate lose-with-one / gain-with-another
+tradeoffs (±10..±15 per faction for boss-tier encounters). The system makes
+mercy decisions consequential rather than reward-only.
+
 ### NPCs & Dialogue
 
 - NPC types (`NPC`, `DialogueMap`, `DialogueTree`, `DialogueNode`,

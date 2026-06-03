@@ -43,6 +43,7 @@ import { EXPERIENCE_PER_LEVEL, STAT_POINTS_PER_LEVEL } from './game-mechanics.co
 import { addItemStacking, rollEncounterLoot, totalEncounterXp } from './combat-grants';
 import { getRng } from '../Utils/rng';
 import { applyAlignmentDelta, defaultAlignment } from '../Philosophy';
+import { applyFactionReputationDeltas, createDefaultFactionReputations } from '../Faction';
 import { generateRunId } from './run-loop';
 
 /**
@@ -54,8 +55,9 @@ import { generateRunId } from './run-loop';
  * `migrateV6toV7` defaults the slice to `{ unlockedEntries: [] }` for
  * legacy v6 saves.
  * Phase 109 — bumped 8 → 9 to add the required `regionConsequences: RegionConsequences` slice.
+ * Phase 110 — bumped 9 → 10 to add the required `factionReputations: FactionReputations` slice.
  */
-export const GAME_STATE_VERSION = 9;
+export const GAME_STATE_VERSION = 10;
 
 /** Builds a brand-new GameState with default player and world. */
 export function createNewGameState(): GameState {
@@ -76,6 +78,7 @@ export function createNewGameState(): GameState {
         philosophicalAlignment: defaultAlignment(),
         codex: { unlockedEntries: [] },
         regionConsequences: { exploitedRegions: [], sparedRegions: [] },
+        factionReputations: createDefaultFactionReputations(),
     };
 }
 
@@ -324,6 +327,22 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
                     nextAlignment = applyAlignmentDelta(nextAlignment, delta);
                 }
             }
+            // Phase 110 — friendship resolutions apply the per-enemy
+            // `factionDeltas` to state.factionReputations via the
+            // Phase 110 `applyFactionReputationDeltas` clamp helper. Each
+            // faction clamps to [-100, +100]; missing factions pass through.
+            // Boss befriend outcomes demonstrate lose-with-one / gain-with-another
+            // tradeoffs.
+            let nextFactionReputations = state.factionReputations;
+            if (outcome === 'friendship') {
+                const factionDeltas = combat.enemy.friendshipReward?.factionDeltas;
+                if (factionDeltas) {
+                    nextFactionReputations = applyFactionReputationDeltas(
+                        nextFactionReputations,
+                        factionDeltas,
+                    );
+                }
+            }
 
             // Phase 73 — friendship resolutions auto-fire the per-enemy
             // codex unlock. The entry's id is appended to
@@ -349,6 +368,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
                 quests: nextQuests,
                 flags: nextFlags,
                 philosophicalAlignment: nextAlignment,
+                factionReputations: nextFactionReputations,
                 codex: nextCodex,
                 combat: null,
                 currentEncounter: undefined,
@@ -469,6 +489,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
                 moralMeter: state.moralMeter,
                 rngState: state.rngState,
                 philosophicalAlignment: state.philosophicalAlignment,
+                factionReputations: state.factionReputations,
                 codex: state.codex,
                 regionConsequences: state.regionConsequences,
                 // lastSeenAlignmentCells intentionally dropped (Phase 72

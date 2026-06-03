@@ -2,6 +2,7 @@ import { CombatState } from '../Combat/types';
 import { WorldState, QuestLog, Encounter } from '../World/types';
 import { Character } from '../Character/types';
 import { PhilosophicalAlignment } from '../Philosophy/types';
+import { FactionReputations } from '../Faction/types';
 
 /**
  * Top-level game state. The root object that aggregates the player,
@@ -139,4 +140,11 @@ export interface GameState {
      * on new games.
      */
     regionConsequences: RegionConsequences;
+    /**
+     * Phase 110 — faction reputation standings. Tracks player reputation
+     * with various political factions across regions. Boss Befriend outcomes
+     * can alter these standings. Required state slice; defaults to `{}`
+     * (empty, all factions neutral) on new games.
+     */
+    factionReputations: FactionReputations;
 }

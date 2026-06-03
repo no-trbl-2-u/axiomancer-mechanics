@@ -12,6 +12,7 @@ import { GameState } from './types';
 import { GAME_STATE_VERSION } from './game.reducer';
 import { getRng } from '../Utils/rng';
 import { defaultAlignment } from '../Philosophy';
+import { createDefaultFactionReputations } from '../Faction';
 import { generateRunId } from './run-loop';
 
 /** GameState shape before v3 (before moralMeter field was added). */
@@ -47,6 +48,11 @@ interface GameStateV7 extends GameState {
 /** GameState shape before v9 (before Phase 109 regionConsequences was added). */
 interface GameStateV8 extends Omit<GameState, 'regionConsequences'> {
     version: 8;
+}
+
+/** GameState shape before v10 (before Phase 110 factionReputations was added). */
+interface GameStateV9 extends Omit<GameState, 'factionReputations'> {
+    version: 9;
 }
 
 /**
@@ -146,11 +152,25 @@ function migrateV7toV8(v7: GameStateV7): GameStateV8 {
  * the new field defaults to `{ exploitedRegions: [], sparedRegions: [] }` so
  * existing saves continue to load without any befriend exploit/spare history.
  */
-function migrateV8toV9(v8: GameStateV8): GameState {
+function migrateV8toV9(v8: GameStateV8): GameStateV9 {
     return {
         ...v8,
         version: 9,
         regionConsequences: { exploitedRegions: [], sparedRegions: [] },
+    };
+}
+
+/**
+ * Migrate from v9 to v10 (Phase 110 — faction reputation): add factionReputations
+ * field defaulting to empty object. v9 saves had no faction reputation tracking;
+ * the new field defaults to `{}` (all factions neutral) so existing saves
+ * continue to load without any faction reputation history.
+ */
+function migrateV9toV10(v9: GameStateV9): GameState {
+    return {
+        ...v9,
+        version: 10,
+        factionReputations: createDefaultFactionReputations(),
     };
 }
 
@@ -212,6 +232,10 @@ export function migrate(
 
     if (fromVersion < 9) {
         migrated = migrateV8toV9(migrated as GameStateV8);
+    }
+
+    if (fromVersion < 10) {
+        migrated = migrateV9toV10(migrated as GameStateV9);
     }
 
     return assertGameState(migrated);
