@@ -14,21 +14,108 @@ deep imports are part of the supported surface.
 
 ### Added
 
-- **Befriendable-enemy Tier-2 expansion** (Phase 102): Expanded befriendable roster from 3 → 7 enemies. Added full befriendability stack (config + rewards + narrative + journal entries) to TideflukeReaver, HushWraith, HollowSaint, and TheDisagreement. Elite-tier enemies require specific stance combinations and patience; boss-tier TheDisagreement requires full stance spectrum and 8-round patience threshold.
-- **Damage resistance primitive** (Phase 93): Skills now apply damage resistance based on target's stats. Physical damage reduced by body stat, mental by mind stat, emotional by heart stat. Linear resistance model (1 stat point = 1 damage reduction) with minimum 1 damage. Completes Phase 80 direction (a) "damage rolls separately + applies resistance."
-
 ### Changed
 
 ### Deprecated
 
 ### Removed
 
-- **getResistStat(combatant, stance)** — replaced by `getEffectiveStats(combatant).baseStats[stance]`. Unused post-Phase-80 target-resist roll removal.
-- **endCombatPlayerVictory / endCombatPlayerDefeat / endCombatWithFriendship aliases** — replaced by `endCombat()`. The outcome is computed by `determineCombatEnd(state)`, not by function name.
+### Fixed
+
+### Security
+
+## [0.14.0] — 2026-06-03
+
+Post-`0.13.0` mechanics release for mobile catch-up. This bump ships the
+combat-contract repair work, unlocked-skill access, reference playtest fixtures,
+balance evidence, Befriend-as-skill mercy flow, anti-exploit region consequences,
+and boss-Befriend faction reputation consequences. It also removes the
+v0.13.0-deprecated combat aliases and `getResistStat` surface.
+
+### Added
+
+- **BattleLogEntry contract validation** (Phase 96): `resolveCombatRound` and
+  `buildBattleLogEntry` now reject missing player/enemy action fields before a
+  malformed `BattleLogEntry` can reach mobile. This protects boss-skill killing
+  blows from producing undefined action labels.
+- **`previewStatAllocation` character API** (Phase 97): Pure stat-allocation
+  preview helper for level-up UI. Mobile should use this rather than approximating
+  derived stat deltas locally.
+- **Unlocked-skill access model** (Phase 99): Learned skills are available by
+  `Character.knownSkills` plus combat-resource affordability; `equippedSkills`
+  no longer gates combat casting. Mobile skill lists should read unlocked +
+  affordable engine state, not equipment slots.
+- **Reference playtest fixtures and exports** (Phase 104): Early-game and
+  endgame playtest fixtures surfaced for deterministic balance/consumer checks.
+- **Befriendable-enemy Tier-2 expansion** (Phase 102): Expanded befriendable
+  roster from 3 → 7 enemies. Added full befriendability stack (config + rewards +
+  narrative + journal entries) to TideflukeReaver, HushWraith, HollowSaint, and
+  TheDisagreement. Elite-tier enemies require specific stance combinations and
+  patience; boss-tier TheDisagreement requires full stance spectrum and an
+  8-round patience threshold.
+- **Befriend is a Heart skill with mercy choice** (Phase 108): Befriend is now a
+  starting Heart skill with a 5-heart-token attempt cost. Successful openings
+  present a consequential spare/befriend versus exploit-for-critical choice.
+- **Region consequence state** (Phase 109): Elite/miniboss Befriend spare/exploit
+  outcomes can affect the later region boss through `RegionConsequences`.
+- **Faction reputation system** (Phase 110): Added `FactionReputations`,
+  `FactionReputationDelta`, `FactionInfo`, faction library/helpers, and
+  boss-Befriend reputation deltas. Boss spare outcomes can now lose reputation
+  with one faction and gain with another; combat-end output exposes
+  `factionReputationShift` for mobile rendering.
+- **Damage resistance primitive** (Phase 93): Skills now apply damage resistance
+  based on target stats: physical by body, mental by mind, emotional by heart.
+  Linear model: 1 stat point = 1 damage reduction, minimum 1 damage.
+
+### Changed
+
+- **Combat difficulty made playable**: Defense multipliers were reduced so level-1
+  combat no longer collapses into zero-damage exchanges against the weakest foes.
+- **Coastal Tyrant mercy-route tuning + balance doctrine** (Phases 101 / 107):
+  Playtest evidence now judges each playstyle against T's 65–75% resolution
+  success band (`victory + friendship/mercy`). Current evidence shows Aggressive
+  and Mixed in-band, while Defensive/Strategist need targeted pressure.
+- **Befriend anti-exploit rules** (Phase 109): Sparing versus exploiting
+  elite/miniboss Befriend openings now carries delayed boss-consequence meaning;
+  mobile should preserve that choice as a visible player decision, not hide it in
+  automatic resolution.
+- **Glanton Nexus guardrail** (Phase 105): Repo-local Nexus state reconciliation
+  is documented so `/march`, `/oversight`, and phase files do not drift from
+  current doctrine.
+
+### Removed
+
+- **`getResistStat(combatant, stance)`** — replaced by
+  `getEffectiveStats(combatant).baseStats[stance]`. Removed after the v0.13.0
+  deprecation window.
+- **`endCombatPlayerVictory` / `endCombatPlayerDefeat` /
+  `endCombatWithFriendship` aliases** — replaced by `endCombat()`. Outcomes are
+  computed by `determineCombatEnd(state)`, not by function name.
 
 ### Fixed
 
-- **Combat re-trigger lock cleared for all outcomes** (Phase 103): Fixed bug where players could not trigger new combat encounters after victory or friendship outcomes. All terminal combat outcomes (victory, friendship, defeat) now properly clear encounter state, allowing subsequent combat triggers to work correctly.
+- **Combat re-trigger lock cleared for all outcomes** (Phase 103): Fixed a bug
+  where players could not trigger new combat encounters after victory or
+  friendship outcomes. All terminal combat outcomes now clear encounter state.
+- **Skill/resource truth repaired for mobile consumption**: combat resources live
+  on `CombatState.combatResources`; skill affordability and token spend should be
+  driven from that state, not from character-level mana/equipment assumptions.
+- **Test/dependency stability**: TypeScript ESLint, zustand, and vitest patch/minor
+  updates shipped; vitest pool isolation now prevents cross-file RNG/state bleed.
+
+### Mobile migration notes
+
+- Update `axiomancer-mobile` from `axiomancer-mechanics@0.13.0` to `0.14.0`.
+- Replace any local stat-preview math with `previewStatAllocation`.
+- Remove any dependency on `equippedSkills` as the combat skill gate; use
+  `knownSkills` + `getAvailableSkills` / `canUseSkill` / `combatResources`.
+- Treat Befriend as a Heart skill attempt that costs 5 heart tokens and can open a
+  spare-versus-exploit choice. The combat UI needs a real choice modal for that
+  opening.
+- Render new end-report consequences when present: `regionConsequences`,
+  `factionReputationShift`, and existing friendship reward/alignment fields.
+- Replace `getResistStat` and the three legacy `endCombat*` aliases if mobile
+  still imports them.
 
 ### Security
 

@@ -4,6 +4,25 @@ Short-form per-version summaries. For per-phase detail see
 [`CHANGELOG.md`](./CHANGELOG.md); for the release-cut ceremony see
 [`RELEASING.md`](./RELEASING.md).
 
+## 0.14.0 — 2026-06-03
+
+Mobile catch-up release: combat contract repairs, unlocked-skill access,
+reference playtest fixtures, v0.13.0 deprecation removals, Befriend-as-Heart-skill
+mercy choice, region consequences, and boss-Befriend faction reputation shifts.
+
+- **Phase 96** — BattleLogEntry contract validation for complete player/enemy action fields.
+- **Phase 97** — `previewStatAllocation` public API for level-up/stat-preview UI.
+- **Phase 99** — Unlocked-skill access: `knownSkills` + affordability replace `equippedSkills` gating.
+- **Phase 101 / 107** — Coastal Tyrant mercy-route tuning + 65–75% per-playstyle resolution-success doctrine.
+- **Phase 102** — Befriendable-enemy Tier-2 expansion (7 total befriendable enemies).
+- **Phase 103** — Combat re-trigger lock clears after victory/friendship/defeat.
+- **Phase 104** — Reference playtest fixtures for early-game and endgame balance checks.
+- **Phase 108** — Befriend is a Heart skill with a 5-heart-token attempt cost and mercy/exploit choice.
+- **Phase 109** — Region consequence state for elite/miniboss Befriend outcomes.
+- **Phase 110** — Faction reputation system and boss-Befriend reputation deltas.
+- **BREAKING:** `getResistStat` and legacy `endCombat*` aliases removed after v0.13.0 deprecation.
+- **Mobile needs:** bump package to `axiomancer-mechanics@0.14.0`; render `regionConsequences` and `factionReputationShift`; replace `equippedSkills` gates; wire Befriend as a choice-bearing Heart skill.
+
 ## 0.12.0 — 2026-05-26
 
 Skills always-land mechanic shift + event system cleanup.
