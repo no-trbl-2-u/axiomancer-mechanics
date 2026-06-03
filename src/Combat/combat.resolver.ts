@@ -97,7 +97,8 @@ export type ScenarioEvent =
     | { phase: 'scenario'; kind: 'heart-buff-extended';
         attacker: CombatActor; effect: Effect | null }
     | { phase: 'scenario'; kind: 'both-defend';
-        friendshipBefore: number; friendshipAfter: number }
+        friendshipBefore: number; friendshipAfter: number;
+        friendshipBlocked?: boolean; reason?: string }
     | { phase: 'scenario'; kind: 'proc-applied';
         actor: CombatActor;
         appliedTo: 'self' | 'opponent';
@@ -315,6 +316,7 @@ export function resolveCombatRound(
     playerAction: CombatAction,
     enemyAction: CombatAction,
     skillLookup?: SkillLookup,
+    exploitedRegions?: string[],
 ): RoundResolution {
     // Early validation to catch contract violations (GitHub issue #74)
     if (!playerAction) {
@@ -370,6 +372,7 @@ export function resolveCombatRound(
         state.combatResources, state.friendshipCounter,
         state.round, skillLookup,
         events,
+        exploitedRegions,
     );
     player = scenario.player;
     enemy  = scenario.enemy;

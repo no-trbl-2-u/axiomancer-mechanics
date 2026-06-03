@@ -41,11 +41,11 @@ describe('Phase 99 migration', () => {
             codex: { unlockedEntries: [] },
         };
 
-        // Migrate from v7 to v8
-        const migrated = migrate(v7Save, 7, 8);
+        // Migrate from v7 to current version
+        const migrated = migrate(v7Save, 7);
 
         // Verify the migration merged skills correctly
-        expect(migrated.version).toBe(8);
+        expect(migrated.version).toBe(GAME_STATE_VERSION);
         expect(migrated.player.knownSkills).toEqual(
             expect.arrayContaining(['ad-hominem-strike', 'false-dilemma', 'appeal-to-pity'])
         );

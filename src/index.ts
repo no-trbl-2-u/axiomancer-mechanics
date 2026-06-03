@@ -164,7 +164,7 @@ export type {
     GameState, GameStore, GameActions, PersistenceAdapter, StoreApi,
     GameAction, GameActionOf,
     GameEvent, GameEventEmitter, GameEventHandler, GameEventType,
-    CodexEntry, CodexState,
+    CodexEntry, CodexState, RegionConsequences,
 } from './Game';
 
 // Legacy combat-action constants (use Action type instead).

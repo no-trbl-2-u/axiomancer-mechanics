@@ -98,6 +98,7 @@ export function runScenarioPhase(
     round: number,
     skillLookup: SkillLookup | undefined,
     events: RoundEvent[],
+    exploitedRegions?: string[],
 ): ScenarioPhaseResult {
     let player = playerIn;
     let enemy  = enemyIn;
@@ -302,10 +303,22 @@ export function runScenarioPhase(
         ));
     } else if (playerActionFinal === 'defend' && enemyActionFinal === 'defend') {
         const before = friendshipCounter;
-        friendshipCounter = before + 1;
+        
+        // Phase 109 — Block friendship counter accumulation for region bosses 
+        // when the region has been exploited
+        const isBoss = enemy.difficulty === 'boss';
+        const regionExploited = exploitedRegions?.includes(enemy.mapName) ?? false;
+        const shouldBlockFriendship = isBoss && regionExploited;
+        
+        if (!shouldBlockFriendship) {
+            friendshipCounter = before + 1;
+        }
+        
         events.push({
             phase: 'scenario', kind: 'both-defend',
-            friendshipBefore: before, friendshipAfter: friendshipCounter,
+            friendshipBefore: before, 
+            friendshipAfter: friendshipCounter,
+            ...(shouldBlockFriendship ? { friendshipBlocked: true, reason: 'region-exploited' } : {}),
         });
     }
     // Else: skip-vs-skip, skip-vs-defend, defend-vs-skip, skill-vs-* (skill

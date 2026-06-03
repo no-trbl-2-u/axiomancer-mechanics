@@ -298,12 +298,12 @@ export function createGameStore(
                 const {
                     currentEncounter: _drop, version, runId, player, world, combat, quests, flags,
                     moralMeter, rngState, philosophicalAlignment,
-                    lastSeenAlignmentCells, codex,
+                    lastSeenAlignmentCells, codex, regionConsequences,
                 } = next;
                 adapter.save({
                     version, runId, player, world, combat, quests, flags,
                     moralMeter, rngState, philosophicalAlignment,
-                    lastSeenAlignmentCells, codex,
+                    lastSeenAlignmentCells, codex, regionConsequences,
                 });
             }
             return next;
@@ -335,12 +335,12 @@ export function createGameStore(
                 const {
                     currentEncounter: _drop, version, runId, player, world, combat: cb, quests, flags,
                     moralMeter, rngState, philosophicalAlignment,
-                    lastSeenAlignmentCells, codex,
+                    lastSeenAlignmentCells, codex, regionConsequences,
                 } = next;
                 adapter.save({
                     version, runId, player, world, combat: cb, quests, flags,
                     moralMeter, rngState, philosophicalAlignment,
-                    lastSeenAlignmentCells, codex,
+                    lastSeenAlignmentCells, codex, regionConsequences,
                 });
             },
 
@@ -489,12 +489,12 @@ export function createGameStore(
                 const {
                     currentEncounter: _drop, version, runId, player, world, combat, quests, flags,
                     moralMeter, rngState, philosophicalAlignment,
-                    lastSeenAlignmentCells, codex,
+                    lastSeenAlignmentCells, codex, regionConsequences,
                 } = next;
                 adapter.save({
                     version, runId, player, world, combat, quests, flags,
                     moralMeter, rngState, philosophicalAlignment,
-                    lastSeenAlignmentCells, codex,
+                    lastSeenAlignmentCells, codex, regionConsequences,
                 });
                 if (emitter) emitter.emit({ type: 'game:saved', payload: { state: next } });
             },

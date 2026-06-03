@@ -953,6 +953,17 @@
       },
       "tier": 1,
       "sourcedFromCell": "faith-optimistic-individual"
+    },
+    {
+      "id": "buff_open_minded",
+      "name": "Open-Minded",
+      "description": "A mind prepared to consider mercy, softened by witnessing compassion to lesser foes. This status has no mechanical effect beyond qualifying the bearer for befriend paths.",
+      "type": "buff",
+      "category": "special",
+      "duration": -1,
+      "stacking": "none",
+      "payload": {},
+      "tier": 0
     }
   ]
 }

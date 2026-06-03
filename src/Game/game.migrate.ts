@@ -44,6 +44,11 @@ interface GameStateV7 extends GameState {
     version: 7;
 }
 
+/** GameState shape before v9 (before Phase 109 regionConsequences was added). */
+interface GameStateV8 extends Omit<GameState, 'regionConsequences'> {
+    version: 8;
+}
+
 /**
  * Migrate from v2 to v3: add moralMeter field defaulting to 0 (neutral).
  * v2 saves had no moral tracking; new field allows existing saves to continue.
@@ -117,7 +122,7 @@ function migrateV6toV7(v6: GameStateV6): GameStateV7 {
  * The equipped skills are merged into known skills to preserve game progress.
  * Post-migration, combat uses knownSkills filtered by canUseSkill affordability.
  */
-function migrateV7toV8(v7: GameStateV7): GameState {
+function migrateV7toV8(v7: GameStateV7): GameStateV8 {
     const mergedKnown = new Set(v7.player.knownSkills);
     // Merge equippedSkills into knownSkills
     for (const skillId of v7.player.equippedSkills) {
@@ -132,6 +137,20 @@ function migrateV7toV8(v7: GameStateV7): GameState {
             knownSkills: [...mergedKnown],
             // Keep equippedSkills for backward compatibility but it's no longer used
         },
+    };
+}
+
+/**
+ * Migrate from v8 to v9 (Phase 109 — region consequences): add regionConsequences
+ * field defaulting to empty arrays. v8 saves had no region consequence tracking;
+ * the new field defaults to `{ exploitedRegions: [], sparedRegions: [] }` so
+ * existing saves continue to load without any befriend exploit/spare history.
+ */
+function migrateV8toV9(v8: GameStateV8): GameState {
+    return {
+        ...v8,
+        version: 9,
+        regionConsequences: { exploitedRegions: [], sparedRegions: [] },
     };
 }
 
@@ -189,6 +208,10 @@ export function migrate(
 
     if (fromVersion < 8) {
         migrated = migrateV7toV8(migrated as GameStateV7);
+    }
+
+    if (fromVersion < 9) {
+        migrated = migrateV8toV9(migrated as GameStateV8);
     }
 
     return assertGameState(migrated);

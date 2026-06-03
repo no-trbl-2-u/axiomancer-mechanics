@@ -53,8 +53,9 @@ import { generateRunId } from './run-loop';
  * Phase 73 — bumped 6 → 7 to add the required `codex: CodexState` slice.
  * `migrateV6toV7` defaults the slice to `{ unlockedEntries: [] }` for
  * legacy v6 saves.
+ * Phase 109 — bumped 8 → 9 to add the required `regionConsequences: RegionConsequences` slice.
  */
-export const GAME_STATE_VERSION = 8;
+export const GAME_STATE_VERSION = 9;
 
 /** Builds a brand-new GameState with default player and world. */
 export function createNewGameState(): GameState {
@@ -74,6 +75,7 @@ export function createNewGameState(): GameState {
         rngState: getRng().getState(),
         philosophicalAlignment: defaultAlignment(),
         codex: { unlockedEntries: [] },
+        regionConsequences: { exploitedRegions: [], sparedRegions: [] },
     };
 }
 
@@ -162,10 +164,32 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
             // Apply moral meter scaling to enemy stats (Phase 92)
             const enemy = encounter.enemies[0]!;
             const scaledBaseStats = applyMoralMeterScaling(enemy.baseStats, state.moralMeter);
-            const scaledEnemy = {
+            let scaledEnemy = {
                 ...enemy,
                 baseStats: scaledBaseStats,
             };
+            
+            // Phase 109 — Apply 'open-minded' status to region bosses when the region was spared
+            const isBoss = enemy.difficulty === 'boss';
+            const regionSpared = state.regionConsequences.sparedRegions.includes(enemy.mapName);
+            if (isBoss && regionSpared) {
+                const openMindedEffect = lookupEffect('buff_open_minded');
+                if (openMindedEffect) {
+                    scaledEnemy = {
+                        ...scaledEnemy,
+                        effects: [...scaledEnemy.effects, {
+                            effectId: openMindedEffect.id,
+                            intensity: 1,
+                            remainingDuration: -1, // Permanent
+                            sourceId: 'region-mercy-consequence',
+                            appliedAt: 0,
+                            tier: openMindedEffect.tier,
+                            resistedBy: openMindedEffect.resistedBy,
+                            resistDR: openMindedEffect.resistDR,
+                        }],
+                    };
+                }
+            }
             
             return {
                 ...state,
@@ -177,14 +201,48 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         case 'COMBAT_ROUND': {
             if (!state.combat) return state;
             const { playerAction, playerStance, skillId, itemId } = action.payload;
+            
+            // Phase 109 — Track mercy choices against elite/miniboss enemies for region consequences
+            let nextRegionConsequences = state.regionConsequences;
+            const enemy = state.combat.enemy;
+            const isEliteOrMiniboss = enemy.difficulty === 'elite' || enemy.difficulty === 'boss';
+            const isRegionBoss = enemy.difficulty === 'boss';
+            
+            if (isEliteOrMiniboss && !isRegionBoss && state.combat.mercyChoiceActive) {
+                const region = enemy.mapName; // Use mapName as region identifier
+                
+                if (playerAction === 'exploit') {
+                    // Player exploited the befriend opening - block friendship counters for region boss
+                    if (!nextRegionConsequences.exploitedRegions.includes(region)) {
+                        nextRegionConsequences = {
+                            ...nextRegionConsequences,
+                            exploitedRegions: [...nextRegionConsequences.exploitedRegions, region],
+                        };
+                    }
+                } else if (playerAction === 'spare') {
+                    // Player spared the enemy - region boss gets 'open-minded' status
+                    if (!nextRegionConsequences.sparedRegions.includes(region)) {
+                        nextRegionConsequences = {
+                            ...nextRegionConsequences,
+                            sparedRegions: [...nextRegionConsequences.sparedRegions, region],
+                        };
+                    }
+                }
+            }
+            
             const enemyAction = determineEnemyAction(state.combat.enemy, state.combat);
             const { state: nextCombat } = resolveCombatRound(
                 state.combat,
                 { stance: playerStance, action: playerAction, skillId, itemId },
                 enemyAction,
                 skillLookup,
+                nextRegionConsequences.exploitedRegions,
             );
-            return { ...state, combat: nextCombat };
+            return { 
+                ...state, 
+                combat: nextCombat, 
+                regionConsequences: nextRegionConsequences 
+            };
         }
 
         case 'END_COMBAT': {
@@ -412,6 +470,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
                 rngState: state.rngState,
                 philosophicalAlignment: state.philosophicalAlignment,
                 codex: state.codex,
+                regionConsequences: state.regionConsequences,
                 // lastSeenAlignmentCells intentionally dropped (Phase 72
                 // D12 — observer cache resets; fresh run, fresh
                 // observation history).
