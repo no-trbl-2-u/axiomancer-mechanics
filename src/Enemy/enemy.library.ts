@@ -658,6 +658,13 @@ export const CoastalTyrant = createEnemy({
         // authoring band; the combined-axis weight is heavier than the
         // normal-tier single-axis deltas, befitting boss-tier.
         alignmentDelta: { outlook: +3, scope: -2 },
+        // Phase 110 — boss befriend faction tradeoff: sparing the Coastal Tyrant costs
+        // reputation with Coastal Guard (they lose their corrupt magistrate protector)
+        // but gains reputation with Merchant's Guild (trade can flourish without graft)
+        factionDeltas: {
+            'coastal-guard': -8,      // lose: they lose their corrupt protector
+            'merchant-guild': +10,    // gain: trade can flourish without corruption
+        },
     },
     // Phase 71 — magistrate-fallen-priest voice; "verdict" / "regalia" /
     // "magistrate" thread; pact lines echo the existing 4-paragraph

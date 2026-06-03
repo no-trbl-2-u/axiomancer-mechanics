@@ -121,7 +121,7 @@ Boss enemies can carry `friendshipReward.factionDeltas: FactionReputationDelta`
 to specify reputation changes on befriend outcomes:
 
 ```typescript
-// Example boss with faction consequences
+// Example boss with faction consequences  
 const disagreementBoss = createEnemy({
     // ... other boss properties
     friendshipReward: {
@@ -129,6 +129,18 @@ const disagreementBoss = createEnemy({
         factionDeltas: {
             'merchant-guild': -10,    // lose: they valued its philosophical constraints
             'forest-wardens': +12,    // gain: appreciate dialectical harmony
+        }
+    }
+});
+
+// Another example: The Coastal Tyrant
+const coastalTyrantBoss = createEnemy({
+    // ... other boss properties
+    friendshipReward: {
+        // ... other rewards (items, XP, narrative)
+        factionDeltas: {
+            'coastal-guard': -8,      // lose: they lose their corrupt protector
+            'merchant-guild': +10,    // gain: trade can flourish without corruption
         }
     }
 });
