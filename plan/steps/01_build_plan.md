@@ -140,7 +140,7 @@ future oversight). `/march` dispatches only `[ ]` rows.
 
 - [x] Phase 108 — Befriend heart skill and mercy choice per T final doctrine 2026-06-02. Keep the HP gate; make Befriend a starting heart-based skill requiring 5 heart tokens to attempt; successful Befriend opens a choice state: spare/befriend/preserve or exploit the opening for a free guaranteed critical attack. CLI must expose the choice. Reports must distinguish Befriend attempts, spare outcomes, exploit outcomes, and timeouts. Brief: `plan/phases/phase_108_befriend_heart_skill_mercy_choice.md`. Commit: a8cf5b4.
 
-- [ ] Phase 109 — Befriend anti-exploit region consequences. If the player exploits a Befriend opening against an elite/miniboss, that region boss cannot gather friendship counters; if the player spares that elite/miniboss, the region boss starts with `open-minded`, a qualifying status/marker for Befriend paths. Brief: `plan/phases/phase_109_befriend_anti_exploit_region_consequences.md`.
+- [x] Phase 109 — Befriend anti-exploit region consequences. If the player exploits a Befriend opening against an elite/miniboss, that region boss cannot gather friendship counters; if the player spares that elite/miniboss, the region boss starts with `open-minded`, a qualifying status/marker for Befriend paths. Brief: `plan/phases/phase_109_befriend_anti_exploit_region_consequences.md`. Commit: b5b24a6.
 
 - [ ] Phase 110 — Boss Befriend faction reputation tradeoff. Boss Befriend/spare outcomes should lose reputation with one faction and gain reputation with another, surfaced for CLI/mobile consumption. Brief: `plan/phases/phase_110_boss_befriend_faction_reputation.md`.
 
