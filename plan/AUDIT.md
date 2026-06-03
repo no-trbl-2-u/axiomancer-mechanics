@@ -60,7 +60,6 @@
 
 
 
-- **[LOW] zustand dependency has patch update available** — npm outdated shows zustand 5.0.13 → 5.0.14. Safe patch bump per iterate guidelines. Impact 3 × Ease 9 / 10 = 2.7.
 
 - **[LOW] vitest has minor update available** — npm outdated shows vitest 3.2.4 → 3.2.6. Safe minor version update per iterate guidelines. Impact 3 × Ease 8 / 10 = 2.4.
 
@@ -71,6 +70,7 @@
 
 ## Done
 
+- [x] **[LOW] zustand dependency has patch update available** — resolved at iterate commit `819d359` (2026-06-03). Updated zustand 5.0.13 → 5.0.14. Safe patch bump per iterate guidelines. npm run verify stays green (957/957 tests). Impact 3 × Ease 9 / 10 = 2.7. Source: /iterate audit category G (deps) finding.
 - [x] **[HIGH] Test isolation failure in tier3-synergy-skills.engine.test.ts** — resolved at iterate commit `a552317` (2026-06-03). "transcendent-synthesis synergy fires unconditionally" test failed intermittently when run with full test suite due to shared state pollution between test files, but passed in isolation. Configured vitest to use forked processes for test isolation via pool: 'forks'. npm run verify stays green (933/933 tests). Impact 9 × Ease 9 / 10 = 8.1. Source: /iterate audit category A (test-quality gaps) finding.
 - [x] **[LOW] TypeScript ESLint packages patch update available** — resolved at iterate commit `daf6ec9` (2026-06-02). Updated @typescript-eslint/eslint-plugin 8.60.0 → 8.60.1 and typescript-eslint 8.60.0 → 8.60.1. Safe patch updates include security patches and maintenance debt. npm run verify stays green (925/925 tests). Impact 4 × Ease 9 / 10 = 3.6. Source: /iterate audit category G (deps) finding.
 
