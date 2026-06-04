@@ -308,3 +308,13 @@ Magistrate Who Set Down the Circlet"). Hermetic pin at
 `src/Game/e2e/codex.engine.test.ts`. Fixture bump 165 → 167 types
 (CodexEntry + CodexState). See `docs/enemy.md` § "Codex entries
 (Phase 73)".
+
+## Phase 114 Extension
+
+The original Spec 07 established the enemy content foundation with 15 enemies
+across the coastal/fishing-village family. Phase 114 expanded this with a
+second enemy class family of 10 northern-forest themed enemies, bringing the
+total library to 25 production enemies. This expansion demonstrates the
+established content patterns: diverse AI behaviors, befriendability configs
+for elite/boss tiers, philosophical alignment distribution, and comprehensive
+journal/aftermath content.

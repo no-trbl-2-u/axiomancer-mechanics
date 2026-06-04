@@ -77,7 +77,7 @@ unaffected.
 
 ### Cell pins on authored enemies
 
-The 16 enemies in `ENEMY_REGISTRY` carry first-pass cell pins:
+The 26 enemies in `ENEMY_REGISTRY` carry first-pass cell pins:
 
 | Enemy | Cell | Archetype |
 |---|---|---|
@@ -95,9 +95,19 @@ The 16 enemies in `ENEMY_REGISTRY` carry first-pass cell pins:
 | HollowSaint | `faith-mid-transcendent` | St. John of the Cross / Rodrigues |
 | CoastalTyrant | `faith-pessimistic-transcendent` | Marcion / Grand Inquisitor |
 | TheDisagreement | `logic-mid-individual` | Camus / Meursault |
+| ThornedSentinel | `faith-pessimistic-relational` | Mainländer / Ferreira |
+| PackleaderWolf | `logic-mid-individual` | Camus / Meursault |
+| WhisperingOak | `mid-optimistic-transcendent` | Teilhard / Whitman |
+| FrostboundHunter | `logic-pessimistic-relational` | Ligotti / Rust Cohle |
+| MistwalkerShade | `mid-mid-transcendent` | Lao Tzu / Siddhartha |
+| VerdantProtector | `faith-optimistic-transcendent` | Aquinas / Hopkins |
+| NightmareStag | `mid-pessimistic-transcendent` | Lovecraft / Burroughs |
+| TheForestMind | `faith-mid-transcendent` | Eckhart / Teilhard |
+| EternalAutumn | `logic-mid-relational` | Wittgenstein / Buber |
+| ShadowOfTheFirst | `mid-mid-individual` | Montaigne / Ishmael |
 | Sandbag_01 | `mid-mid-relational` | Buber / Carraway |
 
-13 distinct cells used out of 27; the remaining 14 are headroom for future
+23 distinct cells used out of 27; the remaining 4 are headroom for future
 enemies. Cell ids are stable across versions (see
 [docs/philosophy.md](./philosophy.md) for the full registry).
 
@@ -149,9 +159,11 @@ grant nothing.
 
 ## Library
 
-[`src/Enemy/enemy.library.ts`](../src/Enemy/enemy.library.ts) — 15 production
-enemies on the Coastal Continent, distributed as Spec 07 Q8 specified:
+[`src/Enemy/enemy.library.ts`](../src/Enemy/enemy.library.ts) — 25 production
+enemies across the Coastal Continent, with the original Spec 07 foundation
+and Phase 114's northern-forest class family expansion.
 
+### Original Coastal Family (Spec 07)
 **Simple (3)** — Tidepool Crab (body), Sea-Mist Wisp (mind), Lullaby Moth (heart).
 **Normal (6)** — Disatree (legacy 1/1/1), Wet Hound (body), Mournful Gull (heart),
 Forest Sprite (mind), Hollow-Eyed Beggar (heart), Argumentative Crow (mind).
@@ -159,8 +171,14 @@ Forest Sprite (mind), Hollow-Eyed Beggar (heart), Argumentative Crow (mind).
 **Boss (2)** — The Coastal Tyrant (body+heart), The Disagreement (mind+heart).
 **Unique (1)** — Echo of Pyrrhonia (all three).
 
+### Northern-Forest Class Family (Phase 114)
+**Normal (3)** — Thorned Sentinel (body, defensive territorial), Packleader Wolf (balanced, leading ghosts), Whispering Oak (mind, forest secrets).
+**Elite (3)** — Frostbound Hunter (body, tracking warmth), Mistwalker Shade (mind, between certainties), Verdant Protector (heart, shepherd of growth).
+**Boss (2)** — Nightmare Stag (mind+body, crystallized fear), The Forest Mind (mind+heart, thousand-year thoughts).
+**Unique (2)** — Eternal Autumn (all three, season refusing to pass), Shadow of the First (body+heart, pre-philosophy wildness).
+
 `EnemiesByMap` indexes them per map for `generateEncounter`. `ENEMY_REGISTRY`
-keys them by CLI slug (`tidepool-crab`, `disatree`, `sandbag`, ...) for the
+keys them by CLI slug (`tidepool-crab`, `thorned-sentinel`, `disatree`, `sandbag`, ...) for the
 combat CLI's `COMBAT_ENEMY=<slug>` override.
 
 The legacy `Sandbag_01` (level 10, 1/1/1) is preserved as a test fixture and

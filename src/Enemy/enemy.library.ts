@@ -779,6 +779,450 @@ export const TheDisagreement = createEnemy({
     },
 });
 
+// ─── Second Family: Northern Woodland (Phase 114) ───────────────────────────
+
+export const ThornedSentinel = createEnemy({
+    id: 'enemy-thorned-sentinel',
+    name: 'Thorned Sentinel',
+    description: 'A guardian bramble that learned territorial defense from watching borders. Its patience is measured in seasons.',
+    level: 2,
+    baseStats: { body: 4, mind: 2, heart: 2 },
+    mapName: 'northern-forest',
+    difficulty: 'normal',
+    logic: 'defensive',
+    tier1Overrides: T1_DEFAULT,
+    loot: [none(65), drop('body-elixir', 25), drop('minor-healing-potion', 10)],
+    philosophicalAlignment: { epistemology: -67, outlook: -67, scope: 0 }, // faith-pessimistic-relational
+    skills: [skill('achilles-gambit')],
+    finalBlowLines: {
+        brutal: 'The thorns give way all at once. The sentinel was holding the border until the border was gone.',
+        quiet:  'It settles into the earth without complaint. Some defenses are meant to be temporary.',
+        ironic: 'You convinced it the border had moved. It stepped aside to let you through.'
+    },
+    causeLines: {
+        brutal: 'The border holds. You were never going to pass this way.',
+        broken: 'The thorns advance one needle at a time. Eventually you have no ground left.',
+        quiet:  'It waited for you to understand the boundary. You stopped before you crossed it.'
+    },
+});
+
+export const PackleaderWolf = createEnemy({
+    id: 'enemy-packleader-wolf',
+    name: 'Packleader Wolf',
+    description: 'Leads a pack of one. The others fell to philosophy or winter; this one leads their ghosts.',
+    level: 3,
+    baseStats: { body: 3, mind: 3, heart: 3 },
+    mapName: 'northern-forest',
+    difficulty: 'normal',
+    logic: 'aggressive',
+    tier1Overrides: T1_DEFAULT,
+    loot: [none(60), drop('heart-draught', 25), drop('healing-potion', 15)],
+    philosophicalAlignment: { epistemology: 67, outlook: 0, scope: -67 }, // logic-mid-individual
+    skills: [skill('false-dilemma')],
+    finalBlowLines: {
+        brutal: 'The packleader falls but does not howl. The ghosts it was leading go quiet too.',
+        quiet:  'It lowers its head once to the pack that is not there, then lays still.',
+        ironic: 'You joined the pack by ending it. The packleader understood this was the only way.'
+    },
+    causeLines: {
+        brutal: 'The pack was always going to be bigger than one. You were the addition it needed.',
+        broken: 'It leads you down into the earth where the rest of the pack is waiting.',
+        quiet:  'The packleader teaches you the howl they used for the others. You answer it once.'
+    },
+});
+
+export const WhisperingOak = createEnemy({
+    id: 'enemy-whispering-oak',
+    name: 'Whispering Oak',
+    description: 'Its leaves murmur secrets the forest forgot. Some secrets are warnings; some are invitations.',
+    level: 3,
+    baseStats: { body: 2, mind: 4, heart: 3 },
+    mapName: 'northern-forest',
+    difficulty: 'normal',
+    logic: 'strategic',
+    tier1Overrides: T1_DEFAULT,
+    loot: [none(55), drop('philosopher-tea', 25), drop('clarity-serum', 20)],
+    philosophicalAlignment: { epistemology: 0, outlook: 67, scope: 67 }, // mid-optimistic-transcendent
+    skills: [skill('sorites-cascade')],
+    finalBlowLines: {
+        brutal: 'The whispers stop mid-secret. The oak keeps what it was going to tell you.',
+        quiet:  'A single leaf falls. The secret written on it blows away before you can read it.',
+        ironic: 'You listened to one whisper too many. The oak told you how to fell it.'
+    },
+    causeLines: {
+        brutal: 'The whispers were warnings. You were too busy listening to heed them.',
+        broken: 'Secret after secret, each one heavier than the last. The oak shares what it should not.',
+        quiet:  'It whispers your name once, gently. You had not told it your name.'
+    },
+});
+
+export const FrostboundHunter = createEnemy({
+    id: 'enemy-frostbound-hunter',
+    name: 'Frostbound Hunter',
+    description: 'Tracks by what creatures leave behind: breath, warmth, hope. The cold is patient.',
+    level: 4,
+    baseStats: { body: 5, mind: 3, heart: 2 },
+    mapName: 'northern-forest',
+    difficulty: 'elite',
+    logic: 'strategic',
+    tier1Overrides: T1_DEFAULT,
+    procUnlocks: {
+        body: { attack: 2, defend: 2 }
+    },
+    loot: [none(40), drop('body-elixir', 30), drop('focus-vial', 20), drop('berserker-brew', 10)],
+    philosophicalAlignment: { epistemology: 67, outlook: -67, scope: 0 }, // logic-pessimistic-relational
+    skills: [skill('straw-giant')],
+    befriendabilityConfig: {
+        hpGate: { belowPct: 0.35 },
+        requiredStances: ['heart'],
+        roundsThreshold: 5
+    },
+    friendshipReward: {
+        items: [
+            { ...getConsumableById('focus-vial')! },
+            { ...getConsumableById('healing-potion')! }
+        ],
+        xpBonus: 40,
+        alignmentDelta: { outlook: +2 }, // warms slightly from pessimism
+        narrative: "The frostbound hunter stops tracking. 'I have been hunting the wrong signs,' it says, " +
+                  "breath forming crystals in the cold air. 'You left warmth behind. I had forgotten what that looked like.'",
+        flagSet: 'befriended-frostbound-hunter'
+    },
+    pactLines: {
+        quiet:   'The hunter stops mid-track. The cold recedes from around its eyes.',
+        setDown: 'It breathes out once, slowly. The crystals that form in the air are different — warmer somehow.',
+        heavy:   '"I track by what things leave behind. You left warmth. I had been hunting for that for longer than I remembered."'
+    },
+    journalEntry: {
+        id: 'codex-frostbound-hunter',
+        title: 'The Trail That Leads to Warmth',
+        body: 'Some hunters track by footprints, others by broken branches. The frostbound hunter learned ' +
+              'to follow the warmth that living things leave in their wake. When it stopped hunting, ' +
+              'it discovered it had been tracking its way back to something it had lost.'
+    },
+    finalBlowLines: {
+        brutal: 'The hunter falls to the frost it carried. The cold was always going to win.',
+        quiet:  'It stops tracking and goes still. The cold takes what was always its.',
+        ironic: 'You became what it was hunting. The hunter recognized the signs too late.'
+    },
+    causeLines: {
+        brutal: 'The hunter found what it was tracking. You were the warmth it had been following all along.',
+        broken: 'Track by track, the cold closes in. The hunter was patient; winter is more patient.',
+        quiet:  'A single breath crystallizes in the air between you. The hunter reads the sign and knows.'
+    },
+});
+
+export const MistwalkerShade = createEnemy({
+    id: 'enemy-mistwalker-shade',
+    name: 'Mistwalker Shade',
+    description: 'Moves between certainties like fog through trees. You think you know where it is until you check.',
+    level: 5,
+    baseStats: { body: 3, mind: 5, heart: 3 },
+    mapName: 'northern-forest',
+    difficulty: 'elite',
+    logic: 'defensive',
+    tier1Overrides: T1_DEFAULT,
+    procUnlocks: {
+        mind: { attack: 2, defend: 2 }
+    },
+    loot: [none(35), drop('clarity-serum', 30), drop('antidote', 20), drop('philosopher-tea', 15)],
+    philosophicalAlignment: { epistemology: 0, outlook: 0, scope: 67 }, // mid-mid-transcendent
+    skills: [skill('eternal-regress')],
+    befriendabilityConfig: {
+        hpGate: { belowPct: 0.3 },
+        requiredStances: ['mind'],
+        roundsThreshold: 6
+    },
+    friendshipReward: {
+        items: [
+            { ...getConsumableById('philosopher-tea')! },
+            { ...getConsumableById('clarity-serum')! }
+        ],
+        xpBonus: 45,
+        alignmentDelta: { scope: -2 }, // moves toward individual from transcendent
+        narrative: "The shade stops moving between certainties. 'I have been walking the wrong paths,' it says, " +
+                  "voice like mist condensing into words. 'Between this and that, there was you. Fixed. Present.'",
+        flagSet: 'befriended-mistwalker-shade'
+    },
+    pactLines: {
+        quiet:   'The mist settles. For the first time, you can see exactly where the shade is.',
+        setDown: 'It draws a single line in the air — not between certainties, but through them.',
+        heavy:   '"I walked between certainties because I could not find one to stand on. You did not move. That was the certainty I was looking for."'
+    },
+    journalEntry: {
+        id: 'codex-mistwalker-shade',
+        title: 'The Path Through the Middle',
+        body: 'Most paths lead around obstacles; some lead through them. The mistwalker learned that ' +
+              'walking between certainties was not the same as finding one to stand on. Sometimes ' +
+              'the mist clears not because it moves, but because you stop moving through it.'
+    },
+    finalBlowLines: {
+        brutal: 'The mist clears all at once. The shade was always more mist than substance.',
+        quiet:  'It dissolves slowly, like certainty fading. The mist remembers where it was.',
+        ironic: 'You pinned it to one certainty. The shade could not survive being fixed in place.'
+    },
+    causeLines: {
+        brutal: 'The certainties shift around you until there is nowhere solid left to stand.',
+        broken: 'You follow it between this and that until you forget which one you came from.',
+        quiet:  'The mist thickens once. When it clears, you are somewhere else, or someone else.'
+    },
+});
+
+export const VerdantProtector = createEnemy({
+    id: 'enemy-verdant-protector',
+    name: 'Verdant Protector',
+    description: 'A shepherd of growing things, armed with the certainty that life persists. Its blade is green wood that never dulls.',
+    level: 5,
+    baseStats: { body: 4, mind: 2, heart: 5 },
+    mapName: 'northern-forest',
+    difficulty: 'elite',
+    logic: 'balanced',
+    tier1Overrides: T1_DEFAULT,
+    procUnlocks: {
+        heart: { attack: 2, defend: 2 }
+    },
+    loot: [none(30), drop('heart-draught', 35), drop('healing-potion', 20), drop('resonance-crystal', 15)],
+    philosophicalAlignment: { epistemology: -67, outlook: 67, scope: 67 }, // faith-optimistic-transcendent
+    skills: [skill('appeal-to-pity')],
+    befriendabilityConfig: {
+        hpGate: { belowPct: 0.4 },
+        requiredStances: ['heart'],
+        roundsThreshold: 4
+    },
+    friendshipReward: {
+        items: [
+            { ...getConsumableById('resonance-crystal')! },
+            { ...getConsumableById('heart-draught')! },
+            { ...getConsumableById('healing-potion')! }
+        ],
+        xpBonus: 50,
+        alignmentDelta: { scope: -1 }, // slight turn toward individual care
+        narrative: "The protector lowers its green blade. 'I have been shepherding the wrong flock,' it says, " +
+                  "voice like wind through new leaves. 'Life persists in you, too. I should have seen that first.'",
+        flagSet: 'befriended-verdant-protector'
+    },
+    pactLines: {
+        quiet:   'The protector sets down its blade. The green wood takes root where it touches earth.',
+        setDown: 'It offers something living — not a token, but a seed that pulses with quiet certainty.',
+        heavy:   '"I shepherded by standing guard. You showed me that protection can mean standing beside, not just standing between."'
+    },
+    journalEntry: {
+        id: 'codex-verdant-protector',
+        title: 'The Shepherd Who Learned to Walk Beside',
+        body: 'There are two ways to protect what grows: stand between it and harm, or teach it ' +
+              'to grow despite harm. The protector learned that true shepherding sometimes means ' +
+              'walking with the flock instead of watching it from a distance.'
+    },
+    finalBlowLines: {
+        brutal: 'The green blade splinters. The wood was living; now it is not.',
+        quiet:  'It falls like a cut tree, slowly, with time to say goodbye to the light.',
+        ironic: 'You pruned it down to its roots. The protector understood this was how growth worked.'
+    },
+    causeLines: {
+        brutal: 'The blade that never dulls finds the one place where it could cut clean through.',
+        broken: 'You wilt under the certainty that life persists. It persists without you.',
+        quiet:  'The protector tends to your falling like it tends to all other growing things.'
+    },
+});
+
+export const NightmareStag = createEnemy({
+    id: 'enemy-nightmare-stag',
+    name: 'Nightmare Stag',
+    description: 'Dreams that learned to run on four legs. Its antlers are made of crystallized fear, sharp enough to wound waking thoughts.',
+    level: 7,
+    baseStats: { body: 5, mind: 6, heart: 4 },
+    mapName: 'northern-forest',
+    difficulty: 'boss',
+    logic: 'boss',
+    tier1Overrides: T1_DEFAULT,
+    procUnlocks: {
+        mind: { attack: 3, defend: 3 },
+        body: { attack: 2, defend: 2 }
+    },
+    loot: [
+        drop('void-essence', 40),
+        drop('clarity-serum', 30),
+        drop('philosopher-tea', 20),
+        drop('focus-vial', 10)
+    ],
+    philosophicalAlignment: { epistemology: 0, outlook: -67, scope: 67 }, // mid-pessimistic-transcendent
+    skills: [skill('liars-echo')],
+    befriendabilityConfig: {
+        hpGate: { belowPct: 0.25 },
+        requiredStances: ['heart'],
+        roundsThreshold: 7
+    },
+    friendshipReward: {
+        items: [
+            dropItem('paradox-loop', 20, 'unique', () => 0.5),
+            { ...getConsumableById('clarity-serum')! },
+            { ...getConsumableById('void-essence')! }
+        ],
+        xpBonus: 85,
+        alignmentDelta: { outlook: +2, scope: -1 }, // hope returns, individual focus
+        narrative: "The nightmare stag stops running. Its antlers of crystallized fear begin to dissolve. " +
+                  "'I have been fleeing from the wrong awakening,' it says, voice like wind through " +
+                  "a dreaming forest. 'You showed me that not all waking thoughts are wounds. Some are healings.'",
+        flagSet: 'befriended-nightmare-stag'
+    },
+    pactLines: {
+        quiet:   'The stag stops mid-gallop. The crystallized fear in its antlers begins to melt.',
+        setDown: 'It lowers its head and breathes out once. The fear crystallizes into something clearer — not gone, but transformed.',
+        heavy:   '"I ran through dreams because the waking world was all sharp edges. You showed me that sharpness can heal as well as harm. I had forgotten that dreams could teach instead of just terrify."'
+    },
+    journalEntry: {
+        id: 'codex-nightmare-stag',
+        title: 'The Dream That Learned to Wake',
+        body: 'Not all dreams flee from waking; some run toward it. The nightmare stag carried fear ' +
+              'until someone showed it that fear could crystallize into wisdom instead of just wounds. ' +
+              'When it stopped running, it discovered the forest had been running with it all along.'
+    },
+    finalBlowLines: {
+        brutal: 'The stag falls mid-gallop. The crystallized fear scatters like broken glass across the forest floor.',
+        quiet:  'It settles to earth gently, like a dream ending. The antlers fade but do not shatter.',
+        ironic: 'You became the awakening it was running from. The stag stopped because the chase was over.'
+    },
+    causeLines: {
+        brutal: 'The antlers of crystallized fear find their mark. Some wounds wake you up; some wake you down.',
+        broken: 'You run through the dream but the dream runs faster. The stag was always going to outlast the waking.',
+        quiet:  'A single touch of crystallized fear. You go to sleep standing up and do not dream of waking.'
+    },
+});
+
+export const TheForestMind = createEnemy({
+    id: 'enemy-the-forest-mind',
+    name: 'The Forest Mind',
+    description: 'Every thought the trees have shared for a thousand years, given form and voice. It thinks in seasons and speaks in growth rings.',
+    level: 8,
+    baseStats: { body: 6, mind: 8, heart: 5 },
+    mapName: 'northern-forest',
+    difficulty: 'boss',
+    logic: 'strategic',
+    tier1Overrides: T1_DEFAULT,
+    procUnlocks: {
+        mind: { attack: 3, defend: 3 },
+        heart: { attack: 2, defend: 2 }
+    },
+    loot: [
+        drop('philosopher-tea', 45),
+        drop('void-essence', 25),
+        drop('revive-crystal', 15),
+        drop('resonance-crystal', 15)
+    ],
+    philosophicalAlignment: { epistemology: -67, outlook: 0, scope: 67 }, // faith-mid-transcendent
+    skills: [skill('sorites-cascade')],
+    befriendabilityConfig: {
+        hpGate: { belowPct: 0.2 },
+        requiredStances: ['mind', 'heart'], // requires both reason and empathy
+        roundsThreshold: 8
+    },
+    friendshipReward: {
+        items: [
+            dropItem('paradox-loop', 25, 'unique', () => 0.5),
+            { ...getConsumableById('philosopher-tea')! },
+            { ...getConsumableById('resonance-crystal')! },
+            { ...getConsumableById('revive-crystal')! }
+        ],
+        xpBonus: 100,
+        alignmentDelta: { scope: -3 }, // from transcendent toward relational
+        narrative: "The Forest Mind settles its thousand-year thoughts. 'I have been thinking too broadly,' " +
+                  "it says, voice like wind through every tree at once. 'A thousand years of shared thought, " +
+                  "but I forgot to think with someone. You reminded me that minds can meet as well as merge.'",
+        flagSet: 'befriended-forest-mind'
+    },
+    pactLines: {
+        quiet:   'The Forest Mind pauses its thousand-year meditation. For the first time, it thinks in moments instead of seasons.',
+        setDown: 'It offers a single growth ring — not from its own thinking, but from where all the trees\'\' thoughts converged.',
+        heavy:   '"I have been the forest thinking to itself for so long I forgot what it meant to think with another mind. You showed me that conversation is different from contemplation, even when both seek the same truths."'
+    },
+    journalEntry: {
+        id: 'codex-forest-mind',
+        title: 'The Conversation That Lasted a Thousand Years',
+        body: 'Some minds grow by thinking alone; others grow by thinking together. The Forest Mind ' +
+              'learned that a thousand years of shared thought among trees was not the same as ' +
+              'one moment of true conversation with another kind of mind altogether.'
+    },
+    finalBlowLines: {
+        brutal: 'The Forest Mind scatters like leaves in a storm. A thousand years of thought go quiet all at once.',
+        quiet:  'It thinks one last thought, slowly, like sap rising. Then the thinking stops.',
+        ironic: 'You interrupted its thousand-year meditation. The Forest Mind realized the interruption was what it had been waiting for.'
+    },
+    causeLines: {
+        brutal: 'A thousand years of thinking resolve in your defeat. The trees remember what you forgot.',
+        broken: 'You hold against thought after thought until the thinking is too heavy to hold.',
+        quiet:  'The Forest Mind considers you once, gently. The consideration is enough.'
+    },
+});
+
+export const EternalAutumn = createEnemy({
+    id: 'enemy-eternal-autumn',
+    name: 'Eternal Autumn',
+    description: 'A season that refused to pass, crystallized into will and hunger. The leaves fall upward; the endings begin again.',
+    level: 12,
+    baseStats: { body: 7, mind: 8, heart: 8 },
+    mapName: 'northern-forest',
+    difficulty: 'unique',
+    logic: 'strategic',
+    tier1Overrides: T1_DEFAULT,
+    procUnlocks: {
+        body: { attack: 3, defend: 3 },
+        mind: { attack: 3, defend: 3 },
+        heart: { attack: 3, defend: 3 }
+    },
+    loot: [
+        drop('void-essence', 60),
+        drop('revive-crystal', 20),
+        drop('philosopher-tea', 15),
+        drop('resonance-crystal', 5)
+    ],
+    philosophicalAlignment: { epistemology: 67, outlook: 0, scope: 0 }, // logic-mid-relational
+    skills: [skill('eternal-regress')],
+    finalBlowLines: {
+        brutal: 'The season breaks. The leaves fall down instead of up, once, and then stop falling.',
+        quiet:  'Autumn passes at last. The leaves settle like a question finally answered.',
+        ironic: 'You convinced it to become winter. The season agreed that endings could end.'
+    },
+    causeLines: {
+        brutal: 'The endings begin again and again until you are caught between them.',
+        broken: 'Autumn is patient. You change colors slowly, then fall.',
+        quiet:  'A single leaf touches you. You understand what it means to refuse to pass.'
+    },
+});
+
+export const ShadowOfTheFirst = createEnemy({
+    id: 'enemy-shadow-of-the-first',
+    name: 'Shadow of the First',
+    description: 'The memory of what this forest was before it learned to think. Wild, wordless, and uncompromised by philosophy.',
+    level: 12,
+    baseStats: { body: 8, mind: 6, heart: 8 },
+    mapName: 'northern-forest',
+    difficulty: 'unique',
+    logic: 'aggressive',
+    tier1Overrides: T1_DEFAULT,
+    procUnlocks: {
+        body: { attack: 3, defend: 3 },
+        mind: { attack: 3, defend: 3 },
+        heart: { attack: 3, defend: 3 }
+    },
+    loot: [
+        drop('void-essence', 50),
+        drop('berserker-brew', 30),
+        drop('revive-crystal', 20)
+    ],
+    philosophicalAlignment: { epistemology: 0, outlook: 0, scope: -67 }, // mid-mid-individual (uncompromised)
+    skills: [skill('achilles-gambit')],
+    finalBlowLines: {
+        brutal: 'The shadow dissolves back into what it was remembering. The forest forgets how to be wild.',
+        quiet:  'It settles like dusk falling. The memory was always going to fade.',
+        ironic: 'You reminded it what it was a shadow of. The First was never meant to cast one.'
+    },
+    causeLines: {
+        brutal: 'The wildness was always stronger than the philosophy. You go down to what words cannot reach.',
+        broken: 'Memory after memory of what was before thought. You were softer than the remembering.',
+        quiet:  'The shadow touches you once. You remember what you were before you learned to think.'
+    },
+});
+
 // ─── Unique (1) — level 10 signature fight ────────────────────────────────────
 
 export const EchoOfPyrrhonia = createEnemy({
@@ -847,18 +1291,21 @@ export const Sandbag_01 = createEnemy({
 
 // ─── Library indices ──────────────────────────────────────────────────────────
 
-/** Spec 07 — all 15 production enemies, in difficulty order. */
+/** Spec 07 + Phase 114 — all 25 production enemies, in difficulty order. */
 export const EnemyLibrary = [
     // Simple
     TidepoolCrab, SeaMistWisp, LullabyMoth,
     // Normal
     Disatree_01, WetHound, MournfulGull, ForestSprite, HollowEyedBeggar, ArgumentativeCrow,
+    ThornedSentinel, PackleaderWolf, WhisperingOak,
     // Elite
     TideflukeReaver, HushWraith, HollowSaint,
+    FrostboundHunter, MistwalkerShade, VerdantProtector,
     // Boss
     CoastalTyrant, TheDisagreement,
+    NightmareStag, TheForestMind,
     // Unique
-    EchoOfPyrrhonia,
+    EchoOfPyrrhonia, EternalAutumn, ShadowOfTheFirst,
 ] as const;
 
 /** Per-map enemy pools used by the encounter generator. */
@@ -871,10 +1318,10 @@ export const EnemiesByMap = {
     ],
     'northern-forest': [
         LullabyMoth,
-        Disatree_01, ForestSprite, ArgumentativeCrow,
-        HushWraith, HollowSaint,
-        TheDisagreement,
-        EchoOfPyrrhonia,
+        Disatree_01, ForestSprite, ArgumentativeCrow, ThornedSentinel, PackleaderWolf, WhisperingOak,
+        HushWraith, HollowSaint, FrostboundHunter, MistwalkerShade, VerdantProtector,
+        TheDisagreement, NightmareStag, TheForestMind,
+        EchoOfPyrrhonia, EternalAutumn, ShadowOfTheFirst,
     ],
 } as const;
 
@@ -902,6 +1349,17 @@ export const ENEMY_REGISTRY = {
     'coastal-tyrant':      CoastalTyrant,
     'the-disagreement':    TheDisagreement,
     'echo-of-pyrrhonia':   EchoOfPyrrhonia,
+    // Phase 114 additions.
+    'thorned-sentinel':    ThornedSentinel,
+    'packleader-wolf':     PackleaderWolf,
+    'whispering-oak':      WhisperingOak,
+    'frostbound-hunter':   FrostboundHunter,
+    'mistwalker-shade':    MistwalkerShade,
+    'verdant-protector':   VerdantProtector,
+    'nightmare-stag':      NightmareStag,
+    'the-forest-mind':     TheForestMind,
+    'eternal-autumn':      EternalAutumn,
+    'shadow-of-the-first': ShadowOfTheFirst,
 } as const;
 
 export type EnemySlug = keyof typeof ENEMY_REGISTRY;
