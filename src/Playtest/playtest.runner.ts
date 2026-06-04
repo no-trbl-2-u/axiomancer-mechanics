@@ -356,14 +356,32 @@ function summarizePolicies(runs: PlaytestRunSummary[]): PlaytestPolicySummary[] 
 function deriveFindings(metrics: PlaytestMetrics): string[] {
     const findings: string[] = [];
     if (metrics.totalRuns === 0) return ['No runs executed.'];
+    
+    // Phase 113 - Enhanced outcome reporting separating types clearly
+    findings.push(`Outcome breakdown: ${percent(metrics.winRate)} victory, ${percent(metrics.friendshipRate)} friendship, ${percent(metrics.defeatRate)} defeat, ${percent(metrics.timeoutRate)} timeout`);
+    
     if (metrics.timeoutRate > 0) findings.push(`${percent(metrics.timeoutRate)} of runs timed out before combat resolved.`);
     if (metrics.defeatRate > 0.5) findings.push(`Defeat rate is high at ${percent(metrics.defeatRate)}.`);
     if (metrics.resolutionSuccessRate < 0.65 || metrics.resolutionSuccessRate > 0.75) {
         findings.push(`Resolution success is ${percent(metrics.resolutionSuccessRate)}; target band is 65–75% victory plus friendship/mercy resolution.`);
     }
     if (metrics.winRate > 0.85) findings.push(`Win rate is high at ${percent(metrics.winRate)}; encounter may be undertuned for these policies.`);
+    
+    // Phase 113 - Enhanced mercy loop evidence reporting
     if (metrics.friendshipRate === 0) findings.push('No friendship outcomes surfaced; Tobin should judge whether the peaceful route is too hidden or too costly.');
     if (metrics.befriendAttempts === 0) findings.push('No Befriend attempts surfaced; mercy evidence is not yet exercising the doctrine path.');
+    
+    if (metrics.befriendAttempts > 0) {
+        const befriendSuccessRate = metrics.befriendSuccesses / metrics.befriendAttempts;
+        findings.push(`Befriend skill metrics: ${metrics.befriendAttempts} attempts, ${percent(befriendSuccessRate)} success rate`);
+        
+        if (metrics.spareChoices > 0 || metrics.exploitChoices > 0) {
+            const totalMercyChoices = metrics.spareChoices + metrics.exploitChoices;
+            const spareRate = metrics.spareChoices / totalMercyChoices;
+            findings.push(`Mercy choices: ${metrics.spareChoices} spare (${percent(spareRate)}), ${metrics.exploitChoices} exploit (${percent(1 - spareRate)})`);
+        }
+    }
+    
     const stalledFriendshipPolicy = metrics.policySummaries.find(summary =>
         summary.policy === 'friendship'
         && summary.friendshipRate === 0
@@ -374,6 +392,13 @@ function deriveFindings(metrics: PlaytestMetrics): string[] {
             `Friendship policy built enough counter (${stalledFriendshipPolicy.maxFriendshipCounter}) but never resolved; HP gate remains unmet at average final enemy HP ${formatFindingNumber(stalledFriendshipPolicy.averageFinalEnemyHp)}.`,
         );
     }
+    
+    // Phase 113 - Policy-specific outcome analysis
+    const strategistPolicy = metrics.policySummaries.find(summary => summary.policy === 'strategist');
+    if (strategistPolicy) {
+        findings.push(`STRATEGIST witness: ${percent(strategistPolicy.resolutionSuccessRate)} resolution success, average ${formatFindingNumber(strategistPolicy.averageRounds)} rounds`);
+    }
+    
     const dominantAction = dominant(metrics.actionUse);
     if (dominantAction && dominantAction.share >= 0.7) findings.push(`Dominant player action: ${dominantAction.key} (${percent(dominantAction.share)} of actions).`);
     const dominantStance = dominant(metrics.stanceUse);

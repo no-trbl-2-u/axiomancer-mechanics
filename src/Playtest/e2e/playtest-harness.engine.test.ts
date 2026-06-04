@@ -86,4 +86,94 @@ describe('Automated playtest harness', () => {
         expect(report.metrics.befriendSuccesses).toBeGreaterThan(0);
         expect(report.metrics.exploitChoices).toBeGreaterThan(0);
     });
+
+    it('tests enhanced STRATEGIST witness reading enemy state and resources', () => {
+        const scenario: PlaytestScenario = {
+            id: 'test-strategist-enhanced-coastal-tyrant',
+            description: 'Enhanced STRATEGIST witness for Phase 113 - reading enemy state and resources',
+            preset: 'sage',
+            enemy: 'coastal-tyrant',
+            runs: 3,
+            maxRounds: 20,
+            seed: 'strategist-enhanced-e2e',
+            policies: ['strategist'],
+        };
+
+        const report = runPlaytestScenario(scenario);
+
+        // STRATEGIST should show tactical decision-making
+        expect(report.metrics.totalRuns).toBe(3);
+        expect(report.metrics.policySummaries).toHaveLength(1);
+        
+        const strategistSummary = report.metrics.policySummaries.find(summary => summary.policy === 'strategist');
+        expect(strategistSummary).toBeDefined();
+        expect(strategistSummary!.resolutionSuccessRate).toBeGreaterThanOrEqual(0);
+        
+        // Verify the enhanced finding reports include STRATEGIST witness
+        const strategistFinding = report.findings.find(finding => 
+            finding.includes('STRATEGIST witness'));
+        expect(strategistFinding).toBeDefined();
+    });
+
+    it('includes enhanced mercy loop reporting in findings per Phase 113', () => {
+        const scenario: PlaytestScenario = {
+            id: 'test-enhanced-reporting-mercy',
+            description: 'Enhanced mercy loop reporting for Phase 113',
+            preset: 'sage',
+            enemy: 'tidefluke-reaver',
+            runs: 2,
+            maxRounds: 22,
+            seed: 'enhanced-reporting-e2e',
+            policies: ['mercy', 'mercy-exploit'],
+        };
+
+        const report = runPlaytestScenario(scenario);
+
+        // Should have detailed outcome breakdown
+        const outcomeFinding = report.findings.find(finding => 
+            finding.includes('Outcome breakdown:'));
+        expect(outcomeFinding).toBeDefined();
+        expect(outcomeFinding).toContain('victory');
+        expect(outcomeFinding).toContain('friendship');
+        expect(outcomeFinding).toContain('defeat');
+        expect(outcomeFinding).toContain('timeout');
+
+        // Should have Befriend skill metrics if any attempts occurred
+        if (report.metrics.befriendAttempts > 0) {
+            const befriendFinding = report.findings.find(finding => 
+                finding.includes('Befriend skill metrics:'));
+            expect(befriendFinding).toBeDefined();
+        }
+
+        // Should have mercy choice breakdown if any choices occurred
+        if (report.metrics.spareChoices > 0 || report.metrics.exploitChoices > 0) {
+            const mercyFinding = report.findings.find(finding => 
+                finding.includes('Mercy choices:'));
+            expect(mercyFinding).toBeDefined();
+        }
+    });
+
+    it('validates 65-75% resolution success rate target in findings', () => {
+        const scenario: PlaytestScenario = {
+            id: 'test-resolution-success-rate-reporting',
+            description: 'Resolution success rate reporting for Phase 113',
+            preset: 'apprentice',
+            enemy: 'tidepool-crab',
+            runs: 4,
+            maxRounds: 15,
+            seed: 'resolution-success-e2e',
+            policies: ['aggressive', 'defensive'],
+        };
+
+        const report = runPlaytestScenario(scenario);
+
+        // Should report resolution success rate with target band
+        const resolutionFinding = report.findings.find(finding => 
+            finding.includes('target band is 65–75%'));
+        
+        // This finding should exist if rate is outside target band
+        if (report.metrics.resolutionSuccessRate < 0.65 || report.metrics.resolutionSuccessRate > 0.75) {
+            expect(resolutionFinding).toBeDefined();
+        }
+    });
 });

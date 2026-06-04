@@ -28,7 +28,7 @@ export const earlyGameFixture: PlaytestScenario = {
     runs: 50,
     maxRounds: 20,  // Early fights should resolve quickly
     seed: 'early-game-probe-2026',
-    policies: ['aggressive', 'defensive', 'friendship', 'resource-optimal'],
+    policies: ['aggressive', 'defensive', 'strategist', 'friendship', 'mercy'],
 };
 
 /**
@@ -43,5 +43,5 @@ export const earlyGameWispFixture: PlaytestScenario = {
     runs: 50,
     maxRounds: 20,
     seed: 'early-game-wisp-2026',
-    policies: ['aggressive', 'defensive', 'friendship', 'resource-optimal'],
+    policies: ['aggressive', 'defensive', 'strategist', 'friendship', 'mercy'],
 };

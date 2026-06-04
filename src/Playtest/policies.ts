@@ -21,11 +21,14 @@ function strategicSkillPriority(combat: CombatState, skillId: string): number {
     if (!skill) return 0;
 
     let score = 0;
+    
+    // Basic skill value assessment
     if (skill.combatEffects?.length) score += 10;
     if (skill.synergy) score += 8;
     if (skill.specialMechanics?.length) score += 5;
     if (skill.incrementsFriendship) score += 2;
 
+    // Synergy predicate satisfaction
     const predicate = skill.synergy?.predicate;
     if (predicate) {
         const effects = predicate.on === 'caster' ? combat.player.effects : combat.enemy.effects;
@@ -35,6 +38,61 @@ function strategicSkillPriority(combat: CombatState, skillId: string): number {
             && effect.remainingDuration >= (predicate.durationMin ?? 0),
         );
         if (satisfied) score += 20;
+    }
+
+    // Enemy state considerations
+    const enemyHpPct = combat.enemy.health / combat.enemy.maxHealth;
+    const playerHpPct = combat.player.health / combat.player.maxHealth;
+
+    // Prioritize damage skills when enemy is healthy and player isn't in danger
+    if (skill.targetType === 'enemy' && skill.basePower > 0 && enemyHpPct > 0.6 && playerHpPct > 0.4) {
+        score += 5;
+    }
+
+    // Prioritize healing skills when player is low HP
+    if (skill.targetType === 'self' && skill.basePower > 0 && playerHpPct < 0.4) {
+        score += 15;
+    }
+
+    // Status effect considerations
+    const enemyHasDebuffs = combat.enemy.effects.some(effect => 
+        effect.effectId.includes('debuff') || effect.effectId.includes('weaken') || 
+        effect.effectId.includes('poison') || effect.effectId.includes('slow')
+    );
+    const playerHasBuffs = combat.player.effects.some(effect =>
+        effect.effectId.includes('buff') || effect.effectId.includes('strengthen') || 
+        effect.effectId.includes('haste') || effect.effectId.includes('shield')
+    );
+
+    // Prioritize self-buffing when player lacks beneficial effects
+    if (skill.combatEffects?.some(effect => effect.appliedTo === 'self' && effect.effectId.includes('buff')) && !playerHasBuffs) {
+        score += 8;
+    }
+
+    // Prioritize enemy debuffing when enemy lacks debuffs
+    if (skill.combatEffects?.some(effect => effect.appliedTo === 'opponent' && effect.effectId.includes('debuff')) && !enemyHasDebuffs) {
+        score += 6;
+    }
+
+    // Resource efficiency considerations
+    const totalResourceCost = Object.values(skill.resourceCost || {}).reduce((sum, cost) => sum + cost, 0);
+    const availableResources = combat.combatResources.heart + combat.combatResources.body + combat.combatResources.mind;
+    
+    // Prefer skills that use available resources efficiently
+    if (totalResourceCost > 0 && totalResourceCost <= availableResources * 0.5) {
+        score += 3; // Efficient resource usage
+    } else if (totalResourceCost > availableResources * 0.8) {
+        score -= 5; // Too expensive relative to available resources
+    }
+
+    // Mercy opportunity assessment
+    const hpGate = combat.enemy.befriendabilityConfig?.hpGate?.belowPct;
+    if (hpGate && enemyHpPct <= hpGate + 0.1) { // Near HP gate
+        if (skillId === 'befriend') {
+            score += 30; // Strongly prioritize befriend near mercy opportunity
+        } else if (skill.targetType === 'enemy' && skill.basePower > 0) {
+            score -= 10; // Deprioritize damage near mercy opportunity
+        }
     }
 
     return score;
@@ -102,8 +160,11 @@ export function selectPolicyAction(policy: PlaytestPolicy, combat: CombatState):
 
     if (policy === 'strategist') {
         const enemyHpPct = combat.enemy.health / combat.enemy.maxHealth;
+        const playerHpPct = combat.player.health / combat.player.maxHealth;
         const hpGate = combat.enemy.befriendabilityConfig?.hpGate?.belowPct;
         const befriend = getSkillById('befriend');
+        
+        // Prioritize befriend when mercy opportunity is available
         if (befriend
             && hpGate !== undefined
             && enemyHpPct <= hpGate
@@ -112,12 +173,36 @@ export function selectPolicyAction(policy: PlaytestPolicy, combat: CombatState):
             return { stance: 'heart', action: 'skill', skillId: 'befriend' };
         }
 
+        // Consider using items when critically low on health
+        const itemId = playerHpPct < 0.25 ? firstConsumableId(combat) : undefined;
+        if (itemId) return { stance: 'body', action: 'item', itemId };
+
+        // Use best strategic skill if available and worthwhile
         const skillId = bestStrategistSkill(combat);
         if (skillId) {
             const skill = getSkillById(skillId);
-            return { stance: skill?.philosophicalAspect ?? pickStance(combat.round), action: 'skill', skillId };
+            const skillScore = strategicSkillPriority(combat, skillId);
+            
+            // Only use skill if it has significant strategic value (score > 10)
+            if (skillScore > 10) {
+                return { stance: skill?.philosophicalAspect ?? pickStance(combat.round), action: 'skill', skillId };
+            }
         }
-        return { stance: pickStance(combat.round), action: 'defend' };
+
+        // Strategic basic action selection based on situation
+        if (playerHpPct < 0.5) {
+            // Defensive play when low health
+            return { stance: 'body', action: 'defend' };
+        } else if (enemyHpPct > 0.8) {
+            // Aggressive play when enemy is healthy
+            return { stance: 'body', action: 'attack' };
+        } else if (combat.combatResources.heart + combat.combatResources.body + combat.combatResources.mind < 3) {
+            // Build resources when low
+            return { stance: pickStance(combat.round), action: 'defend' };
+        } else {
+            // Default to attack for pressure
+            return { stance: 'body', action: 'attack' };
+        }
     }
 
     if (policy === 'resource-optimal') {

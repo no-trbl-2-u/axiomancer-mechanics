@@ -29,7 +29,7 @@ export const endgameFixture: PlaytestScenario = {
     runs: 50,
     maxRounds: 50,  // Boss fights can be longer
     seed: 'endgame-tyrant-2026',
-    policies: ['friendship', 'aggressive', 'defensive', 'resource-optimal', 'mixed'],
+    policies: ['strategist', 'mercy', 'mercy-exploit', 'friendship', 'aggressive', 'defensive'],
 };
 
 /**
@@ -44,7 +44,7 @@ export const endgameDisagreementFixture: PlaytestScenario = {
     runs: 30,
     maxRounds: 50,
     seed: 'endgame-disagreement-2026',
-    policies: ['aggressive', 'defensive', 'resource-optimal'],
+    policies: ['strategist', 'aggressive', 'defensive'],
 };
 
 /**
