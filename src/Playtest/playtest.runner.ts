@@ -130,6 +130,7 @@ function runSingleScenario(scenario: PlaytestScenario, runNumber: number): Playt
             playerAction,
             enemyAction,
             getSkillById,
+            store.getState().regionConsequences.exploitedRegions,
         );
         store.getState().updateCombat(nextCombat, combatEvents);
         increment(actions, playerAction.action);
@@ -253,6 +254,7 @@ export function aggregateMetrics(runs: PlaytestRunSummary[]): PlaytestMetrics {
         defeatRate: rate(outcomes.defeat, totalRuns),
         friendshipRate: rate(outcomes.friendship, totalRuns),
         timeoutRate: rate(outcomes.timeout, totalRuns),
+        resolutionSuccessRate: rate(outcomes.victory + outcomes.friendship, totalRuns),
         averageRounds: average(rounds),
         medianRounds: median(rounds),
         averageFinalPlayerHp: average(runs.map(run => run.playerHp)),
@@ -260,6 +262,11 @@ export function aggregateMetrics(runs: PlaytestRunSummary[]): PlaytestMetrics {
         averageDamageToPlayer: average(runs.map(run => run.damageToPlayer)),
         averageDamageToEnemy: average(runs.map(run => run.damageToEnemy)),
         maxFriendshipCounter: Math.max(0, ...runs.map(run => run.friendshipCounter)),
+        befriendAttempts: runs.reduce((sum, run) => sum + (run.befriendMetrics?.attempts ?? 0), 0),
+        befriendFailures: runs.reduce((sum, run) => sum + (run.befriendMetrics?.failures ?? 0), 0),
+        befriendSuccesses: runs.reduce((sum, run) => sum + (run.befriendMetrics?.successes ?? 0), 0),
+        spareChoices: runs.reduce((sum, run) => sum + (run.befriendMetrics?.spareChoices ?? 0), 0),
+        exploitChoices: runs.reduce((sum, run) => sum + (run.befriendMetrics?.exploitChoices ?? 0), 0),
         stanceUse,
         actionUse,
         skillUse,
@@ -335,6 +342,7 @@ function summarizePolicies(runs: PlaytestRunSummary[]): PlaytestPolicySummary[] 
             defeatRate: rate(outcomes.defeat, matching.length),
             friendshipRate: rate(outcomes.friendship, matching.length),
             timeoutRate: rate(outcomes.timeout, matching.length),
+            resolutionSuccessRate: rate(outcomes.victory + outcomes.friendship, matching.length),
             averageRounds: average(matching.map(run => run.rounds)),
             averageFinalPlayerHp: average(matching.map(run => run.playerHp)),
             averageFinalEnemyHp: average(matching.map(run => run.enemyHp)),
@@ -350,8 +358,12 @@ function deriveFindings(metrics: PlaytestMetrics): string[] {
     if (metrics.totalRuns === 0) return ['No runs executed.'];
     if (metrics.timeoutRate > 0) findings.push(`${percent(metrics.timeoutRate)} of runs timed out before combat resolved.`);
     if (metrics.defeatRate > 0.5) findings.push(`Defeat rate is high at ${percent(metrics.defeatRate)}.`);
+    if (metrics.resolutionSuccessRate < 0.65 || metrics.resolutionSuccessRate > 0.75) {
+        findings.push(`Resolution success is ${percent(metrics.resolutionSuccessRate)}; target band is 65–75% victory plus friendship/mercy resolution.`);
+    }
     if (metrics.winRate > 0.85) findings.push(`Win rate is high at ${percent(metrics.winRate)}; encounter may be undertuned for these policies.`);
     if (metrics.friendshipRate === 0) findings.push('No friendship outcomes surfaced; Tobin should judge whether the peaceful route is too hidden or too costly.');
+    if (metrics.befriendAttempts === 0) findings.push('No Befriend attempts surfaced; mercy evidence is not yet exercising the doctrine path.');
     const stalledFriendshipPolicy = metrics.policySummaries.find(summary =>
         summary.policy === 'friendship'
         && summary.friendshipRate === 0

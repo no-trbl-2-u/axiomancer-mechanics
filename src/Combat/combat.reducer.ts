@@ -104,6 +104,7 @@ export function selectMercyChoice(state: CombatState, choice: 'spare' | 'exploit
         ...state,
         playerChoice: { stance: 'heart', action: choice },
         mercyChoiceActive: false,
+        ...(choice === 'spare' ? { friendshipResolutionAuthorized: true } : {}),
         phase: 'resolving',
     };
 }

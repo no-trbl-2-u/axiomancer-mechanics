@@ -12,7 +12,7 @@
 
 import { describe, it, expect } from 'vitest';
 import {
-    isFriendshipEligible, determineCombatEnd, isCombatOngoing,
+    isBefriendAttemptEligible, isFriendshipEligible, determineCombatEnd, isCombatOngoing,
 } from '../../Combat';
 import { CombatState, BattleLogEntry, Stance } from '../../Combat/types';
 import { Enemy, BefriendabilityConfig } from '../types';
@@ -101,10 +101,12 @@ describe('Phase 68 — BefriendabilityConfig predicate', () => {
             const stateAtCap = makeState(enemy, { friendshipCounter: FRIENDSHIP_COUNTER_MAX });
             const stateBelow = makeState(enemy, { friendshipCounter: FRIENDSHIP_COUNTER_MAX - 1 });
 
-            expect(isFriendshipEligible(stateAtCap)).toBe(true);
-            expect(determineCombatEnd(stateAtCap)).toBe('friendship');
-            expect(isCombatOngoing(stateAtCap)).toBe(false);
+            expect(isBefriendAttemptEligible(stateAtCap)).toBe(true);
+            expect(isFriendshipEligible(stateAtCap)).toBe(false);
+            expect(determineCombatEnd(stateAtCap)).toBe('ongoing');
+            expect(isCombatOngoing(stateAtCap)).toBe(true);
 
+            expect(isBefriendAttemptEligible(stateBelow)).toBe(true);
             expect(isFriendshipEligible(stateBelow)).toBe(false);
             expect(determineCombatEnd(stateBelow)).toBe('ongoing');
             expect(isCombatOngoing(stateBelow)).toBe(true);
@@ -121,8 +123,9 @@ describe('Phase 68 — BefriendabilityConfig predicate', () => {
                 friendshipCounter: FRIENDSHIP_COUNTER_MAX,
             });
             expect(state.enemy.health).toBeGreaterThan(state.enemy.maxHealth * 0.1);
-            expect(isFriendshipEligible(state)).toBe(true);
-            expect(determineCombatEnd(state)).toBe('friendship');
+            expect(isBefriendAttemptEligible(state)).toBe(true);
+            expect(isFriendshipEligible(state)).toBe(false);
+            expect(determineCombatEnd(state)).toBe('ongoing');
         });
     });
 
@@ -146,8 +149,9 @@ describe('Phase 68 — BefriendabilityConfig predicate', () => {
             });
             const maxHp = state.enemy.maxHealth;
             state.enemy.health = Math.floor(maxHp * 0.3);
-            expect(isFriendshipEligible(state)).toBe(true);
-            expect(determineCombatEnd(state)).toBe('friendship');
+            expect(isBefriendAttemptEligible(state)).toBe(true);
+            expect(isFriendshipEligible(state)).toBe(false);
+            expect(determineCombatEnd(state)).toBe('ongoing');
         });
     });
 
@@ -167,7 +171,8 @@ describe('Phase 68 — BefriendabilityConfig predicate', () => {
                 friendshipCounter: FRIENDSHIP_COUNTER_MAX,
                 log: [logEntry(1, 'body'), logEntry(2, 'heart')],
             });
-            expect(isFriendshipEligible(state)).toBe(true);
+            expect(isBefriendAttemptEligible(state)).toBe(true);
+            expect(isFriendshipEligible(state)).toBe(false);
         });
 
         it('treats an empty list as no requirement', () => {
@@ -176,7 +181,8 @@ describe('Phase 68 — BefriendabilityConfig predicate', () => {
                 friendshipCounter: FRIENDSHIP_COUNTER_MAX,
                 log: [],
             });
-            expect(isFriendshipEligible(state)).toBe(true);
+            expect(isBefriendAttemptEligible(state)).toBe(true);
+            expect(isFriendshipEligible(state)).toBe(false);
         });
     });
 
@@ -196,7 +202,8 @@ describe('Phase 68 — BefriendabilityConfig predicate', () => {
                 friendshipCounter: FRIENDSHIP_COUNTER_MAX,
                 log: [logEntry(1, 'body'), logEntry(2, 'heart', 'palm-strike')],
             });
-            expect(isFriendshipEligible(state)).toBe(true);
+            expect(isBefriendAttemptEligible(state)).toBe(true);
+            expect(isFriendshipEligible(state)).toBe(false);
         });
 
         it('ignores log entries whose action is not "skill"', () => {
@@ -231,7 +238,8 @@ describe('Phase 68 — BefriendabilityConfig predicate', () => {
         }
 
         it('eligibility passes when all predicates pass', () => {
-            expect(isFriendshipEligible(passingState())).toBe(true);
+            expect(isBefriendAttemptEligible(passingState())).toBe(true);
+            expect(isFriendshipEligible(passingState())).toBe(false);
         });
 
         it('fails when roundsThreshold not yet reached', () => {
@@ -264,7 +272,9 @@ describe('Phase 68 — BefriendabilityConfig predicate', () => {
             const enemy = makeEnemy({ roundsThreshold: 2 });
             const stateAtThreshold = makeState(enemy, { friendshipCounter: 2 });
             const stateBelow = makeState(enemy, { friendshipCounter: 1 });
-            expect(isFriendshipEligible(stateAtThreshold)).toBe(true);
+            expect(isBefriendAttemptEligible(stateAtThreshold)).toBe(true);
+            expect(isBefriendAttemptEligible(stateBelow)).toBe(true);
+            expect(isFriendshipEligible(stateAtThreshold)).toBe(false);
             expect(isFriendshipEligible(stateBelow)).toBe(false);
         });
     });
@@ -280,8 +290,9 @@ describe('Phase 68 — BefriendabilityConfig predicate', () => {
             expect(determineCombatEnd(state)).toBe('ongoing');
 
             state.enemy.health = Math.floor(state.enemy.maxHealth * 0.2);
-            expect(isCombatOngoing(state)).toBe(false);
-            expect(determineCombatEnd(state)).toBe('friendship');
+            expect(isBefriendAttemptEligible(state)).toBe(true);
+            expect(isCombatOngoing(state)).toBe(true);
+            expect(determineCombatEnd(state)).toBe('ongoing');
         });
     });
 });

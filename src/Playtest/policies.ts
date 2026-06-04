@@ -56,6 +56,13 @@ function randomIndex(maxExclusive: number): number {
 }
 
 export function selectPolicyAction(policy: PlaytestPolicy, combat: CombatState): CombatAction {
+    if (combat.phase === 'mercy_choice' || combat.mercyChoiceActive) {
+        return {
+            stance: 'heart',
+            action: policy === 'mercy-exploit' ? 'exploit' : 'spare',
+        };
+    }
+
     if (policy === 'mixed') {
         const rotation: PlaytestPolicy[] = ['aggressive', 'defensive', 'strategist'];
         return selectPolicyAction(rotation[(combat.round - 1) % rotation.length]!, combat);
@@ -65,7 +72,7 @@ export function selectPolicyAction(policy: PlaytestPolicy, combat: CombatState):
         return { stance: 'heart', action: 'defend' };
     }
 
-    if (policy === 'mercy') {
+    if (policy === 'mercy' || policy === 'mercy-exploit') {
         const enemyHpPct = combat.enemy.health / combat.enemy.maxHealth;
         // Check if enemy has befriendability config with HP gate
         const hpGate = combat.enemy.befriendabilityConfig?.hpGate?.belowPct ?? 0.4;
@@ -75,7 +82,12 @@ export function selectPolicyAction(policy: PlaytestPolicy, combat: CombatState):
             return { stance: 'body', action: 'attack' };
         }
         
-        // Once below HP gate, switch to friendship behavior
+        const befriend = getSkillById('befriend');
+        if (befriend && combat.player.knownSkills.includes('befriend') && canUseSkill(combat.combatResources, befriend)) {
+            return { stance: 'heart', action: 'skill', skillId: 'befriend' };
+        }
+
+        // Once below HP gate, build Heart tokens toward Befriend.
         return { stance: 'heart', action: 'defend' };
     }
 
@@ -89,6 +101,17 @@ export function selectPolicyAction(policy: PlaytestPolicy, combat: CombatState):
     }
 
     if (policy === 'strategist') {
+        const enemyHpPct = combat.enemy.health / combat.enemy.maxHealth;
+        const hpGate = combat.enemy.befriendabilityConfig?.hpGate?.belowPct;
+        const befriend = getSkillById('befriend');
+        if (befriend
+            && hpGate !== undefined
+            && enemyHpPct <= hpGate
+            && combat.player.knownSkills.includes('befriend')
+            && canUseSkill(combat.combatResources, befriend)) {
+            return { stance: 'heart', action: 'skill', skillId: 'befriend' };
+        }
+
         const skillId = bestStrategistSkill(combat);
         if (skillId) {
             const skill = getSkillById(skillId);

@@ -44,11 +44,20 @@ function logEntry(round: number, stance: Stance, skillId?: string): BattleLogEnt
     };
 }
 
+function authorizeFriendship(store: ReturnType<typeof createGameStore>) {
+    const combat = store.getState().combat!;
+    store.getState().updateCombat({
+        ...combat,
+        friendshipResolutionAuthorized: true,
+    });
+}
+
 function driveToFriendship(store: ReturnType<typeof createGameStore>) {
     const combat = store.getState().combat!;
     store.getState().updateCombat({
         ...combat,
         friendshipCounter: FRIENDSHIP_COUNTER_MAX,
+        friendshipResolutionAuthorized: true,
     });
 }
 
@@ -217,6 +226,7 @@ describe('Phase 68 — Coastal Tyrant BefriendabilityConfig integration', () => 
             },
         });
 
+        authorizeFriendship(store);
         const report = store.getState().endCombat();
         expect(report.outcome).toBe('friendship');
     });
@@ -367,6 +377,7 @@ describe('Phase 70 — Coastal Tyrant boss-tier friendshipReward (full Phase 60+
         const initialMeter = selectMoralMeter(store.getState());
         driveCoastalTyrantToFriendship(store);
 
+        authorizeFriendship(store);
         const report = store.getState().endCombat();
         expect(report.outcome).toBe('friendship');
 
@@ -435,6 +446,7 @@ describe('Phase 102 — Befriendable-enemy Tier-2 expansion', () => {
             },
         });
 
+        authorizeFriendship(store);
         const report = store.getState().endCombat();
         expect(report.outcome).toBe('friendship');
         expect(report.loot.some(item => item.id === 'body-elixir')).toBe(true);
@@ -482,6 +494,7 @@ describe('Phase 102 — Befriendable-enemy Tier-2 expansion', () => {
             },
         });
 
+        authorizeFriendship(store);
         const report = store.getState().endCombat();
         expect(report.outcome).toBe('friendship');
         expect(report.loot.some(item => item.id === 'clarity-serum')).toBe(true);
@@ -529,6 +542,7 @@ describe('Phase 102 — Befriendable-enemy Tier-2 expansion', () => {
             },
         });
 
+        authorizeFriendship(store);
         const report = store.getState().endCombat();
         expect(report.outcome).toBe('friendship');
         expect(report.loot.some(item => item.id === 'resonance-crystal')).toBe(true);
@@ -558,6 +572,7 @@ describe('Phase 102 — Befriendable-enemy Tier-2 expansion', () => {
             },
         });
 
+        authorizeFriendship(store);
         const report = store.getState().endCombat();
         expect(report.outcome).toBe('friendship');
         expect(report.loot.some(item => item.id === 'philosopher-tea')).toBe(true);

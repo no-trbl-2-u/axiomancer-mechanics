@@ -23,7 +23,7 @@ import { removeRandomBuff } from '../Combat/effects';
 import { resolveEffectApplication } from '../Combat/resist';
 import { calculateDamageResistance, getSkillDamageType } from '../Combat/damage-resist';
 import { incrementFriendship } from '../Combat/combat.reducer';
-import { isFriendshipEligible } from '../Combat/index';
+import { isBefriendAttemptEligible } from '../Combat/index';
 import { Combatant, CombatState, Stance } from '../Combat/types';
 import {
     RESOURCE_GENERATION,
@@ -800,7 +800,7 @@ function applySpecialMechanic(
 
         case 'befriend_attempt': {
             // Phase 108 — Check if befriend attempt is valid
-            const isEligible = isFriendshipEligible(state);
+            const isEligible = isBefriendAttemptEligible(state);
             
             if (!isEligible) {
                 events.push({

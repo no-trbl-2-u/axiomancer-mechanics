@@ -60,10 +60,12 @@ describe('Phase 103 — Combat retrigger lock fix', () => {
         store.getState().startCombat(MournfulGull);
         expect(store.getState().combat).toBeTruthy();
 
-        // Force friendship by maxing friendship counter
+        // Force friendship by maxing friendship counter and explicitly
+        // authorizing the spare/mercy resolution.
         const combatWithMaxFriendship = {
             ...store.getState().combat!,
             friendshipCounter: 10, // Above threshold
+            friendshipResolutionAuthorized: true,
         };
         store.getState().updateCombat(combatWithMaxFriendship);
 
@@ -135,7 +137,11 @@ describe('Phase 103 — Combat retrigger lock fix', () => {
         expect(store.getState().currentEncounter?.origin).toBe('test-node-2');
 
         // Test friendship → new encounter sequence
-        const combat2 = { ...store.getState().combat!, friendshipCounter: 10 };
+        const combat2 = {
+            ...store.getState().combat!,
+            friendshipCounter: 10,
+            friendshipResolutionAuthorized: true,
+        };
         store.getState().updateCombat(combat2);
         const report2 = store.getState().endCombat();
         expect(report2.outcome).toBe('friendship');
@@ -167,7 +173,11 @@ describe('Phase 103 — Combat retrigger lock fix', () => {
 
         // Second encounter: friendship
         store.getState().startCombat({ enemies: [MournfulGull], origin: 'encounter-2' });
-        const combat2 = { ...store.getState().combat!, friendshipCounter: 10 };
+        const combat2 = {
+            ...store.getState().combat!,
+            friendshipCounter: 10,
+            friendshipResolutionAuthorized: true,
+        };
         store.getState().updateCombat(combat2);
         const report2 = store.getState().endCombat();
         expect(report2.outcome).toBe('friendship');

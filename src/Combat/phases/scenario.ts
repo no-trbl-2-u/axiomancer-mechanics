@@ -38,6 +38,7 @@ import {
 import {
     DEFENSE_MULTIPLIERS,
     PASSIVE_DEFENSE_MULTIPLIER,
+    FRIENDSHIP_COUNTER_MAX,
 } from '../../Game/game-mechanics.constants';
 import type { CombatAction, CombatState, Stance, Action, Advantage } from '../types';
 import {
@@ -258,7 +259,9 @@ export function runScenarioPhase(
             choice: 'spare',
             message: 'You chose mercy - the combat ends in friendship.',
         });
-        // Force friendship state by setting friendshipCounter to max
+        // Force friendship state by setting friendshipCounter to max. Phase 112
+        // requires explicit authorization as well; the returned CombatState is
+        // marked below by the resolver from the spare action.
         friendshipCounter = 999; // Will trigger friendship end in determineCombatEnd
         return { player, enemy, combatResources, friendshipCounter };
     }
@@ -311,7 +314,7 @@ export function runScenarioPhase(
         const shouldBlockFriendship = isBoss && regionExploited;
         
         if (!shouldBlockFriendship) {
-            friendshipCounter = before + 1;
+            friendshipCounter = Math.min(FRIENDSHIP_COUNTER_MAX, before + 1);
         }
         
         events.push({

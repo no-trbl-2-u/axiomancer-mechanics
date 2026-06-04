@@ -16,7 +16,7 @@ import { GameAction } from './actions.types';
 import { Character } from '../Character/types';
 import { Encounter, QuestLog } from '../World/types';
 import { Enemy } from '../Enemy/types';
-import { initializeCombat } from '../Combat/combat.reducer';
+import { initializeCombat, selectMercyChoice } from '../Combat/combat.reducer';
 import { determineEnemyAction, determineCombatEnd } from '../Combat';
 import { applyMoralMeterScaling } from '../Combat/difficulty';
 import { resolveCombatRound } from '../Combat/combat.resolver';
@@ -230,6 +230,14 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
                             sparedRegions: [...nextRegionConsequences.sparedRegions, region],
                         };
                     }
+                }
+
+                if (playerAction === 'spare' || playerAction === 'exploit') {
+                    return {
+                        ...state,
+                        combat: selectMercyChoice(state.combat, playerAction),
+                        regionConsequences: nextRegionConsequences,
+                    };
                 }
             }
             

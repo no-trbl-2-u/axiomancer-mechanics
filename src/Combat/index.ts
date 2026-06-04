@@ -112,13 +112,18 @@ export function determineEnemyAction(
  * `playerAction.stance` and (when `action === 'skill'`) `playerAction.skillId`
  * per resolved round.
  */
-export function isFriendshipEligible(state: CombatState): boolean {
+function befriendabilityPredicatesPass(
+    state: CombatState,
+    options: { requirePassiveCounter: boolean },
+): boolean {
     const config: BefriendabilityConfig | undefined = state.enemy.befriendabilityConfig;
     if (!config || config.defaultFallback === 'both-defend-cap') {
-        return state.friendshipCounter >= FRIENDSHIP_COUNTER_MAX;
+        return options.requirePassiveCounter
+            ? state.friendshipCounter >= FRIENDSHIP_COUNTER_MAX
+            : true;
     }
     const threshold = config.roundsThreshold ?? FRIENDSHIP_COUNTER_MAX;
-    if (state.friendshipCounter < threshold) return false;
+    if (options.requirePassiveCounter && state.friendshipCounter < threshold) return false;
     if (config.hpGate) {
         const maxHp = state.enemy.maxHealth;
         if (maxHp <= 0) return false;
@@ -144,6 +149,20 @@ export function isFriendshipEligible(state: CombatState): boolean {
         }
     }
     return true;
+}
+
+/**
+ * Phase 112 — returns true when the enemy is vulnerable to an explicit
+ * Befriend skill attempt. HP gates and authored stance/skill predicates still
+ * matter, but passive both-defend counter pressure is not, by itself, a combat
+ * end or a mercy decision.
+ */
+export function isBefriendAttemptEligible(state: CombatState): boolean {
+    return befriendabilityPredicatesPass(state, { requirePassiveCounter: false });
+}
+
+export function isFriendshipEligible(state: CombatState): boolean {
+    return state.friendshipResolutionAuthorized === true;
 }
 
 /** True while combat should continue (both alive and friendship not yet eligible). */

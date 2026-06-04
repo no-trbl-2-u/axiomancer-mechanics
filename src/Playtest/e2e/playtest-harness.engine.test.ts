@@ -34,6 +34,9 @@ describe('Automated playtest harness', () => {
         expect(report.metrics.totalRuns).toBe(4);
         expect(report.metrics.outcomes.victory + report.metrics.outcomes.defeat + report.metrics.outcomes.friendship + report.metrics.outcomes.timeout).toBe(4);
         expect(report.metrics.averageRounds).toBeGreaterThan(0);
+        expect(report.metrics.resolutionSuccessRate).toBe(
+            (report.metrics.outcomes.victory + report.metrics.outcomes.friendship) / report.metrics.totalRuns,
+        );
         expect(report.metrics.policySummaries.map(summary => summary.policy).sort()).toEqual(['aggressive', 'defensive', 'mixed', 'strategist']);
         expect(report.runs[0]).toMatchObject({
             run: 1,
@@ -42,5 +45,45 @@ describe('Automated playtest harness', () => {
             enemy: 'coastal-tyrant',
         });
         expect(report.findings.length).toBeGreaterThan(0);
+    });
+
+    it('drives the mercy policy through Befriend attempts and spare choices', () => {
+        const scenario: PlaytestScenario = {
+            id: 'test-mercy-loop-tidefluke-reaver',
+            description: 'Mercy-loop witness for Befriend and spare choice.',
+            preset: 'sage',
+            enemy: 'tidefluke-reaver',
+            runs: 2,
+            maxRounds: 22,
+            seed: 'playtest-mercy-e2e',
+            policies: ['mercy'],
+        };
+
+        const report = runPlaytestScenario(scenario);
+
+        expect(report.metrics.befriendAttempts).toBeGreaterThan(0);
+        expect(report.metrics.befriendSuccesses).toBeGreaterThan(0);
+        expect(report.metrics.spareChoices).toBeGreaterThan(0);
+        expect(report.metrics.exploitChoices).toBe(0);
+        expect(report.runs.some(run => run.outcome === 'friendship')).toBe(true);
+    });
+
+    it('can witness exploit choices from an opened mercy state', () => {
+        const scenario: PlaytestScenario = {
+            id: 'test-mercy-exploit-loop-tidefluke-reaver',
+            description: 'Mercy-loop witness for exploit choice.',
+            preset: 'sage',
+            enemy: 'tidefluke-reaver',
+            runs: 2,
+            maxRounds: 22,
+            seed: 'playtest-mercy-exploit-e2e',
+            policies: ['mercy-exploit'],
+        };
+
+        const report = runPlaytestScenario(scenario);
+
+        expect(report.metrics.befriendAttempts).toBeGreaterThan(0);
+        expect(report.metrics.befriendSuccesses).toBeGreaterThan(0);
+        expect(report.metrics.exploitChoices).toBeGreaterThan(0);
     });
 });

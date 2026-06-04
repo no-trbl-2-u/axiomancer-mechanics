@@ -414,6 +414,7 @@ export function resolveCombatRound(
     const newCombat = {
         ...state,
         player, enemy, friendshipCounter, combatResources,
+        ...(playerActionFinal === 'spare' ? { friendshipResolutionAuthorized: true } : {}),
         round: state.round + 1,
         log: [...state.log, logEntry],
     };

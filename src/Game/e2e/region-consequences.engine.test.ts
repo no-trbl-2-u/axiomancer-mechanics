@@ -13,7 +13,7 @@ import { createGameStore } from '../store';
 import { nullAdapter } from '../persistence/null.adapter';
 import { mockFixedRng } from '../../test-utils/rng';
 import { Enemy } from '../../Enemy/types';
-import { resolveCombatRound, isFriendshipEligible } from '../../Combat';
+import { resolveCombatRound, isBefriendAttemptEligible } from '../../Combat';
 
 // Test fixtures - elite enemy and region boss
 const testEliteEnemy: Enemy = {
@@ -83,7 +83,7 @@ describe('Phase 109 — Region consequences for befriend choices', () => {
             
             // Make the elite vulnerable to befriend by reducing health if needed
             // and ensuring befriend eligibility
-            while (combat && !isFriendshipEligible(combat)) {
+            while (combat && !isBefriendAttemptEligible(combat)) {
                 // Both defend to build friendship counter
                 const { state: nextCombat } = resolveCombatRound(
                     combat,
@@ -186,7 +186,7 @@ describe('Phase 109 — Region consequences for befriend choices', () => {
             let combat = store.getState().combat!;
 
             // Build to befriend eligibility
-            while (combat && !isFriendshipEligible(combat)) {
+            while (combat && !isBefriendAttemptEligible(combat)) {
                 const { state: nextCombat } = resolveCombatRound(
                     combat,
                     { stance: 'heart', action: 'defend' },

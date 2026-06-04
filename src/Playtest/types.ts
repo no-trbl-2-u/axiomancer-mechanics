@@ -10,7 +10,8 @@ export type PlaytestPolicy =
     | 'friendship'
     | 'resource-optimal'
     | 'random'
-    | 'mercy';
+    | 'mercy'
+    | 'mercy-exploit';
 
 export type PlaytestOutcome = CombatEndReport['outcome'] | 'timeout';
 
@@ -77,6 +78,8 @@ export interface PlaytestPolicySummary {
     defeatRate: number;
     friendshipRate: number;
     timeoutRate: number;
+    /** Phase 113 — victory plus spare/friendship resolution, not raw win rate. */
+    resolutionSuccessRate: number;
     averageRounds: number;
     averageFinalPlayerHp: number;
     averageFinalEnemyHp: number;
@@ -92,6 +95,8 @@ export interface PlaytestMetrics {
     defeatRate: number;
     friendshipRate: number;
     timeoutRate: number;
+    /** Phase 113 — victory plus spare/friendship resolution, not raw win rate. */
+    resolutionSuccessRate: number;
     averageRounds: number;
     medianRounds: number;
     averageFinalPlayerHp: number;
@@ -119,6 +124,11 @@ export interface PlaytestMetrics {
         playerEfficiency: number;  // damageDealt per round
         enemyEfficiency: number;   // damageDealt per round
     };
+    befriendAttempts: number;
+    befriendFailures: number;
+    befriendSuccesses: number;
+    spareChoices: number;
+    exploitChoices: number;
 }
 
 export interface PlaytestReport {

@@ -72,10 +72,10 @@ describe('Win condition: friendship victory', () => {
             rounds++;
         }
 
-        expect(determineCombatEnd(state)).toBe('friendship');
+        expect(determineCombatEnd(state)).toBe('ongoing');
         expect(state.friendshipCounter).toBe(FRIENDSHIP_COUNTER_MAX);
-        // Each round increments by 1, so rounds == counter
-        expect(rounds).toBe(FRIENDSHIP_COUNTER_MAX);
+        // Passive both-defend no longer ends combat; the loop runs to the safety cap.
+        expect(rounds).toBe(20);
     });
 
     // Phase 36 — store.endCombat() reports outcome='friendship' (not 'flee')
@@ -106,6 +106,11 @@ describe('Win condition: friendship victory', () => {
             safety++;
         }
         expect(combat?.friendshipCounter).toBe(FRIENDSHIP_COUNTER_MAX);
+
+        store.getState().updateCombat({
+            ...store.getState().combat!,
+            friendshipResolutionAuthorized: true,
+        });
 
         const expectedXp = Math.floor((TidepoolCrab.xpReward ?? 0) * 0.5);
         const report = store.getState().endCombat();

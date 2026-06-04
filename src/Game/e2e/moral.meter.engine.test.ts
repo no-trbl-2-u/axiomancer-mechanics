@@ -79,11 +79,13 @@ describe('Moral meter system — complete pipeline', () => {
 
         // Drive directly to a friendship outcome — the enemy AI for
         // `TidepoolCrab` is aggressive, so we seed the friendship counter at
-        // its cap rather than depend on both combatants choosing defend.
+        // its cap and explicitly authorize the spare/mercy resolution rather
+        // than depend on both combatants choosing defend.
         const combat = store.getState().combat!;
         store.getState().updateCombat({
             ...combat,
             friendshipCounter: FRIENDSHIP_COUNTER_MAX,
+            friendshipResolutionAuthorized: true,
         });
 
         expect(determineCombatEnd(store.getState().combat!)).toBe('friendship');

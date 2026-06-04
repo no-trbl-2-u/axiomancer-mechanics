@@ -128,6 +128,13 @@ export interface CombatState {
     combatResources: CombatResources;
     /** Phase 108 - when true, indicates a successful Befriend has opened mercy choice state */
     mercyChoiceActive?: boolean;
+    /**
+     * Phase 112 — true only after the player explicitly chooses the spare
+     * mercy action opened by a successful Befriend attempt. Passive
+     * friendship-counter pressure may make an enemy vulnerable, but it no
+     * longer authorizes a friendship combat end by itself.
+     */
+    friendshipResolutionAuthorized?: boolean;
 }
 
 /**

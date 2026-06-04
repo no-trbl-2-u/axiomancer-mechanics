@@ -25,11 +25,15 @@ describe('Phase 73 — codex / journal-entry surface', () => {
 
     it('befriending MournfulGull unlocks codex entry + surfaces { id, title } on report', () => {
         const store = createGameStore(nullAdapter);
-        // Drive a synthetic friendship outcome: cap friendshipCounter,
-        // then endCombat.
+        // Drive a synthetic friendship outcome: cap friendshipCounter and
+        // explicitly authorize the spare/mercy resolution, then endCombat.
         store.getState().startCombat(MournfulGull);
         const combat = store.getState().combat!;
-        store.getState().updateCombat({ ...combat, friendshipCounter: 10 });
+        store.getState().updateCombat({
+            ...combat,
+            friendshipCounter: 10,
+            friendshipResolutionAuthorized: true,
+        });
         const report = store.getState().endCombat();
         expect(report.outcome).toBe('friendship');
         expect(store.getState().codex.unlockedEntries).toContain('codex-mournful-gull');
@@ -50,7 +54,11 @@ describe('Phase 73 — codex / journal-entry surface', () => {
         const store = createGameStore(nullAdapter);
         store.getState().startCombat(TidepoolCrab);
         const combat = store.getState().combat!;
-        store.getState().updateCombat({ ...combat, friendshipCounter: 10 });
+        store.getState().updateCombat({
+            ...combat,
+            friendshipCounter: 10,
+            friendshipResolutionAuthorized: true,
+        });
         const report = store.getState().endCombat();
         expect(report.outcome).toBe('friendship');
         expect(store.getState().codex.unlockedEntries).toEqual([]);
