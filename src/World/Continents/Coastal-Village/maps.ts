@@ -392,16 +392,44 @@ const northernForest: MapDefinition = {
         connectedNodes: ['nf-2', 'nf-3'],
     },
     nodes: [
+        // Existing spine (preserved)
         { id: 'nf-1',  location: [0, 0], connectedNodes: ['nf-2', 'nf-3'] },
         { id: 'nf-2',  location: [1, 0], connectedNodes: ['nf-4'] },
-        { id: 'nf-3',  location: [1, 1], connectedNodes: ['nf-5'] },
+        { id: 'nf-3',  location: [1, 1], connectedNodes: ['nf-5', 'nf-12'] },
         { id: 'nf-4',  location: [2, 0], connectedNodes: ['nf-6'] },
-        { id: 'nf-5',  location: [2, 1], connectedNodes: ['nf-6'] },
-        { id: 'nf-6',  location: [3, 0], connectedNodes: ['nf-7'] },
-        { id: 'nf-7',  location: [4, 0], connectedNodes: ['nf-8'] },
-        { id: 'nf-8',  location: [5, 0], connectedNodes: ['nf-9'] },
-        { id: 'nf-9',  location: [6, 0], connectedNodes: ['nf-10'] },
+        { id: 'nf-5',  location: [2, 1], connectedNodes: ['nf-6', 'nf-20'] },
+        { id: 'nf-6',  location: [3, 0], connectedNodes: ['nf-7', 'nf-15'] },
+        { id: 'nf-7',  location: [4, 0], connectedNodes: ['nf-8', 'nf-11'] },
+        { id: 'nf-8',  location: [5, 0], connectedNodes: ['nf-9', 'nf-18'] },
+        { id: 'nf-9',  location: [6, 0], connectedNodes: ['nf-10', 'nf-22'] },
         { id: 'nf-10', location: [7, 0], connectedNodes: [] },
+        
+        // Mist Ridge sub-area
+        { id: 'nf-11', location: [4, -1], connectedNodes: ['nf-7'] },
+        
+        // Glen Path sub-area
+        { id: 'nf-12', location: [1, -1], connectedNodes: ['nf-3', 'nf-13', 'nf-20'] },
+        { id: 'nf-13', location: [2, -1], connectedNodes: ['nf-12', 'nf-14'] },
+        { id: 'nf-14', location: [3, -1], connectedNodes: ['nf-13'] },
+        
+        // Bone Hollow sub-area
+        { id: 'nf-15', location: [3, 1], connectedNodes: ['nf-6', 'nf-16'] },
+        { id: 'nf-16', location: [4, 1], connectedNodes: ['nf-15', 'nf-17'] },
+        { id: 'nf-17', location: [5, 1], connectedNodes: ['nf-16'] },
+        
+        // Mist Ridge continued
+        { id: 'nf-18', location: [5, -1], connectedNodes: ['nf-8', 'nf-19'] },
+        { id: 'nf-19', location: [6, -1], connectedNodes: ['nf-18'] },
+        
+        // Glen Path lower branch
+        { id: 'nf-20', location: [1, -2], connectedNodes: ['nf-5', 'nf-12', 'nf-21'] },
+        { id: 'nf-21', location: [2, -2], connectedNodes: ['nf-20'] },
+        
+        // Mist Ridge east
+        { id: 'nf-22', location: [6, 0], connectedNodes: ['nf-9', 'nf-23'] },
+        { id: 'nf-23', location: [7, 0], connectedNodes: ['nf-22', 'nf-24'] },
+        { id: 'nf-24', location: [7, -1], connectedNodes: ['nf-23', 'nf-25'] },
+        { id: 'nf-25', location: [8, -1], connectedNodes: ['nf-24'] },
     ],
     npcs: [shrineKeeper, chronicler, wanderingPhilosopher],
     enemies: [],
