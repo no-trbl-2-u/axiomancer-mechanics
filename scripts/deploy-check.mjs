@@ -97,7 +97,14 @@ function readTopChangelogVersion() {
 const latestTag = readLatestGitTag()
 const { version: topChangelogVersion, headingRaw: topChangelogHeading } = readTopChangelogVersion()
 
-if (latestTag && topChangelogVersion) {
+// Phase 52 guard runs on direct pushes to main and local invocations.
+// PRs are pre-release — no tag has been cut yet for the in-flight work,
+// and the nearest reachable ancestor tag may legitimately lag the CHANGELOG
+// heading. Skipping avoids false failures when a remote tag points to a
+// rebased-away commit.
+const isPullRequest = process.env.GITHUB_EVENT_NAME === 'pull_request'
+
+if (!isPullRequest && latestTag && topChangelogVersion) {
   // Normalise the tag — `v0.10.0` → `0.10.0`.
   const normalisedTag = latestTag.replace(/^v/, '')
   if (normalisedTag !== topChangelogVersion) {
