@@ -87,13 +87,13 @@ describe('northern-forest content (Phase 24)', () => {
         const expected: Array<[string, string]> = [
             ['nf-1',  'cutscene'],
             ['nf-2',  'gathering'],
-            ['nf-3',  'hazard'],
+            ['nf-3',  'interaction'], // Phase 115: Shrine Keeper NPC
             ['nf-4',  'rest'],
-            ['nf-5',  'loot-cache'],
+            ['nf-5',  'interaction'], // Phase 115: Chronicler NPC
             ['nf-6',  'encounter'],
             ['nf-7',  'interaction'],
             ['nf-8',  'village'],
-            ['nf-9',  'encounter'],
+            ['nf-9',  'interaction'], // Phase 115: Wandering Philosopher NPC
             ['nf-10', 'cutscene'],
         ];
 

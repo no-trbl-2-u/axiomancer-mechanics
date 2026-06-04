@@ -224,7 +224,7 @@ const fvQuaysideChapel: MapEventPool = {
     }],
 };
 
-const fvTidePools: MapEventPool = {
+const _fvTidePools: MapEventPool = {
     id: 'fv-14.gathering',
     entries: [{
         kind: 'gathering', weight: 1,
@@ -253,7 +253,7 @@ const fvGullCrag: MapEventPool = {
     }],
 };
 
-const fvTownWell: MapEventPool = {
+const _fvTownWell: MapEventPool = {
     id: 'fv-16.rest',
     entries: [{
         kind: 'rest', weight: 1,
@@ -432,7 +432,7 @@ const nfWoodGather: MapEventPool = {
     }],
 };
 
-const nfThorns: MapEventPool = {
+const _nfThorns: MapEventPool = {
     id: 'nf-3.hazard',
     entries: [{
         kind: 'hazard', weight: 1,
@@ -460,7 +460,7 @@ const nfSpring: MapEventPool = {
     }],
 };
 
-const nfBuriedCache: MapEventPool = {
+const _nfBuriedCache: MapEventPool = {
     id: 'nf-5.loot-cache',
     entries: [{
         kind: 'loot-cache', weight: 1,
@@ -518,7 +518,7 @@ const nfForestMarket: MapEventPool = {
     }],
 };
 
-const nfCrow: MapEventPool = {
+const _nfCrow: MapEventPool = {
     id: 'nf-9.encounter',
     entries: [{
         kind: 'encounter', weight: 1,
@@ -549,6 +549,71 @@ const nfCaveMouth: MapEventPool = {
     }],
 };
 
+// ─── Phase 115 — Story Content NPCs interaction pools ────────────────────────
+
+const fvCaptainBlackwater: MapEventPool = {
+    id: 'fv-14.interaction',
+    entries: [{
+        kind: 'interaction', weight: 1,
+        payload: {
+            kind: 'interaction',
+            npcName: 'Captain Blackwater',
+            description: 'Captain Blackwater tallies cargo manifests at the trading docks.',
+        },
+    }],
+};
+
+const fvFishermansDaughter: MapEventPool = {
+    id: 'fv-16.interaction',
+    entries: [{
+        kind: 'interaction', weight: 1,
+        payload: {
+            kind: 'interaction',
+            npcName: "Fisherman's Daughter",
+            description: 'The fisherman\'s daughter tends nets, her eyes bright with curiosity.',
+        },
+    }],
+};
+
+const nfShrineKeeper: MapEventPool = {
+    id: 'nf-3.interaction',
+    entries: [{
+        kind: 'interaction', weight: 1,
+        payload: {
+            kind: 'interaction',
+            npcName: 'Shrine Keeper',
+            description: 'The Shrine Keeper tends ancient carved stones among the forest growth.',
+        },
+        alignmentDelta: { epistemology: 1, scope: 1 },
+    }],
+};
+
+const nfChronicler: MapEventPool = {
+    id: 'nf-5.interaction',
+    entries: [{
+        kind: 'interaction', weight: 1,
+        payload: {
+            kind: 'interaction',
+            npcName: 'The Chronicler',
+            description: 'The Chronicler sits surrounded by leather-bound tomes and parchments.',
+        },
+        alignmentDelta: { epistemology: 1 },
+    }],
+};
+
+const nfWanderingPhilosopher: MapEventPool = {
+    id: 'nf-9.interaction',
+    entries: [{
+        kind: 'interaction', weight: 1,
+        payload: {
+            kind: 'interaction',
+            npcName: 'The Wandering Philosopher',
+            description: 'A contemplative figure in simple robes sits among the trees.',
+        },
+        alignmentDelta: { epistemology: 1, scope: 1 },
+    }],
+};
+
 // ─── register everything on module load ───────────────────────────────────────
 
 const FISHING_VILLAGE_POOLS: ReadonlyArray<{ nodeId: string; pool: MapEventPool }> = [
@@ -567,10 +632,10 @@ const FISHING_VILLAGE_POOLS: ReadonlyArray<{ nodeId: string; pool: MapEventPool 
     { nodeId: 'fv-11', pool: fvFishmongerRow },
     { nodeId: 'fv-12', pool: fvFerrySlip     },
     { nodeId: 'fv-13', pool: fvQuaysideChapel },
-    { nodeId: 'fv-14', pool: fvTidePools     },
+    { nodeId: 'fv-14', pool: fvCaptainBlackwater },
     { nodeId: 'fv-15', pool: fvGullCrag      },
     // Inland streets (Phase 65)
-    { nodeId: 'fv-16', pool: fvTownWell      },
+    { nodeId: 'fv-16', pool: fvFishermansDaughter },
     { nodeId: 'fv-17', pool: fvSmokehouse    },
     { nodeId: 'fv-18', pool: fvBackAlley     },
     { nodeId: 'fv-19', pool: fvAbandonedShack },
@@ -586,13 +651,13 @@ const FISHING_VILLAGE_POOLS: ReadonlyArray<{ nodeId: string; pool: MapEventPool 
 const NORTHERN_FOREST_POOLS: ReadonlyArray<{ nodeId: string; pool: MapEventPool }> = [
     { nodeId: 'nf-1',  pool: nfCutscene     },
     { nodeId: 'nf-2',  pool: nfWoodGather   },
-    { nodeId: 'nf-3',  pool: nfThorns       },
+    { nodeId: 'nf-3',  pool: nfShrineKeeper },
     { nodeId: 'nf-4',  pool: nfSpring       },
-    { nodeId: 'nf-5',  pool: nfBuriedCache  },
+    { nodeId: 'nf-5',  pool: nfChronicler   },
     { nodeId: 'nf-6',  pool: nfSprite       },
     { nodeId: 'nf-7',  pool: nfHermit       },
     { nodeId: 'nf-8',  pool: nfForestMarket },
-    { nodeId: 'nf-9',  pool: nfCrow         },
+    { nodeId: 'nf-9',  pool: nfWanderingPhilosopher },
     { nodeId: 'nf-10', pool: nfCaveMouth    },
 ];
 
