@@ -43,6 +43,9 @@ jobs:
           # `git describe --tags --abbrev=0` to validate the
           # tag/CHANGELOG agreement (Phase 52 unit 2).
           fetch-depth: 0
+          # actions/checkout@v4 uses --no-tags internally even with
+          # fetch-depth: 0; fetch-tags: true forces all remote tags down.
+          fetch-tags: true
 
       - name: Setup Node
         uses: actions/setup-node@v4
