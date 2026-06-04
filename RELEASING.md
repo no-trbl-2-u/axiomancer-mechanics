@@ -1,8 +1,12 @@
 # Releasing `axiomancer-mechanics`
 
-> The manual publish flow. The autonomous-beast loop never publishes
-> on its own; tags are user-triggered and `npm publish` is a
-> deliberate, attended step.
+> **Tag pushing** can be performed by Claude when the user explicitly
+> authorises it ("go ahead and push the missing tags" or similar).
+> Claude creates annotated tags at the correct release commits and
+> pushes them to origin.
+>
+> **`npm publish`** remains a deliberate, attended, user-triggered
+> step — Claude never runs it autonomously.
 
 ## Pre-release checklist
 
@@ -52,6 +56,7 @@ git add package.json package-lock.json CHANGELOG.md
 git commit -m "release: <version>"
 
 # 4. Tag (annotated, signed if you've set up `commit.gpgsign`).
+#    Claude can do steps 4–5 when explicitly authorised by the user.
 git tag -a v<version> -m "<short topline of what shipped>"
 
 # 5. Push the commit + tag.
