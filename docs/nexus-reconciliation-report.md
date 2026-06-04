@@ -12,8 +12,10 @@
 - `skills/oversight.md` — Oversight command skill (accessible, enhanced)
 
 **External State Files:**
-- `~/Workspace/SOMBERSOFT_COMMAND_LEDGER.md` — Central ledger (not accessible)
-- `~/Workspace/reports/` — Historical reports directory (not accessible)
+- `~/Workspace/decisions/` — Company CDRs (now required in hierarchy)
+- `docs/adr/` — Repo ADRs (now required in hierarchy)
+- `~/Workspace/SOMBERSOFT_COMMAND_LEDGER.md` — Central ledger
+- `~/Workspace/reports/` — Historical reports directory
 
 ### Drift Found
 
@@ -37,24 +39,23 @@
 
 **Documentation Added:**
 - Formal Glanton Nexus source-of-truth law documented in both march and oversight skills
-- 6-layer hierarchy: T decisions → Central ledger → Build plan → Phase candidates → Critique/audit → Historical reports
+- 2026-06-04 cleanup: hierarchy updated to 7 layers: T decisions → CDRs/ADRs → Central ledger → Build plan → Phase candidates → Critique/audit → Historical reports
+- Dedicated source-of-truth doc added at `docs/source-of-truth-hierarchy.md`
 
 ### Unresolved Conflicts
 
 **Access Limitations:**
-- Cannot access `~/Workspace/SOMBERSOFT_COMMAND_LEDGER.md` to verify central ledger alignment
-- Cannot access `~/Workspace/reports/` to write reconciliation report in specified location
+- Original Phase 105 worker reported it could not access root workspace files; later Glanton cleanup had access and reconciled the hierarchy layer.
 
 **Workaround Applied:**
-- Created this report in `docs/nexus-reconciliation-report.md` as accessible alternative
-- Enhanced local skills to reference external state hierarchy they should respect
+- This report remains a historical Phase 105 artifact; current marching law lives in `docs/source-of-truth-hierarchy.md` and the repo skills.
 
 ### March Safety Assessment
 
 **✅ /march is SAFE to resume** with the following improvements:
 
 1. **Enhanced Preflight:** March now includes comprehensive state-sanity preflight per Phase 105
-2. **Decision Hierarchy:** Both march and oversight now reference formal 6-layer source-of-truth law
+2. **Decision Hierarchy:** Both march and oversight now reference formal 7-layer source-of-truth law
 3. **Sync Checklist:** Oversight has expanded decision-sync checklist to prevent state drift
 4. **Drift Detection:** Workers will now surface contradictions rather than execute with stale state
 

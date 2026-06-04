@@ -10,11 +10,12 @@
 > Nexus source-of-truth law (Phase 105) before returning to `/march`:
 >
 > 1. T's latest explicit decision.
-> 2. Central SomberSoft ledger (`~/Workspace/SOMBERSOFT_COMMAND_LEDGER.md`).
-> 3. Active build plan (`plan/steps/01_build_plan.md`).
-> 4. Phase candidates (`plan/PHASE_CANDIDATES.md`).
-> 5. Critique/audit logs (`plan/CRITIQUE.md`, `plan/AUDIT.md`).
-> 6. Historical reports (`~/Workspace/reports/`).
+> 2. CDRs / ADRs (`~/Workspace/decisions/`, `docs/adr/`).
+> 3. Central SomberSoft ledger (`~/Workspace/SOMBERSOFT_COMMAND_LEDGER.md`).
+> 4. Active build plan (`plan/steps/01_build_plan.md`).
+> 5. Phase candidates (`plan/PHASE_CANDIDATES.md`).
+> 6. Critique/audit logs (`plan/CRITIQUE.md`, `plan/AUDIT.md`).
+> 7. Historical reports (`~/Workspace/reports/`).
 >
 > Sync decisions down the hierarchy and stop if contradictions remain.
 
@@ -184,7 +185,7 @@ oversight complete. <N> adjustments applied.
 Before handing back to `/march`, verify state consistency per the source-of-truth hierarchy:
 
 - [ ] **T decisions synced:** Latest explicit T decisions are reflected in local plan files.
-- [ ] **Central ledger aligned:** Central SomberSoft ledger doctrine is mirrored into local operational files.
+- [ ] **Central ledger aligned:** CDR/ADR doctrine and central SomberSoft ledger law are mirrored into local operational files.
 - [ ] **Deferred work marked:** Newly deferred work is marked `[deferred]` everywhere it appears (build plan, candidates, critique rows).
 - [ ] **Promoted candidates moved:** Candidates promoted to phases are moved/annotated in `PHASE_CANDIDATES.md` and added to build plan.
 - [ ] **Shipped phases drained:** Completed phases drain or annotate matching critique/audit rows with resolution notes.

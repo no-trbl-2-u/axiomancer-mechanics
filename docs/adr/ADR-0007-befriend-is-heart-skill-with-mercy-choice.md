@@ -1,6 +1,6 @@
 # ADR-0007 — Befriend is a heart skill with a mercy choice
 
-- Status: Proposed for Phase 107 mechanics-change implementation
+- Status: Accepted; implemented across mechanics Phases 108–110, with follow-up needed to remove legacy passive friendship bypasses
 - Date: 2026-06-02
 - Supersedes: none
 - Related: `~/Workspace/decisions/CDR-0005-axiomancer-befriend-skill-and-mercy-choice.md`, ADR-0003 difficult befriending requires HP pressure
@@ -11,7 +11,7 @@ Phase 107 balance evidence shows that parameter tuning alone improved ordinary v
 
 T's doctrine is that befriending should be difficult, consequential, and content-bearing. Defend should be used when the player fears a large attack, wants to generate resources, or wants to pursue befriending — not as a free bunker. Combat remains status/resource/skill centered.
 
-## Decision candidate
+## Decision
 
 Keep the HP gate, but move friendship initiation into an explicit skill path:
 
@@ -23,7 +23,7 @@ Keep the HP gate, but move friendship initiation into an explicit skill path:
    - exploit the opening for a free guaranteed critical attack.
 5. The exploit option is not neutral flavor. It should be tracked as an ethically meaningful act and may affect alignment, future content, enemy state, or narrative consequence.
 
-## Anti-exploit rule candidate
+## Anti-exploit rule
 
 To prevent the exploit/free-critical choice from becoming a pure damage engine:
 
@@ -36,7 +36,7 @@ Preserve but do not implement by default yet: status effects modifying Befriend 
 
 ## Mechanics obligations
 
-Implementation should expose:
+Implementation exposes or must preserve:
 
 - starting-character Befriend access;
 - heart-token cost or held-token threshold;
@@ -58,7 +58,7 @@ Do not declare friendship sound merely because one boss can be spared. Phase 107
 - defensive-only dominance remains a pathology;
 - friendship should carry consequence and exclusive content, not become optimal pacifist loot farming.
 
-## Open questions before implementation
+## Remaining open questions
 
 - Is 5 heart paid on attempt or only required to attempt?
 - Does a failed attempt spend heart tokens?

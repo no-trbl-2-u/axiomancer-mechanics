@@ -16,7 +16,8 @@ See [`RELEASES.md`](./RELEASES.md) for short-form per-version
 summaries (at-a-glance "what shipped in 0.X.Y?"),
 [`CHANGELOG.md`](./CHANGELOG.md) for the full per-phase detail per
 release, [`RELEASING.md`](./RELEASING.md) for the publish flow +
-deprecation lifecycle policy, and [`docs/adr/`](./docs/adr/) for durable
+deprecation lifecycle policy, [`docs/source-of-truth-hierarchy.md`](./docs/source-of-truth-hierarchy.md)
+for Nexus state reconciliation law, and [`docs/adr/`](./docs/adr/) for durable
 architecture and product decisions that govern mechanics work.
 
 ---
@@ -165,6 +166,7 @@ automation/                # standalone walkthrough script + replay fixtures
 ## Documentation
 
 - [`plan/steps/01_build_plan.md`](./plan/steps/01_build_plan.md) — phased development plan with progress tracking
+- [`docs/source-of-truth-hierarchy.md`](./docs/source-of-truth-hierarchy.md) — Nexus hierarchy for resolving T decisions, CDRs/ADRs, central ledger, build plans, candidates, critique/audit, and reports
 - [`plan/AUDIT.md`](./plan/AUDIT.md) — code audit and quality findings (drained by `/iterate`)
 - [`plan/CRITIQUE.md`](./plan/CRITIQUE.md) — architecture / quality findings filed by `/critique`
 - [`Knowledge-Gaps.md`](./Knowledge-Gaps.md) — open design and intent questions

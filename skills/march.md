@@ -8,11 +8,12 @@
 > Glanton Nexus source-of-truth law (Phase 105):
 >
 > 1. T's latest explicit decision.
-> 2. Central SomberSoft ledger (`~/Workspace/SOMBERSOFT_COMMAND_LEDGER.md`).
-> 3. Active build plan (`plan/steps/01_build_plan.md`).
-> 4. Phase candidates (`plan/PHASE_CANDIDATES.md`).
-> 5. Critique/audit logs (`plan/CRITIQUE.md`, `plan/AUDIT.md`).
-> 6. Historical reports (`~/Workspace/reports/`).
+> 2. CDRs / ADRs (`~/Workspace/decisions/`, `docs/adr/`).
+> 3. Central SomberSoft ledger (`~/Workspace/SOMBERSOFT_COMMAND_LEDGER.md`).
+> 4. Active build plan (`plan/steps/01_build_plan.md`).
+> 5. Phase candidates (`plan/PHASE_CANDIDATES.md`).
+> 6. Critique/audit logs (`plan/CRITIQUE.md`, `plan/AUDIT.md`).
+> 7. Historical reports (`~/Workspace/reports/`).
 >
 > Stop if lower command state contradicts higher decision law.
 
@@ -54,10 +55,10 @@ If divergence, stop per §5.
 Before dispatch, check for obvious command drift per the source-of-truth hierarchy:
 
 - **Deferred rows excluded:** `[deferred]` rows must not be selected as pending work.
-- **Phase-plan consistency:** Top pending phase must not contradict newer T decisions, central ledger entries, or build-plan annotations.
+- **Phase-plan consistency:** Top pending phase must not contradict newer T decisions, CDRs/ADRs, central ledger entries, or build-plan annotations.
 - **Shipped-pending conflicts:** No phase must be both `[x]` shipped and `[ ]` pending simultaneously.
 - **Critique/audit staleness:** Shipped-but-still-pending critique/audit rows must be surfaced as ledger drift before worker execution.
-- **Decision layer coherence:** Central ledger, active build plan, and phase candidates must not contradict each other on core scope/priority decisions.
+- **Decision layer coherence:** CDRs/ADRs, central ledger, active build plan, and phase candidates must not contradict each other on core scope/priority decisions.
 - **Historical drift detection:** Recently shipped phases must have corresponding commit hashes and status updates in the build plan.
 
 If any drift is detected, stop execution and surface the contradiction for `/oversight` or Glanton reconciliation rather than proceeding with stale command state.
