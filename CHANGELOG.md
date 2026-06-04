@@ -16,6 +16,8 @@ deep imports are part of the supported surface.
 
 ### Changed
 
+- **Phase 117** — Northern-forest expansion: grow `northern-forest` map from 10 to 25 nodes with 3 thematic sub-areas (Glen Path, Bone Hollow, Mist Ridge). Preserves existing nf-1..nf-10 structure while adding 15 new nodes with comprehensive MapEventPool coverage. Features 2 dead-ends and 1 small loop.
+
 ### Deprecated
 
 ### Removed

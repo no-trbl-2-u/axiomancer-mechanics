@@ -339,3 +339,76 @@ describe('Phase 65 — expanded fishing-village layout', () => {
         }
     });
 });
+
+describe('Phase 117 — expanded northern-forest layout', () => {
+    const nf = () => getMapDefinition('coastal-continent', 'northern-forest');
+
+    it('grows from 10 to 25 nodes (existing structure + 3 sub-areas)', () => {
+        expect(nf().nodes.length).toBe(25);
+    });
+
+    it('preserves existing nf-1..nf-10 structure', () => {
+        const map = nf();
+        // Verify the existing fork-and-rejoin pattern is intact
+        const nf1 = map.nodes.find(n => n.id === 'nf-1')!;
+        const nf6 = map.nodes.find(n => n.id === 'nf-6')!;
+        expect(nf1.connectedNodes).toContain('nf-2');
+        expect(nf1.connectedNodes).toContain('nf-3');
+        expect(nf6.connectedNodes).toContain('nf-7');
+    });
+
+    it('nf-3 branches to glen path via nf-12', () => {
+        const map = nf();
+        const nf3 = map.nodes.find(n => n.id === 'nf-3')!;
+        expect(nf3.connectedNodes).toContain('nf-12');
+    });
+
+    it('nf-17 (bone circle) is a dead-end via nf-16', () => {
+        const map = nf();
+        const nf17 = map.nodes.find(n => n.id === 'nf-17')!;
+        expect(nf17.connectedNodes).toEqual(['nf-16']);
+    });
+
+    it('nf-21 (ranger cairn) is a dead-end via nf-20', () => {
+        const map = nf();
+        const nf21 = map.nodes.find(n => n.id === 'nf-21')!;
+        expect(nf21.connectedNodes).toEqual(['nf-20']);
+    });
+
+    it('nf-24 ↔ nf-25 small loop in the mist ridge sub-area', () => {
+        const map = nf();
+        const nf24 = map.nodes.find(n => n.id === 'nf-24')!;
+        const nf25 = map.nodes.find(n => n.id === 'nf-25')!;
+        // Loop: nf-24 → nf-25 and nf-25 → nf-24 (bidirectional).
+        expect(nf24.connectedNodes).toContain('nf-25');
+        expect(nf25.connectedNodes).toContain('nf-24');
+    });
+
+    it('all 25 nodes have a registered MapEventPool', () => {
+        // Drive resolveMapEvent against each node id; expect every one to
+        // surface a non-null event (i.e. the registered pool fired).
+        const map = nf();
+        for (const node of map.nodes) {
+            const state = createNewGameState();
+            state.world = {
+                ...state.world,
+                currentMapName: 'northern-forest',
+                currentMap: {
+                    ...state.world.currentMap,
+                    mapName: 'northern-forest',
+                    continent: 'coastal-continent',
+                    state: {
+                        ...state.world.currentMap.state,
+                        currentNodeId: node.id,
+                        availableNodes: [node.id],
+                        discoveredNodes: [node.id],
+                        consumedNodes: [],
+                    },
+                },
+            };
+            const result = resolveMapEvent(state);
+            expect(result.event, `nf ${node.id} should have a registered pool`).not.toBeNull();
+        }
+    });
+
+});

@@ -258,9 +258,12 @@ All 8 `MapEventKind` values are represented multiple times across the
 25 nodes (5 cutscene / 2 village / 2 interaction / 3 gathering / 4
 encounter / 3 loot-cache / 4 rest / 2 hazard).
 
-`northern-forest` is a smaller 10-node branching map (2-way fork at
-nf-1 joining at nf-6); a future content phase can densify it to match
-the fishing-village shape.
+`northern-forest` expanded from a 10-node branching pattern to a
+25-node multi-area layout in **Phase 117**. The original fork-and-rejoin
+structure (nf-1 splits to nf-2/nf-3, rejoins at nf-6) is preserved,
+with three new sub-areas: Glen Path (forest floor), Bone Hollow
+(ancient themes), and Mist Ridge (elevated mystical). Features 2
+dead-ends (nf-17, nf-21) and 1 small loop (nf-24 ↔ nf-25).
 
 ## Bootstrap
 
