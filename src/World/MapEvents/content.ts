@@ -614,6 +614,219 @@ const nfWanderingPhilosopher: MapEventPool = {
     }],
 };
 
+// ─── Phase 117 northern-forest expansion pools ────────────────────────────────
+const nfMossyClearing: MapEventPool = {
+    id: 'nf-11.rest',
+    entries: [{
+        kind: 'rest', weight: 1,
+        payload: {
+            kind: 'rest',
+            healFraction: 0.75,
+            description: 'A mossy clearing with a fallen log that serves as a natural bench.',
+        },
+        alignmentDelta: { scope: 1 },
+    }],
+};
+
+const nfDenseThicket: MapEventPool = {
+    id: 'nf-12.encounter',
+    entries: [{
+        kind: 'encounter', weight: 1,
+        payload: {
+            kind: 'encounter',
+            enemySlug: 'thorned-sentinel',
+            isBoss: false,
+            description: 'Dense thickets block the way; something large and thorned moves within.',
+        },
+    }],
+};
+
+const nfBerryBushes: MapEventPool = {
+    id: 'nf-13.gathering',
+    entries: [{
+        kind: 'gathering', weight: 1,
+        payload: {
+            kind: 'gathering',
+            items: [{
+                id: 'dark-berries', name: 'Dark Berries',
+                description: 'Plump and sweet, with a hint of bitterness.',
+                category: 'material', quantity: 2,
+            }],
+            description: 'Berry bushes heavy with dark fruit. You gather what you can.',
+        },
+    }],
+};
+
+const nfStoneMarker: MapEventPool = {
+    id: 'nf-14.interaction',
+    entries: [{
+        kind: 'interaction', weight: 1,
+        payload: {
+            kind: 'interaction',
+            npcName: 'Ancient Stone Marker',
+            description: 'An old stone marker left by previous travelers. Carved runes mark the way forward.',
+        },
+    }],
+};
+
+const nfBrambleTrap: MapEventPool = {
+    id: 'nf-15.hazard',
+    entries: [{
+        kind: 'hazard', weight: 1,
+        payload: {
+            kind: 'hazard',
+            damage: 1,
+            description: 'Hidden brambles catch at your feet and tear at exposed skin.',
+        },
+        alignmentDelta: { outlook: -1 },
+    }],
+};
+
+const nfHuntersCache: MapEventPool = {
+    id: 'nf-16.loot-cache',
+    entries: [{
+        kind: 'loot-cache', weight: 1,
+        payload: {
+            kind: 'loot-cache',
+            currency: 10,
+            description: 'An old hunter\'s cache buried beneath gnarled roots.',
+        },
+    }],
+};
+
+const nfBoneCircle: MapEventPool = {
+    id: 'nf-17.cutscene',
+    entries: [{
+        kind: 'cutscene', weight: 1,
+        payload: {
+            kind: 'cutscene',
+            lines: [
+                'Ancient bones are scattered in a perfect circle beneath the canopy.',
+                'Time has bleached them white, but their arrangement speaks of purpose.',
+                'Something old and final happened here.'
+            ],
+            description: 'A circle of ancient bones in the hollow.',
+        },
+        alignmentDelta: { epistemology: -2, scope: -1 },
+    }],
+};
+
+const nfHerbTrader: MapEventPool = {
+    id: 'nf-18.village',
+    entries: [{
+        kind: 'village', weight: 1,
+        payload: {
+            kind: 'village',
+            villageName: 'Hidden Camp',
+            merchants: [{ name: 'Herb Trader', isShopkeeper: true }],
+            shop: {
+                wares: [
+                    { itemId: 'minor-healing-potion', price: 10 },
+                    { itemId: 'antidote',             price: 15 },
+                    { itemId: 'clarity-serum',        price: 25 },
+                ],
+            },
+            description: 'A herb trader\'s carefully hidden camp among the mist-shrouded trees.',
+        },
+    }],
+};
+
+const nfShadowWolfTerritory: MapEventPool = {
+    id: 'nf-19.encounter',
+    entries: [{
+        kind: 'encounter', weight: 1,
+        payload: {
+            kind: 'encounter',
+            enemySlug: 'mistwalker-shade',
+            isBoss: false,
+            description: 'A shadowy form drifts between the mist-wreathed trees.',
+        },
+    }],
+};
+
+const nfAxeHead: MapEventPool = {
+    id: 'nf-20.loot-cache',
+    entries: [{
+        kind: 'loot-cache', weight: 1,
+        payload: {
+            kind: 'loot-cache',
+            currency: 8,
+            description: 'A woodcutter\'s forgotten axe head, still sharp beneath the rust.',
+        },
+    }],
+};
+
+const nfRangerCairn: MapEventPool = {
+    id: 'nf-21.cutscene',
+    entries: [{
+        kind: 'cutscene', weight: 1,
+        payload: {
+            kind: 'cutscene',
+            lines: [
+                'A careful stack of stones marks this quiet spot.',
+                'Someone is buried here — a ranger who never came home.'
+            ],
+            description: 'A memorial cairn for a lost ranger.',
+        },
+        alignmentDelta: { outlook: -1, epistemology: 1 },
+    }],
+};
+
+const nfMoonbellFlowers: MapEventPool = {
+    id: 'nf-22.gathering',
+    entries: [{
+        kind: 'gathering', weight: 1,
+        payload: {
+            kind: 'gathering',
+            items: [{
+                id: 'moonbell-petals', name: 'Moonbell Petals',
+                description: 'Silvery petals that glow with their own light.',
+                category: 'material', quantity: 1,
+            }],
+            description: 'Rare moonbell flowers bloom in silver clusters, their petals glowing faintly.',
+        },
+    }],
+};
+
+const nfEchoStone: MapEventPool = {
+    id: 'nf-23.interaction',
+    entries: [{
+        kind: 'interaction', weight: 1,
+        payload: {
+            kind: 'interaction',
+            npcName: 'Echo Stone',
+            description: 'A smooth stone formation that echoes back whispered words with perfect clarity.',
+        },
+        alignmentDelta: { epistemology: 1 },
+    }],
+};
+
+const nfHiddenGrove: MapEventPool = {
+    id: 'nf-24.rest',
+    entries: [{
+        kind: 'rest', weight: 1,
+        payload: {
+            kind: 'rest',
+            healFraction: 1.0,
+            description: 'A hidden grove surrounds a natural spring. The water runs clear and cold.',
+        },
+        alignmentDelta: { scope: 2 },
+    }],
+};
+
+const nfMistPools: MapEventPool = {
+    id: 'nf-25.hazard',
+    entries: [{
+        kind: 'hazard', weight: 1,
+        payload: {
+            kind: 'hazard',
+            damage: 2,
+            description: 'Thick pools of mist swirl and eddy, confusing your sense of direction.',
+        },
+        alignmentDelta: { epistemology: -1 },
+    }],
+};
+
 // ─── register everything on module load ───────────────────────────────────────
 
 const FISHING_VILLAGE_POOLS: ReadonlyArray<{ nodeId: string; pool: MapEventPool }> = [
@@ -649,6 +862,7 @@ const FISHING_VILLAGE_POOLS: ReadonlyArray<{ nodeId: string; pool: MapEventPool 
 ];
 
 const NORTHERN_FOREST_POOLS: ReadonlyArray<{ nodeId: string; pool: MapEventPool }> = [
+    // Existing pools (preserved)
     { nodeId: 'nf-1',  pool: nfCutscene     },
     { nodeId: 'nf-2',  pool: nfWoodGather   },
     { nodeId: 'nf-3',  pool: nfShrineKeeper },
@@ -659,6 +873,22 @@ const NORTHERN_FOREST_POOLS: ReadonlyArray<{ nodeId: string; pool: MapEventPool 
     { nodeId: 'nf-8',  pool: nfForestMarket },
     { nodeId: 'nf-9',  pool: nfWanderingPhilosopher },
     { nodeId: 'nf-10', pool: nfCaveMouth    },
+    // Phase 117 expansion pools
+    { nodeId: 'nf-11', pool: nfMossyClearing    },
+    { nodeId: 'nf-12', pool: nfDenseThicket     },
+    { nodeId: 'nf-13', pool: nfBerryBushes      },
+    { nodeId: 'nf-14', pool: nfStoneMarker      },
+    { nodeId: 'nf-15', pool: nfBrambleTrap      },
+    { nodeId: 'nf-16', pool: nfHuntersCache     },
+    { nodeId: 'nf-17', pool: nfBoneCircle       },
+    { nodeId: 'nf-18', pool: nfHerbTrader       },
+    { nodeId: 'nf-19', pool: nfShadowWolfTerritory },
+    { nodeId: 'nf-20', pool: nfAxeHead          },
+    { nodeId: 'nf-21', pool: nfRangerCairn      },
+    { nodeId: 'nf-22', pool: nfMoonbellFlowers  },
+    { nodeId: 'nf-23', pool: nfEchoStone        },
+    { nodeId: 'nf-24', pool: nfHiddenGrove      },
+    { nodeId: 'nf-25', pool: nfMistPools        },
 ];
 
 for (const { nodeId, pool } of FISHING_VILLAGE_POOLS) {
