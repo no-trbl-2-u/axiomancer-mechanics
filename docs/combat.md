@@ -45,10 +45,15 @@ Advantage modifier (flat roll bonus/penalty from `getAdvantageModifier()`):
 | `skill` | Use a learned/unlocked skill that is currently affordable (Spec 04 / 04b; legacy equipped gate removed in Phase 98) |
 | `item` | Use an inventory consumable (Spec 05 / 05b) |
 | `flee` | Attempt to escape |
+| `spare` | Phase 108 — mercy choice to spare/befriend the enemy (sets `friendshipResolutionAuthorized`) |
+| `exploit` | Phase 108 — mercy choice to exploit the opening for a free critical attack |
 
 ## Combat Phases
 
-`choosing_stance` → `choosing_action` → `choosing_skill` → `resolving` → `ended`
+`choosing_stance` → `choosing_action` → `choosing_skill` → `mercy_choice` → `resolving` → `ended`
+
+The `mercy_choice` phase activates after a successful Befriend skill cast, presenting
+the player with a choice between `spare` (mercy/friendship) and `exploit` (critical attack).
 
 The Combat CLI currently drives both selection phases inline rather than persisting them
 on `state.phase`; the reducer still exposes `setPhase(state, phase)` for consumers that
@@ -323,6 +328,31 @@ once (heart stance), and 3 both-defend rounds have passed. The
 authored `friendshipReward` content (multi-paragraph narrative + items)
 is deferred to the boss-tier befriendable-enemy follow-up phase.
 
+### Friendship Resolution Authority (Phase 112)
+
+Phase 112 hardened the Befriend doctrine to ensure friendship resolution
+is always explicit and intentional. **Passive friendship counter pressure
+alone no longer ends combat.** The friendship outcome requires:
+
+1. **Explicit Befriend skill cast** — the player must actively use the
+   Befriend skill (5 heart tokens) when the enemy is vulnerable.
+2. **Mercy choice selection** — successful Befriend opens a choice between
+   `spare` (mercy/friendship) and `exploit` (critical attack).
+3. **Authorization flag** — only `spare` choice sets
+   `state.friendshipResolutionAuthorized = true`, enabling the friendship
+   combat end.
+
+Both-defend friendship counters still increment normally and contribute to
+`BefriendabilityConfig` thresholds, but they are no longer sufficient by
+themselves. This prevents silent bypassing of:
+- The 5-heart Befriend cost
+- The explicit mercy choice moment
+- HP-gate and other authored eligibility requirements
+
+The `isFriendshipEligible(state)` predicate now checks
+`state.friendshipResolutionAuthorized === true` rather than counter/config
+predicates directly.
+
 ## Combat End Conditions
 
 `determineCombatEnd(state)` returns:
@@ -331,7 +361,7 @@ is deferred to the boss-tier befriendable-enemy follow-up phase.
 |--------|-----------|
 | `'player'` | Enemy HP ≤ 0 |
 | `'ko'` | Player HP ≤ 0 |
-| `'friendship'` | `isFriendshipEligible(state)` — Phase 36 cap by default, overridden by `enemy.befriendabilityConfig` per Phase 68 |
+| `'friendship'` | `state.friendshipResolutionAuthorized === true` — set only when player casts Befriend + chooses `spare` (Phase 112) |
 | `'ongoing'` | None of the above |
 
 ## Battle Log
