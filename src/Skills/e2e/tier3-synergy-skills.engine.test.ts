@@ -17,7 +17,7 @@ import { lookupEffect } from '../../Effects';
 import { CombatState } from '../../Combat/types';
 import { ActiveEffect } from '../../Effects/types';
 import type { CombatResources } from '../types';
-import { restoreOriginalRng } from '../../test-utils/rng';
+import { mockSequentialRng, restoreOriginalRng } from '../../test-utils/rng';
 
 afterEach(() => {
     vi.restoreAllMocks();
@@ -191,6 +191,8 @@ describe('Phase 94 — Tier 3 synergy skills (5 patterns)', () => {
 
     describe('transcendent-synthesis', () => {
         it('synergy fires unconditionally; consumes all combat resources; applies buff_regeneration', () => {
+            // buff_regeneration is tier-2 — mock RNG so the caster-side d20 never fumbles.
+            mockSequentialRng(0.5); // d20 = 10, always a clean success
             const state = fixtureState({ heart: 10, body: 8, mind: 6, paradox: 4, fallacy: 2 });
             const result = executeSkill(state, 'transcendent-synthesis', getSkillById);
             

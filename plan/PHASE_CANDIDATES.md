@@ -24,13 +24,6 @@
 
 ## Pending
 
-### Candidate: Northern-forest expansion (Phase 65 pattern applied to `nf-*`)
-- signal: Phase 65 (`4f3b9ec` + `e8d3b90` + `e7da1d7`) expanded the fishing-village starting map 10 → 25 nodes with three sub-areas + 15 new `MapEventPool` entries + ~60% `alignmentDelta` density. The second authored map, `northern-forest`, is still at **11 nodes** (`nf-1..nf-11`, mostly linear with one branch at `nf-1 → nf-2 / nf-3` that re-converges at `nf-6`). The content-scale asymmetry is significant — fishing-village is the early-game canvas the player explores most, but northern-forest is the natural escalation tier (`nf-` enemies skew elite/boss, Phase 49 enemy-skill caster path was first-authored there). The Phase 65 pattern (preserved spine, extended `connectedNodes`, new pool consts) is a proven recipe; applying it to `nf-*` brings the second region's exploration depth to parity.
-- scope: One phase, 3 commit units (mirror of Phase 65). **Unit 1 — node structure.** Grow `northern-forest.nodes[]` from 11 to ~25 entries; existing spine `nf-1..nf-11` preserved verbatim with `connectedNodes` EXTENDED (not replaced) so existing Phase 23/24 pool overrides + Phase 43 `alignmentDelta` authoring (the `nf-4` / `nf-10` deltas) + any Phase 45 enemy placements continue to function unchanged. 2-3 sub-areas with thematic identity (e.g. Glen Path dead-end, Bone Hollow loot/encounter cluster, Mist Ridge cliff path with hazards). **Unit 2 — pool authoring.** ~12-14 new `MapEventPool` consts registered in the matching `NORTHERN_FOREST_POOLS` block (or equivalent — check the current registry). All 8 `MapEventKind` values represented multiple times across the 25-node grid; ~60% `alignmentDelta` density mirroring Phase 43's first-pass + Phase 65's ratio. Optionally place 1-2 additional befriendable enemies in the new sub-areas if the Boss-tier befriendable enemy candidate ships earlier; otherwise leave the new nodes content-only. **Unit 3 — hermetic e2e + docs + CHANGELOG.** `src/World/e2e/world.engine.test.ts` gains a Northern-forest expansion describe block mirroring the Phase 65 block (node count = 25; spine preserved; new pool registration; all 25 nodes drive through `resolveMapEvent`); `docs/world.md` "Northern forest" section (currently mostly absent — fishing-village dominates) gains a layout block matching the post-Phase-65 fishing-village section; `CHANGELOG.md [unreleased] ### Changed` entry; `specs/23-map-events.md` acceptance checklist gains a row mirroring the Phase 65 row (already shipped at iterate da9b413).
-- unblocks: closes the content-scale asymmetry between the two authored regions. The Phase 65 framework (sub-areas + dead-ends + alignment authoring + befriendable placements) becomes the standard for future region authoring — bringing northern-forest up to parity validates the pattern is portable. Future region phases (Northern Continent stub, candidate filed at expand-16; eventual Continent 3) get a single recipe to follow.
-- blocked-by: None — Phase 65's framework is shipped and the engine is unchanged. Wants no user-attended design pass at oversight time beyond confirming the sub-area thematic identity.
-- score: 5 × 6 / 10 = 3.0 (medium impact — content-scale parity for early-mid game progression; medium-high ease — pure content authoring against the Phase 65 recipe with no engine change).
-- recommended-slot: after the Walkthrough catalog expansion candidate (above) since one of those walkthroughs would naturally cover the northern-forest path. Independent of the befriend-mechanic / Tier 3 / alignmentDelta candidates.
 
 ### Candidate: Phase 66 synergy walkthrough (requires preset extension)
 - signal: Phase 81 (commit `0ab5968`) shipped 3 of the originally-scoped 3 walkthroughs but pivoted Unit 2 from Phase 66 synergy → Tier 2 `eternal-regress` per brief D2. The pivot reason: **none of the 5 Phase 66 synergy skills** (`resonance-bleed`, `intensity-feedback`, `bat-swarm-thoughtform`, `resonance-burst`, `resonance-detonation`) ship in any preset's `knownSkills` / `equippedSkills`. `TIER_2_SKILLS` in `src/Character/presets.ts:58-62` holds only the 3 originals (mob-appeal, undistributed-middle, eternal-regress); Phase 66 added 5 more to the library but not to the presets. Exercising synergy via Character-tab Learn + Equip workflow would significantly complicate the walkthrough + risk failure-mode 6. The Phase 81 brief D6 explicitly defers to a candidate.
@@ -56,21 +49,7 @@
 - score: TBD (deferred — score withheld so `/expand` / `/march` cannot auto-cluster it; was 6 × 8 / 10 = 4.8). Revisit at a future oversight alongside the Phase 100 re-queue, once base-mechanics stabilisation feels solid.
 - recommended-slot: not before the Phase 100 re-queue.
 
-### Candidate: Roster-wide difficulty tuning via the Phase 104 reference probes
-- signal: Phase 101 (`8ccb61b`) tuned exactly ONE enemy (Coastal Tyrant mercy route); Phase 104 (`99e5174`) stood up two reproducible reference-playtest probes (early-game level-1 vs easiest fishing-village enemies; endgame max-level vs late-game/boss) that emit survivability / rounds-to-resolve / damage-dealt-vs-taken bands. The probes exist but only the Tyrant has been tuned against them. The user's recurring top concern — "difficulty is all over the place / no order" (playtest jot #89, restated through oversight-26/27) — is a roster-wide problem, not a one-boss problem. **T locked the sequencing on 2026-06-02: promote this before the difficulty doctrine spec; fix/playthrough/fix/playthrough until approximately 70% win rate.**
-- scope: One phase, 4 commit units. **Unit 1 — preflight**: before tuning, verify token resource generation, skill casting, and status-effect behavior end-to-end so balance is not compensating for broken machinery. **Unit 2 — measure**: run the Phase 104 early-game + endgame probes across the full fishing-village + northern-forest enemy roster where the harness permits; record a per-enemy pass/out-of-band table (win/defeat/friendship/timeout, rounds, policy, skill/resource/item signals). **Unit 3 — tune loop**: adjust parameters smallest-change-first — enemy stats/level, player stats/level, player equipment, player skills — and rerun playtests after each meaningful change. **Unit 4 — closeout**: stop when playtest evidence reaches approximately 70% win rate; if parameter tuning cannot reach the target, stop for T discussion before changing core mechanics. Regenerate reports, update `automation/playtest/NEXT_STEPS.md` / `docs/playtest.md`, and add/extend hermetic coverage for any real bug found.
-- unblocks: Directly addresses the user's #1 stated concern (difficulty legibility) systematically rather than one boss at a time. Turns the Phase 104 probes from infrastructure into an applied tuning discipline; future content phases inherit a measured difficulty curve to author against.
-- blocked-by: None — Phase 104 probes are shipped and T supplied the initial success band: approximately 70% win rate, with preflight verification for resources/skills/status effects before balance tuning.
-- score: urgency 6 × value 6 / 10 = 3.6 (high urgency — recurring user top concern; medium-high value — roster-wide legibility; medium ease — measurement is automated, tuning is iterative per-enemy).
-- recommended-slot: **PROMOTED as Phase 107** by T direct decision 2026-06-02. Runs before difficulty-curve doctrine; doctrine should follow empirical tuning evidence.
 
-### Candidate: Difficulty-curve doctrine spec (`specs/15-difficulty-curve.md`)
-- signal: The difficulty work to date (Phase 92 difficulty-meter scaling, Phase 101 Tyrant mercy, Phase 104 reference probes) has no written target — each tuning decision is locked ad-hoc at oversight ("80% timeout is a failure", "wound-then-spare should resolve below the HP gate"). The user's "no order" framing is partly a doctrine gap: there is no single document stating what the intended survivability / rounds-to-resolve / damage bands ARE per region tier. Every other multi-phase mechanic (alignment cube → Spec 14) eventually got a retroactive spec; difficulty hasn't.
-- scope: One small phase, 1-2 commit units. Author `specs/15-difficulty-curve.md` defining target bands per progression tier (early fishing-village / mid northern-forest / endgame boss): expected rounds-to-resolve, player survivability %, damage-dealt-vs-taken ratio, and the friendship-route reachability target the Phase 101 doctrine implies. Reference the Phase 104 probe fields as the measurement surface. `specs/README.md` recommended-order row added. Pre-fill `> Your answer:` lines for the band thresholds at the attended oversight that promotes it. Pure docs/spec; no code.
-- unblocks: Gives the roster-tuning candidate (above) and all future content phases a fixed numerical target instead of per-oversight ad-hoc calls. Makes "difficulty is all over the place" falsifiable against a written band.
-- blocked-by: None on the engine side. **Wants a user-attended design pass** at oversight to lock the band numbers (this is exactly the kind of doctrine call the user owns).
-- score: urgency 5 × value 6 / 10 = 3.0 (medium urgency — anchors the live tuning work; medium-high value — converts ad-hoc calls into a referenceable target; high ease — pure authoring once the bands are agreed).
-- recommended-slot: before the roster-wide tuning candidate (the spec gives the tuning phase its target), or alongside it at the same oversight.
 
 ### Candidate: Mid-game reference playtest probe (Phase 104 coverage gap)
 - signal: Phase 104 (`99e5174`) shipped two reference probes (early-game level-1 vs easy fishing-village; endgame max-level vs boss/late-game) but the roster-wide tuning candidate (above) exposed a coverage gap: no mid-game probe in the northern-forest tier. Early + endgame gives the outer bounds but does not directly measure the mid-game progression tier (level 5-8 vs northern-forest elites).
@@ -80,23 +59,32 @@
 - score: urgency 4 × value 5 / 10 = 2.0 (below threshold — medium-low urgency; the two existing probes give enough bound data for the roster-tuning candidate to proceed with acceptable error bars).
 - recommended-slot: after the roster-wide tuning + difficulty doctrine work; if they surface a mid-game measurement gap, file this again.
 
-### Candidate: Second Enemy Class Family Content Expansion  
-- signal: spec.md 6-month horizon "Second+ enemy class families" + post-Phase-110 engine maturity. Current bestiary is concentrated in a single enemy class family; engine supports diverse befriendability, AI patterns, philosophical alignments but variety is limited.
-- scope: Author 8-12 new enemies in a second enemy class family distinct from existing roster. Include diverse AI patterns (beyond current randomLogic variants), befriendability configurations spanning normal/elite/boss tiers, philosophical alignment representation across multiple cube cells, and varied combat resources/skill resistance patterns. Follow established content pattern: Enemy type definitions, AI behavior variants, friendship reward content, journal entries, combat stat distributions.
-- unblocks: Greater enemy variety for region expansion, more comprehensive philosophical alignment representation, extended mid-late game content depth, diversified AI pattern library for future content
-- blocked-by: None (combat engine, AI system, befriendability infrastructure, philosophical alignment system all complete)
-- score: urgency 6.0 × value 7.0 / 10 = 4.2
-- recommended-slot: after Phase 110
-
-### Candidate: Story Content NPCs Dialogue Expansion
-- signal: spec.md 6-month horizon "Story content: named NPCs with moral dialogue trees" + Phase 63 alignment observers infrastructure + philosophical alignment gate system (Phase 42-46) ready for content utilization
-- scope: Author 3-5 named NPCs with multi-branch dialogue trees leveraging philosophical alignment gates, moral choice consequences, and quest-adjacent interactions. Include Chronicle journal integration, diverse personality archetypes, meaningful choice branching with narrative payoff, and flagSet quest chain integration. Establish NPC content patterns for future story expansion.
-- unblocks: Story depth and player agency content, Chronicle system utilization, narrative engagement beyond combat, philosophical alignment system content showcase
-- blocked-by: None (dialogue infrastructure, alignment gates, flagSet system, Chronicle system all shipped)
-- score: urgency 5.5 × value 6.5 / 10 = 3.6  
-- recommended-slot: after Phase 110
-
 ## Promoted
+
+### Phase 117 — Northern-forest expansion (Phase 65 pattern applied to `nf-*`)
+- promoted: 2026-06-04 (oversight). User pick (Q1 — all four). Score 5 × 6 / 10 = 3.0.
+- source: expand-21. Content-scale parity between the two authored regions.
+- scope: Grow `nf-*` from 11 to ~25 nodes, 2–3 sub-areas, ~14 new `MapEventPool` entries (~60% `alignmentDelta` density), hermetic e2e + docs + CHANGELOG. Phase 65 recipe applied verbatim; existing spine preserved.
+
+### Phase 116 — Difficulty-curve doctrine spec (`specs/15-difficulty-curve.md`)
+- promoted: 2026-06-04 (oversight). User pick (Q1 + Q2 — design-attended at brief dispatch). Score 5 × 6 / 10 = 3.0.
+- source: expand-29. Converts ad-hoc per-oversight band calls into a referenceable written spec.
+- scope: Author `specs/15-difficulty-curve.md` with target bands per tier (65–75% resolution success + rounds-to-resolve + damage ratio). Pre-fill `> Your answer:` lines at the attended brief dispatch. `specs/README.md` row added.
+
+### Phase 115 — Story Content NPCs Dialogue Expansion
+- promoted: 2026-06-04 (oversight). User pick (Q1). Score 5.5 × 6.5 / 10 = 3.6.
+- source: expand-31 + spec.md 6-month horizon.
+- scope: 3–5 named NPCs with multi-branch dialogue trees, philosophical alignment gates, moral choice consequences, Chronicle integration, flagSet quest chains. Establishes NPC content patterns for future story expansion.
+
+### Phase 114 — Second Enemy Class Family Content Expansion
+- promoted: 2026-06-04 (oversight). User pick (Q1). Score 6 × 7 / 10 = 4.2.
+- source: expand-31 + spec.md 6-month horizon.
+- scope: 8–12 new enemies in a second family with diverse AI patterns (beyond randomLogic variants), befriendability configs at all tiers, philosophical alignment variety across multiple cube cells, varied combat resources/skill resistance patterns.
+
+### Phase 107 — Roster-wide difficulty tuning via the Phase 104 reference probes (stale-row cleanup)
+- promoted: 2026-06-02 (T direct decision). **Shipped** — Phase 107 has since shipped; this row moved from ## Pending (where it was stale with "PROMOTED as Phase 107" annotation) to ## Promoted at oversight 2026-06-04 for tracking hygiene.
+- source: expand-29. User's recurring top concern: "difficulty is all over the place / no order".
+- scope: Roster-wide measurement via Phase 104 probes + iterative parameter tuning until ~70% win rate. Preflight + measure + tune loop + closeout.
 
 ### Phase 105 — Glanton Nexus state reconciliation guardrail
 - promoted: 2026-06-01 (T direct approval after Glanton hire). Runs before Phase 104/101/102 because stale Nexus state can cause workers to march under old orders. Score 8 × 7 / 10 = 5.6.
