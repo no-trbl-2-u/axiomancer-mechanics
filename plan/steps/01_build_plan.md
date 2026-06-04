@@ -31,6 +31,10 @@ future oversight). `/march` dispatches only `[ ]` rows.
 - [x] Spec 08 — World content and hazards (pre-loop)
 
 **Next up (autonomous loop's queue):**
+
+- [ ] Phase 112 — Befriend authority + HP-gate doctrine hardening. Promoted above all else by Glanton cleanup 2026-06-04 after doctrine-alignment audit. Remove or explicitly re-doctrine legacy passive friendship resolution so it cannot silently bypass the Befriend skill, 5-Heart requirement, mercy-choice state, or HP gate. Preserve spare/exploit and anti-exploit/faction consequences. Brief: `plan/phases/phase_112_befriend_authority_hp_gate.md`. Verification: targeted Befriend/friendship e2e + `npm run verify` + `npm run deploy:check`.
+
+- [ ] Phase 113 — Mercy-loop playtest evidence + STRATEGIST witness. Promoted above normal queue by Glanton cleanup 2026-06-04. Upgrade playtest policies/reports so evidence explicitly covers Befriend cast → spare/exploit → consequences; strengthen STRATEGIST to read resources/status/enemy state/HP-gate proximity; normalize balance evidence to 65–75% resolution success. Brief: `plan/phases/phase_113_mercy_playtest_evidence.md`. Verification: `npm run verify` + `npm run playtest`.
 - [x] Phase 09 — Game loop orchestration (`gameReducer`, full store wiring, `game.cli.ts`) (e6ce034)
 - [x] Phase 10 — Moral/difficulty meter (choice tracking, alignment, difficulty scaling) (a6085c4)
 - [x] Phase 11 — RNG seeding and test harness (seeded RNG, deterministic replays, full test harness) (a6b33f0)
