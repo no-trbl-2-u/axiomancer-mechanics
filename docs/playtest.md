@@ -204,6 +204,30 @@ npm run playtest -- --scenario=automation/playtest/scenarios/late-game-coastal-t
 - Damage ratio: 0.8:1 to 1.4:1 (balanced to slight player advantage)
 - Friendship reachability: 40-60%
 
+### Phase 121 Three-Anchor Balance Scaffold
+
+Phase 121 established a three-anchor playtest matrix for systematic Sage balance validation:
+
+**Easy Anchor:**
+- Preset: Sage (level 15)
+- Enemy: Coastal Tyrant (level 6)
+- Target: 100% actual wins
+- Scenario: `sage-anchor-easy`
+
+**Normal Anchor:**
+- Preset: Sage (level 15)
+- Enemy: Audit Sentinel (level 15)
+- Target: 75-100% actual wins
+- Scenario: `sage-anchor-normal`
+
+**Difficult Anchor:**
+- Preset: Sage (level 15)
+- Enemy: Balance Judge (level 18)
+- Target: 25-50% actual wins
+- Scenario: `sage-anchor-difficult`
+
+Each scenario runs 25 times per policy (100 total runs per enemy) across aggressive, defensive, mixed, and strategist policies. Results are recorded in `automation/playtest/BALANCE_LEDGER.md`.
+
 ### When to Run Reference Probes
 
 - **After major balance changes**: Validate that adjustments haven't broken difficulty progression
