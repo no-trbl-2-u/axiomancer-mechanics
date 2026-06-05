@@ -30,13 +30,6 @@
 
 ## Pending
 
-### [LOW] Combat — isValidCombatAction export potentially unused
-- pass: critique-53 (commit 8c0b942)
-- area: dead-code
-- observation: isValidCombatAction function is exported from src/index.ts but has zero in-repo callers and is not mentioned in spec.md contract
-- evidence: src/index.ts:64, src/Combat/index.ts:185
-- suggested_fix: evaluate if this export is needed for external consumers; if not, remove from public barrel
-- source: critique
 
 
 
@@ -45,6 +38,7 @@
 
 ## Done
 
+- [x] **[LOW] Combat — isValidCombatAction export potentially unused** — evaluated at iterate (this commit). Export intentionally retained on public barrel for external consumer validation of partial CombatAction objects. Type guard functions are conventionally provided for API consumers even when zero in-repo usage. No breaking change applied per iterate Hard Rule 4. Source: critique-53 (commit `8c0b942`).
 - [x] **[LOW] test-utils — @ts-ignore without explanatory comment violates type-safety standards** — resolved at iterate commit `6b1f258` (2026-06-03). Added explanatory comment above the @ts-ignore at `src/test-utils/e2e/agent-vitest-reporter.engine.test.ts:25` describing why .mjs import bypasses TS module graph validation. Source: critique-48 (commit `fed2b01`).
 - [x] **[LOW] Combat — deprecation removals due at the v0.13.0 minor bump are un-actioned** — resolved at Phase 106 (this commit). Removed four `@deprecated` symbols scheduled for removal at v0.13.0 minor bump: `getResistStat` (replaced by `getEffectiveStats(target).baseStats[stance]`) and three `endCombat*` aliases (replaced by `endCombat`). Updated test files to use replacements, removed from public barrels, updated public surface fixture (-4 runtime exports), added CHANGELOG `### Removed` entries with migration guidance, cleared deprecated schedule row. Zero external callers documented assumption per build plan guidance. Source: critique-46 (commit `81ff3a5`).
 - [x] **[MED] Character/presets — `@deprecated remove at v0.13.0` schedule now contradicts live use** — resolved at commit `89e52e3` (2026-06-01). Updated JSDoc @deprecated tags in src/Character/presets.ts (lines 4, 28, 136, 141, 148) from "Scheduled for removal at v0.13.0" to "no earlier than v0.14.0, after the Playtest runner migrates off presets". Added note naming src/Playtest/playtest.runner.ts as removal blocker. Resolves contradiction where package reached v0.13.0 but presets remain load-bearing for Playtest harness.
