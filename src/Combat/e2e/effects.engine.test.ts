@@ -124,11 +124,11 @@ describe('Effects E2E: end-phase DoT via processRoundEndEffects', () => {
 
 describe('Effects E2E: lethal start-phase DoT — terminal condition', () => {
     it('heavy poison kills enemy before actions; combat ends as player victory', () => {
-        // intensity 4 → DoT = 3 × 4 = 12/round; Disatree_01.maxHealth = 10
+        // intensity 5 → DoT = 3 × 5 = 15/round; Disatree_01.maxHealth = 15
         const base = initializeCombat(Player, Disatree_01);
         const state = {
             ...base,
-            enemy: { ...base.enemy, effects: [ae('debuff_poison', 4)] },
+            enemy: { ...base.enemy, effects: [ae('debuff_poison', 5)] },
         };
 
         // Attack actions supplied — they must NOT fire (enemy dead before actions)
