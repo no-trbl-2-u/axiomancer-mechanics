@@ -217,28 +217,33 @@ Minimum 12 skills covering all `philosophicalAspect × category` cells.
 
 | ID | Name | Aspect | Category | Cost | Target | basePower | Effect |
 |---|---|---|---|---|---|---|---|
-| `ad_hominem_strike` | Ad Hominem Strike | body | fallacy | `{ body: 3 }` | enemy | 8 | Damage + strip 1 random enemy buff |
-| `false_dilemma` | False Dilemma | mind | fallacy | `{ mind: 3 }` | enemy | 4 | Damage + 2-round confusion debuff |
-| `appeal_to_pity` | Appeal to Pity | heart | fallacy | `{ heart: 3 }` | self | 0 | Heal self (`heart × 2`) |
-| `achilles_gambit` | Achilles' Gambit | body | paradox | `{ body: 3 }` | enemy | 12 | Pure damage |
-| `liars_echo` | Liar's Echo | mind | paradox | `{ mind: 3 }` | enemy | 3 | Damage + 2-round mind mark (+2 intensity) |
-| `ship_of_theseus` | Ship of Theseus | heart | paradox | `{ heart: 3 }` | enemy | 0 | Convert 1 random enemy buff → same effect on player |
+| `ad-hominem-strike` | Ad Hominem Strike | body | fallacy | `{ body: 3 }` | enemy | 8 | Damage + strip 1 random enemy buff |
+| `false-dilemma` | False Dilemma | mind | fallacy | `{ mind: 3 }` | enemy | 4 | Damage + 2-round confusion debuff |
+| `appeal-to-pity` | Appeal to Pity | heart | fallacy | `{ heart: 3 }` | self | 0 | Heal self (`heart × 2`) |
+| `achilles-gambit` | Achilles' Gambit | body | paradox | `{ body: 3 }` | enemy | 12 | Pure damage |
+| `liars-echo` | Liar's Echo | mind | paradox | `{ mind: 3 }` | enemy | 3 | Damage + 2-round mind mark (+2 intensity) |
+| `ship-of-theseus` | Ship of Theseus | heart | paradox | `{ heart: 3 }` | enemy | 0 | Convert 1 random enemy buff → same effect on player |
 
 ### Tier 2 — Resonance Required
 
 | ID | Name | Category | Cost | Target | basePower | Effect |
 |---|---|---|---|---|---|---|
-| `mob_appeal` | Mob Appeal | fallacy | `{ body: 2, heart: 2 }` | enemy | 10 | Damage + heal self (`heart × 0.5`) |
-| `undistributed_middle` | Undistributed Middle | paradox | `{ body: 2, mind: 2 }` | enemy | 8 | Damage + 3-round mind mark debuff |
-| `eternal_regress` | Eternal Regress | fallacy | `{ heart: 2, mind: 2 }` | enemy | 6 | Apply two Tier 2 debuffs simultaneously |
+| `mob-appeal` | Mob Appeal | fallacy | `{ body: 2, heart: 2 }` | enemy | 10 | Damage + heal self (`heart × 0.5`) |
+| `undistributed-middle` | Undistributed Middle | paradox | `{ body: 2, mind: 2 }` | enemy | 8 | Damage + 3-round mind mark debuff |
+| `eternal-regress` | Eternal Regress | fallacy | `{ heart: 2, mind: 2 }` | enemy | 6 | Apply two Tier 2 debuffs simultaneously |
 
 ### Tier 3 — Philosophical Resource Required
 
 | ID | Name | Category | Cost | Target | basePower | Effect |
 |---|---|---|---|---|---|---|
-| `sorites_cascade` | Sorites' Cascade | paradox | `{ mind: 2, paradox: 1 }` | enemy | 5 | Stacking bleed: 4 rounds, intensity 2 |
-| `straw_giant` | Straw Giant | fallacy | `{ body: 3, fallacy: 1 }` | enemy | 18 | Damage that bypasses enemy defense |
-| `bootstrap_paradox` | Bootstrap Paradox | paradox | `{ heart: 2, paradox: 1 }` | self | 0 | Restore HP equal to damage dealt this round† |
+| `sorites-cascade` | Sorites' Cascade | paradox | `{ mind: 2, paradox: 1 }` | enemy | 5 | Stacking bleed: 4 rounds, intensity 2 |
+| `straw-giant` | Straw Giant | fallacy | `{ body: 3, fallacy: 1 }` | enemy | 18 | Damage that bypasses enemy defense |
+| `bootstrap-paradox` | Bootstrap Paradox | paradox | `{ heart: 2, paradox: 1 }` | self | 0 | Restore HP equal to damage dealt this round† |
+| `appeal-to-consequences` | Appeal to Consequences | fallacy | `{ body: 3, fallacy: 1 }` | enemy | 16 | Damage + self-buff (body attack) |
+| `nirvana-fallacy` | Nirvana Fallacy | fallacy | `{ mind: 2, fallacy: 1 }` | enemy | 14 | Damage + confusion debuff |
+| `appeal-to-fear` | Appeal to Fear | fallacy | `{ heart: 2, fallacy: 1 }` | enemy | 12 | Damage + slow debuff |
+| `logical-recursion` | Logical Recursion | fallacy | `{ mind: 2, fallacy: 2 }` | enemy | 12 | Damage + self-buff on synergy |
+| `existential-collapse` | Existential Collapse | fallacy | `{ body: 4, fallacy: 2 }` | enemy | 18 | Damage + effect clearing on synergy |
 
 > † Bootstrap Paradox requires round-damage tracking in `CombatState`. If that
 > data is not yet available when Spec 04b ships, fall back to a flat heal and

@@ -218,9 +218,10 @@ const strawGiant: Skill = {
     category: 'fallacy',
     philosophicalAspect: 'body',
     description:
-        'You build the version of them you can topple, then topple it — and the ' +
-        'real one comes with. There is no defence against the argument you ' +
-        'invented to win.',
+        'You construct their position in cardboard and straw, then demolish ' +
+        'it with theatrical precision. The real argument was never the point — ' +
+        'the audience believes what they see fall. Their actual stance crumbles ' +
+        'in sympathy with its hollow twin.',
     tier: 3,
     resourceCost: { body: 3, fallacy: 1 },
     targetType: 'enemy',
@@ -264,9 +265,10 @@ const appealToConsequences: Skill = {
     category: 'fallacy',
     philosophicalAspect: 'body',
     description:
-        'You strike, and the world tilts to validate the strike. The belief makes ' +
-        'you stronger, so the belief is true. They feel both the blow and the ' +
-        'argument arrive at once.',
+        'The outcome justifies the method, so the method becomes righteous. ' +
+        'Your strike carries the weight of inevitable consequence — what must ' +
+        'happen, happening. They fall not to your force, but to the logic that ' +
+        'made the force necessary.',
     tier: 3,
     resourceCost: { body: 3, fallacy: 1 },
     targetType: 'enemy',
@@ -285,9 +287,10 @@ const nirvanaFallacy: Skill = {
     category: 'fallacy',
     philosophicalAspect: 'mind',
     description:
-        'You hold up the perfect outcome the world refused to grant them, and ' +
-        'their own existence falls short of it. The contrast disorders their ' +
-        'reasoning faster than the wound disorders their flesh.',
+        'Why settle for good when perfection exists somewhere? You show them ' +
+        'the ideal they cannot reach, and suddenly their reality becomes failure. ' +
+        'The gap between what is and what could be opens like a wound, and they ' +
+        'fall through their own inadequacy.',
     tier: 3,
     resourceCost: { mind: 2, fallacy: 1 },
     targetType: 'enemy',
@@ -332,9 +335,10 @@ const appealToFear: Skill = {
     category: 'fallacy',
     philosophicalAspect: 'heart',
     description:
-        'You whisper the indifferent cosmos into their ear — what waits beyond ' +
-        'them, what cares for them — and the dread lands before the strike does. ' +
-        'They move like something has already begun pulling at their feet.',
+        'The universe is vast and cold, and something terrible is coming. You ' +
+        'name their deepest dread aloud until it becomes more real than the fight. ' +
+        'The fear arrives first; your strike simply confirms what they already ' +
+        'knew was inevitable.',
     tier: 3,
     resourceCost: { heart: 2, fallacy: 1 },
     targetType: 'enemy',
@@ -605,9 +609,10 @@ const logicalRecursion: Skill = {
     category: 'fallacy',
     philosophicalAspect: 'mind',
     description:
-        'The confusion you planted in yourself calls to the confusion ' +
-        'you placed in them. Like facing mirrors, the reflection bounces ' +
-        'between you until one of the glass breaks. It is not yours.',
+        'Your uncertainty echoes theirs, and theirs echoes yours, until the ' +
+        'feedback becomes deafening. Logic eats its own tail in an endless loop ' +
+        'of self-reference. When the recursion finally collapses, only one mind ' +
+        'remains intact enough to remember which thoughts belonged to whom.',
     tier: 3,
     resourceCost: { mind: 2, fallacy: 2 },
     targetType: 'enemy',
@@ -634,9 +639,10 @@ const existentialCollapse: Skill = {
     category: 'fallacy',
     philosophicalAspect: 'body',
     description:
-        'You end the argument by ending the premise that arguments exist. ' +
-        'Every binding dissolves; every certainty becomes uncertain. In ' +
-        'the sudden emptiness, only your strike remains real.',
+        'Why debate the nature of truth when truth itself is questionable? ' +
+        'You dissolve the foundation beneath every position, every stance, every ' +
+        'reason to resist. In the resulting void where meaning used to be, only ' +
+        'your will finds purchase.',
     tier: 3,
     resourceCost: { body: 4, fallacy: 2 },
     targetType: 'enemy',
