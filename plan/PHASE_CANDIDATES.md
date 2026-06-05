@@ -2,7 +2,7 @@
 
 > Proposed new phases from `/expand`. Reviewed and promoted by
 > `/oversight`. Format: `## Pending` → `/oversight` moves to
-> `## Promoted` or `## Rejected`.
+> `## Promoted`, `## Deferred`, or `## Rejected`.
 
 <!-- Metadata (updated by /expand after each pass):
 > Last pass: 2026-06-04 at commit 77aab3d
@@ -24,52 +24,24 @@
 
 ## Pending
 
-
-### Candidate: Phase 66 synergy walkthrough (requires preset extension)
-- signal: Phase 81 (commit `0ab5968`) shipped 3 of the originally-scoped 3 walkthroughs but pivoted Unit 2 from Phase 66 synergy → Tier 2 `eternal-regress` per brief D2. The pivot reason: **none of the 5 Phase 66 synergy skills** (`resonance-bleed`, `intensity-feedback`, `bat-swarm-thoughtform`, `resonance-burst`, `resonance-detonation`) ship in any preset's `knownSkills` / `equippedSkills`. `TIER_2_SKILLS` in `src/Character/presets.ts:58-62` holds only the 3 originals (mob-appeal, undistributed-middle, eternal-regress); Phase 66 added 5 more to the library but not to the presets. Exercising synergy via Character-tab Learn + Equip workflow would significantly complicate the walkthrough + risk failure-mode 6. The Phase 81 brief D6 explicitly defers to a candidate.
-- scope: One small phase, 2 commit units. **Unit 1 — preset extension.** Extend `TIER_2_SKILLS` in `src/Character/presets.ts` to include the 5 Phase 66 synergy skills, or add a sibling `TIER_2_SYNERGY_SKILLS` const; thread into `wandererPreset.knownSkills` + add 1-2 (e.g. `resonance-bleed` + `resonance-burst`) to `wandererPreset.equippedSkills`. **Unit 2 — walkthrough.** Author `automation/scripts/walkthroughs/synergy-skills-chain.{json,goal.md}` (the originally-scoped Phase 81 Unit 2): Wanderer (level 8) → debug-spawn an enemy → 1-2 basic rounds to set up predicate-target effects (e.g. apply `debuff_bleed` via a basic round if achievable, else use the synergy skill's no-predicate sibling) → cast `resonance-bleed` → assert `synergy-fired` SkillEvent emission. README inventory row + docs/testing.md note + CHANGELOG entry.
-- unblocks: closes the original Phase 81 Unit 2 scope. Phase 66's authored synergy library gets the player-experience-tier coverage it deserves.
-- blocked-by: None on the engine side. Wants user-attended oversight if the preset extension wants the full 5-synergy-known shape vs the minimum-viable 2-synergy-equipped shape.
-- score: 4 × 7 / 10 = 2.8 (medium impact — closes a deferred-Phase-81-scope at the player-experience tier; high ease — small preset edit + a known walkthrough pattern). Aggressive 2.5+ threshold catches this. Source: Phase 81 D6 ship-time filing (commit `0ab5968`).
-- recommended-slot: any time. Pairs naturally with the Damage-resist primitive candidate (both are small Phase 80 follow-ups).
-
-### Candidate: Non-combat encounter minigames (design conversation — flagged at oversight-26)
-- signal: User write-in at oversight-26 2026-05-30: "I also want to start designing minigames for each different non-combat encounter, that's a conversation we need to have soon." Today non-combat `MapEventKind` resolutions (village/shop/rest/treasure/lore/hazard/etc.) resolve through `resolveMapEvent` as single-step outcomes; there is no interactive minigame layer per encounter type. This is a net-new gameplay system, not a drift fix.
-- scope: **DESIGN-HEAVY — wants a dedicated brainstorm before any phase brief.** Not yet scoped to units. Open questions for the conversation: which `MapEventKind`s get bespoke minigames vs a shared mechanic; whether minigames are skill-checks (stat rolls) or interactive (timing/choice/puzzle); how they integrate with the alignment cube + resource economy; how the CLI reference consumer renders them; how they're graded in agent walkthroughs. Use the `brainstorm-mechanics` skill to open the design space and cite prior art (Disco Elysium skill checks, Sekiro/timing, Undertale bullet-board, Pokémon fishing/contest minigames) before filing a real candidate with a score.
-- unblocks: Turns non-combat exploration from single-step outcomes into interactive set-pieces; deepens the moment-to-moment loop outside combat.
-- blocked-by: A design conversation (user-flagged "soon"). **Do NOT auto-promote under /march** — this candidate is intentionally unscored and parked pending the brainstorm.
-- score: TBD (unscored — needs design pass; parked to keep /expand and /march from auto-clustering it).
-- recommended-slot: after the user-attended brainstorm; not before.
-
-### Candidate: Second continent content expansion
-- signal: spec.md 6-month horizon item + existing candidate pool coverage
-- scope: Author Continent 2 map definition with 15-25 nodes, enemy populations, location content following Phase 65 fishing-village expansion pattern. Unit 1 — map structure + node graph. Unit 2 — MapEventPool authoring (~60% alignmentDelta density). Unit 3 — hermetic e2e + docs integration. Establishes multi-continent world depth.
-- unblocks: Major content expansion for endgame progression; world exploration breadth beyond coastal continent
-- blocked-by: **DEFERRED INDEFINITELY** per T decision 2026-06-01 ("Hold off on adding another continent until we have the base mechanics working. Defer that indefinitely.") — mirrors Phase 100 `[deferred]`. Confirmed at oversight-28 2026-06-02 (Q2: "Defer it / match Phase 100"). **Do NOT auto-promote under `/march` or `/expand`.** This candidate is the same continent-expansion direction as Phase 100; promoting it would contradict an explicit T decision (Glanton Nexus source-of-truth layer 1).
-- score: TBD (deferred — score withheld so `/expand` / `/march` cannot auto-cluster it; was 6 × 8 / 10 = 4.8). Revisit at a future oversight alongside the Phase 100 re-queue, once base-mechanics stabilisation feels solid.
-- recommended-slot: not before the Phase 100 re-queue.
-
-
-
-### Candidate: Mid-game reference playtest probe (Phase 104 coverage gap)
-- signal: Phase 104 (`99e5174`) shipped two reference probes (early-game level-1 vs easy fishing-village; endgame max-level vs boss/late-game) but the roster-wide tuning candidate (above) exposed a coverage gap: no mid-game probe in the northern-forest tier. Early + endgame gives the outer bounds but does not directly measure the mid-game progression tier (level 5-8 vs northern-forest elites).
-- scope: One small phase, 2 commit units following the Phase 104 pattern. **Unit 1 — probe script**: author `automation/playtest/mid-game-reference-probe.mjs` running level 6 Wanderer preset (tier-2 skills unlocked; endgame but not overpowered) vs 3-4 northern-forest elite-tier enemies; emit rounds-to-resolve + survivability + resource/skill/friendship routing to a generated report matching the Phase 104 format. **Unit 2 — integration**: thread into `automation/playtest/README.md` + docs inventory; verify the script reproduces under `npm run playtest` vs the Phase 104 scripts. `docs/playtest.md` gains a row; `CHANGELOG.md [unreleased] ### Added`.
-- unblocks: Fills the mid-game measurement gap for the roster-wide tuning candidate. Three-tier probe coverage (early/mid/endgame) gives the difficulty doctrine spec comprehensive measurement data to reference.
-- blocked-by: None — pure content authoring against the Phase 104 pattern.
-- score: urgency 4 × value 5 / 10 = 2.0 (below threshold — medium-low urgency; the two existing probes give enough bound data for the roster-tuning candidate to proceed with acceptable error bars).
-- recommended-slot: after the roster-wide tuning + difficulty doctrine work; if they surface a mid-game measurement gap, file this again.
-
-<!-- Pass 32 (2026-06-04 at commit 77aab3d): 1 candidate proposed. Post-Phase-117 (northern-forest expansion) + critique pass 52. Signal sources: AUDIT.md Pending empty (comprehensive audit in pass 31 comment found 0 actionable findings). CRITIQUE.md Pending empty. Knowledge-Gaps only Q28 deferred (endgame/multiple endings). specs/ all recommended-order DONE. braindump/ unchanged since 2026-05-12 (skill resource economy + rarity system both shipped in engine). spec.md 6-month horizon partially addressed: Story content NPCs expanded via Phase 115; Second enemy families expanded via Phase 114; more content depth possible but not urgent. Recent commits show clean Phase 114-117 content expansion pattern (enemy families + northern-forest + critique pass) — major content delivery just shipped, engine mature. With traditional signals quiet post-117, the primary opportunity cluster is **endgame polish and minor infrastructure gaps**. Single candidate filed from a narrow technical signal: improve CLI experience for Tier 3 fallacy skills via description enrichment — leverages the philosophical theme vocabulary and addresses a UX gap surfaced during recent content authoring. Deliberately avoided content candidates (major expansion just shipped) and dependency maintenance (no accumulation since recent passes). Pool stays 4 → 5 Pending. -->
-
-### Candidate: Tier 3 fallacy skill descriptions enrichment
-- signal: Recent content authoring (Phases 114-117) highlighted that Tier 3 fallacy skills have minimal `description` fields compared to Tier 1/2 skills. The CLI skill browser shows sparse information for the philosophical capstone abilities, reducing their narrative impact. Engine ships 7 Tier 3 skills (`poisoning-the-well`, `slippery-slope`, `straw-man`, `ad-hominem`, `false-dichotomy`, `appeal-to-authority`, `bandwagon-effect`) but their descriptions don't match the philosophical vocabulary depth established elsewhere in the engine.
-- scope: One small maintenance phase, single commit unit. Enrich `description` fields for the 7 Tier 3 skills in `src/Skills/library/tier3.ts` to match the philosophical theme and prose quality of other skills. Each description should capture the logical fallacy's philosophical essence in 2-3 sentences, referencing the paradox/fallacy theme vocabulary established in Effects/Combat. Update skill library inventory in `docs/skills.md`. No mechanical changes to costs, effects, or combat behavior.
-- unblocks: Improves narrative immersion for the philosophical capstone abilities. Better CLI experience when browsing advanced skills. Maintains consistency with the established philosophical vocabulary.
-- blocked-by: None — pure content polish against existing skill library.
-- score: urgency 3 × value 8 / 10 = 2.4 (below 2.5 threshold but close — low-medium urgency since functional but impacts narrative quality of philosophical capstones; high value for thematic consistency and CLI experience polish).
-- recommended-slot: any time — pure polish work independent of other candidates.
+_No pending candidates after 2026-06-05 oversight promotion/defer pass._
 
 ## Promoted
+
+### Phase 120 — Phase 66 synergy walkthrough (requires preset extension)
+- promoted: 2026-06-05 (T direct oversight order: "Promote 5, 4, and 1"). Score 4 × 7 / 10 = 2.8.
+- source: Phase 81 deferred Unit 2 scope after Phase 66 synergy skills were not present in presets.
+- scope: Extend Wanderer/Tier 2 preset access to selected Phase 66 synergy skills, then author a synergy-skills walkthrough pair and docs inventory row so the synergy library has player-experience-tier coverage. Brief: `plan/phases/phase_120_phase_66_synergy_walkthrough.md`.
+
+### Phase 119 — Mid-game reference playtest probe (Phase 104 coverage gap)
+- promoted: 2026-06-05 (T direct oversight order: "Promote 5, 4, and 1"). Score urgency 4 × value 5 / 10 = 2.0, promoted by user priority despite below-threshold score.
+- source: Phase 104 early/endgame probes left the northern-forest midgame tier unmeasured.
+- scope: Add a level-6 Wanderer/northern-forest elite reference probe script, documentation, and playtest README integration. Brief: `plan/phases/phase_119_mid_game_reference_playtest_probe.md`.
+
+### Phase 118 — Tier 3 fallacy skill descriptions enrichment
+- promoted: 2026-06-05 (T direct oversight order: "Promote 5, 4, and 1"). Score urgency 3 × value 8 / 10 = 2.4, promoted by user priority despite below-threshold score.
+- source: Phases 114-117 content work highlighted sparse Tier 3 capstone skill descriptions.
+- scope: Enrich descriptions for the seven Tier 3 fallacy skills in `src/Skills/library/tier3.ts`; update `docs/skills.md`; no mechanical changes. Brief: `plan/phases/phase_118_tier_3_fallacy_skill_descriptions_enrichment.md`.
 
 ### Phase 117 — Northern-forest expansion (Phase 65 pattern applied to `nf-*`)
 - promoted: 2026-06-04 (oversight). User pick (Q1 — all four). Score 5 × 6 / 10 = 3.0.
@@ -1066,6 +1038,16 @@
 - recommended-slot: any time — independent maintenance work.
 
 ---
+
+## Deferred
+
+### Candidate: Non-combat encounter minigames (design conversation — flagged at oversight-26)
+- deferred: 2026-06-05 (T direct oversight order: defer non-combat minigames).
+- reason: This is a design-heavy gameplay-system conversation, not a ready `/march` phase. Keep parked until a user-attended minigame design pass defines encounter kinds, resolution rules, alignment/resource integration, CLI reference rendering, and walkthrough grading.
+
+### Candidate: Second continent content expansion
+- deferred: 2026-06-05 (T direct oversight order, reaffirming 2026-06-01 decision).
+- reason: Base mechanics stabilization remains higher priority. Do not auto-promote under `/march` or `/expand`; revisit only when T explicitly reopens the Phase 100/second-continent direction.
 
 ## Rejected
 
