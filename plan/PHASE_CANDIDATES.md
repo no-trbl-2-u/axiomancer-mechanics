@@ -28,11 +28,6 @@ _No pending candidates after 2026-06-05 oversight promotion/defer pass._
 
 ## Promoted
 
-### Phase 121 — Labyrinth Act II world-puzzle doctrine
-- promoted: 2026-06-05 (T direct order after Labyrinth design pass). User priority override; no score needed.
-- source: T corrected the Labyrinth concept: literally a maze the size of Russia, Act II/Adult, not a metaphor and not merely the city wrapper. Reference blend: `Maze: Solve the World's Most Challenging Puzzle` + Bowie `Labyrinth` + Mörk Borg doom texture. Brainstorm source: `/root/Workspace/axiomancer-both/Encounter Brainstorm/labyrinth-act-notes.md`.
-- scope: Canonize the Labyrinth as Axiomancer's Act II world-puzzle doctrine: update story overview, author durable story/world doctrine, define physical model, puzzle grammar, tone, encounter pressure, and future traversal hooks. Do not build the full traversal engine in this phase. Brief: `plan/phases/phase_121_labyrinth_act_ii_world_puzzle_doctrine.md`.
-
 ### Phase 120 — Phase 66 synergy walkthrough (requires preset extension)
 - promoted: 2026-06-05 (T direct oversight order: "Promote 5, 4, and 1"). Score 4 × 7 / 10 = 2.8.
 - source: Phase 81 deferred Unit 2 scope after Phase 66 synergy skills were not present in presets.
