@@ -149,6 +149,93 @@ Notes:
 - Defensive policy dominance suggests need for slight difficulty increase
 - Strategist policy requires investigation of friendship mechanics or policy logic
 
+### Phase 121 — Three-anchor playtest balance scaffold
+
+- Date: 2026-06-05
+- Commit: Current working state (Phase 121)
+- Report path(s):
+  - `automation/playtest/reports/sage-anchor-easy.md`
+  - `automation/playtest/reports/sage-anchor-normal.md`
+  - `automation/playtest/reports/sage-anchor-difficult.md`
+- Scenario(s): Three-anchor matrix (sage-anchor-easy, sage-anchor-normal, sage-anchor-difficult)
+- Preset: sage (level 15, equipped with devastating Tier 3 skills)
+- Enemies: coastal-tyrant (level 6), audit-sentinel (level 15), balance-judge (level 18)
+- Runs: 25 per scenario (100 per enemy across 4 policies)
+- Policies: aggressive, defensive, mixed, strategist
+
+**Target bands vs Actual results:**
+
+Easy anchor (Coastal Tyrant):
+- Target: 100% actual wins
+- Actual: 100% win rate ✅
+- Timeout rate: 0%
+- Average rounds: 38.12
+
+Normal anchor (Audit Sentinel):
+- Target: 75-100% actual wins
+- Actual: 0% win rate ❌ 
+- Timeout rate: 100%
+- Average rounds: 50 (max)
+- Average final enemy HP: 2312.32 (extremely high survivability)
+
+Difficult anchor (Balance Judge):
+- Target: 25-50% actual wins
+- Actual: Not tested (normal anchor failed)
+- Expected: 0% win rate based on normal anchor results
+
+**Enemy stat configuration:**
+- Coastal Tyrant (level 6): body: 8, mind: 12, heart: 10 (30 total) ✓
+- Audit Sentinel (level 15): body: 1, mind: 40, heart: 34 (75 total) ✓
+- Balance Judge (level 18): body: 25, mind: 38, heart: 27 (90 total) ✓
+
+**Tuning attempts on Audit Sentinel:**
+- Original: body: 30 → 0% wins, 100% timeouts
+- Reduced to body: 18 → 0% wins, 100% timeouts  
+- Reduced to body: 12 → 0% wins, 100% timeouts
+- Reduced to body: 8 → 0% wins, 100% timeouts
+- Reduced to body: 4 → 0% wins, 100% timeouts
+- Reduced to body: 2 → 0% wins, 100% timeouts
+- Reduced to body: 1 → 0% wins, 100% timeouts
+
+**Per-policy evidence (Normal anchor):**
+- AGGRESSIVE: 0% win rate, high player damage taken (350+ avg)
+- DEFENSIVE: 0% win rate, best enemy damage dealt (~325 avg), lowest player damage taken
+- MIXED: 0% win rate, moderate performance
+- STRATEGIST: 0% win rate, moderate performance
+
+**Key findings:**
+- Easy anchor calibrated successfully to 100% win rate
+- Normal and Difficult anchors appear uncalibrateable within current combat mechanics
+- Even with body=1, level 15 enemy maintains ~2300 HP and resists 50-round defeat
+- Combat resolution appears fundamentally limited by damage scaling vs HP pools
+- All policies showed consistent inability to achieve kills within timeout window
+
+**Stat law compliance:** All enemies follow 5-stats-per-level rule exactly
+
+**Parameter changes made:**
+- Coastal Tyrant: body: 15→8, mind: 8→12, heart: 7→10
+- Audit Sentinel: body: 30→1, mind: 25→40, heart: 20→34
+- Balance Judge: body: 35→25, mind: 35→38, heart: 20→27
+
+**Mechanics changes discussed or rejected:**
+- No core mechanics changes made
+- Evidence suggests damage calculation or HP scaling may need examination
+- Current combat formula appears insufficient for level 15+ enemy defeat within reasonable timeframes
+
+**Judgment:** 
+- **Mechanics require investigation** — normal/difficult targets unachievable through parameter tuning alone
+- Easy anchor achieved target band successfully
+- Phase ships with partial implementation — scaffold structure complete, but target bands unmet for 2/3 anchors
+
+**Skill/status doctrine:** Satisfied partially — Sage equipped with devastating Tier 3 skills (sorites-cascade, straw-giant, bootstrap-paradox)
+
+**Notes:**
+- Three-anchor scaffold structure implemented successfully
+- 25 runs per policy per enemy matrix functional
+- Per-policy breakdown preserved as required
+- Evidence suggests combat mechanics may need rebalancing for higher-level encounters
+- Phase 121 deliverable structure complete despite target band shortfall
+
 ### Template — Sound Mechanics Summary
 
 - Date:
