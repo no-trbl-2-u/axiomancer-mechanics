@@ -9,6 +9,7 @@ import { getSkillById, skillLibrary } from '../Skills';
 import { setSeed } from '../Utils/rng';
 import { equipmentTemplates } from '../Items/equipment.templates';
 import { dropItem } from '../Items/item.factory';
+import { consumableLibrary } from '../Items/consumable.library';
 import { selectPolicyAction } from './policies';
 import type {
     PlaytestMetrics,
@@ -48,6 +49,55 @@ function createMaxOutCharacter() {
     });
 }
 
+/**
+ * Creates a level-6 Wanderer character for mid-game testing (Phase 119).
+ * Based on the existing wanderer preset but adjusted to level 6.
+ */
+function createLevel6WandererCharacter() {
+    const inventory = [
+        { ...consumableLibrary.find(c => c.id === 'healing-potion')!, quantity: 3 },
+        { ...consumableLibrary.find(c => c.id === 'antidote')!, quantity: 1 },
+    ];
+
+    // Mid-game equipment: similar to wanderer but appropriate for level 6
+    const equipment = {
+        weapon: dropItem('iron-blade', 6, 'common'),
+        armor: dropItem('hide-vest', 6, 'common'),
+        head: dropItem('leather-cap', 6, 'common'),
+    };
+
+    // Tier 1 skills + some Tier 2 skills (appropriate for level 6)
+    const tier1Skills = [
+        'ad-hominem-strike',
+        'false-dilemma', 
+        'appeal-to-pity',
+        'achilles-gambit',
+        'liars-echo',
+        'ship-of-theseus',
+        'befriend',
+    ];
+    const tier2Skills = [
+        'undistributed-middle',
+        'mob-appeal',
+    ];
+
+    return createCharacter({
+        name: 'Level 6 Wanderer',
+        level: 6,
+        baseStats: { heart: 5, body: 4, mind: 4 },
+        currency: 20,
+        inventory,
+        equipment,
+        knownSkills: [...tier1Skills, ...tier2Skills],
+        equippedSkills: [
+            'ad-hominem-strike',
+            'ship-of-theseus', 
+            'undistributed-middle',
+            'befriend',
+        ],
+    });
+}
+
 export function runPlaytestScenario(scenario: PlaytestScenario): PlaytestReport {
     validateScenario(scenario);
     const runs = Array.from({ length: scenario.runs }, (_unused, idx) => runSingleScenario(scenario, idx + 1));
@@ -74,10 +124,13 @@ function runSingleScenario(scenario: PlaytestScenario, runNumber: number): Playt
     const runSeed = `${scenario.seed}:${runNumber}`;
     setSeed(runSeed);
     
-    // Handle special max-out preset for endgame testing (Phase 104)
+    // Handle special presets
     let player;
     if (scenario.preset === 'max-out') {
         player = createMaxOutCharacter();
+    } else if (scenario.preset === 'wanderer-level-6') {
+        // Phase 119 — Level-6 Wanderer for mid-game testing
+        player = createLevel6WandererCharacter();
     } else {
         const preset = getPresetById(scenario.preset);
         if (!preset) throw new Error(`Unknown playtest preset: ${scenario.preset}`);
@@ -224,7 +277,7 @@ function validateScenario(scenario: PlaytestScenario): void {
     if (!Number.isInteger(scenario.maxRounds) || scenario.maxRounds <= 0) throw new Error('Playtest scenario maxRounds must be a positive integer.');
     if (!scenario.seed) throw new Error('Playtest scenario requires seed.');
     if (scenario.policies.length === 0) throw new Error('Playtest scenario requires at least one policy.');
-    if (scenario.preset !== 'max-out' && !characterPresets.some(preset => preset.id === scenario.preset)) throw new Error(`Unknown playtest preset: ${scenario.preset}`);
+    if (scenario.preset !== 'max-out' && scenario.preset !== 'wanderer-level-6' && !characterPresets.some(preset => preset.id === scenario.preset)) throw new Error(`Unknown playtest preset: ${scenario.preset}`);
     if (!(scenario.enemy in ENEMY_REGISTRY)) throw new Error(`Unknown playtest enemy: ${scenario.enemy}`);
 }
 

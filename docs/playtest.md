@@ -165,6 +165,52 @@ runSeed = `${scenario.seed}:${runNumber}`
 
 Failed or interesting runs include their seeds in the report for replay and debugging.
 
+## Reference Probes
+
+The playtest framework includes standardized reference probes for measuring combat balance across difficulty tiers:
+
+### Mid-game Reference Probe (Phase 119)
+
+Measures level-6 Wanderer performance against northern-forest elite-tier enemies.
+
+**Command:**
+```bash
+node automation/playtest/mid-game-reference-probe.mjs
+```
+
+**Target Metrics (Spec 15):**
+- Expected rounds: 5-8 rounds
+- Player survivability: 70-85%
+- Damage ratio: 1.2:1 to 1.8:1 (player advantage)
+- Friendship reachability: 55-70%
+
+**Scenarios Tested:**
+- `mid-game-hush-wraith` — vs Hush-Wraith (mind-focused elite)
+- `mid-game-hollow-saint` — vs Hollow Saint (heart-focused elite)  
+- `mid-game-frostbound-hunter` — vs Frostbound Hunter (body-focused elite)
+
+### Late-game Reference Probe
+
+Measures endgame Sage preset performance against boss-tier enemies.
+
+**Command:**
+```bash
+npm run playtest -- --scenario=automation/playtest/scenarios/late-game-coastal-tyrant.json
+```
+
+**Target Metrics (Spec 15):**
+- Expected rounds: 8-15 rounds
+- Player survivability: 55-75% 
+- Damage ratio: 0.8:1 to 1.4:1 (balanced to slight player advantage)
+- Friendship reachability: 40-60%
+
+### When to Run Reference Probes
+
+- **After major balance changes**: Validate that adjustments haven't broken difficulty progression
+- **Post-content expansion**: Ensure new content aligns with existing difficulty curves
+- **Before releases**: Gate releases on probe results staying within target bands
+- **During iterative tuning**: Use probe feedback to guide balance adjustments
+
 ## Integration
 
 ### Character Presets

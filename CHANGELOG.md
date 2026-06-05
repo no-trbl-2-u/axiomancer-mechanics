@@ -14,6 +14,8 @@ deep imports are part of the supported surface.
 
 ### Added
 
+- **Phase 119** — Mid-game reference playtest probe: level-6 Wanderer vs northern-forest elite-tier enemies measurement framework. Adds `automation/playtest/mid-game-reference-probe.mjs` script and `wanderer-level-6` preset support in playtest runner. Measures rounds-to-resolve, survivability, resource routing, skill use, and friendship/mercy signals per Phase 104 pattern.
+
 ### Changed
 
 - **Phase 117** — Northern-forest expansion: grow `northern-forest` map from 10 to 25 nodes with 3 thematic sub-areas (Glen Path, Bone Hollow, Mist Ridge). Preserves existing nf-1..nf-10 structure while adding 15 new nodes with comprehensive MapEventPool coverage. Features 2 dead-ends and 1 small loop.
