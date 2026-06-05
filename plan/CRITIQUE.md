@@ -6,9 +6,10 @@
 > by `/iterate`.
 
 <!-- Metadata (updated by /critique after each pass):
-> Last pass: 2026-06-04 at commit 83774c3
-> Pass count: 52
+> Last pass: 2026-06-05 at commit 8c0b942
+> Pass count: 53
 -->
+<!-- Pass 53 (2026-06-05 at commit 8c0b942): 1 finding (0H/0M/1L). Post-Phase-121 window + 23 commits since pass 52 (Phase 121 three-anchor playtest balance scaffold). Comprehensive audit across all areas (A-F): **Public API surface** — zero new exports vs spec.md Contracts section; all src/index.ts exports align with bearings.md contract groups, no API drift detected. **E2e coverage** — comprehensive across all modules; each has *.engine.test.ts files with hermetic coverage. **Module structure** — clean consistency; logic in resolvers/reducers, constants properly organized, test-utils/rng.ts properly stubbed. **Documentation completeness** — docs/ folder current for all modules. **Type safety** — clean (zero @ts-ignore except expected .mjs import case; zero `as any` casts; no implicit return types). **Dead code** — one potential unused export identified: `isValidCombatAction` exported from barrel but has zero in-repo callers and is not in spec contract. Found codebase in excellent architectural health post-Phase-121 balance work. -->
 <!-- Pass 52 (2026-06-04 at commit 83774c3): 0 findings. Post-Phase-117 window + 14 commits since pass 51 (Phase 117 northern-forest expansion). Comprehensive audit across all areas (A-F): **Public API surface** — zero new exports vs spec.md Contracts section; all src/index.ts exports align with bearings.md contract groups, no API drift detected. **E2e coverage** — comprehensive across all modules; each has *.engine.test.ts files with hermetic coverage. **Module structure** — clean consistency; logic in resolvers/reducers, constants properly organized, test-utils/rng.ts properly stubbed. **Documentation completeness** — docs/ folder current for all modules. **Type safety** — zero @ts-ignore except expected .mjs import case; zero `as any` casts; no implicit return types. **Dead code** — no large commented-out blocks; no unused exports identified. Found codebase in excellent architectural health post-northern-forest expansion. Pool: empty. -->
 <!-- Pass 51 (2026-06-04 at commit d169194): 0 findings. Post-Phase-112/113/114 window + 24 commits since pass 50 (Phase 112 playtest observer/evidence integration + Phase 113 Mercy-loop playtest evidence + STRATEGIST witness + Phase 114 second enemy class family brief). Comprehensive audit across all areas (A-F): **Public API surface** — zero new exports vs spec.md Contracts section; all src/index.ts exports align with bearings.md contract groups, no API drift detected. **E2e coverage** — comprehensive across all 15 modules (Character, Combat, Effects, Enemy, Game, Items, Skills, World, Utils, NPCs, Philosophy, Playtest, CLI, Faction, test-utils); each has *.engine.test.ts files with hermetic coverage. **Module structure** — clean consistency; logic in resolvers/reducers, constants properly organized in combat.constants.ts + game-mechanics.constants.ts + actions.constants.ts pattern, test-utils/rng.ts properly stubbed throughout. **Documentation completeness** — docs/ folder current for all modules including recent Faction; docs/api.md properly documents all exported groups. **Type safety** — zero @ts-ignore except expected .mjs import case; zero `as any` casts; no implicit return types. **Dead code** — no large commented-out blocks; no unused exports identified. Found codebase in excellent architectural health post-Phase-114 content expansion brief. Pool: empty (pass 50 drained all findings). -->
 <!-- Pass 50 (2026-06-03 at commit bc5eb72): 0 findings. Post-Phase-111 cycle + 13 commits since pass 49 (Phase 109 faction reputation + Phase 110 factions + Phase 111 faction public surface audit). Exhaustive audit across all areas (A-F): **Public API surface** — zero new exports vs spec.md Contracts section; Faction module group properly exported (FACTION_REPUTATION_MIN/MAX, factionLibrary, getFactionInfo, FactionReputation types) aligns with bearings.md contract. **E2e coverage** — comprehensive across all modules including new Faction; each has *.engine.test.ts files with hermetic coverage. **Module structure** — clean consistency; faction logic in faction.ts, constants in constants.ts, test-utils/rng.ts properly stubbed. **Documentation completeness** — docs/faction.md current, all modules documented. **Type safety** — zero @ts-ignore except expected .mjs import case; zero `as any` casts. **Dead code** — comprehensive analysis of questioned exports (counterStanceOf, rollLoot*, createEventEmitter, nullAdapter, etc.) confirms all are actively used with legitimate callers; zero large commented-out blocks found. Found codebase in excellent health post-faction system implementation. Pool: existing LOW findings from prior passes remain. -->
@@ -29,8 +30,13 @@
 
 ## Pending
 
-
-
+### [LOW] Combat — isValidCombatAction export potentially unused
+- pass: critique-53 (commit 8c0b942)
+- area: dead-code
+- observation: isValidCombatAction function is exported from src/index.ts but has zero in-repo callers and is not mentioned in spec.md contract
+- evidence: src/index.ts:64, src/Combat/index.ts:185
+- suggested_fix: evaluate if this export is needed for external consumers; if not, remove from public barrel
+- source: critique
 
 
 
