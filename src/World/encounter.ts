@@ -20,6 +20,7 @@ import { EnemiesByMap } from '../Enemy/enemy.library';
 import { DEFAULT_XP_BY_DIFFICULTY } from '../Enemy';
 import { MapName } from './map.library';
 import { MapNode, Encounter } from './types';
+import type { BaseStats } from '../Character/types';
 
 /**
  * Adaptive scaling bands (Spec 07 Q6). For each difficulty tier the picked
@@ -53,6 +54,39 @@ function randomIntInclusive(min: number, max: number, rng: () => number = Math.r
     return Math.floor(rng() * (max - min + 1)) + min;
 }
 
+function scaleBaseStatsToLevel(baseStats: BaseStats, level: number): BaseStats {
+    const targetTotal = Math.max(3, level * 5);
+    const currentTotal = baseStats.body + baseStats.heart + baseStats.mind;
+    if (currentTotal <= 0) {
+        const floor = Math.floor(targetTotal / 3);
+        const remainder = targetTotal - floor * 3;
+        return {
+            body: floor + (remainder > 0 ? 1 : 0),
+            heart: floor + (remainder > 1 ? 1 : 0),
+            mind: floor,
+        };
+    }
+
+    const entries = (['body', 'heart', 'mind'] as const).map(stat => {
+        const exact = (baseStats[stat] / currentTotal) * targetTotal;
+        const whole = Math.floor(exact);
+        return { stat, whole, fraction: exact - whole };
+    });
+
+    let remainder = targetTotal - entries.reduce((total, entry) => total + entry.whole, 0);
+    entries.sort((a, b) => b.fraction - a.fraction);
+    for (const entry of entries) {
+        if (remainder <= 0) break;
+        entry.whole += 1;
+        remainder -= 1;
+    }
+
+    return entries.reduce((stats, entry) => {
+        stats[entry.stat] = entry.whole;
+        return stats;
+    }, {} as BaseStats);
+}
+
 /**
  * Returns a fresh `Enemy` scaled to `targetLevel`. Recomputes maxHealth and
  * derivedStats so the scaling stays internally consistent. `xpReward` is
@@ -64,6 +98,7 @@ export function scaleEnemyToLevel(source: Enemy, targetLevel: number): Enemy {
     const scaled: Enemy = {
         ...deepClone(source),
         level,
+        baseStats: scaleBaseStatsToLevel(source.baseStats, level),
     };
     scaled.maxHealth = calculateMaxHealth(level, scaled.baseStats);
     scaled.health = scaled.maxHealth;

@@ -21,12 +21,13 @@ export const STAT_MULTIPLIERS = {
 // ============================================================================
 // CHARACTER — RESOURCE CALCULATIONS
 // ============================================================================
-// Scaling factor applied after the base-stat average when computing the
-// maximum pool for each resource.
-// Formula:  max = level × average(relevantStats) × PER_STAT multiplier
+// Scaling factor applied to the base-stat sum when computing max health.
+// Formula: maxHealth = (body + heart + mind) × HEALTH_PER_STAT.
+// Level influences health through the authored stat budget, not by a second
+// multiplicative level factor.
 
 export const RESOURCE_MULTIPLIERS = {
-    HEALTH_PER_STAT: 10,
+    HEALTH_PER_STAT: 5,
 } as const;
 
 // ============================================================================

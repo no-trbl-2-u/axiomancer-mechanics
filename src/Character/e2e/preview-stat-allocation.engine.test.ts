@@ -85,13 +85,12 @@ describe('previewStatAllocation', () => {
         );
     });
 
-    it('should respect level in maxHealth calculation', () => {
+    it('should compute maxHealth from allocated stat sum, not level multiplier', () => {
         const allocation = { heart: 1, body: 1, mind: 0 };
         
         const level1Preview = previewStatAllocation(baseStats, 1, allocation);
         const level3Preview = previewStatAllocation(baseStats, 3, allocation);
 
-        // Higher level should yield higher maxHealth for same stat allocation
-        expect(level3Preview.maxHealth).toBeGreaterThan(level1Preview.maxHealth);
+        expect(level3Preview.maxHealth).toBe(level1Preview.maxHealth);
     });
 });

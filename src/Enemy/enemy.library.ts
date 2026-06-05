@@ -158,7 +158,7 @@ export const LullabyMoth = createEnemy({
 
 /**
  * Legacy fixture preserved from Spec 02-era tests. Many e2e tests depend on
- * the exact `maxHealth = 10` (level 1 × avg(1, 1) × 10) so the stat block
+ * the exact `maxHealth = 15` (sum(1, 1, 1) × 5) so the stat block
  * is intentionally kept at 1/1/1. New normal enemies on the forest map
  * (`ForestSprite`, `ArgumentativeCrow`) carry the proper stat-aligned values.
  */
@@ -399,7 +399,7 @@ export const TideflukeReaver = createEnemy({
     name: 'Tidefluke Reaver',
     description: 'Salt-bound and shore-cursed. Its fists move faster than the surf retreats.',
     level: 4,
-    baseStats: { body: 6, mind: 2, heart: 3 },
+    baseStats: { body: 11, mind: 4, heart: 5 },
     mapName: 'fishing-village',
     difficulty: 'elite',
     logic: 'aggressive',
@@ -1271,8 +1271,10 @@ export const EchoOfPyrrhonia = createEnemy({
 
 /**
  * Punching-bag enemy used by Spec 04b's e2e suite and hermetic tests that
- * need a long-lived combat encounter. Kept separate from the spec-07
- * library so the encounter generator never selects it.
+ * need a long-lived combat encounter. It keeps body at 1 so old body-defense
+ * damage assertions remain stable, while heart/mind carry the extra HP budget.
+ * Kept separate from the spec-07 library so the encounter generator never
+ * selects it.
  */
 export const Sandbag_01 = createEnemy({
     id: 'sandbag-01',
@@ -1281,7 +1283,7 @@ export const Sandbag_01 = createEnemy({
         'A practice dummy of stitched arguments, hung from a rope. It mumbles, ' +
         'rarely strikes back, and refuses to die quickly.',
     level: 10,
-    baseStats: { body: 1, mind: 1, heart: 1 },
+    baseStats: { body: 1, mind: 30, heart: 29 },
     mapName: 'northern-forest',
     difficulty: 'simple',
     logic: 'random',

@@ -114,9 +114,9 @@ describe('createCharacter — derivation contracts', () => {
         expect(ch.nonCombatStats.mentalTest).toBe(2 * STAT_MULTIPLIERS.TEST);
     });
 
-    it('sets maxHealth = level × avg(body, heart) × HEALTH_PER_STAT and seeds health to full', () => {
+    it('sets maxHealth = sum(body, heart, mind) × HEALTH_PER_STAT and seeds health to full', () => {
         const ch = buildPlayer({ level: 3 });
-        const expected = 3 * ((3 + 4) / 2) * RESOURCE_MULTIPLIERS.HEALTH_PER_STAT;
+        const expected = (3 + 4 + 2) * RESOURCE_MULTIPLIERS.HEALTH_PER_STAT;
         expect(ch.maxHealth).toBe(expected);
         expect(ch.health).toBe(expected);
     });
