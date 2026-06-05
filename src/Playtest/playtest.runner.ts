@@ -409,14 +409,18 @@ function summarizePolicies(runs: PlaytestRunSummary[]): PlaytestPolicySummary[] 
 function deriveFindings(metrics: PlaytestMetrics): string[] {
     const findings: string[] = [];
     if (metrics.totalRuns === 0) return ['No runs executed.'];
+    const aggregateWins = metrics.outcomes.victory;
+    const aggregateMinWins = Math.ceil(metrics.totalRuns * 0.65);
+    const aggregateMaxWins = Math.floor(metrics.totalRuns * 0.75);
     
     // Phase 113 - Enhanced outcome reporting separating types clearly
     findings.push(`Outcome breakdown: ${percent(metrics.winRate)} victory, ${percent(metrics.friendshipRate)} friendship, ${percent(metrics.defeatRate)} defeat, ${percent(metrics.timeoutRate)} timeout`);
     
     if (metrics.timeoutRate > 0) findings.push(`${percent(metrics.timeoutRate)} of runs timed out before combat resolved.`);
     if (metrics.defeatRate > 0.5) findings.push(`Defeat rate is high at ${percent(metrics.defeatRate)}.`);
-    if (metrics.resolutionSuccessRate < 0.65 || metrics.resolutionSuccessRate > 0.75) {
-        findings.push(`Resolution success is ${percent(metrics.resolutionSuccessRate)}; target band is 65–75% victory plus friendship/mercy resolution.`);
+    findings.push(`Actual win rate is ${percent(metrics.winRate)} (${aggregateWins}/${metrics.totalRuns}); target band is ${aggregateMinWins}–${aggregateMaxWins} victories only.`);
+    if (metrics.resolutionSuccessRate !== metrics.winRate) {
+        findings.push(`Resolution success including friendship/mercy is ${percent(metrics.resolutionSuccessRate)}; actual win tuning ignores non-victory resolutions.`);
     }
     if (metrics.winRate > 0.85) findings.push(`Win rate is high at ${percent(metrics.winRate)}; encounter may be undertuned for these policies.`);
     
@@ -449,15 +453,58 @@ function deriveFindings(metrics: PlaytestMetrics): string[] {
     // Phase 113 - Policy-specific outcome analysis
     const strategistPolicy = metrics.policySummaries.find(summary => summary.policy === 'strategist');
     if (strategistPolicy) {
-        findings.push(`STRATEGIST witness: ${percent(strategistPolicy.resolutionSuccessRate)} resolution success, average ${formatFindingNumber(strategistPolicy.averageRounds)} rounds`);
+        const strategistWins = policyWins(strategistPolicy);
+        const strategistFloor = Math.ceil(strategistPolicy.runs * 0.8);
+        findings.push(`STRATEGIST witness: ${percent(strategistPolicy.winRate)} actual win rate (${strategistWins}/${strategistPolicy.runs}; needs ${strategistFloor}+), average ${formatFindingNumber(strategistPolicy.averageRounds)} rounds`);
+        if (strategistWins < strategistFloor) findings.push(`STRATEGIST is below T's 80% mastery-path floor at ${strategistWins}/${strategistPolicy.runs}.`);
+    }
+
+    const policyFloors: Record<string, number> = {
+        aggressive: 0.65,
+        defensive: 0.65,
+        mixed: 0.65,
+    };
+    for (const summary of metrics.policySummaries) {
+        const floor = policyFloors[summary.policy];
+        const wins = policyWins(summary);
+        if (floor !== undefined && summary.winRate < floor) {
+            findings.push(`${summary.policy.toUpperCase()} is below T's ${percent(floor)} actual-win floor at ${wins}/${summary.runs}; needs ${Math.ceil(summary.runs * floor)}+.`);
+        } else if (floor !== undefined) {
+            findings.push(`${summary.policy.toUpperCase()} clears T's ${percent(floor)} actual-win floor at ${wins}/${summary.runs}; needs ${Math.ceil(summary.runs * floor)}+.`);
+        }
     }
     
     const dominantAction = dominant(metrics.actionUse);
     if (dominantAction && dominantAction.share >= 0.7) findings.push(`Dominant player action: ${dominantAction.key} (${percent(dominantAction.share)} of actions).`);
     const dominantStance = dominant(metrics.stanceUse);
     if (dominantStance && dominantStance.share >= 0.7) findings.push(`Dominant stance: ${dominantStance.key} (${percent(dominantStance.share)} of stances).`);
+    findings.push(`Expressiveness verdict: ${deriveExpressivenessVerdict(metrics)}.`);
     if (findings.length === 0) findings.push('No obvious aggregate warning tripped; inspect per-run transcripts for feel and readability.');
     return findings;
+}
+
+function policyWins(summary: PlaytestPolicySummary): number {
+    return Math.round(summary.winRate * summary.runs);
+}
+
+function deriveExpressivenessVerdict(metrics: PlaytestMetrics): string {
+    const dominantStance = dominant(metrics.stanceUse);
+    const usedSkills = Object.values(metrics.skillUse).reduce((sum, count) => sum + count, 0);
+    const usedMultipleSkills = Object.keys(metrics.skillUse).length >= 3;
+    const strategist = metrics.policySummaries.find(summary => summary.policy === 'strategist');
+    const mixed = metrics.policySummaries.find(summary => summary.policy === 'mixed');
+    const concerns: string[] = [];
+
+    if (strategist && policyWins(strategist) < Math.ceil(strategist.runs * 0.8)) concerns.push('STRATEGIST below mastery-path floor');
+    if (mixed && policyWins(mixed) < Math.ceil(mixed.runs * 0.65)) concerns.push('ordinary mixed play below floor');
+    if (dominantStance && dominantStance.share >= 0.85) concerns.push(`${dominantStance.key} stance dominates at ${percent(dominantStance.share)}`);
+    if (usedSkills === 0) concerns.push('no skill use surfaced');
+    else if (!usedMultipleSkills) concerns.push('skill use is too narrow');
+    if (metrics.befriendAttempts > 0 && metrics.spareChoices === 0) concerns.push('mercy opens but is only exploited, not spared');
+
+    if (concerns.length === 0) return 'strong — gates pass and play expresses multiple mechanics';
+    if (concerns.length <= 2) return `thin — ${concerns.join('; ')}`;
+    return `broken — ${concerns.join('; ')}`;
 }
 
 function describeAction(action: CombatAction): string {

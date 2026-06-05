@@ -592,7 +592,7 @@ export const CoastalTyrant = createEnemy({
         'Once a magistrate of the bay; now a king whose subjects are all gulls and grievances. ' +
         'His blade is older than the village charter.',
     level: 6,
-    baseStats: { body: 6, mind: 3, heart: 4 },
+    baseStats: { body: 12, mind: 10, heart: 9 },
     mapName: 'fishing-village',
     difficulty: 'boss',
     logic: 'boss',

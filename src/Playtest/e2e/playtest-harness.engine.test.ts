@@ -153,27 +153,27 @@ describe('Automated playtest harness', () => {
         }
     });
 
-    it('validates 65-75% resolution success rate target in findings', () => {
+    it('validates 65-75% actual win-rate target in findings', () => {
         const scenario: PlaytestScenario = {
-            id: 'test-resolution-success-rate-reporting',
-            description: 'Resolution success rate reporting for Phase 113',
+            id: 'test-actual-win-rate-reporting',
+            description: 'Actual win-rate reporting for Phase 113',
             preset: 'apprentice',
             enemy: 'tidepool-crab',
             runs: 4,
             maxRounds: 15,
-            seed: 'resolution-success-e2e',
+            seed: 'actual-win-e2e',
             policies: ['aggressive', 'defensive'],
         };
 
         const report = runPlaytestScenario(scenario);
 
-        // Should report resolution success rate with target band
-        const resolutionFinding = report.findings.find(finding => 
-            finding.includes('target band is 65–75%'));
+        // Should report actual win rate with target band
+        const winRateFinding = report.findings.find(finding => 
+            finding.includes('target band is') && finding.includes('victories only'));
         
-        // This finding should exist if rate is outside target band
-        if (report.metrics.resolutionSuccessRate < 0.65 || report.metrics.resolutionSuccessRate > 0.75) {
-            expect(resolutionFinding).toBeDefined();
+        // This finding should exist if actual win rate is outside target band
+        if (report.metrics.winRate < 0.65 || report.metrics.winRate > 0.75) {
+            expect(winRateFinding).toBeDefined();
         }
     });
 });

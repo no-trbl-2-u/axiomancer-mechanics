@@ -85,9 +85,13 @@ function strategicSkillPriority(combat: CombatState, skillId: string): number {
         score -= 5; // Too expensive relative to available resources
     }
 
-    // Mercy opportunity assessment
+    // Mercy opportunity assessment. Befriend is a witness to a real opening,
+    // not a generic low-cost skill. Do not cast it before the authored HP gate.
     const hpGate = combat.enemy.befriendabilityConfig?.hpGate?.belowPct;
-    if (hpGate && enemyHpPct <= hpGate + 0.1) { // Near HP gate
+    if (skillId === 'befriend' && hpGate !== undefined && enemyHpPct > hpGate) {
+        return Number.NEGATIVE_INFINITY;
+    }
+    if (hpGate !== undefined && enemyHpPct <= hpGate + 0.1) { // Near HP gate
         if (skillId === 'befriend') {
             score += 30; // Strongly prioritize befriend near mercy opportunity
         } else if (skill.targetType === 'enemy' && skill.basePower > 0) {
@@ -117,7 +121,7 @@ export function selectPolicyAction(policy: PlaytestPolicy, combat: CombatState):
     if (combat.phase === 'mercy_choice' || combat.mercyChoiceActive) {
         return {
             stance: 'heart',
-            action: policy === 'mercy-exploit' ? 'exploit' : 'spare',
+            action: policy === 'friendship' || policy === 'mercy' ? 'spare' : 'exploit',
         };
     }
 
@@ -153,9 +157,13 @@ export function selectPolicyAction(policy: PlaytestPolicy, combat: CombatState):
         const hpFraction = combat.player.health / combat.player.maxHealth;
         const itemId = hpFraction < 0.45 ? firstConsumableId(combat) : undefined;
         if (itemId) return { stance: 'body', action: 'item', itemId };
-        return hpFraction < 0.7
-            ? { stance: 'body', action: 'defend' }
-            : { stance: 'body', action: 'attack' };
+
+        // DEFENSIVE is a survival witness, not a disguised attack bot. In the
+        // Coastal Tyrant audit it resolved faster than AGGRESSIVE, which made
+        // its testimony false. It now preserves HP and tempo-caution first,
+        // attacking only often enough to prove that patient play can close.
+        if (hpFraction < 0.8 || combat.round % 4 === 0) return { stance: 'body', action: 'defend' };
+        return { stance: 'body', action: 'attack' };
     }
 
     if (policy === 'strategist') {
@@ -164,13 +172,34 @@ export function selectPolicyAction(policy: PlaytestPolicy, combat: CombatState):
         const hpGate = combat.enemy.befriendabilityConfig?.hpGate?.belowPct;
         const befriend = getSkillById('befriend');
         
-        // Prioritize befriend when mercy opportunity is available
+        // Prioritize befriend when mercy opportunity is available.
         if (befriend
             && hpGate !== undefined
             && enemyHpPct <= hpGate
             && combat.player.knownSkills.includes('befriend')
             && canUseSkill(combat.combatResources, befriend)) {
             return { stance: 'heart', action: 'skill', skillId: 'befriend' };
+        }
+
+        // If the enemy is brought low but Befriend is not yet affordable,
+        // stop murdering the evidence and build Heart tokens/patience toward
+        // the mercy opening. STRATEGIST is the status/mercy witness, not a
+        // body-attack clone with better vocabulary.
+        if (befriend
+            && hpGate !== undefined
+            && enemyHpPct <= hpGate
+            && combat.player.knownSkills.includes('befriend')) {
+            return { stance: 'heart', action: 'defend' };
+        }
+
+        // Start banking Heart just before the HP gate so the policy can
+        // actually exercise the boss mercy route once the gate opens.
+        if (befriend
+            && hpGate !== undefined
+            && enemyHpPct <= hpGate + 0.1
+            && combat.player.knownSkills.includes('befriend')
+            && !canUseSkill(combat.combatResources, befriend)) {
+            return { stance: 'heart', action: 'defend' };
         }
 
         // Consider using items when critically low on health
@@ -227,7 +256,7 @@ export function selectPolicyAction(policy: PlaytestPolicy, combat: CombatState):
     }
 
     const skills = affordableSkills(combat);
-    if (skills.length > 0 && combat.round % 3 === 0) {
+    if (skills.length > 0) {
         return { stance: 'body', action: 'skill', skillId: skills[0] };
     }
     return { stance: 'body', action: 'attack' };

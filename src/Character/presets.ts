@@ -119,9 +119,10 @@ export const wandererPreset: CharacterPreset = {
 export const sagePreset: CharacterPreset = {
     id: 'sage',
     name: 'Sage',
-    summary: 'Late-game — mid-tier kit, every skill known, paradox in reach.',
+    summary: 'Late-game — 5-stat-points-per-level split evenly, every skill known, paradox in reach.',
     level: 15,
-    baseStats: { heart: 7, body: 6, mind: 6 },
+    // Level 15 assumes 5 stat points per level and an even late-game split.
+    baseStats: { heart: 25, body: 25, mind: 25 },
     equipment: [
         { templateId: 'steel-blade', slot: 'weapon' },
         { templateId: 'chain-mail',  slot: 'armor'  },

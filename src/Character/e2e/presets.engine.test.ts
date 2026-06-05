@@ -65,7 +65,7 @@ describe('buildCharacterFromPreset', () => {
         mockSequentialRng(0.5);
         const player = buildCharacterFromPreset(sagePreset);
         expect(player.level).toBe(15);
-        expect(player.baseStats).toEqual({ heart: 7, body: 6, mind: 6 });
+        expect(player.baseStats).toEqual({ heart: 25, body: 25, mind: 25 });
         expect(player.knownSkills).toHaveLength(13); // Phase 108 — includes Befriend starting skill
         expect(player.equippedSkills).toContain('bootstrap-paradox');
         expect(player.equipment.weapon?.id).toBe('steel-blade');

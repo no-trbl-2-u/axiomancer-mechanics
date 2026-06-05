@@ -69,7 +69,11 @@ Use these references when making balance changes to validate that early-game acc
 
 Axiomancer combat doctrine: status effects are central. A player may sometimes win by basic attacking or friendliness, but the intended mastery path is skill use, resource planning, status application, and status synergy. Playtest evidence must include AGGRESSIVE, DEFENSIVE, MIXED, and STRATEGIST styles; STRATEGIST is the witness for skill/status planning.
 
-The current roster-wide difficulty mandate is empirical: verify the combat machinery, tune parameters, playtest, read the report, and repeat until the current report reaches approximately **65–75% resolution success rate** (victory plus friendship/mercy resolution, not raw win rate) for every current strategy.
+Policy strategy memory lives in [`automation/playtest/PLAYSTYLE_MEMORY.md`](../automation/playtest/PLAYSTYLE_MEMORY.md). Read and update that file when mechanics change so the automated playstyles keep maximizing their assigned strategies instead of silently drifting into stale or stupid witness behavior.
+
+The current roster-wide difficulty mandate is empirical: verify the combat machinery, tune parameters, playtest, read the report, and repeat until the current report satisfies T's actual-victory gates: **65–75% aggregate actual win rate**, **STRATEGIST at least 80% actual win rate**, and **AGGRESSIVE / DEFENSIVE / MIXED at least 65% actual win rate**. Friendship/mercy/capture outcomes remain separate evidence and do not satisfy win-rate targets unless T explicitly asks for broader resolution success.
+
+The canonical late-game Coastal Tyrant probe uses 100 runs across the four canonical policies, giving 25 runs per playstyle. Convert all percentage gates into counts before judging: aggregate must land at 65–75 victories, STRATEGIST must win at least 20/25, and AGGRESSIVE / DEFENSIVE / MIXED must each win at least 17/25.
 
 Preflight before tuning:
 
