@@ -26,6 +26,14 @@ scripted and JSON-event modes:
 `npm run game -- --script <path>` / `--stdin` / `--json-events`. See
 `README.md` "Agent-driven CLI mode" for examples.
 
+### Branch hygiene before new work
+
+Before implementation work, fetch `origin`, switch to `main`, require a clean
+worktree, and fast-forward from `origin/main`. New work must start from a fresh
+task branch based on current clean `main`. Do not begin implementation from a
+dirty `main`; if `main` is dirty, preserve/quarantine that state on a salvage
+branch before cleaning main.
+
 ### Committing during spec implementations
 
 When implementing a spec, commit **incrementally** — do not accumulate all
