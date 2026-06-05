@@ -121,18 +121,18 @@ export const sagePreset: CharacterPreset = {
     name: 'Sage',
     summary: 'Late-game — mid-tier kit, every skill known, paradox in reach.',
     level: 15,
-    baseStats: { heart: 7, body: 6, mind: 6 },
+    baseStats: { heart: 20, body: 30, mind: 25 },
     equipment: [
         { templateId: 'steel-blade', slot: 'weapon' },
         { templateId: 'chain-mail',  slot: 'armor'  },
         { templateId: 'chain-coif',  slot: 'head'   },
     ],
-    knownSkills: [...TIER_1_SKILLS, ...TIER_2_SKILLS, ...TIER_3_SKILLS],
+    knownSkills: [...TIER_1_SKILLS, ...TIER_2_SKILLS, ...TIER_3_SKILLS, ...TIER_2_SYNERGY_SKILLS],
     equippedSkills: [
-        'liars-echo',
-        'mob-appeal',
         'sorites-cascade',
         'bootstrap-paradox',
+        'resonance-detonation',
+        'bat-swarm-thoughtform',
     ],
     consumables: [
         { id: 'healing-potion', quantity: 6 },

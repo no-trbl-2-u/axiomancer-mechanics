@@ -592,7 +592,7 @@ export const CoastalTyrant = createEnemy({
         'Once a magistrate of the bay; now a king whose subjects are all gulls and grievances. ' +
         'His blade is older than the village charter.',
     level: 6,
-    baseStats: { body: 6, mind: 3, heart: 4 },
+    baseStats: { body: 15, mind: 8, heart: 7 },
     mapName: 'fishing-village',
     difficulty: 'boss',
     logic: 'boss',
@@ -609,7 +609,8 @@ export const CoastalTyrant = createEnemy({
     // Phase 45 — faith-pessimistic-transcendent (Marcion / Grand Inquisitor archetype).
     philosophicalAlignment: { epistemology: -67, outlook: -67, scope: 67 },
     // Phase 49 — body-aspected paradox skill matches the magistrate's heavy blade.
-    skills: [skill('achilles-gambit')],
+    // Phase 121 — additional skills for Easy anchor testing.
+    skills: [skill('achilles-gambit'), skill('ad-hominem-strike'), skill('false-dilemma')],
     // Phase 68 — boss-tier befriend predicate: the fallen-priest's friendship arc
     // opens only after he's been brought low (hpGate 40%), the player has shown
     // empathy at least once (heart stance), and 3 both-defend rounds have passed.
@@ -1289,6 +1290,71 @@ export const Sandbag_01 = createEnemy({
     philosophicalAlignment: { epistemology: 0, outlook: 0, scope: 0 },
 });
 
+// ─── Phase 121 Balance Audit Anchors ──────────────────────────────────────────
+
+/** Phase 121 — Normal anchor for playtest balance scaffold. */
+export const AuditSentinel = createEnemy({
+    id: 'enemy-audit-sentinel',
+    name: 'Audit Sentinel',
+    description: 'A manifestation of methodical scrutiny. It counts your errors patiently.',
+    level: 15,
+    baseStats: { body: 30, mind: 25, heart: 20 }, // 75 total = 15 × 5
+    mapName: 'northern-forest',
+    difficulty: 'normal',
+    logic: 'balanced',
+    tier1Overrides: T1_DEFAULT,
+    loot: [none(50), drop('clarity-serum', 30), drop('healing-potion', 20)],
+    philosophicalAlignment: { epistemology: 67, outlook: 0, scope: 0 }, // logic-mid-relational
+    skills: [skill('false-dilemma'), skill('ad-hominem-strike')], // 1-2 low-tier skills
+    finalBlowLines: {
+        brutal: 'The audit ends in your favor. The sentinel accepts the verdict.',
+        quiet:  'A methodical collapse, each error catalogued to the end.',
+        ironic: 'You convinced it to audit itself. The results were unfavorable.',
+    },
+    causeLines: {
+        brutal: 'The scrutiny finds what it was looking for. The errors were yours.',
+        broken: 'Error by error, the audit proceeds. You are found wanting.',
+        quiet:  'A single miscalculation. The sentinel notes it down and closes the ledger.',
+    },
+});
+
+/** Phase 121 — Difficult-but-doable anchor for playtest balance scaffold. */
+export const BalanceJudge = createEnemy({
+    id: 'enemy-balance-judge',
+    name: 'The Balance Judge',
+    description: 'Arbitrates between reason and unreason with devastating finality. Its scales weigh more than arguments.',
+    level: 18,
+    baseStats: { body: 35, mind: 35, heart: 20 }, // 90 total = 18 × 5
+    mapName: 'northern-forest',
+    difficulty: 'boss',
+    logic: 'boss',
+    tier1Overrides: T1_DEFAULT,
+    procUnlocks: {
+        body: { attack: 3, defend: 3 },
+        mind: { attack: 3, defend: 3 },
+        heart: { attack: 2, defend: 2 },
+    },
+    loot: [
+        drop('philosopher-tea', 40),
+        drop('void-essence', 30),
+        drop('revive-crystal', 20),
+        drop('resonance-crystal', 10),
+    ],
+    philosophicalAlignment: { epistemology: 0, outlook: 67, scope: 67 }, // mid-optimistic-transcendent
+    // Several skills including devastating ones
+    skills: [skill('sorites-cascade'), skill('straw-giant'), skill('bootstrap-paradox')],
+    finalBlowLines: {
+        brutal: 'The scales tip. The judgment is final.',
+        quiet:  'A balanced verdict, weighed against your arguments.',
+        ironic: 'You tipped the scales yourself. The judge merely recorded the result.',
+    },
+    causeLines: {
+        brutal: 'The scales weigh your arguments and find them light.',
+        broken: 'Judgment by judgment, the balance shifts against you.',
+        quiet:  'The scales tip once, gently. The judge nods and the session ends.',
+    },
+});
+
 // ─── Library indices ──────────────────────────────────────────────────────────
 
 /** Spec 07 + Phase 114 — all 25 production enemies, in difficulty order. */
@@ -1298,12 +1364,14 @@ export const EnemyLibrary = [
     // Normal
     Disatree_01, WetHound, MournfulGull, ForestSprite, HollowEyedBeggar, ArgumentativeCrow,
     ThornedSentinel, PackleaderWolf, WhisperingOak,
+    AuditSentinel, // Phase 121
     // Elite
     TideflukeReaver, HushWraith, HollowSaint,
     FrostboundHunter, MistwalkerShade, VerdantProtector,
     // Boss
     CoastalTyrant, TheDisagreement,
     NightmareStag, TheForestMind,
+    BalanceJudge, // Phase 121
     // Unique
     EchoOfPyrrhonia, EternalAutumn, ShadowOfTheFirst,
 ] as const;
@@ -1319,8 +1387,10 @@ export const EnemiesByMap = {
     'northern-forest': [
         LullabyMoth,
         Disatree_01, ForestSprite, ArgumentativeCrow, ThornedSentinel, PackleaderWolf, WhisperingOak,
+        AuditSentinel, // Phase 121
         HushWraith, HollowSaint, FrostboundHunter, MistwalkerShade, VerdantProtector,
         TheDisagreement, NightmareStag, TheForestMind,
+        BalanceJudge, // Phase 121
         EchoOfPyrrhonia, EternalAutumn, ShadowOfTheFirst,
     ],
 } as const;
@@ -1360,6 +1430,9 @@ export const ENEMY_REGISTRY = {
     'the-forest-mind':     TheForestMind,
     'eternal-autumn':      EternalAutumn,
     'shadow-of-the-first': ShadowOfTheFirst,
+    // Phase 121 balance audit anchors.
+    'audit-sentinel':      AuditSentinel,
+    'balance-judge':       BalanceJudge,
 } as const;
 
 export type EnemySlug = keyof typeof ENEMY_REGISTRY;

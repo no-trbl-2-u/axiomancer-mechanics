@@ -54,6 +54,7 @@ This is a pure documentation spec with no code implementation. The spec itself I
 - [x] Measurement cadence and tolerance guidelines specified
 - [x] `specs/README.md` updated with row 15 in recommended order
 - [x] All content committed and pushed
+- [x] Phase 121 — Three-anchor playtest balance scaffold for Sage preset
 
 ## Out of scope
 

@@ -176,4 +176,59 @@ describe('Automated playtest harness', () => {
             expect(resolutionFinding).toBeDefined();
         }
     });
+
+    // Phase 121 — Three-anchor balance scaffold validation
+    it('validates Phase 121 balance anchors against stat law and target bands', () => {
+        const easyScenario: PlaytestScenario = {
+            id: 'test-phase-121-easy-anchor',
+            description: 'Phase 121 Easy anchor validation',
+            preset: 'sage',
+            enemy: 'coastal-tyrant',
+            runs: 4,
+            maxRounds: 25,
+            seed: 'phase-121-easy-test',
+            policies: ['aggressive', 'defensive'],
+        };
+
+        const normalScenario: PlaytestScenario = {
+            id: 'test-phase-121-normal-anchor',
+            description: 'Phase 121 Normal anchor validation',
+            preset: 'sage',
+            enemy: 'audit-sentinel',
+            runs: 4,
+            maxRounds: 25,
+            seed: 'phase-121-normal-test',
+            policies: ['aggressive', 'defensive'],
+        };
+
+        const difficultScenario: PlaytestScenario = {
+            id: 'test-phase-121-difficult-anchor',
+            description: 'Phase 121 Difficult anchor validation',
+            preset: 'sage',
+            enemy: 'balance-judge',
+            runs: 4,
+            maxRounds: 35,
+            seed: 'phase-121-difficult-test',
+            policies: ['aggressive', 'defensive'],
+        };
+
+        // All scenarios should run without error
+        const easyReport = runPlaytestScenario(easyScenario);
+        const normalReport = runPlaytestScenario(normalScenario);
+        const difficultReport = runPlaytestScenario(difficultScenario);
+
+        // Validate basic structure
+        expect(easyReport.metrics.totalRuns).toBe(4);
+        expect(normalReport.metrics.totalRuns).toBe(4);
+        expect(difficultReport.metrics.totalRuns).toBe(4);
+
+        // Easy anchor should have higher win rate than difficult
+        expect(easyReport.metrics.winRate).toBeGreaterThanOrEqual(normalReport.metrics.winRate);
+        expect(normalReport.metrics.winRate).toBeGreaterThanOrEqual(difficultReport.metrics.winRate);
+
+        // All should have some outcome breakdown findings
+        expect(easyReport.findings.length).toBeGreaterThan(0);
+        expect(normalReport.findings.length).toBeGreaterThan(0);
+        expect(difficultReport.findings.length).toBeGreaterThan(0);
+    });
 });

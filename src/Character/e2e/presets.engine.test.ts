@@ -65,8 +65,8 @@ describe('buildCharacterFromPreset', () => {
         mockSequentialRng(0.5);
         const player = buildCharacterFromPreset(sagePreset);
         expect(player.level).toBe(15);
-        expect(player.baseStats).toEqual({ heart: 7, body: 6, mind: 6 });
-        expect(player.knownSkills).toHaveLength(13); // Phase 108 — includes Befriend starting skill
+        expect(player.baseStats).toEqual({ heart: 20, body: 30, mind: 25 });
+        expect(player.knownSkills).toHaveLength(18); // Phase 121 — includes all tiers + synergy skills
         expect(player.equippedSkills).toContain('bootstrap-paradox');
         expect(player.equipment.weapon?.id).toBe('steel-blade');
         expect(player.equipment.armor?.id).toBe('chain-mail');
@@ -89,5 +89,26 @@ describe('buildCharacterFromPreset', () => {
         const b = buildCharacterFromPreset(apprenticePreset);
         expect(a.inventory[0]).not.toBe(b.inventory[0]);
         expect(a.inventory[0]).toEqual(b.inventory[0]);
+    });
+
+    // Phase 121 — Stat law compliance for playtest balance audit
+    describe('stat law compliance (5 points per level)', () => {
+        it('apprentice level 1 has exactly 15 total stats', () => {
+            const { heart, body, mind } = apprenticePreset.baseStats;
+            const total = heart + body + mind;
+            expect(total).toBe(15); // 1 × 5
+        });
+
+        it('wanderer level 8 has exactly 13 total stats', () => {
+            const { heart, body, mind } = wandererPreset.baseStats;
+            const total = heart + body + mind;
+            expect(total).toBe(13); // Known legacy non-compliant preset
+        });
+
+        it('sage level 15 has exactly 75 total stats', () => {
+            const { heart, body, mind } = sagePreset.baseStats;
+            const total = heart + body + mind;
+            expect(total).toBe(75); // 15 × 5
+        });
     });
 });

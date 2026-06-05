@@ -359,8 +359,9 @@ describe('Phase 49 + Phase 57 enemy rotations', () => {
 
     it('Coastal Tyrant carries the achilles-gambit rotation (Phase 49)', () => {
         expect(CoastalTyrant.skills).toBeDefined();
-        expect(CoastalTyrant.skills?.length).toBe(1);
-        expect(CoastalTyrant.skills?.[0].id).toBe('achilles-gambit');
+        expect(CoastalTyrant.skills?.length).toBe(3); // Phase 121 — added skills for Easy anchor
+        const skillIds = CoastalTyrant.skills?.map(s => s.id) || [];
+        expect(skillIds).toContain('achilles-gambit');
     });
 
     it('Tidefluke Reaver carries the straw-giant rotation (Phase 57)', () => {
@@ -389,5 +390,49 @@ describe('Phase 49 + Phase 57 enemy rotations', () => {
 
     it('Hollow-Eyed Beggar carries the pascals-wager rotation (Phase 57)', () => {
         expect(HollowEyedBeggar.skills?.[0].id).toBe('pascals-wager');
+    });
+});
+
+describe('Phase 121 stat law compliance for playtest balance anchors', () => {
+    it('Coastal Tyrant level 6 has exactly 30 total stats (5 × level)', () => {
+        const { body, mind, heart } = CoastalTyrant.baseStats;
+        const total = body + mind + heart;
+        expect(total).toBe(30);
+    });
+
+    it('Coastal Tyrant has skills for Easy anchor testing', () => {
+        expect(CoastalTyrant.skills).toBeDefined();
+        expect(CoastalTyrant.skills?.length).toBeGreaterThanOrEqual(3);
+        const skillIds = CoastalTyrant.skills?.map(s => s.id) || [];
+        expect(skillIds).toContain('achilles-gambit');
+    });
+
+    it('Audit Sentinel level 15 has exactly 75 total stats (5 × level)', () => {
+        const AuditSentinel = ENEMY_REGISTRY['audit-sentinel'];
+        const { body, mind, heart } = AuditSentinel.baseStats;
+        const total = body + mind + heart;
+        expect(total).toBe(75);
+    });
+
+    it('Audit Sentinel has 1-2 low-tier skills for Normal anchor', () => {
+        const AuditSentinel = ENEMY_REGISTRY['audit-sentinel'];
+        expect(AuditSentinel.skills).toBeDefined();
+        expect(AuditSentinel.skills?.length).toBeGreaterThanOrEqual(1);
+        expect(AuditSentinel.skills?.length).toBeLessThanOrEqual(2);
+    });
+
+    it('Balance Judge level 18 has exactly 90 total stats (5 × level)', () => {
+        const BalanceJudge = ENEMY_REGISTRY['balance-judge'];
+        const { body, mind, heart } = BalanceJudge.baseStats;
+        const total = body + mind + heart;
+        expect(total).toBe(90);
+    });
+
+    it('Balance Judge has several devastating skills for Difficult anchor', () => {
+        const BalanceJudge = ENEMY_REGISTRY['balance-judge'];
+        expect(BalanceJudge.skills).toBeDefined();
+        expect(BalanceJudge.skills?.length).toBeGreaterThanOrEqual(3);
+        const skillIds = BalanceJudge.skills?.map(s => s.id) || [];
+        expect(skillIds).toContain('bootstrap-paradox'); // devastating tier 3 skill
     });
 });

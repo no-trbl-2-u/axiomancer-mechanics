@@ -13,67 +13,61 @@
 
 ## Aggregate Metrics
 
-- Win rate: 76.0%
+- Win rate: 96.0%
 - Defeat rate: 0.0%
-- Friendship rate: 8.0%
-- Timeout rate: 16.0%
-- Average rounds: 53.16
-- Median rounds: 54
-- Average final player HP: 794.16
-- Average final enemy HP: 9.76
-- Average damage to player: 14.08
-- Average damage to enemy: 435.16
-- Max friendship counter: 999
+- Friendship rate: 0.0%
+- Timeout rate: 4.0%
+- Average rounds: 53.88
+- Median rounds: 58
+- Average final player HP: 3725.16
+- Average final enemy HP: 1.68
+- Average damage to player: 0
+- Average damage to enemy: 643.56
+- Max friendship counter: 0
 
 ## Outcome Counts
 
-- victory: 19
+- victory: 24
 - defeat: 0
-- friendship: 2
+- friendship: 0
 - flee: 0
-- timeout: 4
+- timeout: 1
 
 ## Player Action Use
 
-- attack: 732
-- skill: 470
-- defend: 125
-- spare: 2
+- attack: 1074
+- skill: 273
 
 ## Stance Use
 
-- body: 1076
-- mind: 213
-- heart: 40
+- body: 1347
+- heart: 0
+- mind: 0
 
 ## Skill Use
 
-- ad-hominem-strike: 308
-- false-dilemma: 75
-- sorites-cascade: 38
-- undistributed-middle: 30
-- befriend: 19
+- ad-hominem-strike: 273
 
 ## Enemy Action Use
 
-- defend: 560
-- skill:achilles-gambit: 447
-- attack: 322
+- defend: 557
+- skill:achilles-gambit: 452
+- attack: 338
 
 ## Policy Summaries
 
 ### aggressive
 
 - Runs: 7
-- Win rate: 71.4%
+- Win rate: 85.7%
 - Defeat rate: 0.0%
 - Friendship rate: 0.0%
-- Timeout rate: 28.6%
-- Average rounds: 64.29
-- Average final player HP: 760.86
-- Average final enemy HP: 10.29
-- Average damage to player: 18.86
-- Average damage to enemy: 489.71
+- Timeout rate: 14.3%
+- Average rounds: 66.71
+- Average final player HP: 3719.57
+- Average final enemy HP: 6
+- Average damage to player: 0
+- Average damage to enemy: 632.29
 - Max friendship counter: 0
 
 ### defensive
@@ -83,78 +77,81 @@
 - Defeat rate: 0.0%
 - Friendship rate: 0.0%
 - Timeout rate: 0.0%
-- Average rounds: 28.67
-- Average final player HP: 881.67
+- Average rounds: 36.67
+- Average final player HP: 3732.50
 - Average final enemy HP: 0
-- Average damage to player: 1.67
-- Average damage to enemy: 415.33
+- Average damage to player: 0
+- Average damage to enemy: 640.33
 - Max friendship counter: 0
 
 ### mixed
 
 - Runs: 6
-- Win rate: 66.7%
+- Win rate: 100.0%
 - Defeat rate: 0.0%
 - Friendship rate: 0.0%
-- Timeout rate: 33.3%
-- Average rounds: 64.33
-- Average final player HP: 747.17
-- Average final enemy HP: 4.50
-- Average damage to player: 24.50
-- Average damage to enemy: 505
+- Timeout rate: 0.0%
+- Average rounds: 55.50
+- Average final player HP: 3723.67
+- Average final enemy HP: 0
+- Average damage to player: 0
+- Average damage to enemy: 651.50
 - Max friendship counter: 0
 
 ### strategist
 
 - Runs: 6
-- Win rate: 66.7%
+- Win rate: 100.0%
 - Defeat rate: 0.0%
-- Friendship rate: 33.3%
+- Friendship rate: 0.0%
 - Timeout rate: 0.0%
-- Average rounds: 53.50
-- Average final player HP: 792.50
-- Average final enemy HP: 24.17
-- Average damage to player: 10.50
-- Average damage to enemy: 321.50
-- Max friendship counter: 999
+- Average rounds: 54.50
+- Average final player HP: 3725.83
+- Average final enemy HP: 0
+- Average damage to player: 0
+- Average damage to enemy: 652
+- Max friendship counter: 0
 
 ## Findings for Tobin
 
-- 16% of runs timed out before combat resolved.
-- Resolution success is 84%; target band is 65–75% victory plus friendship/mercy resolution.
-- Dominant stance: body (81% of stances).
+- Outcome breakdown: 96% victory, 0% friendship, 0% defeat, 4% timeout
+- 4% of runs timed out before combat resolved.
+- Resolution success is 96%; target band is 65–75% victory plus friendship/mercy resolution.
+- Win rate is high at 96%; encounter may be undertuned for these policies.
+- No friendship outcomes surfaced; Tobin should judge whether the peaceful route is too hidden or too costly.
+- No Befriend attempts surfaced; mercy evidence is not yet exercising the doctrine path.
+- STRATEGIST witness: 100% resolution success, average 54.50 rounds
+- Dominant player action: attack (80% of actions).
+- Dominant stance: body (100% of stances).
 
 ## Replay Seeds Worth Inspecting
 
-- late-game-coastal-tyrant-v0:11
-- late-game-coastal-tyrant-v0:13
-- late-game-coastal-tyrant-v0:15
-- late-game-coastal-tyrant-v0:25
+- late-game-coastal-tyrant-v0:5
 
 ## Run Summaries
 
-- Run 1: outcome=victory, policy=aggressive, seed=late-game-coastal-tyrant-v0:1, rounds=61, playerHp=799, enemyHp=0, damageToPlayer=6, damageToEnemy=486, friendshipCounter=0
-- Run 2: outcome=victory, policy=defensive, seed=late-game-coastal-tyrant-v0:2, rounds=31, playerHp=854, enemyHp=0, damageToPlayer=0, damageToEnemy=444, friendshipCounter=0
-- Run 3: outcome=victory, policy=mixed, seed=late-game-coastal-tyrant-v0:3, rounds=54, playerHp=766, enemyHp=0, damageToPlayer=24, damageToEnemy=489, friendshipCounter=0
-- Run 4: outcome=victory, policy=strategist, seed=late-game-coastal-tyrant-v0:4, rounds=54, playerHp=807, enemyHp=0, damageToPlayer=0, damageToEnemy=327, friendshipCounter=9
-- Run 5: outcome=victory, policy=aggressive, seed=late-game-coastal-tyrant-v0:5, rounds=58, playerHp=762, enemyHp=0, damageToPlayer=62, damageToEnemy=450, friendshipCounter=0
-- Run 6: outcome=victory, policy=defensive, seed=late-game-coastal-tyrant-v0:6, rounds=38, playerHp=827, enemyHp=0, damageToPlayer=0, damageToEnemy=465, friendshipCounter=0
-- Run 7: outcome=victory, policy=mixed, seed=late-game-coastal-tyrant-v0:7, rounds=57, playerHp=818, enemyHp=0, damageToPlayer=16, damageToEnemy=445, friendshipCounter=0
-- Run 8: outcome=victory, policy=strategist, seed=late-game-coastal-tyrant-v0:8, rounds=54, playerHp=837, enemyHp=0, damageToPlayer=17, damageToEnemy=273, friendshipCounter=8
-- Run 9: outcome=victory, policy=aggressive, seed=late-game-coastal-tyrant-v0:9, rounds=60, playerHp=790, enemyHp=0, damageToPlayer=0, damageToEnemy=492, friendshipCounter=0
-- Run 10: outcome=victory, policy=defensive, seed=late-game-coastal-tyrant-v0:10, rounds=25, playerHp=905, enemyHp=0, damageToPlayer=0, damageToEnemy=382, friendshipCounter=0
-- Run 11: outcome=timeout, policy=mixed, seed=late-game-coastal-tyrant-v0:11, rounds=75, playerHp=773, enemyHp=12, damageToPlayer=12, damageToEnemy=478, friendshipCounter=0
-- Run 12: outcome=friendship, policy=strategist, seed=late-game-coastal-tyrant-v0:12, rounds=54, playerHp=775, enemyHp=50, damageToPlayer=9, damageToEnemy=347, friendshipCounter=999
-- Run 13: outcome=timeout, policy=aggressive, seed=late-game-coastal-tyrant-v0:13, rounds=75, playerHp=690, enemyHp=37, damageToPlayer=32, damageToEnemy=518, friendshipCounter=0
-- Run 14: outcome=victory, policy=defensive, seed=late-game-coastal-tyrant-v0:14, rounds=24, playerHp=908, enemyHp=0, damageToPlayer=0, damageToEnemy=367, friendshipCounter=0
-- Run 15: outcome=timeout, policy=mixed, seed=late-game-coastal-tyrant-v0:15, rounds=75, playerHp=679, enemyHp=15, damageToPlayer=26, damageToEnemy=554, friendshipCounter=0
-- Run 16: outcome=victory, policy=strategist, seed=late-game-coastal-tyrant-v0:16, rounds=54, playerHp=788, enemyHp=0, damageToPlayer=1, damageToEnemy=336, friendshipCounter=6
-- Run 17: outcome=victory, policy=aggressive, seed=late-game-coastal-tyrant-v0:17, rounds=54, playerHp=842, enemyHp=0, damageToPlayer=0, damageToEnemy=435, friendshipCounter=0
-- Run 18: outcome=victory, policy=defensive, seed=late-game-coastal-tyrant-v0:18, rounds=23, playerHp=926, enemyHp=0, damageToPlayer=0, damageToEnemy=402, friendshipCounter=0
-- Run 19: outcome=victory, policy=mixed, seed=late-game-coastal-tyrant-v0:19, rounds=59, playerHp=752, enemyHp=0, damageToPlayer=11, damageToEnemy=550, friendshipCounter=0
-- Run 20: outcome=friendship, policy=strategist, seed=late-game-coastal-tyrant-v0:20, rounds=51, playerHp=738, enemyHp=95, damageToPlayer=36, damageToEnemy=319, friendshipCounter=999
-- Run 21: outcome=victory, policy=aggressive, seed=late-game-coastal-tyrant-v0:21, rounds=67, playerHp=754, enemyHp=0, damageToPlayer=32, damageToEnemy=491, friendshipCounter=0
-- Run 22: outcome=victory, policy=defensive, seed=late-game-coastal-tyrant-v0:22, rounds=31, playerHp=870, enemyHp=0, damageToPlayer=10, damageToEnemy=432, friendshipCounter=0
-- Run 23: outcome=victory, policy=mixed, seed=late-game-coastal-tyrant-v0:23, rounds=66, playerHp=695, enemyHp=0, damageToPlayer=58, damageToEnemy=514, friendshipCounter=0
-- Run 24: outcome=victory, policy=strategist, seed=late-game-coastal-tyrant-v0:24, rounds=54, playerHp=810, enemyHp=0, damageToPlayer=0, damageToEnemy=327, friendshipCounter=8
-- Run 25: outcome=timeout, policy=aggressive, seed=late-game-coastal-tyrant-v0:25, rounds=75, playerHp=689, enemyHp=35, damageToPlayer=0, damageToEnemy=556, friendshipCounter=0
+- Run 1: outcome=victory, policy=aggressive, seed=late-game-coastal-tyrant-v0:1, rounds=72, playerHp=3715, enemyHp=0, damageToPlayer=0, damageToEnemy=647, friendshipCounter=0
+- Run 2: outcome=victory, policy=defensive, seed=late-game-coastal-tyrant-v0:2, rounds=35, playerHp=3733, enemyHp=0, damageToPlayer=0, damageToEnemy=664, friendshipCounter=0
+- Run 3: outcome=victory, policy=mixed, seed=late-game-coastal-tyrant-v0:3, rounds=59, playerHp=3719, enemyHp=0, damageToPlayer=0, damageToEnemy=668, friendshipCounter=0
+- Run 4: outcome=victory, policy=strategist, seed=late-game-coastal-tyrant-v0:4, rounds=51, playerHp=3728, enemyHp=0, damageToPlayer=0, damageToEnemy=635, friendshipCounter=0
+- Run 5: outcome=timeout, policy=aggressive, seed=late-game-coastal-tyrant-v0:5, rounds=75, playerHp=3714, enemyHp=42, damageToPlayer=0, damageToEnemy=598, friendshipCounter=0
+- Run 6: outcome=victory, policy=defensive, seed=late-game-coastal-tyrant-v0:6, rounds=50, playerHp=3725, enemyHp=0, damageToPlayer=0, damageToEnemy=654, friendshipCounter=0
+- Run 7: outcome=victory, policy=mixed, seed=late-game-coastal-tyrant-v0:7, rounds=58, playerHp=3728, enemyHp=0, damageToPlayer=0, damageToEnemy=671, friendshipCounter=0
+- Run 8: outcome=victory, policy=strategist, seed=late-game-coastal-tyrant-v0:8, rounds=59, playerHp=3721, enemyHp=0, damageToPlayer=0, damageToEnemy=662, friendshipCounter=0
+- Run 9: outcome=victory, policy=aggressive, seed=late-game-coastal-tyrant-v0:9, rounds=67, playerHp=3720, enemyHp=0, damageToPlayer=0, damageToEnemy=641, friendshipCounter=0
+- Run 10: outcome=victory, policy=defensive, seed=late-game-coastal-tyrant-v0:10, rounds=35, playerHp=3735, enemyHp=0, damageToPlayer=0, damageToEnemy=621, friendshipCounter=0
+- Run 11: outcome=victory, policy=mixed, seed=late-game-coastal-tyrant-v0:11, rounds=59, playerHp=3726, enemyHp=0, damageToPlayer=0, damageToEnemy=664, friendshipCounter=0
+- Run 12: outcome=victory, policy=strategist, seed=late-game-coastal-tyrant-v0:12, rounds=47, playerHp=3733, enemyHp=0, damageToPlayer=0, damageToEnemy=667, friendshipCounter=0
+- Run 13: outcome=victory, policy=aggressive, seed=late-game-coastal-tyrant-v0:13, rounds=63, playerHp=3722, enemyHp=0, damageToPlayer=0, damageToEnemy=637, friendshipCounter=0
+- Run 14: outcome=victory, policy=defensive, seed=late-game-coastal-tyrant-v0:14, rounds=31, playerHp=3735, enemyHp=0, damageToPlayer=0, damageToEnemy=635, friendshipCounter=0
+- Run 15: outcome=victory, policy=mixed, seed=late-game-coastal-tyrant-v0:15, rounds=67, playerHp=3714, enemyHp=0, damageToPlayer=0, damageToEnemy=650, friendshipCounter=0
+- Run 16: outcome=victory, policy=strategist, seed=late-game-coastal-tyrant-v0:16, rounds=49, playerHp=3736, enemyHp=0, damageToPlayer=0, damageToEnemy=633, friendshipCounter=0
+- Run 17: outcome=victory, policy=aggressive, seed=late-game-coastal-tyrant-v0:17, rounds=62, playerHp=3723, enemyHp=0, damageToPlayer=0, damageToEnemy=641, friendshipCounter=0
+- Run 18: outcome=victory, policy=defensive, seed=late-game-coastal-tyrant-v0:18, rounds=35, playerHp=3736, enemyHp=0, damageToPlayer=0, damageToEnemy=648, friendshipCounter=0
+- Run 19: outcome=victory, policy=mixed, seed=late-game-coastal-tyrant-v0:19, rounds=41, playerHp=3732, enemyHp=0, damageToPlayer=0, damageToEnemy=622, friendshipCounter=0
+- Run 20: outcome=victory, policy=strategist, seed=late-game-coastal-tyrant-v0:20, rounds=70, playerHp=3707, enemyHp=0, damageToPlayer=0, damageToEnemy=681, friendshipCounter=0
+- Run 21: outcome=victory, policy=aggressive, seed=late-game-coastal-tyrant-v0:21, rounds=59, playerHp=3724, enemyHp=0, damageToPlayer=0, damageToEnemy=625, friendshipCounter=0
+- Run 22: outcome=victory, policy=defensive, seed=late-game-coastal-tyrant-v0:22, rounds=34, playerHp=3731, enemyHp=0, damageToPlayer=0, damageToEnemy=620, friendshipCounter=0
+- Run 23: outcome=victory, policy=mixed, seed=late-game-coastal-tyrant-v0:23, rounds=49, playerHp=3723, enemyHp=0, damageToPlayer=0, damageToEnemy=634, friendshipCounter=0
+- Run 24: outcome=victory, policy=strategist, seed=late-game-coastal-tyrant-v0:24, rounds=51, playerHp=3730, enemyHp=0, damageToPlayer=0, damageToEnemy=634, friendshipCounter=0
+- Run 25: outcome=victory, policy=aggressive, seed=late-game-coastal-tyrant-v0:25, rounds=69, playerHp=3719, enemyHp=0, damageToPlayer=0, damageToEnemy=637, friendshipCounter=0
