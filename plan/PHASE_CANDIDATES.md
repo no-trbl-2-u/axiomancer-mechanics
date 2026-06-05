@@ -28,6 +28,11 @@ _No pending candidates after 2026-06-05 oversight promotion/defer pass._
 
 ## Promoted
 
+### Phase 121 — Three-anchor playtest balance scaffold
+- promoted: 2026-06-05 (T direct order after Sage/enemy balance planning pass). User priority override; no score needed.
+- source: T requested a three-enemy playtest face: Easy level-6 Coastal Tyrant, Normal level-15 non-boss, Difficult-but-doable level-18 boss; Sage gets 2–3 devastating skills; each enemy is tested 25 times per playstyle/strategy. Enemies obey level × 5 stat law. Metric is actual Sage win rate.
+- scope: Replace the single Coastal Tyrant witness with a three-anchor playtest matrix; fix Coastal Tyrant stats/skills; add the level-15 normal enemy and level-18 boss; tune/report actual-win bands 100%, 75–100%, and 25–50% with per-policy breakdowns. Brief: `plan/phases/phase_121_three_anchor_playtest_balance_scaffold.md`.
+
 ### Phase 120 — Phase 66 synergy walkthrough (requires preset extension)
 - promoted: 2026-06-05 (T direct oversight order: "Promote 5, 4, and 1"). Score 4 × 7 / 10 = 2.8.
 - source: Phase 81 deferred Unit 2 scope after Phase 66 synergy skills were not present in presets.
