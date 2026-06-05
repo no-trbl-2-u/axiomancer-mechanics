@@ -7,7 +7,7 @@
 <!-- Bias line (written by /oversight when set):
 > Bias: <category> (set via oversight <date>)
 -->
-> Bias: mechanics (set via oversight 2026-06-04 — T concern: mechanics drifting; /iterate weights mechanic-category findings 1.5×)
+<!-- Bias CLEARED via oversight 2026-06-05 (Q3 user pick: "Clear it"). The mechanics bias (set via oversight 2026-06-04 — T concern: mechanics drifting; /iterate weighted mechanic-category findings 1.5×) was a no-op multiplier: AUDIT Pending 0 + CRITIQUE Pending 0 (pass 52), so no live findings ever surfaced for it to weight. Cleared so /iterate weights evenly when the post-Phase-121 critique passes re-cluster a category. Re-evaluate at the next oversight if a category dominates. -->
 
 <!-- Bias cleared via oversight 2026-05-24 (twentieth oversight, second of the day). Q3 user pick: "Clear — no live queue; let signals re-cluster naturally." AUDIT pending 0; CRITIQUE pending 0. The multiplier is a no-op until the next critique pass. With 10 phases now queued (78-87 — three audits + mechanic shift + four post-80 follow-ups + walkthroughs + CLI + docs) the post-ship critique passes are about to land a mixed signal across skills/effects/combat-tuning/equipment/docs; no single category dominates yet. Bias re-evaluates at next oversight after the audit-trio (78/79/86) lands and the critique queue surfaces a category cluster. -->
 
