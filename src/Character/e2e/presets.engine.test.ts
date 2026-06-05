@@ -53,7 +53,7 @@ describe('buildCharacterFromPreset', () => {
         const player = buildCharacterFromPreset(wandererPreset);
         expect(player.level).toBe(8);
         expect(player.baseStats).toEqual({ heart: 5, body: 4, mind: 4 });
-        expect(player.knownSkills).toHaveLength(10); // Phase 108 — includes Befriend starting skill
+        expect(player.knownSkills).toHaveLength(15); // Phase 108 — includes Befriend starting skill + Phase 120 — includes 5 synergy skills
         expect(player.equippedSkills).toHaveLength(4);
         expect(player.equipment.weapon?.id).toBe('iron-blade');
         expect(player.equipment.armor?.id).toBe('hide-vest');

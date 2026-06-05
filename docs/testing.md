@@ -100,8 +100,15 @@ zero-coverage primitives at the player-experience tier), and
 `BefriendabilityConfig` AND-composition; grades on
 predicate-attempt visibility per the brief D3). The Phase 66 synergy
 walkthrough originally scoped for Phase 81 pivoted per brief D2 (the
-5 synergy skills aren't in any preset's `knownSkills`); a separate
-candidate ships the synergy walkthrough after a preset extension.
+5 synergy skills aren't in any preset's `knownSkills`).
+
+**Phase 120 (2026-06-05).** Ships the deferred Phase 66 synergy
+walkthrough: `synergy-skills-chain`. Wanderer preset extended to
+include all 5 Phase 66 synergy skills; walkthrough exercises
+`resonance-burst` synergy firing by first casting `eternal-regress`
+(applies `debuff_confusion`) then casting `resonance-burst` (synergizes
+with the confusion debuff). Closes the Phase 81 Unit 2 deferred
+coverage.
 
 ### Deploy gate — `npm run deploy:check`
 

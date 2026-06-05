@@ -68,6 +68,14 @@ const TIER_3_SKILLS = [
     'bootstrap-paradox',
 ];
 
+const TIER_2_SYNERGY_SKILLS = [
+    'resonance-bleed',
+    'intensity-feedback',
+    'bat-swarm-thoughtform',
+    'resonance-burst',
+    'resonance-detonation',
+];
+
 export const apprenticePreset: CharacterPreset = {
     id: 'apprentice',
     name: 'Apprentice',
@@ -94,12 +102,12 @@ export const wandererPreset: CharacterPreset = {
         { templateId: 'hide-vest',   slot: 'armor'  },
         { templateId: 'leather-cap', slot: 'head'   },
     ],
-    knownSkills: [...TIER_1_SKILLS, ...TIER_2_SKILLS],
+    knownSkills: [...TIER_1_SKILLS, ...TIER_2_SKILLS, ...TIER_2_SYNERGY_SKILLS],
     equippedSkills: [
         'ad-hominem-strike',
         'ship-of-theseus',
-        'mob-appeal',
-        'undistributed-middle',
+        'resonance-bleed',
+        'resonance-burst',
     ],
     consumables: [
         { id: 'healing-potion', quantity: 5 },

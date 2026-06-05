@@ -14,6 +14,7 @@ deep imports are part of the supported surface.
 
 ### Added
 
+- **Phase 120** — Phase 66 synergy walkthrough: extends Wanderer preset with Phase 66 synergy skills and adds `synergy-skills-chain` walkthrough demonstrating synergy fire events. Closes deferred Phase 81 Unit 2 coverage for player-experience-tier synergy skill testing.
 - **Phase 119** — Mid-game reference playtest probe: level-6 Wanderer vs northern-forest elite-tier enemies measurement framework. Adds `automation/playtest/mid-game-reference-probe.mjs` script and `wanderer-level-6` preset support in playtest runner. Measures rounds-to-resolve, survivability, resource routing, skill use, and friendship/mercy signals per Phase 104 pattern.
 
 ### Changed
