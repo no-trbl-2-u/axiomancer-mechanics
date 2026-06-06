@@ -46,18 +46,20 @@
 
 ## Pending
 
+- **[LOW] Dead code — `clearTier1EffectsForType` legacy alias unused on public barrel** — `src/index.ts:94` exports `clearTier1EffectsForType` as a legacy alias for `clearTier1EffectsForStance` but it has zero callers anywhere in the codebase. The alias is redundant since the actual function is properly used throughout. Removal would reduce API surface area and eliminate potentially confusing duplicate naming. Also needs docs cleanup in `docs/effects.md:601` and `docs/api.md:473` that reference the unused alias. Impact 3 × Ease 9 / 10 = 2.7. Source: /iterate audit category D (dead code) finding.
+
 <!-- iterate audit 2026-06-06: comprehensive audit across categories Z-H.
      Z. External critique: CRITIQUE.md Pending queue empty (no changes since previous audit)
      A. Test-quality gaps: all modules have hermetic e2e tests, no raw vi.spyOn usage except in test-utils/rng.ts helper (clean)
      B. Spec-gap items: no open questions with blank "Your answer:" placeholders (template files excluded) (clean)
      C. Type-safety: 1 justified @ts-ignore with explanatory comment in agent-vitest-reporter.engine.test.ts (acceptable)
-     D. Dead code: no commented-out code blocks found, no unused exports on public barrel (clean)
-     E. Documentation gaps: all major modules have docs in docs/ directory (clean)
+     D. Dead code: 1 finding - clearTier1EffectsForType legacy alias (score 2.7)
+     E. Documentation gaps: stale clearTier1EffectsForType references in docs/effects.md + docs/api.md (connected to dead code finding)
      F. ESLint fix: already shipped in Phase 13, npm run lint passes clean (clean)
      G. Dependency updates: 4 major bumps available (typescript 5→6, @types/node 22→25, inquirer 9→12, globals 16→17) - require deliberate phases per iterate policy
      H. Commit-hygiene: git status clean, no uncommitted changes (clean)
      
-     Finding: 0 actionable findings scoring ≥ 3.0. All queues drained. -->
+     Finding: 1 actionable finding (score 2.7) below 3.0 threshold. Per iterate failure mode 3, posture is bold → dispatch to /expand. -->
 
 
 
