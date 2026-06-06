@@ -46,18 +46,18 @@
 
 ## Pending
 
-<!-- iterate audit 2026-06-05: comprehensive audit across categories Z-H.
-     Z. External critique: 1 LOW finding in CRITIQUE.md — isValidCombatAction export potentially unused (score 1.6)
+<!-- iterate audit 2026-06-06: comprehensive audit across categories Z-H.
+     Z. External critique: CRITIQUE.md Pending queue empty (no changes since previous audit)
      A. Test-quality gaps: all modules have hermetic e2e tests, no raw vi.spyOn usage except in test-utils/rng.ts helper (clean)
      B. Spec-gap items: no open questions with blank "Your answer:" placeholders (template files excluded) (clean)
      C. Type-safety: 1 justified @ts-ignore with explanatory comment in agent-vitest-reporter.engine.test.ts (acceptable)
-     D. Dead code: same as Z finding — isValidCombatAction export with zero callers (score 1.6)
+     D. Dead code: no commented-out code blocks found, no unused exports on public barrel (clean)
      E. Documentation gaps: all major modules have docs in docs/ directory (clean)
      F. ESLint fix: already shipped in Phase 13, npm run lint passes clean (clean)
-     G. Dependency updates: 1 patch update available (@types/node 22.19.19→22.19.20, score 2.7)
+     G. Dependency updates: 4 major bumps available (typescript 5→6, @types/node 22→25, inquirer 9→12, globals 16→17) - require deliberate phases per iterate policy
      H. Commit-hygiene: git status clean, no uncommitted changes (clean)
      
-     Top finding: Dependency updates - @types/node patch update (score 2.7). -->
+     Finding: 0 actionable findings scoring ≥ 3.0. All queues drained. -->
 
 
 
