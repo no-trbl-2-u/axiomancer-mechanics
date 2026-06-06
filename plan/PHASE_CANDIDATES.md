@@ -29,29 +29,15 @@
 
 ## Pending
 
-### Candidate: Combat Scaling Mechanics Investigation
-- signal: Phase 121 BALANCE_LEDGER evidence showing level 15+ enemies uncalibrateable — 0% win rates persist even with minimal stats (body=1), indicating fundamental combat formula limitations
-- scope: Systematic investigation of combat resolution mechanics for high-level encounters. Analyze damage scaling vs HP pool relationships, examine level-based stat derivation formulas, test alternative combat resolution approaches. Document findings with evidence-based recommendations for mechanics changes to enable viable level 15+ encounters within reasonable round counts.
-- unblocks: Normal and difficult anchor calibration in three-anchor playtest matrix; viable endgame encounter design; progression curve that doesn't hit scaling walls
-- blocked-by: None — Phase 121 provided comprehensive evidence base
-- score: 8 × 5 / 10 = 4.0
-- recommended-slot: after Phase 121
+<!-- oversight 2026-06-06 (post-Phase-121 ship; attended): expand-33's three combat-scaling candidates (Combat Scaling Mechanics Investigation 4.0 / Health Formula Rebalancing 3.2 / Damage Calculation Audit 2.8) were REJECTED — their shared premise was contradicted by Phase 121's own evidence and a live re-run at this oversight. See ## Rejected. The user (Q1) directed filing the one thread Phase 121's closeout actually names: friendship / nonlethal expressiveness is absent on the lethal anchors. Balance/playtest expand-bias from oversight-2026-06-05 is KEPT (Q2) but the live signal it should weight is route-expressiveness, not HP/damage scaling. -->
 
-### Candidate: Health Formula Rebalancing for High-Level Encounters  
-- signal: Phase 121 evidence that level 15 enemy maintains ~2300 HP even with body=1, creating 50-round timeouts across all policies — suggests HP calculation formula unsuitable for level scaling
-- scope: Rebalance health derivation formulas to enable viable high-level encounters. Test alternative HP scaling approaches (linear vs exponential, stat weighting adjustments, level caps). Calibrate against Phase 121 three-anchor target bands. Preserve existing low-level balance while fixing high-level scaling issues.
-- unblocks: Normal anchor (75-100% win target) and difficult anchor (25-50% win target) calibration success in playtest matrix
-- blocked-by: May depend on Combat Scaling Investigation findings
-- score: 8 × 4 / 10 = 3.2  
-- recommended-slot: after Combat Scaling Investigation
-
-### Candidate: Damage Calculation Audit for Level Scaling
-- signal: Phase 121 BALANCE_LEDGER shows damage scaling insufficient for level 15+ enemy defeat within reasonable timeframes — all policies consistently fail to achieve kills within 50 rounds regardless of strategy
-- scope: Audit damage calculation formulas for level scaling viability. Examine attack stat scaling, damage roll mechanics, defense multiplier interactions. Test alternative damage scaling approaches to enable progression-appropriate encounter resolution times while preserving early-game balance.
-- unblocks: Viable damage progression curve that supports the three-anchor playtest matrix target bands
-- blocked-by: Combat Scaling Investigation may inform approach
-- score: 7 × 4 / 10 = 2.8
-- recommended-slot: after Combat Scaling Investigation
+### Candidate: Friendship / nonlethal route expressiveness on lethal anchors
+- signal: Phase 121 closeout (BALANCE_LEDGER.md tail) judged the three lethal anchors "mechanics sound for this gate" but flagged "friendship/nonlethal play is still absent from these lethal anchors and should be probed separately." Confirmed by a live re-run at oversight 2026-06-06: sage-anchor-normal (L15 audit-sentinel) 23/25 wins / 92% / max friendship counter **0**; sage-anchor-difficult (L18 balance-judge) 8/25 wins / 32% / max friendship counter **2**. STRATEGIST builds counters but the HP gate never opens, so the mercy route — the project's signature identity — never resolves on these anchors.
+- scope: Make the friendship / nonlethal route a reachable outcome on at least the Easy and Normal anchors without breaking the lethal-anchor win bands (Easy 100%, Normal 75-100%, Difficult 25-50%). Candidate levers (to be decided at brief time, NOT pre-committed here): friendship-route policy depth (a dedicated befriend-seeking policy/witness vs. the current STRATEGIST), HP-gate-vs-counter interaction tuning on these specific anchors, befriendability configs on audit-sentinel / balance-judge, and a friendship-rate target band added to the three-anchor matrix. Pure balance/content + playtest-witness work; core combat resolution stays as-is unless evidence forces otherwise.
+- unblocks: Mercy-route expressiveness on the canonical anchors; closes the "improving, not complete" expressiveness verdict the Phase 121 closeout left open; gives the friendship system playtest coverage at level-15/18 tiers (today it only resolves at low level).
+- blocked-by: None — Phase 121 scaffold + BefriendabilityConfig (Phase 68) + Befriend skill (Phase 108) + mercy-route tuning (Phase 101) all shipped.
+- score: 6 × 6 / 10 = 3.6
+- recommended-slot: next balance/playtest phase (after Phase 121)
 
 ## Promoted
 
@@ -1082,6 +1068,15 @@
 - reason: Base mechanics stabilization remains higher priority. Do not auto-promote under `/march` or `/expand`; revisit only when T explicitly reopens the Phase 100/second-continent direction.
 
 ## Rejected
+
+### Candidate: Combat Scaling Mechanics Investigation
+- rejected: 2026-06-06 (oversight, attended; Q1 user pick "Reject all 3, file real thread"). Premise contradicted by evidence. The candidate (expand-33, score 4.0) claimed "level 15+ enemies uncalibrateable — 0% win rates persist even with body=1, fundamental combat formula limitations." Phase 121's OWN closeout ledger (`automation/playtest/BALANCE_LEDGER.md` tail) reports the opposite: Normal L15 anchor 23/25 wins, Difficult L18 anchor 8/25 wins (in 25-50% band), aggregate 56/75 = 74.7%, verdict "mechanics sound for this gate", and explicitly "No core mechanics changes made." Re-verified by a live re-run at this oversight (`npm run playtest` against `sage-anchor-normal.json` → 23/25 wins / 92% / enemy final HP ~12; `sage-anchor-difficult.json` → 8/25 wins / 32% / 0 timeouts). The "~2300 HP / 50-round timeout / 0% win" state describes an intermediate exploration during Phase 121, not the landed scaffold. No core-mechanics investigation warranted. The real remaining thread (friendship/nonlethal expressiveness on lethal anchors) was filed as a fresh Pending candidate at this oversight.
+
+### Candidate: Health Formula Rebalancing for High-Level Encounters
+- rejected: 2026-06-06 (oversight, attended; Q1 user pick "Reject all 3, file real thread"). Same contradicted premise as the Combat Scaling Investigation candidate above. The "level 15 enemy maintains ~2300 HP even with body=1, 50-round timeouts across all policies" claim is false against current code: the live re-run at this oversight shows the L15 normal anchor (audit-sentinel) resolving at 92% wins with enemy final HP ~12 and avg 40 rounds (cap 55). HP derivation does not wall high-level encounters. No rebalancing phase warranted.
+
+### Candidate: Damage Calculation Audit for Level Scaling
+- rejected: 2026-06-06 (oversight, attended; Q1 user pick "Reject all 3, file real thread"). Same contradicted premise. The claim "damage scaling insufficient for level 15+ enemy defeat... all policies fail to achieve kills within 50 rounds" is false: both anchors resolve by lethal damage in-band at this oversight's live re-run (avg damage-to-enemy 367 normal / 339 difficult; avg rounds 40 / 25). Damage scaling is adequate for the canonical anchors. No audit phase warranted.
 
 ### Candidate: Character presets deprecation schedule cleanup
 - rejected: 2026-06-02 (oversight-28; Q1 user write-in: "remove phase item about presets. I'm trying to remove them"). The user is removing the deprecated Character presets directly, so the candidate is superseded by hands-on work. The underlying critique-46 MED ("presets deprecation schedule contradicts live use") was already drained at iterate `841d9ae` ("Character presets deprecation schedule updated"). No autonomous phase warranted — the preset-removal decision and execution sit with the user.
