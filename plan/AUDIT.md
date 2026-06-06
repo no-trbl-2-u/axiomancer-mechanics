@@ -46,6 +46,23 @@
 
 ## Pending
 
+<!-- iterate audit 2026-06-06: comprehensive audit across categories Z-H (twelfth audit this tick, systematic iterate skill procedure).
+     Z. External critique: CRITIQUE.md Pending queue empty (pass 54, no changes since last iterate)
+     A. Test-quality gaps: 1 finding - CLI/game.cli.ts lacks hermetic e2e test (score 4.2)
+     B. Spec-gap items: no open questions with blank "Your answer:" placeholders (template files excluded) (clean)
+     C. Type-safety: 1 justified @ts-ignore with explanatory comment in agent-vitest-reporter.engine.test.ts (acceptable)
+     D. Dead code: createDie export is used internally by createDieRoll function (clean)
+     E. Documentation gaps: all major modules have docs coverage (clean)
+     F. ESLint fix: already shipped in Phase 13, npm run lint passes clean (clean)
+     G. Dependency updates: 4 major bumps available (typescript 5→6, @types/node 22→25, inquirer 9→12, globals 16→17) - require deliberate phases per iterate policy
+     H. Commit-hygiene: git status clean, no uncommitted changes (clean)
+     
+     Bias: CLEARED (no active bias to apply)
+     
+     Finding: 1 actionable finding (CLI test gap, score 4.2) above 3.0 threshold. Proceed with implementation. -->
+
+- [ ] **[A] test-gaps — CLI/game.cli.ts lacks hermetic e2e test** — `src/CLI/game.cli.ts` (134 lines) has no corresponding `src/CLI/e2e/game.cli.engine.test.ts`. The CLI driver orchestrates full game loop + inquirer prompts (Map, Character, Inventory, Combat, Debug tabs). Engine verification needed for tab switching, store dispatch, prompt handling. Impact 7 × ease 6 = score 4.2. Source: iterate audit (this commit).
+
 <!-- iterate audit 2026-06-06: comprehensive audit across categories Z-H (tenth audit this tick, systematic iterate skill procedure).
      Z. External critique: CRITIQUE.md Pending queue empty (pass 54, no changes since last iterate)
      A. Test-quality gaps: all modules have hermetic e2e tests, no raw vi.spyOn usage except in test-utils/rng.ts helper, no non-hermetic test patterns found
