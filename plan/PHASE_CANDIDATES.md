@@ -5,8 +5,8 @@
 > `## Promoted`, `## Deferred`, or `## Rejected`.
 
 <!-- Metadata (updated by /expand after each pass):
-> Last pass: 2026-06-04 at commit 77aab3d
-> Pass count: 32
+> Last pass: 2026-06-06 at commit ea089dd
+> Pass count: 33
 -->
 <!-- oversight 2026-06-05 (post-Phase-120 ship): with all queues empty (phases: only Phase 121 pending; candidates/AUDIT/CRITIQUE: 0), once Phase 121 ships /march falls straight through to /expand. Two directives set this oversight:
   (1) NEXT-EXPANSION BIAS — balance/playtest (Q2 user pick). /expand should weight the difficulty/balance-tuning thread that Phase 121 opens — e.g. roster-wide tuning via the three-anchor pattern, extending the Sage three-anchor scaffold to other presets/enemies, or consuming the Phase 121 BALANCE_LEDGER evidence. Prefer balance/playtest candidates over fresh content expansion until T re-steers.
@@ -25,9 +25,33 @@
 
 ---
 
+<!-- Pass 33 (2026-06-06 at commit ea089dd): 3 candidates proposed. Post-Phase-121 (three-anchor playtest balance scaffold) + iterate/audit drain. Signal sources: AUDIT.md Pending empty; CRITIQUE.md Pending empty; Knowledge-Gaps only Q28 deferred (endgame); specs/ all recommended-order DONE; braindump/ unchanged since 2026-05-12; spec.md 6-month horizon Story content NPCs + Second enemy families (both already candidated). Recent commits clean pattern (Phase 121 ship + maintenance fixes). Primary signal cluster: **Phase 121 BALANCE_LEDGER evidence** shows fundamental combat scaling limitations for level 15+ encounters — normal/difficult anchors uncalibrateable through parameter tuning (0% win rates even with body=1), suggesting core combat mechanics investigation needed. Per oversight-2026-06-05 balance/playtest bias directive, prioritized combat mechanics candidates over content expansion. Filed three candidates: Combat scaling mechanics investigation (4.0), Health formula rebalancing (3.2), Damage calculation audit (2.8). All target the core limitation Phase 121 revealed. Pool grows 0 → 3 Pending. -->
+
 ## Pending
 
-_No pending candidates after 2026-06-05 oversight promotion/defer pass. Next /expand pass is biased toward balance/playtest (see oversight 2026-06-05 directive above). Labyrinth Act II is dropped, not a candidate._
+### Candidate: Combat Scaling Mechanics Investigation
+- signal: Phase 121 BALANCE_LEDGER evidence showing level 15+ enemies uncalibrateable — 0% win rates persist even with minimal stats (body=1), indicating fundamental combat formula limitations
+- scope: Systematic investigation of combat resolution mechanics for high-level encounters. Analyze damage scaling vs HP pool relationships, examine level-based stat derivation formulas, test alternative combat resolution approaches. Document findings with evidence-based recommendations for mechanics changes to enable viable level 15+ encounters within reasonable round counts.
+- unblocks: Normal and difficult anchor calibration in three-anchor playtest matrix; viable endgame encounter design; progression curve that doesn't hit scaling walls
+- blocked-by: None — Phase 121 provided comprehensive evidence base
+- score: 8 × 5 / 10 = 4.0
+- recommended-slot: after Phase 121
+
+### Candidate: Health Formula Rebalancing for High-Level Encounters  
+- signal: Phase 121 evidence that level 15 enemy maintains ~2300 HP even with body=1, creating 50-round timeouts across all policies — suggests HP calculation formula unsuitable for level scaling
+- scope: Rebalance health derivation formulas to enable viable high-level encounters. Test alternative HP scaling approaches (linear vs exponential, stat weighting adjustments, level caps). Calibrate against Phase 121 three-anchor target bands. Preserve existing low-level balance while fixing high-level scaling issues.
+- unblocks: Normal anchor (75-100% win target) and difficult anchor (25-50% win target) calibration success in playtest matrix
+- blocked-by: May depend on Combat Scaling Investigation findings
+- score: 8 × 4 / 10 = 3.2  
+- recommended-slot: after Combat Scaling Investigation
+
+### Candidate: Damage Calculation Audit for Level Scaling
+- signal: Phase 121 BALANCE_LEDGER shows damage scaling insufficient for level 15+ enemy defeat within reasonable timeframes — all policies consistently fail to achieve kills within 50 rounds regardless of strategy
+- scope: Audit damage calculation formulas for level scaling viability. Examine attack stat scaling, damage roll mechanics, defense multiplier interactions. Test alternative damage scaling approaches to enable progression-appropriate encounter resolution times while preserving early-game balance.
+- unblocks: Viable damage progression curve that supports the three-anchor playtest matrix target bands
+- blocked-by: Combat Scaling Investigation may inform approach
+- score: 7 × 4 / 10 = 2.8
+- recommended-slot: after Combat Scaling Investigation
 
 ## Promoted
 
