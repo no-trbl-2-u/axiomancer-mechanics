@@ -1300,7 +1300,7 @@ export const AuditSentinel = createEnemy({
     name: 'Audit Sentinel',
     description: 'A manifestation of methodical scrutiny. It counts your errors patiently.',
     level: 15,
-    baseStats: { body: 1, mind: 40, heart: 34 }, // 75 total = 15 × 5
+    baseStats: { body: 5, mind: 36, heart: 34 }, // 75 total = 15 × 5
     mapName: 'northern-forest',
     difficulty: 'normal',
     logic: 'balanced',
@@ -1326,7 +1326,7 @@ export const BalanceJudge = createEnemy({
     name: 'The Balance Judge',
     description: 'Arbitrates between reason and unreason with devastating finality. Its scales weigh more than arguments.',
     level: 18,
-    baseStats: { body: 25, mind: 38, heart: 27 }, // 90 total = 18 × 5
+    baseStats: { body: 5, mind: 20, heart: 65 }, // 90 total = 18 × 5
     mapName: 'northern-forest',
     difficulty: 'boss',
     logic: 'boss',

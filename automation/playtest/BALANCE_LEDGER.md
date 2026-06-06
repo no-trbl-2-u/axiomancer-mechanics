@@ -236,6 +236,54 @@ Difficult anchor (Balance Judge):
 - Evidence suggests combat mechanics may need rebalancing for higher-level encounters
 - Phase 121 deliverable structure complete despite target band shortfall
 
+### Phase 121 tuning rerun — witness calibration + anchor retune
+
+- Date: 2026-06-05T23:30:11Z
+- Commit: `3f3ebbd` base, working branch `judge-rpg-mechanics-tuning-20260605-230746`
+- Report path(s):
+  - `automation/playtest/reports/sage-anchor-easy.md`
+  - `automation/playtest/reports/sage-anchor-normal.md`
+  - `automation/playtest/reports/sage-anchor-difficult.md`
+- Scenario(s): Three-anchor matrix (`sage-anchor-easy`, `sage-anchor-normal`, `sage-anchor-difficult`)
+- Runs / policies: 25 runs per scenario; AGGRESSIVE, DEFENSIVE, MIXED, STRATEGIST
+
+Final stats:
+
+- Easy anchor: 25/25 victories, 0 defeats, 0 timeouts, 100.0% actual win rate, average 11.60 rounds.
+- Normal anchor: 20/25 victories, 0 defeats, 5 timeouts, 80.0% actual win rate, average 39.60 rounds.
+- Difficult anchor: 9/25 victories, 16 defeats, 0 timeouts, 36.0% actual win rate, average 23.76 rounds.
+- Friendship rate: 0.0% on all three anchors; these anchors are lethal-combat probes, not mercy-route probes.
+
+Per-strategy win rates:
+
+- Easy: AGGRESSIVE 7/7, DEFENSIVE 6/6, MIXED 6/6, STRATEGIST 6/6.
+- Normal: AGGRESSIVE 4/7, DEFENSIVE 4/6, MIXED 6/6, STRATEGIST 6/6.
+- Difficult: AGGRESSIVE 3/7, DEFENSIVE 1/6, MIXED 2/6, STRATEGIST 3/6.
+
+Difference from prior Phase 121 marker:
+
+- Normal anchor: 0/25 wins and 25/25 timeouts → 20/25 wins and 5/25 timeouts.
+- Difficult anchor: 0/25 wins and 25/25 defeats → 9/25 wins and 16/25 defeats.
+- Easy anchor remains 25/25 wins.
+- Skill evidence improved from stale `ad-hominem-strike` dominance to repeated `achilles-gambit`, `sorites-cascade`, `straw-giant`, and limited `undistributed-middle` use.
+- Stance evidence improved: Body still dominates, but Mind now appears on all three anchors when the witness builds/fires Mind skills.
+
+Parameter / witness changes made:
+
+- Created `automation/playtest/PLAYSTYLE_MEMORY.md` to record canonical witness intent.
+- Updated `src/Playtest/policies.ts` so AGGRESSIVE and DEFENSIVE spend pressure skills rather than hoarding resources, and STRATEGIST scores tier, damage, status, special mechanics, synergies, and stance-resource planning.
+- Audit Sentinel stat spread: `{ body: 1, mind: 40, heart: 34 }` → `{ body: 5, mind: 36, heart: 34 }` while preserving 75 total stats.
+- Balance Judge stat spread: `{ body: 25, mind: 38, heart: 27 }` → `{ body: 5, mind: 20, heart: 65 }` while preserving 90 total stats.
+- No core mechanics changes made.
+- Updated `src/Playtest/e2e/playtest-harness.engine.test.ts` so the Phase 121 unit gate uses the canonical anchor seeds, maxRounds, 25-run count, and all four witness policies instead of a stale 4-run AGGRESSIVE/DEFENSIVE smoke check.
+- Verification: `npm run verify` passes (type-check, lint, 83 Vitest files / 1031 tests, build).
+
+Judgment:
+
+- Continue tuning / mechanics sound / discuss mechanics change: **continue tuning**, but the three-anchor scaffold is no longer a corpse. Normal and difficult anchors are now inside their scenario-authored bands; easy remains intentionally trivial for the Sage.
+- Balance-gate verdict: **pass against Phase 121 anchor bands** (easy 100%, normal 75–100%, difficult 25–50%). **Fail against class-level per-policy floors** if applied universally, because normal AGGRESSIVE is 4/7 rather than 5/7 and difficult is intentionally below 65% for several policies.
+- Expressiveness verdict: **improving but still thin**. STRATEGIST now proves a real skill chain and outperforms blunt aggression, but Heart/friendship play is absent from these anchors and Body remains the dominant stance.
+
 ### Template — Sound Mechanics Summary
 
 - Date:
