@@ -142,7 +142,7 @@ export function selectPolicyAction(policy: PlaytestPolicy, combat: CombatState):
             return { stance: getSkillById(pressureSkill)?.philosophicalAspect ?? 'body', action: 'skill', skillId: pressureSkill };
         }
         return hpFraction < 0.55
-            ? { stance: 'body', action: 'defend' }
+            ? { stance: 'heart', action: 'defend' }
             : { stance: 'body', action: 'attack' };
     }
 

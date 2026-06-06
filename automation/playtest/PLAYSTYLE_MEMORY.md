@@ -5,7 +5,7 @@ This file records how automated playtest witnesses should behave. It is not comb
 ## Canonical witnesses
 
 - **AGGRESSIVE**: press damage, build Body resources through attacks, and spend affordable enemy-targeting skills immediately. It should not hoard resources or stall behind defensive loops.
-- **DEFENSIVE**: preserve HP with items/defend when genuinely pressured, but still convert safe windows into damage through skills and attacks. It is a survival witness, not a bunker doctrine.
+- **DEFENSIVE**: preserve HP with items/defend when genuinely pressured, but still convert safe windows into damage through skills and attacks. When wounded, it may defend in Heart to stabilize instead of turning Body-defense into a bunker or a bad matchup. It is a survival witness, not a bunker doctrine.
 - **MIXED**: rotate through aggressive, defensive, and strategist intentions so broad ordinary play remains viable.
 - **STRATEGIST**: prove the intended skill/status mastery route. It should prioritize high-value skills, status effects, synergies, Tier 3 chains, and stance/resource planning instead of repeating basic Body attacks forever.
 

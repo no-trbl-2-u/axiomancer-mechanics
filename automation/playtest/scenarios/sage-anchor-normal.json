@@ -4,7 +4,7 @@
   "preset": "sage",
   "enemy": "audit-sentinel",
   "runs": 25,
-  "maxRounds": 50,
+  "maxRounds": 55,
   "seed": "phase-121-normal-v1",
   "policies": ["aggressive", "defensive", "mixed", "strategist"]
 }

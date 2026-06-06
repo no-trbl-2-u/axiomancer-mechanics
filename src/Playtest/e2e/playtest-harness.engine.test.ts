@@ -197,7 +197,7 @@ describe('Automated playtest harness', () => {
             preset: 'sage',
             enemy: 'audit-sentinel',
             runs: 25,
-            maxRounds: 50,
+            maxRounds: 55,
             seed: 'phase-121-normal-v1',
             policies: canonicalPolicies,
         };

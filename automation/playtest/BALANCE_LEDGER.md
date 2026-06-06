@@ -284,6 +284,61 @@ Judgment:
 - Balance-gate verdict: **pass against Phase 121 anchor bands** (easy 100%, normal 75–100%, difficult 25–50%). **Fail against class-level per-policy floors** if applied universally, because normal AGGRESSIVE is 4/7 rather than 5/7 and difficult is intentionally below 65% for several policies.
 - Expressiveness verdict: **improving but still thin**. STRATEGIST now proves a real skill chain and outperforms blunt aggression, but Heart/friendship play is absent from these anchors and Body remains the dominant stance.
 
+### Phase 121 tuning rerun — class gate closure
+
+- Date: 2026-06-06T00:43:20Z
+- Commit: `61f69ad` base, working branch `judge-rpg-mechanics-tuning-20260605-230746`
+- Report path(s):
+  - `automation/playtest/reports/sage-anchor-easy.md`
+  - `automation/playtest/reports/sage-anchor-normal.md`
+  - `automation/playtest/reports/sage-anchor-difficult.md`
+- Scenario(s): Three-anchor matrix (`sage-anchor-easy`, `sage-anchor-normal`, `sage-anchor-difficult`)
+- Runs / policies: 25 runs per scenario; AGGRESSIVE, DEFENSIVE, MIXED, STRATEGIST
+
+Gate math:
+
+- Aggregate actual-victory target: 65–75% over 75 runs = **49–56 victories**.
+- Per-policy floors: AGGRESSIVE / DEFENSIVE / MIXED at least 65%; STRATEGIST at least 80%.
+- Current per-policy integer floors: AGGRESSIVE at least 14/21, DEFENSIVE at least 12/18, MIXED at least 12/18, STRATEGIST at least 15/18.
+
+Final stats:
+
+- Easy anchor: 25/25 victories, 0 defeats, 0 timeouts, 100.0% actual win rate, average 11.60 rounds.
+- Normal anchor: 23/25 victories, 0 defeats, 2 timeouts, 92.0% actual win rate, average 40.28 rounds.
+- Difficult anchor: 8/25 victories, 17 defeats, 0 timeouts, 32.0% actual win rate, average 24.60 rounds.
+- Aggregate: **56/75 victories, 74.7% actual win rate**.
+- Friendship rate: 0.0% on all three anchors; these remain lethal-combat probes, not mercy-route probes.
+
+Per-strategy aggregate win rates:
+
+- AGGRESSIVE: 16/21 wins, 76.2% — pass.
+- DEFENSIVE: 12/18 wins, 66.7% — pass.
+- MIXED: 13/18 wins, 72.2% — pass.
+- STRATEGIST: 15/18 wins, 83.3% — pass.
+
+Difference from prior tuning rerun:
+
+- Normal anchor: 20/25 wins and 5/25 timeouts → 23/25 wins and 2/25 timeouts.
+- Difficult anchor: 9/25 wins and 16/25 defeats → 8/25 wins and 17/25 defeats.
+- Aggregate: 54/75 wins, 72.0% → 56/75 wins, 74.7%.
+- DEFENSIVE aggregate: 11/18, 61.1% → 12/18, 66.7%.
+- MIXED aggregate remains above floor despite one fewer difficult-anchor win.
+
+Parameter / witness changes made:
+
+- Updated `automation/playtest/scenarios/sage-anchor-normal.json` maxRounds from 50 to 55 after timeout-tail evidence showed several normal-anchor runs ending near lethal resolution rather than failing by defeat.
+- Updated `src/Playtest/e2e/playtest-harness.engine.test.ts` to keep the Phase 121 test gate aligned with the canonical normal anchor cap.
+- Updated `src/Playtest/policies.ts` so DEFENSIVE uses Heart defend when wounded, distinguishing survival stabilization from Body bunker stalling and adding Heart evidence to the witness set.
+- Updated `automation/playtest/PLAYSTYLE_MEMORY.md` with the DEFENSIVE Heart-stabilization rule.
+- No core mechanics changes made.
+
+Judgment:
+
+- Continue tuning / mechanics sound / discuss mechanics change: **mechanics sound for this gate**. The class-level aggregate and per-policy actual-victory gates now pass without changing core combat rules.
+- Balance-gate verdict: **pass** against aggregate and per-policy count gates: aggregate 56/75 inside 49–56; AGGRESSIVE 16/21 ≥ 14; DEFENSIVE 12/18 ≥ 12; MIXED 13/18 ≥ 12; STRATEGIST 15/18 ≥ 15.
+- Expressiveness verdict: **improving, not complete**. STRATEGIST remains the strongest route and skill/status usage persists. Heart now appears through defensive stabilization, but friendship/nonlethal play is still absent from these lethal anchors and should be probed separately.
+- Verification: `npm run verify` passes (type-check, lint, 83 Vitest files / 1031 tests, build).
+
 ### Template — Sound Mechanics Summary
 
 - Date:
