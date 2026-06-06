@@ -46,7 +46,7 @@
 
 ## Pending
 
-<!-- iterate audit 2026-06-06: comprehensive audit across categories Z-H (first audit this tick, post-march dispatch).
+<!-- iterate audit 2026-06-06: comprehensive audit across categories Z-H (second audit this tick, post-march dispatch).
      Z. External critique: CRITIQUE.md Pending queue empty (no changes since last iterate)
      A. Test-quality gaps: all modules have hermetic e2e tests, no raw vi.spyOn usage except in test-utils/rng.ts helper (clean)
      B. Spec-gap items: no open questions with blank "Your answer:" placeholders (template files excluded) (clean)
@@ -57,7 +57,7 @@
      G. Dependency updates: 4 major bumps available (typescript 5→6, @types/node 22→25, inquirer 9→12, globals 16→17) - require deliberate phases per iterate policy
      H. Commit-hygiene: git status clean, no uncommitted changes (clean)
      
-     Finding: 1 actionable finding (score 1.6) below 3.0 threshold. Per iterate failure mode 3, posture is bold → dispatch to /expand. However, expand conditions not met (only 5 commits since last pass, need ≥20; no actionable signals in AUDIT/CRITIQUE/Knowledge-Gaps). Result: no action taken, iterate complete. -->
+     Finding: 1 actionable finding (score 1.6) below 3.0 threshold. Per iterate failure mode 3, posture is bold → dispatch to /expand. However, expand conditions not met (only 6 commits since last pass, need ≥20; no actionable signals in AUDIT/CRITIQUE/Knowledge-Gaps). Result: no action taken, iterate complete. -->
 
 
 
