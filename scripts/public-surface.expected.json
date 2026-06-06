@@ -64,7 +64,6 @@
     "clamp",
     "clampFactionReputation",
     "clearTier1EffectsForStance",
-    "clearTier1EffectsForType",
     "completeCurrentNode",
     "completeMap",
     "completeNode",

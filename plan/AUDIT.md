@@ -46,8 +46,6 @@
 
 ## Pending
 
-- **[LOW] Dead code — `clearTier1EffectsForType` legacy alias unused on public barrel** — `src/index.ts:94` exports `clearTier1EffectsForType` as a legacy alias for `clearTier1EffectsForStance` but it has zero callers anywhere in the codebase. The alias is redundant since the actual function is properly used throughout. Removal would reduce API surface area and eliminate potentially confusing duplicate naming. Also needs docs cleanup in `docs/effects.md:601` and `docs/api.md:473` that reference the unused alias. Impact 3 × Ease 9 / 10 = 2.7. Source: /iterate audit category D (dead code) finding.
-
 <!-- iterate audit 2026-06-06: comprehensive audit across categories Z-H.
      Z. External critique: CRITIQUE.md Pending queue empty (no changes since previous audit)
      A. Test-quality gaps: all modules have hermetic e2e tests, no raw vi.spyOn usage except in test-utils/rng.ts helper (clean)
@@ -135,6 +133,7 @@
 
 ## Done
 
+- [x] **[LOW] Dead code — `clearTier1EffectsForType` legacy alias unused on public barrel** — resolved at iterate commit `aca1b1a` (2026-06-06). Removed unused legacy alias from src/index.ts barrel export and src/Effects/index.ts definition. Updated docs/effects.md and docs/api.md to remove stale references. The alias was redundant since clearTier1EffectsForStance is properly used throughout. Removal reduces API surface area (-1 runtime export) and eliminates potentially confusing duplicate naming. Impact 3 × Ease 9 / 10 = 2.7. Source: /iterate audit category D (dead code) finding.
 - [x] **[LOW] isValidCombatAction export potentially unused** — evaluated at iterate (this commit). Export intentionally retained on public barrel for external consumer validation of partial CombatAction objects. Type guard functions are conventionally provided for API consumers even when zero in-repo usage. No breaking change applied per iterate Hard Rule 4. Impact 2 × Ease 8 / 10 = 1.6. Source: /iterate audit category Z (external critique) finding.
 - [x] **[LOW] @types/node dependency has patch update available** — resolved at iterate commit `2550735` (2026-06-05). Updated @types/node 22.19.19 → 22.19.20. Safe patch update per iterate guidelines. npm run verify stays green (1031/1031 tests). Impact 3 × Ease 9 / 10 = 2.7. Source: /iterate audit category G (deps) finding.
 - [x] **[HIGH] Test isolation failure causing non-deterministic test failures** — resolved at iterate commit `0bba1bf` (2026-06-03). skill.engine.test.ts was not cleaning up RNG state in afterEach, causing tier3-synergy-skills.engine.test.ts to fail when running after it. Added restoreOriginalRng() call to skill.engine.test.ts afterEach hook. npm run verify stays green (957/957 tests). Impact 8 × Ease 9 / 10 = 7.2. Source: /iterate audit category A (test-quality gaps) finding.
