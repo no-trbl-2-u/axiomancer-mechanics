@@ -24,6 +24,7 @@ import { parseArgv, prompt, emit, log, logState, setIoMode, setOutputMode, setSt
 
 import { createCharacter } from '../Character';
 import { ENEMY_REGISTRY, EnemyLibrary, type EnemySlug } from '../Enemy/enemy.library';
+import type { EquipmentSlot } from '../Items';
 import {
     devSetLevel, devSetStats, devLearnSkills, devEquipSkills,
     devGrantAllEquipment, devGrantAllConsumables, devEquipItem,
@@ -787,12 +788,12 @@ async function devTab(store: GameStoreHandle): Promise<void> {
         }
         case 'set-alignment': {
             const cur = store.getState().philosophicalAlignment;
-            const { logic, outlook, scope } = await prompt<{ logic: number; outlook: number; scope: number }>([
-                { type: 'number', name: 'logic',   message: 'Logic (-100 to 100):',   default: cur.logic },
+            const { epistemology, outlook, scope } = await prompt<{ epistemology: number; outlook: number; scope: number }>([
+                { type: 'number', name: 'epistemology',   message: 'Epistemology (-100 to 100):',   default: cur.epistemology },
                 { type: 'number', name: 'outlook',  message: 'Outlook (-100 to 100):', default: cur.outlook },
                 { type: 'number', name: 'scope',    message: 'Scope (-100 to 100):',   default: cur.scope },
             ]);
-            const r = devSetAlignment(store, { logic, outlook, scope });
+            const r = devSetAlignment(store, { epistemology, outlook, scope });
             log(`\n${r.detail}\n`);
             break;
         }
