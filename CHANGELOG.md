@@ -26,17 +26,17 @@ deep imports are part of the supported surface.
 
 ## [0.15.0] — 2026-06-06
 
-Balance/content release for the post-0.14 mobile line. This bump ships Befriend
-authority hardening, reproducible mercy and mid-game playtest evidence,
+Balance/content release for the post-0.14 mobile line. This bump ships Stance
+and Vitae authority hardening, reproducible Stance/Vitae and mid-game playtest evidence,
 northern-forest content expansion, story NPC dialogue, Tier 3 description polish,
 synergy walkthrough coverage, and the Phase 121 three-anchor Sage balance
 scaffold/tuning pass.
 
 ### Added
 
-- **Phase 113** — Mercy-loop playtest evidence and STRATEGIST witness reports for
-  Befriend/mercy routing. Adds stronger evidence around wound-then-spare play and
-  the nonviolent patience control.
+- **Phase 113** — Stance/Vitae playtest evidence and STRATEGIST witness reports for
+  resource-and-stance routing. Adds stronger evidence around stance choice, Vitae
+  spending/generation, and patience-control play.
 - **Phase 114** — Second enemy class family for `northern-forest`, expanding enemy
   variety beyond the initial coastal roster with additional AI/content patterns.
 - **Phase 115** — Story-content NPC dialogue expansion with authored branches and
@@ -52,9 +52,9 @@ scaffold/tuning pass.
 
 ### Changed
 
-- **Phase 112** — Befriend resolution authority and HP-gate doctrine hardening:
-  mechanics owns the successful Befriend opening, HP gate, and mercy-choice state;
-  consumers should not simulate this flow locally.
+- **Phase 112** — Stance and Vitae authority doctrine hardening: mechanics owns
+  stance state, Vitae/resource generation and spending, action affordability, and
+  report output; consumers should not simulate this flow locally.
 - **Phase 116** — Difficulty-curve doctrine spec: codifies target bands for
   difficulty, resolution success, rounds-to-resolve, and balance evidence.
 - **Phase 117** — Northern-forest map expansion: grows `northern-forest` from 10 to
@@ -67,9 +67,9 @@ scaffold/tuning pass.
 ### Mobile migration notes
 
 - Update `axiomancer-mobile` from `axiomancer-mechanics@0.14.0` to `0.15.0`.
-- Treat Befriend/mercy as engine-owned: surface mechanics-emitted opening/choice
-  state and reports; do not restore local HP-gate, spare/exploit, or success
-  simulation.
+- Treat Stance and Vitae as engine-owned: surface mechanics-emitted stance,
+  resource, action-affordability, and report state; do not restore local
+  stance/resource or resolution simulation.
 - Refresh any exploration assumptions around `northern-forest`; the map and event
   pools are broader than the prior 10-node shape.
 - Review new enemy/NPC/story content for presentation fallbacks, codex/memoir copy,

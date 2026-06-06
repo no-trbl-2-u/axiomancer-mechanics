@@ -6,13 +6,13 @@ Short-form per-version summaries. For per-phase detail see
 
 ## 0.15.0 — 2026-06-06
 
-Balance/content release for the mobile catch-up line: Befriend authority hardening,
-reproducible mercy/mid-game playtest evidence, northern-forest expansion, story
+Balance/content release for the mobile catch-up line: Stance and Vitae authority
+hardening, reproducible Stance/Vitae and mid-game playtest evidence, northern-forest expansion, story
 NPC dialogue, Tier 3 description polish, synergy walkthrough coverage, and the
 three-anchor Sage balance scaffold.
 
-- **Phase 112** — Mechanics owns Befriend HP gate, successful opening, and mercy-choice state; consumers must not simulate the flow locally.
-- **Phase 113** — Mercy-loop playtest evidence plus STRATEGIST witness for wound-then-spare and patience controls.
+- **Phase 112** — Mechanics owns Stance state, Vitae/resource generation and spending, action affordability, and report output; consumers must not simulate the flow locally.
+- **Phase 113** — Stance/Vitae playtest evidence plus STRATEGIST witness for resource-and-stance routing and patience controls.
 - **Phase 114** — Second northern-forest enemy class family with new roster/content patterns.
 - **Phase 115** — Story NPC dialogue expansion with alignment-facing branches.
 - **Phase 116** — Difficulty-curve doctrine spec for target bands and evidence rules.
@@ -21,7 +21,7 @@ three-anchor Sage balance scaffold.
 - **Phase 119** — Mid-game reference playtest probe and `wanderer-level-6` preset support.
 - **Phase 120** — Synergy-skills walkthrough coverage for player-experience-tier validation.
 - **Phase 121** — Three-anchor Sage balance scaffold/tuning with per-policy 25-run evidence.
-- **Mobile needs:** bump package to `axiomancer-mechanics@0.15.0`; preserve engine-owned Befriend/mercy truth; refresh northern-forest/story/enemy presentation fallbacks; run typecheck, focused Jest, verify, visual smoke, and playtest evidence.
+- **Mobile needs:** bump package to `axiomancer-mechanics@0.15.0`; preserve engine-owned Stance and Vitae truth; refresh northern-forest/story/enemy presentation fallbacks; run typecheck, focused Jest, verify, visual smoke, and playtest evidence.
 
 ## 0.14.0 — 2026-06-03
 
