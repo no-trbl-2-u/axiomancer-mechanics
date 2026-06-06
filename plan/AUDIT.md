@@ -46,7 +46,7 @@
 
 ## Pending
 
-<!-- iterate audit 2026-06-06: comprehensive audit across categories Z-H (fifth audit this tick, post-march dispatch).
+<!-- iterate audit 2026-06-06: comprehensive audit across categories Z-H (sixth audit this tick, post-march dispatch).
      Z. External critique: CRITIQUE.md Pending queue empty (no changes since last iterate)
      A. Test-quality gaps: all modules have hermetic e2e tests, no raw vi.spyOn usage except in test-utils/rng.ts helper (clean)
      B. Spec-gap items: no open questions with blank "Your answer:" placeholders (template files excluded) (clean)
