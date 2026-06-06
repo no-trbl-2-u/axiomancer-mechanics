@@ -46,20 +46,21 @@
 
 ## Pending
 
-<!-- iterate audit 2026-06-06: comprehensive audit across categories Z-H (twelfth audit this tick, systematic iterate skill procedure).
+<!-- iterate audit 2026-06-06: comprehensive audit across categories Z-H (thirteenth audit this tick, systematic iterate skill procedure).
      Z. External critique: CRITIQUE.md Pending queue empty (pass 54, no changes since last iterate)
-     A. Test-quality gaps: 1 finding - CLI/game.cli.ts lacks hermetic e2e test (score 4.2)
-     B. Spec-gap items: no open questions with blank "Your answer:" placeholders (template files excluded) (clean)
-     C. Type-safety: 1 justified @ts-ignore with explanatory comment in agent-vitest-reporter.engine.test.ts (acceptable)
-     D. Dead code: createDie export is used internally by createDieRoll function (clean)
-     E. Documentation gaps: all major modules have docs coverage (clean)
+     A. Test-quality gaps: all modules have hermetic e2e tests, no raw vi.spyOn usage except in test-utils/rng.ts helper, no non-hermetic test patterns found
+     B. Spec-gap items: no open questions with blank "Your answer:" placeholders except template files (clean)
+     C. Type-safety: 1 justified @ts-ignore with explanatory comment in agent-vitest-reporter.engine.test.ts, unknown types in appropriate contexts, no missing return type annotations (clean)
+     D. Dead code: createDie export is used internally by createDieRoll function, no unused internal files or commented code blocks found (clean)
+     E. Documentation gaps: all major modules have docs coverage, gameloop.md covers Game module adequately, no README.md Public API table to sync (clean)
      F. ESLint fix: already shipped in Phase 13, npm run lint passes clean (clean)
      G. Dependency updates: 4 major bumps available (typescript 5→6, @types/node 22→25, inquirer 9→12, globals 16→17) - require deliberate phases per iterate policy
      H. Commit-hygiene: git status clean, no uncommitted changes (clean)
      
      Bias: CLEARED (no active bias to apply)
+     Knowledge-Gaps: All questions resolved except Q28 (multiple endings) which is genuinely deferred as endgame question (clean)
      
-     Finding: 1 actionable finding (CLI test gap, score 4.2) above 3.0 threshold. Proceed with implementation. -->
+     Finding: 0 actionable findings above 3.0 threshold. Per iterate failure mode 3, posture is bold → dispatch to /expand. However, expand conditions not met (only 5 commits since last pass 9a3bd90, need ≥20; <48h since last pass). Result: no action taken, iterate complete. -->
 
 - [x] **[A] test-gaps — CLI/game.cli.ts lacks hermetic e2e test** — resolved at iterate commit `800192c` (2026-06-06). Added `src/CLI/e2e/game.cli.engine.test.ts` with 11 test cases covering CLI argument parsing, game store bootstrap, dev tools integration, and I/O configuration. Fixed EquipmentSlot import and PhilosophicalAlignment property names in game.cli.ts. Full CLI driver functionality verified without TTY interaction. Impact 7 × ease 6 = score 4.2. Source: iterate audit (commit `bba5c99`).
 
