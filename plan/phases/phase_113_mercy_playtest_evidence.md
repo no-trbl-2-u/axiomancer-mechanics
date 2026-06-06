@@ -1,4 +1,4 @@
-# Phase 113 — Mercy-loop playtest evidence + STRATEGIST witness
+# Phase 113 — Stance/Vitae playtest evidence + STRATEGIST witness
 
 ## Source
 
@@ -6,24 +6,24 @@ Glanton cleanup after SomberSoft doctrine alignment audit `~/Workspace/reports/a
 
 ## Problem
 
-Current playtest evidence does not reliably prove the new mercy loop. Policies can still over-measure defend/stall behavior and under-measure intentional Befriend casting, spare choice, exploit choice, and downstream consequences. STRATEGIST is too close to generic best-affordable-skill fallback.
+Current playtest evidence does not reliably prove the Stance/Vitae loop. Policies can still over-measure defend/stall behavior and under-measure intentional stance choice, Vitae/resource generation and spending, action affordability, and downstream consequences. STRATEGIST is too close to generic best-affordable-skill fallback.
 
 ## Scope
 
 1. Add or update playtest policies/scenarios that explicitly exercise:
-   - Befriend cast attempts;
-   - spare/mercy choice;
-   - exploit/free-critical choice;
-   - downstream anti-exploit/faction consequences where available.
-2. Strengthen STRATEGIST so it reads enemy state, status effects, combat resources, available skills, HP-gate proximity, and mercy opportunity rather than only picking best affordable skill.
+   - stance choice;
+   - Vitae/resource generation;
+   - Vitae/resource spending;
+   - downstream consequences where available.
+2. Strengthen STRATEGIST so it reads enemy state, status effects, combat resources, available skills, stance position, and opportunity windows rather than only picking best affordable skill.
 3. Update playtest reports to separate:
    - victories;
    - defeats;
-   - spare/friendship outcomes;
-   - exploit outcomes;
+   - resource-driven outcomes;
+   - consequence outcomes;
    - timeouts;
-   - Befriend attempts and failures.
-4. Normalize docs/report wording to **65–75% resolution success**: victory plus friendship/mercy resolution, not raw win rate.
+   - Stance/Vitae attempts and failures.
+4. Normalize docs/report wording to **65–75% resolution success** where the evidence target is resolution, not raw win rate.
 5. Add hermetic tests for new policy/report fields.
 
 ## Verification
@@ -34,4 +34,4 @@ Current playtest evidence does not reliably prove the new mercy loop. Policies c
 
 ## Out of scope
 
-- Core Befriend semantics changes. If Phase 112 has not shipped, this phase must either wait or explicitly note which legacy behavior remains.
+- Core Stance/Vitae semantics changes. If Phase 112 has not shipped, this phase must either wait or explicitly note which legacy behavior remains.
