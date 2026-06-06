@@ -179,15 +179,16 @@ describe('Automated playtest harness', () => {
 
     // Phase 121 — Three-anchor balance scaffold validation
     it('validates Phase 121 balance anchors against stat law and target bands', () => {
+        const canonicalPolicies: PlaytestScenario['policies'] = ['aggressive', 'defensive', 'mixed', 'strategist'];
         const easyScenario: PlaytestScenario = {
             id: 'test-phase-121-easy-anchor',
             description: 'Phase 121 Easy anchor validation',
             preset: 'sage',
             enemy: 'coastal-tyrant',
-            runs: 4,
-            maxRounds: 25,
-            seed: 'phase-121-easy-test',
-            policies: ['aggressive', 'defensive'],
+            runs: 25,
+            maxRounds: 50,
+            seed: 'phase-121-easy-v1',
+            policies: canonicalPolicies,
         };
 
         const normalScenario: PlaytestScenario = {
@@ -195,10 +196,10 @@ describe('Automated playtest harness', () => {
             description: 'Phase 121 Normal anchor validation',
             preset: 'sage',
             enemy: 'audit-sentinel',
-            runs: 4,
-            maxRounds: 25,
-            seed: 'phase-121-normal-test',
-            policies: ['aggressive', 'defensive'],
+            runs: 25,
+            maxRounds: 50,
+            seed: 'phase-121-normal-v1',
+            policies: canonicalPolicies,
         };
 
         const difficultScenario: PlaytestScenario = {
@@ -206,10 +207,10 @@ describe('Automated playtest harness', () => {
             description: 'Phase 121 Difficult anchor validation',
             preset: 'sage',
             enemy: 'balance-judge',
-            runs: 4,
-            maxRounds: 35,
-            seed: 'phase-121-difficult-test',
-            policies: ['aggressive', 'defensive'],
+            runs: 25,
+            maxRounds: 75,
+            seed: 'phase-121-difficult-v1',
+            policies: canonicalPolicies,
         };
 
         // All scenarios should run without error
@@ -217,12 +218,22 @@ describe('Automated playtest harness', () => {
         const normalReport = runPlaytestScenario(normalScenario);
         const difficultReport = runPlaytestScenario(difficultScenario);
 
-        // Validate basic structure
-        expect(easyReport.metrics.totalRuns).toBe(4);
-        expect(normalReport.metrics.totalRuns).toBe(4);
-        expect(difficultReport.metrics.totalRuns).toBe(4);
+        // Validate canonical run structure
+        expect(easyReport.metrics.totalRuns).toBe(25);
+        expect(normalReport.metrics.totalRuns).toBe(25);
+        expect(difficultReport.metrics.totalRuns).toBe(25);
+        expect(easyReport.metrics.policySummaries).toHaveLength(canonicalPolicies.length);
+        expect(normalReport.metrics.policySummaries).toHaveLength(canonicalPolicies.length);
+        expect(difficultReport.metrics.policySummaries).toHaveLength(canonicalPolicies.length);
 
-        // Easy anchor should have higher win rate than difficult
+        // Validate authored target bands from the Phase 121 anchor scenarios.
+        expect(easyReport.metrics.winRate).toBe(1);
+        expect(normalReport.metrics.winRate).toBeGreaterThanOrEqual(0.75);
+        expect(normalReport.metrics.winRate).toBeLessThanOrEqual(1);
+        expect(difficultReport.metrics.winRate).toBeGreaterThanOrEqual(0.25);
+        expect(difficultReport.metrics.winRate).toBeLessThanOrEqual(0.5);
+
+        // Easy anchor should have higher win rate than normal, and normal higher than difficult.
         expect(easyReport.metrics.winRate).toBeGreaterThanOrEqual(normalReport.metrics.winRate);
         expect(normalReport.metrics.winRate).toBeGreaterThanOrEqual(difficultReport.metrics.winRate);
 

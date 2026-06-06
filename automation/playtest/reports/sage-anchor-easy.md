@@ -13,61 +13,64 @@
 
 ## Aggregate Metrics
 
-- Win rate: 48.0%
+- Win rate: 100.0%
 - Defeat rate: 0.0%
 - Friendship rate: 0.0%
-- Timeout rate: 52.0%
-- Average rounds: 45.32
-- Median rounds: 50
-- Average final player HP: 3729.60
-- Average final enemy HP: 67
+- Timeout rate: 0.0%
+- Average rounds: 11.60
+- Median rounds: 11
+- Average final player HP: 369.32
+- Average final enemy HP: 0
 - Average damage to player: 0
-- Average damage to enemy: 624.04
+- Average damage to enemy: 159.16
 - Max friendship counter: 0
 
 ## Outcome Counts
 
-- victory: 12
+- victory: 25
 - defeat: 0
 - friendship: 0
 - flee: 0
-- timeout: 13
+- timeout: 0
 
 ## Player Action Use
 
-- attack: 907
-- skill: 226
+- attack: 172
+- skill: 118
 
 ## Stance Use
 
-- body: 1133
+- body: 241
+- mind: 49
 - heart: 0
-- mind: 0
 
 ## Skill Use
 
-- ad-hominem-strike: 226
+- achilles-gambit: 80
+- sorites-cascade: 18
+- straw-giant: 15
+- undistributed-middle: 5
 
 ## Enemy Action Use
 
-- defend: 462
-- skill:achilles-gambit: 367
-- attack: 304
+- defend: 117
+- skill:achilles-gambit: 97
+- attack: 76
 
 ## Policy Summaries
 
 ### aggressive
 
 - Runs: 7
-- Win rate: 0.0%
+- Win rate: 100.0%
 - Defeat rate: 0.0%
 - Friendship rate: 0.0%
-- Timeout rate: 100.0%
-- Average rounds: 50
-- Average final player HP: 3729
-- Average final enemy HP: 136.43
+- Timeout rate: 0.0%
+- Average rounds: 13.29
+- Average final player HP: 368.29
+- Average final enemy HP: 0
 - Average damage to player: 0
-- Average damage to enemy: 545.14
+- Average damage to enemy: 168.43
 - Max friendship counter: 0
 
 ### defensive
@@ -77,89 +80,79 @@
 - Defeat rate: 0.0%
 - Friendship rate: 0.0%
 - Timeout rate: 0.0%
-- Average rounds: 37
-- Average final player HP: 3731.67
+- Average rounds: 10.83
+- Average final player HP: 370.67
 - Average final enemy HP: 0
 - Average damage to player: 0
-- Average damage to enemy: 694.33
+- Average damage to enemy: 170
 - Max friendship counter: 0
 
 ### mixed
 
 - Runs: 6
-- Win rate: 66.7%
+- Win rate: 100.0%
 - Defeat rate: 0.0%
 - Friendship rate: 0.0%
-- Timeout rate: 33.3%
-- Average rounds: 45.83
-- Average final player HP: 3729.83
-- Average final enemy HP: 54.67
+- Timeout rate: 0.0%
+- Average rounds: 10.33
+- Average final player HP: 370.17
+- Average final enemy HP: 0
 - Average damage to player: 0
-- Average damage to enemy: 642.83
+- Average damage to enemy: 156.33
 - Max friendship counter: 0
 
 ### strategist
 
 - Runs: 6
-- Win rate: 33.3%
+- Win rate: 100.0%
 - Defeat rate: 0.0%
 - Friendship rate: 0.0%
-- Timeout rate: 66.7%
-- Average rounds: 47.67
-- Average final player HP: 3728
-- Average final enemy HP: 65.33
+- Timeout rate: 0.0%
+- Average rounds: 11.67
+- Average final player HP: 368.33
+- Average final enemy HP: 0
 - Average damage to player: 0
-- Average damage to enemy: 627
+- Average damage to enemy: 140.33
 - Max friendship counter: 0
 
 ## Findings for Tobin
 
-- Outcome breakdown: 48% victory, 0% friendship, 0% defeat, 52% timeout
-- 52% of runs timed out before combat resolved.
-- Resolution success is 48%; target band is 65–75% victory plus friendship/mercy resolution.
+- Outcome breakdown: 100% victory, 0% friendship, 0% defeat, 0% timeout
+- Resolution success is 100%; target band is 65–75% victory plus friendship/mercy resolution.
+- Win rate is high at 100%; encounter may be undertuned for these policies.
 - No friendship outcomes surfaced; Tobin should judge whether the peaceful route is too hidden or too costly.
 - No Befriend attempts surfaced; mercy evidence is not yet exercising the doctrine path.
-- STRATEGIST witness: 33% resolution success, average 47.67 rounds
-- Dominant player action: attack (80% of actions).
-- Dominant stance: body (100% of stances).
+- STRATEGIST witness: 100% resolution success, average 11.67 rounds
+- Dominant stance: body (83% of stances).
 
 ## Replay Seeds Worth Inspecting
 
-- phase-121-easy-v1:1
-- phase-121-easy-v1:4
-- phase-121-easy-v1:5
-- phase-121-easy-v1:8
-- phase-121-easy-v1:9
-- phase-121-easy-v1:11
-- phase-121-easy-v1:12
-- phase-121-easy-v1:13
-- phase-121-easy-v1:14
-- phase-121-easy-v1:17
+- None.
 
 ## Run Summaries
 
-- Run 1: outcome=timeout, policy=aggressive, seed=phase-121-easy-v1:1, rounds=50, playerHp=3726, enemyHp=159, damageToPlayer=0, damageToEnemy=524, friendshipCounter=0
-- Run 2: outcome=victory, policy=defensive, seed=phase-121-easy-v1:2, rounds=30, playerHp=3737, enemyHp=0, damageToPlayer=0, damageToEnemy=697, friendshipCounter=0
-- Run 3: outcome=victory, policy=mixed, seed=phase-121-easy-v1:3, rounds=47, playerHp=3730, enemyHp=0, damageToPlayer=0, damageToEnemy=685, friendshipCounter=0
-- Run 4: outcome=timeout, policy=strategist, seed=phase-121-easy-v1:4, rounds=50, playerHp=3730, enemyHp=22, damageToPlayer=0, damageToEnemy=664, friendshipCounter=0
-- Run 5: outcome=timeout, policy=aggressive, seed=phase-121-easy-v1:5, rounds=50, playerHp=3730, enemyHp=179, damageToPlayer=0, damageToEnemy=500, friendshipCounter=0
-- Run 6: outcome=victory, policy=defensive, seed=phase-121-easy-v1:6, rounds=42, playerHp=3728, enemyHp=0, damageToPlayer=0, damageToEnemy=718, friendshipCounter=0
-- Run 7: outcome=victory, policy=mixed, seed=phase-121-easy-v1:7, rounds=47, playerHp=3731, enemyHp=0, damageToPlayer=0, damageToEnemy=685, friendshipCounter=0
-- Run 8: outcome=timeout, policy=strategist, seed=phase-121-easy-v1:8, rounds=50, playerHp=3725, enemyHp=101, damageToPlayer=0, damageToEnemy=587, friendshipCounter=0
-- Run 9: outcome=timeout, policy=aggressive, seed=phase-121-easy-v1:9, rounds=50, playerHp=3733, enemyHp=74, damageToPlayer=0, damageToEnemy=607, friendshipCounter=0
-- Run 10: outcome=victory, policy=defensive, seed=phase-121-easy-v1:10, rounds=28, playerHp=3739, enemyHp=0, damageToPlayer=0, damageToEnemy=678, friendshipCounter=0
-- Run 11: outcome=timeout, policy=mixed, seed=phase-121-easy-v1:11, rounds=50, playerHp=3725, enemyHp=151, damageToPlayer=0, damageToEnemy=533, friendshipCounter=0
-- Run 12: outcome=timeout, policy=strategist, seed=phase-121-easy-v1:12, rounds=50, playerHp=3730, enemyHp=80, damageToPlayer=0, damageToEnemy=603, friendshipCounter=0
-- Run 13: outcome=timeout, policy=aggressive, seed=phase-121-easy-v1:13, rounds=50, playerHp=3731, enemyHp=190, damageToPlayer=0, damageToEnemy=490, friendshipCounter=0
-- Run 14: outcome=victory, policy=defensive, seed=phase-121-easy-v1:14, rounds=50, playerHp=3721, enemyHp=0, damageToPlayer=0, damageToEnemy=693, friendshipCounter=0
-- Run 15: outcome=victory, policy=mixed, seed=phase-121-easy-v1:15, rounds=42, playerHp=3731, enemyHp=0, damageToPlayer=0, damageToEnemy=725, friendshipCounter=0
-- Run 16: outcome=victory, policy=strategist, seed=phase-121-easy-v1:16, rounds=47, playerHp=3728, enemyHp=0, damageToPlayer=0, damageToEnemy=705, friendshipCounter=0
-- Run 17: outcome=timeout, policy=aggressive, seed=phase-121-easy-v1:17, rounds=50, playerHp=3727, enemyHp=118, damageToPlayer=0, damageToEnemy=564, friendshipCounter=0
-- Run 18: outcome=victory, policy=defensive, seed=phase-121-easy-v1:18, rounds=38, playerHp=3732, enemyHp=0, damageToPlayer=0, damageToEnemy=699, friendshipCounter=0
-- Run 19: outcome=timeout, policy=mixed, seed=phase-121-easy-v1:19, rounds=50, playerHp=3724, enemyHp=177, damageToPlayer=0, damageToEnemy=511, friendshipCounter=0
-- Run 20: outcome=timeout, policy=strategist, seed=phase-121-easy-v1:20, rounds=50, playerHp=3722, enemyHp=189, damageToPlayer=0, damageToEnemy=501, friendshipCounter=0
-- Run 21: outcome=timeout, policy=aggressive, seed=phase-121-easy-v1:21, rounds=50, playerHp=3728, enemyHp=131, damageToPlayer=0, damageToEnemy=553, friendshipCounter=0
-- Run 22: outcome=victory, policy=defensive, seed=phase-121-easy-v1:22, rounds=34, playerHp=3733, enemyHp=0, damageToPlayer=0, damageToEnemy=681, friendshipCounter=0
-- Run 23: outcome=victory, policy=mixed, seed=phase-121-easy-v1:23, rounds=39, playerHp=3738, enemyHp=0, damageToPlayer=0, damageToEnemy=718, friendshipCounter=0
-- Run 24: outcome=victory, policy=strategist, seed=phase-121-easy-v1:24, rounds=39, playerHp=3733, enemyHp=0, damageToPlayer=0, damageToEnemy=702, friendshipCounter=0
-- Run 25: outcome=timeout, policy=aggressive, seed=phase-121-easy-v1:25, rounds=50, playerHp=3728, enemyHp=104, damageToPlayer=0, damageToEnemy=578, friendshipCounter=0
+- Run 1: outcome=victory, policy=aggressive, seed=phase-121-easy-v1:1, rounds=14, playerHp=367, enemyHp=0, damageToPlayer=0, damageToEnemy=165, friendshipCounter=0
+- Run 2: outcome=victory, policy=defensive, seed=phase-121-easy-v1:2, rounds=11, playerHp=373, enemyHp=0, damageToPlayer=0, damageToEnemy=157, friendshipCounter=0
+- Run 3: outcome=victory, policy=mixed, seed=phase-121-easy-v1:3, rounds=7, playerHp=372, enemyHp=0, damageToPlayer=0, damageToEnemy=183, friendshipCounter=0
+- Run 4: outcome=victory, policy=strategist, seed=phase-121-easy-v1:4, rounds=13, playerHp=370, enemyHp=0, damageToPlayer=0, damageToEnemy=133, friendshipCounter=0
+- Run 5: outcome=victory, policy=aggressive, seed=phase-121-easy-v1:5, rounds=13, playerHp=367, enemyHp=0, damageToPlayer=0, damageToEnemy=191, friendshipCounter=0
+- Run 6: outcome=victory, policy=defensive, seed=phase-121-easy-v1:6, rounds=10, playerHp=371, enemyHp=0, damageToPlayer=0, damageToEnemy=169, friendshipCounter=0
+- Run 7: outcome=victory, policy=mixed, seed=phase-121-easy-v1:7, rounds=10, playerHp=370, enemyHp=0, damageToPlayer=0, damageToEnemy=170, friendshipCounter=0
+- Run 8: outcome=victory, policy=strategist, seed=phase-121-easy-v1:8, rounds=18, playerHp=363, enemyHp=0, damageToPlayer=0, damageToEnemy=136, friendshipCounter=0
+- Run 9: outcome=victory, policy=aggressive, seed=phase-121-easy-v1:9, rounds=11, playerHp=370, enemyHp=0, damageToPlayer=0, damageToEnemy=155, friendshipCounter=0
+- Run 10: outcome=victory, policy=defensive, seed=phase-121-easy-v1:10, rounds=11, playerHp=370, enemyHp=0, damageToPlayer=0, damageToEnemy=159, friendshipCounter=0
+- Run 11: outcome=victory, policy=mixed, seed=phase-121-easy-v1:11, rounds=8, playerHp=370, enemyHp=0, damageToPlayer=0, damageToEnemy=140, friendshipCounter=0
+- Run 12: outcome=victory, policy=strategist, seed=phase-121-easy-v1:12, rounds=10, playerHp=368, enemyHp=0, damageToPlayer=0, damageToEnemy=150, friendshipCounter=0
+- Run 13: outcome=victory, policy=aggressive, seed=phase-121-easy-v1:13, rounds=11, playerHp=373, enemyHp=0, damageToPlayer=0, damageToEnemy=158, friendshipCounter=0
+- Run 14: outcome=victory, policy=defensive, seed=phase-121-easy-v1:14, rounds=9, playerHp=372, enemyHp=0, damageToPlayer=0, damageToEnemy=156, friendshipCounter=0
+- Run 15: outcome=victory, policy=mixed, seed=phase-121-easy-v1:15, rounds=17, playerHp=366, enemyHp=0, damageToPlayer=0, damageToEnemy=129, friendshipCounter=0
+- Run 16: outcome=victory, policy=strategist, seed=phase-121-easy-v1:16, rounds=12, playerHp=367, enemyHp=0, damageToPlayer=0, damageToEnemy=130, friendshipCounter=0
+- Run 17: outcome=victory, policy=aggressive, seed=phase-121-easy-v1:17, rounds=11, playerHp=370, enemyHp=0, damageToPlayer=0, damageToEnemy=178, friendshipCounter=0
+- Run 18: outcome=victory, policy=defensive, seed=phase-121-easy-v1:18, rounds=13, playerHp=368, enemyHp=0, damageToPlayer=0, damageToEnemy=195, friendshipCounter=0
+- Run 19: outcome=victory, policy=mixed, seed=phase-121-easy-v1:19, rounds=12, playerHp=370, enemyHp=0, damageToPlayer=0, damageToEnemy=163, friendshipCounter=0
+- Run 20: outcome=victory, policy=strategist, seed=phase-121-easy-v1:20, rounds=10, playerHp=369, enemyHp=0, damageToPlayer=0, damageToEnemy=138, friendshipCounter=0
+- Run 21: outcome=victory, policy=aggressive, seed=phase-121-easy-v1:21, rounds=18, playerHp=365, enemyHp=0, damageToPlayer=0, damageToEnemy=167, friendshipCounter=0
+- Run 22: outcome=victory, policy=defensive, seed=phase-121-easy-v1:22, rounds=11, playerHp=370, enemyHp=0, damageToPlayer=0, damageToEnemy=184, friendshipCounter=0
+- Run 23: outcome=victory, policy=mixed, seed=phase-121-easy-v1:23, rounds=8, playerHp=373, enemyHp=0, damageToPlayer=0, damageToEnemy=153, friendshipCounter=0
+- Run 24: outcome=victory, policy=strategist, seed=phase-121-easy-v1:24, rounds=7, playerHp=373, enemyHp=0, damageToPlayer=0, damageToEnemy=155, friendshipCounter=0
+- Run 25: outcome=victory, policy=aggressive, seed=phase-121-easy-v1:25, rounds=15, playerHp=366, enemyHp=0, damageToPlayer=0, damageToEnemy=165, friendshipCounter=0
