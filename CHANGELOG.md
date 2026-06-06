@@ -14,18 +14,68 @@ deep imports are part of the supported surface.
 
 ### Added
 
-- **Phase 120** — Phase 66 synergy walkthrough: extends Wanderer preset with Phase 66 synergy skills and adds `synergy-skills-chain` walkthrough demonstrating synergy fire events. Closes deferred Phase 81 Unit 2 coverage for player-experience-tier synergy skill testing.
-- **Phase 119** — Mid-game reference playtest probe: level-6 Wanderer vs northern-forest elite-tier enemies measurement framework. Adds `automation/playtest/mid-game-reference-probe.mjs` script and `wanderer-level-6` preset support in playtest runner. Measures rounds-to-resolve, survivability, resource routing, skill use, and friendship/mercy signals per Phase 104 pattern.
-
 ### Changed
-
-- **Phase 117** — Northern-forest expansion: grow `northern-forest` map from 10 to 25 nodes with 3 thematic sub-areas (Glen Path, Bone Hollow, Mist Ridge). Preserves existing nf-1..nf-10 structure while adding 15 new nodes with comprehensive MapEventPool coverage. Features 2 dead-ends and 1 small loop.
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
+
+### Security
+
+## [0.15.0] — 2026-06-06
+
+Balance/content release for the post-0.14 mobile line. This bump ships Befriend
+authority hardening, reproducible mercy and mid-game playtest evidence,
+northern-forest content expansion, story NPC dialogue, Tier 3 description polish,
+synergy walkthrough coverage, and the Phase 121 three-anchor Sage balance
+scaffold/tuning pass.
+
+### Added
+
+- **Phase 113** — Mercy-loop playtest evidence and STRATEGIST witness reports for
+  Befriend/mercy routing. Adds stronger evidence around wound-then-spare play and
+  the nonviolent patience control.
+- **Phase 114** — Second enemy class family for `northern-forest`, expanding enemy
+  variety beyond the initial coastal roster with additional AI/content patterns.
+- **Phase 115** — Story-content NPC dialogue expansion with authored branches and
+  alignment-facing narrative surfaces.
+- **Phase 119** — Mid-game reference playtest probe: level-6 Wanderer vs
+  northern-forest elite-tier enemies. Adds `automation/playtest/mid-game-reference-probe.mjs`
+  and `wanderer-level-6` preset support.
+- **Phase 120** — Phase 66 synergy walkthrough coverage: extends Wanderer access to
+  selected synergy skills and adds the `synergy-skills-chain` walkthrough.
+- **Phase 121** — Three-anchor playtest balance scaffold for level-6 Sage against
+  easy/normal/difficult anchors, with per-policy 25-run evidence and balance
+  reports.
+
+### Changed
+
+- **Phase 112** — Befriend resolution authority and HP-gate doctrine hardening:
+  mechanics owns the successful Befriend opening, HP gate, and mercy-choice state;
+  consumers should not simulate this flow locally.
+- **Phase 116** — Difficulty-curve doctrine spec: codifies target bands for
+  difficulty, resolution success, rounds-to-resolve, and balance evidence.
+- **Phase 117** — Northern-forest map expansion: grows `northern-forest` from 10 to
+  25 nodes with three sub-areas, additional MapEventPool coverage, dead-ends, and a
+  small loop.
+- **Phase 118** — Tier 3 fallacy skill descriptions enriched; no mechanical change.
+- **Phase 121 tuning close-out** — Sage anchor enemies, policy evidence, and health
+  formula/tuning were adjusted so the three-anchor balance class behaves as intended.
+
+### Mobile migration notes
+
+- Update `axiomancer-mobile` from `axiomancer-mechanics@0.14.0` to `0.15.0`.
+- Treat Befriend/mercy as engine-owned: surface mechanics-emitted opening/choice
+  state and reports; do not restore local HP-gate, spare/exploit, or success
+  simulation.
+- Refresh any exploration assumptions around `northern-forest`; the map and event
+  pools are broader than the prior 10-node shape.
+- Review new enemy/NPC/story content for presentation fallbacks, codex/memoir copy,
+  encounter rendering, and visual-smoke route coverage.
+- Run mobile `npm run typecheck`, focused Jest around combat/exploration/story
+  presenters, `npm run verify`, and visual smoke/playtest evidence after bumping.
 
 ### Security
 

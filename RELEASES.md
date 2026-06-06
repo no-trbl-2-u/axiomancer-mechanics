@@ -4,6 +4,25 @@ Short-form per-version summaries. For per-phase detail see
 [`CHANGELOG.md`](./CHANGELOG.md); for the release-cut ceremony see
 [`RELEASING.md`](./RELEASING.md).
 
+## 0.15.0 — 2026-06-06
+
+Balance/content release for the mobile catch-up line: Befriend authority hardening,
+reproducible mercy/mid-game playtest evidence, northern-forest expansion, story
+NPC dialogue, Tier 3 description polish, synergy walkthrough coverage, and the
+three-anchor Sage balance scaffold.
+
+- **Phase 112** — Mechanics owns Befriend HP gate, successful opening, and mercy-choice state; consumers must not simulate the flow locally.
+- **Phase 113** — Mercy-loop playtest evidence plus STRATEGIST witness for wound-then-spare and patience controls.
+- **Phase 114** — Second northern-forest enemy class family with new roster/content patterns.
+- **Phase 115** — Story NPC dialogue expansion with alignment-facing branches.
+- **Phase 116** — Difficulty-curve doctrine spec for target bands and evidence rules.
+- **Phase 117** — Northern-forest map grows to 25 nodes with new event pools, branches, dead-ends, and loop structure.
+- **Phase 118** — Tier 3 fallacy skill descriptions enriched; mechanics unchanged.
+- **Phase 119** — Mid-game reference playtest probe and `wanderer-level-6` preset support.
+- **Phase 120** — Synergy-skills walkthrough coverage for player-experience-tier validation.
+- **Phase 121** — Three-anchor Sage balance scaffold/tuning with per-policy 25-run evidence.
+- **Mobile needs:** bump package to `axiomancer-mechanics@0.15.0`; preserve engine-owned Befriend/mercy truth; refresh northern-forest/story/enemy presentation fallbacks; run typecheck, focused Jest, verify, visual smoke, and playtest evidence.
+
 ## 0.14.0 — 2026-06-03
 
 Mobile catch-up release: combat contract repairs, unlocked-skill access,
