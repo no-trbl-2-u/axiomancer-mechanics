@@ -91,7 +91,7 @@ export type {
 // ─── Effects ──────────────────────────────────────────────────────────────────
 export {
     applyEffect, applyTier1CombatEffect,
-    clearTier1EffectsForStance, clearTier1EffectsForType,
+    clearTier1EffectsForStance,
     lookupEffect, getEffectByName, getEffectsByType, effectsLibrary,
     processWorldEffectTick, getActiveHazards,
 } from './Effects';

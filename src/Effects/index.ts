@@ -268,8 +268,6 @@ export function clearTier1EffectsForStance(
     return { activeEffects: remaining, cleared };
 }
 
-// Legacy export name retained for backwards compatibility.
-export const clearTier1EffectsForType = clearTier1EffectsForStance;
 
 /**
  * Removes every ActiveEffect whose `effectId` matches `lookupEffect(...)?.type === effectType`,

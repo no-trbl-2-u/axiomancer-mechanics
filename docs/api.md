@@ -470,7 +470,7 @@ hermetic walkthrough.
 ### Effects
 
 - Effect application (`applyEffect`, `applyTier1CombatEffect`,
-  `clearTier1EffectsForStance`, `clearTier1EffectsForType`,
+  `clearTier1EffectsForStance`,
   `lookupEffect`, `getEffectByName`, `getEffectsByType`,
   `effectsLibrary`) — Stable.
 - World-effect tick (`processWorldEffectTick`,

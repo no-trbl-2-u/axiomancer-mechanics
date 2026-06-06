@@ -598,7 +598,7 @@ Full per-effect documentation: [`docs/effects/debuffs/`](./effects/debuffs/)
 | `getEffectsByType(type)` | `src/Effects/effects.library.ts` | Get all buffs or all debuffs |
 | `applyEffect(effects, effect, round, options?)` | `src/Effects/index.ts` | Core stacking engine — applies an effect respecting all stacking modes |
 | `applyTier1CombatEffect(actorEffects, opponentEffects, combatAction, round, overrides?)` | `src/Effects/index.ts` | Applies Tier 1 stance effect; returns `Tier1Outcome` with updated arrays + UI feedback |
-| `clearTier1EffectsForStance(effects, currentStance)` (alias `clearTier1EffectsForType`) | `src/Effects/index.ts` | Removes stale Tier 1 self-buffs on stance switch |
+| `clearTier1EffectsForStance(effects, currentStance)` | `src/Effects/index.ts` | Removes stale Tier 1 self-buffs on stance switch |
 | `removeEffect(effects, effectId)` | `src/Effects/index.ts` | Removes the first ActiveEffect with the given ID |
 | `removeEffectsByType(effects, type, maxTier?)` | `src/Effects/index.ts` | Bulk strip by buff/debuff with optional tier cap (used by cleanse/dispel) |
 | `getEffectiveStats(target).baseStats[resistedBy]` | `src/Combat/effect-modifiers.ts` | Target's effective base stat for the resisting stance |
