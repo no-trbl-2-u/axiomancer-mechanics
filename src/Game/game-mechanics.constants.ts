@@ -101,3 +101,17 @@ export const RESOURCE_GENERATION = {
 // counter increments.  Reaching the maximum ends combat peacefully.
 
 export const FRIENDSHIP_COUNTER_MAX = 3;
+
+// ============================================================================
+// ENEMY — STAT BUDGET PER LEVEL
+// ============================================================================
+// Total base-stat budget granted to an enemy is `level × ENEMY_STAT_PER_LEVEL`,
+// distributed across heart / body / mind. Players, by contrast, carry a
+// `level × 5` budget, so the default `3` makes a same-level enemy roughly 60%
+// of a player's raw stat weight — a starting point the tuning workflow A/B's.
+//
+// This is the single tunable knob for global enemy power scaling. Authored
+// enemies that opt into budget-based stats build their `baseStats` via
+// `enemyStatBudget(level)` (see `src/Enemy/index.ts`); legacy enemies that
+// hand-author `baseStats` are unaffected.
+export const ENEMY_STAT_PER_LEVEL = 3;

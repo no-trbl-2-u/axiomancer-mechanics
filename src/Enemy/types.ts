@@ -323,4 +323,12 @@ export interface Enemy {
      * {@link CodexEntry}. Closes GH#65 ask 3.
      */
     journalEntry?: CodexEntry;
+    /**
+     * Content-provenance metadata used by the tuning `--focus` filter
+     * (`src/Tuning/focus.parser.ts`). `addedIn` is an ISO date / phase tag;
+     * `tags` are freeform labels (e.g. `'late-game'`, `'boss'`). Both
+     * optional and ignored by the combat engine.
+     */
+    addedIn?: string;
+    tags?: string[];
 }

@@ -5,6 +5,7 @@ import { BaseStats } from '../Character/types';
 import { deriveStats, calculateMaxHealth } from '../Utils';
 import { ProcOverrides, ProcUnlocks } from '../Combat/combat-effects';
 import { PhilosophicalAlignment } from '../Philosophy/types';
+import { ENEMY_STAT_PER_LEVEL } from '../Game/game-mechanics.constants';
 import {
     Enemy, EnemyLogic, EnemyDifficulty, Tier1EffectOverrides, LootTableEntry,
     FriendshipReward, BefriendabilityConfig,
@@ -48,6 +49,9 @@ export interface CreateEnemyOptions {
     causeLines?: CauseLines;
     /** Phase 73 — optional per-foe codex / journal entry (GH#65 ask 3). */
     journalEntry?: CodexEntry;
+    /** Content-provenance metadata for the tuning `--focus` filter. */
+    addedIn?: string;
+    tags?: string[];
 }
 
 /**
@@ -64,6 +68,51 @@ export const DEFAULT_XP_BY_DIFFICULTY: Record<EnemyDifficulty, number> = {
 };
 
 /**
+ * Distributes an enemy's total stat budget (`level × ENEMY_STAT_PER_LEVEL`)
+ * across heart / body / mind according to a normalised weight triple.
+ *
+ * Used by budget-scaled enemies (and by the tuning workflow's enemy scaler)
+ * so a single `ENEMY_STAT_PER_LEVEL` knob governs global enemy power. The
+ * returned stats always sum to the rounded budget; any rounding remainder is
+ * folded into the largest-weight stat so the total stays exact.
+ *
+ * @param level   - Enemy level.
+ * @param weights - Relative heart/body/mind weighting (need not sum to 1).
+ * @param perLevel - Override for `ENEMY_STAT_PER_LEVEL` (the tuner passes a
+ *                   candidate value when A/B-testing the scaling constant).
+ */
+export function enemyStatBudget(
+    level: number,
+    weights: BaseStats = { heart: 1, body: 1, mind: 1 },
+    perLevel: number = ENEMY_STAT_PER_LEVEL,
+): BaseStats {
+    const total = Math.max(0, Math.round(level * perLevel));
+    const weightSum = weights.heart + weights.body + weights.mind || 1;
+    const raw = {
+        heart: (weights.heart / weightSum) * total,
+        body: (weights.body / weightSum) * total,
+        mind: (weights.mind / weightSum) * total,
+    };
+    const floored: BaseStats = {
+        heart: Math.floor(raw.heart),
+        body: Math.floor(raw.body),
+        mind: Math.floor(raw.mind),
+    };
+    // Distribute the rounding remainder to the highest-weighted stats so the
+    // distribution stays deterministic and the total is exact.
+    let remainder = total - (floored.heart + floored.body + floored.mind);
+    const order: (keyof BaseStats)[] = (['body', 'mind', 'heart'] as (keyof BaseStats)[])
+        .sort((a, b) => weights[b] - weights[a]);
+    let i = 0;
+    while (remainder > 0) {
+        floored[order[i % order.length]!] += 1;
+        remainder -= 1;
+        i += 1;
+    }
+    return floored;
+}
+
+/**
  * Builds a fully-initialised Enemy. Derived stats and resources are
  * computed automatically from `baseStats` and `level`. `xpReward` defaults
  * to `level × DEFAULT_XP_BY_DIFFICULTY[difficulty]` when not supplied.
@@ -75,7 +124,7 @@ export function createEnemy(options: CreateEnemyOptions): Enemy {
         skills, loot, xpReward, effects = [], philosophicalAlignment,
         friendshipReward, befriendabilityConfig,
         finalBlowLines, pactLines, causeLines,
-        journalEntry,
+        journalEntry, addedIn, tags,
     } = options;
 
     const maxHealth = calculateMaxHealth(level, baseStats);
@@ -101,6 +150,8 @@ export function createEnemy(options: CreateEnemyOptions): Enemy {
         pactLines,
         causeLines,
         journalEntry,
+        addedIn,
+        tags,
     };
 }
 
