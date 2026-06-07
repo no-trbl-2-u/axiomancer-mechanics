@@ -33,6 +33,8 @@
 
 ## Pending
 
+<!-- oversight 2026-06-07: balance/playtest expand-bias CLEARED. T decision Q2: "Clear bias — let /expand re-cluster naturally." Bias was set 2026-06-05 (post-Phase-120) and kept 2026-06-06 (post-Phase-121); it steered the 2026-06-07 tuning cycle correctly (Phases 122-125 are all balance/mechanics). With that cycle now queued, no single category dominates the post-125 candidate pool (top scores: Second Enemy Family 4.2, Friendship Route / Story NPCs 3.6 each). /expand weights all categories evenly from this point until signals re-cluster naturally. -->
+
 <!-- oversight 2026-06-06 (post-Phase-121 ship; attended): expand-33's three combat-scaling candidates (Combat Scaling Mechanics Investigation 4.0 / Health Formula Rebalancing 3.2 / Damage Calculation Audit 2.8) were REJECTED — their shared premise was contradicted by Phase 121's own evidence and a live re-run at this oversight. See ## Rejected. The user (Q1) directed filing the one thread Phase 121's closeout actually names: friendship / nonlethal expressiveness is absent on the lethal anchors. Balance/playtest expand-bias from oversight-2026-06-05 is KEPT (Q2) but the live signal it should weight is route-expressiveness, not HP/damage scaling. -->
 
 ### Candidate: Friendship / nonlethal route expressiveness on lethal anchors
