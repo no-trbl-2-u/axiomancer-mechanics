@@ -3,7 +3,7 @@
  * runner (with fully injected, in-memory dependencies).
  */
 
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
@@ -14,7 +14,7 @@ import {
 } from '../strategist.knowledge';
 import { scoreHealth, compareHealth } from '../health.metrics';
 import { runExperiment, type ExperimentDeps } from '../experiment.runner';
-import type { CellResult, HealthScore, MatrixPlan } from '../types';
+import type { CellResult, MatrixPlan } from '../types';
 import type { PlaytestRunSummary } from '../../Playtest/types';
 import type { ApplyResult } from '../tunable.applier';
 
