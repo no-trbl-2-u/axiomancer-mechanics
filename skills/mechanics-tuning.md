@@ -64,8 +64,11 @@ analysis in-session.
 - **One PR carries everything.** The data report, the suggestions writeup (with
   inline player/enemy/combat snapshots), and any auto-applied winners all ride a
   single new branch + PR. Nothing is pushed to `main` automatically.
-- **Ambiguity → ask.** If a focus is unclear or a propose-only idea looks
-  architecturally significant, surface it; don't guess.
+- **Ambiguity → document and proceed.** If a focus is unclear or a propose-only
+  idea looks architecturally significant, make the most reasonable assumption,
+  document the assumption and the open question under an `## Open questions`
+  section appended to the suggestions file, and continue — never pause for
+  input. In a GH Action container there is no user to answer.
 
 ## 4. The procedure
 
