@@ -43,7 +43,91 @@
       "kept": false,
       "significant": false,
       "confidence": "low"
+    },
+    {
+      "timestamp": "2026-06-07T19-32-52-112Z",
+      "paramId": "effect.buff_regeneration.duration",
+      "oldValue": 6,
+      "newValue": 5,
+      "direction": "down",
+      "deltaHealth": 0,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "Status effects and skills in early and mid game"
+    },
+    {
+      "timestamp": "2026-06-07T19-32-52-112Z",
+      "paramId": "effect.tier1_heart_defend.healthPerRound",
+      "oldValue": 2,
+      "newValue": 1,
+      "direction": "down",
+      "deltaHealth": 0.0014188464130117096,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "Status effects and skills in early and mid game"
+    },
+    {
+      "timestamp": "2026-06-07T19-32-52-112Z",
+      "paramId": "effect.tier1_body_attack.duration",
+      "oldValue": 3,
+      "newValue": 2,
+      "direction": "down",
+      "deltaHealth": -0.001204020749811241,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "Status effects and skills in early and mid game"
+    },
+    {
+      "timestamp": "2026-06-07T19-32-52-112Z",
+      "paramId": "effect.debuff_confusion.rollModifier",
+      "oldValue": -5,
+      "newValue": -4,
+      "direction": "up",
+      "deltaHealth": -0.0006190476190476024,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "Status effects and skills in early and mid game"
+    },
+    {
+      "timestamp": "2026-06-07T19-32-52-112Z",
+      "paramId": "effect.debuff_fear.rollModifier",
+      "oldValue": -4,
+      "newValue": -3,
+      "direction": "up",
+      "deltaHealth": -0.00007740699404762408,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "Status effects and skills in early and mid game"
+    },
+    {
+      "timestamp": "2026-06-07T19-35-20-857Z",
+      "paramId": "effect.maxIntensity",
+      "oldValue": 10,
+      "newValue": 13,
+      "direction": "up",
+      "deltaHealth": -0.0000010407699700398787,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "Status effects and skills in early and mid game"
+    },
+    {
+      "timestamp": "2026-06-07T19-35-20-857Z",
+      "paramId": "effect.maxDuration",
+      "oldValue": 10,
+      "newValue": 13,
+      "direction": "up",
+      "deltaHealth": 0.00011428571428570566,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "Status effects and skills in early and mid game"
     }
   ],
-  "updatedAt": "2026-06-07T13:38:01.136Z"
+  "updatedAt": "2026-06-07T19:35:38.504Z"
 }
