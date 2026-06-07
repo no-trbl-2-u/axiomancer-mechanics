@@ -43,7 +43,43 @@
       "kept": false,
       "significant": false,
       "confidence": "low"
+    },
+    {
+      "timestamp": "2026-06-07T20-36-33-493Z",
+      "paramId": "effect.buff_regeneration.duration",
+      "oldValue": 6,
+      "newValue": 5,
+      "direction": "down",
+      "deltaHealth": 0,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "Phase 123 gear-tier counterweight + Phase 124 stronger skills/effects combined validation"
+    },
+    {
+      "timestamp": "2026-06-07T20-36-33-493Z",
+      "paramId": "effect.tier1_heart_defend.healthPerRound",
+      "oldValue": 2,
+      "newValue": 1,
+      "direction": "down",
+      "deltaHealth": 0.0006602406113852544,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "Phase 123 gear-tier counterweight + Phase 124 stronger skills/effects combined validation"
+    },
+    {
+      "timestamp": "2026-06-07T20-36-33-493Z",
+      "paramId": "effect.tier1_body_attack.duration",
+      "oldValue": 3,
+      "newValue": 2,
+      "direction": "down",
+      "deltaHealth": -0.0007618514894181527,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "Phase 123 gear-tier counterweight + Phase 124 stronger skills/effects combined validation"
     }
   ],
-  "updatedAt": "2026-06-07T13:38:01.136Z"
+  "updatedAt": "2026-06-07T20:37:06.869Z"
 }
