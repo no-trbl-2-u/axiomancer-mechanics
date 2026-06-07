@@ -12,6 +12,15 @@ The engine should support strange, legible, consequential systems over safe RPG 
 
 Combat is fundamentally status-effect-centered.
 
+**Doctrine (load-bearing, set 2026-06):** Status effects are the MAIN fun and
+the most engaging aspect of combat. Every balance decision, tuning run, content
+addition, and skill/effect design is judged first by "does this make applying
+and exploiting status effects more central and more satisfying?" If a change
+makes basic-attack trading more attractive than status-effect play, it works
+against the vision. The mechanics-tuning loop and the balance-analyst must treat
+low status-effect engagement as a balance failure even when win/loss rates look
+healthy.
+
 The intended mastery path is:
 
 1. read the enemy;

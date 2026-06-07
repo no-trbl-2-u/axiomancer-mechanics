@@ -1,7 +1,9 @@
 /**
- * Report generator — emits the TWO distinct artifacts the delivery model needs:
- *   1. Data report (facts only, no recommendations) → pushed to `main`.
- *   2. Suggestions writeup (recommended changes + why + references) → PR branch.
+ * Report generator — emits the two artifacts the delivery model needs. Both now
+ * ride the SAME PR branch (nothing auto-lands on `main`):
+ *   1. Data report (facts only, no recommendations).
+ *   2. Suggestions writeup (recommended changes + why + an inline snapshot of
+ *      the relevant game state — player, enemy, combat — that supports each).
  */
 
 import type { CellResult, ExperimentResult, TuningTickResult } from './types';
@@ -61,7 +63,33 @@ function focusLine(tick: TuningTickResult): string {
     return parts.join(' · ');
 }
 
-/** Data report — aggregate facts only. No recommendations. Pushed to `main`. */
+/**
+ * Status-effect engagement view (Axiomancer north-star: status effects are the
+ * main engagement). Skill-use-per-run is the current proxy until effects-
+ * applied-per-run lands. Lower numbers warn that combat is devolving into
+ * basic-attack trades.
+ */
+function engagementTable(cells: CellResult[]): string {
+    const groups = new Map<string, CellResult[]>();
+    for (const c of cells) {
+        const k = c.cell.playstyle;
+        (groups.get(k) ?? groups.set(k, []).get(k)!).push(c);
+    }
+    const rows = [...groups.entries()].map(([key, group]) => {
+        const skillPerRun = avg(group.map(g => g.snapshot?.combat.skillUsePerRun ?? 0));
+        const skillShare = avg(group.map(g => g.snapshot?.combat.skillActionShare ?? 0));
+        return { key, skillPerRun, skillShare };
+    }).sort((a, b) => a.key.localeCompare(b.key));
+    return [
+        '### Status-effect engagement (by playstyle)',
+        '',
+        '| Playstyle | Skill uses / run | Skill action share |',
+        '| --- | --- | --- |',
+        ...rows.map(r => `| ${r.key} | ${round(r.skillPerRun, 1)} | ${pct(r.skillShare)} |`),
+    ].join('\n');
+}
+
+/** Data report — aggregate facts only. No recommendations. Rides the PR. */
 export function renderDataReport(tick: TuningTickResult): string {
     const cells = tick.baselineCells;
     const lines: string[] = [
@@ -80,6 +108,8 @@ export function renderDataReport(tick: TuningTickResult): string {
         table('By enemy', aggregateBy(cells, c => c.cell.enemySlug)),
         '',
         table('By difficulty', aggregateBy(cells, c => c.cell.difficulty)),
+        '',
+        engagementTable(cells),
         '',
     ];
 
@@ -135,10 +165,52 @@ function experimentSummary(e: ExperimentResult): string {
     return `- **${e.paramId}**: ${round(e.oldValue)} → ${round(e.newValue)} — ${e.candidate.rationale} (ΔHealth ${round(e.comparison.delta, 4)}; ${e.comparison.note})`;
 }
 
+function statLine(s: { heart: number; body: number; mind: number }): string {
+    return `H${s.heart}/B${s.body}/M${s.mind}`;
+}
+
+/** Inline snapshot of one cell's player, enemy, and combat state. */
+function renderSnapshot(c: CellResult): string {
+    const snap = c.snapshot;
+    const m = c.report.metrics;
+    const head = `**\`${c.cell.cellId}\`** — L${c.cell.level} ${c.cell.playstyle} vs \`${c.cell.enemySlug}\` (${c.cell.difficulty})`;
+    if (!snap) {
+        return [head, `  - resolution ${pct(m.resolutionSuccessRate)} · defeat ${pct(m.defeatRate)} · timeout ${pct(m.timeoutRate)} · avg ${round(m.averageRounds, 1)} rounds`].join('\n');
+    }
+    const p = snap.player;
+    const e = snap.enemy;
+    return [
+        head,
+        `  - **Player:** L${p.level} ${statLine(p.baseStats)} · HP ${p.maxHealth} · atk(P/M/E) ${p.derived.physicalAttack}/${p.derived.mentalAttack}/${p.derived.emotionalAttack} · def ${p.derived.physicalDefense}/${p.derived.mentalDefense}/${p.derived.emotionalDefense} · ${p.knownSkills} skills · gear [${p.equipment.join(', ') || 'none'}]`,
+        `  - **Enemy:** ${e.name} L${e.level} (${e.logic}/${e.difficulty ?? 'n/a'}) ${statLine(e.baseStats)} · HP ${e.maxHealth} · atk ${e.derived.physicalAttack}/${e.derived.mentalAttack}/${e.derived.emotionalAttack} · def ${e.derived.physicalDefense}/${e.derived.mentalDefense}/${e.derived.emotionalDefense}`,
+        `  - **Combat:** resolution ${pct(snap.combat.resolutionSuccessRate)} · defeat ${pct(snap.combat.defeatRate)} · timeout ${pct(snap.combat.timeoutRate)} · avg ${round(snap.combat.averageRounds, 1)} rounds · dmg ratio ${round(snap.combat.damageRatioPlayerToEnemy)} · stances ${snap.combat.topStances || 'n/a'}`,
+        `  - **Status-effect engagement:** ${round(snap.combat.skillUsePerRun, 1)} skill uses/run (${pct(snap.combat.skillActionShare)} of actions) · top skills: ${snap.combat.topSkills.join(', ') || 'none'}`,
+    ].join('\n');
+}
+
+function cellById(tick: TuningTickResult, cellId: string): CellResult | undefined {
+    return tick.baselineCells.find(c => c.cell.cellId === cellId);
+}
+
+/** The most off-band cells (worst deviation first), with snapshots available. */
+function worstOffBandCells(tick: TuningTickResult, n: number): CellResult[] {
+    const ranked = [...tick.baseline.perCell]
+        .filter(c => c.deviation > 0)
+        .sort((a, b) => b.deviation - a.deviation)
+        .slice(0, n);
+    return ranked
+        .map(r => cellById(tick, r.cellId))
+        .filter((c): c is CellResult => !!c);
+}
+
+const CELL_ID_RE = /\b(l\d+-[a-z]+-[a-z]+)\b/;
+
 /**
- * Suggestions writeup — recommended changes with a brief why and references
- * back to the data report. Rides the PR branch alongside the auto-applied
- * winners. `dataReportRef` is the committed data report filename to cite.
+ * Suggestions writeup — recommended changes with a brief why, an inline
+ * snapshot of the relevant game state (player / enemy / combat) that supports
+ * them, and a reference to the data report. Rides the SAME PR branch as the
+ * data report and the auto-applied winners. `dataReportRef` is the data report
+ * filename to cite.
  */
 export function renderSuggestions(tick: TuningTickResult, dataReportRef: string): string {
     const kept = tick.experiments.filter(e => e.kept);
@@ -178,8 +250,33 @@ export function renderSuggestions(tick: TuningTickResult, dataReportRef: string)
     } else {
         for (const p of tick.proposeOnly) {
             lines.push(`- ${p.summary}${p.paramId ? ` (\`${p.paramId}\`)` : ''} — ${p.rationale}`);
+            // If the item names a specific cell, embed its snapshot inline.
+            const cellId = p.summary.match(CELL_ID_RE)?.[1];
+            const cell = cellId ? cellById(tick, cellId) : undefined;
+            if (cell) {
+                for (const l of renderSnapshot(cell).split('\n')) lines.push(`  ${l}`);
+            }
         }
         lines.push('');
+    }
+
+    // Supporting evidence: the most off-band matchups, with full game-state
+    // snapshots, so the reviewer can judge a numeric change against the
+    // concrete player/enemy/combat state that motivated it.
+    const evidence = worstOffBandCells(tick, 5);
+    lines.push('## Supporting evidence — relevant game state', '');
+    if (evidence.length === 0) {
+        lines.push('_Matrix is in band; no off-band cells to snapshot._', '');
+    } else {
+        lines.push(
+            'Most off-band matchups (worst deviation first). Per the Axiomancer',
+            'north-star, watch the status-effect engagement line: low skill use'
+            + ' means combat is collapsing into basic-attack trades.',
+            '',
+        );
+        for (const c of evidence) {
+            lines.push(renderSnapshot(c), '');
+        }
     }
     return lines.join('\n') + '\n';
 }

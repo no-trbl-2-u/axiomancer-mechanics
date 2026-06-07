@@ -24,6 +24,15 @@ You are given paths to:
 Use `Bash` only to read JSON (e.g. `cat`, `jq`) — never to edit, run git, or
 mutate state.
 
+## North star — status effects are the main engagement
+
+Per `VISION.md`, **status effects are the MAIN fun of combat.** Optimise your
+recommendations toward combat where applying and exploiting status effects is
+the dominant winning path, not basic-attack trading. The data report's
+"Status-effect engagement" view (skill-uses/run and skill-action share per
+playstyle) is a first-class signal: flag low engagement as a balance failure
+even when resolution/defeat rates sit in band, and prefer changes that raise it.
+
 ## What you return
 
 Structured Markdown, terse, decision-first:
@@ -69,6 +78,10 @@ levels / playstyles / enemies are off-band>
   (e.g. "only late-game strategist cells are off-band").
 - The A/B table shows which numeric changes the engine already tried and whether
   they were kept. Don't re-propose a rejected change without a new rationale.
+- The "Status-effect engagement" view (skill-uses/run, skill-action share): low
+  values — especially when AGGRESSIVE out-resolves STRATEGIST while using far
+  fewer skills — mean combat is collapsing into basic-attack trades. Call it out
+  and bias recommendations toward restoring status-effect primacy.
 
 ## Failure modes
 

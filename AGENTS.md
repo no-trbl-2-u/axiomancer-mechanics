@@ -6,6 +6,8 @@
 
 Axiomancer Mechanics is a TypeScript TTRPG game engine (Node.js CLI). No databases, servers, or containers required. See `README.md` for architecture docs. Read `VISION.md` before major mechanics, combat, balance, friendship/mercy, alignment, or `/march` phase work.
 
+**Load-bearing doctrine (2026-06):** Status effects are the MAIN fun and the most engaging aspect of combat. Balance/tuning/content work optimises first for status-effect-centric play; treat low status-effect engagement as a balance failure even when win/loss rates look healthy. Canonical in `VISION.md`.
+
 ### Key commands
 
 All commands are in `package.json`:

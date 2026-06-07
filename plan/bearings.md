@@ -20,6 +20,15 @@ a full game loop. The React Native UI is out of scope for this repo.
 
 **Live at:** not applicable — npm library, not hosted.
 
+## Design doctrine (load-bearing)
+
+**Status effects are the MAIN fun and the most engaging aspect of combat.**
+(Set 2026-06; see `VISION.md` → Combat vision.) Balance, tuning, and content
+work optimise first for status-effect-centric play — applying and exploiting
+effects should be the dominant winning path, not basic-attack trading. The
+mechanics-tuning loop treats low status-effect engagement as a balance failure
+even when win/loss rates look healthy.
+
 ## Surface
 
 **Surface:** `library`

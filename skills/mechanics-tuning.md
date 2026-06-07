@@ -1,9 +1,19 @@
 # Skill: mechanics-tuning
 
 > **High autonomy within hard guardrails.** Run the character × playstyle ×
-> enemy balance matrix, A/B-test numeric changes, and deliver results on two
-> tracks: the data report goes to `main`, the suggestions + auto-applied
-> winners go to a new branch + PR.
+> enemy balance matrix, A/B-test numeric changes, and deliver everything —
+> the data report, the suggestions (with inline game-state evidence), and any
+> auto-applied winners — together on ONE new branch + PR. Nothing auto-lands
+> on `main`.
+
+## North star — status effects are the main engagement
+
+Per `VISION.md`, **status effects are the primary fun of combat.** When tuning
+or recommending, optimise toward combat where reading the enemy, applying, and
+exploiting status effects is the dominant winning path — not basic-attack
+trades. Treat low status-effect engagement (see the engagement view in the data
+report) as a balance problem even when win/defeat rates look fine, and surface
+it in the suggestions. The STRATEGIST playstyle is the witness for this path.
 
 ## 1. Purpose
 
@@ -37,8 +47,9 @@ analysis in-session.
   tunable registry (`src/Tuning/tunable.registry.ts`), each ±25%/run, and only
   keeps a change that improves matrix health, is not a regression, and passes
   `npm run verify`. Structural/schema/logic ideas are propose-only.
-- **Two delivery tracks (never blur them).** The data report (facts) lands on
-  `main`. The suggestions writeup + the auto-applied winners ride a PR branch.
+- **One PR carries everything.** The data report, the suggestions writeup (with
+  inline player/enemy/combat snapshots), and any auto-applied winners all ride a
+  single new branch + PR. Nothing is pushed to `main` automatically.
 - **Ambiguity → ask.** If a focus is unclear or a propose-only idea looks
   architecturally significant, surface it; don't guess.
 
@@ -65,40 +76,35 @@ analysis in-session.
   the suggestions file so a human reviewer sees the richer reasoning.
 - Do NOT have the subagent write code — it returns analysis only.
 
-### Step 3 — Track 1: data report → `main`
-- Stage ONLY the data artifacts and learning state (NOT the winner edits):
+### Step 3 — Deliver everything on ONE PR
+- Create a branch off the base: `git checkout -b balance/tuning-<ts>`.
+- Stage ALL of it together — the data report, the suggestions writeup, the
+  learning state, and any winner-edited tunable files:
   `git add automation/playtest/reports/tuning-<ts>.md
    automation/playtest/reports/tuning-<ts>.json
-   automation/playtest/strategist-knowledge.json`
-- Commit: `docs(balance): tuning data report <ts>`
-- Push to `main`: `git push origin HEAD:main`
-  (In CI the checkout is `main`; locally, confirm you're on / targeting `main`.)
-
-### Step 4 — Track 2: suggestions + winners → PR
-- Create a branch: `git checkout -b balance/tuning-<ts>` (carries the still-
-  unstaged winner edits + the suggestions file across).
-- Stage the winner-edited tunable files and the suggestions writeup:
-  `git add <changed tunable files> automation/playtest/reports/suggestions-<ts>.md`
-- Commit: `fix(balance): apply A/B winners + suggestions <ts>`
+   automation/playtest/reports/suggestions-<ts>.md
+   automation/playtest/strategist-knowledge.json
+   <changed tunable files>`
+- Commit: `balance(tuning): <ts> report + suggestions (<n> auto-applied)`
 - Push and open a PR (ready for review, not draft):
   - Title: `balance: tuning <ts> (<n> auto-applied)`
-  - Body: list each kept change (`param: old → new`), a one-line *why*, and a
-    link/reference to the data report committed on `main`. Add the propose-only
-    section for human follow-up.
-- If there are **no kept winners**, still open the PR carrying just the
-  suggestions writeup (propose-only recommendations) so the findings are
-  reviewable. If there is genuinely nothing to suggest, skip the PR and say so.
+  - Body: the headline health delta; each kept change (`param: old → new`) with
+    a one-line *why*; the suggestions' supporting game-state snapshots for the
+    most off-band cells; and the propose-only section for human follow-up.
+- If there are **no kept winners**, still open the PR carrying the data report +
+  the suggestions (propose-only recommendations + evidence snapshots) so the
+  findings are reviewable. If there is genuinely nothing to report, say so.
 
-### Step 5 — Report back
-- One concise message: data-report commit on `main`, the PR URL, and the
-  headline health delta. If `/loop`-invoked and a focus rotation is desired,
-  proceed to the next focus; otherwise stop.
+### Step 4 — Report back
+- One concise message: the PR URL and the headline health + engagement delta.
+  If `/loop`-invoked and a focus rotation is desired, proceed to the next focus;
+  otherwise stop.
 
 ## 5. Hard rules
 
-- **Never push code/balance changes directly to `main`.** Only the data report
-  (+ learning state) lands on `main`. Winners go through the PR.
-- **Never auto-merge the suggestions PR.** A human approves it.
+- **Never push anything to `main` automatically.** The data report, suggestions,
+  learning state, and winners ALL ride the PR branch. A human merges.
+- **Never auto-merge the PR.** A human approves it.
 - **Never bypass the verify gate.** The engine already gates kept winners on
   `npm run verify`; do not commit a winner that did not pass.
 - **Never edit `src/index.ts`, public types, or core formulas.** The applier

@@ -1,9 +1,10 @@
 name: mechanics-tuning
 
 # Manually fire one tuning tick: runs the character × playstyle × enemy balance
-# matrix, A/B-tests numeric candidates, and delivers results on two tracks —
-# the data report is pushed to `main`, and the suggestions + any auto-applied
-# winners are pushed to a new branch with a PR opened for review.
+# matrix, A/B-tests numeric candidates, and delivers everything — the data
+# report, the suggestions (with inline game-state evidence), and any auto-applied
+# winners — together on one new branch with a PR opened for review. Nothing is
+# pushed to `main` automatically.
 #
 # Trigger: Actions tab → "mechanics-tuning" → Run workflow. Provide an optional
 # focus (e.g. "new status effects since April", "early-game enemy balance").
@@ -14,8 +15,8 @@ name: mechanics-tuning
 #                             API billing. (Mirrors the `march` workflow; no
 #                             ANTHROPIC_API_KEY is used.)
 #
-# The auto-provisioned GITHUB_TOKEN is used for git push (to main) and for
-# opening the suggestions PR. The hybrid analyst runs offline-first here (no
+# The auto-provisioned GITHUB_TOKEN is used to push the tuning branch and open
+# the PR (nothing is pushed to main). The hybrid analyst runs offline-first (no
 # programmatic API key), enriched by the balance-analyst subagent the skill
 # spawns in-session.
 

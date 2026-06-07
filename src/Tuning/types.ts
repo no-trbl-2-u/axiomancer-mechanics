@@ -9,6 +9,7 @@
 
 import type { Stance } from '../Combat';
 import type { PlaytestPolicy, PlaytestReport } from '../Playtest/types';
+import type { BaseStats } from '../Character/types';
 
 // ─── Focus ──────────────────────────────────────────────────────────────────
 
@@ -105,9 +106,51 @@ export interface MatrixPlan {
     focus: FocusFilter;
 }
 
+/** Compact stat block for a combatant, embedded in the suggestions evidence. */
+export interface CombatantSnapshot {
+    name: string;
+    level: number;
+    baseStats: BaseStats;
+    maxHealth: number;
+    /** Headline derived combat stats (attack/defense per axis). */
+    derived: {
+        physicalAttack: number; physicalDefense: number;
+        mentalAttack: number; mentalDefense: number;
+        emotionalAttack: number; emotionalDefense: number;
+    };
+}
+
+/**
+ * A snapshot of the relevant game state for one matrix cell — the player
+ * loadout, the scaled enemy, and combat-state highlights — so a suggestion can
+ * carry its supporting evidence inline (the reviewer never has to reconstruct
+ * the matchup from raw logs).
+ */
+export interface CellSnapshot {
+    player: CombatantSnapshot & { knownSkills: number; equipment: string[] };
+    enemy: CombatantSnapshot & { logic: string; difficulty?: string; slug: string };
+    combat: {
+        resolutionSuccessRate: number;
+        defeatRate: number;
+        timeoutRate: number;
+        averageRounds: number;
+        damageRatioPlayerToEnemy: number;
+        /** Top stances by share, e.g. "body 60% · mind 30%". */
+        topStances: string;
+        /** Top skill ids by use count (status-effect engagement signal). */
+        topSkills: string[];
+        /** Skill actions per run — proxy for status-effect engagement. */
+        skillUsePerRun: number;
+        /** Share of player actions that were skills (vs attack/defend/item). */
+        skillActionShare: number;
+    };
+}
+
 export interface CellResult {
     cell: MatrixCell;
     report: PlaytestReport;
+    /** Optional supporting snapshot (populated by the matrix runner). */
+    snapshot?: CellSnapshot;
 }
 
 // ─── Health scoring ───────────────────────────────────────────────────────────
