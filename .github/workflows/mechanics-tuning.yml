@@ -9,12 +9,15 @@ name: mechanics-tuning
 # focus (e.g. "new status effects since April", "early-game enemy balance").
 #
 # Required secrets (Settings → Secrets and variables → Actions):
-#   ANTHROPIC_API_KEY — used both to run Claude Code (the skill) and by the
-#                       hybrid analyst's optional programmatic API path. If
-#                       absent, the analyst falls back to the offline heuristic.
+#   CLAUDE_CODE_OAUTH_TOKEN — OAuth token from `claude setup-token`, draws from
+#                             your Claude Code subscription instead of per-token
+#                             API billing. (Mirrors the `march` workflow; no
+#                             ANTHROPIC_API_KEY is used.)
 #
 # The auto-provisioned GITHUB_TOKEN is used for git push (to main) and for
-# opening the suggestions PR.
+# opening the suggestions PR. The hybrid analyst runs offline-first here (no
+# programmatic API key), enriched by the balance-analyst subagent the skill
+# spawns in-session.
 
 on:
   workflow_dispatch:
@@ -63,11 +66,24 @@ jobs:
           git config user.name  "axiomancer-tuning[bot]"
           git config user.email "41898282+axiomancer-tuning[bot]@users.noreply.github.com"
 
+      - name: Provision .env for nexus skills
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # The nexus skills read GH_TOKEN / GH_REPO from a local .env via
+          # `awk -F=`. Provision a CI-scoped copy so the two-track delivery
+          # (git push + gh pr create) works out of the box.
+          umask 077
+          cat > .env <<EOF
+          GH_TOKEN=${GH_TOKEN}
+          GH_REPO=${{ github.repository }}
+          EOF
+
       - name: Run /mechanics-tuning
         uses: anthropics/claude-code-base-action@beta
         with:
-          prompt: '/mechanics-tuning --focus="${{ github.event.inputs.focus }}" --use-api --max-iterations=${{ github.event.inputs.max_iterations }}'
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: '/mechanics-tuning --focus="${{ github.event.inputs.focus }}" --max-iterations=${{ github.event.inputs.max_iterations }}'
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # The skill needs to read everything, run npm (tune + verify), edit
           # the winning numeric values, and run git / gh for the two-track
           # delivery. The workflow itself is the trust boundary, so run with
@@ -76,7 +92,5 @@ jobs:
           settings: '{"permissions":{"defaultMode":"bypassPermissions","skipDangerousModePermissionPrompt":true}}'
           timeout_minutes: '110'
         env:
-          # Exposed for the hybrid analyst's programmatic Claude API path.
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}

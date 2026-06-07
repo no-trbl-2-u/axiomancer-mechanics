@@ -26,7 +26,10 @@ playtest harness do that. The skill is the orchestrator + the delivery layer.
 ```
 
 Arguments are forwarded to `npm run tune` (`--focus`, `--runs`, `--levels`,
-`--playstyles`, `--difficulties`, `--use-api`, `--max-iterations`).
+`--playstyles`, `--difficulties`, `--max-iterations`). The CI workflow runs
+offline-first (no programmatic API key — auth mirrors `/march` via
+`CLAUDE_CODE_OAUTH_TOKEN`); the `balance-analyst` subagent provides the richer
+analysis in-session.
 
 ## 3. Autonomy contract
 
