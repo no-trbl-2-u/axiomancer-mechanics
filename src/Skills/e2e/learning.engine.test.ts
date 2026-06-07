@@ -28,9 +28,11 @@ const buildPlayer = (level: number, overrides: Partial<{
 });
 
 describe('meetsLearningRequirement — tier-derived defaults', () => {
-    it('admits a level-1 character to every Tier 1 skill', () => {
+    it('admits a level-1 character to every default-gated Tier 1 skill', () => {
         const ch = buildPlayer(1);
-        for (const s of skillLibrary.filter(x => x.tier === 1)) {
+        // Scope to skills relying on tier-derived defaults; content-expansion
+        // skills may carry explicit higher requirements (level / stat gates).
+        for (const s of skillLibrary.filter(x => x.tier === 1 && !x.learningRequirement)) {
             expect(meetsLearningRequirement(ch, s)).toBe(true);
         }
     });
@@ -57,7 +59,9 @@ describe('meetsLearningRequirement — tier-derived defaults', () => {
         // The two gates are orthogonal axes, so an alignment that satisfies
         // both exists: pessimistic AND transcendent.
         const passAllGates = { epistemology: 0, outlook: -50, scope: 50 };
-        for (const s of skillLibrary.filter(x => x.tier === 3)) {
+        // Scope to default-gated tier-3 skills (tier-derived level 10/15).
+        // Content-expansion tier-3 skills may require higher levels / stats.
+        for (const s of skillLibrary.filter(x => x.tier === 3 && !x.learningRequirement)) {
             expect(meetsLearningRequirement(ch, s, passAllGates)).toBe(true);
         }
     });
@@ -69,7 +73,12 @@ describe('getAvailableSkills', () => {
         // Phase 46 — same all-passing alignment as the Tier 3 admission test.
         const passAllGates = { epistemology: 0, outlook: -50, scope: 50 };
         const available = getAvailableSkills(ch, passAllGates);
-        expect(available.length).toBe(skillLibrary.length);
+        // Content-expansion added skills with explicit higher level/stat gates
+        // not all reachable at level 15; assert the filter returns exactly the
+        // qualifying subset (correctness), not the entire library.
+        const expected = skillLibrary.filter(s => meetsLearningRequirement(ch, s, passAllGates));
+        expect(available.length).toBe(expected.length);
+        expect(available.length).toBeGreaterThan(0);
     });
 
     it('omits already-known skills from the result', () => {
@@ -85,9 +94,12 @@ describe('getAvailableSkills', () => {
         // Phase 46 — supply the alignment that admits every Tier 3 skill.
         const passAllGates = { epistemology: 0, outlook: -50, scope: 50 };
         const available = getAvailableSkills(ch, passAllGates);
-        const libraryIds = skillLibrary.map(s => s.id);
+        // Order must mirror the library among the qualifying subset.
+        const expectedIds = skillLibrary
+            .filter(s => meetsLearningRequirement(ch, s, passAllGates))
+            .map(s => s.id);
         const availableIds = available.map(s => s.id);
-        expect(availableIds).toEqual(libraryIds);
+        expect(availableIds).toEqual(expectedIds);
     });
 });
 

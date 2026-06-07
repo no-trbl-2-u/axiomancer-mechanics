@@ -688,6 +688,478 @@ const transcendentSynthesis: Skill = {
     },
 };
 
+// ─── 2026-06-07 content drop — mid/late-game expansion (20 skills) ───────────
+//
+// Twenty new skills scaling content up toward level ~45. Spread across
+// body/mind/heart × fallacy/paradox × tiers 1-3 and across the four
+// playstyle needs: pure damage (high basePower, enemy-target), control
+// (debuff combatEffects), defensive/self (self buffs / secondary_heal_self),
+// and synergy (strategist `synergy` clauses). Every entry carries
+// `addedIn: '2026-06-07'` + content tags for the tuning `--focus` filter.
+// All `combatEffects[].effectId` reference effects that exist in
+// `src/Effects/{buffs,debuffs}.library.json`.
+
+// ── Tier 1 — early-mid filler (5 skills) ─────────────────────────────────────
+
+const hastyGeneralization: Skill = {
+    id: 'hasty-generalization',
+    name: 'Hasty Generalization',
+    category: 'fallacy',
+    philosophicalAspect: 'body',
+    description:
+        'One blow becomes the whole truth of them. You strike once and treat ' +
+        'the flinch as proof of everything — and so it becomes proof, the ' +
+        'sample of one swelling to a verdict their whole body must answer for.',
+    tier: 1,
+    resourceCost: { body: 3 },
+    targetType: 'enemy',
+    basePower: 11,
+    scalingStat: 'body',
+    learningRequirement: { level: 3 },
+    addedIn: '2026-06-07',
+    tags: ['early-game', 'damage'],
+};
+
+const redHerring: Skill = {
+    id: 'red-herring',
+    name: 'Red Herring',
+    category: 'fallacy',
+    philosophicalAspect: 'mind',
+    description:
+        'You drag a brighter, louder, irrelevant thing across their line of ' +
+        'reasoning. By the time they remember what they were chasing, the ' +
+        'scent is gone and so is their footing.',
+    tier: 1,
+    resourceCost: { mind: 3 },
+    targetType: 'enemy',
+    basePower: 4,
+    scalingStat: 'mind',
+    combatEffects: [
+        { effectId: 'debuff_accuracy_down', appliedTo: 'opponent', duration: 3 },
+    ],
+    learningRequirement: { level: 3 },
+    addedIn: '2026-06-07',
+    tags: ['early-game', 'control'],
+};
+
+const wishfulThinking: Skill = {
+    id: 'wishful-thinking',
+    name: 'Wishful Thinking',
+    category: 'fallacy',
+    philosophicalAspect: 'heart',
+    description:
+        'You decide, with great feeling, that you are already healing — and ' +
+        'the feeling is sincere enough to do a little of the work itself. ' +
+        'Believing it does not make it true, but it makes it truer.',
+    tier: 1,
+    resourceCost: { heart: 3 },
+    targetType: 'self',
+    basePower: 0,
+    scalingStat: 'heart',
+    scalingMultiplier: 4,
+    learningRequirement: { level: 3 },
+    addedIn: '2026-06-07',
+    tags: ['early-game', 'defensive', 'heal'],
+};
+
+const arrowParadox: Skill = {
+    id: 'arrow-paradox',
+    name: 'Arrow Paradox',
+    category: 'paradox',
+    philosophicalAspect: 'body',
+    description:
+        'At every instant the arrow is motionless, so motion cannot exist — ' +
+        'yet here it is, lodged in them. You let the contradiction carry the ' +
+        'shot that logic insists never travelled.',
+    tier: 1,
+    resourceCost: { body: 3 },
+    targetType: 'enemy',
+    basePower: 13,
+    scalingStat: 'body',
+    learningRequirement: { level: 4 },
+    addedIn: '2026-06-07',
+    tags: ['early-game', 'damage'],
+};
+
+const heapOfDoubt: Skill = {
+    id: 'heap-of-doubt',
+    name: 'Heap of Doubt',
+    category: 'paradox',
+    philosophicalAspect: 'mind',
+    description:
+        'Remove one certainty and they are still sure. Remove another. At no ' +
+        'single grain do they become lost — and yet, grain by grain, they are. ' +
+        'You watch the heap of their conviction quietly stop being a heap.',
+    tier: 1,
+    resourceCost: { mind: 3 },
+    targetType: 'enemy',
+    basePower: 5,
+    scalingStat: 'mind',
+    combatEffects: [
+        { effectId: 'debuff_confusion', appliedTo: 'opponent', duration: 2 },
+    ],
+    learningRequirement: { level: 4 },
+    addedIn: '2026-06-07',
+    tags: ['early-game', 'control'],
+};
+
+// ── Tier 2 — mid-game core (8 skills) ────────────────────────────────────────
+
+const slipperySlope: Skill = {
+    id: 'slippery-slope',
+    name: 'Slippery Slope',
+    category: 'fallacy',
+    philosophicalAspect: 'body',
+    description:
+        'One concession, then the next, then the avalanche you promised was ' +
+        'inevitable. You name the catastrophe at the bottom of the hill until ' +
+        'the ground itself seems to tilt, and they slide the whole way down.',
+    tier: 2,
+    resourceCost: { body: 3, mind: 1 },
+    targetType: 'enemy',
+    basePower: 16,
+    scalingStat: 'body',
+    combatEffects: [
+        { effectId: 'debuff_bleed', appliedTo: 'opponent', intensity: 2, duration: 3 },
+    ],
+    learningRequirement: { level: 14 },
+    addedIn: '2026-06-07',
+    tags: ['mid-game', 'damage', 'control'],
+};
+
+const appealToAuthority: Skill = {
+    id: 'appeal-to-authority',
+    name: 'Appeal to Authority',
+    category: 'fallacy',
+    philosophicalAspect: 'mind',
+    description:
+        'You do not argue — you cite. A name they dare not contradict settles ' +
+        'over the exchange, and their own thoughts begin to defer to a ' +
+        'borrowed certainty that was never yours to lend.',
+    tier: 2,
+    resourceCost: { mind: 3, heart: 1 },
+    targetType: 'enemy',
+    basePower: 9,
+    scalingStat: 'mind',
+    combatEffects: [
+        { effectId: 'debuff_vulnerability_mind', appliedTo: 'opponent', intensity: 2, duration: 3 },
+        { effectId: 'buff_mind_attack_up', appliedTo: 'self', intensity: 2, duration: 3 },
+    ],
+    learningRequirement: { level: 15 },
+    addedIn: '2026-06-07',
+    tags: ['mid-game', 'control', 'buff'],
+};
+
+const tuQuoque: Skill = {
+    id: 'tu-quoque',
+    name: 'Tu Quoque',
+    category: 'fallacy',
+    philosophicalAspect: 'heart',
+    description:
+        '"And you?" You turn the accusation back on the accuser, and in the ' +
+        'turning their guard turns with it. The mirror you raise reflects ' +
+        'just enough of their own blow to mend the place it landed on you.',
+    tier: 2,
+    resourceCost: { heart: 3, body: 1 },
+    targetType: 'enemy',
+    basePower: 10,
+    scalingStat: 'heart',
+    specialMechanics: [{ kind: 'secondary_heal_self', stat: 'heart', multiplier: 2 }],
+    learningRequirement: { level: 15 },
+    addedIn: '2026-06-07',
+    tags: ['mid-game', 'damage', 'heal'],
+};
+
+const baradoxsBarber: Skill = {
+    id: 'barbers-paradox',
+    name: "Barber's Paradox",
+    category: 'paradox',
+    philosophicalAspect: 'mind',
+    description:
+        'The barber who shaves all who do not shave themselves — does he shave ' +
+        'himself? You hand them the question that has no consistent answer and ' +
+        'watch the recursion eat the floor out from under their attention.',
+    tier: 2,
+    resourceCost: { mind: 3, paradox: 1 },
+    targetType: 'enemy',
+    basePower: 11,
+    scalingStat: 'mind',
+    combatEffects: [
+        { effectId: 'debuff_confusion', appliedTo: 'opponent', duration: 3 },
+        { effectId: 'debuff_silence', appliedTo: 'opponent', duration: 2 },
+    ],
+    learningRequirement: { level: 16 },
+    addedIn: '2026-06-07',
+    tags: ['mid-game', 'control'],
+};
+
+const ravenParadox: Skill = {
+    id: 'raven-paradox',
+    name: 'Raven Paradox',
+    category: 'paradox',
+    philosophicalAspect: 'body',
+    description:
+        'Every green leaf confirms that all ravens are black. You arm yourself ' +
+        'with the absurd abundance of evidence the world keeps handing you, and ' +
+        'each irrelevant proof sharpens the inevitability of the next strike.',
+    tier: 2,
+    resourceCost: { body: 3, mind: 2 },
+    targetType: 'enemy',
+    basePower: 18,
+    scalingStat: 'body',
+    combatEffects: [
+        { effectId: 'buff_critical_rate_up', appliedTo: 'self', intensity: 2, duration: 3 },
+    ],
+    learningRequirement: { level: 17 },
+    addedIn: '2026-06-07',
+    tags: ['mid-game', 'damage', 'buff'],
+};
+
+const stoicBulwark: Skill = {
+    id: 'stoic-bulwark',
+    name: 'Stoic Bulwark',
+    category: 'paradox',
+    philosophicalAspect: 'heart',
+    description:
+        'What is not in your control cannot truly harm you — so you decide it ' +
+        'is not, and the deciding becomes a wall. The blows still come; they ' +
+        'simply arrive at a self that has agreed not to be there for them.',
+    tier: 2,
+    resourceCost: { heart: 3, body: 1 },
+    targetType: 'self',
+    basePower: 0,
+    scalingStat: 'heart',
+    combatEffects: [
+        { effectId: 'buff_damage_reduction', appliedTo: 'self', intensity: 2, duration: 3 },
+        { effectId: 'buff_barrier', appliedTo: 'self', intensity: 2, duration: 3 },
+    ],
+    learningRequirement: { level: 14 },
+    addedIn: '2026-06-07',
+    tags: ['mid-game', 'defensive', 'buff'],
+};
+
+const equivocationCascade: Skill = {
+    id: 'equivocation-cascade',
+    name: 'Equivocation Cascade',
+    category: 'fallacy',
+    philosophicalAspect: 'mind',
+    description:
+        'The same word, two meanings, slid against each other until the seam ' +
+        'gives. By the time they notice the term has changed under them, the ' +
+        'whole argument has reorganised itself around your conclusion.',
+    tier: 2,
+    resourceCost: { mind: 3, fallacy: 1 },
+    targetType: 'enemy',
+    basePower: 7,
+    scalingStat: 'mind',
+    learningRequirement: { level: 16 },
+    synergy: {
+        predicate: { effectId: 'debuff_confusion', on: 'target', durationMin: 1 },
+        bonusDamage: 6,
+        durationDamageMul: 4,
+        intensityDamageMul: 3,
+        consumeMatched: true,
+    },
+    addedIn: '2026-06-07',
+    tags: ['mid-game', 'synergy', 'damage'],
+};
+
+const sunkCostMomentum: Skill = {
+    id: 'sunk-cost-momentum',
+    name: 'Sunk Cost Momentum',
+    category: 'fallacy',
+    philosophicalAspect: 'body',
+    description:
+        'You have already given so much to this exchange — so you give more, ' +
+        'and the giving becomes its own argument. Every token you have spent ' +
+        'demands that the next blow justify them all at once.',
+    tier: 2,
+    resourceCost: { body: 3, heart: 2 },
+    targetType: 'enemy',
+    basePower: 8,
+    scalingStat: 'body',
+    learningRequirement: { level: 17 },
+    synergy: {
+        // Unconditional on cast — pure resource-dump strategist payoff.
+        bonusDamage: 10,
+        resourceTokenDamageMul: 4,
+        consumeAllResources: true,
+    },
+    addedIn: '2026-06-07',
+    tags: ['mid-game', 'synergy', 'damage'],
+};
+
+// ── Tier 3 — late-game capstones (7 skills) ──────────────────────────────────
+
+const omnipotenceParadox: Skill = {
+    id: 'omnipotence-paradox',
+    name: 'Omnipotence Paradox',
+    category: 'paradox',
+    philosophicalAspect: 'body',
+    description:
+        'Can the all-powerful forge a stone they cannot lift? You become the ' +
+        'stone and the lifting both, and the contradiction discharges into ' +
+        'them as a blow that no defence was designed to be able to answer.',
+    tier: 3,
+    resourceCost: { body: 4, paradox: 2 },
+    targetType: 'enemy',
+    basePower: 30,
+    scalingStat: 'body',
+    scalingMultiplier: 1.5,
+    specialMechanics: [{ kind: 'bypass_defense' }],
+    combatEffects: [
+        { effectId: 'debuff_defense_down', appliedTo: 'opponent', intensity: 3, duration: 3 },
+    ],
+    learningRequirement: { level: 38, statRequirementType: 'body', statRequirementValue: 30 },
+    addedIn: '2026-06-07',
+    tags: ['late-game', 'damage'],
+};
+
+const gamblersRuin: Skill = {
+    id: 'gamblers-ruin',
+    name: "Gambler's Ruin",
+    category: 'fallacy',
+    philosophicalAspect: 'mind',
+    description:
+        'The next throw must come good — it is owed, surely, after so many ' +
+        'that did not. You press the fallacy onto them until they stake what ' +
+        'remains on a turn that the arithmetic has already lost.',
+    tier: 3,
+    resourceCost: { mind: 4, fallacy: 2 },
+    targetType: 'enemy',
+    basePower: 22,
+    scalingStat: 'mind',
+    scalingMultiplier: 1.25,
+    combatEffects: [
+        { effectId: 'debuff_all_stats_down', appliedTo: 'opponent', intensity: 2, duration: 3 },
+        { effectId: 'debuff_fear', appliedTo: 'opponent', duration: 2 },
+    ],
+    learningRequirement: { level: 40, prerequisiteSkill: 'gamblers-fallacy' },
+    addedIn: '2026-06-07',
+    tags: ['late-game', 'control', 'damage'],
+};
+
+const gamblersFallacy: Skill = {
+    id: 'gamblers-fallacy',
+    name: "Gambler's Fallacy",
+    category: 'fallacy',
+    philosophicalAspect: 'mind',
+    description:
+        'The coin has no memory, but you do — and you lend yours to them. ' +
+        'You convince their reasoning that the pattern owes a correction, and ' +
+        'they overcommit to a turn that chance never promised.',
+    tier: 3,
+    resourceCost: { mind: 3, fallacy: 1 },
+    targetType: 'enemy',
+    basePower: 17,
+    scalingStat: 'mind',
+    combatEffects: [
+        { effectId: 'debuff_confusion', appliedTo: 'opponent', duration: 3 },
+    ],
+    learningRequirement: { level: 30 },
+    addedIn: '2026-06-07',
+    tags: ['late-game', 'control'],
+};
+
+const buridansImpasse: Skill = {
+    id: 'buridans-impasse',
+    name: "Buridan's Impasse",
+    category: 'paradox',
+    philosophicalAspect: 'mind',
+    description:
+        'The donkey, equally hungry and equally placed between two identical ' +
+        'meals, starves on the symmetry. You make every option perfectly ' +
+        'equal, and they freeze in the exact centre of their own indecision.',
+    tier: 3,
+    resourceCost: { mind: 4, paradox: 2 },
+    targetType: 'enemy',
+    basePower: 14,
+    scalingStat: 'mind',
+    combatEffects: [
+        { effectId: 'debuff_stun', appliedTo: 'opponent', duration: 2 },
+        { effectId: 'debuff_slow', appliedTo: 'opponent', duration: 3 },
+    ],
+    learningRequirement: { level: 36 },
+    addedIn: '2026-06-07',
+    tags: ['late-game', 'control'],
+};
+
+const eternalRecurrence: Skill = {
+    id: 'eternal-recurrence',
+    name: 'Eternal Recurrence',
+    category: 'paradox',
+    philosophicalAspect: 'heart',
+    description:
+        'Live this moment so that you could will it again, and again, forever. ' +
+        'You take the wound as something you have already chosen a thousand ' +
+        'times, and the choosing knits it shut with the weight of all those lives.',
+    tier: 3,
+    resourceCost: { heart: 4, paradox: 2 },
+    targetType: 'self',
+    basePower: 0,
+    scalingStat: 'heart',
+    scalingMultiplier: 6,
+    combatEffects: [
+        { effectId: 'buff_regeneration', appliedTo: 'self', intensity: 3, duration: 4 },
+        { effectId: 'buff_all_stats_up', appliedTo: 'self', intensity: 2, duration: 3 },
+    ],
+    learningRequirement: { level: 42, statRequirementType: 'heart', statRequirementValue: 32 },
+    addedIn: '2026-06-07',
+    tags: ['late-game', 'defensive', 'heal', 'buff'],
+};
+
+const grandfatherParadox: Skill = {
+    id: 'grandfather-paradox',
+    name: 'Grandfather Paradox',
+    category: 'paradox',
+    philosophicalAspect: 'body',
+    description:
+        'You strike at the cause of them rather than the effect — unmaking the ' +
+        'condition that let them be standing here at all. The blow lands before ' +
+        'the parry could have been born, and consumes the certainty they leaned on.',
+    tier: 3,
+    resourceCost: { body: 4, paradox: 2 },
+    targetType: 'enemy',
+    basePower: 20,
+    scalingStat: 'body',
+    learningRequirement: { level: 44, statRequirementType: 'body', statRequirementValue: 34 },
+    synergy: {
+        predicate: { effectId: 'buff_all_stats_up', on: 'target', intensityMin: 1 },
+        bonusDamage: 14,
+        intensityDamageMul: 8,
+        durationDamageMul: 5,
+        consumeMatched: true,
+        clearAllEffectsBothSides: true,
+    },
+    addedIn: '2026-06-07',
+    tags: ['late-game', 'synergy', 'damage'],
+};
+
+const apophaticAegis: Skill = {
+    id: 'apophatic-aegis',
+    name: 'Apophatic Aegis',
+    category: 'paradox',
+    philosophicalAspect: 'heart',
+    description:
+        'You define your defence only by what it is not — not a wall, not a ' +
+        'guard, not a refusal — until the via negativa leaves nothing for the ' +
+        'blow to find. What cannot be named cannot be struck.',
+    tier: 3,
+    resourceCost: { heart: 4, mind: 1, paradox: 1 },
+    targetType: 'self',
+    basePower: 0,
+    scalingStat: 'heart',
+    scalingMultiplier: 4,
+    combatEffects: [
+        { effectId: 'buff_barrier', appliedTo: 'self', intensity: 3, duration: 4 },
+        { effectId: 'buff_reflect', appliedTo: 'self', intensity: 2, duration: 3 },
+        { effectId: 'buff_damage_reduction', appliedTo: 'self', intensity: 2, duration: 3 },
+    ],
+    learningRequirement: { level: 40, statRequirementType: 'heart', statRequirementValue: 30 },
+    addedIn: '2026-06-07',
+    tags: ['late-game', 'defensive', 'buff', 'heal'],
+};
+
 // ─── Library Export ──────────────────────────────────────────────────────────
 
 /**
@@ -734,6 +1206,30 @@ export const skillLibrary: Skill[] = [
     empatheticUnderstanding,
     // Phase 108 — Befriend heart skill
     befriend,
+    // 2026-06-07 content drop — mid/late-game expansion (20 skills)
+    // Tier 1 (5)
+    hastyGeneralization,
+    redHerring,
+    wishfulThinking,
+    arrowParadox,
+    heapOfDoubt,
+    // Tier 2 (8)
+    slipperySlope,
+    appealToAuthority,
+    tuQuoque,
+    baradoxsBarber,
+    ravenParadox,
+    stoicBulwark,
+    equivocationCascade,
+    sunkCostMomentum,
+    // Tier 3 (7)
+    omnipotenceParadox,
+    gamblersRuin,
+    gamblersFallacy,
+    buridansImpasse,
+    eternalRecurrence,
+    grandfatherParadox,
+    apophaticAegis,
 ];
 
 const skillRegistry: ReadonlyMap<string, Skill> = new Map(

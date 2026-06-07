@@ -79,7 +79,9 @@ describe('Phase 94 — Tier 3 synergy skills (5 patterns)', () => {
             expect(skill!.tier, `${id} should be tier 3`).toBe(3);
             expect(skill!.synergy, `${id} should carry a synergy clause`).toBeDefined();
         }
-        expect(skillLibrary.filter(s => s.tier === 3 && s.synergy)).toHaveLength(5);
+        // Content expansion may add further tier-3 synergy skills; the named
+        // Phase 94 set must all be present (asserted above).
+        expect(skillLibrary.filter(s => s.tier === 3 && s.synergy).length).toBeGreaterThanOrEqual(5);
     });
 
     describe('paradox-convergence', () => {
