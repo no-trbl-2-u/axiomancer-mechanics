@@ -87,29 +87,36 @@ export function enemyStatBudget(
     perLevel: number = ENEMY_STAT_PER_LEVEL,
 ): BaseStats {
     const total = Math.max(0, Math.round(level * perLevel));
-    const weightSum = weights.heart + weights.body + weights.mind || 1;
-    const raw = {
-        heart: (weights.heart / weightSum) * total,
-        body: (weights.body / weightSum) * total,
-        mind: (weights.mind / weightSum) * total,
-    };
-    const floored: BaseStats = {
-        heart: Math.floor(raw.heart),
-        body: Math.floor(raw.body),
-        mind: Math.floor(raw.mind),
-    };
-    // Distribute the rounding remainder to the highest-weighted stats so the
-    // distribution stays deterministic and the total is exact.
-    let remainder = total - (floored.heart + floored.body + floored.mind);
     const order: (keyof BaseStats)[] = (['body', 'mind', 'heart'] as (keyof BaseStats)[])
         .sort((a, b) => weights[b] - weights[a]);
-    let i = 0;
-    while (remainder > 0) {
-        floored[order[i % order.length]!] += 1;
-        remainder -= 1;
-        i += 1;
+
+    // Distribute `budget` across stats by weight, exact-sum, remainder to the
+    // highest-weighted stats first.
+    const distribute = (budget: number): BaseStats => {
+        const weightSum = weights.heart + weights.body + weights.mind || 1;
+        const out: BaseStats = {
+            heart: Math.floor((weights.heart / weightSum) * budget),
+            body: Math.floor((weights.body / weightSum) * budget),
+            mind: Math.floor((weights.mind / weightSum) * budget),
+        };
+        let remainder = budget - (out.heart + out.body + out.mind);
+        let i = 0;
+        while (remainder > 0) {
+            out[order[i % order.length]!] += 1;
+            remainder -= 1;
+            i += 1;
+        }
+        return out;
+    };
+
+    // When the budget can afford it (≥3), guarantee at least 1 in every stat so
+    // no derived combat stat collapses to 0 (a heart-0 enemy would deal no
+    // emotional damage). Below 3 we distribute what's available as-is.
+    if (total >= 3) {
+        const extra = distribute(total - 3);
+        return { heart: extra.heart + 1, body: extra.body + 1, mind: extra.mind + 1 };
     }
-    return floored;
+    return distribute(total);
 }
 
 /**
