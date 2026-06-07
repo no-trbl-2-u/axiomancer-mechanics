@@ -4,120 +4,120 @@
       "slug": "salt-gnaw-rat",
       "stanceDamage": {
         "body": {
-          "total": 11173,
-          "samples": 837
+          "total": 13851,
+          "samples": 1043
         }
       },
       "skillDamage": {
         "achilles-gambit": {
-          "total": 1521,
-          "samples": 117
+          "total": 1534,
+          "samples": 118
         },
         "arrow-paradox": {
-          "total": 3696,
-          "samples": 264
+          "total": 4984,
+          "samples": 356
         }
       },
-      "sampleCount": 837
+      "sampleCount": 1043
     },
     "petty-cutpurse": {
       "slug": "petty-cutpurse",
       "stanceDamage": {
         "body": {
-          "total": 10950,
-          "samples": 441
+          "total": 13490,
+          "samples": 531
         }
       },
       "skillDamage": {
         "achilles-gambit": {
-          "total": 437,
-          "samples": 29
+          "total": 467,
+          "samples": 31
         },
         "arrow-paradox": {
-          "total": 3342,
-          "samples": 118
+          "total": 4105,
+          "samples": 145
         }
       },
-      "sampleCount": 441
+      "sampleCount": 531
     },
     "the-market-arbiter": {
       "slug": "the-market-arbiter",
       "stanceDamage": {
         "body": {
-          "total": 20532,
-          "samples": 1731
+          "total": 25487,
+          "samples": 2151
         },
         "mind": {
-          "total": 60,
-          "samples": 50
+          "total": 78,
+          "samples": 62
         }
       },
       "skillDamage": {
         "achilles-gambit": {
-          "total": 1860,
-          "samples": 136
+          "total": 2340,
+          "samples": 171
         },
         "heap-of-doubt": {
-          "total": 60,
-          "samples": 50
+          "total": 78,
+          "samples": 62
         },
         "arrow-paradox": {
-          "total": 10182,
-          "samples": 744
+          "total": 12604,
+          "samples": 922
         }
       },
-      "sampleCount": 1781
+      "sampleCount": 2213
     },
     "thicket-ambusher": {
       "slug": "thicket-ambusher",
       "stanceDamage": {
         "body": {
-          "total": 7676,
-          "samples": 982
+          "total": 8714,
+          "samples": 1095
         },
         "mind": {
-          "total": 4701,
-          "samples": 364
+          "total": 6023,
+          "samples": 492
         }
       },
       "skillDamage": {
         "achilles-gambit": {
-          "total": 1077,
-          "samples": 172
+          "total": 1226,
+          "samples": 182
         },
         "slippery-slope": {
-          "total": 442,
-          "samples": 100
+          "total": 519,
+          "samples": 117
         },
         "nirvana-fallacy": {
-          "total": 2820,
-          "samples": 172
+          "total": 3585,
+          "samples": 219
         },
         "sorites-cascade": {
-          "total": 890,
-          "samples": 121
+          "total": 1166,
+          "samples": 158
         },
         "appeal-to-consequences": {
-          "total": 295,
-          "samples": 68
+          "total": 329,
+          "samples": 75
         },
         "paradox-convergence": {
-          "total": 815,
-          "samples": 47
+          "total": 920,
+          "samples": 53
         },
         "heap-of-doubt": {
-          "total": 176,
-          "samples": 24
+          "total": 212,
+          "samples": 29
         }
       },
-      "sampleCount": 1377
+      "sampleCount": 1624
     },
     "reef-barnacle-colony": {
       "slug": "reef-barnacle-colony",
       "stanceDamage": {
         "body": {
-          "total": 44761,
-          "samples": 6182
+          "total": 55848,
+          "samples": 7656
         },
         "heart": {
           "total": 146,
@@ -126,8 +126,8 @@
       },
       "skillDamage": {
         "achilles-gambit": {
-          "total": 11811,
-          "samples": 1928
+          "total": 12209,
+          "samples": 1951
         },
         "ship-of-theseus": {
           "total": 146,
@@ -142,122 +142,122 @@
           "samples": 2
         },
         "peaceful-gesture": {
-          "total": 6100,
-          "samples": 1083
+          "total": 7669,
+          "samples": 1368
         },
         "arrow-paradox": {
-          "total": 7881,
-          "samples": 984
+          "total": 11985,
+          "samples": 1622
         },
         "appeal-to-consequences": {
-          "total": 4232,
-          "samples": 546
+          "total": 5479,
+          "samples": 691
         }
       },
-      "sampleCount": 7704
+      "sampleCount": 9542
     },
     "tolltaker-of-the-ford": {
       "slug": "tolltaker-of-the-ford",
       "stanceDamage": {
         "body": {
-          "total": 36441,
-          "samples": 5875
+          "total": 45257,
+          "samples": 7289
         },
         "heart": {
-          "total": 164,
-          "samples": 50
+          "total": 174,
+          "samples": 55
         }
       },
       "skillDamage": {
         "achilles-gambit": {
-          "total": 2295,
-          "samples": 197
+          "total": 2791,
+          "samples": 242
         },
         "appeal-to-pity": {
           "total": 63,
-          "samples": 31
+          "samples": 33
         },
         "ship-of-theseus": {
-          "total": 77,
-          "samples": 14
+          "total": 79,
+          "samples": 16
         },
         "peaceful-gesture": {
-          "total": 60,
-          "samples": 12
+          "total": 68,
+          "samples": 14
         },
         "soothing-words": {
-          "total": 24,
-          "samples": 5
+          "total": 32,
+          "samples": 6
         },
         "arrow-paradox": {
-          "total": 19297,
-          "samples": 2571
+          "total": 24087,
+          "samples": 3206
         }
       },
-      "sampleCount": 5983
+      "sampleCount": 7410
     },
     "apprentice-heretic": {
       "slug": "apprentice-heretic",
       "stanceDamage": {
         "body": {
-          "total": 47019,
-          "samples": 3829
+          "total": 58036,
+          "samples": 4703
         }
       },
       "skillDamage": {
         "achilles-gambit": {
-          "total": 481,
-          "samples": 37
+          "total": 546,
+          "samples": 42
         },
         "arrow-paradox": {
-          "total": 33075,
-          "samples": 1575
+          "total": 40677,
+          "samples": 1937
         }
       },
-      "sampleCount": 3829
+      "sampleCount": 4703
     },
     "wandering-sophist": {
       "slug": "wandering-sophist",
       "stanceDamage": {
         "body": {
-          "total": 32162,
-          "samples": 2478
+          "total": 39839,
+          "samples": 3072
         },
         "heart": {
-          "total": 42,
-          "samples": 29
+          "total": 51,
+          "samples": 36
         }
       },
       "skillDamage": {
         "achilles-gambit": {
-          "total": 1827,
-          "samples": 165
+          "total": 2299,
+          "samples": 208
         },
         "soothing-words": {
-          "total": 42,
-          "samples": 29
+          "total": 51,
+          "samples": 36
         },
         "peaceful-gesture": {
           "total": 42,
-          "samples": 44
+          "samples": 47
         },
         "arrow-paradox": {
-          "total": 13103,
-          "samples": 898
+          "total": 16293,
+          "samples": 1116
         }
       },
-      "sampleCount": 2554
+      "sampleCount": 3164
     },
     "bog-will-stripling": {
       "slug": "bog-will-stripling",
       "stanceDamage": {
         "body": {
-          "total": 2525,
-          "samples": 220
+          "total": 2660,
+          "samples": 229
         },
         "mind": {
-          "total": 5828,
-          "samples": 213
+          "total": 7646,
+          "samples": 294
         }
       },
       "skillDamage": {
@@ -274,554 +274,566 @@
           "samples": 8
         },
         "slippery-slope": {
-          "total": 1350,
-          "samples": 90
+          "total": 1485,
+          "samples": 99
         },
         "nirvana-fallacy": {
-          "total": 1660,
-          "samples": 83
+          "total": 2040,
+          "samples": 102
         },
         "sorites-cascade": {
-          "total": 11,
-          "samples": 1
+          "total": 143,
+          "samples": 13
+        },
+        "undistributed-middle": {
+          "total": 168,
+          "samples": 12
         }
       },
-      "sampleCount": 433
+      "sampleCount": 523
     },
     "rimeclaw-prowler": {
       "slug": "rimeclaw-prowler",
       "stanceDamage": {
         "mind": {
-          "total": 2566,
-          "samples": 408
+          "total": 3213,
+          "samples": 510
         },
         "body": {
-          "total": 136881,
-          "samples": 10338
+          "total": 169675,
+          "samples": 12737
         },
         "heart": {
-          "total": 152,
-          "samples": 100
+          "total": 203,
+          "samples": 124
         }
       },
       "skillDamage": {
         "heap-of-doubt": {
-          "total": 303,
-          "samples": 87
+          "total": 378,
+          "samples": 110
         },
         "slippery-slope": {
-          "total": 1020,
-          "samples": 50
+          "total": 1264,
+          "samples": 62
         },
         "appeal-to-consequences": {
-          "total": 1110,
-          "samples": 100
+          "total": 1372,
+          "samples": 124
         },
         "arrow-paradox": {
-          "total": 13563,
-          "samples": 4564
+          "total": 16724,
+          "samples": 5619
         },
         "barbers-paradox": {
-          "total": 597,
-          "samples": 82
+          "total": 749,
+          "samples": 103
         },
         "raven-paradox": {
-          "total": 3111,
-          "samples": 275
+          "total": 3861,
+          "samples": 341
         },
         "sorites-cascade": {
-          "total": 167,
-          "samples": 127
+          "total": 210,
+          "samples": 157
         },
         "gamblers-fallacy": {
-          "total": 1499,
-          "samples": 112
+          "total": 1876,
+          "samples": 140
         },
         "ship-of-theseus": {
-          "total": 107,
-          "samples": 50
+          "total": 146,
+          "samples": 62
         },
         "bootstrap-paradox": {
-          "total": 45,
-          "samples": 50
+          "total": 57,
+          "samples": 62
         }
       },
-      "sampleCount": 10846
+      "sampleCount": 13371
     },
     "apostate-abbot": {
       "slug": "apostate-abbot",
       "stanceDamage": {
         "body": {
-          "total": 173116,
-          "samples": 6559
+          "total": 213785,
+          "samples": 8089
         },
         "mind": {
-          "total": 346,
-          "samples": 346
+          "total": 415,
+          "samples": 415
         },
         "heart": {
-          "total": 50,
-          "samples": 50
+          "total": 62,
+          "samples": 62
         }
       },
       "skillDamage": {
         "raven-paradox": {
-          "total": 41136,
-          "samples": 857
+          "total": 50400,
+          "samples": 1050
         },
         "arrow-paradox": {
-          "total": 57859,
-          "samples": 1905
+          "total": 71978,
+          "samples": 2370
         },
         "sorites-cascade": {
-          "total": 287,
-          "samples": 287
+          "total": 346,
+          "samples": 346
         },
         "appeal-to-consequences": {
-          "total": 12038,
-          "samples": 278
+          "total": 14618,
+          "samples": 338
         },
         "nirvana-fallacy": {
-          "total": 54,
-          "samples": 54
+          "total": 64,
+          "samples": 64
         },
         "undistributed-middle": {
           "total": 5,
           "samples": 5
         },
         "ship-of-theseus": {
-          "total": 50,
-          "samples": 50
+          "total": 62,
+          "samples": 62
         },
         "sunk-cost-momentum": {
-          "total": 1012,
-          "samples": 44
+          "total": 1288,
+          "samples": 56
         },
         "mob-appeal": {
           "total": 150,
           "samples": 6
         }
       },
-      "sampleCount": 6955
+      "sampleCount": 8566
     },
     "contrarian-revenant": {
       "slug": "contrarian-revenant",
       "stanceDamage": {
         "body": {
-          "total": 20946,
-          "samples": 1193
+          "total": 25976,
+          "samples": 1488
         },
         "heart": {
-          "total": 1468,
-          "samples": 50
+          "total": 1820,
+          "samples": 62
         }
       },
       "skillDamage": {
         "mob-appeal": {
-          "total": 826,
-          "samples": 57
+          "total": 1009,
+          "samples": 70
         },
         "appeal-to-fear": {
-          "total": 1468,
-          "samples": 50
+          "total": 1820,
+          "samples": 62
         },
         "sunk-cost-momentum": {
-          "total": 529,
-          "samples": 43
+          "total": 665,
+          "samples": 54
         },
         "appeal-to-consequences": {
-          "total": 1018,
-          "samples": 50
+          "total": 1262,
+          "samples": 62
         },
         "arrow-paradox": {
-          "total": 9493,
-          "samples": 547
+          "total": 11804,
+          "samples": 680
         }
       },
-      "sampleCount": 1243
+      "sampleCount": 1550
     },
     "iron-covenanter": {
       "slug": "iron-covenanter",
       "stanceDamage": {
         "mind": {
-          "total": 7783,
-          "samples": 552
+          "total": 9697,
+          "samples": 713
         },
         "heart": {
-          "total": 930,
-          "samples": 100
+          "total": 1152,
+          "samples": 124
         },
         "body": {
-          "total": 11288,
-          "samples": 3162
+          "total": 13911,
+          "samples": 3880
         }
       },
       "skillDamage": {
         "appeal-to-authority": {
-          "total": 606,
-          "samples": 50
+          "total": 753,
+          "samples": 62
         },
         "appeal-to-fear": {
-          "total": 764,
-          "samples": 50
+          "total": 946,
+          "samples": 62
         },
         "ship-of-theseus": {
-          "total": 166,
-          "samples": 50
+          "total": 206,
+          "samples": 62
         },
         "arrow-paradox": {
-          "total": 1454,
-          "samples": 1095
+          "total": 1787,
+          "samples": 1354
         },
         "raven-paradox": {
-          "total": 293,
-          "samples": 227
+          "total": 358,
+          "samples": 277
         },
         "slippery-slope": {
-          "total": 283,
-          "samples": 203
+          "total": 355,
+          "samples": 252
         },
         "appeal-to-consequences": {
-          "total": 345,
-          "samples": 259
+          "total": 414,
+          "samples": 307
         },
         "sorites-cascade": {
-          "total": 529,
-          "samples": 63
+          "total": 652,
+          "samples": 78
         },
         "barbers-paradox": {
-          "total": 715,
-          "samples": 50
+          "total": 874,
+          "samples": 61
+        },
+        "gamblers-fallacy": {
+          "total": 305,
+          "samples": 15
         }
       },
-      "sampleCount": 3814
+      "sampleCount": 4717
     },
     "the-tithewarden": {
       "slug": "the-tithewarden",
       "stanceDamage": {
         "heart": {
-          "total": 74,
-          "samples": 58
+          "total": 87,
+          "samples": 73
         },
         "body": {
-          "total": 18720,
-          "samples": 3459
+          "total": 23035,
+          "samples": 4223
         },
         "mind": {
-          "total": 36855,
-          "samples": 2205
+          "total": 45110,
+          "samples": 2756
         }
       },
       "skillDamage": {
         "ship-of-theseus": {
-          "total": 70,
-          "samples": 50
+          "total": 82,
+          "samples": 62
         },
         "sunk-cost-momentum": {
-          "total": 55,
-          "samples": 42
+          "total": 67,
+          "samples": 51
         },
         "appeal-to-consequences": {
-          "total": 509,
-          "samples": 382
+          "total": 593,
+          "samples": 448
         },
         "slippery-slope": {
-          "total": 557,
-          "samples": 324
+          "total": 812,
+          "samples": 432
         },
         "arrow-paradox": {
-          "total": 1518,
-          "samples": 1098
+          "total": 1733,
+          "samples": 1256
         },
         "barbers-paradox": {
-          "total": 12956,
-          "samples": 758
+          "total": 13379,
+          "samples": 824
         },
         "bootstrap-paradox": {
-          "total": 4,
-          "samples": 8
+          "total": 5,
+          "samples": 11
         },
         "sorites-cascade": {
-          "total": 1226,
-          "samples": 65
+          "total": 1825,
+          "samples": 103
         },
         "heap-of-doubt": {
-          "total": 1020,
-          "samples": 50
+          "total": 1269,
+          "samples": 62
         },
         "nirvana-fallacy": {
-          "total": 500,
-          "samples": 17
+          "total": 2180,
+          "samples": 74
         },
         "gamblers-fallacy": {
-          "total": 454,
-          "samples": 14
+          "total": 785,
+          "samples": 41
+        },
+        "raven-paradox": {
+          "total": 90,
+          "samples": 70
         }
       },
-      "sampleCount": 5722
+      "sampleCount": 7052
     },
     "the-last-consensus": {
       "slug": "the-last-consensus",
       "stanceDamage": {
         "heart": {
-          "total": 215,
-          "samples": 150
+          "total": 271,
+          "samples": 186
         },
         "body": {
-          "total": 82398,
-          "samples": 1407
+          "total": 102473,
+          "samples": 1745
         },
         "mind": {
-          "total": 726,
-          "samples": 536
+          "total": 904,
+          "samples": 669
         }
       },
       "skillDamage": {
         "ship-of-theseus": {
-          "total": 215,
-          "samples": 150
+          "total": 271,
+          "samples": 186
         },
         "sorites-cascade": {
-          "total": 104,
-          "samples": 75
+          "total": 132,
+          "samples": 96
         },
         "omnipotence-paradox": {
-          "total": 25620,
-          "samples": 296
+          "total": 31602,
+          "samples": 365
         },
         "nirvana-fallacy": {
-          "total": 159,
-          "samples": 117
+          "total": 198,
+          "samples": 145
         },
         "appeal-to-consequences": {
-          "total": 2372,
-          "samples": 49
+          "total": 3171,
+          "samples": 65
         },
         "raven-paradox": {
-          "total": 6124,
-          "samples": 189
+          "total": 7325,
+          "samples": 227
         },
         "heap-of-doubt": {
-          "total": 40,
-          "samples": 30
+          "total": 51,
+          "samples": 39
         },
         "slippery-slope": {
-          "total": 1217,
-          "samples": 46
+          "total": 1587,
+          "samples": 60
         },
         "gamblers-fallacy": {
-          "total": 293,
-          "samples": 221
+          "total": 362,
+          "samples": 275
         },
         "arrow-paradox": {
-          "total": 1588,
-          "samples": 68
+          "total": 1986,
+          "samples": 85
         },
         "buridans-impasse": {
-          "total": 18,
-          "samples": 14
+          "total": 27,
+          "samples": 20
         },
         "barbers-paradox": {
-          "total": 112,
-          "samples": 79
+          "total": 134,
+          "samples": 94
         }
       },
-      "sampleCount": 2093
+      "sampleCount": 2600
     },
     "prosecutor-of-the-real": {
       "slug": "prosecutor-of-the-real",
       "stanceDamage": {
         "body": {
-          "total": 137363,
-          "samples": 2650
+          "total": 170207,
+          "samples": 3301
         },
         "heart": {
-          "total": 6290,
-          "samples": 200
+          "total": 7792,
+          "samples": 248
         },
         "mind": {
-          "total": 327,
-          "samples": 239
+          "total": 418,
+          "samples": 305
         }
       },
       "skillDamage": {
         "arrow-paradox": {
-          "total": 16032,
-          "samples": 419
+          "total": 20142,
+          "samples": 527
         },
         "omnipotence-paradox": {
-          "total": 34829,
-          "samples": 475
+          "total": 43154,
+          "samples": 589
         },
         "appeal-to-consequences": {
-          "total": 9810,
-          "samples": 275
+          "total": 12178,
+          "samples": 341
         },
         "ship-of-theseus": {
-          "total": 6290,
-          "samples": 200
+          "total": 7792,
+          "samples": 248
         },
         "heap-of-doubt": {
-          "total": 26,
-          "samples": 18
+          "total": 39,
+          "samples": 27
         },
         "barbers-paradox": {
-          "total": 70,
-          "samples": 48
+          "total": 95,
+          "samples": 65
         },
         "raven-paradox": {
-          "total": 4729,
-          "samples": 156
+          "total": 5578,
+          "samples": 184
         },
         "gamblers-fallacy": {
-          "total": 163,
-          "samples": 120
+          "total": 209,
+          "samples": 154
         },
         "slippery-slope": {
-          "total": 1101,
-          "samples": 39
+          "total": 1439,
+          "samples": 51
         },
         "buridans-impasse": {
-          "total": 4,
-          "samples": 4
+          "total": 5,
+          "samples": 5
         },
         "logical-recursion": {
-          "total": 12,
-          "samples": 10
+          "total": 13,
+          "samples": 11
         },
         "nirvana-fallacy": {
-          "total": 37,
-          "samples": 27
+          "total": 42,
+          "samples": 31
         },
         "sorites-cascade": {
           "total": 15,
           "samples": 12
         }
       },
-      "sampleCount": 3089
+      "sampleCount": 3854
     },
     "cathedral-of-doubt": {
       "slug": "cathedral-of-doubt",
       "stanceDamage": {
         "body": {
-          "total": 47804,
-          "samples": 1394
+          "total": 59266,
+          "samples": 1730
         },
         "mind": {
-          "total": 359,
-          "samples": 267
+          "total": 448,
+          "samples": 335
         }
       },
       "skillDamage": {
         "raven-paradox": {
-          "total": 10582,
-          "samples": 256
+          "total": 13192,
+          "samples": 319
         },
         "arrow-paradox": {
-          "total": 3091,
-          "samples": 85
+          "total": 3707,
+          "samples": 102
         },
         "sorites-cascade": {
-          "total": 201,
-          "samples": 143
+          "total": 248,
+          "samples": 178
         },
         "nirvana-fallacy": {
-          "total": 132,
-          "samples": 105
+          "total": 167,
+          "samples": 133
         },
         "omnipotence-paradox": {
-          "total": 20054,
-          "samples": 256
+          "total": 24907,
+          "samples": 318
         },
         "logical-recursion": {
-          "total": 21,
-          "samples": 15
+          "total": 25,
+          "samples": 18
         },
         "appeal-to-consequences": {
-          "total": 9561,
-          "samples": 243
+          "total": 11845,
+          "samples": 301
         },
         "undistributed-middle": {
-          "total": 5,
-          "samples": 4
+          "total": 8,
+          "samples": 6
         }
       },
-      "sampleCount": 1661
+      "sampleCount": 2065
     },
     "graveward-keeper": {
       "slug": "graveward-keeper",
       "stanceDamage": {
         "mind": {
-          "total": 47574,
-          "samples": 1405
+          "total": 59845,
+          "samples": 1785
         },
         "body": {
-          "total": 45664,
-          "samples": 2595
+          "total": 55816,
+          "samples": 3175
         }
       },
       "skillDamage": {
         "heap-of-doubt": {
-          "total": 1400,
-          "samples": 50
+          "total": 1736,
+          "samples": 62
         },
         "raven-paradox": {
-          "total": 1508,
-          "samples": 377
+          "total": 1964,
+          "samples": 491
         },
         "omnipotence-paradox": {
-          "total": 23310,
-          "samples": 630
+          "total": 28416,
+          "samples": 768
         },
         "gamblers-fallacy": {
-          "total": 29637,
-          "samples": 743
+          "total": 36735,
+          "samples": 921
         },
         "arrow-paradox": {
-          "total": 354,
-          "samples": 354
+          "total": 406,
+          "samples": 406
         },
         "barbers-paradox": {
-          "total": 5474,
-          "samples": 164
+          "total": 7004,
+          "samples": 209
         },
         "slippery-slope": {
-          "total": 194,
-          "samples": 97
+          "total": 250,
+          "samples": 125
         },
         "buridans-impasse": {
-          "total": 6117,
-          "samples": 167
+          "total": 7597,
+          "samples": 207
         },
         "sorites-cascade": {
-          "total": 252,
-          "samples": 9
+          "total": 532,
+          "samples": 19
         },
         "nirvana-fallacy": {
-          "total": 1369,
-          "samples": 37
+          "total": 1739,
+          "samples": 47
         },
         "appeal-to-consequences": {
-          "total": 184,
-          "samples": 92
+          "total": 234,
+          "samples": 117
         },
         "gamblers-ruin": {
           "total": 495,
           "samples": 9
         }
       },
-      "sampleCount": 4000
+      "sampleCount": 4960
     },
     "the-schismarch": {
       "slug": "the-schismarch",
       "stanceDamage": {
         "heart": {
-          "total": 212,
-          "samples": 200
+          "total": 268,
+          "samples": 248
         },
         "body": {
-          "total": 47379,
-          "samples": 2939
+          "total": 59639,
+          "samples": 3707
         },
         "mind": {
           "total": 1190,
@@ -830,28 +842,28 @@
       },
       "skillDamage": {
         "ship-of-theseus": {
-          "total": 121,
-          "samples": 100
+          "total": 152,
+          "samples": 124
         },
         "eternal-recurrence": {
-          "total": 15,
-          "samples": 50
+          "total": 20,
+          "samples": 62
         },
         "appeal-to-fear": {
-          "total": 76,
-          "samples": 50
+          "total": 96,
+          "samples": 62
         },
         "arrow-paradox": {
-          "total": 4019,
-          "samples": 331
+          "total": 5686,
+          "samples": 466
         },
         "omnipotence-paradox": {
-          "total": 22856,
-          "samples": 454
+          "total": 29205,
+          "samples": 580
         },
         "appeal-to-consequences": {
-          "total": 8464,
-          "samples": 565
+          "total": 10321,
+          "samples": 689
         },
         "sorites-cascade": {
           "total": 52,
@@ -882,83 +894,83 @@
           "samples": 3
         }
       },
-      "sampleCount": 3580
+      "sampleCount": 4396
     },
     "pallbearer-of-reason": {
       "slug": "pallbearer-of-reason",
       "stanceDamage": {
         "mind": {
-          "total": 67717,
-          "samples": 1482
+          "total": 84760,
+          "samples": 1828
         },
         "heart": {
-          "total": 1238,
-          "samples": 200
+          "total": 1532,
+          "samples": 248
         },
         "body": {
-          "total": 4081,
-          "samples": 375
+          "total": 4182,
+          "samples": 393
         }
       },
       "skillDamage": {
         "appeal-to-authority": {
-          "total": 2229,
-          "samples": 50
+          "total": 2766,
+          "samples": 62
         },
         "appeal-to-fear": {
-          "total": 1147,
-          "samples": 100
+          "total": 1417,
+          "samples": 124
         },
         "apophatic-aegis": {
-          "total": 20,
-          "samples": 50
+          "total": 26,
+          "samples": 62
         },
         "ship-of-theseus": {
-          "total": 71,
-          "samples": 50
+          "total": 89,
+          "samples": 62
         },
         "buridans-impasse": {
-          "total": 1081,
-          "samples": 22
+          "total": 1574,
+          "samples": 32
         },
         "appeal-to-consequences": {
-          "total": 127,
-          "samples": 94
+          "total": 129,
+          "samples": 96
         },
         "arrow-paradox": {
-          "total": 46,
-          "samples": 34
+          "total": 52,
+          "samples": 38
         },
         "raven-paradox": {
-          "total": 59,
-          "samples": 45
+          "total": 71,
+          "samples": 52
         },
         "sorites-cascade": {
-          "total": 4460,
-          "samples": 128
+          "total": 5249,
+          "samples": 151
         },
         "omnipotence-paradox": {
-          "total": 1059,
-          "samples": 65
+          "total": 1140,
+          "samples": 70
         },
         "barbers-paradox": {
-          "total": 12145,
-          "samples": 316
+          "total": 14865,
+          "samples": 388
         },
         "gamblers-fallacy": {
-          "total": 4114,
-          "samples": 89
+          "total": 5198,
+          "samples": 112
         },
         "heap-of-doubt": {
-          "total": 1510,
-          "samples": 50
+          "total": 1879,
+          "samples": 62
         },
         "nirvana-fallacy": {
-          "total": 236,
-          "samples": 6
+          "total": 423,
+          "samples": 10
         }
       },
-      "sampleCount": 2057
+      "sampleCount": 2469
     },
     "warrant-of-the-void": {
       "slug": "warrant-of-the-void",
@@ -968,8 +980,8 @@
           "samples": 1224
         },
         "mind": {
-          "total": 23604,
-          "samples": 2045
+          "total": 34878,
+          "samples": 2754
         }
       },
       "skillDamage": {
@@ -978,28 +990,32 @@
           "samples": 42
         },
         "sorites-cascade": {
-          "total": 919,
-          "samples": 686
+          "total": 1046,
+          "samples": 776
         },
         "appeal-to-consequences": {
           "total": 537,
           "samples": 433
         },
         "nirvana-fallacy": {
-          "total": 3842,
-          "samples": 403
+          "total": 4477,
+          "samples": 489
         },
         "barbers-paradox": {
-          "total": 2023,
-          "samples": 465
+          "total": 3096,
+          "samples": 713
         },
         "undistributed-middle": {
           "total": 11,
           "samples": 8
+        },
+        "heap-of-doubt": {
+          "total": 14,
+          "samples": 12
         }
       },
-      "sampleCount": 3269
+      "sampleCount": 3978
     }
   },
-  "updatedAt": "2026-06-07T08:37:55.276Z"
+  "updatedAt": "2026-06-07T09:59:20.339Z"
 }
