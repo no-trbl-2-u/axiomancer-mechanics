@@ -43,7 +43,115 @@
       "kept": false,
       "significant": false,
       "confidence": "low"
+    },
+    {
+      "timestamp": "2026-06-07T22-56-13-367Z",
+      "paramId": "effect.buff_regeneration.duration",
+      "oldValue": 6,
+      "newValue": 5,
+      "direction": "down",
+      "deltaHealth": 0,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "Focus on skills and status effects in early game and mid game. They should fundamentally be the main route to victory"
+    },
+    {
+      "timestamp": "2026-06-07T22-56-13-367Z",
+      "paramId": "effect.tier1_heart_defend.healthPerRound",
+      "oldValue": 2,
+      "newValue": 1,
+      "direction": "down",
+      "deltaHealth": 0.0014664654606307281,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "Focus on skills and status effects in early game and mid game. They should fundamentally be the main route to victory"
+    },
+    {
+      "timestamp": "2026-06-07T22-56-13-367Z",
+      "paramId": "effect.tier1_body_attack.duration",
+      "oldValue": 3,
+      "newValue": 2,
+      "direction": "down",
+      "deltaHealth": -0.001204020749811241,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "Focus on skills and status effects in early game and mid game. They should fundamentally be the main route to victory"
+    },
+    {
+      "timestamp": "2026-06-07T22-56-13-367Z",
+      "paramId": "effect.debuff_confusion.rollModifier",
+      "oldValue": -5,
+      "newValue": -4,
+      "direction": "up",
+      "deltaHealth": -0.0006190476190476024,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "Focus on skills and status effects in early game and mid game. They should fundamentally be the main route to victory"
+    },
+    {
+      "timestamp": "2026-06-07T22-56-13-367Z",
+      "paramId": "effect.debuff_fear.rollModifier",
+      "oldValue": -4,
+      "newValue": -3,
+      "direction": "up",
+      "deltaHealth": -0.00007740699404762408,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "Focus on skills and status effects in early game and mid game. They should fundamentally be the main route to victory"
+    },
+    {
+      "timestamp": "2026-06-07T22-59-01-271Z",
+      "paramId": "effect.resolutionDebuffIntensityThreshold",
+      "oldValue": 8,
+      "newValue": 6,
+      "direction": "down",
+      "deltaHealth": 0.006380952380952362,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "Focus on skills and status effects in early game and mid game. They should fundamentally be the main route to victory"
+    },
+    {
+      "timestamp": "2026-06-07T22-59-01-271Z",
+      "paramId": "effect.resolutionDotDamageThreshold",
+      "oldValue": 5,
+      "newValue": 4,
+      "direction": "down",
+      "deltaHealth": -0.0000023809523809481536,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "Focus on skills and status effects in early game and mid game. They should fundamentally be the main route to victory"
+    },
+    {
+      "timestamp": "2026-06-07T22-59-01-271Z",
+      "paramId": "effect.maxIntensity",
+      "oldValue": 10,
+      "newValue": 12,
+      "direction": "up",
+      "deltaHealth": 0.0004558953504567864,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "Focus on skills and status effects in early game and mid game. They should fundamentally be the main route to victory"
+    },
+    {
+      "timestamp": "2026-06-07T22-59-01-271Z",
+      "paramId": "effect.maxDuration",
+      "oldValue": 10,
+      "newValue": 12,
+      "direction": "up",
+      "deltaHealth": 0.000057142857142838954,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "Focus on skills and status effects in early game and mid game. They should fundamentally be the main route to victory"
     }
   ],
-  "updatedAt": "2026-06-07T13:38:01.136Z"
+  "updatedAt": "2026-06-07T22:59:41.980Z"
 }

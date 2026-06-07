@@ -1,0 +1,22 @@
+[
+  {
+    "paramId": "effect.resolutionDebuffIntensityThreshold",
+    "proposedValue": 6,
+    "rationale": "L15 strategist normal shows 0% success with 100% timeouts - lower threshold from 8 to 6 to enable debuff-based victory routes"
+  },
+  {
+    "paramId": "effect.resolutionDotDamageThreshold",
+    "proposedValue": 4,
+    "rationale": "Multiple timeout issues in L30/L50 mixed cells - reduce from 5 to 4 to enable DoT-based resolution routes"
+  },
+  {
+    "paramId": "effect.maxIntensity",
+    "proposedValue": 12,
+    "rationale": "L1 strategist shows 8% engagement (below 35% floor) - increase stacking ceiling from 10 to 12 to strengthen status effect gameplay"
+  },
+  {
+    "paramId": "effect.maxDuration",
+    "proposedValue": 12,
+    "rationale": "Supporting status effect potency for early game strategist engagement - increase duration ceiling from 10 to 12"
+  }
+]
