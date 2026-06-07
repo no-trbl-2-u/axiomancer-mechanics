@@ -1,8 +1,10 @@
 /**
  * Equipment Templates — Spec 05c content (procedural base items).
  *
- * Twenty-one `EquipmentTemplate`s across seven slots × three required-level
- * tiers (lvl 1 / 10 / 20). A template carries only the *base* identity and
+ * Forty-three `EquipmentTemplate`s across seven slots spanning required-level
+ * 1 → 50. The original lvl 1 / 10 / 20 tiers are kept; the 2026-06-07 content
+ * pass added lvl 30 / 40 / 50 lines to every gear slot (and an extra lvl 15 /
+ * 30 / 40 / 50 accessory line). A template carries only the *base* identity and
  * stat floor; rarity, rolled modifiers, and the rest of the runtime instance
  * shape are decided by `dropItem` in `item.factory.ts`.
  *
@@ -50,6 +52,48 @@ const weapons: EquipmentTemplate[] = [
             { stat: 'physicalAttack', value: 2 },
         ],
     },
+    {
+        id: 'runed-glaive',
+        name: 'Runed Glaive',
+        description: 'A polearm scored with biting runes that hum when swung.',
+        slot: 'weapon',
+        requiredLevel: 30,
+        baseStatModifiers: [
+            { stat: 'body',           value: 6 },
+            { stat: 'physicalAttack', value: 4 },
+            { stat: 'physicalSkill',  value: 2 },
+        ],
+        addedIn: '2026-06-07',
+        tags: ['weapon', 'mid-game'],
+    },
+    {
+        id: 'dragonbone-saber',
+        name: 'Dragonbone Saber',
+        description: 'Carved from a wyrm\'s rib, it remembers fire it never held.',
+        slot: 'weapon',
+        requiredLevel: 40,
+        baseStatModifiers: [
+            { stat: 'body',           value: 8 },
+            { stat: 'physicalAttack', value: 6 },
+            { stat: 'physicalSkill',  value: 3 },
+        ],
+        addedIn: '2026-06-07',
+        tags: ['weapon', 'late-game'],
+    },
+    {
+        id: 'axiom-greatsword',
+        name: 'Axiom Greatsword',
+        description: 'A two-handed proof in steel; each cut closes an argument.',
+        slot: 'weapon',
+        requiredLevel: 50,
+        baseStatModifiers: [
+            { stat: 'body',           value: 11 },
+            { stat: 'physicalAttack', value: 9 },
+            { stat: 'physicalSkill',  value: 4 },
+        ],
+        addedIn: '2026-06-07',
+        tags: ['weapon', 'late-game', 'endgame'],
+    },
 ];
 
 // ─── Armor ───────────────────────────────────────────────────────────────────
@@ -84,6 +128,47 @@ const armor: EquipmentTemplate[] = [
             { stat: 'physicalDefense', value: 5 },
             { stat: 'body',            value: 2 },
         ],
+    },
+    {
+        id: 'runed-cuirass',
+        name: 'Runed Cuirass',
+        description: 'Plate inscribed with warding glyphs that drink incoming force.',
+        slot: 'armor',
+        requiredLevel: 30,
+        baseStatModifiers: [
+            { stat: 'physicalDefense', value: 8 },
+            { stat: 'body',            value: 3 },
+        ],
+        addedIn: '2026-06-07',
+        tags: ['armor', 'mid-game'],
+    },
+    {
+        id: 'dragonscale-harness',
+        name: 'Dragonscale Harness',
+        description: 'Overlapping scales that turn a killing blow into a bruise.',
+        slot: 'armor',
+        requiredLevel: 40,
+        baseStatModifiers: [
+            { stat: 'physicalDefense', value: 11 },
+            { stat: 'body',            value: 4 },
+            { stat: 'mentalDefense',   value: 2 },
+        ],
+        addedIn: '2026-06-07',
+        tags: ['armor', 'late-game'],
+    },
+    {
+        id: 'aegis-plate',
+        name: 'Aegis Plate',
+        description: 'A bulwark of mirror-bright steel said to repel certainty itself.',
+        slot: 'armor',
+        requiredLevel: 50,
+        baseStatModifiers: [
+            { stat: 'physicalDefense', value: 15 },
+            { stat: 'body',            value: 5 },
+            { stat: 'mentalDefense',   value: 3 },
+        ],
+        addedIn: '2026-06-07',
+        tags: ['armor', 'late-game', 'endgame'],
     },
 ];
 
@@ -120,6 +205,47 @@ const head: EquipmentTemplate[] = [
             { stat: 'body',            value: 1 },
         ],
     },
+    {
+        id: 'sage-circlet',
+        name: 'Sage Circlet',
+        description: 'A thin silver band that quiets noise and sharpens thought.',
+        slot: 'head',
+        requiredLevel: 30,
+        baseStatModifiers: [
+            { stat: 'mentalDefense', value: 5 },
+            { stat: 'mind',          value: 3 },
+        ],
+        addedIn: '2026-06-07',
+        tags: ['head', 'mid-game', 'mental'],
+    },
+    {
+        id: 'warlords-greathelm',
+        name: "Warlord's Greathelm",
+        description: 'A crested helm that has outlived three generals.',
+        slot: 'head',
+        requiredLevel: 40,
+        baseStatModifiers: [
+            { stat: 'physicalDefense', value: 8 },
+            { stat: 'mentalDefense',   value: 4 },
+            { stat: 'body',            value: 2 },
+        ],
+        addedIn: '2026-06-07',
+        tags: ['head', 'late-game'],
+    },
+    {
+        id: 'oracle-crown',
+        name: 'Oracle Crown',
+        description: 'A diadem of foresight; the wearer flinches a half-second early.',
+        slot: 'head',
+        requiredLevel: 50,
+        baseStatModifiers: [
+            { stat: 'mentalDefense', value: 9 },
+            { stat: 'mind',          value: 5 },
+            { stat: 'luck',          value: 2 },
+        ],
+        addedIn: '2026-06-07',
+        tags: ['head', 'late-game', 'endgame'],
+    },
 ];
 
 // ─── Body / Chest ────────────────────────────────────────────────────────────
@@ -154,6 +280,46 @@ const body: EquipmentTemplate[] = [
             { stat: 'physicalDefense', value: 4 },
             { stat: 'body',            value: 2 },
         ],
+    },
+    {
+        id: 'brigandine',
+        name: 'Brigandine',
+        description: 'Riveted plates sewn between cloth. A soldier\'s second skin.',
+        slot: 'body',
+        requiredLevel: 30,
+        baseStatModifiers: [
+            { stat: 'physicalDefense', value: 7 },
+            { stat: 'body',            value: 3 },
+        ],
+        addedIn: '2026-06-07',
+        tags: ['body', 'mid-game'],
+    },
+    {
+        id: 'warded-robe',
+        name: 'Warded Robe',
+        description: 'Layered silk stitched with deflective sigils.',
+        slot: 'body',
+        requiredLevel: 40,
+        baseStatModifiers: [
+            { stat: 'physicalDefense', value: 9 },
+            { stat: 'mentalDefense',   value: 4 },
+            { stat: 'body',            value: 3 },
+        ],
+        addedIn: '2026-06-07',
+        tags: ['body', 'late-game'],
+    },
+    {
+        id: 'titan-carapace',
+        name: 'Titan Carapace',
+        description: 'A shell of fused alloy plates that makes its wearer a wall.',
+        slot: 'body',
+        requiredLevel: 50,
+        baseStatModifiers: [
+            { stat: 'physicalDefense', value: 13 },
+            { stat: 'body',            value: 5 },
+        ],
+        addedIn: '2026-06-07',
+        tags: ['body', 'late-game', 'endgame'],
     },
 ];
 
@@ -190,6 +356,47 @@ const hands: EquipmentTemplate[] = [
             { stat: 'body',           value: 2 },
         ],
     },
+    {
+        id: 'runed-bracers',
+        name: 'Runed Bracers',
+        description: 'Etched vambraces that steady a strike at the last instant.',
+        slot: 'hands',
+        requiredLevel: 30,
+        baseStatModifiers: [
+            { stat: 'physicalAttack', value: 5 },
+            { stat: 'physicalSkill',  value: 3 },
+        ],
+        addedIn: '2026-06-07',
+        tags: ['hands', 'mid-game'],
+    },
+    {
+        id: 'dragonclaw-gauntlets',
+        name: 'Dragonclaw Gauntlets',
+        description: 'Taloned gauntlets that turn a fist into a finishing blow.',
+        slot: 'hands',
+        requiredLevel: 40,
+        baseStatModifiers: [
+            { stat: 'physicalAttack', value: 7 },
+            { stat: 'physicalSkill',  value: 4 },
+            { stat: 'body',           value: 2 },
+        ],
+        addedIn: '2026-06-07',
+        tags: ['hands', 'late-game'],
+    },
+    {
+        id: 'titan-grips',
+        name: 'Titan Grips',
+        description: 'Colossal gauntlets that crush what they hold.',
+        slot: 'hands',
+        requiredLevel: 50,
+        baseStatModifiers: [
+            { stat: 'physicalAttack', value: 10 },
+            { stat: 'physicalSkill',  value: 5 },
+            { stat: 'body',           value: 3 },
+        ],
+        addedIn: '2026-06-07',
+        tags: ['hands', 'late-game', 'endgame'],
+    },
 ];
 
 // ─── Feet ────────────────────────────────────────────────────────────────────
@@ -224,6 +431,47 @@ const feet: EquipmentTemplate[] = [
             { stat: 'physicalDefense', value: 4 },
             { stat: 'body',            value: 2 },
         ],
+    },
+    {
+        id: 'swiftstride-boots',
+        name: 'Swiftstride Boots',
+        description: 'Light boots that seem to find the ground a step early.',
+        slot: 'feet',
+        requiredLevel: 30,
+        baseStatModifiers: [
+            { stat: 'physicalSave', value: 6 },
+            { stat: 'luck',         value: 2 },
+        ],
+        addedIn: '2026-06-07',
+        tags: ['feet', 'mid-game'],
+    },
+    {
+        id: 'runed-sabatons',
+        name: 'Runed Sabatons',
+        description: 'Glyph-warded plate boots that root the wearer like an oath.',
+        slot: 'feet',
+        requiredLevel: 40,
+        baseStatModifiers: [
+            { stat: 'physicalDefense', value: 8 },
+            { stat: 'physicalSave',    value: 4 },
+            { stat: 'body',            value: 2 },
+        ],
+        addedIn: '2026-06-07',
+        tags: ['feet', 'late-game'],
+    },
+    {
+        id: 'windwalker-greaves',
+        name: 'Windwalker Greaves',
+        description: 'Greaves so light the wearer half-forgets the ground.',
+        slot: 'feet',
+        requiredLevel: 50,
+        baseStatModifiers: [
+            { stat: 'physicalSave', value: 10 },
+            { stat: 'luck',         value: 3 },
+            { stat: 'body',         value: 2 },
+        ],
+        addedIn: '2026-06-07',
+        tags: ['feet', 'late-game', 'endgame'],
     },
 ];
 
@@ -261,11 +509,68 @@ const accessory: EquipmentTemplate[] = [
             { stat: 'heart', value: 1 },
         ],
     },
+    {
+        id: 'jade-amulet',
+        name: 'Jade Amulet',
+        description: 'A carved jade pendant, cool and steady against the pulse.',
+        slot: 'accessory',
+        requiredLevel: 15,
+        baseStatModifiers: [
+            { stat: 'heart', value: 2 },
+            { stat: 'mind',  value: 1 },
+        ],
+        addedIn: '2026-06-07',
+        tags: ['accessory', 'mid-game'],
+    },
+    {
+        id: 'sigil-pendant',
+        name: 'Sigil Pendant',
+        description: 'A pendant graven with a sigil that hums in three keys at once.',
+        slot: 'accessory',
+        requiredLevel: 30,
+        baseStatModifiers: [
+            { stat: 'body',  value: 3 },
+            { stat: 'mind',  value: 3 },
+            { stat: 'heart', value: 2 },
+        ],
+        addedIn: '2026-06-07',
+        tags: ['accessory', 'mid-game'],
+    },
+    {
+        id: 'platinum-band',
+        name: 'Platinum Band',
+        description: 'A flawless band that lends its bearer an uncanny edge.',
+        slot: 'accessory',
+        requiredLevel: 40,
+        baseStatModifiers: [
+            { stat: 'body',  value: 4 },
+            { stat: 'mind',  value: 4 },
+            { stat: 'heart', value: 3 },
+            { stat: 'luck',  value: 2 },
+        ],
+        addedIn: '2026-06-07',
+        tags: ['accessory', 'late-game'],
+    },
+    {
+        id: 'astral-circlet',
+        name: 'Astral Circlet',
+        description: 'A ring of cold starlight worn at the brow of the resolute.',
+        slot: 'accessory',
+        requiredLevel: 50,
+        baseStatModifiers: [
+            { stat: 'body',  value: 5 },
+            { stat: 'mind',  value: 5 },
+            { stat: 'heart', value: 5 },
+            { stat: 'luck',  value: 3 },
+        ],
+        addedIn: '2026-06-07',
+        tags: ['accessory', 'late-game', 'endgame'],
+    },
 ];
 
 /**
- * The full equipment template library for Spec 05c. Exactly 21 entries
- * (7 slots × 3 progression tiers by `requiredLevel`).
+ * The full equipment template library for Spec 05c. 43 entries spanning
+ * `requiredLevel` 1 → 50 across all 7 slots.
  */
 export const equipmentTemplates: EquipmentTemplate[] = [
     ...weapons,

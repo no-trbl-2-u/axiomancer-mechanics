@@ -32,7 +32,14 @@ export {
 export {
     dropItem, rollModifiers, resolveModifiers, rarityWeightTable,
     previewTemplateAtRarity, previewTemplateAtAllRarities,
+    dropItemWithAffixes,
 } from './item.factory';
+export type { DropWithAffixesOptions } from './item.factory';
+export {
+    prefixes, suffixes, allAffixes, getAffixById,
+    composeItemName, affixesForSlot, AFFIX_RARITY_WEIGHTS,
+} from './affix.library';
+export type { Affix, AffixRole } from './modifier.types';
 export { consumableLibrary, getConsumableById } from './consumable.library';
 export { buyItem, sellItem, defaultSellPrice } from './shop.reducer';
 export type { SetBonus, ItemSet } from './set.types';

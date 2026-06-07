@@ -1,7 +1,7 @@
 /**
  * Consumable Library — Spec 05b content.
  *
- * Twelve consumables that exercise every leg of the Spec 05 consumable
+ * Twenty-two consumables that exercise every leg of the Spec 05 consumable
  * pipeline: immediate `healAmount`, effect-library references via `effectId`,
  * and combat-resource grants via `resourceGrant`.
  *
@@ -22,7 +22,7 @@
 import { Consumable } from './types';
 
 /**
- * The full consumable library for Spec 05b. Exactly 12 entries. Quantities
+ * The full consumable library for Spec 05b. 22 entries. Quantities
  * default to 1 — callers (shops, loot tables, debug helpers) stack as needed
  * via `stackItem`.
  */
@@ -137,6 +137,111 @@ export const consumableLibrary: Consumable[] = [
         effectId: 'buff_critical_damage_up',
         resourceGrant: { heart: 2 },
         quantity: 1,
+    },
+    // ── Content expansion pass 2026-06-07 ──
+    {
+        id: 'greater-healing-potion',
+        name: 'Greater Healing Potion',
+        description: 'A deep crimson draught in cut crystal. Restores a great deal of HP.',
+        category: 'consumable',
+        healAmount: 50,
+        quantity: 1,
+        addedIn: '2026-06-07',
+        tags: ['consumable', 'healing', 'mid-game'],
+    },
+    {
+        id: 'supreme-healing-potion',
+        name: 'Supreme Healing Potion',
+        description: 'A draught of liquid dawn. Closes all but mortal wounds.',
+        category: 'consumable',
+        healAmount: 100,
+        quantity: 1,
+        addedIn: '2026-06-07',
+        tags: ['consumable', 'healing', 'late-game'],
+    },
+    {
+        id: 'regeneration-tonic',
+        name: 'Regeneration Tonic',
+        description: 'A slow green tonic that knits flesh over several breaths.',
+        category: 'consumable',
+        effectId: 'buff_regeneration',
+        quantity: 1,
+        addedIn: '2026-06-07',
+        tags: ['consumable', 'sustain'],
+    },
+    {
+        id: 'iron-skin-draught',
+        name: 'Iron Skin Draught',
+        description: 'A chalky grey draught that hardens the skin against blows.',
+        category: 'consumable',
+        effectId: 'buff_damage_reduction',
+        quantity: 1,
+        addedIn: '2026-06-07',
+        tags: ['consumable', 'defense'],
+    },
+    {
+        id: 'whetstone-oil',
+        name: 'Whetstone Oil',
+        description: 'A keen-smelling oil that sharpens both blade and aim.',
+        category: 'consumable',
+        effectId: 'buff_critical_rate_up',
+        quantity: 1,
+        addedIn: '2026-06-07',
+        tags: ['consumable', 'offense', 'crit'],
+    },
+    {
+        id: 'hunters-elixir',
+        name: "Hunter's Elixir",
+        description: 'A clear elixir that steadies the hand and trues the eye.',
+        category: 'consumable',
+        effectId: 'buff_accuracy_up',
+        quantity: 1,
+        addedIn: '2026-06-07',
+        tags: ['consumable', 'offense', 'accuracy'],
+    },
+    {
+        id: 'quicksilver-vial',
+        name: 'Quicksilver Vial',
+        description: 'A shivering silver liquid that quickens every motion.',
+        category: 'consumable',
+        effectId: 'buff_haste',
+        quantity: 1,
+        addedIn: '2026-06-07',
+        tags: ['consumable', 'utility'],
+    },
+    {
+        id: 'phoenix-tear',
+        name: 'Phoenix Tear',
+        description: 'A single warm bead of ember that wards off the killing blow.',
+        category: 'consumable',
+        // No bespoke prevent-KO effect exists yet; `buff_phoenix_vigor` sells
+        // the rebirth fantasy with existing data (see `revive-crystal` note).
+        effectId: 'buff_phoenix_vigor',
+        healAmount: 40,
+        quantity: 1,
+        addedIn: '2026-06-07',
+        tags: ['consumable', 'healing', 'sustain', 'late-game'],
+    },
+    {
+        id: 'war-horn-draught',
+        name: 'War Horn Draught',
+        description: 'A roaring brew that floods the body with martial resolve.',
+        category: 'consumable',
+        resourceGrant: { body: 6 },
+        effectId: 'buff_haste',
+        quantity: 1,
+        addedIn: '2026-06-07',
+        tags: ['consumable', 'resource', 'late-game'],
+    },
+    {
+        id: 'greater-resonance-crystal',
+        name: 'Greater Resonance Crystal',
+        description: 'A radiant crystal that floods body, mind, and heart at once.',
+        category: 'consumable',
+        resourceGrant: { body: 4, mind: 4, heart: 4 },
+        quantity: 1,
+        addedIn: '2026-06-07',
+        tags: ['consumable', 'resource', 'late-game'],
     },
 ];
 

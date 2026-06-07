@@ -39,6 +39,9 @@ export const weaponModPool: Modifier[] = [
             { levelReq: 1,  range: [1, 3] },
             { levelReq: 10, range: [4, 8] },
             { levelReq: 20, range: [9, 15] },
+            { levelReq: 30, range: [16, 24] },
+            { levelReq: 40, range: [25, 35] },
+            { levelReq: 50, range: [36, 50] },
         ],
         payload: {
             statModifiers: [{ stat: 'physicalAttack', value: 0 }],
@@ -103,6 +106,140 @@ export const weaponModPool: Modifier[] = [
             }],
         },
     },
+    // ── Content expansion 2026-06-07 ──
+    {
+        id: 'wm-skill-edge',
+        name: 'Honed Technique',
+        hiddenRarity: 'common_mod',
+        validSlots: ['weapon'],
+        levelTiers: [
+            { levelReq: 1,  range: [1, 2] },
+            { levelReq: 10, range: [3, 5] },
+            { levelReq: 20, range: [6, 10] },
+            { levelReq: 30, range: [11, 16] },
+            { levelReq: 40, range: [17, 24] },
+            { levelReq: 50, range: [25, 34] },
+        ],
+        payload: {
+            statModifiers: [{ stat: 'physicalSkill', value: 0 }],
+        },
+        addedIn: '2026-06-07',
+        tags: ['weapon', 'offense'],
+    },
+    {
+        id: 'wm-crit-rate',
+        name: 'Cruel Point',
+        hiddenRarity: 'uncommon_mod',
+        validSlots: ['weapon'],
+        levelTiers: [
+            { levelReq: 10, range: [1, 1] },
+            { levelReq: 30, range: [1, 1] },
+        ],
+        payload: {
+            passiveEffects: ['buff_critical_rate_up'],
+        },
+        addedIn: '2026-06-07',
+        tags: ['weapon', 'offense', 'crit'],
+    },
+    {
+        id: 'wm-crit-damage',
+        name: 'Savage Bite',
+        hiddenRarity: 'rare_mod',
+        validSlots: ['weapon'],
+        levelTiers: [
+            { levelReq: 20, range: [1, 1] },
+            { levelReq: 40, range: [1, 1] },
+        ],
+        payload: {
+            passiveEffects: ['buff_critical_damage_up'],
+        },
+        addedIn: '2026-06-07',
+        tags: ['weapon', 'offense', 'crit'],
+    },
+    {
+        id: 'wm-mind-rend',
+        name: 'Mind Render',
+        hiddenRarity: 'rare_mod',
+        validSlots: ['weapon'],
+        levelTiers: [
+            { levelReq: 20, range: [3, 6] },
+            { levelReq: 30, range: [7, 11] },
+            { levelReq: 40, range: [12, 18] },
+            { levelReq: 50, range: [19, 27] },
+        ],
+        payload: {
+            statModifiers: [{ stat: 'mentalAttack', value: 0 }],
+            onHitEffects: [{
+                effectId: 'debuff_vulnerability_mind',
+                target: 'opponent',
+                baseChance: 0.25,
+                tier: 3,
+            }],
+        },
+        addedIn: '2026-06-07',
+        tags: ['weapon', 'offense', 'mental'],
+    },
+    // ── Content expansion pass 2026-06-07 (new weapon mods) ──
+    {
+        id: 'wm-heart-rend',
+        name: 'Heart Cleaver',
+        hiddenRarity: 'rare_mod',
+        validSlots: ['weapon'],
+        levelTiers: [
+            { levelReq: 15, range: [2, 5] },
+            { levelReq: 30, range: [6, 10] },
+            { levelReq: 40, range: [11, 16] },
+            { levelReq: 50, range: [17, 24] },
+        ],
+        payload: {
+            statModifiers: [{ stat: 'emotionalAttack', value: 0 }],
+            onHitEffects: [{
+                effectId: 'debuff_vulnerability_heart',
+                target: 'opponent',
+                baseChance: 0.25,
+                tier: 3,
+            }],
+        },
+        addedIn: '2026-06-07',
+        tags: ['weapon', 'offense', 'emotional'],
+    },
+    {
+        id: 'wm-bleeding-edge',
+        name: 'Bleeding Edge',
+        hiddenRarity: 'uncommon_mod',
+        validSlots: ['weapon'],
+        levelTiers: [
+            { levelReq: 10, range: [1, 1] },
+            { levelReq: 30, range: [1, 1] },
+            { levelReq: 50, range: [1, 1] },
+        ],
+        payload: {
+            onHitEffects: [{
+                effectId: 'debuff_bleed',
+                target: 'opponent',
+                baseChance: 0.30,
+                tier: 2,
+            }],
+        },
+        addedIn: '2026-06-07',
+        tags: ['weapon', 'offense', 'dot'],
+    },
+    {
+        id: 'wm-accuracy',
+        name: 'True Aim',
+        hiddenRarity: 'common_mod',
+        validSlots: ['weapon'],
+        levelTiers: [
+            { levelReq: 1,  range: [1, 1] },
+            { levelReq: 20, range: [1, 1] },
+            { levelReq: 40, range: [1, 1] },
+        ],
+        payload: {
+            passiveEffects: ['buff_accuracy_up'],
+        },
+        addedIn: '2026-06-07',
+        tags: ['weapon', 'offense', 'accuracy'],
+    },
 ];
 
 // ─── Head pool ───────────────────────────────────────────────────────────────
@@ -117,6 +254,9 @@ export const headModPool: Modifier[] = [
             { levelReq: 1,  range: [5, 15] },
             { levelReq: 10, range: [16, 35] },
             { levelReq: 20, range: [36, 60] },
+            { levelReq: 30, range: [61, 90] },
+            { levelReq: 40, range: [91, 130] },
+            { levelReq: 50, range: [131, 180] },
         ],
         // `EffectStatTarget` has no `maxHp` today — the closest primitive is
         // the `buff_max_hp_up` passive. The rolled value is a presence marker
@@ -153,6 +293,58 @@ export const headModPool: Modifier[] = [
             passiveEffects: ['buff_buff_duration_up'],
         },
     },
+    // ── Content expansion pass 2026-06-07 (new head mods) ──
+    {
+        id: 'hm-mental-defense',
+        name: 'Warded Crown',
+        hiddenRarity: 'common_mod',
+        validSlots: ['head'],
+        levelTiers: [
+            { levelReq: 1,  range: [2, 5] },
+            { levelReq: 10, range: [6, 12] },
+            { levelReq: 20, range: [13, 22] },
+            { levelReq: 30, range: [23, 34] },
+            { levelReq: 40, range: [35, 48] },
+            { levelReq: 50, range: [49, 64] },
+        ],
+        payload: {
+            statModifiers: [{ stat: 'mentalDefense', value: 0 }],
+        },
+        addedIn: '2026-06-07',
+        tags: ['head', 'defense', 'mental'],
+    },
+    {
+        id: 'hm-insight',
+        name: 'Insightful',
+        hiddenRarity: 'uncommon_mod',
+        validSlots: ['head'],
+        levelTiers: [
+            { levelReq: 5,  range: [1, 2] },
+            { levelReq: 20, range: [3, 5] },
+            { levelReq: 35, range: [6, 9] },
+            { levelReq: 50, range: [10, 14] },
+        ],
+        payload: {
+            statModifiers: [{ stat: 'mentalSkill', value: 0 }],
+        },
+        addedIn: '2026-06-07',
+        tags: ['head', 'offense', 'mental'],
+    },
+    {
+        id: 'hm-foresight',
+        name: 'Oracle Sight',
+        hiddenRarity: 'rare_mod',
+        validSlots: ['head'],
+        levelTiers: [
+            { levelReq: 20, range: [1, 1] },
+            { levelReq: 40, range: [1, 1] },
+        ],
+        payload: {
+            passiveEffects: ['buff_accuracy_up'],
+        },
+        addedIn: '2026-06-07',
+        tags: ['head', 'utility', 'accuracy'],
+    },
 ];
 
 // ─── Body / Chest pool ───────────────────────────────────────────────────────
@@ -167,6 +359,9 @@ export const bodyModPool: Modifier[] = [
             { levelReq: 1,  range: [2, 5] },
             { levelReq: 10, range: [6, 12] },
             { levelReq: 20, range: [13, 22] },
+            { levelReq: 30, range: [23, 34] },
+            { levelReq: 40, range: [35, 48] },
+            { levelReq: 50, range: [49, 64] },
         ],
         payload: {
             statModifiers: [{ stat: 'physicalDefense', value: 0 }],
@@ -202,6 +397,62 @@ export const bodyModPool: Modifier[] = [
         payload: {
             passiveEffects: ['buff_reflect'],
         },
+    },
+    // ── Content expansion pass 2026-06-07 (new body mods) ──
+    {
+        id: 'bm-vitality',
+        name: 'Stalwart',
+        hiddenRarity: 'common_mod',
+        validSlots: ['body'],
+        levelTiers: [
+            { levelReq: 1,  range: [1, 2] },
+            { levelReq: 10, range: [3, 5] },
+            { levelReq: 20, range: [6, 9] },
+            { levelReq: 30, range: [10, 14] },
+            { levelReq: 40, range: [15, 20] },
+            { levelReq: 50, range: [21, 28] },
+        ],
+        payload: {
+            statModifiers: [{ stat: 'body', value: 0 }],
+        },
+        addedIn: '2026-06-07',
+        tags: ['body', 'defense'],
+    },
+    {
+        id: 'bm-damage-reduction',
+        name: 'Bulwark',
+        hiddenRarity: 'rare_mod',
+        validSlots: ['body'],
+        levelTiers: [
+            { levelReq: 15, range: [1, 1] },
+            { levelReq: 35, range: [1, 1] },
+        ],
+        payload: {
+            passiveEffects: ['buff_damage_reduction'],
+        },
+        addedIn: '2026-06-07',
+        tags: ['body', 'defense'],
+    },
+    {
+        id: 'bm-thorns-proc',
+        name: 'Brazen Thorns',
+        hiddenRarity: 'uncommon_mod',
+        validSlots: ['body'],
+        levelTiers: [
+            { levelReq: 10, range: [1, 1] },
+            { levelReq: 30, range: [1, 1] },
+            { levelReq: 50, range: [1, 1] },
+        ],
+        payload: {
+            onDefendEffects: [{
+                effectId: 'buff_brazen_thorns',
+                target: 'self',
+                baseChance: 0.35,
+                tier: 2,
+            }],
+        },
+        addedIn: '2026-06-07',
+        tags: ['body', 'defense', 'proc'],
     },
 ];
 
@@ -255,6 +506,62 @@ export const handsModPool: Modifier[] = [
             }],
         },
     },
+    // ── Content expansion pass 2026-06-07 (new hands mods) ──
+    {
+        id: 'hndm-strength',
+        name: 'Crushing Grasp',
+        hiddenRarity: 'common_mod',
+        validSlots: ['hands'],
+        levelTiers: [
+            { levelReq: 1,  range: [1, 3] },
+            { levelReq: 10, range: [4, 7] },
+            { levelReq: 20, range: [8, 13] },
+            { levelReq: 30, range: [14, 20] },
+            { levelReq: 40, range: [21, 29] },
+            { levelReq: 50, range: [30, 40] },
+        ],
+        payload: {
+            statModifiers: [{ stat: 'physicalAttack', value: 0 }],
+        },
+        addedIn: '2026-06-07',
+        tags: ['hands', 'offense'],
+    },
+    {
+        id: 'hndm-crit-rate',
+        name: 'Deft Fingers',
+        hiddenRarity: 'uncommon_mod',
+        validSlots: ['hands'],
+        levelTiers: [
+            { levelReq: 10, range: [1, 1] },
+            { levelReq: 30, range: [1, 1] },
+            { levelReq: 50, range: [1, 1] },
+        ],
+        payload: {
+            passiveEffects: ['buff_critical_rate_up'],
+        },
+        addedIn: '2026-06-07',
+        tags: ['hands', 'offense', 'crit'],
+    },
+    {
+        id: 'hndm-counter',
+        name: 'Riposte Form',
+        hiddenRarity: 'rare_mod',
+        validSlots: ['hands'],
+        levelTiers: [
+            { levelReq: 20, range: [1, 1] },
+            { levelReq: 40, range: [1, 1] },
+        ],
+        payload: {
+            onDefendEffects: [{
+                effectId: 'buff_counter',
+                target: 'self',
+                baseChance: 0.30,
+                tier: 2,
+            }],
+        },
+        addedIn: '2026-06-07',
+        tags: ['hands', 'defense', 'proc'],
+    },
 ];
 
 // ─── Feet pool ───────────────────────────────────────────────────────────────
@@ -269,6 +576,9 @@ export const feetModPool: Modifier[] = [
             { levelReq: 1,  range: [1, 3] },
             { levelReq: 10, range: [4, 7] },
             { levelReq: 20, range: [8, 12] },
+            { levelReq: 30, range: [13, 18] },
+            { levelReq: 40, range: [19, 26] },
+            { levelReq: 50, range: [27, 36] },
         ],
         payload: {
             statModifiers: [{ stat: 'physicalSave', value: 0 }],
@@ -306,6 +616,56 @@ export const feetModPool: Modifier[] = [
             statModifiers: [{ stat: 'luck', value: 0 }],
         },
     },
+    // ── Content expansion pass 2026-06-07 (new feet mods) ──
+    {
+        id: 'fm-evasion-proc',
+        name: 'Phantom Step',
+        hiddenRarity: 'uncommon_mod',
+        validSlots: ['feet'],
+        levelTiers: [
+            { levelReq: 10, range: [1, 1] },
+            { levelReq: 30, range: [1, 1] },
+            { levelReq: 50, range: [1, 1] },
+        ],
+        payload: {
+            passiveEffects: ['buff_evasion_up'],
+        },
+        addedIn: '2026-06-07',
+        tags: ['feet', 'defense', 'evasion'],
+    },
+    {
+        id: 'fm-physical-save',
+        name: 'Sure Footing',
+        hiddenRarity: 'common_mod',
+        validSlots: ['feet'],
+        levelTiers: [
+            { levelReq: 1,  range: [2, 4] },
+            { levelReq: 15, range: [5, 9] },
+            { levelReq: 30, range: [10, 16] },
+            { levelReq: 45, range: [17, 25] },
+            { levelReq: 50, range: [26, 34] },
+        ],
+        payload: {
+            statModifiers: [{ stat: 'physicalSave', value: 0 }],
+        },
+        addedIn: '2026-06-07',
+        tags: ['feet', 'defense'],
+    },
+    {
+        id: 'fm-haste',
+        name: 'Fleetfoot',
+        hiddenRarity: 'rare_mod',
+        validSlots: ['feet'],
+        levelTiers: [
+            { levelReq: 20, range: [1, 1] },
+            { levelReq: 40, range: [1, 1] },
+        ],
+        payload: {
+            passiveEffects: ['buff_haste'],
+        },
+        addedIn: '2026-06-07',
+        tags: ['feet', 'utility'],
+    },
 ];
 
 // ─── Accessory pool ──────────────────────────────────────────────────────────
@@ -320,6 +680,9 @@ export const accessoryModPool: Modifier[] = [
             { levelReq: 1,  range: [1, 2] },
             { levelReq: 10, range: [2, 4] },
             { levelReq: 20, range: [4, 7] },
+            { levelReq: 30, range: [8, 11] },
+            { levelReq: 40, range: [12, 16] },
+            { levelReq: 50, range: [17, 22] },
         ],
         // Two different stats, each receiving the rolled value (both sentinels
         // resolve to the same N — Spec 05d's "+N each" reading).
@@ -365,6 +728,62 @@ export const accessoryModPool: Modifier[] = [
             statModifiers: [{ stat: 'luck', value: 0 }],
         },
     },
+    // ── Content expansion pass 2026-06-07 (new accessory mods) ──
+    {
+        id: 'am-heart-focus',
+        name: 'Heartstone',
+        hiddenRarity: 'common_mod',
+        validSlots: ['accessory'],
+        levelTiers: [
+            { levelReq: 1,  range: [1, 2] },
+            { levelReq: 15, range: [3, 5] },
+            { levelReq: 30, range: [6, 9] },
+            { levelReq: 45, range: [10, 14] },
+            { levelReq: 50, range: [15, 20] },
+        ],
+        payload: {
+            statModifiers: [{ stat: 'heart', value: 0 }],
+        },
+        addedIn: '2026-06-07',
+        tags: ['accessory', 'utility', 'emotional'],
+    },
+    {
+        id: 'am-regen',
+        name: 'Mending Charm',
+        hiddenRarity: 'uncommon_mod',
+        validSlots: ['accessory'],
+        levelTiers: [
+            { levelReq: 10, range: [1, 1] },
+            { levelReq: 30, range: [1, 1] },
+            { levelReq: 50, range: [1, 1] },
+        ],
+        payload: {
+            passiveEffects: ['buff_regeneration'],
+        },
+        addedIn: '2026-06-07',
+        tags: ['accessory', 'sustain'],
+    },
+    {
+        id: 'am-all-attunement',
+        name: 'Triune Sigil',
+        hiddenRarity: 'rare_mod',
+        validSlots: ['accessory'],
+        levelTiers: [
+            { levelReq: 25, range: [2, 4] },
+            { levelReq: 40, range: [5, 8] },
+            { levelReq: 50, range: [9, 13] },
+        ],
+        // Three base stats, each receiving the rolled value.
+        payload: {
+            statModifiers: [
+                { stat: 'heart', value: 0 },
+                { stat: 'body',  value: 0 },
+                { stat: 'mind',  value: 0 },
+            ],
+        },
+        addedIn: '2026-06-07',
+        tags: ['accessory', 'utility'],
+    },
 ];
 
 // ─── Armor pool ──────────────────────────────────────────────────────────────
@@ -379,6 +798,9 @@ export const armorModPool: Modifier[] = [
             { levelReq: 1,  range: [3, 7] },
             { levelReq: 10, range: [8, 16] },
             { levelReq: 20, range: [17, 28] },
+            { levelReq: 30, range: [29, 42] },
+            { levelReq: 40, range: [43, 58] },
+            { levelReq: 50, range: [59, 78] },
         ],
         payload: {
             statModifiers: [{ stat: 'physicalDefense', value: 0 }],
@@ -393,6 +815,9 @@ export const armorModPool: Modifier[] = [
             { levelReq: 1,  range: [1, 2] },
             { levelReq: 10, range: [2, 3] },
             { levelReq: 20, range: [3, 5] },
+            { levelReq: 30, range: [5, 7] },
+            { levelReq: 40, range: [7, 9] },
+            { levelReq: 50, range: [9, 12] },
         ],
         payload: {
             resourceInteraction: {
@@ -406,11 +831,69 @@ export const armorModPool: Modifier[] = [
         hiddenRarity: 'rare_mod',
         validSlots: ['armor'],
         levelTiers: [
-            { levelReq: 5, range: [1, 1] },
+            { levelReq: 5,  range: [1, 1] },
+            { levelReq: 30, range: [1, 1] },
+            { levelReq: 50, range: [1, 1] },
         ],
         payload: {
             passiveEffects: ['buff_regeneration'],
         },
+    },
+    // ── Content expansion pass 2026-06-07 (new armor mods) ──
+    {
+        id: 'armm-vitality',
+        name: 'Ironhide',
+        hiddenRarity: 'common_mod',
+        validSlots: ['armor'],
+        levelTiers: [
+            { levelReq: 1,  range: [1, 2] },
+            { levelReq: 10, range: [3, 5] },
+            { levelReq: 20, range: [6, 10] },
+            { levelReq: 30, range: [11, 16] },
+            { levelReq: 40, range: [17, 23] },
+            { levelReq: 50, range: [24, 32] },
+        ],
+        payload: {
+            statModifiers: [{ stat: 'body', value: 0 }],
+        },
+        addedIn: '2026-06-07',
+        tags: ['armor', 'defense'],
+    },
+    {
+        id: 'armm-aegis',
+        name: 'Aegis Weave',
+        hiddenRarity: 'rare_mod',
+        validSlots: ['armor'],
+        levelTiers: [
+            { levelReq: 15, range: [1, 1] },
+            { levelReq: 35, range: [1, 1] },
+        ],
+        payload: {
+            onDefendEffects: [{
+                effectId: 'buff_barrier',
+                target: 'self',
+                baseChance: 0.30,
+                tier: 2,
+            }],
+        },
+        addedIn: '2026-06-07',
+        tags: ['armor', 'defense', 'proc'],
+    },
+    {
+        id: 'armm-stoic',
+        name: 'Stoic Plating',
+        hiddenRarity: 'uncommon_mod',
+        validSlots: ['armor'],
+        levelTiers: [
+            { levelReq: 10, range: [1, 1] },
+            { levelReq: 30, range: [1, 1] },
+            { levelReq: 50, range: [1, 1] },
+        ],
+        payload: {
+            passiveEffects: ['buff_damage_reduction'],
+        },
+        addedIn: '2026-06-07',
+        tags: ['armor', 'defense'],
     },
 ];
 
@@ -479,6 +962,79 @@ export const uniqueModPool: Modifier[] = [
                 combatStartTokens: { heart: 0, body: 0, mind: 0 },
             },
         },
+    },
+    // ── Content expansion pass 2026-06-07 (new unique-only mods) ──
+    {
+        id: 'um-phoenix-heart',
+        name: 'Phoenix Heart',
+        hiddenRarity: 'rare_mod',
+        validSlots: ['armor', 'body', 'accessory'],
+        levelTiers: [
+            { levelReq: 25, range: [1, 1] },
+            { levelReq: 45, range: [1, 1] },
+        ],
+        // A late-game signature: regeneration plus a vigor proc when defending.
+        payload: {
+            passiveEffects: ['buff_regeneration'],
+            onDefendEffects: [{
+                effectId: 'buff_phoenix_vigor',
+                target: 'self',
+                baseChance: 0.25,
+                tier: 3,
+            }],
+        },
+        addedIn: '2026-06-07',
+        tags: ['unique', 'sustain', 'late-game'],
+    },
+    {
+        id: 'um-gorgon-stare',
+        name: 'Gorgon Stare',
+        hiddenRarity: 'rare_mod',
+        validSlots: ['weapon', 'head'],
+        levelTiers: [
+            { levelReq: 30, range: [4, 8] },
+            { levelReq: 50, range: [9, 16] },
+        ],
+        payload: {
+            statModifiers: [{ stat: 'mentalAttack', value: 0 }],
+            onHitEffects: [{
+                effectId: 'debuff_gorgon_gaze',
+                target: 'opponent',
+                baseChance: 0.25,
+                tier: 3,
+            }],
+        },
+        addedIn: '2026-06-07',
+        tags: ['unique', 'offense', 'control', 'late-game'],
+    },
+    {
+        id: 'um-promethean-spark',
+        name: 'Promethean Spark',
+        hiddenRarity: 'rare_mod',
+        validSlots: ['weapon', 'accessory'],
+        levelTiers: [
+            { levelReq: 20, range: [1, 1] },
+            { levelReq: 40, range: [1, 1] },
+        ],
+        // Burns the foe and embers the wielder — all-stance generation on hit.
+        payload: {
+            onHitEffects: [
+                {
+                    effectId: 'debuff_burn',
+                    target: 'opponent',
+                    baseChance: 0.30,
+                    tier: 3,
+                },
+                {
+                    effectId: 'buff_promethean_ember',
+                    target: 'self',
+                    baseChance: 0.30,
+                    tier: 3,
+                },
+            ],
+        },
+        addedIn: '2026-06-07',
+        tags: ['unique', 'offense', 'dot', 'late-game'],
     },
 ];
 
