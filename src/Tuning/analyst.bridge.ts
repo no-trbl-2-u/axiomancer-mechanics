@@ -52,6 +52,107 @@ function meanResolution(cells: CellResult[]): number {
     return cells.reduce((s, c) => s + c.report.metrics.resolutionSuccessRate, 0) / cells.length;
 }
 
+function mean(xs: number[]): number {
+    return xs.length ? xs.reduce((s, x) => s + x, 0) / xs.length : 0;
+}
+
+function pct(n: number): string {
+    return `${Math.round(n * 100)}%`;
+}
+
+/** Share of a cell's player actions that were skills (snapshot, else metrics). */
+function skillShareOf(c: CellResult): number {
+    if (c.snapshot) return c.snapshot.combat.skillActionShare;
+    const a = c.report.metrics.actionUse;
+    const total = Object.values(a).reduce((s, n) => s + n, 0) || 1;
+    return (a.skill ?? 0) / total;
+}
+
+interface PlaystyleEngagement {
+    playstyle: string;
+    cells: number;
+    resolution: number;
+    skillShare: number;
+}
+
+function engagementByPlaystyle(cells: CellResult[]): PlaystyleEngagement[] {
+    const groups = new Map<string, CellResult[]>();
+    for (const c of cells) {
+        const k = c.cell.playstyle;
+        (groups.get(k) ?? groups.set(k, []).get(k)!).push(c);
+    }
+    return [...groups.entries()].map(([playstyle, g]) => ({
+        playstyle,
+        cells: g.length,
+        resolution: mean(g.map(x => x.report.metrics.resolutionSuccessRate)),
+        skillShare: mean(g.map(skillShareOf)),
+    }));
+}
+
+/** Margin by which aggressive must beat strategist to flag the doctrine. */
+const DOCTRINE_RESOLUTION_MARGIN = 0.05;
+/** Below this skill-action share, basic actions dominate selection. */
+const DOCTRINE_LOW_SKILL_SHARE = 0.5;
+
+/**
+ * Status-effect doctrine analysis (VISION.md: status effects are the MAIN fun).
+ * Detects when basic-attack play out-weighs skill/status play and emits remedy
+ * suggestions — plus a registry-backed candidate to raise skill payoff when one
+ * is available. Returns suggestions only; never throws.
+ */
+export function doctrineSuggestions(req: AnalystRequest): {
+    candidates: Candidate[];
+    proposeOnly: AnalystResponse['proposeOnly'];
+} {
+    const byStyle = engagementByPlaystyle(req.cells);
+    const aggressive = byStyle.find(s => s.playstyle === 'aggressive');
+    const strategist = byStyle.find(s => s.playstyle === 'strategist');
+    const overallSkillShare = mean(byStyle.map(s => s.skillShare));
+    const candidates: Candidate[] = [];
+    const proposeOnly: AnalystResponse['proposeOnly'] = [];
+
+    let flagged = false;
+
+    if (aggressive && strategist && aggressive.resolution > strategist.resolution + DOCTRINE_RESOLUTION_MARGIN) {
+        flagged = true;
+        const delta = aggressive.resolution - strategist.resolution;
+        proposeOnly.push({
+            summary: `Basic actions out-weigh skills: AGGRESSIVE resolves ${pct(aggressive.resolution)} vs STRATEGIST ${pct(strategist.resolution)} (Δ${pct(delta)}). Per the status-effect doctrine, skill/status planning should be the STRONGER path, not basic-attack trading.`,
+            rationale: 'Remedy: increase skill/status payoff relative to basic attacks — raise `combat.skillStatMultiplier` (skills hit harder) and/or lower `combat.resourceGen.attackHit` (basic attacks build less tempo); strengthen status-effect potency/duration. Re-run and confirm STRATEGIST resolution ≥ AGGRESSIVE.',
+        });
+    }
+
+    if (overallSkillShare < DOCTRINE_LOW_SKILL_SHARE) {
+        flagged = true;
+        proposeOnly.push({
+            summary: `Skills are a minority of actions: only ${pct(overallSkillShare)} of player actions across the matrix are skills — basic attack / defend / item dominate selection.`,
+            rationale: 'Remedy: make status effects the default, not the fallback — raise resource generation (`combat.resourceGen.*`) or lower skill costs so skills are affordable more often, and have enemies punish repeated unmitigated basic attacks (reactive guards / counters).',
+        });
+    }
+
+    if (flagged) {
+        // Registry-backed corrective: tilt damage toward skills, if tunable here.
+        const cur = req.currentValues['combat.skillStatMultiplier'];
+        const param = req.tunables.find(t => t.id === 'combat.skillStatMultiplier');
+        if (param && typeof cur === 'number') {
+            const step = param.step ?? 0.05;
+            candidates.push({
+                paramId: 'combat.skillStatMultiplier',
+                proposedValue: cur + step,
+                rationale: 'Status-effect doctrine: raise skill damage scaling so skill/status play out-performs basic-attack trading.',
+                source: 'heuristic',
+            });
+        }
+        // Meta-remedy: the objective itself can't yet see the problem.
+        proposeOnly.push({
+            summary: 'The tuning objective scores only win/mercy resolution, not status-effect engagement, so it cannot auto-correct basic-attack dominance on its own.',
+            rationale: 'Remedy (structural): add a transcript-derived effects-applied/exploited metric and fold an engagement term into `scoreHealth`; add per-effect (potency / duration / proc-chance) and per-skill payload tunables to the registry so the loop can act on it.',
+        });
+    }
+
+    return { candidates, proposeOnly };
+}
+
 /** Worst (highest deviation) cells, for propose-only structural notes. */
 function worstCells(baseline: HealthScore, n: number): typeof baseline.perCell {
     return [...baseline.perCell].sort((a, b) => b.deviation - a.deviation).slice(0, n);
@@ -101,6 +202,13 @@ export function heuristicRecommendations(req: AnalystRequest): AnalystResponse {
             rationale: `Mean resolution ${(mean * 100).toFixed(0)}% sits inside ${(low * 100).toFixed(0)}–${(high * 100).toFixed(0)}%; no numeric change recommended.`,
         });
     }
+
+    // Status-effect doctrine: flag and remedy basic-attack dominance.
+    const doctrine = doctrineSuggestions(req);
+    for (const c of doctrine.candidates) {
+        if (!candidates.some(existing => existing.paramId === c.paramId)) candidates.push(c);
+    }
+    proposeOnly.push(...doctrine.proposeOnly);
 
     // Structural / per-cell observations the loop cannot auto-apply.
     for (const cell of worstCells(baseline, 3)) {
