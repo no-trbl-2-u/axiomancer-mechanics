@@ -25,7 +25,7 @@ export type {
 
 // ─── Enemy ────────────────────────────────────────────────────────────────────
 export {
-    createEnemy, randomLogic, decideEnemyAction,
+    createEnemy, enemyStatBudget, randomLogic, decideEnemyAction,
     aggressiveLogic, defensiveLogic, balancedLogic, strategicLogic, bossLogic,
     counterStanceOf, weakestStanceOf,
     rollLoot, rollLootMany,

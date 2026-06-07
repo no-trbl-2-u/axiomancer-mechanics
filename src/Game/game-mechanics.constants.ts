@@ -115,3 +115,12 @@ export const FRIENDSHIP_COUNTER_MAX = 3;
 // `enemyStatBudget(level)` (see `src/Enemy/index.ts`); legacy enemies that
 // hand-author `baseStats` are unaffected.
 export const ENEMY_STAT_PER_LEVEL = 3;
+
+// Off-budget "gear tier" scaling term to counteract player power accumulation.
+// Represents the compounding advantage players gain from equipment upgrades and
+// skill library expansion that enemies lack. Applied as a multiplicative bonus
+// to enemy defensive stats (HP/defense/resists), weighted away from attack to
+// avoid defeat spikes. The curve is ≈0 at level 1 (early game untouched) and
+// grows with level to balance late-game trivialization. Magnitude is tuned by
+// the mechanics loop via the tunable registry.
+export const ENEMY_GEAR_TIER_PER_LEVEL = 0.02;

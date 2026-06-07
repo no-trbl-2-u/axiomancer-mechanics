@@ -35,6 +35,12 @@ Enemies do not have `nonCombatStats`; `getSaveStat()` falls back to `getDefenseS
 default `xpReward` from `level` / `baseStats` / `difficulty`. Starts the enemy
 at full HP.
 
+`enemyStatBudget(level, weights?, perLevel?, gearTierPerLevel?)` — distributes a
+level-scaled stat budget across heart/body/mind according to weights, with an
+optional gear-tier bonus that scales with level to counter player power accumulation.
+The gear-tier bonus is ≈0 at level 1 and grows linearly to balance late-game
+trivialization. Used by budget-based enemies and the tuning workflow's enemy scaler.
+
 `DEFAULT_XP_BY_DIFFICULTY` — `simple: 10, normal: 20, elite: 50, boss: 200, unique: 500`.
 Multiplied by `level` for the final default.
 

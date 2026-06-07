@@ -31,6 +31,18 @@ export const TUNABLE_REGISTRY: TunableParam[] = [
         effect: { difficulty: 'raises' },
     },
     {
+        id: 'enemy.gearTierPerLevel',
+        kind: 'enemy-stat',
+        category: 'enemy',
+        file: CONSTANTS_FILE,
+        locator: { exportName: 'ENEMY_GEAR_TIER_PER_LEVEL' },
+        min: 0, max: 0.05, step: 0.005,
+        magnitudeCapPct: 0.25,
+        tags: ['enemy', 'scaling', 'difficulty', 'late-game'],
+        rationale: 'Off-budget gear tier counterweight to player power accumulation.',
+        effect: { difficulty: 'raises' },
+    },
+    {
         id: 'combat.skillStatMultiplier',
         kind: 'multiplier',
         category: 'fundamental',

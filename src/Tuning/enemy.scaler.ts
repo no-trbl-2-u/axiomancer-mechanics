@@ -12,7 +12,7 @@ import { ENEMY_REGISTRY, type EnemySlug } from '../Enemy/enemy.library';
 import { createEnemy, enemyStatBudget } from '../Enemy';
 import type { Enemy } from '../Enemy/types';
 import type { BaseStats } from '../Character/types';
-import { ENEMY_STAT_PER_LEVEL } from '../Game/game-mechanics.constants';
+import { ENEMY_STAT_PER_LEVEL, ENEMY_GEAR_TIER_PER_LEVEL } from '../Game/game-mechanics.constants';
 import type { Difficulty } from './types';
 
 const DIFFICULTY_STAT_MULT: Record<Difficulty, number> = {
@@ -29,14 +29,15 @@ const DIFFICULTY_LEVEL_DELTA: Record<Difficulty, number> = {
 };
 
 /**
- * Build a scaled enemy for a cell. `perLevel` lets the A/B harness inject a
- * candidate `ENEMY_STAT_PER_LEVEL` value; defaults to the live constant.
+ * Build a scaled enemy for a cell. `perLevel` and `gearTierPerLevel` let the A/B 
+ * harness inject candidate values; they default to the live constants.
  */
 export function scaleEnemyForCell(
     slug: EnemySlug,
     difficulty: Difficulty,
     playerLevel: number,
     perLevel: number = ENEMY_STAT_PER_LEVEL,
+    gearTierPerLevel: number = ENEMY_GEAR_TIER_PER_LEVEL,
 ): Enemy {
     const base = ENEMY_REGISTRY[slug];
     if (!base) throw new Error(`scaleEnemyForCell: unknown enemy slug '${slug}'.`);
@@ -50,7 +51,7 @@ export function scaleEnemyForCell(
         mind: Math.max(1, base.baseStats.mind),
     };
     const effectivePerLevel = perLevel * DIFFICULTY_STAT_MULT[difficulty];
-    const baseStats = enemyStatBudget(level, weights, effectivePerLevel);
+    const baseStats = enemyStatBudget(level, weights, effectivePerLevel, gearTierPerLevel);
 
     return createEnemy({
         id: `${base.id}__${difficulty}-l${level}`,

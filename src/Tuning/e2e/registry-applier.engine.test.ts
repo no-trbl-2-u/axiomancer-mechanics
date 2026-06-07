@@ -15,7 +15,7 @@ import {
     TUNABLE_REGISTRY, getTunable, listTunables, filterTunablesByFocus, clampCandidate,
 } from '../tunable.registry';
 import { readTunableValue, applyTunableValue, restoreBackup } from '../tunable.applier';
-import { ENEMY_STAT_PER_LEVEL, SKILL_STAT_MULTIPLIER } from '../../Game/game-mechanics.constants';
+import { ENEMY_STAT_PER_LEVEL, ENEMY_GEAR_TIER_PER_LEVEL, SKILL_STAT_MULTIPLIER } from '../../Game/game-mechanics.constants';
 import type { TunableParam } from '../types';
 
 describe('tunable registry', () => {
@@ -28,6 +28,7 @@ describe('tunable registry', () => {
 
     it('resolved values match the live imported constants', () => {
         expect(readTunableValue(getTunable('enemy.statPerLevel')!)).toBe(ENEMY_STAT_PER_LEVEL);
+        expect(readTunableValue(getTunable('enemy.gearTierPerLevel')!)).toBe(ENEMY_GEAR_TIER_PER_LEVEL);
         expect(readTunableValue(getTunable('combat.skillStatMultiplier')!)).toBe(SKILL_STAT_MULTIPLIER);
     });
 

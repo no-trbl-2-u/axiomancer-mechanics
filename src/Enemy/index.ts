@@ -5,7 +5,7 @@ import { BaseStats } from '../Character/types';
 import { deriveStats, calculateMaxHealth } from '../Utils';
 import { ProcOverrides, ProcUnlocks } from '../Combat/combat-effects';
 import { PhilosophicalAlignment } from '../Philosophy/types';
-import { ENEMY_STAT_PER_LEVEL } from '../Game/game-mechanics.constants';
+import { ENEMY_STAT_PER_LEVEL, ENEMY_GEAR_TIER_PER_LEVEL } from '../Game/game-mechanics.constants';
 import {
     Enemy, EnemyLogic, EnemyDifficulty, Tier1EffectOverrides, LootTableEntry,
     FriendshipReward, BefriendabilityConfig,
@@ -69,7 +69,8 @@ export const DEFAULT_XP_BY_DIFFICULTY: Record<EnemyDifficulty, number> = {
 
 /**
  * Distributes an enemy's total stat budget (`level × ENEMY_STAT_PER_LEVEL`)
- * across heart / body / mind according to a normalised weight triple.
+ * across heart / body / mind according to a normalised weight triple, then
+ * applies an optional gear-tier bonus weighted toward defensive stats.
  *
  * Used by budget-scaled enemies (and by the tuning workflow's enemy scaler)
  * so a single `ENEMY_STAT_PER_LEVEL` knob governs global enemy power. The
@@ -80,11 +81,14 @@ export const DEFAULT_XP_BY_DIFFICULTY: Record<EnemyDifficulty, number> = {
  * @param weights - Relative heart/body/mind weighting (need not sum to 1).
  * @param perLevel - Override for `ENEMY_STAT_PER_LEVEL` (the tuner passes a
  *                   candidate value when A/B-testing the scaling constant).
+ * @param gearTierPerLevel - Override for `ENEMY_GEAR_TIER_PER_LEVEL` (the tuner
+ *                          passes a candidate value when A/B-testing the gear scaling).
  */
 export function enemyStatBudget(
     level: number,
     weights: BaseStats = { heart: 1, body: 1, mind: 1 },
     perLevel: number = ENEMY_STAT_PER_LEVEL,
+    gearTierPerLevel: number = ENEMY_GEAR_TIER_PER_LEVEL,
 ): BaseStats {
     const total = Math.max(0, Math.round(level * perLevel));
     const order: (keyof BaseStats)[] = (['body', 'mind', 'heart'] as (keyof BaseStats)[])
@@ -112,11 +116,22 @@ export function enemyStatBudget(
     // When the budget can afford it (≥3), guarantee at least 1 in every stat so
     // no derived combat stat collapses to 0 (a heart-0 enemy would deal no
     // emotional damage). Below 3 we distribute what's available as-is.
+    let baseStats: BaseStats;
     if (total >= 3) {
         const extra = distribute(total - 3);
-        return { heart: extra.heart + 1, body: extra.body + 1, mind: extra.mind + 1 };
+        baseStats = { heart: extra.heart + 1, body: extra.body + 1, mind: extra.mind + 1 };
+    } else {
+        baseStats = distribute(total);
     }
-    return distribute(total);
+
+    // Apply gear-tier scaling bonus weighted toward defensive stats (heart for HP,
+    // body/mind for defense/resists). The bonus is ≈0 at level 1 and grows with level.
+    const gearTierMultiplier = 1 + (level * gearTierPerLevel);
+    return {
+        heart: Math.round(baseStats.heart * gearTierMultiplier),
+        body: Math.round(baseStats.body * gearTierMultiplier),
+        mind: Math.round(baseStats.mind * gearTierMultiplier),
+    };
 }
 
 /**
