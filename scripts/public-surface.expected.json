@@ -101,6 +101,7 @@
     "endCombat",
     "endgameDisagreementFixture",
     "endgameFixture",
+    "enemyStatBudget",
     "equipItem",
     "equipmentTemplates",
     "executeSkill",
