@@ -224,6 +224,30 @@ export const TUNABLE_REGISTRY: TunableParam[] = [
         rationale: 'Roll penalty for fear debuff - important for status-effect engagement.',
         effect: { difficulty: 'raises', engagement: 'raises' },
     },
+    {
+        id: 'effect.resolutionDebuffIntensityThreshold',
+        kind: 'constant',
+        category: 'effect',
+        file: CONSTANTS_FILE,
+        locator: { exportName: 'EFFECTS_RESOLUTION_DEBUFF_INTENSITY_THRESHOLD' },
+        min: 4, max: 15, step: 1,
+        magnitudeCapPct: 0.5,
+        tags: ['effect', 'control', 'status-effect', 'resolution', 'timeout'],
+        rationale: 'Combined debuff/control intensity needed to force saturation yield (friendship route).',
+        effect: { difficulty: 'lowers', engagement: 'raises' },
+    },
+    {
+        id: 'effect.resolutionDotDamageThreshold',
+        kind: 'constant',
+        category: 'effect',
+        file: CONSTANTS_FILE,
+        locator: { exportName: 'EFFECTS_RESOLUTION_DOT_DAMAGE_THRESHOLD' },
+        min: 2, max: 12, step: 1,
+        magnitudeCapPct: 0.5,
+        tags: ['effect', 'damage', 'status-effect', 'resolution', 'timeout'],
+        rationale: 'Minimum DoT damage per round to force erosion victory route.',
+        effect: { difficulty: 'lowers', engagement: 'raises' },
+    },
 ];
 
 const REGISTRY_BY_ID = new Map(TUNABLE_REGISTRY.map(p => [p.id, p]));

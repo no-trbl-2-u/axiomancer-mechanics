@@ -36,7 +36,7 @@ import { createStore, StoreApi } from 'zustand/vanilla';
 import { Character } from '../Character/types';
 import { Enemy } from '../Enemy/types';
 import { CombatState } from '../Combat/types';
-import { isFriendshipEligible } from '../Combat';
+import { isFriendshipEligible, getEffectsResolutionOutcome } from '../Combat';
 import type { RoundEvent } from '../Combat/combat.resolver';
 import { Encounter } from '../World/types';
 import {
@@ -359,9 +359,13 @@ export function createGameStore(
                 if (!pre.combat) {
                     return { outcome: 'flee', xpGained: 0, loot: [] };
                 }
+                // Phase 125 — check for effects-based resolution first
+                const effectsOutcome = getEffectsResolutionOutcome(pre.combat);
                 const outcome: CombatEndReport['outcome'] =
                     pre.combat.enemy.health <= 0 ? 'victory'
                     : pre.combat.player.health <= 0 ? 'defeat'
+                    : effectsOutcome === 'victory' ? 'victory'
+                    : effectsOutcome === 'friendship' ? 'friendship'
                     : isFriendshipEligible(pre.combat) ? 'friendship'
                     : 'flee';
 

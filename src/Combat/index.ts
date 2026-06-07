@@ -21,6 +21,7 @@ import { decideEnemyAction } from '../Enemy/enemy.logic';
 import { Enemy, BefriendabilityConfig } from '../Enemy/types';
 import { FRIENDSHIP_COUNTER_MAX } from '../Game/game-mechanics.constants';
 import { CombatAction, CombatState, Stance } from './types';
+import { analyzeEffectsForResolution } from './effect-resolution';
 
 export type {
     Stance, Action, Advantage, CritStyle, CombatAction, PlayerCombatAction,
@@ -165,12 +166,26 @@ export function isFriendshipEligible(state: CombatState): boolean {
     return state.friendshipResolutionAuthorized === true;
 }
 
+/**
+ * Phase 125 — checks if status effects should force a combat resolution.
+ * 
+ * Returns the type of resolution effects should trigger:
+ * - 'victory': DoT effects can finish the enemy 
+ * - 'friendship': Enemy is saturated with control/debuff effects
+ * - null: Effects insufficient for resolution
+ */
+export function getEffectsResolutionOutcome(state: CombatState): 'victory' | 'friendship' | null {
+    const analysis = analyzeEffectsForResolution(state);
+    return analysis.shouldResolve ? analysis.outcomeType : null;
+}
+
 /** True while combat should continue (both alive and friendship not yet eligible). */
 export function isCombatOngoing(state: CombatState): boolean {
     return state.active
         && state.player.health > 0
         && state.enemy.health > 0
-        && !isFriendshipEligible(state);
+        && !isFriendshipEligible(state)
+        && getEffectsResolutionOutcome(state) === null;
 }
 
 /** Outcome of the encounter. `'ongoing'` while combat is still active. */
@@ -178,6 +193,12 @@ export function determineCombatEnd(state: CombatState): 'player' | 'ko' | 'frien
     if (state.enemy.health <= 0) return 'player';
     if (state.player.health <= 0) return 'ko';
     if (isFriendshipEligible(state)) return 'friendship';
+    
+    // Phase 125 — check if effects should force resolution
+    const effectsOutcome = getEffectsResolutionOutcome(state);
+    if (effectsOutcome === 'victory') return 'player';
+    if (effectsOutcome === 'friendship') return 'friendship';
+    
     return 'ongoing';
 }
 

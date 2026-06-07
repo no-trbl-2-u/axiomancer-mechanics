@@ -102,6 +102,12 @@ export const RESOURCE_GENERATION = {
 
 export const FRIENDSHIP_COUNTER_MAX = 3;
 
+// Phase 125 — Effects-driven resolution thresholds
+// Combined intensity of control/debuff effects needed to force saturation yield (friendship route)
+export const EFFECTS_RESOLUTION_DEBUFF_INTENSITY_THRESHOLD = 8;
+// Minimum DoT damage per round needed to force erosion victory route  
+export const EFFECTS_RESOLUTION_DOT_DAMAGE_THRESHOLD = 5;
+
 // ============================================================================
 // ENEMY — STAT BUDGET PER LEVEL
 // ============================================================================
