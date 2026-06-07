@@ -206,6 +206,33 @@ function worstOffBandCells(tick: TuningTickResult, n: number): CellResult[] {
 const CELL_ID_RE = /\b(l\d+-[a-z]+-[a-z]+)\b/;
 
 /**
+ * Assumptions & methodology — the premises behind every recommendation, so a
+ * reviewer can judge the suggestions on the same footing the loop used. Mixes
+ * the run's concrete parameters (band, sample size, focus) with the fixed
+ * methodology contract (objective, guardrails, proxy limitations).
+ */
+function renderAssumptions(tick: TuningTickResult): string {
+    const band = tick.baseline.targetBand;
+    const runs = tick.plan.cells.map(c => c.runs);
+    const minRuns = runs.length ? Math.min(...runs) : 0;
+    const maxRuns = runs.length ? Math.max(...runs) : 0;
+    const runsLabel = minRuns === maxRuns ? `${minRuns}` : `${minRuns}–${maxRuns}`;
+    return [
+        '## Assumptions & methodology',
+        '',
+        `- **Objective:** matrix "health" = weighted squared deviation of each cell's resolution-success rate from the target band **${pct(band.low)}–${pct(band.high)}** (victory + mercy/friendship). Lower is healthier; the loop minimises it.`,
+        `- **Sample:** ${runsLabel} runs/cell, ${tick.plan.cells.length} cells, deterministic seeds derived from \`${tick.plan.baseSeed}\` + cell id (variant A and B share seeds). Timeouts (combat unresolved by the round cap) count as non-resolution.`,
+        '- **A change is kept only if** it improves aggregate health beyond a fixed significance epsilon (0.005), is **not a regression** (worst-cell defeat rate must not rise > 10 points), **and** passes `npm run verify`. Otherwise the edit is reverted.',
+        '- **Auto-apply scope:** numeric values in the tunable registry only, each clamped to its min/max and a per-run magnitude cap (±25% for fundamentals). Structural / schema / logic ideas are propose-only — the applier cannot touch them.',
+        '- **Enemy scaling:** `enemyStatBudget(level) = level × ENEMY_STAT_PER_LEVEL`, then per-difficulty ×0.8 / ×1.0 / ×1.25 (easy/normal/hard) with small level deltas.',
+        '- **Loadouts:** players receive every level-eligible skill plus best-fit gear per slot (an upper bound on kit, not a constrained real-player loadout).',
+        '- **Known limitation (status-effect doctrine):** engagement is currently the *proxy* skill-uses/run + skill-action-share, NOT effects-applied/exploited. Repeated low-value skill spam can inflate it, and a "skill" is not necessarily a status effect. Read the engagement lines with that caveat; a transcript-derived effects metric is the planned upgrade.',
+        '- **Statistical caveat:** significance is a fixed epsilon on aggregate deviation, not a confidence interval — small ΔHealth values may be within run-to-run noise.',
+        '',
+    ].join('\n');
+}
+
+/**
  * Suggestions writeup — recommended changes with a brief why, an inline
  * snapshot of the relevant game state (player / enemy / combat) that supports
  * them, and a reference to the data report. Rides the SAME PR branch as the
@@ -221,6 +248,7 @@ export function renderSuggestions(tick: TuningTickResult, dataReportRef: string)
         `Derived from the data report: \`${dataReportRef}\`.`,
         `**Focus:** ${focusLine(tick)}`,
         '',
+        renderAssumptions(tick),
         '## Auto-applied changes (in this PR)',
         '',
     ];

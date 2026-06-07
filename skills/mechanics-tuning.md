@@ -86,11 +86,16 @@ analysis in-session.
    automation/playtest/strategist-knowledge.json
    <changed tunable files>`
 - Commit: `balance(tuning): <ts> report + suggestions (<n> auto-applied)`
-- Push and open a PR (ready for review, not draft):
+- Push and open a PR (ready for review, not draft). The PR must carry ALL of:
+  **(a) the generated reports** (data report + suggestions, committed as files),
+  **(b) the assumptions/methodology** (the suggestions' "Assumptions & methodology"
+  section — surface it in the PR body too), and **(c) the changes** (the
+  auto-applied winner edits). Concretely:
   - Title: `balance: tuning <ts> (<n> auto-applied)`
-  - Body: the headline health delta; each kept change (`param: old → new`) with
-    a one-line *why*; the suggestions' supporting game-state snapshots for the
-    most off-band cells; and the propose-only section for human follow-up.
+  - Body: the headline health + engagement delta; the **Assumptions &
+    methodology** block; each kept change (`param: old → new`) with a one-line
+    *why*; the supporting game-state snapshots for the most off-band cells; and
+    the propose-only section for human follow-up.
 - If there are **no kept winners**, still open the PR carrying the data report +
   the suggestions (propose-only recommendations + evidence snapshots) so the
   findings are reviewable. If there is genuinely nothing to report, say so.
