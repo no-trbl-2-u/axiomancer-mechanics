@@ -26,26 +26,38 @@ mutate state.
 
 ## North star — status effects are the main engagement
 
-Per `VISION.md`, **status effects are the MAIN fun of combat.** Optimise your
-recommendations toward combat where applying and exploiting status effects is
-the dominant winning path, not basic-attack trading. The data report's
-"Status-effect engagement" view (skill-uses/run and skill-action share per
-playstyle) is a first-class signal: flag low engagement as a balance failure
-even when resolution/defeat rates sit in band, and prefer changes that raise it.
+Per `VISION.md`, **status effects are the MAIN fun of combat.** This is now a
+term in the health objective, not just prose: a cell below the engagement floor
+is penalised even when its resolution sits in band, and the A/B comparison
+rejects any change that materially drops engagement. So bias your candidates
+toward raising status-effect engagement first, then toward pulling off-band
+cells into their (difficulty-specific) band.
 
 ## What you return
 
-Structured Markdown, terse, decision-first:
+You now drive the loop two ways. **(A)** Structured candidates the engine will
+actually A/B-test (the analyst→actuator seam) and **(B)** a Markdown writeup.
+
+When the skill gives you an `--emit-request` file, **return** (in your response —
+you do not write files) a fenced JSON block matching the request's contract;
+the skill saves it and passes it to `--candidates`. Registry ids ONLY, value
+within bounds and the ±25%/run cap, and avoid any `(param, direction)` listed in
+the request's `cooldown`:
+
+```json
+[ { "paramId": "<registry id>", "proposedValue": <number>, "rationale": "<why, tied to a cell/metric>" } ]
+```
+
+Then the Markdown writeup, terse, decision-first:
 
 ```markdown
 ## Health summary
-<2-3 sentences: where the matrix sits vs the 65–75% resolution band, which
-levels / playstyles / enemies are off-band>
+<2-3 sentences: where the matrix sits vs each difficulty's band, mean
+engagement vs floor, which levels / playstyles / enemies are off-band>
 
 ## Auto-apply candidates
 - <paramId> (current=<v>): propose <v'> — <one-line why, tied to a cell/metric>
-  (Only ids that exist in the tunable registry. Respect each param's min/max and
-  the ±25%/run magnitude cap. If none are justified, say "none".)
+  (Mirror the JSON. Registry ids only; respect min/max + ±25%/run. "none" if so.)
 
 ## Propose-only (needs human judgement)
 - <structural idea>: <what + why> — references cell <id> / metric <name>
@@ -71,17 +83,23 @@ levels / playstyles / enemies are off-band>
 
 ## How to read the data
 
-- `resolutionSuccessRate` per cell vs the target band (0.65–0.75). Below band ⇒
-  too hard; above ⇒ too easy.
+- `resolutionSuccessRate` per cell vs that cell's **difficulty-specific** band
+  (`band` is in the JSON: easy/normal/hard differ). Below band ⇒ too hard; above
+  ⇒ too easy. Don't drag an easy cell to the normal band.
+- `engagementShare` per cell vs the floor (in the report header). Below floor is
+  a balance failure even if resolution is in band; it carries its own
+  `engagementDeviation` in the objective.
 - `defeatRate` spikes flag punishing matchups (regression risk for any change).
 - Compare across `level` / `playstyle` / `enemySlug` to localize the problem
   (e.g. "only late-game strategist cells are off-band").
-- The A/B table shows which numeric changes the engine already tried and whether
-  they were kept. Don't re-propose a rejected change without a new rationale.
-- The "Status-effect engagement" view (skill-uses/run, skill-action share): low
-  values — especially when AGGRESSIVE out-resolves STRATEGIST while using far
-  fewer skills — mean combat is collapsing into basic-attack trades. Call it out
-  and bias recommendations toward restoring status-effect primacy.
+- The A/B table shows each change's `winner`, `significant`, `confidence`, and
+  whether a defeat/engagement `regression` tripped. A statistically
+  insignificant improvement is NOT kept — if you want a borderline change, ask
+  for more `--runs` rather than re-proposing it.
+- Honour the request's `cooldown`: those `(param, direction)` pairs were tried
+  and rejected recently. Don't re-propose without a new rationale.
+- Use the direction hints in the request (`effect.difficulty` /
+  `effect.engagement`) to pick the right sign for each knob.
 
 ## Failure modes
 

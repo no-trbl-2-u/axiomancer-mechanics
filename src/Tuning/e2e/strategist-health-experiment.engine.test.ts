@@ -78,9 +78,11 @@ function cell(cellId: string, resolution: number, defeat: number, weight = 1): C
 }
 
 describe('health scoring', () => {
-    it('scores 0 deviation when all cells sit in the band', () => {
+    it('scores 0 deviation when all cells sit in the band (no transcript ⇒ no engagement penalty)', () => {
         const h = scoreHealth([cell('a', 0.7, 0.2), cell('b', 0.68, 0.25)]);
         expect(h.aggregate).toBe(0);
+        // Synthetic reports carry no runs, so engagement is unknown, not penalised.
+        expect(h.meanEngagement).toBe(1);
     });
 
     it('compareHealth prefers the lower-deviation variant', () => {

@@ -28,6 +28,7 @@ export const TUNABLE_REGISTRY: TunableParam[] = [
         magnitudeCapPct: 0.25,
         tags: ['enemy', 'scaling', 'difficulty'],
         rationale: 'Global enemy power scaling; the headline difficulty knob.',
+        effect: { difficulty: 'raises' },
     },
     {
         id: 'combat.skillStatMultiplier',
@@ -39,6 +40,7 @@ export const TUNABLE_REGISTRY: TunableParam[] = [
         magnitudeCapPct: 0.25,
         tags: ['skill', 'damage', 'scaling'],
         rationale: 'Scales skill damage off the scaling stat; a value, not a formula.',
+        effect: { difficulty: 'lowers', engagement: 'raises' },
     },
     {
         id: 'combat.healthPerStat',
@@ -50,6 +52,7 @@ export const TUNABLE_REGISTRY: TunableParam[] = [
         magnitudeCapPct: 0.25,
         tags: ['health', 'survivability'],
         rationale: 'HP per base-stat point; governs time-to-kill on both sides.',
+        effect: { difficulty: 'lowers', engagement: 'raises' },
     },
     {
         id: 'combat.defense.advantage',
@@ -61,6 +64,7 @@ export const TUNABLE_REGISTRY: TunableParam[] = [
         magnitudeCapPct: 0.25,
         tags: ['defense', 'stance'],
         rationale: 'Reward for defending with the advantaged stance.',
+        effect: { difficulty: 'lowers', engagement: 'lowers' },
     },
     {
         id: 'combat.defense.neutral',
@@ -72,6 +76,7 @@ export const TUNABLE_REGISTRY: TunableParam[] = [
         magnitudeCapPct: 0.25,
         tags: ['defense', 'stance'],
         rationale: 'Defending with a neutral stance.',
+        effect: { difficulty: 'lowers', engagement: 'lowers' },
     },
     {
         id: 'combat.resourceGen.attackHit',
@@ -83,6 +88,7 @@ export const TUNABLE_REGISTRY: TunableParam[] = [
         magnitudeCapPct: 0.5,
         tags: ['resource', 'economy', 'skill'],
         rationale: 'Tokens generated on a landed attack; paces skill access.',
+        effect: { difficulty: 'lowers', engagement: 'raises' },
     },
     {
         id: 'combat.resourceGen.defend',
@@ -94,6 +100,7 @@ export const TUNABLE_REGISTRY: TunableParam[] = [
         magnitudeCapPct: 0.5,
         tags: ['resource', 'economy', 'defense'],
         rationale: 'Tokens generated on defend; paces defensive playstyles.',
+        effect: { difficulty: 'lowers', engagement: 'raises' },
     },
     {
         id: 'combat.friendshipCounterMax',
@@ -105,6 +112,7 @@ export const TUNABLE_REGISTRY: TunableParam[] = [
         magnitudeCapPct: 0.5,
         tags: ['friendship', 'mercy'],
         rationale: 'Both-defend rounds needed for a peaceful resolution.',
+        effect: { difficulty: 'raises' },
     },
     {
         id: 'effect.maxIntensity',
@@ -116,6 +124,7 @@ export const TUNABLE_REGISTRY: TunableParam[] = [
         magnitudeCapPct: 0.5,
         tags: ['effect', 'stacking', 'status-effect'],
         rationale: 'Ceiling on effect intensity stacking.',
+        effect: { engagement: 'raises' },
     },
     {
         id: 'effect.maxDuration',
@@ -127,6 +136,7 @@ export const TUNABLE_REGISTRY: TunableParam[] = [
         magnitudeCapPct: 0.5,
         tags: ['effect', 'stacking', 'status-effect'],
         rationale: 'Ceiling on effect remaining-duration stacking.',
+        effect: { engagement: 'raises' },
     },
     {
         id: 'progression.statPointsPerLevel',
@@ -138,6 +148,7 @@ export const TUNABLE_REGISTRY: TunableParam[] = [
         magnitudeCapPct: 0.5,
         tags: ['progression', 'player-power'],
         rationale: 'Stat points granted per level; player power curve.',
+        effect: { difficulty: 'lowers' },
     },
     {
         // JSON-data tunable — exercises the applier's JSON path. Targets a
@@ -151,6 +162,7 @@ export const TUNABLE_REGISTRY: TunableParam[] = [
         magnitudeCapPct: 0.5,
         tags: ['effect', 'regeneration', 'status-effect'],
         rationale: 'Base duration of the regeneration buff.',
+        effect: { difficulty: 'lowers', engagement: 'raises' },
     },
 ];
 

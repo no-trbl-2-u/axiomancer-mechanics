@@ -8,12 +8,13 @@
 
 ## North star — status effects are the main engagement
 
-Per `VISION.md`, **status effects are the primary fun of combat.** When tuning
-or recommending, optimise toward combat where reading the enemy, applying, and
-exploiting status effects is the dominant winning path — not basic-attack
-trades. Treat low status-effect engagement (see the engagement view in the data
-report) as a balance problem even when win/defeat rates look fine, and surface
-it in the suggestions. The STRATEGIST playstyle is the witness for this path.
+Per `VISION.md` / `CLAUDE.md`, **status effects are the primary fun of combat.**
+This is no longer just prose the optimiser ignores: status-effect engagement is
+now a **term in the health objective** (`health.metrics.ts`). A change that
+holds win rates but collapses combat into basic-attack trades scores WORSE, and
+the A/B comparison rejects any change that materially drops engagement
+(`engagementRegression`). The STRATEGIST playstyle is the witness for this path
+and learns to win by applying/exploiting effects, not by raw damage.
 
 ## 1. Purpose
 
@@ -45,8 +46,21 @@ analysis in-session.
 
 - **Numeric-only, capped, reviewed.** The engine can only change values in the
   tunable registry (`src/Tuning/tunable.registry.ts`), each ±25%/run, and only
-  keeps a change that improves matrix health, is not a regression, and passes
-  `npm run verify`. Structural/schema/logic ideas are propose-only.
+  keeps a change that **significantly** improves matrix health (a paired-cell
+  test, not a magic epsilon — the kept change carries a `confidence`), is not a
+  defeat-rate OR engagement regression, and passes `npm run verify`.
+  Structural/schema/logic ideas are propose-only.
+- **The objective has two terms.** Per-cell deviation from a *difficulty-specific*
+  success band (easy/normal/hard target different rates) PLUS shortfall below the
+  status-effect engagement floor. Both are weighted into one score; lower is
+  healthier.
+- **The ruler is frozen per tick.** The baseline and every A/B variant are
+  measured under the same strategist snapshot, so keep/reject decisions are made
+  against the same policy. Cross-tick learning is folded separately afterward.
+- **The loop remembers.** Every A/B outcome is recorded in
+  `automation/playtest/tuning-ledger.json`; a `(param, direction)` rejected in
+  the last couple of ticks is on cooldown and not re-proposed without new
+  evidence.
 - **One PR carries everything.** The data report, the suggestions writeup (with
   inline player/enemy/combat snapshots), and any auto-applied winners all ride a
   single new branch + PR. Nothing is pushed to `main` automatically.
@@ -68,13 +82,25 @@ analysis in-session.
   the two report artifacts under `automation/playtest/reports/`, and an updated
   `automation/playtest/strategist-knowledge.json`.
 
-### Step 2 — Consult the balance-analyst (offline enrichment)
-- Spawn the `balance-analyst` subagent, pointing it at the data report JSON and
-  any `automation/playtest/tuning/<run-id>/` artifacts.
-- It returns structured Markdown (auto-apply candidates already covered by the
-  engine + propose-only structural ideas). Append its "Propose-only" section to
-  the suggestions file so a human reviewer sees the richer reasoning.
-- Do NOT have the subagent write code — it returns analysis only.
+### Step 2 — Close the analyst→actuator loop (the smart path)
+The offline heuristic can move numbers but is coarse. For a richer pass, let the
+`balance-analyst` subagent actually drive the A/B loop (not just write prose):
+
+1. Run with `--emit-request=<path>` to produce a compact analyst request
+   (per-cell band/engagement, legal tunables + direction hints, current
+   cooldowns) alongside the data report — no A/B is run.
+2. Spawn the `balance-analyst` subagent on the data report JSON + the request.
+   It returns BOTH structured candidates (the JSON contract in the request:
+   `[{paramId, proposedValue, rationale}]`, registry ids only) AND a
+   propose-only section. Write the candidates to a file.
+3. Re-run with `--candidates=<that file>` to A/B-test the subagent's candidates
+   under the same guardrails (clamp, significance, regression, verify) and apply
+   the winners.
+
+Append the subagent's "Propose-only" section to the suggestions file. The
+subagent still returns analysis only — the **engine** applies, within its
+guardrails. (Skipping Steps 2.1–2.3 and running `npm run tune` directly uses the
+generalized offline heuristic, which is a valid lighter pass.)
 
 ### Step 3 — Deliver everything on ONE PR
 - Create a branch off the base: `git checkout -b balance/tuning-<ts>`.
@@ -84,7 +110,10 @@ analysis in-session.
    automation/playtest/reports/tuning-<ts>.json
    automation/playtest/reports/suggestions-<ts>.md
    automation/playtest/strategist-knowledge.json
+   automation/playtest/tuning-ledger.json
    <changed tunable files>`
+  (Note: `reports/.gitignore` ignores `*.json`; `git add -f` the data-report
+  JSON if you want it on the PR.)
 - Commit: `balance(tuning): <ts> report + suggestions (<n> auto-applied)`
 - Push and open a PR (ready for review, not draft):
   - Title: `balance: tuning <ts> (<n> auto-applied)`
@@ -128,7 +157,13 @@ analysis in-session.
 
 - Engine: `src/Tuning/` · CLI: `npm run tune` · registry:
   `src/Tuning/tunable.registry.ts`
+- Objective: `src/Tuning/health.metrics.ts` (band + engagement) ·
+  bands: `difficulty.bands.ts` · engagement: `engagement.metrics.ts`
 - Artifacts: `automation/playtest/reports/{tuning,suggestions}-<ts>.*`
 - Learning state: `automation/playtest/strategist-knowledge.json`
+- Experiment memory: `automation/playtest/tuning-ledger.json`
+- Flags: `--emit-request=<p>` / `--candidates=<p>` (analyst→actuator loop),
+  `--dry-run`, `--focus`, `--runs`, `--levels`, `--playstyles`,
+  `--difficulties`, `--max-iterations`, `--use-api`
 - Subagent: `.claude/agents/balance-analyst.md`
 - CI: `.github/workflows/mechanics-tuning.yml` (manual `workflow_dispatch`)

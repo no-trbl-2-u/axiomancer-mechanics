@@ -61,6 +61,22 @@ export interface TunableLocator {
 }
 
 /**
+ * How INCREASING a tunable's value moves an outcome dimension. `raises` /
+ * `lowers` give the heuristic a corrective direction without a sensitivity
+ * probe; `either` (or omitted) means the direction is ambiguous and the param
+ * is left to a probe / human. Read as: "raising this param <raises|lowers>
+ * <difficulty for the player | status-effect engagement>".
+ */
+export type DirectionHint = 'raises' | 'lowers' | 'either';
+
+export interface TunableEffectHint {
+    /** Effect of raising the value on how HARD the game is for the player. */
+    difficulty?: DirectionHint;
+    /** Effect of raising the value on STATUS-EFFECT engagement. */
+    engagement?: DirectionHint;
+}
+
+/**
  * One allow-listed numeric knob. Anything NOT in the registry is, by
  * construction, "propose-only" — the applier cannot resolve a locator for it.
  */
@@ -83,6 +99,12 @@ export interface TunableParam {
     addedIn?: string;
     /** Why this value is safe to tune autonomously. */
     rationale: string;
+    /**
+     * Declared monotonic direction this knob pushes difficulty / engagement.
+     * Lets the heuristic propose corrective nudges for ALL knobs, not just the
+     * two headline ones. Omitted ⇒ ambiguous ⇒ propose-only.
+     */
+    effect?: TunableEffectHint;
 }
 
 // ─── Matrix ───────────────────────────────────────────────────────────────────
@@ -155,29 +177,68 @@ export interface CellResult {
 
 // ─── Health scoring ───────────────────────────────────────────────────────────
 
+export interface TargetBand { low: number; high: number; }
+
 export interface CellHealth {
     cellId: string;
+    difficulty: Difficulty;
+    weight: number;
     resolutionSuccessRate: number;
     defeatRate: number;
-    /** Squared distance from the target band (0 ⇒ inside the band). */
+    /** Per-cell target band (difficulty-dependent). */
+    band: TargetBand;
+    /** Squared distance from this cell's band (0 ⇒ inside the band). */
+    bandDeviation: number;
+    /**
+     * Status-effect engagement share in [0,1] (rounds where the player applied
+     * or exploited a status effect / action rounds). `undefined` when the cell
+     * carries no transcript (e.g. synthetic test reports) ⇒ no penalty.
+     */
+    engagementShare?: number;
+    /** Squared shortfall below the engagement floor (0 ⇒ at/above floor). */
+    engagementDeviation: number;
+    /**
+     * Combined per-cell objective (band + engagement shortfall). LOWER is
+     * healthier. This is the paired sample the A/B significance test consumes.
+     */
     deviation: number;
 }
 
 export interface HealthScore {
     perCell: CellHealth[];
-    /** Aggregate deviation — LOWER is healthier. */
+    /** Aggregate combined deviation (band + engagement) — LOWER is healthier. */
     aggregate: number;
-    targetBand: { low: number; high: number };
+    /** Resolution-band component of the aggregate (for diagnostics). */
+    aggregateBand: number;
+    /** Engagement-shortfall component of the aggregate (for diagnostics). */
+    aggregateEngagement: number;
+    /** Mean status-effect engagement share across cells (HIGHER is healthier). */
+    meanEngagement: number;
+    /** The normal-difficulty band, retained for display/back-compat. */
+    targetBand: TargetBand;
+    /** The engagement floor the objective penalizes shortfall below. */
+    engagementFloor: number;
     /** Worst defeat rate across cells (regression guard). */
     maxDefeatRate: number;
     summary: string;
 }
 
+export type Confidence = 'high' | 'medium' | 'low';
+
 export interface HealthComparison {
     winner: 'A' | 'B';
+    /** Aggregate objective delta (a.aggregate − b.aggregate); >0 ⇒ B healthier. */
     delta: number;
+    /** True when the paired per-cell improvement clears the noise floor. */
     significant: boolean;
+    /** Statistical confidence in the verdict, from the paired-cell spread. */
+    confidence: Confidence;
+    /** Defeat-rate regression guard tripped. */
     regression: boolean;
+    /** Engagement-collapse guard tripped (status play got materially worse). */
+    engagementRegression: boolean;
+    /** Paired-cell statistics behind `significant` / `confidence`. */
+    stats: { meanDelta: number; stdErr: number; n: number; ciMargin: number };
     note: string;
 }
 
@@ -220,16 +281,49 @@ export interface TuningTickResult {
 
 // ─── Strategist knowledge ─────────────────────────────────────────────────────
 
+/** Accumulator for an averaged observation (total / samples). */
+export interface RunningMean { total: number; samples: number; }
+
 export interface EnemyKnowledge {
     slug: string;
     /** Average damage the player dealt while attacking in each stance. */
-    stanceDamage: Partial<Record<Stance, { total: number; samples: number }>>;
+    stanceDamage: Partial<Record<Stance, RunningMean>>;
     /** Average damage observed per skill id. */
-    skillDamage: Record<string, { total: number; samples: number }>;
+    skillDamage: Record<string, RunningMean>;
+    /**
+     * Average STATUS-EFFECT leverage (effects applied to the enemy + exploited
+     * via synergy) per stance. The strategist optimises this first — per the
+     * doctrine that status play, not raw damage, is the intended winning path.
+     */
+    stanceStatus?: Partial<Record<Stance, RunningMean>>;
+    /** Average status-effect leverage observed per skill id. */
+    skillStatus?: Record<string, RunningMean>;
     sampleCount: number;
 }
 
 export interface StrategistKnowledge {
     enemies: Record<string, EnemyKnowledge>;
+    updatedAt: string;
+}
+
+// ─── Experiment ledger ──────────────────────────────────────────────────────
+
+/** One recorded A/B outcome, persisted so the loop remembers what it tried. */
+export interface LedgerEntry {
+    timestamp: string;
+    paramId: string;
+    oldValue: number;
+    newValue: number;
+    /** Direction of the attempted change relative to the old value. */
+    direction: 'up' | 'down';
+    deltaHealth: number;
+    kept: boolean;
+    significant: boolean;
+    confidence: Confidence;
+    focus?: string;
+}
+
+export interface ExperimentLedger {
+    entries: LedgerEntry[];
     updatedAt: string;
 }
