@@ -75,9 +75,9 @@ describe('Phase 88 — debuff_fear', () => {
 
     it('reduces heart-related stats', () => {
         const mods = getActiveEffectModifiers([ae('debuff_fear')]);
-        expect(mods.statFlat.get('heart')).toBe(-3);
-        expect(mods.statFlat.get('emotionalSkill')).toBe(-2);
-        expect(mods.statFlat.get('emotionalDefense')).toBe(-2);
+        expect(mods.statFlat.get('heart')).toBe(-4);
+        expect(mods.statFlat.get('emotionalSkill')).toBe(-3);
+        expect(mods.statFlat.get('emotionalDefense')).toBe(-3);
     });
 });
 

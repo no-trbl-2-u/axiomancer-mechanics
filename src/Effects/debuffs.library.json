@@ -349,26 +349,26 @@
       "description": "You see the paradox of your own destruction—if you fight, you ensure your doom; if you flee, you ensure your doom. Either path leads backward to oblivion.",
       "type": "debuff",
       "category": "control",
-      "duration": 2,
+      "duration": 3,
       "stacking": "duration",
       "resistedBy": "body",
       "resistDR": 13,
       "payload": {
-        "rollModifier": -3,
+        "rollModifier": -4,
         "statModifiers": [
           {
             "stat": "heart",
-            "value": -3,
+            "value": -4,
             "isMultiplier": false
           },
           {
             "stat": "emotionalSkill",
-            "value": -2,
+            "value": -3,
             "isMultiplier": false
           },
           {
             "stat": "emotionalDefense",
-            "value": -2,
+            "value": -3,
             "isMultiplier": false
           }
         ]
@@ -410,12 +410,12 @@
       "description": "Should you switch? The other choice always seems better. You switch targets, switch tactics, switch again—always certain switching helps, always wrong.",
       "type": "debuff",
       "category": "control",
-      "duration": 3,
+      "duration": 4,
       "stacking": "duration",
       "resistedBy": "heart",
       "resistDR": 13,
       "payload": {
-        "rollModifier": -4,
+        "rollModifier": -5,
         "advantageModifier": {
           "grantDisadvantage": [
             "body",

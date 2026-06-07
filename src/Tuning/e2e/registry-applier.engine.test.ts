@@ -40,6 +40,14 @@ describe('tunable registry', () => {
         expect(readTunableValue(getTunable('effect.buff_regeneration.duration')!)).toBeGreaterThan(0);
     });
 
+    it('resolves Phase 124 effect tunables', () => {
+        // New tunables added in Phase 124
+        expect(readTunableValue(getTunable('effect.tier1_heart_defend.healthPerRound')!)).toBe(2);
+        expect(readTunableValue(getTunable('effect.tier1_body_attack.duration')!)).toBe(3);
+        expect(readTunableValue(getTunable('effect.debuff_confusion.rollModifier')!)).toBe(-5);
+        expect(readTunableValue(getTunable('effect.debuff_fear.rollModifier')!)).toBe(-4);
+    });
+
     it('clampCandidate enforces bounds, magnitude cap, and step', () => {
         const param = getTunable('enemy.statPerLevel')!; // min 2 max 6 step .5 cap .25
         // Magnitude cap relative to current=3 is ±0.75.

@@ -116,11 +116,11 @@ fine-tune afterward.
 
 ## Definition of Done
 
-- [ ] Core status-kit base intensity/duration strengthened (values, not formula
+- [x] Core status-kit base intensity/duration strengthened (values, not formula
   rewrites).
-- [ ] Any new loop-owned base-strength value registered as a tunable with tight
+- [x] Any new loop-owned base-strength value registered as a tunable with tight
   bounds; applier test extended.
-- [ ] Hermetic e2e pins the stronger effect output.
+- [x] Hermetic e2e pins the stronger effect output.
 - [ ] Matrix evidence: fewer cells below the engagement floor; L1 + strategist
   cells improve; no engagement regression.
 - [ ] Verify + deploy gates pass.

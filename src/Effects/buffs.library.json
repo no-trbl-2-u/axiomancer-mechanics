@@ -6,13 +6,13 @@
       "description": "Your argument doesn't need words when your presence speaks volumes. You don't debate — you loom. Each exchange sharpens the edge of your conviction into something that leaves marks.",
       "type": "buff",
       "category": "stat",
-      "duration": 2,
+      "duration": 3,
       "stacking": "intensity",
       "payload": {
         "statModifiers": [
           {
             "stat": "physicalAttack",
-            "value": 1,
+            "value": 2,
             "isMultiplier": false
           }
         ],
@@ -39,11 +39,11 @@
       "description": "You stop fighting for a moment and simply exist. The stillness heals. The compassion you pour outward turns inward just enough — a quiet restoration, round by round.",
       "type": "buff",
       "category": "regeneration",
-      "duration": 3,
+      "duration": 4,
       "stacking": "intensity",
       "payload": {
         "regeneration": {
-          "healthPerRound": 1
+          "healthPerRound": 2
         }
       },
       "tier": 1
@@ -422,13 +422,13 @@
       "description": "Like the writer who takes a year to document a day, your healing works faster than wounds accumulate. Eventually, you'll catch up.",
       "type": "buff",
       "category": "regeneration",
-      "duration": 5,
+      "duration": 6,
       "stacking": "intensity",
       "resistedBy": "mind",
       "resistDR": 12,
       "payload": {
         "regeneration": {
-          "healthPerRound": 3
+          "healthPerRound": 4
         }
       },
       "tier": 2

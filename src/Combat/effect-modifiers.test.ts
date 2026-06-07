@@ -56,11 +56,11 @@ describe('getActiveEffectModifiers', () => {
 
     it('separates regen from drain (Q6)', () => {
         const mods = getActiveEffectModifiers([
-            ae('buff_regeneration', 2),  // healthPerRound 3 × 2 = 6
+            ae('buff_regeneration', 2),  // healthPerRound 4 × 2 = 8 (Phase 124 buff)
             ae('debuff_disease',    1),  // healthPerRound -1 × 1 = drain 1
             ae('debuff_hp_decay',   1),  // healthPerRound -2 × 1 = drain 2
         ]);
-        expect(mods.healthRegen).toBe(6);
+        expect(mods.healthRegen).toBe(8);
         expect(mods.healthDrain).toBe(3);
     });
 
@@ -204,10 +204,10 @@ describe('DoT and drain HP changes', () => {
 
     it('applyRegen scales with intensity (Q2)', () => {
         const damaged = { ...fixture([ae('buff_regeneration', 2)]), health: 10 };
-        // healthPerRound 3 × intensity 2 = 6
+        // healthPerRound 4 × intensity 2 = 8 (Phase 124 buff)
         const r = applyRegen(damaged);
-        expect(r.healed).toBe(6);
-        expect(r.target.health).toBe(16);
+        expect(r.healed).toBe(8);
+        expect(r.target.health).toBe(18);
     });
 
 });
