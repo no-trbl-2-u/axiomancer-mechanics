@@ -359,10 +359,26 @@ predicates directly.
 
 | Return | Condition |
 |--------|-----------|
-| `'player'` | Enemy HP ≤ 0 |
+| `'player'` | Enemy HP ≤ 0 OR effects-driven victory (Phase 125) |
 | `'ko'` | Player HP ≤ 0 |
-| `'friendship'` | `state.friendshipResolutionAuthorized === true` — set only when player casts Befriend + chooses `spare` (Phase 112) |
+| `'friendship'` | `state.friendshipResolutionAuthorized === true` — set only when player casts Befriend + chooses `spare` (Phase 112) OR effects-driven friendship (Phase 125) |
 | `'ongoing'` | None of the above |
+
+### Effects-Driven Resolution (Phase 125)
+
+Phase 125 allows status effects to force combat resolution instead of timeout, rewarding status-effect-heavy play styles. `getEffectsResolutionOutcome(state)` analyzes the enemy's active effects and can trigger two resolution paths:
+
+**Saturation Yield (→ friendship)**: When the enemy is overwhelmed by control and debuff effects, it yields. The combined intensity of control effects plus stat-debuffing effects must reach `EFFECTS_RESOLUTION_DEBUFF_INTENSITY_THRESHOLD` (tunable, default 8). This routes through the existing `'friendship'` outcome for stable rewards (half XP + full loot).
+
+**DoT Erosion (→ victory)**: When damage-over-time effects can realistically finish the enemy, combat resolves to victory. Total DoT damage per round must exceed `EFFECTS_RESOLUTION_DOT_DAMAGE_THRESHOLD` (tunable, default 5) and be able to finish the enemy within ~10 rounds. This routes through the existing `'victory'` outcome for full XP and loot.
+
+Effects resolution integrates with existing combat-end logic:
+- Checked after HP conditions but before manual friendship authorization  
+- Uses existing `CombatEndReport.outcome` union values (no new outcome types)
+- Preserves round cap unchanged — effects provide resolution, not more time
+- Thresholds are registry tunables for balance iteration
+
+This closes the high-engagement timeout issue where players dominating via status effects couldn't complete fights within the round limit.
 
 ## Battle Log
 

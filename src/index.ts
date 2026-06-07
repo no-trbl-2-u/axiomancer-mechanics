@@ -62,6 +62,7 @@ export {
     resolveEffectApplication,
     calculateDamageResistance, getSkillDamageType,
     determineEnemyAction, isCombatOngoing, determineCombatEnd, isValidCombatAction,
+    getEffectsResolutionOutcome,
     healCharacter,
     calculateEnemyStatMultiplier, applyMoralMeterScaling,
 } from './Combat';

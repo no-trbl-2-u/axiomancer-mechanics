@@ -5,7 +5,7 @@ import type { PlaytestScenario } from '../types';
 
 describe('Mid-game reference probe (Phase 119)', () => {
     beforeEach(() => {
-        mockFixedRng();
+        mockFixedRng([0.5, 0.3, 0.7, 0.2, 0.8, 0.1, 0.9, 0.4, 0.6]);
     });
 
     it('should support wanderer-level-6 preset', () => {
