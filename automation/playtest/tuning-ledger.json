@@ -1,0 +1,49 @@
+{
+  "entries": [
+    {
+      "timestamp": "2026-06-07T13-36-33-232Z",
+      "paramId": "combat.skillStatMultiplier",
+      "oldValue": 0.5,
+      "newValue": 0.6,
+      "direction": "up",
+      "deltaHealth": 0.009510758701617744,
+      "kept": false,
+      "significant": false,
+      "confidence": "low"
+    },
+    {
+      "timestamp": "2026-06-07T13-36-33-232Z",
+      "paramId": "combat.healthPerStat",
+      "oldValue": 5,
+      "newValue": 6,
+      "direction": "up",
+      "deltaHealth": -0.019396040704951642,
+      "kept": false,
+      "significant": false,
+      "confidence": "low"
+    },
+    {
+      "timestamp": "2026-06-07T13-36-33-232Z",
+      "paramId": "combat.resourceGen.defend",
+      "oldValue": 5,
+      "newValue": 6,
+      "direction": "up",
+      "deltaHealth": -0.0032395470617544164,
+      "kept": false,
+      "significant": false,
+      "confidence": "low"
+    },
+    {
+      "timestamp": "2026-06-07T13-37-51-907Z",
+      "paramId": "combat.skillStatMultiplier",
+      "oldValue": 0.5,
+      "newValue": 0.6,
+      "direction": "up",
+      "deltaHealth": 0.009138880408381525,
+      "kept": false,
+      "significant": false,
+      "confidence": "low"
+    }
+  ],
+  "updatedAt": "2026-06-07T13:38:01.136Z"
+}
