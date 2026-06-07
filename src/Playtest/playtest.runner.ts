@@ -1,8 +1,10 @@
 import { buildCharacterFromPreset, characterPresets, getPresetById } from '../Character/presets';
 import { createCharacter } from '../Character';
+import type { Character } from '../Character/types';
 import { determineEnemyAction, isCombatOngoing, resolveCombatRound } from '../Combat';
 import type { CombatAction, Stance } from '../Combat';
 import { ENEMY_REGISTRY, type EnemySlug } from '../Enemy/enemy.library';
+import type { Enemy } from '../Enemy/types';
 import { createGameStore } from '../Game/store';
 import { nullAdapter } from '../Game/persistence/null.adapter';
 import { getSkillById, skillLibrary } from '../Skills';
@@ -18,17 +20,38 @@ import type {
     PlaytestReport,
     PlaytestRunSummary,
     PlaytestScenario,
+    PolicyContext,
 } from './types';
+
+/**
+ * Injection for `runPlaytestScenarioWith` — a prebuilt player/enemy pair and an
+ * optional policy context. Lets the tuning matrix drive the existing harness
+ * with live objects instead of preset/registry string ids.
+ */
+export interface PlaytestInjection {
+    player: Character;
+    enemy: Enemy;
+    policyContext?: PolicyContext;
+}
+
+/** Structured deep-clone with a JSON fallback (characters/enemies are data). */
+function deepClone<T>(value: T): T {
+    const sc = (globalThis as { structuredClone?: <U>(v: U) => U }).structuredClone;
+    return sc ? sc(value) : (JSON.parse(JSON.stringify(value)) as T);
+}
 
 /**
  * Creates a maxed-out character for endgame testing (Phase 104).
  * Replicates the dev-tools max-out functionality.
  */
 function createMaxOutCharacter() {
-    const equipment = equipmentTemplates.map(template => 
-        dropItem(template.id, 20, 'rare')
-    );
-    
+    // Only drop templates the level-20 character can actually equip; the
+    // library now spans to level 50, and dropItem throws when playerLevel is
+    // below a template's requiredLevel.
+    const equipment = equipmentTemplates
+        .filter(template => template.requiredLevel <= 20)
+        .map(template => dropItem(template.id, 20, 'rare'));
+
     return createCharacter({
         name: 'Maxed Test Character',
         level: 20,
@@ -120,10 +143,61 @@ export function runPlaytestScenario(scenario: PlaytestScenario): PlaytestReport 
     };
 }
 
+/**
+ * Run a scenario against an injected (player, enemy) pair — the entry point the
+ * tuning matrix uses. Reuses the exact combat-trial loop, metrics aggregation,
+ * and findings of `runPlaytestScenario`; only the combatant source differs.
+ * Player/enemy are deep-cloned per run so the caller may reuse the objects and
+ * each run starts from a pristine state. Seeds derive solely from
+ * `scenario.seed` + run number, so two calls (variant A / variant B) with the
+ * same scenario produce identical RNG streams.
+ */
+export function runPlaytestScenarioWith(
+    scenario: PlaytestScenario,
+    injection: PlaytestInjection,
+): PlaytestReport {
+    if (!scenario.id) throw new Error('Playtest scenario requires id.');
+    if (!Number.isInteger(scenario.runs) || scenario.runs <= 0) throw new Error('Playtest scenario runs must be a positive integer.');
+    if (!Number.isInteger(scenario.maxRounds) || scenario.maxRounds <= 0) throw new Error('Playtest scenario maxRounds must be a positive integer.');
+    if (!scenario.seed) throw new Error('Playtest scenario requires seed.');
+    if (scenario.policies.length === 0) throw new Error('Playtest scenario requires at least one policy.');
+
+    const runs = Array.from({ length: scenario.runs }, (_unused, idx) => {
+        const runNumber = idx + 1;
+        const runSeed = `${scenario.seed}:${runNumber}`;
+        setSeed(runSeed);
+        return runCombatTrial(
+            scenario,
+            runNumber,
+            runSeed,
+            deepClone(injection.player),
+            deepClone(injection.enemy),
+            injection.policyContext,
+        );
+    });
+    const metrics = aggregateMetrics(runs);
+    return {
+        scenarioId: scenario.id,
+        description: scenario.description,
+        preset: scenario.preset,
+        enemy: scenario.enemy,
+        seed: scenario.seed,
+        maxRounds: scenario.maxRounds,
+        policies: scenario.policies,
+        metrics,
+        findings: deriveFindings(metrics),
+        replaySeeds: runs
+            .filter(run => run.outcome === 'defeat' || run.outcome === 'timeout' || run.rounds >= scenario.maxRounds)
+            .slice(0, 10)
+            .map(run => run.seed),
+        runs,
+    };
+}
+
 function runSingleScenario(scenario: PlaytestScenario, runNumber: number): PlaytestRunSummary {
     const runSeed = `${scenario.seed}:${runNumber}`;
     setSeed(runSeed);
-    
+
     // Handle special presets
     let player;
     if (scenario.preset === 'max-out') {
@@ -136,10 +210,27 @@ function runSingleScenario(scenario: PlaytestScenario, runNumber: number): Playt
         if (!preset) throw new Error(`Unknown playtest preset: ${scenario.preset}`);
         player = buildCharacterFromPreset(preset);
     }
-    
+
     const enemy = ENEMY_REGISTRY[scenario.enemy as EnemySlug];
     if (!enemy) throw new Error(`Unknown playtest enemy: ${scenario.enemy}`);
 
+    return runCombatTrial(scenario, runNumber, runSeed, player, enemy);
+}
+
+/**
+ * Core combat-trial loop shared by the preset-driven `runSingleScenario` and
+ * the injection-driven `runPlaytestScenarioWith`. The seed has already been set
+ * by the caller; `player` / `enemy` are deep-cloned by the store at combat
+ * start, but we clone defensively so callers may reuse the same objects.
+ */
+function runCombatTrial(
+    scenario: PlaytestScenario,
+    runNumber: number,
+    runSeed: string,
+    player: Character,
+    enemy: Enemy,
+    policyContext?: PolicyContext,
+): PlaytestRunSummary {
     const policy = scenario.policies[(runNumber - 1) % scenario.policies.length]!;
     const store = createGameStore(nullAdapter, { player });
     store.getState().startCombat({ enemies: [enemy] });
@@ -176,7 +267,7 @@ function runSingleScenario(scenario: PlaytestScenario, runNumber: number): Playt
         const combat = store.getState().combat;
         if (!combat || !isCombatOngoing(combat)) break;
 
-        const playerAction = selectPolicyAction(policy, combat);
+        const playerAction = selectPolicyAction(policy, combat, policyContext);
         const enemyAction = determineEnemyAction(combat.enemy, combat);
         const { state: nextCombat, combatEvents } = resolveCombatRound(
             combat,

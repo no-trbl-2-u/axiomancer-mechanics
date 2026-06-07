@@ -1244,6 +1244,276 @@
       "resistedBy": "heart",
       "resistDR": 11,
       "sourcedFromCell": "mid-pessimistic-transcendent"
+    },
+    {
+      "id": "debuff_tartarus_rot",
+      "name": "Tartarus Rot",
+      "description": "A pit beneath the world, where things go to be forgotten and yet keep suffering. The decay does not heal; it only finds new places to begin.",
+      "type": "debuff",
+      "category": "damage",
+      "duration": 4,
+      "stacking": "intensity",
+      "resistedBy": "mind",
+      "resistDR": 13,
+      "payload": {
+        "damageOverTime": {
+          "damagePerRound": 4,
+          "damageType": "body",
+          "tickPhase": "end"
+        },
+        "statModifiers": [
+          {
+            "stat": "body",
+            "value": -1,
+            "isMultiplier": false
+          }
+        ]
+      },
+      "tier": 2,
+      "addedIn": "2026-04-15",
+      "tags": ["status-effect", "damage", "dot", "since-april"]
+    },
+    {
+      "id": "debuff_lethe_fog",
+      "name": "Lethe Fog",
+      "description": "The river of forgetting laps at the edges of thought. Names of techniques slip away mid-motion; you reach for what you knew and close on mist.",
+      "type": "debuff",
+      "category": "control",
+      "duration": 2,
+      "stacking": "duration",
+      "resistedBy": "heart",
+      "resistDR": 13,
+      "payload": {
+        "rollModifier": -3,
+        "statModifiers": [
+          {
+            "stat": "mind",
+            "value": -2,
+            "isMultiplier": false
+          },
+          {
+            "stat": "mentalSkill",
+            "value": -2,
+            "isMultiplier": false
+          }
+        ],
+        "advantageModifier": {
+          "grantDisadvantage": ["mind"]
+        }
+      },
+      "tier": 2,
+      "addedIn": "2026-04-15",
+      "tags": ["status-effect", "control", "since-april"]
+    },
+    {
+      "id": "debuff_gorgon_gaze",
+      "name": "Gorgon's Gaze",
+      "description": "Meet the eyes and the body forgets it was ever fluid. Stone climbs the limbs from the ankles up. For a held breath, you are a statue of yourself.",
+      "type": "debuff",
+      "category": "control",
+      "duration": 1,
+      "stacking": "none",
+      "resistedBy": "heart",
+      "resistDR": 16,
+      "payload": {
+        "actionRestriction": {
+          "skipTurn": true
+        },
+        "defenseModifier": -3,
+        "statModifiers": [
+          {
+            "stat": "physicalDefense",
+            "value": -2,
+            "isMultiplier": false
+          }
+        ]
+      },
+      "tier": 3,
+      "addedIn": "2026-04-15",
+      "tags": ["status-effect", "control", "stun", "since-april"]
+    },
+    {
+      "id": "debuff_sisyphean_weight",
+      "name": "Sisyphean Weight",
+      "description": "The boulder is yours forever and it is always near the top. Each effort is total; each result is the slope beginning again. Strength leaks out as despair.",
+      "type": "debuff",
+      "category": "stat",
+      "duration": 4,
+      "stacking": "intensity",
+      "resistedBy": "heart",
+      "resistDR": 12,
+      "payload": {
+        "statModifiers": [
+          {
+            "stat": "body",
+            "value": -2,
+            "isMultiplier": false
+          },
+          {
+            "stat": "physicalAttack",
+            "value": -2,
+            "isMultiplier": false
+          },
+          {
+            "stat": "physicalSkill",
+            "value": -1,
+            "isMultiplier": false
+          }
+        ],
+        "rollModifier": -1
+      },
+      "tier": 2,
+      "addedIn": "2026-04-15",
+      "tags": ["status-effect", "stat", "since-april"]
+    },
+    {
+      "id": "debuff_harpy_torment",
+      "name": "Harpy's Torment",
+      "description": "They snatch the meal before it reaches the mouth — every restorative gesture fouled, every breath of relief stolen mid-inhale. Nothing taken stays taken.",
+      "type": "debuff",
+      "category": "regeneration",
+      "duration": 3,
+      "stacking": "intensity",
+      "resistedBy": "body",
+      "resistDR": 13,
+      "payload": {
+        "regeneration": {
+          "healthPerRound": -3
+        },
+        "statModifiers": [
+          {
+            "stat": "heart",
+            "value": -1,
+            "isMultiplier": false
+          }
+        ]
+      },
+      "tier": 2,
+      "addedIn": "2026-04-15",
+      "tags": ["status-effect", "regeneration", "since-april"]
+    },
+    {
+      "id": "debuff_icarus_descent",
+      "name": "Icarus Descent",
+      "description": "The wax remembers the sun. What lifted you now drips away, and the higher your earlier flight, the steeper the lesson on the way down.",
+      "type": "debuff",
+      "category": "advantage",
+      "duration": 3,
+      "stacking": "duration",
+      "resistedBy": "mind",
+      "resistDR": 13,
+      "payload": {
+        "rollModifier": -3,
+        "advantageModifier": {
+          "grantDisadvantage": ["body", "heart"]
+        },
+        "statModifiers": [
+          {
+            "stat": "luck",
+            "value": -2,
+            "isMultiplier": false
+          }
+        ]
+      },
+      "tier": 2,
+      "addedIn": "2026-05-20",
+      "tags": ["status-effect", "advantage", "since-april"]
+    },
+    {
+      "id": "debuff_basilisk_venom",
+      "name": "Basilisk Venom",
+      "description": "A poison that argues with the blood, persuading it to curdle. Conviction itself turns toxic — emotional reserves souring round after round.",
+      "type": "debuff",
+      "category": "damage",
+      "duration": 4,
+      "stacking": "intensity",
+      "resistedBy": "body",
+      "resistDR": 13,
+      "payload": {
+        "damageOverTime": {
+          "damagePerRound": 3,
+          "damageType": "heart"
+        },
+        "statModifiers": [
+          {
+            "stat": "emotionalDefense",
+            "value": -2,
+            "isMultiplier": false
+          }
+        ]
+      },
+      "tier": 2,
+      "addedIn": "2026-05-20",
+      "tags": ["status-effect", "damage", "dot", "since-april"]
+    },
+    {
+      "id": "debuff_minotaur_maze",
+      "name": "Minotaur's Maze",
+      "description": "Every corridor of intention loops back on itself. You charge forward and arrive behind. The labyrinth was built to keep the monster in — and now it keeps you.",
+      "type": "debuff",
+      "category": "control",
+      "duration": 2,
+      "stacking": "none",
+      "resistedBy": "mind",
+      "resistDR": 14,
+      "payload": {
+        "actionRestriction": {
+          "blockedStances": ["body"]
+        },
+        "rollModifier": -2,
+        "statModifiers": [
+          {
+            "stat": "physicalSkill",
+            "value": -2,
+            "isMultiplier": false
+          }
+        ]
+      },
+      "tier": 2,
+      "addedIn": "2026-05-20",
+      "tags": ["status-effect", "control", "since-april"]
+    },
+    {
+      "id": "debuff_hubris_brand",
+      "name": "Hubris Brand",
+      "description": "The gods mark the proud so the world may aim true. A sigil no one else can read sits on your brow, and every blow seems to know exactly where you stand.",
+      "type": "debuff",
+      "category": "advantage",
+      "duration": 3,
+      "stacking": "none",
+      "resistedBy": "heart",
+      "resistDR": 13,
+      "payload": {
+        "defenseModifier": -4,
+        "advantageModifier": {
+          "grantDisadvantage": ["body", "mind", "heart"]
+        }
+      },
+      "tier": 2,
+      "addedIn": "2026-06-07",
+      "tags": ["status-effect", "advantage", "mark", "since-april"]
+    },
+    {
+      "id": "debuff_minor_unsteadiness",
+      "name": "Minor Unsteadiness",
+      "description": "A loose stone underfoot you keep half-noticing. Nothing dramatic — just a wobble in the wrist at the worst small moments.",
+      "type": "debuff",
+      "category": "stat",
+      "duration": 2,
+      "stacking": "none",
+      "payload": {
+        "statModifiers": [
+          {
+            "stat": "physicalSkill",
+            "value": -1,
+            "isMultiplier": false
+          }
+        ],
+        "rollModifier": -1
+      },
+      "tier": 1,
+      "addedIn": "2026-06-07",
+      "tags": ["status-effect", "stat", "since-april"]
     }
   ]
 }

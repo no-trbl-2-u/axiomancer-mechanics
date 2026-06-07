@@ -62,8 +62,13 @@ describe('character:levelup payload — Phase 30 unit 2', () => {
         store.getState().levelUp();
         expect(captured).toHaveLength(1);
         const unlocked = captured[0].payload.unlockedSkills ?? [];
-        const tier2Ids = skillLibrary.filter(s => s.tier === 2).map(s => s.id);
-        expect(unlocked.sort()).toEqual(tier2Ids.sort());
+        // Default-gated tier-2 skills (level requirement = 5) unlock at L5.
+        // Content-expansion tier-2 skills carry higher explicit levels and
+        // unlock later, so assert containment rather than exact equality.
+        const defaultTier2Ids = skillLibrary
+            .filter(s => s.tier === 2 && !s.learningRequirement)
+            .map(s => s.id);
+        expect(unlocked).toEqual(expect.arrayContaining(defaultTier2Ids));
     });
 
     it('lists both tier-2 and tier-3 skills when a cascade crosses both thresholds', () => {
@@ -80,10 +85,13 @@ describe('character:levelup payload — Phase 30 unit 2', () => {
         expect(finalLevel).toBeGreaterThanOrEqual(14);
 
         const unlocked = captured[0].payload.unlockedSkills ?? [];
-        const t2t3Ids = skillLibrary
-            .filter(s => s.tier === 2 || s.tier === 3)
+        // Default-gated tier-2 (level 5) and tier-3 (level 10) skills must all
+        // unlock by level 14. Higher explicit-requirement content skills only
+        // appear once their level is reached, so assert containment.
+        const defaultT2T3Ids = skillLibrary
+            .filter(s => (s.tier === 2 || s.tier === 3) && !s.learningRequirement)
             .map(s => s.id);
-        expect(unlocked.sort()).toEqual(t2t3Ids.sort());
+        expect(unlocked).toEqual(expect.arrayContaining(defaultT2T3Ids));
     });
 
     it('omits already-known skills from the unlock list', () => {

@@ -1,5 +1,5 @@
 import type { CombatAction, CombatState, Stance } from '../Combat';
-import type { PlaytestPolicy } from './types';
+import type { PlaytestPolicy, PolicyContext } from './types';
 import { canUseSkill, getSkillById } from '../Skills';
 import { getRng } from '../Utils/rng';
 
@@ -97,7 +97,11 @@ function randomIndex(maxExclusive: number): number {
     return Math.floor(getRng().random() * maxExclusive);
 }
 
-export function selectPolicyAction(policy: PlaytestPolicy, combat: CombatState): CombatAction {
+export function selectPolicyAction(
+    policy: PlaytestPolicy,
+    combat: CombatState,
+    ctx?: PolicyContext,
+): CombatAction {
     if (combat.phase === 'mercy_choice' || combat.mercyChoiceActive) {
         return {
             stance: 'heart',
@@ -107,7 +111,7 @@ export function selectPolicyAction(policy: PlaytestPolicy, combat: CombatState):
 
     if (policy === 'mixed') {
         const rotation: PlaytestPolicy[] = ['aggressive', 'defensive', 'strategist'];
-        return selectPolicyAction(rotation[(combat.round - 1) % rotation.length]!, combat);
+        return selectPolicyAction(rotation[(combat.round - 1) % rotation.length]!, combat, ctx);
     }
 
     if (policy === 'friendship') {
@@ -165,12 +169,26 @@ export function selectPolicyAction(policy: PlaytestPolicy, combat: CombatState):
         const itemId = playerHpPct < 0.25 ? firstConsumableId(combat) : undefined;
         if (itemId) return { stance: 'body', action: 'item', itemId };
 
+        // Cross-run knowledge (tuning workflow): if the advisor recommends a
+        // learned-effective skill that is affordable, prefer it. This lets the
+        // strategist exploit weaknesses discovered in earlier matrix runs.
+        const advisorKey = ctx?.enemyKey ?? combat.enemy.id;
+        const learnedSkillId = ctx?.strategist?.recommendSkill(advisorKey);
+        if (learnedSkillId
+            && combat.player.knownSkills.includes(learnedSkillId)) {
+            const learned = getSkillById(learnedSkillId);
+            if (learned && canUseSkill(combat.combatResources, learned)
+                && strategicSkillPriority(combat, learnedSkillId) > 0) {
+                return { stance: learned.philosophicalAspect, action: 'skill', skillId: learnedSkillId };
+            }
+        }
+
         // Use best strategic skill if available and worthwhile
         const skillId = bestStrategistSkill(combat);
         if (skillId) {
             const skill = getSkillById(skillId);
             const skillScore = strategicSkillPriority(combat, skillId);
-            
+
             // The strategist is the skill/status witness: spend resources on
             // meaningful effects instead of hoarding them while basic-attacking.
             if (skillScore > 8) {
@@ -178,7 +196,10 @@ export function selectPolicyAction(policy: PlaytestPolicy, combat: CombatState):
             }
         }
 
-        const buildStance = stanceToBuildForStrategist(combat);
+        // Bias basic-action stance toward the enemy's learned-weak stance when
+        // the advisor has one; otherwise fall back to the resource-building stance.
+        const learnedStance = ctx?.strategist?.recommendStance(advisorKey);
+        const buildStance = learnedStance ?? stanceToBuildForStrategist(combat);
 
         // Strategic basic action selection based on situation
         if (playerHpPct < 0.5) {

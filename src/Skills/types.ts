@@ -270,4 +270,12 @@ export interface Skill {
      * but before resource costs. Does not require defend stance.
      */
     incrementsFriendship?: number;
+    /**
+     * Content-provenance metadata used by the tuning `--focus` filter
+     * (`src/Tuning/focus.parser.ts`). `addedIn` is an ISO date / phase tag;
+     * `tags` are freeform labels (e.g. `'mid-game'`, `'damage'`). Both
+     * optional and ignored by the skill engine.
+     */
+    addedIn?: string;
+    tags?: string[];
 }

@@ -74,11 +74,93 @@ const scholarsCircle: ItemSet = {
     },
 };
 
+// ── Content expansion pass 2026-06-07 ──
+
+const veteransPlate: ItemSet = {
+    id: 'veterans-plate',
+    name: "Veteran's Plate",
+    description: 'Heavy field plate worn by soldiers who expect to come home.',
+    memberTemplateIds: ['runed-cuirass', 'full-helm', 'plate-gauntlets', 'iron-greaves'],
+    bonuses: {
+        2: {
+            statModifiers: [
+                { stat: 'physicalDefense', value: 4 },
+            ],
+        },
+        3: {
+            resourceInteraction: {
+                combatStartTokens: { body: 2 },
+            },
+        },
+        4: {
+            passiveEffects: ['buff_damage_reduction'],
+        },
+    },
+};
+
+const sagesRegalia: ItemSet = {
+    id: 'sages-regalia',
+    name: "Sage's Regalia",
+    description: 'The studious vestments of one who reasons faster than they bleed.',
+    memberTemplateIds: ['sage-circlet', 'warded-robe', 'jade-amulet'],
+    bonuses: {
+        2: {
+            statModifiers: [
+                { stat: 'mind',          value: 3 },
+                { stat: 'mentalDefense', value: 3 },
+            ],
+        },
+        3: {
+            resourceInteraction: {
+                combatStartTokens: { mind: 3 },
+            },
+            passiveEffects: ['buff_buff_duration_up'],
+        },
+    },
+};
+
+const embersOfRebirth: ItemSet = {
+    id: 'embers-of-rebirth',
+    name: 'Embers of Rebirth',
+    description: 'Relics of a flame that refuses to be the last of its kind.',
+    memberTemplateIds: ['phoenix-mantle', 'titans-girdle'],
+    bonuses: {
+        2: {
+            passiveEffects: ['buff_regeneration', 'buff_phoenix_vigor'],
+            statModifiers: [
+                { stat: 'heart', value: 3 },
+            ],
+        },
+    },
+};
+
+const skirmishersKit: ItemSet = {
+    id: 'skirmishers-kit',
+    name: "Skirmisher's Kit",
+    description: 'Light gear for those who win by never standing still.',
+    memberTemplateIds: ['swiftstride-boots', 'leather-coat', 'chain-gauntlets'],
+    bonuses: {
+        2: {
+            statModifiers: [
+                { stat: 'luck',       value: 2 },
+                { stat: 'physicalSave', value: 3 },
+            ],
+        },
+        3: {
+            passiveEffects: ['buff_evasion_up'],
+        },
+    },
+};
+
 /** All named item sets, frozen and iterated in this exact order. */
 export const itemSetLibrary: ReadonlyArray<ItemSet> = Object.freeze([
     wandererRoad,
     ironDiscipline,
     scholarsCircle,
+    veteransPlate,
+    sagesRegalia,
+    embersOfRebirth,
+    skirmishersKit,
 ]);
 
 /**

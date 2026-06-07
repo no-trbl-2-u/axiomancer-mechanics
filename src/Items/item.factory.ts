@@ -44,6 +44,12 @@ import {
     getModifierById,
     pickValueTier,
 } from './modifier.catalogue';
+import { Affix } from './modifier.types';
+import {
+    affixesForSlot,
+    composeItemName,
+    AFFIX_RARITY_WEIGHTS,
+} from './affix.library';
 
 // ─── Rarity weight table (Spec 05c §9) ───────────────────────────────────────
 
@@ -434,6 +440,142 @@ export function previewTemplateAtAllRarities(
         rare:     previewTemplateAtRarity(templateId, 'rare',     playerLevel, rng),
         unique:   previewTemplateAtRarity(templateId, 'unique',   playerLevel, rng),
     };
+}
+
+// ─── Affix-decorated drops (2026-06-07 content pass) ─────────────────────────
+
+/**
+ * Options for {@link dropItemWithAffixes}. All optional; sensible defaults keep
+ * the call site terse for loot tables and tests.
+ *
+ * - `rarity`      — instance rarity for the underlying base item (defaults to
+ *                   the weighted table draw, same as `dropItem`). Affixes are
+ *                   layered on top regardless of base rarity.
+ * - `rng`         — seeded uniform `[0,1)` source. Defaults to `Math.random`.
+ *                   Pass a deterministic rng for reproducible drops.
+ * - `maxPrefixes` — cap on prefixes drawn (0..1; default 1).
+ * - `maxSuffixes` — cap on suffixes drawn (0..1; default 1).
+ */
+export interface DropWithAffixesOptions {
+    rarity?: ItemRarity;
+    rng?: () => number;
+    maxPrefixes?: number;
+    maxSuffixes?: number;
+}
+
+/** Weighted draw of a single affix from `candidates`, consuming one rng value. */
+function drawAffix(candidates: Affix[], rng: () => number): Affix | undefined {
+    if (candidates.length === 0) return undefined;
+    const entries = candidates.map(a => [a, AFFIX_RARITY_WEIGHTS[a.hiddenRarity]] as const);
+    return drawWeighted(entries, rng);
+}
+
+/**
+ * Drops an `Equipment` instance decorated with prefix/suffix affixes.
+ *
+ * Additive over {@link dropItem} — that path is untouched. This factory:
+ *   1. Resolves the template (regular or unique) and validates the level gate.
+ *   2. Resolves a base rarity (caller-supplied or weighted draw; unique
+ *      templates force `'unique'`, in which case no affixes are layered — a
+ *      unique's identity is its three fixed mods, not procedural affixes).
+ *   3. Rolls the base modifier list via `rollModifiers` (same as `dropItem`).
+ *   4. Selects up to `maxPrefixes` prefix + `maxSuffixes` suffix affixes from
+ *      `affix.library`, weighted by `hiddenRarity` and filtered to the slot +
+ *      level. Each selected affix contributes its `modIds`, whose values are
+ *      rolled through the shared `pickValueTier` + uniform-int machinery.
+ *   5. Resolves the *combined* rolled-mod list (base + affix-granted) via
+ *      `resolveModifiers`, so affix payloads fold into the same
+ *      `statModifiers` / `passiveEffects` / proc / resource fields.
+ *   6. Sets `name` via `composeItemName`.
+ *
+ * Pure and deterministic given a seeded `rng`.
+ */
+export function dropItemWithAffixes(
+    templateId: string,
+    playerLevel: number,
+    opts: DropWithAffixesOptions = {},
+): Equipment {
+    const {
+        rarity,
+        rng = Math.random,
+        maxPrefixes = 1,
+        maxSuffixes = 1,
+    } = opts;
+
+    const template = getEquipmentTemplate(templateId) ?? getUniqueTemplate(templateId);
+    if (!template) {
+        throw new Error(`dropItemWithAffixes: no template registered for id '${templateId}'.`);
+    }
+    if (playerLevel < template.requiredLevel) {
+        throw new Error(
+            `dropItemWithAffixes: playerLevel ${playerLevel} is below template ` +
+            `'${templateId}' requiredLevel ${template.requiredLevel}.`,
+        );
+    }
+
+    const isUniqueTpl = isUnique(template);
+    if (rarity === 'unique' && !isUniqueTpl) {
+        throw new Error(
+            `dropItemWithAffixes: rarity 'unique' is reserved for UniqueItemTemplate; ` +
+            `template '${templateId}' is a regular EquipmentTemplate.`,
+        );
+    }
+
+    const finalRarity: ItemRarity = (() => {
+        if (isUniqueTpl) return 'unique';
+        if (rarity) return rarity;
+        return drawWeighted(RARITY_WEIGHTS, rng);
+    })();
+
+    // Base mods first (identical to `dropItem`), so two paths share a seed prefix.
+    const baseRolled = rollModifiers(template, finalRarity, playerLevel, rng);
+
+    // Affix selection — skipped for unique templates (their identity is fixed).
+    let prefix: Affix | undefined;
+    let suffix: Affix | undefined;
+    const affixRolled: RolledModifier[] = [];
+
+    const rollAffixMods = (affix: Affix): void => {
+        for (const modId of affix.modIds) {
+            const mod = getModifierById(modId);
+            if (!mod) {
+                affixRolled.push({ modId, value: 0 });
+                continue;
+            }
+            const tier = pickValueTier(mod, playerLevel);
+            const value = tier ? rollInRange(tier.range[0], tier.range[1], rng) : 0;
+            affixRolled.push({ modId, value });
+        }
+    };
+
+    if (!isUniqueTpl) {
+        if (maxPrefixes > 0) {
+            const candidates = affixesForSlot(template.slot, playerLevel, 'prefix');
+            prefix = drawAffix(candidates, rng);
+            if (prefix) rollAffixMods(prefix);
+        }
+        if (maxSuffixes > 0) {
+            const candidates = affixesForSlot(template.slot, playerLevel, 'suffix');
+            suffix = drawAffix(candidates, rng);
+            if (suffix) rollAffixMods(suffix);
+        }
+    }
+
+    const allRolled: RolledModifier[] = [...baseRolled, ...affixRolled];
+    const resolved = resolveModifiers(template, allRolled);
+
+    const instance: Equipment = {
+        id:            template.id,
+        name:          composeItemName(template.name, prefix, suffix),
+        description:   template.description,
+        category:      'equipment',
+        slot:          template.slot,
+        rarity:        finalRarity,
+        requiredLevel: template.requiredLevel,
+        ...resolved,
+        ...(allRolled.length > 0 ? { rolledMods: allRolled } : {}),
+    };
+    return instance;
 }
 
 // Re-export the unique-pool shape so tests / loot tables can introspect it

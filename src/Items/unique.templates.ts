@@ -1,9 +1,10 @@
 /**
  * Unique Item Templates — Spec 05c stubs, Spec 05d wiring.
  *
- * Two curated Uniques for initial playtesting. `fixedModIds` reference the
- * canonical Spec 05d catalogue (`src/Items/modifier.catalogue.ts`); the
- * factory rolls each ID through the same machinery a procedural mod uses.
+ * Seven curated Uniques (two original + five from the 2026-06-07 content
+ * pass). `fixedModIds` reference the canonical Spec 05d catalogue
+ * (`src/Items/modifier.catalogue.ts`); the factory rolls each ID through the
+ * same machinery a procedural mod uses.
  *
  * Spec 05d §8:
  *   - `axioms-edge`   — `['wm-flat-damage', 'wm-body-gen', 'um-paradox-edge']`
@@ -13,8 +14,8 @@
 import { UniqueItemTemplate } from './types';
 
 /**
- * The full Unique-item template library. Two entries today; Spec 05e set
- * items will layer `setMembership` references on top.
+ * The full Unique-item template library. Seven entries; two carry
+ * `setMembership` references for the 'embers-of-rebirth' set (Spec 05e).
  */
 export const uniqueTemplates: UniqueItemTemplate[] = [
     {
@@ -49,6 +50,99 @@ export const uniqueTemplates: UniqueItemTemplate[] = [
             'am-proc-boost',         // rare procedural — luck-driven proc adjacency
             'um-resonance-prime',    // unique-only — combat-start tokens for all stances
         ],
+    },
+    // ── Content expansion pass 2026-06-07 (mid/late-game uniques) ──
+    {
+        id: 'gorgon-fang',
+        name: 'Gorgon Fang',
+        description: 'A dagger whose edge holds a single petrifying glance.',
+        slot: 'weapon',
+        requiredLevel: 30,
+        baseStatModifiers: [
+            { stat: 'mentalAttack',   value: 4 },
+            { stat: 'physicalAttack', value: 3 },
+        ],
+        fixedModIds: [
+            'wm-mind-rend',       // rare procedural — +mentalAttack + mind vulnerability
+            'wm-crit-damage',     // rare procedural — critical damage passive
+            'um-gorgon-stare',    // unique-only — gorgon gaze on hit
+        ],
+        addedIn: '2026-06-07',
+        tags: ['unique', 'weapon', 'late-game'],
+    },
+    {
+        id: 'phoenix-mantle',
+        name: 'Phoenix Mantle',
+        description: 'A cloak of ember-feathers that knits its wearer back together.',
+        slot: 'armor',
+        requiredLevel: 35,
+        setMembership: 'embers-of-rebirth',
+        baseStatModifiers: [
+            { stat: 'physicalDefense', value: 8 },
+            { stat: 'heart',           value: 3 },
+        ],
+        fixedModIds: [
+            'armm-regen',          // rare procedural — regeneration passive
+            'armm-aegis',          // rare procedural — barrier proc on defend
+            'um-phoenix-heart',    // unique-only — regen + phoenix vigor proc
+        ],
+        addedIn: '2026-06-07',
+        tags: ['unique', 'armor', 'sustain', 'late-game'],
+    },
+    {
+        id: 'prometheus-brand',
+        name: "Prometheus' Brand",
+        description: 'A torch-headed maul that gifts fire to its wielder and ruin to all else.',
+        slot: 'weapon',
+        requiredLevel: 25,
+        baseStatModifiers: [
+            { stat: 'physicalAttack', value: 5 },
+            { stat: 'body',           value: 3 },
+        ],
+        fixedModIds: [
+            'wm-flat-damage',         // common procedural — +physicalAttack
+            'wm-bleeding-edge',       // uncommon procedural — bleed proc
+            'um-promethean-spark',    // unique-only — burn + ember dual proc
+        ],
+        addedIn: '2026-06-07',
+        tags: ['unique', 'weapon', 'dot', 'mid-game'],
+    },
+    {
+        id: 'oracle-eye',
+        name: 'Oracle Eye',
+        description: 'A pendant set with an eye that blinks a heartbeat before the future does.',
+        slot: 'accessory',
+        requiredLevel: 40,
+        baseStatModifiers: [
+            { stat: 'mind', value: 4 },
+            { stat: 'luck', value: 3 },
+        ],
+        fixedModIds: [
+            'am-all-attunement',     // rare procedural — all base stats
+            'am-regen',              // uncommon procedural — regeneration passive
+            'um-resonance-prime',    // unique-only — combat-start tokens for all stances
+        ],
+        addedIn: '2026-06-07',
+        tags: ['unique', 'accessory', 'late-game'],
+    },
+    {
+        id: 'titans-girdle',
+        name: "Titan's Girdle",
+        description: 'A belt of fused alloy plate that makes its wearer immovable.',
+        slot: 'body',
+        requiredLevel: 45,
+        setMembership: 'embers-of-rebirth',
+        baseStatModifiers: [
+            { stat: 'physicalDefense', value: 11 },
+            { stat: 'body',            value: 5 },
+        ],
+        fixedModIds: [
+            'bm-vitality',           // common procedural — +body
+            'bm-damage-reduction',   // rare procedural — damage reduction passive
+            'bm-thorns-proc',        // uncommon procedural — brazen thorns on defend
+        ],
+        addedIn: '2026-06-07',
+        tags: ['unique', 'body', 'defense', 'late-game'],
     },
 ];
 

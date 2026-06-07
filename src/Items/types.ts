@@ -184,6 +184,15 @@ export interface EquipmentTemplate {
     slot: EquipmentSlot;
     requiredLevel: number;
     baseStatModifiers?: StatModifier[];
+    /**
+     * Content-provenance metadata used by the tuning workflow's `--focus`
+     * filter (`src/Tuning/focus.parser.ts`). `addedIn` is an ISO date
+     * (`YYYY-MM-DD`) or phase tag marking when the entry was authored;
+     * `tags` are freeform labels (e.g. `'early-game'`, `'weapon'`). Both
+     * optional and ignored by the core engine.
+     */
+    addedIn?: string;
+    tags?: string[];
 }
 
 /**
@@ -240,6 +249,9 @@ export interface Consumable extends BaseItem {
     resourceGrant?: Partial<CombatResources>;
     intensityOverride?: number;
     durationOverride?: number;
+    /** Content-provenance metadata (see `EquipmentTemplate.addedIn`). */
+    addedIn?: string;
+    tags?: string[];
 }
 
 /**

@@ -20,7 +20,7 @@
  *     only when an enemy should grant unusual XP for narrative reasons.
  */
 
-import { createEnemy } from './index';
+import { createEnemy, enemyStatBudget } from './index';
 import { LootTableEntry } from './types';
 import { consumableLibrary, getConsumableById } from '../Items/consumable.library';
 import { dropItem } from '../Items/item.factory';
@@ -1357,6 +1357,706 @@ export const BalanceJudge = createEnemy({
     },
 });
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// 2026-06-07 content drop — budget-scaled tiers (early / mid / late game)
+//
+// Every enemy below builds `baseStats` via `enemyStatBudget(level, weights)` so
+// they honor the tunable `ENEMY_STAT_PER_LEVEL` knob. Weights bias the
+// archetype (brute = body-heavy, trickster = mind-heavy, zealot = heart-heavy,
+// etc.). Each carries `addedIn: '2026-06-07'` and a tier tag.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const ADDED = '2026-06-07';
+
+// ─── EARLY GAME (levels ~1-15) — 10 enemies ───────────────────────────────────
+
+export const SaltGnawRat = createEnemy({
+    id: 'enemy-salt-gnaw-rat',
+    name: 'Salt-Gnaw Rat',
+    description: 'It has chewed through every certainty in the bilge. Yours looks edible too.',
+    level: 1,
+    baseStats: enemyStatBudget(1, { heart: 1, body: 3, mind: 1 }),
+    mapName: 'fishing-village',
+    difficulty: 'simple',
+    logic: 'aggressive',
+    tier1Overrides: T1_DEFAULT,
+    loot: [none(85), drop('minor-healing-potion', 15)],
+    philosophicalAlignment: { epistemology: 0, outlook: -67, scope: -67 },
+    addedIn: ADDED,
+    tags: ['early-game', 'enemy'],
+});
+
+export const DriftwoodHusk = createEnemy({
+    id: 'enemy-driftwood-husk',
+    name: 'Driftwood Husk',
+    description: 'A shape the tide carved and then abandoned. It moves only when watched.',
+    level: 2,
+    baseStats: enemyStatBudget(2, { heart: 1, body: 3, mind: 1 }),
+    mapName: 'fishing-village',
+    difficulty: 'simple',
+    logic: 'defensive',
+    tier1Overrides: T1_DEFAULT,
+    loot: [none(80), drop('body-elixir', 15), drop('minor-healing-potion', 5)],
+    philosophicalAlignment: { epistemology: 0, outlook: -67, scope: 0 },
+    addedIn: ADDED,
+    tags: ['early-game', 'enemy'],
+});
+
+export const PettyCutpurse = createEnemy({
+    id: 'enemy-petty-cutpurse',
+    name: 'Petty Cutpurse',
+    description: 'Argues that your coin was always going to be his; only the timeline was in question.',
+    level: 3,
+    baseStats: enemyStatBudget(3, { heart: 1, body: 1, mind: 3 }),
+    mapName: 'fishing-village',
+    difficulty: 'normal',
+    logic: 'strategic',
+    tier1Overrides: T1_DEFAULT,
+    loot: [none(60), drop('clarity-serum', 25), drop('healing-potion', 15)],
+    philosophicalAlignment: { epistemology: 67, outlook: 0, scope: -67 },
+    skills: [skill('false-dilemma')],
+    addedIn: ADDED,
+    tags: ['early-game', 'enemy'],
+});
+
+export const BogWillStripling = createEnemy({
+    id: 'enemy-bog-will-stripling',
+    name: 'Bog-Will Stripling',
+    description: 'A young marsh-light that has not yet learned what it lures men toward.',
+    level: 4,
+    baseStats: enemyStatBudget(4, { heart: 1, body: 1, mind: 2 }),
+    mapName: 'northern-forest',
+    difficulty: 'normal',
+    logic: 'random',
+    tier1Overrides: T1_DEFAULT,
+    loot: [none(55), drop('focus-vial', 25), drop('clarity-serum', 20)],
+    philosophicalAlignment: { epistemology: 0, outlook: 67, scope: 67 },
+    addedIn: ADDED,
+    tags: ['early-game', 'enemy'],
+});
+
+export const ApprenticeHeretic = createEnemy({
+    id: 'enemy-apprentice-heretic',
+    name: 'Apprentice Heretic',
+    description: 'Newly excommunicated and twice as certain. He recites doubts like catechism.',
+    level: 5,
+    baseStats: enemyStatBudget(5, { heart: 3, body: 1, mind: 2 }),
+    mapName: 'fishing-village',
+    difficulty: 'normal',
+    logic: 'balanced',
+    tier1Overrides: T1_DEFAULT,
+    loot: [none(50), drop('heart-draught', 30), drop('philosopher-tea', 10), drop('healing-potion', 10)],
+    philosophicalAlignment: { epistemology: -67, outlook: -67, scope: -67 },
+    skills: [skill('pascals-wager')],
+    addedIn: ADDED,
+    tags: ['early-game', 'enemy'],
+});
+
+export const ThicketAmbusher = createEnemy({
+    id: 'enemy-thicket-ambusher',
+    name: 'Thicket Ambusher',
+    description: 'Half bandit, half bramble. It waits in the green and bargains only after the first blow.',
+    level: 7,
+    baseStats: enemyStatBudget(7, { heart: 1, body: 3, mind: 1 }),
+    mapName: 'northern-forest',
+    difficulty: 'normal',
+    logic: 'aggressive',
+    tier1Overrides: T1_DEFAULT,
+    loot: [none(45), drop('body-elixir', 30), drop('berserker-brew', 15), drop('healing-potion', 10)],
+    philosophicalAlignment: { epistemology: 67, outlook: -67, scope: -67 },
+    skills: [skill('achilles-gambit')],
+    addedIn: ADDED,
+    tags: ['early-game', 'enemy'],
+});
+
+export const ReefBarnacleColony = createEnemy({
+    id: 'enemy-reef-barnacle-colony',
+    name: 'Reef Barnacle Colony',
+    description: 'A thousand small minds agreeing, slowly, on one thing: you should stay.',
+    level: 9,
+    baseStats: enemyStatBudget(9, { heart: 2, body: 3, mind: 1 }),
+    mapName: 'fishing-village',
+    difficulty: 'elite',
+    logic: 'defensive',
+    tier1Overrides: T1_DEFAULT,
+    procUnlocks: { body: { attack: 2, defend: 2 } },
+    loot: [none(40), drop('body-elixir', 30), drop('resonance-crystal', 20), drop('healing-potion', 10)],
+    philosophicalAlignment: { epistemology: -67, outlook: 0, scope: 0 },
+    skills: [skill('straw-giant')],
+    addedIn: ADDED,
+    tags: ['early-game', 'enemy'],
+});
+
+export const WanderingSophist = createEnemy({
+    id: 'enemy-wandering-sophist',
+    name: 'Wandering Sophist',
+    description: 'Sells certainties he does not own. The patter is the weapon; the dagger is incidental.',
+    level: 11,
+    baseStats: enemyStatBudget(11, { heart: 1, body: 1, mind: 3 }),
+    mapName: 'northern-forest',
+    difficulty: 'elite',
+    logic: 'strategic',
+    tier1Overrides: T1_DEFAULT,
+    procUnlocks: { mind: { attack: 2, defend: 2 } },
+    loot: [none(40), drop('clarity-serum', 30), drop('philosopher-tea', 20), drop('focus-vial', 10)],
+    philosophicalAlignment: { epistemology: 67, outlook: 67, scope: -67 },
+    skills: [skill('liars-echo')],
+    addedIn: ADDED,
+    tags: ['early-game', 'enemy'],
+});
+
+export const TolltakerOfTheFord = createEnemy({
+    id: 'enemy-tolltaker-of-the-ford',
+    name: 'Tolltaker of the Ford',
+    description: 'Everyone pays to cross. Some pay in coin, the rest in the only thing they brought.',
+    level: 13,
+    baseStats: enemyStatBudget(13, { heart: 2, body: 3, mind: 1 }),
+    mapName: 'fishing-village',
+    difficulty: 'elite',
+    logic: 'balanced',
+    tier1Overrides: T1_DEFAULT,
+    procUnlocks: { body: { attack: 2, defend: 2 } },
+    loot: [none(35), drop('body-elixir', 35), drop('healing-potion', 20), drop('antidote', 10)],
+    philosophicalAlignment: { epistemology: 0, outlook: -67, scope: 0 },
+    skills: [skill('ad-hominem-strike')],
+    addedIn: ADDED,
+    tags: ['early-game', 'enemy'],
+});
+
+export const TheMarketArbiter = createEnemy({
+    id: 'enemy-the-market-arbiter',
+    name: 'The Market Arbiter',
+    description: 'Sets the price of every quarrel in the village and collects on all of them at once.',
+    level: 15,
+    baseStats: enemyStatBudget(15, { heart: 3, body: 2, mind: 3 }),
+    mapName: 'fishing-village',
+    difficulty: 'boss',
+    logic: 'boss',
+    tier1Overrides: T1_DEFAULT,
+    procUnlocks: {
+        mind: { attack: 3, defend: 3 },
+        heart: { attack: 2, defend: 2 },
+    },
+    loot: [drop('healing-potion', 45), drop('philosopher-tea', 30), drop('heart-draught', 25)],
+    philosophicalAlignment: { epistemology: 67, outlook: 0, scope: 0 },
+    skills: [skill('false-dilemma'), skill('appeal-to-pity')],
+    befriendabilityConfig: {
+        hpGate: { belowPct: 0.35 },
+        requiredStances: ['mind'],
+        roundsThreshold: 4,
+    },
+    friendshipReward: {
+        items: [
+            { ...getConsumableById('philosopher-tea')! },
+            { ...getConsumableById('healing-potion')! },
+        ],
+        xpBonus: 60,
+        alignmentDelta: { outlook: +2 },
+        narrative: "The Arbiter closes the ledger before it is settled. 'There is one debt I keep mispricing,' " +
+                  "he says. 'The one owed to the person who refuses to pay it.'",
+        flagSet: 'befriended-market-arbiter',
+    },
+    addedIn: ADDED,
+    tags: ['early-game', 'boss', 'enemy'],
+});
+
+// ─── MID GAME (levels ~16-35) — 10 enemies ────────────────────────────────────
+
+export const RimeclawProwler = createEnemy({
+    id: 'enemy-rimeclaw-prowler',
+    name: 'Rimeclaw Prowler',
+    description: 'Winter taught it patience; hunger taught it the rest. It circles before it commits.',
+    level: 16,
+    baseStats: enemyStatBudget(16, { heart: 1, body: 3, mind: 1 }),
+    mapName: 'northern-forest',
+    difficulty: 'normal',
+    logic: 'aggressive',
+    tier1Overrides: T1_DEFAULT,
+    loot: [none(45), drop('body-elixir', 30), drop('berserker-brew', 15), drop('healing-potion', 10)],
+    philosophicalAlignment: { epistemology: 67, outlook: -67, scope: -67 },
+    skills: [skill('achilles-gambit')],
+    addedIn: ADDED,
+    tags: ['mid-game', 'enemy'],
+});
+
+export const GlassmindOracle = createEnemy({
+    id: 'enemy-glassmind-oracle',
+    name: 'Glassmind Oracle',
+    description: 'It has foreseen this fight a hundred ways and lost in ninety-nine of them. It picked the hundredth.',
+    level: 19,
+    baseStats: enemyStatBudget(19, { heart: 1, body: 1, mind: 4 }),
+    mapName: 'northern-forest',
+    difficulty: 'elite',
+    logic: 'strategic',
+    tier1Overrides: T1_DEFAULT,
+    procUnlocks: { mind: { attack: 2, defend: 2 } },
+    loot: [none(35), drop('clarity-serum', 30), drop('philosopher-tea', 25), drop('focus-vial', 10)],
+    philosophicalAlignment: { epistemology: 67, outlook: 0, scope: 67 },
+    skills: [skill('eternal-regress')],
+    addedIn: ADDED,
+    tags: ['mid-game', 'enemy'],
+});
+
+export const PenitentFlagellant = createEnemy({
+    id: 'enemy-penitent-flagellant',
+    name: 'Penitent Flagellant',
+    description: 'Each wound it takes it counts as grace. It would like to share the bounty.',
+    level: 21,
+    baseStats: enemyStatBudget(21, { heart: 4, body: 2, mind: 1 }),
+    mapName: 'northern-forest',
+    difficulty: 'elite',
+    logic: 'defensive',
+    tier1Overrides: T1_DEFAULT,
+    procUnlocks: { heart: { attack: 2, defend: 2 } },
+    loot: [none(35), drop('heart-draught', 35), drop('healing-potion', 20), drop('resonance-crystal', 10)],
+    philosophicalAlignment: { epistemology: -67, outlook: -67, scope: 67 },
+    skills: [skill('pascals-wager')],
+    addedIn: ADDED,
+    tags: ['mid-game', 'enemy'],
+});
+
+export const IronCovenanter = createEnemy({
+    id: 'enemy-iron-covenanter',
+    name: 'Iron Covenanter',
+    description: 'Sworn to a creed no one alive remembers. The oath keeps the body upright long past the cause.',
+    level: 23,
+    baseStats: enemyStatBudget(23, { heart: 2, body: 4, mind: 2 }),
+    mapName: 'northern-forest',
+    difficulty: 'elite',
+    logic: 'balanced',
+    tier1Overrides: T1_DEFAULT,
+    procUnlocks: { body: { attack: 2, defend: 2 } },
+    loot: [none(30), drop('body-elixir', 35), drop('healing-potion', 20), drop('revive-crystal', 5)],
+    philosophicalAlignment: { epistemology: -67, outlook: 0, scope: 0 },
+    skills: [skill('straw-giant')],
+    addedIn: ADDED,
+    tags: ['mid-game', 'enemy'],
+});
+
+export const MireOfConsensus = createEnemy({
+    id: 'enemy-mire-of-consensus',
+    name: 'Mire of Consensus',
+    description: 'Everything that ever agreed to rot together, agreeing still. It pulls down by majority.',
+    level: 25,
+    baseStats: enemyStatBudget(25, { heart: 3, body: 3, mind: 1 }),
+    mapName: 'northern-forest',
+    difficulty: 'elite',
+    logic: 'defensive',
+    tier1Overrides: T1_DEFAULT,
+    procUnlocks: { body: { attack: 2, defend: 2 }, heart: { attack: 2, defend: 2 } },
+    loot: [none(30), drop('void-essence', 30), drop('heart-draught', 25), drop('healing-potion', 15)],
+    philosophicalAlignment: { epistemology: 0, outlook: -67, scope: 0 },
+    skills: [skill('sorites-cascade')],
+    addedIn: ADDED,
+    tags: ['mid-game', 'enemy'],
+});
+
+export const ContrarianRevenant = createEnemy({
+    id: 'enemy-contrarian-revenant',
+    name: 'Contrarian Revenant',
+    description: 'Died mid-argument and refuses to concede the point. It will outlast your certainty.',
+    level: 27,
+    baseStats: enemyStatBudget(27, { heart: 1, body: 2, mind: 4 }),
+    mapName: 'northern-forest',
+    difficulty: 'elite',
+    logic: 'strategic',
+    tier1Overrides: T1_DEFAULT,
+    procUnlocks: { mind: { attack: 2, defend: 2 } },
+    loot: [none(30), drop('clarity-serum', 30), drop('philosopher-tea', 25), drop('void-essence', 15)],
+    philosophicalAlignment: { epistemology: 67, outlook: -67, scope: -67 },
+    skills: [skill('liars-echo'), skill('false-dilemma')],
+    addedIn: ADDED,
+    tags: ['mid-game', 'enemy'],
+});
+
+export const TheTithewarden = createEnemy({
+    id: 'enemy-the-tithewarden',
+    name: 'The Tithewarden',
+    description: 'Collects a tenth of everything: grain, blood, conviction. The ledger is never balanced.',
+    level: 29,
+    baseStats: enemyStatBudget(29, { heart: 3, body: 3, mind: 2 }),
+    mapName: 'fishing-village',
+    difficulty: 'boss',
+    logic: 'boss',
+    tier1Overrides: T1_DEFAULT,
+    procUnlocks: {
+        body: { attack: 3, defend: 3 },
+        heart: { attack: 2, defend: 2 },
+    },
+    loot: [drop('healing-potion', 45), drop('body-elixir', 30), drop('revive-crystal', 15), drop('void-essence', 10)],
+    philosophicalAlignment: { epistemology: -67, outlook: -67, scope: 0 },
+    skills: [skill('ad-hominem-strike'), skill('straw-giant')],
+    befriendabilityConfig: {
+        hpGate: { belowPct: 0.3 },
+        requiredStances: ['heart'],
+        roundsThreshold: 5,
+    },
+    friendshipReward: {
+        items: [
+            { ...getConsumableById('revive-crystal')! },
+            { ...getConsumableById('healing-potion')! },
+        ],
+        xpBonus: 90,
+        alignmentDelta: { outlook: +2, scope: -1 },
+        narrative: "The Tithewarden lays down the ledger. 'A tenth of everything,' it says. 'I never once tithed mercy. " +
+                  "Strange that it is the only column that balances.'",
+        flagSet: 'befriended-tithewarden',
+    },
+    addedIn: ADDED,
+    tags: ['mid-game', 'boss', 'enemy'],
+});
+
+export const ApostateAbbot = createEnemy({
+    id: 'enemy-apostate-abbot',
+    name: 'The Apostate Abbot',
+    description: 'He kept the robes and discarded the faith, then discovered the robes were the heavier of the two.',
+    level: 32,
+    baseStats: enemyStatBudget(32, { heart: 4, body: 1, mind: 3 }),
+    mapName: 'northern-forest',
+    difficulty: 'boss',
+    logic: 'boss',
+    tier1Overrides: T1_DEFAULT,
+    procUnlocks: {
+        heart: { attack: 3, defend: 3 },
+        mind: { attack: 3, defend: 3 },
+    },
+    loot: [drop('philosopher-tea', 40), drop('heart-draught', 30), drop('revive-crystal', 20), drop('resonance-crystal', 10)],
+    philosophicalAlignment: { epistemology: -67, outlook: -67, scope: 67 },
+    skills: [skill('pascals-wager'), skill('liars-echo')],
+    befriendabilityConfig: {
+        hpGate: { belowPct: 0.25 },
+        requiredStances: ['heart', 'mind'],
+        roundsThreshold: 6,
+    },
+    friendshipReward: {
+        items: [
+            dropItem('paradox-loop', 32, 'unique', () => 0.5),
+            { ...getConsumableById('philosopher-tea')! },
+            { ...getConsumableById('revive-crystal')! },
+        ],
+        xpBonus: 110,
+        alignmentDelta: { epistemology: +3, scope: -2 },
+        narrative: "The abbot unfastens the robes at last. 'I thought losing the faith would lighten me,' he says. " +
+                  "'No one warned me the vestments remember the shape of belief.'",
+        flagSet: 'befriended-apostate-abbot',
+    },
+    addedIn: ADDED,
+    tags: ['mid-game', 'boss', 'enemy'],
+});
+
+export const TheUnwriting = createEnemy({
+    id: 'enemy-the-unwriting',
+    name: 'The Unwriting',
+    description: 'Not a creature but a deletion: it removes the parts of an argument that held it together.',
+    level: 34,
+    baseStats: enemyStatBudget(34, { heart: 2, body: 2, mind: 5 }),
+    mapName: 'northern-forest',
+    difficulty: 'unique',
+    logic: 'strategic',
+    tier1Overrides: T1_DEFAULT,
+    procUnlocks: {
+        body: { attack: 3, defend: 3 },
+        mind: { attack: 3, defend: 3 },
+        heart: { attack: 3, defend: 3 },
+    },
+    loot: [drop('void-essence', 55), drop('philosopher-tea', 25), drop('revive-crystal', 15), drop('clarity-serum', 5)],
+    philosophicalAlignment: { epistemology: 67, outlook: -67, scope: 67 },
+    skills: [skill('eternal-regress'), skill('sorites-cascade')],
+    addedIn: ADDED,
+    tags: ['mid-game', 'unique', 'enemy'],
+});
+
+export const HarvestOfNames = createEnemy({
+    id: 'enemy-harvest-of-names',
+    name: 'The Harvest of Names',
+    description: 'It reaps what people called themselves. Each name it takes leaves the bearer a little less certain who is fighting.',
+    level: 35,
+    baseStats: enemyStatBudget(35, { heart: 3, body: 2, mind: 3 }),
+    mapName: 'northern-forest',
+    difficulty: 'unique',
+    logic: 'boss',
+    tier1Overrides: T1_DEFAULT,
+    procUnlocks: {
+        body: { attack: 3, defend: 3 },
+        mind: { attack: 3, defend: 3 },
+        heart: { attack: 3, defend: 3 },
+    },
+    loot: [drop('void-essence', 50), drop('revive-crystal', 25), drop('resonance-crystal', 15), drop('philosopher-tea', 10)],
+    philosophicalAlignment: { epistemology: 0, outlook: -67, scope: 67 },
+    skills: [skill('liars-echo'), skill('eternal-regress')],
+    addedIn: ADDED,
+    tags: ['mid-game', 'unique', 'enemy'],
+});
+
+// ─── LATE GAME (levels ~36-50) — 10 enemies ───────────────────────────────────
+
+export const FamineOfTheDeepWood = createEnemy({
+    id: 'enemy-famine-of-the-deep-wood',
+    name: 'Famine of the Deep Wood',
+    description: 'The forest in its starving aspect. Everything it touches forgets how to grow back.',
+    level: 36,
+    baseStats: enemyStatBudget(36, { heart: 1, body: 4, mind: 1 }),
+    mapName: 'northern-forest',
+    difficulty: 'elite',
+    logic: 'aggressive',
+    tier1Overrides: T1_DEFAULT,
+    procUnlocks: { body: { attack: 3, defend: 2 } },
+    loot: [none(25), drop('void-essence', 40), drop('berserker-brew', 20), drop('healing-potion', 15)],
+    philosophicalAlignment: { epistemology: 0, outlook: -67, scope: 0 },
+    skills: [skill('straw-giant'), skill('achilles-gambit')],
+    addedIn: ADDED,
+    tags: ['late-game', 'enemy'],
+});
+
+export const CathedralOfDoubt = createEnemy({
+    id: 'enemy-cathedral-of-doubt',
+    name: 'Cathedral of Doubt',
+    description: 'A structure built entirely of unanswered questions, vast enough to hold a congregation of them.',
+    level: 38,
+    baseStats: enemyStatBudget(38, { heart: 2, body: 1, mind: 4 }),
+    mapName: 'northern-forest',
+    difficulty: 'elite',
+    logic: 'defensive',
+    tier1Overrides: T1_DEFAULT,
+    procUnlocks: { mind: { attack: 3, defend: 3 } },
+    loot: [none(25), drop('philosopher-tea', 40), drop('clarity-serum', 25), drop('void-essence', 15)],
+    philosophicalAlignment: { epistemology: 67, outlook: -67, scope: 67 },
+    skills: [skill('eternal-regress'), skill('sorites-cascade')],
+    addedIn: ADDED,
+    tags: ['late-game', 'enemy'],
+});
+
+export const WarrantOfTheVoid = createEnemy({
+    id: 'enemy-warrant-of-the-void',
+    name: 'Warrant of the Void',
+    description: 'It arrives with documentation. The charge is existence; the sentence is already carried out.',
+    level: 40,
+    baseStats: enemyStatBudget(40, { heart: 1, body: 3, mind: 3 }),
+    mapName: 'northern-forest',
+    difficulty: 'boss',
+    logic: 'boss',
+    tier1Overrides: T1_DEFAULT,
+    procUnlocks: {
+        body: { attack: 3, defend: 3 },
+        mind: { attack: 3, defend: 3 },
+    },
+    loot: [drop('void-essence', 45), drop('revive-crystal', 25), drop('philosopher-tea', 20), drop('resonance-crystal', 10)],
+    philosophicalAlignment: { epistemology: 67, outlook: -67, scope: 67 },
+    skills: [skill('ad-hominem-strike'), skill('liars-echo'), skill('eternal-regress')],
+    befriendabilityConfig: {
+        hpGate: { belowPct: 0.2 },
+        requiredStances: ['mind'],
+        roundsThreshold: 7,
+    },
+    friendshipReward: {
+        items: [
+            dropItem('paradox-loop', 40, 'unique', () => 0.5),
+            { ...getConsumableById('revive-crystal')! },
+            { ...getConsumableById('void-essence')! },
+        ],
+        xpBonus: 140,
+        alignmentDelta: { outlook: +3, scope: -2 },
+        narrative: "The Warrant folds itself in half, then in half again, until the charge no longer fits the page. " +
+                  "'A clerical error,' it admits. 'You were never the defendant. You were the appeal.'",
+        flagSet: 'befriended-warrant-of-the-void',
+    },
+    addedIn: ADDED,
+    tags: ['late-game', 'boss', 'enemy'],
+});
+
+export const TheSchismarch = createEnemy({
+    id: 'enemy-the-schismarch',
+    name: 'The Schismarch',
+    description: 'Sovereign of every split that ever broke a faith in two. It rules by dividing what stands before it.',
+    level: 42,
+    baseStats: enemyStatBudget(42, { heart: 3, body: 2, mind: 4 }),
+    mapName: 'northern-forest',
+    difficulty: 'boss',
+    logic: 'boss',
+    tier1Overrides: T1_DEFAULT,
+    procUnlocks: {
+        mind: { attack: 3, defend: 3 },
+        heart: { attack: 3, defend: 3 },
+        body: { attack: 2, defend: 2 },
+    },
+    loot: [drop('philosopher-tea', 40), drop('void-essence', 30), drop('revive-crystal', 20), drop('resonance-crystal', 10)],
+    philosophicalAlignment: { epistemology: -67, outlook: -67, scope: 0 },
+    skills: [skill('false-dilemma'), skill('liars-echo'), skill('pascals-wager')],
+    befriendabilityConfig: {
+        hpGate: { belowPct: 0.25 },
+        requiredStances: ['heart', 'mind'],
+        roundsThreshold: 7,
+    },
+    friendshipReward: {
+        items: [
+            dropItem('paradox-loop', 42, 'unique', () => 0.5),
+            { ...getConsumableById('philosopher-tea')! },
+            { ...getConsumableById('revive-crystal')! },
+        ],
+        xpBonus: 150,
+        alignmentDelta: { scope: +3 },
+        narrative: "The Schismarch hesitates before the cut. 'I have divided everything I have ever met,' it says. " +
+                  "'You are the first thing I would rather keep whole.'",
+        flagSet: 'befriended-schismarch',
+    },
+    addedIn: ADDED,
+    tags: ['late-game', 'boss', 'enemy'],
+});
+
+export const GravewardKeeper = createEnemy({
+    id: 'enemy-graveward-keeper',
+    name: 'Graveward Keeper',
+    description: 'Tends the plots of arguments that died unwon. It would prefer you join the quiet rows.',
+    level: 44,
+    baseStats: enemyStatBudget(44, { heart: 4, body: 3, mind: 1 }),
+    mapName: 'northern-forest',
+    difficulty: 'elite',
+    logic: 'balanced',
+    tier1Overrides: T1_DEFAULT,
+    procUnlocks: { heart: { attack: 3, defend: 3 }, body: { attack: 2, defend: 2 } },
+    loot: [none(25), drop('heart-draught', 35), drop('revive-crystal', 25), drop('healing-potion', 15)],
+    philosophicalAlignment: { epistemology: -67, outlook: -67, scope: 67 },
+    skills: [skill('appeal-to-pity'), skill('pascals-wager')],
+    addedIn: ADDED,
+    tags: ['late-game', 'enemy'],
+});
+
+export const ProsecutorOfTheReal = createEnemy({
+    id: 'enemy-prosecutor-of-the-real',
+    name: 'Prosecutor of the Real',
+    description: 'Argues that nothing you believe is admissible. Disturbingly, the evidence keeps agreeing.',
+    level: 46,
+    baseStats: enemyStatBudget(46, { heart: 1, body: 2, mind: 5 }),
+    mapName: 'northern-forest',
+    difficulty: 'elite',
+    logic: 'strategic',
+    tier1Overrides: T1_DEFAULT,
+    procUnlocks: { mind: { attack: 3, defend: 3 } },
+    loot: [none(25), drop('clarity-serum', 35), drop('philosopher-tea', 25), drop('void-essence', 15)],
+    philosophicalAlignment: { epistemology: 67, outlook: 0, scope: 67 },
+    skills: [skill('eternal-regress'), skill('false-dilemma')],
+    addedIn: ADDED,
+    tags: ['late-game', 'enemy'],
+});
+
+export const TheLastConsensus = createEnemy({
+    id: 'enemy-the-last-consensus',
+    name: 'The Last Consensus',
+    description: 'What remains when every disagreement has been resolved by force. It is perfectly, terribly agreed.',
+    level: 48,
+    baseStats: enemyStatBudget(48, { heart: 3, body: 3, mind: 3 }),
+    mapName: 'northern-forest',
+    difficulty: 'boss',
+    logic: 'boss',
+    tier1Overrides: T1_DEFAULT,
+    procUnlocks: {
+        body: { attack: 3, defend: 3 },
+        mind: { attack: 3, defend: 3 },
+        heart: { attack: 3, defend: 3 },
+    },
+    loot: [drop('void-essence', 45), drop('revive-crystal', 30), drop('philosopher-tea', 15), drop('resonance-crystal', 10)],
+    philosophicalAlignment: { epistemology: -67, outlook: 67, scope: 67 },
+    skills: [skill('sorites-cascade'), skill('straw-giant'), skill('bootstrap-paradox')],
+    befriendabilityConfig: {
+        hpGate: { belowPct: 0.2 },
+        requiredStances: ['mind', 'heart'],
+        roundsThreshold: 8,
+    },
+    friendshipReward: {
+        items: [
+            dropItem('paradox-loop', 48, 'unique', () => 0.5),
+            { ...getConsumableById('revive-crystal')! },
+            { ...getConsumableById('philosopher-tea')! },
+        ],
+        xpBonus: 175,
+        alignmentDelta: { outlook: -3, scope: -2 },
+        narrative: "The Consensus permits one dissent. 'Agreement was never the goal,' it confesses, the unanimity " +
+                  "cracking pleasantly. 'It was only the easiest thing to enforce. You disagreed beautifully.'",
+        flagSet: 'befriended-last-consensus',
+    },
+    addedIn: ADDED,
+    tags: ['late-game', 'boss', 'enemy'],
+});
+
+export const AxiomBreaker = createEnemy({
+    id: 'enemy-axiom-breaker',
+    name: 'The Axiom-Breaker',
+    description: 'It does not refute your first principles. It simply makes them stop being true.',
+    level: 50,
+    baseStats: enemyStatBudget(50, { heart: 3, body: 3, mind: 4 }),
+    mapName: 'northern-forest',
+    difficulty: 'unique',
+    logic: 'boss',
+    tier1Overrides: T1_DEFAULT,
+    procUnlocks: {
+        body: { attack: 3, defend: 3 },
+        mind: { attack: 3, defend: 3 },
+        heart: { attack: 3, defend: 3 },
+    },
+    loot: [drop('void-essence', 50), drop('revive-crystal', 30), drop('resonance-crystal', 15), drop('philosopher-tea', 5)],
+    philosophicalAlignment: { epistemology: 67, outlook: -67, scope: 67 },
+    skills: [skill('eternal-regress'), skill('liars-echo'), skill('bootstrap-paradox')],
+    befriendabilityConfig: {
+        hpGate: { belowPct: 0.15 },
+        requiredStances: ['mind', 'heart'],
+        roundsThreshold: 9,
+    },
+    friendshipReward: {
+        items: [
+            dropItem('paradox-loop', 50, 'unique', () => 0.5),
+            { ...getConsumableById('revive-crystal')! },
+            { ...getConsumableById('void-essence')! },
+        ],
+        xpBonus: 200,
+        alignmentDelta: { epistemology: -3, outlook: +3 },
+        narrative: "The Axiom-Breaker stays its hand over your last certainty. 'I could unmake it,' it says. " +
+                  "'But you held it so gently. I have unmade everything except the wish to leave one thing standing.'",
+        flagSet: 'befriended-axiom-breaker',
+    },
+    addedIn: ADDED,
+    tags: ['late-game', 'unique', 'boss', 'enemy'],
+});
+
+export const PallbearerOfReason = createEnemy({
+    id: 'enemy-pallbearer-of-reason',
+    name: 'Pallbearer of Reason',
+    description: 'Carries the coffin of every theory that overreached. It walks slowly, and it never sets the box down.',
+    level: 49,
+    baseStats: enemyStatBudget(49, { heart: 2, body: 4, mind: 3 }),
+    mapName: 'northern-forest',
+    difficulty: 'elite',
+    logic: 'defensive',
+    tier1Overrides: T1_DEFAULT,
+    procUnlocks: { body: { attack: 3, defend: 3 }, mind: { attack: 2, defend: 2 } },
+    loot: [none(25), drop('body-elixir', 35), drop('void-essence', 25), drop('revive-crystal', 15)],
+    philosophicalAlignment: { epistemology: 67, outlook: -67, scope: 0 },
+    skills: [skill('straw-giant'), skill('eternal-regress')],
+    addedIn: ADDED,
+    tags: ['late-game', 'enemy'],
+});
+
+export const TheTerminalProof = createEnemy({
+    id: 'enemy-the-terminal-proof',
+    name: 'The Terminal Proof',
+    description: 'A demonstration so complete it ends the conversation, and the things that were having it.',
+    level: 50,
+    baseStats: enemyStatBudget(50, { heart: 2, body: 3, mind: 5 }),
+    mapName: 'northern-forest',
+    difficulty: 'unique',
+    logic: 'strategic',
+    tier1Overrides: T1_DEFAULT,
+    procUnlocks: {
+        body: { attack: 3, defend: 3 },
+        mind: { attack: 3, defend: 3 },
+        heart: { attack: 3, defend: 3 },
+    },
+    loot: [drop('void-essence', 55), drop('revive-crystal', 25), drop('philosopher-tea', 15), drop('resonance-crystal', 5)],
+    philosophicalAlignment: { epistemology: 67, outlook: 0, scope: 67 },
+    skills: [skill('bootstrap-paradox'), skill('eternal-regress'), skill('sorites-cascade')],
+    addedIn: ADDED,
+    tags: ['late-game', 'unique', 'enemy'],
+});
+
 // ─── Library indices ──────────────────────────────────────────────────────────
 
 /** Spec 07 + Phase 114 — all 25 production enemies, in difficulty order. */
@@ -1376,6 +2076,15 @@ export const EnemyLibrary = [
     BalanceJudge, // Phase 121
     // Unique
     EchoOfPyrrhonia, EternalAutumn, ShadowOfTheFirst,
+    // 2026-06-07 early-game
+    SaltGnawRat, DriftwoodHusk, PettyCutpurse, BogWillStripling, ApprenticeHeretic,
+    ThicketAmbusher, ReefBarnacleColony, WanderingSophist, TolltakerOfTheFord, TheMarketArbiter,
+    // 2026-06-07 mid-game
+    RimeclawProwler, GlassmindOracle, PenitentFlagellant, IronCovenanter, MireOfConsensus,
+    ContrarianRevenant, TheTithewarden, ApostateAbbot, TheUnwriting, HarvestOfNames,
+    // 2026-06-07 late-game
+    FamineOfTheDeepWood, CathedralOfDoubt, WarrantOfTheVoid, TheSchismarch, GravewardKeeper,
+    ProsecutorOfTheReal, TheLastConsensus, AxiomBreaker, PallbearerOfReason, TheTerminalProof,
 ] as const;
 
 /** Per-map enemy pools used by the encounter generator. */
@@ -1385,6 +2094,9 @@ export const EnemiesByMap = {
         WetHound, MournfulGull, HollowEyedBeggar,
         TideflukeReaver,
         CoastalTyrant,
+        // 2026-06-07 additions
+        SaltGnawRat, DriftwoodHusk, PettyCutpurse, ApprenticeHeretic,
+        ReefBarnacleColony, TolltakerOfTheFord, TheMarketArbiter, TheTithewarden,
     ],
     'northern-forest': [
         LullabyMoth,
@@ -1394,6 +2106,12 @@ export const EnemiesByMap = {
         TheDisagreement, NightmareStag, TheForestMind,
         BalanceJudge, // Phase 121
         EchoOfPyrrhonia, EternalAutumn, ShadowOfTheFirst,
+        // 2026-06-07 additions
+        BogWillStripling, ThicketAmbusher, WanderingSophist,
+        RimeclawProwler, GlassmindOracle, PenitentFlagellant, IronCovenanter, MireOfConsensus,
+        ContrarianRevenant, ApostateAbbot, TheUnwriting, HarvestOfNames,
+        FamineOfTheDeepWood, CathedralOfDoubt, WarrantOfTheVoid, TheSchismarch, GravewardKeeper,
+        ProsecutorOfTheReal, TheLastConsensus, AxiomBreaker, PallbearerOfReason, TheTerminalProof,
     ],
 } as const;
 
@@ -1435,6 +2153,39 @@ export const ENEMY_REGISTRY = {
     // Phase 121 balance audit anchors.
     'audit-sentinel':      AuditSentinel,
     'balance-judge':       BalanceJudge,
+    // 2026-06-07 early-game additions.
+    'salt-gnaw-rat':            SaltGnawRat,
+    'driftwood-husk':           DriftwoodHusk,
+    'petty-cutpurse':           PettyCutpurse,
+    'bog-will-stripling':       BogWillStripling,
+    'apprentice-heretic':       ApprenticeHeretic,
+    'thicket-ambusher':         ThicketAmbusher,
+    'reef-barnacle-colony':     ReefBarnacleColony,
+    'wandering-sophist':        WanderingSophist,
+    'tolltaker-of-the-ford':    TolltakerOfTheFord,
+    'the-market-arbiter':       TheMarketArbiter,
+    // 2026-06-07 mid-game additions.
+    'rimeclaw-prowler':         RimeclawProwler,
+    'glassmind-oracle':         GlassmindOracle,
+    'penitent-flagellant':      PenitentFlagellant,
+    'iron-covenanter':          IronCovenanter,
+    'mire-of-consensus':        MireOfConsensus,
+    'contrarian-revenant':      ContrarianRevenant,
+    'the-tithewarden':          TheTithewarden,
+    'apostate-abbot':           ApostateAbbot,
+    'the-unwriting':            TheUnwriting,
+    'harvest-of-names':         HarvestOfNames,
+    // 2026-06-07 late-game additions.
+    'famine-of-the-deep-wood':  FamineOfTheDeepWood,
+    'cathedral-of-doubt':       CathedralOfDoubt,
+    'warrant-of-the-void':      WarrantOfTheVoid,
+    'the-schismarch':           TheSchismarch,
+    'graveward-keeper':         GravewardKeeper,
+    'prosecutor-of-the-real':   ProsecutorOfTheReal,
+    'the-last-consensus':       TheLastConsensus,
+    'axiom-breaker':            AxiomBreaker,
+    'pallbearer-of-reason':     PallbearerOfReason,
+    'the-terminal-proof':       TheTerminalProof,
 } as const;
 
 export type EnemySlug = keyof typeof ENEMY_REGISTRY;

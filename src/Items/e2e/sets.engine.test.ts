@@ -71,12 +71,15 @@ const ZERO_RESOURCES: CombatResources = { heart: 0, body: 0, mind: 0, fallacy: 0
 // ─── Tests ───────────────────────────────────────────────────────────────────
 
 describe('Phase 54 — set library', () => {
-    it('ships exactly 3 initial sets in deterministic order', () => {
-        expect(itemSetLibrary.map(s => s.id)).toEqual([
+    it('ships the 3 initial sets first, in deterministic order', () => {
+        // Content expansion appends further sets; the original three remain the
+        // first entries in declaration order.
+        expect(itemSetLibrary.map(s => s.id).slice(0, 3)).toEqual([
             'wanderers-road',
             'iron-discipline',
             'scholars-circle',
         ]);
+        expect(itemSetLibrary.length).toBeGreaterThanOrEqual(3);
     });
 
     it('getItemSetById returns the matching set or undefined', () => {

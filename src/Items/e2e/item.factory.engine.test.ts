@@ -62,21 +62,28 @@ afterEach(() => {
 // ─── Templates inventory ────────────────────────────────────────────────────
 
 describe('equipment.templates: inventory (Spec 05c §6)', () => {
-    it('exports exactly 21 base templates', () => {
-        expect(equipmentTemplates).toHaveLength(21);
+    it('exports the full expanded template library (>= 43 entries)', () => {
+        // Original 21 (7 slots × lvl 1/10/20) + 2026-06-07 content pass.
+        expect(equipmentTemplates.length).toBeGreaterThanOrEqual(43);
     });
 
-    it('every slot has exactly 3 templates across lvl 1 / 10 / 20', () => {
+    it('every slot covers the original lvl 1 / 10 / 20 tiers ascending', () => {
         const slots = ['weapon', 'armor', 'head', 'body', 'hands', 'feet', 'accessory'] as const;
         for (const slot of slots) {
             const list = getTemplatesBySlot(slot);
-            expect(list).toHaveLength(3);
-            expect(list.map(t => t.requiredLevel)).toEqual([1, 10, 20]);
+            expect(list.length).toBeGreaterThanOrEqual(3);
+            // `getTemplatesBySlot` sorts ascending by requiredLevel.
+            const levels = list.map(t => t.requiredLevel);
+            const sorted = [...levels].sort((a, b) => a - b);
+            expect(levels).toEqual(sorted);
+            for (const lvl of [1, 10, 20]) {
+                expect(levels).toContain(lvl);
+            }
         }
     });
 
-    it('exports exactly 2 Unique templates (Spec 05c §7)', () => {
-        expect(uniqueTemplates).toHaveLength(2);
+    it('exports the curated Unique templates (>= 2)', () => {
+        expect(uniqueTemplates.length).toBeGreaterThanOrEqual(2);
         expect(getUniqueTemplate('axioms-edge')).toBeDefined();
         expect(getUniqueTemplate('paradox-loop')).toBeDefined();
     });

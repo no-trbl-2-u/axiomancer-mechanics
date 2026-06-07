@@ -82,4 +82,44 @@ export interface Modifier {
     validSlots: EquipmentSlot[];
     levelTiers: ModValueTier[];
     payload: ModifierPayload;
+    /**
+     * Content-provenance metadata used by the tuning `--focus` filter.
+     * `addedIn` is an ISO date / phase tag; `tags` are freeform labels.
+     * Optional and ignored by the roll/resolve engine.
+     */
+    addedIn?: string;
+    tags?: string[];
+}
+
+/**
+ * Affix role for the prefix/suffix naming layer (`src/Items/affix.library.ts`).
+ * Prefixes lead the item name ("Keen Iron Blade"); suffixes trail it
+ * ("Iron Blade of the Bear"). Orthogonal to `Modifier` — an `Affix` references
+ * one or more catalogue modifier IDs and supplies the display word.
+ */
+export type AffixRole = 'prefix' | 'suffix';
+
+/**
+ * A named affix in the prefix/suffix naming layer. Selecting an affix during a
+ * drop both contributes its `modIds` to the rolled modifier set and decorates
+ * the item's display name with `word`. Authored in `affix.library.ts`.
+ *
+ * @property id         - Stable identifier.
+ * @property word       - Display word inserted into the item name.
+ * @property role       - Whether the word leads (prefix) or trails (suffix).
+ * @property modIds     - Catalogue modifier IDs this affix grants.
+ * @property validSlots - Slots this affix may apply to.
+ * @property hiddenRarity - Draw weight, reusing the modifier rarity weights.
+ * @property minLevel   - Minimum item level this affix can roll on.
+ */
+export interface Affix {
+    id: string;
+    word: string;
+    role: AffixRole;
+    modIds: string[];
+    validSlots: EquipmentSlot[];
+    hiddenRarity: HiddenModRarity;
+    minLevel: number;
+    addedIn?: string;
+    tags?: string[];
 }

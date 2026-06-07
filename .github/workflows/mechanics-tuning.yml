@@ -1,0 +1,82 @@
+name: mechanics-tuning
+
+# Manually fire one tuning tick: runs the character × playstyle × enemy balance
+# matrix, A/B-tests numeric candidates, and delivers results on two tracks —
+# the data report is pushed to `main`, and the suggestions + any auto-applied
+# winners are pushed to a new branch with a PR opened for review.
+#
+# Trigger: Actions tab → "mechanics-tuning" → Run workflow. Provide an optional
+# focus (e.g. "new status effects since April", "early-game enemy balance").
+#
+# Required secrets (Settings → Secrets and variables → Actions):
+#   ANTHROPIC_API_KEY — used both to run Claude Code (the skill) and by the
+#                       hybrid analyst's optional programmatic API path. If
+#                       absent, the analyst falls back to the offline heuristic.
+#
+# The auto-provisioned GITHUB_TOKEN is used for git push (to main) and for
+# opening the suggestions PR.
+
+on:
+  workflow_dispatch:
+    inputs:
+      focus:
+        description: 'Tuning focus (e.g. "early-game enemy balance", "effects since April")'
+        required: false
+        default: ''
+      max_iterations:
+        description: 'Max A/B experiments to attempt this tick'
+        required: false
+        default: '3'
+
+permissions:
+  contents: write        # push the data report to main; push the PR branch
+  pull-requests: write   # open the suggestions PR
+  id-token: write        # for Anthropic's auth proxy
+
+concurrency:
+  group: mechanics-tuning
+  cancel-in-progress: false
+
+jobs:
+  tune:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Configure git identity
+        run: |
+          git config user.name  "axiomancer-tuning[bot]"
+          git config user.email "41898282+axiomancer-tuning[bot]@users.noreply.github.com"
+
+      - name: Run /mechanics-tuning
+        uses: anthropics/claude-code-base-action@beta
+        with:
+          prompt: '/mechanics-tuning --focus="${{ github.event.inputs.focus }}" --use-api --max-iterations=${{ github.event.inputs.max_iterations }}'
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # The skill needs to read everything, run npm (tune + verify), edit
+          # the winning numeric values, and run git / gh for the two-track
+          # delivery. The workflow itself is the trust boundary, so run with
+          # permissions bypassed (the equivalent of --dangerously-skip-permissions).
+          allowed_tools: "Bash,Read,Edit,Write,Glob,Grep,Agent,TodoWrite,WebFetch,WebSearch"
+          settings: '{"permissions":{"defaultMode":"bypassPermissions","skipDangerousModePermissionPrompt":true}}'
+          timeout_minutes: '110'
+        env:
+          # Exposed for the hybrid analyst's programmatic Claude API path.
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}

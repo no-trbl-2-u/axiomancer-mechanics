@@ -2,6 +2,28 @@ import type { CombatAction, Stance } from '../Combat';
 import type { RoundEvent } from '../Combat/combat.resolver';
 import type { CombatEndReport } from '../Game/store';
 
+/**
+ * Structural advisor the strategist policy consults for cross-run knowledge.
+ * The tuning workflow's knowledge store (`src/Tuning/strategist.knowledge.ts`)
+ * satisfies this shape; keeping it structural avoids a Playtest→Tuning import.
+ * Methods are keyed by an enemy key (slug or enemy id).
+ */
+export interface StrategistAdvisor {
+    recommendStance(enemyKey: string): Stance | undefined;
+    recommendSkill(enemyKey: string): string | undefined;
+}
+
+/**
+ * Optional context threaded into `selectPolicyAction`. Absent for all existing
+ * callers (preserving today's stateless behaviour); the tuning matrix runner
+ * supplies it so the strategist can exploit learned enemy weaknesses.
+ */
+export interface PolicyContext {
+    strategist?: StrategistAdvisor;
+    /** Enemy key used for advisor lookups. Defaults to `combat.enemy.id`. */
+    enemyKey?: string;
+}
+
 export type PlaytestPolicy =
     | 'aggressive'
     | 'defensive'
