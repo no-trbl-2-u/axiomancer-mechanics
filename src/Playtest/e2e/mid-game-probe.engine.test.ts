@@ -1,12 +1,8 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { runPlaytestScenario } from '../playtest.runner';
-import { mockFixedRng } from '../../test-utils/rng';
 import type { PlaytestScenario } from '../types';
 
 describe('Mid-game reference probe (Phase 119)', () => {
-    beforeEach(() => {
-        mockFixedRng();
-    });
 
     it('should support wanderer-level-6 preset', () => {
         const scenario: PlaytestScenario = {
