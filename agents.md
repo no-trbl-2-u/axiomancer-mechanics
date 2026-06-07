@@ -132,6 +132,7 @@ an open question in a spec.
 | `march` | `skills/march.md` | Outer dispatcher: triage → critique → phase → expand → iterate. |
 | `oversight` | `skills/oversight.md` | **User-in-the-loop.** The only skill that asks anything. |
 | `jot` | `skills/jot.md` | Drop a quick observation into CRITIQUE.md. |
+| `mechanics-tuning` | `skills/mechanics-tuning.md` | Run the balance matrix, A/B-test numeric changes; data report → `main`, suggestions + winners → PR. |
 
 Also available (project-specific):
 
@@ -163,6 +164,7 @@ Also available (project-specific):
 |---|---|
 | `scout` | Open-web research: TTRPG specs, game design patterns, references |
 | `mechanics-expert` | Game mechanic review, balance analysis, spec alignment checks |
+| `balance-analyst` | Reads tuning-run logs/reports; returns balance recommendations (registry auto-apply candidates + propose-only ideas). |
 
 The main agent handles code, wiring, decisions. Spawn sub-agents for research
 and domain analysis.
