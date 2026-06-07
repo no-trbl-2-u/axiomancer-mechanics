@@ -19,20 +19,28 @@ export {
 export { buildLoadoutCharacter } from './loadout.builder';
 export { scaleEnemyForCell } from './enemy.scaler';
 export {
-    loadKnowledge, saveKnowledge, emptyKnowledge, updateFromRun,
+    loadKnowledge, saveKnowledge, emptyKnowledge, cloneKnowledge, updateFromRun,
     recommendStance, recommendSkill, makeAdvisor, DEFAULT_KNOWLEDGE_PATH,
 } from './strategist.knowledge';
 export { runMatrix, MATRIX_MAX_ROUNDS } from './matrix.runner';
 export type { RunMatrixOptions } from './matrix.runner';
-export { scoreHealth, compareHealth } from './health.metrics';
+export {
+    scoreHealth, compareHealth, ENGAGEMENT_FLOOR, BAND_WEIGHT, ENGAGEMENT_WEIGHT,
+} from './health.metrics';
+export { cellEngagementShare, runEngagementShare } from './engagement.metrics';
+export { bandFor, bandDeviation, DIFFICULTY_BANDS, NORMAL_BAND } from './difficulty.bands';
 export { runExperiment } from './experiment.runner';
 export type { ExperimentDeps } from './experiment.runner';
 export { runVerify } from './verify.gate';
 export type { VerifyResult } from './verify.gate';
 export {
-    requestRecommendations, heuristicRecommendations,
+    requestRecommendations, heuristicRecommendations, validateCandidates,
 } from './analyst.bridge';
 export type { AnalystRequest, AnalystResponse, AnalystOptions } from './analyst.bridge';
+export {
+    loadLedger, saveLedger, emptyLedger, recordExperiments, cooldownDirections,
+    DEFAULT_LEDGER_PATH, DEFAULT_COOLDOWN,
+} from './ledger';
 export {
     renderDataReport, renderDataReportJson, renderSuggestions,
 } from './report.generator';

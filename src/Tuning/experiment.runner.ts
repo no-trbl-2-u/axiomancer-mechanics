@@ -16,10 +16,20 @@ import { compareHealth } from './health.metrics';
 import type {
     Candidate,
     ExperimentResult,
+    HealthComparison,
     HealthScore,
     MatrixPlan,
 } from './types';
 import type { ApplyResult, SourceBackup } from './tunable.applier';
+
+/** A non-decision comparison (no-op / propose-only / apply-failed paths). */
+function inertComparison(note: string): HealthComparison {
+    return {
+        winner: 'A', delta: 0, significant: false, confidence: 'low',
+        regression: false, engagementRegression: false,
+        stats: { meanDelta: 0, stdErr: 0, n: 0, ciMargin: 0 }, note,
+    };
+}
 
 export interface ExperimentDeps {
     /** Score matrix health against the CURRENT on-disk source (post-edit). */
@@ -55,7 +65,7 @@ export function runExperiment(
         return {
             candidate, paramId: candidate.paramId, oldValue: NaN, newValue: NaN,
             variantA, variantB: variantA,
-            comparison: { winner: 'A', delta: 0, significant: false, regression: false, note: 'propose-only' },
+            comparison: inertComparison('propose-only'),
             kept: false, verifyPassed: false, notes,
         };
     }
@@ -67,7 +77,7 @@ export function runExperiment(
         return {
             candidate, paramId: candidate.paramId, oldValue, newValue: oldValue,
             variantA, variantB: variantA,
-            comparison: { winner: 'A', delta: 0, significant: false, regression: false, note: 'no-op after clamp' },
+            comparison: inertComparison('no-op after clamp'),
             kept: false, verifyPassed: false, notes,
         };
     }
@@ -79,7 +89,7 @@ export function runExperiment(
         return {
             candidate, paramId: candidate.paramId, oldValue, newValue: oldValue,
             variantA, variantB: variantA,
-            comparison: { winner: 'A', delta: 0, significant: false, regression: false, note: 'apply failed' },
+            comparison: inertComparison('apply failed'),
             kept: false, verifyPassed: false, notes,
         };
     }

@@ -1,17 +1,22 @@
 /**
  * Strategist cross-run knowledge store.
  *
- * Mines per-run transcripts for how much damage the player dealt in each stance
- * and with each skill against a given enemy, accumulates it across runs/cells,
- * and exposes an advisor the strategist policy consults to exploit learned
- * weaknesses. Persisted as JSON so learning survives across tuning ticks.
+ * The strategist is the doctrine's witness: it is meant to win by APPLYING and
+ * EXPLOITING status effects, not by trading basic attacks. So it learns, per
+ * enemy, which stance and which skill yield the most status-effect leverage
+ * (effects applied to the enemy + synergies exploited), and recommends those
+ * first. Raw damage is still tracked and used as a fallback / tiebreak so the
+ * policy never stalls when no status data exists yet.
+ *
+ * Mines per-run transcripts, accumulates across runs/cells, and persists as
+ * JSON so learning survives across tuning ticks.
  */
 
 import * as fs from 'fs';
 import * as path from 'path';
 import type { Stance } from '../Combat';
 import type { PlaytestRunSummary, StrategistAdvisor } from '../Playtest/types';
-import type { EnemyKnowledge, StrategistKnowledge } from './types';
+import type { EnemyKnowledge, RunningMean, StrategistKnowledge } from './types';
 
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 export const DEFAULT_KNOWLEDGE_PATH = path.join(
@@ -45,13 +50,28 @@ export function saveKnowledge(
     fs.writeFileSync(filePath, JSON.stringify(knowledge, null, 2) + '\n', 'utf8');
 }
 
-function ensureEnemy(knowledge: StrategistKnowledge, slug: string): EnemyKnowledge {
+/** Deep clone a knowledge snapshot (so a tick can freeze its measurement). */
+export function cloneKnowledge(knowledge: StrategistKnowledge): StrategistKnowledge {
+    return JSON.parse(JSON.stringify(knowledge)) as StrategistKnowledge;
+}
+
+function ensureEnemy(knowledge: StrategistKnowledge, slug: string): Required<EnemyKnowledge> {
     let entry = knowledge.enemies[slug];
     if (!entry) {
         entry = { slug, stanceDamage: {}, skillDamage: {}, sampleCount: 0 };
         knowledge.enemies[slug] = entry;
     }
-    return entry;
+    // Back-compat: older persisted entries lack the status tables.
+    entry.stanceStatus ??= {};
+    entry.skillStatus ??= {};
+    return entry as Required<EnemyKnowledge>;
+}
+
+function add(table: Record<string, RunningMean>, key: string, value: number): void {
+    const cell = table[key] ?? { total: 0, samples: 0 };
+    cell.total += value;
+    cell.samples += 1;
+    table[key] = cell;
 }
 
 /** Damage dealt to the enemy by a single round's combat events. */
@@ -67,9 +87,21 @@ function roundDamageToEnemy(events: PlaytestRunSummary['transcript'][number]['co
     }, 0);
 }
 
+/** Status-effect leverage the player generated this round (apply + exploit). */
+function roundStatusLeverage(events: PlaytestRunSummary['transcript'][number]['combatEvents']): number {
+    return events.reduce((total, event) => {
+        if (event.phase === 'skill' && event.kind === 'effect-applied') return total + 1;
+        if (event.phase === 'skill' && event.kind === 'synergy-fired') return total + 1;
+        if (event.phase === 'scenario' && event.kind === 'proc-applied'
+            && event.actor === 'player' && event.appliedTo === 'opponent') return total + 1;
+        return total;
+    }, 0);
+}
+
 /**
  * Fold one run's transcript into the knowledge store, attributing each round's
- * damage-to-enemy to the player's stance and (if any) skill that round.
+ * damage-to-enemy AND status-effect leverage to the player's stance and (if
+ * any) skill that round.
  */
 export function updateFromRun(
     knowledge: StrategistKnowledge,
@@ -78,28 +110,30 @@ export function updateFromRun(
 ): void {
     const entry = ensureEnemy(knowledge, enemySlug);
     for (const round of run.transcript) {
-        const dmg = roundDamageToEnemy(round.combatEvents);
         if (round.playerAction.action !== 'attack' && round.playerAction.action !== 'skill') continue;
+        const dmg = roundDamageToEnemy(round.combatEvents);
+        const status = roundStatusLeverage(round.combatEvents);
         const stance = round.playerAction.stance;
-        const sd = entry.stanceDamage[stance] ?? { total: 0, samples: 0 };
-        sd.total += dmg;
-        sd.samples += 1;
-        entry.stanceDamage[stance] = sd;
+        add(entry.stanceDamage as Record<string, RunningMean>, stance, dmg);
+        add(entry.stanceStatus as Record<string, RunningMean>, stance, status);
 
         const skillId = round.playerAction.skillId;
         if (skillId) {
-            const kd = entry.skillDamage[skillId] ?? { total: 0, samples: 0 };
-            kd.total += dmg;
-            kd.samples += 1;
-            entry.skillDamage[skillId] = kd;
+            add(entry.skillDamage, skillId, dmg);
+            add(entry.skillStatus, skillId, status);
         }
     }
     entry.sampleCount += run.transcript.length;
     knowledge.updatedAt = new Date().toISOString();
 }
 
+/**
+ * Best key by average value. `requirePositive` returns undefined when the best
+ * average is ≤0 (used so an all-zero status table defers to the damage table).
+ */
 function bestAverage<T extends string>(
-    table: Partial<Record<T, { total: number; samples: number }>>,
+    table: Partial<Record<T, RunningMean>>,
+    requirePositive = false,
 ): T | undefined {
     let best: T | undefined;
     let bestAvg = -Infinity;
@@ -112,21 +146,26 @@ function bestAverage<T extends string>(
             best = key;
         }
     }
+    if (requirePositive && bestAvg <= 0) return undefined;
     return best;
 }
 
 export function recommendStance(knowledge: StrategistKnowledge, slug: string): Stance | undefined {
     const entry = knowledge.enemies[slug];
     if (!entry) return undefined;
+    // Status leverage first (the doctrine), damage as fallback.
     return bestAverage<Stance>(
-        entry.stanceDamage as Partial<Record<Stance, { total: number; samples: number }>>,
+        (entry.stanceStatus ?? {}) as Partial<Record<Stance, RunningMean>>, true,
+    ) ?? bestAverage<Stance>(
+        entry.stanceDamage as Partial<Record<Stance, RunningMean>>,
     );
 }
 
 export function recommendSkill(knowledge: StrategistKnowledge, slug: string): string | undefined {
     const entry = knowledge.enemies[slug];
     if (!entry) return undefined;
-    return bestAverage<string>(entry.skillDamage);
+    return bestAverage<string>(entry.skillStatus ?? {}, true)
+        ?? bestAverage<string>(entry.skillDamage);
 }
 
 /** Wrap a knowledge snapshot as the structural advisor the policy consults. */

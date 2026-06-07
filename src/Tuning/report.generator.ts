@@ -65,27 +65,34 @@ function focusLine(tick: TuningTickResult): string {
 
 /**
  * Status-effect engagement view (Axiomancer north-star: status effects are the
- * main engagement). Skill-use-per-run is the current proxy until effects-
- * applied-per-run lands. Lower numbers warn that combat is devolving into
- * basic-attack trades.
+ * main engagement). The "Status play" column is the share that now FEEDS THE
+ * OBJECTIVE — rounds where the player applied or exploited a status effect.
+ * Values below the floor warn that combat is devolving into basic-attack trades
+ * AND penalise the cell's health score.
  */
-function engagementTable(cells: CellResult[]): string {
+function engagementTable(tick: TuningTickResult): string {
+    const cells = tick.baselineCells;
+    const shareByCell = new Map(tick.baseline.perCell.map(c => [c.cellId, c.engagementShare]));
     const groups = new Map<string, CellResult[]>();
     for (const c of cells) {
         const k = c.cell.playstyle;
         (groups.get(k) ?? groups.set(k, []).get(k)!).push(c);
     }
+    const floor = tick.baseline.engagementFloor;
     const rows = [...groups.entries()].map(([key, group]) => {
         const skillPerRun = avg(group.map(g => g.snapshot?.combat.skillUsePerRun ?? 0));
-        const skillShare = avg(group.map(g => g.snapshot?.combat.skillActionShare ?? 0));
-        return { key, skillPerRun, skillShare };
+        const statusShares = group
+            .map(g => shareByCell.get(g.cell.cellId))
+            .filter((s): s is number => typeof s === 'number');
+        const statusShare = statusShares.length ? avg(statusShares) : NaN;
+        return { key, skillPerRun, statusShare };
     }).sort((a, b) => a.key.localeCompare(b.key));
     return [
-        '### Status-effect engagement (by playstyle)',
+        `### Status-effect engagement (by playstyle) — floor ${pct(floor)}`,
         '',
-        '| Playstyle | Skill uses / run | Skill action share |',
-        '| --- | --- | --- |',
-        ...rows.map(r => `| ${r.key} | ${round(r.skillPerRun, 1)} | ${pct(r.skillShare)} |`),
+        '| Playstyle | Skill uses / run | Status play (objective) | vs floor |',
+        '| --- | --- | --- | --- |',
+        ...rows.map(r => `| ${r.key} | ${round(r.skillPerRun, 1)} | ${Number.isFinite(r.statusShare) ? pct(r.statusShare) : 'n/a'} | ${Number.isFinite(r.statusShare) ? (r.statusShare >= floor ? 'ok' : 'BELOW') : '—'} |`),
     ].join('\n');
 }
 
@@ -109,17 +116,21 @@ export function renderDataReport(tick: TuningTickResult): string {
         '',
         table('By difficulty', aggregateBy(cells, c => c.cell.difficulty)),
         '',
-        engagementTable(cells),
+        engagementTable(tick),
+        '',
+        '_Objective = band deviation + engagement shortfall (lower is healthier). '
+        + `Success bands are difficulty-specific (easy/normal/hard); engagement floor ${pct(tick.baseline.engagementFloor)}._`,
         '',
     ];
 
     if (tick.experiments.length) {
         lines.push('## A/B experiments (facts)', '');
-        lines.push('| Param | Old → New | Winner | ΔHealth | Kept | Verify |');
-        lines.push('| --- | --- | --- | --- | --- | --- |');
+        lines.push('| Param | Old → New | Winner | ΔHealth | Significant | Confidence | Kept | Verify |');
+        lines.push('| --- | --- | --- | --- | --- | --- | --- | --- |');
         for (const e of tick.experiments) {
+            const c = e.comparison;
             lines.push(
-                `| ${e.paramId} | ${round(e.oldValue)} → ${round(e.newValue)} | ${e.comparison.winner} | ${round(e.comparison.delta, 4)} | ${e.kept ? 'yes' : 'no'} | ${e.verifyPassed ? 'pass' : '—'} |`,
+                `| ${e.paramId} | ${round(e.oldValue)} → ${round(e.newValue)} | ${c.winner} | ${round(c.delta, 4)} | ${c.significant ? 'yes' : 'no'} | ${c.confidence} | ${e.kept ? 'yes' : 'no'} | ${e.verifyPassed ? 'pass' : '—'} |`,
             );
         }
         lines.push('');
@@ -128,27 +139,40 @@ export function renderDataReport(tick: TuningTickResult): string {
 }
 
 export function renderDataReportJson(tick: TuningTickResult): string {
-    const cells = tick.baselineCells.map(c => ({
-        cellId: c.cell.cellId,
-        level: c.cell.level,
-        playstyle: c.cell.playstyle,
-        difficulty: c.cell.difficulty,
-        enemySlug: c.cell.enemySlug,
-        runs: c.cell.runs,
-        resolutionSuccessRate: c.report.metrics.resolutionSuccessRate,
-        winRate: c.report.metrics.winRate,
-        defeatRate: c.report.metrics.defeatRate,
-        friendshipRate: c.report.metrics.friendshipRate,
-        timeoutRate: c.report.metrics.timeoutRate,
-        averageRounds: c.report.metrics.averageRounds,
-        damageRatio: c.report.metrics.damageRatio,
-    }));
+    const engagementByCell = new Map(tick.baseline.perCell.map(c => [c.cellId, c]));
+    const cells = tick.baselineCells.map(c => {
+        const h = engagementByCell.get(c.cell.cellId);
+        return {
+            cellId: c.cell.cellId,
+            level: c.cell.level,
+            playstyle: c.cell.playstyle,
+            difficulty: c.cell.difficulty,
+            enemySlug: c.cell.enemySlug,
+            runs: c.cell.runs,
+            resolutionSuccessRate: c.report.metrics.resolutionSuccessRate,
+            winRate: c.report.metrics.winRate,
+            defeatRate: c.report.metrics.defeatRate,
+            friendshipRate: c.report.metrics.friendshipRate,
+            timeoutRate: c.report.metrics.timeoutRate,
+            averageRounds: c.report.metrics.averageRounds,
+            damageRatio: c.report.metrics.damageRatio,
+            band: h?.band,
+            bandDeviation: h?.bandDeviation,
+            engagementShare: h?.engagementShare,
+            engagementDeviation: h?.engagementDeviation,
+        };
+    });
     const experiments = tick.experiments.map(e => ({
         paramId: e.paramId,
         oldValue: e.oldValue,
         newValue: e.newValue,
         winner: e.comparison.winner,
         deltaHealth: e.comparison.delta,
+        significant: e.comparison.significant,
+        confidence: e.comparison.confidence,
+        regression: e.comparison.regression,
+        engagementRegression: e.comparison.engagementRegression,
+        stats: e.comparison.stats,
         kept: e.kept,
         verifyPassed: e.verifyPassed,
     }));
@@ -162,7 +186,7 @@ export function renderDataReportJson(tick: TuningTickResult): string {
 }
 
 function experimentSummary(e: ExperimentResult): string {
-    return `- **${e.paramId}**: ${round(e.oldValue)} → ${round(e.newValue)} — ${e.candidate.rationale} (ΔHealth ${round(e.comparison.delta, 4)}; ${e.comparison.note})`;
+    return `- **${e.paramId}**: ${round(e.oldValue)} → ${round(e.newValue)} — ${e.candidate.rationale} (ΔHealth ${round(e.comparison.delta, 4)}, ${e.comparison.confidence} confidence, n=${e.comparison.stats.n}; ${e.comparison.note})`;
 }
 
 function statLine(s: { heart: number; body: number; mind: number }): string {
@@ -214,7 +238,7 @@ const CELL_ID_RE = /\b(l\d+-[a-z]+-[a-z]+)\b/;
  */
 export function renderSuggestions(tick: TuningTickResult, dataReportRef: string): string {
     const kept = tick.experiments.filter(e => e.kept);
-    const rejected = tick.experiments.filter(e => !e.kept && e.candidate.source !== 'heuristic' || (!e.kept && Number.isFinite(e.oldValue)));
+    const rejected = tick.experiments.filter(e => !e.kept && Number.isFinite(e.oldValue));
     const lines: string[] = [
         `# Tuning suggestions — ${tick.timestamp}`,
         '',
