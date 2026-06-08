@@ -4,6 +4,19 @@ Short-form per-version summaries. For per-phase detail see
 [`CHANGELOG.md`](./CHANGELOG.md); for the release-cut ceremony see
 [`RELEASING.md`](./RELEASING.md).
 
+## 0.15.1 — 2026-06-08
+
+Balance/resolution hardening release for the manual mobile-build line: Phase 122–126 enemy balance, gear-tier counterweight, stronger status effects/skills, status-effect-driven victory/friendship resolution, public effect-resolution helpers, and the recent skills/equipment content expansion.
+
+- **Phase 122** — Level-1 enemy outliers retuned into the 65–75% resolution-success target band.
+- **Phase 123** — `enemyStatBudget(level, difficulty)` export plus `ENEMY_GEAR_TIER_*` gear-tier counterweights for late-game balance.
+- **Phase 124** — Core status effects and skills strengthened through per-effect intensity/duration levers.
+- **Phase 125** — `getEffectsResolutionOutcome(combatState)` export; saturation-yield resolves as `'friendship'`, DoT erosion resolves as `'victory'`.
+- **Phase 126** — Follow-up status-effect threshold and potency tuning after T's override: DoT threshold 5→3, debuff intensity threshold 8→6.
+- **Content expansion** — ~20 new skills and a larger equipment/item template library are present for downstream presentation and tuning.
+- **BREAKING/cleanup:** `clearTier1EffectsForType` removed from the public barrel; use `clearTier1EffectsForStance`.
+- **Mobile needs:** bump package to `axiomancer-mechanics@0.15.1`; make active effects prominent; preserve engine-owned Stance, Vitae, affordability, action resolution, and status-resolution truth; use `getEffectsResolutionOutcome` rather than local threshold math; run typecheck, focused combat/effects/items tests, verify, visual smoke, and manual playthrough evidence.
+
 ## 0.15.0 — 2026-06-06
 
 Balance/content release for the mobile catch-up line: Stance and Vitae authority

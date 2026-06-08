@@ -10,17 +10,87 @@ Pre-1.0.0 status: minor bumps may carry breaking public-API changes
 map exposes `.` (top-level barrel) and `./node` (Node.js adapter); no
 deep imports are part of the supported surface.
 
-## [unreleased]
+## [0.15.1] — 2026-06-08
+
+Balance and resolution hardening release. Phases 122–126 close the mid/late-game
+timeout problem: enemies can no longer tank indefinitely against a saturated/debuffed
+player. Status effects are now the dominant path to resolution — DoT erosion drives
+victory, saturation-yield drives friendship — and their potency is meaningfully higher
+across the board. Alongside these fixes, a content expansion ships ~20 new skills and
+a larger equipment/item library (internal content only; no new public-barrel exports
+for those surfaces). Status effects are the main fun; this release makes them feel it.
 
 ### Added
 
+- **Phase 123** — `enemyStatBudget(level, difficulty)` is now a public export.
+  Returns the HP/stat budget used for enemy stat generation. Useful for debugging
+  and documentation overlays; also exposes `ENEMY_GEAR_TIER_EASY/NORMAL/HARD/BOSS`
+  constants that feed the gear-tier counterweight (see Changed below).
+- **Phase 125** — `getEffectsResolutionOutcome(combatState)` is now a public export.
+  Returns the engine-computed resolution outcome when status effects alone would end
+  the encounter (`'friendship'` via saturation-yield or `'victory'` via DoT erosion),
+  or `null` when effects have not crossed any threshold. Engine-owned truth — mobile
+  must surface this rather than computing thresholds locally.
+
 ### Changed
 
-### Deprecated
+- **Phase 122** — Level-1 enemy outlier rebalance: `reef-barnacle-colony` (17%
+  resolution, 55% defeat) and `tolltaker-of-the-ford` (91% defeat at L1 mixed-hard)
+  stat splits adjusted. Both now fall within the 65–75% resolution-success target
+  band without cutting the global `enemy.statPerLevel` slope.
+- **Phase 123** — Enemy gear-tier counterweight: `ENEMY_GEAR_TIER_*` constants wired
+  into `enemyStatBudget` as a `gearTierBonus` (≈0 at L1, scales at higher levels).
+  Counterbalances the player's off-budget gear/skill advantage that caused late-game
+  trivialization. Registered as a tight-bounded registry tunable so the balance loop
+  can A/B the magnitude.
+- **Phase 124** — Status effects and skills stronger: base intensity and duration
+  raised across the core debuff/buff/DoT kit (per-effect lever approach, no formula
+  rewrites). Exposed as loop-owned registry tunables. Engagement-floor confirmed
+  in-band (no basic-attack-trade regression).
+- **Phase 125** — Effects contribute to resolution: a saturated/debuffed enemy now
+  yields (routed through the existing `'friendship'` outcome) and DoT erosion can
+  drive `'victory'` — without a larger `maxRounds` cap and without a new `outcome`
+  union member. Resolution thresholds exposed as registry tunables. `src/index.ts`
+  now exports `getEffectsResolutionOutcome`.
+- **Phase 126** — Status effects/skills stronger (follow-up, T human override on
+  threshold values): `effect.resolutionDotDamageThreshold` 5→3 and
+  `effect.resolutionDebuffIntensityThreshold` 8→6 (analyst-proposed values, overrides
+  prior auto-applied zero changes). DoT damage-per-round, debuff/buff intensity and
+  duration, and key skill proc magnitudes raised further. Mid/late-game timeout cells
+  (`l15-mixed-easy`, `l15-strategist-normal`, `l30-mixed-normal`) confirmed moving
+  toward in-band resolution.
+- **PR #120 content expansion** — ~20 new skills across Tiers 1–3 registered in the
+  skill library; equipment template library expanded to ~43 templates spanning L1–50
+  (24 new modifier types, new uniques, sets, consumables); affix naming layer added
+  internally (`dropItemWithAffixes` factory path, not yet on the public barrel). All
+  content carries `addedIn`/`tags` provenance metadata for the tuning workflow's
+  `--focus` filter.
 
 ### Removed
 
-### Fixed
+- **`clearTier1EffectsForType`** — dead legacy alias removed from the public barrel
+  (commit `aca1b1a`, iterate finding). The canonical export is `clearTier1EffectsForStance`,
+  which has identical behaviour and has always been the in-repo callers' target. No
+  known external consumers; removed without a formal deprecation window per the
+  pre-1.0.0 dead-code exception.
+
+### Mobile migration notes
+
+- Update `axiomancer-mobile` from `axiomancer-mechanics@0.15.0` to `0.15.1`.
+- **Status effects are now the main path to resolution.** Mobile should ensure
+  active-effect displays are prominent and legible. The STRATEGIST playstyle is the
+  witness: if status-effect play does not feel decisive, something is wrong. Do not
+  suppress or abbreviate effect stacks.
+- **Engine owns saturation-yield and DoT-victory.** Use `getEffectsResolutionOutcome`
+  to read the engine's resolution determination; do not approximate the thresholds
+  locally. Both the `'friendship'` and `'victory'` branches are in the existing
+  `CombatEndReport.outcome` union — no new rendering path required.
+- **`enemyStatBudget`** is available for debug overlays or encounter-preview screens.
+- **Remove any import of `clearTier1EffectsForType`** — replace with
+  `clearTier1EffectsForStance` (identical signature and behaviour).
+- New skills and equipment content are now in the respective libraries. Run mobile
+  `npm run typecheck`, focused Jest around combat/effects/items presenters, and
+  `npm run verify` after bumping.
 
 ### Security
 
