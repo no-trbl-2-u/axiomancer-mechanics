@@ -35,13 +35,6 @@
 
 ## Pending
 
-### [LOW] api — spec.md Contracts section missing recent exports
-- pass: critique-58 (commit 5f68b7f)
-- area: api
-- observation: Two exports present in src/index.ts are not documented in spec.md Contracts section
-- evidence: enemyStatBudget (Enemy group) and getEffectsResolutionOutcome (Combat group) missing from spec.md line ~89 table
-- suggested_fix: Add both exports to the spec.md "Contracts" section table under their respective groups
-- source: critique
 
 
 
@@ -51,6 +44,7 @@
 
 ## Done
 
+- [x] **[LOW] api — spec.md Contracts section missing recent exports** — resolved at iterate commit 3ddca75 (2026-06-08). Added enemyStatBudget (Enemy group) and getEffectsResolutionOutcome (Combat group) to spec.md Contracts table. Two exports present in src/index.ts were not documented in spec.md Contracts section for external consumers. Source: critique-58 (commit 5f68b7f).
 - [x] **[LOW] Combat — isValidCombatAction export potentially unused** — evaluated at iterate (this commit). Export intentionally retained on public barrel for external consumer validation of partial CombatAction objects. Type guard functions are conventionally provided for API consumers even when zero in-repo usage. No breaking change applied per iterate Hard Rule 4. Source: critique-53 (commit `8c0b942`).
 - [x] **[LOW] test-utils — @ts-ignore without explanatory comment violates type-safety standards** — resolved at iterate commit `6b1f258` (2026-06-03). Added explanatory comment above the @ts-ignore at `src/test-utils/e2e/agent-vitest-reporter.engine.test.ts:25` describing why .mjs import bypasses TS module graph validation. Source: critique-48 (commit `fed2b01`).
 - [x] **[LOW] Combat — deprecation removals due at the v0.13.0 minor bump are un-actioned** — resolved at Phase 106 (this commit). Removed four `@deprecated` symbols scheduled for removal at v0.13.0 minor bump: `getResistStat` (replaced by `getEffectiveStats(target).baseStats[stance]`) and three `endCombat*` aliases (replaced by `endCombat`). Updated test files to use replacements, removed from public barrels, updated public surface fixture (-4 runtime exports), added CHANGELOG `### Removed` entries with migration guidance, cleared deprecated schedule row. Zero external callers documented assumption per build plan guidance. Source: critique-46 (commit `81ff3a5`).
