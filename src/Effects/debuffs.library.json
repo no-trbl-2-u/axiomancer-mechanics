@@ -25,32 +25,32 @@
         "statModifiers": [
           {
             "stat": "body",
-            "value": -2,
+            "value": -3,
             "isMultiplier": false
           },
           {
             "stat": "mind",
-            "value": -2,
+            "value": -3,
             "isMultiplier": false
           },
           {
             "stat": "heart",
-            "value": -2,
+            "value": -3,
             "isMultiplier": false
           },
           {
             "stat": "physicalSkill",
-            "value": -1,
+            "value": -2,
             "isMultiplier": false
           },
           {
             "stat": "mentalSkill",
-            "value": -1,
+            "value": -2,
             "isMultiplier": false
           },
           {
             "stat": "emotionalSkill",
-            "value": -1,
+            "value": -2,
             "isMultiplier": false
           }
         ],
@@ -70,7 +70,7 @@
       "resistDR": 13,
       "payload": {
         "damageOverTime": {
-          "damagePerRound": 3,
+          "damagePerRound": 4,
           "damageType": "body"
         }
       },
@@ -113,7 +113,7 @@
       "resistDR": 12,
       "payload": {
         "damageOverTime": {
-          "damagePerRound": 2,
+          "damagePerRound": 3,
           "damageType": "body",
           "tickPhase": "end"
         }
@@ -157,7 +157,7 @@
       "resistDR": 12,
       "payload": {
         "damageOverTime": {
-          "damagePerRound": 2,
+          "damagePerRound": 3,
           "damageType": "body"
         },
         "rollModifier": -2

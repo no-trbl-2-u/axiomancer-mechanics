@@ -47,11 +47,11 @@ describe('getActiveEffectModifiers', () => {
     it('aggregates DoT damage by tick phase (Q4)', () => {
         // poison ticks at start (default), bleed ticks at end (data-driven).
         const mods = getActiveEffectModifiers([
-            ae('debuff_poison', 2),  // 3 × 2 = 6 at start
-            ae('debuff_bleed',  3),  // 2 × 3 = 6 at end
+            ae('debuff_poison', 2),  // 4 × 2 = 8 at start (strengthened in Phase 126)
+            ae('debuff_bleed',  3),  // 3 × 3 = 9 at end (strengthened in Phase 126)
         ]);
-        expect(mods.dotStart).toBe(6);
-        expect(mods.dotEnd).toBe(6);
+        expect(mods.dotStart).toBe(8);
+        expect(mods.dotEnd).toBe(9);
     });
 
     it('separates regen from drain (Q6)', () => {
@@ -181,17 +181,17 @@ describe('DoT and drain HP changes', () => {
         const t = fixture([ae('debuff_poison', 2)]);
         const before = t.health;
         const r = processDamageOverTime(t, 'start');
-        expect(r.damage).toBe(6);
-        expect(r.target.health).toBe(before - 6);
+        expect(r.damage).toBe(8); // 4 × 2 = 8 (strengthened in Phase 126)
+        expect(r.target.health).toBe(before - 8);
     });
 
     it('processDamageOverTime separates start from end phases', () => {
         const t = fixture([ae('debuff_poison'), ae('debuff_bleed')]);
-        // poison starts (3), bleed ends (2)
+        // poison starts (4), bleed ends (3) - both strengthened in Phase 126
         const startTick = processDamageOverTime(t, 'start');
-        expect(startTick.damage).toBe(3);
+        expect(startTick.damage).toBe(4);
         const endTick = processDamageOverTime(startTick.target, 'end');
-        expect(endTick.damage).toBe(2);
+        expect(endTick.damage).toBe(3);
     });
 
     it('applyDrain damages bearer based on negative regen', () => {
@@ -214,13 +214,13 @@ describe('DoT and drain HP changes', () => {
 
 describe('processRoundStartEffects orchestrator', () => {
     it('applies regen, drain and start-DoT in one call', () => {
-        // poison (DoT 3 start) + disease (DoT 2 start, drain 1)
+        // poison (DoT 4 start, strengthened in Phase 126) + disease (DoT 2 start, drain 1)
         const t = { ...fixture([ae('debuff_poison'), ae('debuff_disease')]), health: 30 };
         const r = processRoundStartEffects(t);
-        // start-DoT total: 3 + 2 = 5; drain: 1
-        expect(r.dotDamage).toBe(5);
+        // start-DoT total: 4 + 2 = 6; drain: 1
+        expect(r.dotDamage).toBe(6);
         expect(r.drained).toBe(1);
-        expect(r.target.health).toBe(30 - 5 - 1);
+        expect(r.target.health).toBe(30 - 6 - 1);
     });
 });
 
@@ -228,8 +228,8 @@ describe('processRoundEndEffects orchestrator', () => {
     it('applies end-DoT then ticks duration', () => {
         const t = { ...fixture([ae('debuff_bleed', 1, 2)]), health: 20 };
         const r = processRoundEndEffects(t);
-        expect(r.dotDamage).toBe(2);
-        expect(r.target.health).toBe(18);
+        expect(r.dotDamage).toBe(3); // strengthened from 2 to 3 in Phase 126
+        expect(r.target.health).toBe(17); // 20 - 3 = 17
         // Duration ticked from 2 → 1
         expect(r.target.effects[0].remainingDuration).toBe(1);
     });

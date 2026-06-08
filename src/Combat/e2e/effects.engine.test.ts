@@ -61,8 +61,8 @@ describe('Effects E2E: start-phase DoT via processRoundStartEffects', () => {
             { stance: 'body', action: 'defend' },
         );
 
-        // Poison fired at round start: 3 × intensity(1) = 3 damage
-        expect(next.enemy.health).toBe(Disatree_01.maxHealth - 3);
+        // Poison fired at round start: 4 × intensity(1) = 4 damage (strengthened in Phase 126)
+        expect(next.enemy.health).toBe(Disatree_01.maxHealth - 4);
         // Duration ticked once at round end: 3 → 2
         const poisonAfter = next.enemy.effects.find(e => e.effectId === 'debuff_poison');
         expect(poisonAfter?.remainingDuration).toBe(2);
@@ -83,8 +83,8 @@ describe('Effects E2E: start-phase DoT via processRoundStartEffects', () => {
             { stance: 'body', action: 'defend' },
         );
 
-        // 3 × intensity(2) = 6 damage
-        expect(next.enemy.health).toBe(Disatree_01.maxHealth - 6);
+        // 4 × intensity(2) = 8 damage (strengthened in Phase 126)
+        expect(next.enemy.health).toBe(Disatree_01.maxHealth - 8);
     });
 });
 
@@ -109,8 +109,8 @@ describe('Effects E2E: end-phase DoT via processRoundEndEffects', () => {
             { stance: 'body', action: 'defend' },
         );
 
-        // Bleed fired at round end: 2 × intensity(1) = 2 damage
-        expect(next.enemy.health).toBe(Disatree_01.maxHealth - 2);
+        // Bleed fired at round end: 3 × intensity(1) = 3 damage (strengthened in Phase 126)
+        expect(next.enemy.health).toBe(Disatree_01.maxHealth - 3);
         const bleedAfter = next.enemy.effects.find(e => e.effectId === 'debuff_bleed');
         expect(bleedAfter?.remainingDuration).toBe(2);
     });
@@ -238,7 +238,7 @@ describe('Effects E2E: Game store lifecycle with active effects — nullAdapter'
         // Spec 09 Q4 — autosave on every action; nullAdapter still no-ops on disk.
         expect(saveSpy).toHaveBeenCalled();
 
-        // Poison actually fired — HP reduced
-        expect(next.enemy.health).toBe(Disatree_01.maxHealth - 3);
+        // Poison actually fired — HP reduced (strengthened in Phase 126)
+        expect(next.enemy.health).toBe(Disatree_01.maxHealth - 4);
     });
 });

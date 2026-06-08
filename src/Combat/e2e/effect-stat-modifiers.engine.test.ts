@@ -56,11 +56,11 @@ describe('Phase 48 — statModifiers runtime aggregation (KG Q8)', () => {
     });
 
     it('a flat base-stat debuff drops the matching defense accessor', () => {
-        // debuff_all_stats_down at intensity 1: body -2 → effective body 3.
-        // physicalDefense = body × DEFENSE (3) = 3 × 3 = 9.
+        // debuff_all_stats_down at intensity 1: body -3 → effective body 2 (strengthened in Phase 126).
+        // physicalDefense = body × DEFENSE (3) = 2 × 3 = 6.
         const c = withEffects([ae('debuff_all_stats_down', 1)]);
-        expect(getBaseStat(c, 'body')).toBe(3);
-        expect(getDefenseStat(c, 'body')).toBe(9);
+        expect(getBaseStat(c, 'body')).toBe(2);
+        expect(getDefenseStat(c, 'body')).toBe(6);
     });
 
     it('base-stat changes re-derive every dependent derived stat', () => {
@@ -84,11 +84,11 @@ describe('Phase 48 — intensity scaling on statModifiers (KG Q9)', () => {
     });
 
     it('intensity scales debuffs the same way', () => {
-        // debuff_all_stats_down at intensity 2: body -4 → effective body 1.
-        // physicalDefense = 1 × 3 = 3.
+        // debuff_all_stats_down at intensity 2: body -6 → effective body -1 (strengthened in Phase 126).
+        // physicalDefense = -1 × 3 = -3.
         const c = withEffects([ae('debuff_all_stats_down', 2)]);
-        expect(getBaseStat(c, 'body')).toBe(1);
-        expect(getDefenseStat(c, 'body')).toBe(3);
+        expect(getBaseStat(c, 'body')).toBe(-1);
+        expect(getDefenseStat(c, 'body')).toBe(-3);
     });
 });
 

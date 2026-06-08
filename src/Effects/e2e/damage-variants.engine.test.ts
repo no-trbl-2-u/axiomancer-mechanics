@@ -69,12 +69,12 @@ describe('Phase 88 — debuff_burn', () => {
     });
 });
 
-// ─── debuff_frostbite: 2 dmg/round (start), rollModifier -2 ──────────────────
+// ─── debuff_frostbite: 3 dmg/round (start), rollModifier -2 (strengthened in Phase 126) ──────
 
 describe('Phase 88 — debuff_frostbite', () => {
-    it('deals 2 damage per round at start-of-round', () => {
+    it('deals 3 damage per round at start-of-round', () => {
         const mods = getActiveEffectModifiers([ae('debuff_frostbite')]);
-        expect(mods.dotStart).toBe(2);
+        expect(mods.dotStart).toBe(3); // strengthened from 2 to 3 in Phase 126
         expect(mods.dotEnd).toBe(0);
     });
 
