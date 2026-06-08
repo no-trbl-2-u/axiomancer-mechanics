@@ -76,7 +76,43 @@
       "kept": false,
       "significant": false,
       "confidence": "low"
+    },
+    {
+      "timestamp": "2026-06-08T00-47-16-358Z",
+      "paramId": "effect.resolutionDotDamageThreshold",
+      "oldValue": 5,
+      "newValue": 4,
+      "direction": "down",
+      "deltaHealth": 0.00014791666666667813,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "skills, status effects, and multipliers"
+    },
+    {
+      "timestamp": "2026-06-08T00-47-16-358Z",
+      "paramId": "effect.maxDuration",
+      "oldValue": 10,
+      "newValue": 13,
+      "direction": "up",
+      "deltaHealth": -0.0005666666666666598,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "skills, status effects, and multipliers"
+    },
+    {
+      "timestamp": "2026-06-08T00-47-16-358Z",
+      "paramId": "effect.maxIntensity",
+      "oldValue": 10,
+      "newValue": 12,
+      "direction": "up",
+      "deltaHealth": -0.00030942490168361925,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "skills, status effects, and multipliers"
     }
   ],
-  "updatedAt": "2026-06-08T00:04:32.161Z"
+  "updatedAt": "2026-06-08T00:47:51.116Z"
 }

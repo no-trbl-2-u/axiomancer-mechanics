@@ -1,36 +1,21 @@
 {
-  "timestamp": "2026-06-08T00-01-57-425Z",
-  "focus": {},
+  "timestamp": "2026-06-08T00-45-23-944Z",
+  "focus": {
+    "raw": "skills, status effects, and multipliers",
+    "categories": [
+      "effect",
+      "skill",
+      "fundamental"
+    ]
+  },
   "engagementFloor": 0.35,
-  "baselineSummary": "2/48 cells in band; aggregate 0.1350 (band 0.1157 + engage 0.0193); mean engagement 52% (15/48 cells below floor); worst defeat 98%",
+  "baselineSummary": "3/48 cells in band; aggregate 0.1207 (band 0.1014 + engage 0.0193); mean engagement 52% (15/48 cells below floor); worst defeat 82%",
   "cooldown": [
     "combat.skillStatMultiplier:up",
-    "combat.healthPerStat:up",
-    "combat.resourceGen.defend:up"
+    "effect.resolutionDotDamageThreshold:down",
+    "progression.statPointsPerLevel:up"
   ],
   "legalTunables": [
-    {
-      "id": "enemy.statPerLevel",
-      "current": 3,
-      "min": 2,
-      "max": 6,
-      "step": 0.5,
-      "effect": {
-        "difficulty": "raises"
-      },
-      "rationale": "Global enemy power scaling; the headline difficulty knob."
-    },
-    {
-      "id": "enemy.gearTierPerLevel",
-      "current": 0.02,
-      "min": 0,
-      "max": 0.05,
-      "step": 0.005,
-      "effect": {
-        "difficulty": "raises"
-      },
-      "rationale": "Off-budget gear tier counterweight to player power accumulation."
-    },
     {
       "id": "combat.skillStatMultiplier",
       "current": 0.5,
@@ -209,7 +194,7 @@
     },
     {
       "id": "effect.resolutionDebuffIntensityThreshold",
-      "current": 8,
+      "current": 6,
       "min": 4,
       "max": 15,
       "step": 1,
@@ -361,9 +346,9 @@
         "low": 0.5,
         "high": 0.65
       },
-      "resolutionSuccessRate": 0.7,
-      "defeatRate": 0.3,
-      "engagementShare": 0.40852558552558554
+      "resolutionSuccessRate": 0.6,
+      "defeatRate": 0.4,
+      "engagementShare": 0.40228239149910977
     },
     {
       "cellId": "l15-aggressive-easy",
@@ -493,9 +478,9 @@
         "low": 0.5,
         "high": 0.65
       },
-      "resolutionSuccessRate": 0.04,
+      "resolutionSuccessRate": 1,
       "defeatRate": 0,
-      "engagementShare": 0.8716666666666667
+      "engagementShare": 0.9398474116808945
     },
     {
       "cellId": "l30-aggressive-easy",
@@ -638,7 +623,7 @@
       },
       "resolutionSuccessRate": 1,
       "defeatRate": 0,
-      "engagementShare": 0.9277939101645607
+      "engagementShare": 0.9237195511902019
     },
     {
       "cellId": "l50-aggressive-normal",
@@ -649,7 +634,7 @@
       },
       "resolutionSuccessRate": 1,
       "defeatRate": 0,
-      "engagementShare": 0.8170242400631196
+      "engagementShare": 0.8142600124208431
     },
     {
       "cellId": "l50-aggressive-hard",
@@ -658,9 +643,9 @@
         "low": 0.5,
         "high": 0.65
       },
-      "resolutionSuccessRate": 0,
-      "defeatRate": 0.98,
-      "engagementShare": 0.9604820760312254
+      "resolutionSuccessRate": 0.22,
+      "defeatRate": 0.76,
+      "engagementShare": 0.9611401815631514
     },
     {
       "cellId": "l50-defensive-easy",
@@ -671,7 +656,7 @@
       },
       "resolutionSuccessRate": 1,
       "defeatRate": 0,
-      "engagementShare": 0.8179234093107881
+      "engagementShare": 0.8173110627461458
     },
     {
       "cellId": "l50-defensive-normal",
@@ -680,9 +665,9 @@
         "low": 0.65,
         "high": 0.75
       },
-      "resolutionSuccessRate": 0.96,
+      "resolutionSuccessRate": 0.98,
       "defeatRate": 0,
-      "engagementShare": 0.8250887749800324
+      "engagementShare": 0.758951847538582
     },
     {
       "cellId": "l50-defensive-hard",
@@ -691,9 +676,9 @@
         "low": 0.5,
         "high": 0.65
       },
-      "resolutionSuccessRate": 0.06,
+      "resolutionSuccessRate": 0.2,
       "defeatRate": 0,
-      "engagementShare": 0.9225934065934066
+      "engagementShare": 0.9251485535167305
     },
     {
       "cellId": "l50-mixed-easy",
@@ -702,9 +687,9 @@
         "low": 0.75,
         "high": 0.88
       },
-      "resolutionSuccessRate": 0.4,
+      "resolutionSuccessRate": 0.56,
       "defeatRate": 0,
-      "engagementShare": 0.94583738182068
+      "engagementShare": 0.9413722306419642
     },
     {
       "cellId": "l50-mixed-normal",
@@ -713,9 +698,9 @@
         "low": 0.65,
         "high": 0.75
       },
-      "resolutionSuccessRate": 0,
-      "defeatRate": 0,
-      "engagementShare": 0.5120000000000001
+      "resolutionSuccessRate": 0.2,
+      "defeatRate": 0.02,
+      "engagementShare": 0.5748195488721805
     },
     {
       "cellId": "l50-mixed-hard",
@@ -724,9 +709,9 @@
         "low": 0.5,
         "high": 0.65
       },
-      "resolutionSuccessRate": 0,
+      "resolutionSuccessRate": 0.02,
       "defeatRate": 0,
-      "engagementShare": 0.6797500000000001
+      "engagementShare": 0.6849680851063827
     },
     {
       "cellId": "l50-strategist-easy",
@@ -735,9 +720,9 @@
         "low": 0.75,
         "high": 0.88
       },
-      "resolutionSuccessRate": 0.7,
+      "resolutionSuccessRate": 0.74,
       "defeatRate": 0,
-      "engagementShare": 0.7899003216034979
+      "engagementShare": 0.788345756427116
     },
     {
       "cellId": "l50-strategist-normal",
