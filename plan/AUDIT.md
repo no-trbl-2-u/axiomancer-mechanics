@@ -45,9 +45,10 @@
 ---
 
 ## Pending
+
 <!-- iterate audit 2026-06-08: comprehensive audit across categories Z-H (twenty-eighth audit, march-dispatched iterate procedure via /march autonomous dispatch at commit f458dbf).
      Z. External critique: CRITIQUE.md Pending queue empty (pass 57, no changes since last audit)
-     A. Test-quality gaps: 83 hermetic *.engine.test.ts files across all modules; RNG properly stubbed via test-utils/rng.ts; baseline tests green (1281 passing, 1 skipped); no non-hermetic patterns outside intentional CLI/persistence node API testing
+     A. Test-quality gaps: 83 hermetic *.engine.test.ts files across all modules; RNG properly stubbed via test-utils/rng.ts; baseline tests FAILING (1 failure out of 1282 total, previously 1281 passing); isolated test passes but full suite fails due to state pollution
      B. Spec-gap items: Knowledge-Gaps.md all questions resolved except Q28 (multiple endings) genuinely deferred as endgame question; all spec files have answered "Your answer:" prompts except in template files
      C. Type-safety: 1 justified @ts-ignore with explanatory comment in agent-vitest-reporter.engine.test.ts:25; no `as any` usage; proper `unknown` usage in appropriate contexts; `npm run type-check` passes clean; all exported functions have proper return type annotations
      D. Dead code: no large commented-out code blocks; internal files properly used; public exports verified as active through comprehensive test coverage; no unused exports identified
@@ -398,6 +399,7 @@
 
 ## Done
 
+- [x] **[HIGH] Test isolation failure in tier3-synergy-skills.engine.test.ts** — resolved at iterate commit `90b4e3b` (2026-06-08). logical-recursion synergy test failed when run with full test suite but passed in isolation due to RNG state pollution between test files. Added restoreOriginalRng() import and call in map-events.engine.test.ts afterEach; added proper afterEach cleanup with vi.restoreAllMocks() + restoreOriginalRng() + _clearMapEventPoolRegistry() in alignment-authoring.engine.test.ts. npm run verify stays green (1281/1281 tests). Impact 9 × Ease 7 / 10 = 6.3. Source: /iterate baseline test verification finding.
 - [x] **[LOW] Dead code — `clearTier1EffectsForType` legacy alias unused on public barrel** — resolved at iterate commit `aca1b1a` (2026-06-06). Removed unused legacy alias from src/index.ts barrel export and src/Effects/index.ts definition. Updated docs/effects.md and docs/api.md to remove stale references. The alias was redundant since clearTier1EffectsForStance is properly used throughout. Removal reduces API surface area (-1 runtime export) and eliminates potentially confusing duplicate naming. Impact 3 × Ease 9 / 10 = 2.7. Source: /iterate audit category D (dead code) finding.
 - [x] **[LOW] isValidCombatAction export potentially unused** — evaluated at iterate (this commit). Export intentionally retained on public barrel for external consumer validation of partial CombatAction objects. Type guard functions are conventionally provided for API consumers even when zero in-repo usage. No breaking change applied per iterate Hard Rule 4. Impact 2 × Ease 8 / 10 = 1.6. Source: /iterate audit category Z (external critique) finding.
 - [x] **[LOW] @types/node dependency has patch update available** — resolved at iterate commit `2550735` (2026-06-05). Updated @types/node 22.19.19 → 22.19.20. Safe patch update per iterate guidelines. npm run verify stays green (1031/1031 tests). Impact 3 × Ease 9 / 10 = 2.7. Source: /iterate audit category G (deps) finding.
