@@ -2057,22 +2057,285 @@ export const TheTerminalProof = createEnemy({
     tags: ['late-game', 'unique', 'enemy'],
 });
 
+// ─── ANCIENT RUINS (Phase 127) — 5 enemies ──────────────────────────────────
+
+export const BonewardSentinel = createEnemy({
+    id: 'enemy-boneward-sentinel',
+    name: 'Boneward Sentinel',
+    description: 'An ancient guardian of ossified duty. It remembers its vigil but has forgotten what it guards.',
+    level: 12,
+    baseStats: enemyStatBudget(12, { body: 3, mind: 2, heart: 1 }),
+    mapName: 'northern-forest',
+    difficulty: 'normal',
+    logic: 'defensive',
+    tier1Overrides: T1_DEFAULT,
+    loot: [none(60), drop('healing-potion', 25), drop('void-essence', 15)],
+    philosophicalAlignment: { epistemology: -34, outlook: 0, scope: -34 },
+    friendshipReward: {
+        items: [
+            { ...getConsumableById('healing-potion')! },
+        ],
+        xpBonus: 15,
+        alignmentDelta: { epistemology: +2 },
+        narrative: "The sentinel lowers its bone spear. 'I remember the shape of mercy,' it says. 'Perhaps that is worth guarding too.'",
+        flagSet: 'befriended-boneward-sentinel',
+    },
+    finalBlowLines: {
+        brutal: 'The bones remember the breaking, then forget they were ever whole.',
+        quiet: 'It settles into a pattern of rest that looks like standing guard.',
+        ironic: 'The last vigil ends with the guardian finally lying down.',
+    },
+    pactLines: {
+        quiet: 'The duty shifts from watching against to watching over.',
+        setDown: 'It sets down the spear but keeps the posture of protection.',
+        heavy: 'You carry what it guarded: the weight of remembering to care.',
+    },
+    causeLines: {
+        brutal: 'Your bones remember a breaking they have never known before.',
+        broken: 'The duty it kept becomes the duty you cannot.',
+        quiet: 'You understand the weight of standing guard over emptiness.',
+    },
+    journalEntry: {
+        id: 'codex-boneward-sentinel',
+        title: 'The Compact of Marrow',
+        body: 'Found carved in the inner curve of a femur: "What we guard shapes what guards us. The bones remember their purpose longer than the flesh remembers its name." - Records of the Ossuary Keepers',
+    },
+    addedIn: 'phase-127',
+    tags: ['mid-game', 'enemy'],
+});
+
+export const VoidwroughtConstruct = createEnemy({
+    id: 'enemy-voidwrought-construct',
+    name: 'Voidwrought Construct',
+    description: 'Forged from crystallized absence, it moves with the weight of everything it is not.',
+    level: 14,
+    baseStats: enemyStatBudget(14, { mind: 3, body: 2, heart: 1 }),
+    mapName: 'northern-forest',
+    difficulty: 'normal',
+    logic: 'strategic',
+    tier1Overrides: T1_DEFAULT,
+    loot: [none(50), drop('void-essence', 30), drop('clarity-serum', 20)],
+    philosophicalAlignment: { epistemology: 67, outlook: -34, scope: 0 },
+    skills: [skill('eternal-regress')],
+    friendshipReward: {
+        items: [
+            { ...getConsumableById('void-essence')! },
+            { ...getConsumableById('clarity-serum')! },
+        ],
+        xpBonus: 18,
+        alignmentDelta: { epistemology: -2, outlook: +3 },
+        narrative: "The construct's void-crystal core flickers with an almost-light. 'I was made to be nothing in particular,' it says. 'But you make me something specific.'",
+        flagSet: 'befriended-voidwrought-construct',
+    },
+    finalBlowLines: {
+        brutal: 'The absence becomes more absent, until it forgets how to not exist.',
+        quiet: 'It settles into a configuration of not-being that resembles peace.',
+        ironic: 'In breaking, it finally becomes the nothing it was made to be.',
+    },
+    pactLines: {
+        quiet: 'The void learns to hold something: the shape of understanding.',
+        setDown: 'It relinquishes its crystallized emptiness for crystallized connection.',
+        heavy: 'You carry its paradox: being nothing and meaning everything.',
+    },
+    causeLines: {
+        brutal: 'The void it carries becomes the void inside you.',
+        broken: 'You understand the weight of being made for absence.',
+        quiet: 'The crystallized nothing cuts cleaner than any blade.',
+    },
+    journalEntry: {
+        id: 'codex-voidwrought-construct',
+        title: 'Architectures of Absence',
+        body: 'The Null-Shapers claimed they could build from what was not there. Their constructs remain, proving that even emptiness can be given form, purpose, and a kind of terrible beauty.',
+    },
+    addedIn: 'phase-127',
+    tags: ['mid-game', 'enemy'],
+});
+
+export const CindergeistRevenantElemental = createEnemy({
+    id: 'enemy-cindergeist-revenant',
+    name: 'Cindergeist Revenant',
+    description: 'The ghost of a flame that burned too hot and too long. It seeks fuel for a fire that already consumed everything.',
+    level: 18,
+    baseStats: enemyStatBudget(18, { heart: 3, mind: 2, body: 2 }),
+    mapName: 'northern-forest',
+    difficulty: 'elite',
+    logic: 'aggressive',
+    tier1Overrides: T1_DEFAULT,
+    procUnlocks: { heart: { attack: 2, defend: 2 } },
+    loot: [none(35), drop('phoenix-tear', 25), drop('heart-draught', 25), drop('healing-potion', 15)],
+    philosophicalAlignment: { epistemology: 0, outlook: 67, scope: 34 },
+    skills: [skill('resonance-bleed')],
+    befriendabilityConfig: {
+        hpGate: { belowPct: 0.4 },
+        requiredStances: ['heart'],
+        roundsThreshold: 4,
+    },
+    friendshipReward: {
+        items: [
+            { ...getConsumableById('phoenix-tear')! },
+            { ...getConsumableById('heart-draught')! },
+            { ...getConsumableById('healing-potion')! },
+        ],
+        xpBonus: 45,
+        alignmentDelta: { outlook: -2, scope: +2 },
+        narrative: "The cindergeist's flames dim to embers, then to warmth. 'I have burned through my rage,' it whispers. 'Help me remember what I was before the fire.'",
+        flagSet: 'befriended-cindergeist-revenant',
+    },
+    finalBlowLines: {
+        brutal: 'The last flames gutter out, leaving only the memory of heat.',
+        quiet: 'It fades like a candle in a still room, peacefully extinguished.',
+        ironic: 'The ghost of fire burns itself out on the irony of its own need.',
+    },
+    pactLines: {
+        quiet: 'The flame learns to warm instead of consume.',
+        setDown: 'It banks its fires, keeping only the ember of hope.',
+        heavy: 'You carry its warmth, and the responsibility not to let it burn cold.',
+    },
+    causeLines: {
+        brutal: 'The fire it could not finish spreads into your veins.',
+        broken: 'You understand the hunger of flames that have outlived their fuel.',
+        quiet: 'The heat it carried becomes the fever that will not break.',
+    },
+    journalEntry: {
+        id: 'codex-cindergeist-revenant',
+        title: 'The Pyroclasm Elegies',
+        body: 'When the Great Library burned, the scholars said the books screamed. The cindergeists are what remains of those screams - knowledge reduced to pure heat, seeking something worthy to illuminate.',
+    },
+    addedIn: 'phase-127',
+    tags: ['mid-game', 'elite', 'enemy'],
+});
+
+export const ObsidianColossus = createEnemy({
+    id: 'enemy-obsidian-colossus',
+    name: 'Obsidian Colossus',
+    description: 'A towering guardian carved from volcanic glass and ancient grief. Each movement cuts the air itself.',
+    level: 22,
+    baseStats: enemyStatBudget(22, { body: 4, heart: 2, mind: 1 }),
+    mapName: 'northern-forest',
+    difficulty: 'elite',
+    logic: 'balanced',
+    tier1Overrides: T1_DEFAULT,
+    procUnlocks: { body: { attack: 2, defend: 2 }, heart: { attack: 2, defend: 2 } },
+    loot: [none(25), drop('iron-skin-draught', 35), drop('body-elixir', 25), drop('revive-crystal', 15)],
+    philosophicalAlignment: { epistemology: -34, outlook: -67, scope: 67 },
+    skills: [skill('straw-giant'), skill('achilles-gambit')],
+    befriendabilityConfig: {
+        hpGate: { belowPct: 0.3 },
+        requiredStances: ['body', 'heart'],
+        roundsThreshold: 6,
+    },
+    friendshipReward: {
+        items: [
+            { ...getConsumableById('iron-skin-draught')! },
+            { ...getConsumableById('body-elixir')! },
+            { ...getConsumableById('revive-crystal')! },
+        ],
+        xpBonus: 65,
+        alignmentDelta: { outlook: +4, scope: -3 },
+        narrative: "The colossus kneels, its obsidian surface reflecting your image fractured into countless selves. 'I have been a mirror for grief too long,' it rumbles. 'Show me how to reflect hope.'",
+        flagSet: 'befriended-obsidian-colossus',
+    },
+    finalBlowLines: {
+        brutal: 'The volcanic glass shatters, each shard cutting the light into dark spectra.',
+        quiet: 'It settles into the earth like a mountain deciding to sleep.',
+        ironic: 'The guardian meant to last forever cracks along the faults of its own making.',
+    },
+    pactLines: {
+        quiet: 'The mirror of grief becomes a window into understanding.',
+        setDown: 'It sets aside its weight of ancient sorrow for the lightness of new purpose.',
+        heavy: 'You carry its reflection: the weight of being seen clearly.',
+    },
+    causeLines: {
+        brutal: 'The obsidian cuts you into the shape of its ancient grief.',
+        broken: 'You understand the weight of being carved from catastrophe.',
+        quiet: 'The volcanic glass teaches you how sharpness and fragility are the same thing.',
+    },
+    journalEntry: {
+        id: 'codex-obsidian-colossus',
+        title: 'The Glass Mountain Fragments',
+        body: 'From the Pyroclasts\' final work: "We shape the earth\'s grief into guardians, hoping they will remember what we could not - that destruction and creation drink from the same molten heart."',
+    },
+    addedIn: 'phase-127',
+    tags: ['mid-game', 'elite', 'enemy'],
+});
+
+export const TheLichOfMissingSteps = createEnemy({
+    id: 'enemy-the-lich-of-missing-steps',
+    name: 'The Lich of Missing Steps',
+    description: 'An undead philosopher-king who skipped crucial logical steps in the proof of its own eternal existence.',
+    level: 26,
+    baseStats: enemyStatBudget(26, { mind: 4, heart: 3, body: 1 }),
+    mapName: 'northern-forest',
+    difficulty: 'boss',
+    logic: 'boss',
+    tier1Overrides: T1_DEFAULT,
+    procUnlocks: {
+        mind: { attack: 3, defend: 3 },
+        heart: { attack: 2, defend: 2 },
+    },
+    loot: [drop('philosopher-tea', 40), drop('void-essence', 30), drop('revive-crystal', 20), drop('resonance-crystal', 10)],
+    philosophicalAlignment: { epistemology: 67, outlook: -34, scope: -67 },
+    skills: [skill('bootstrap-paradox'), skill('eternal-regress'), skill('undistributed-middle')],
+    befriendabilityConfig: {
+        hpGate: { belowPct: 0.2 },
+        requiredStances: ['mind', 'heart'],
+        roundsThreshold: 7,
+    },
+    friendshipReward: {
+        items: [
+            dropItem('paradox-loop', 26, 'unique', () => 0.5),
+            { ...getConsumableById('philosopher-tea')! },
+            { ...getConsumableById('void-essence')! },
+            { ...getConsumableById('revive-crystal')! },
+        ],
+        xpBonus: 95,
+        alignmentDelta: { epistemology: -4, outlook: +3, scope: +5 },
+        narrative: "The lich's hollow eyes flicker with something approaching warmth. 'I spent eternity searching for the missing steps,' it whispers. 'But you have shown me the answer was not in the proof, but in the question of who I was proving it to.'",
+        flagSet: 'befriended-lich-of-missing-steps',
+    },
+    finalBlowLines: {
+        brutal: 'The logical structure collapses, taking the lich\'s certainty with it.',
+        quiet: 'It fades like a hypothesis that was elegant but wrong.',
+        ironic: 'The proof of its existence fails at the moment it stops existing.',
+    },
+    pactLines: {
+        quiet: 'The missing steps are filled with understanding instead of logic.',
+        setDown: 'It abandons the proof for the more difficult work of living the question.',
+        heavy: 'You carry its unfinished theorem: the weight of questions that matter more than their answers.',
+    },
+    causeLines: {
+        brutal: 'The missing steps become gaps in your own understanding of life.',
+        broken: 'You realize you cannot prove you exist to someone who has forgotten how to listen.',
+        quiet: 'The lich\'s failed logic becomes the framework for your own unraveling.',
+    },
+    journalEntry: {
+        id: 'codex-lich-of-missing-steps',
+        title: 'Theorem of the Unproven Self',
+        body: 'The Lich\'s final manuscript: "I have demonstrated my eternal existence in seventeen volumes. Yet I cannot remember why I wanted to prove it, or to whom. Perhaps the missing step was the very question of proof itself."',
+    },
+    addedIn: 'phase-127',
+    tags: ['mid-game', 'boss', 'enemy'],
+});
+
 // ─── Library indices ──────────────────────────────────────────────────────────
 
-/** Spec 07 + Phase 114 — all 25 production enemies, in difficulty order. */
+/** Spec 07 + Phase 114 + Phase 127 — all 30 production enemies, in difficulty order. */
 export const EnemyLibrary = [
     // Simple
     TidepoolCrab, SeaMistWisp, LullabyMoth,
     // Normal
     Disatree_01, WetHound, MournfulGull, ForestSprite, HollowEyedBeggar, ArgumentativeCrow,
     ThornedSentinel, PackleaderWolf, WhisperingOak,
+    BonewardSentinel, VoidwroughtConstruct, // Phase 127
     AuditSentinel, // Phase 121
     // Elite
     TideflukeReaver, HushWraith, HollowSaint,
     FrostboundHunter, MistwalkerShade, VerdantProtector,
+    CindergeistRevenantElemental, ObsidianColossus, // Phase 127
     // Boss
     CoastalTyrant, TheDisagreement,
     NightmareStag, TheForestMind,
+    TheLichOfMissingSteps, // Phase 127
     BalanceJudge, // Phase 121
     // Unique
     EchoOfPyrrhonia, EternalAutumn, ShadowOfTheFirst,
@@ -2112,6 +2375,9 @@ export const EnemiesByMap = {
         ContrarianRevenant, ApostateAbbot, TheUnwriting, HarvestOfNames,
         FamineOfTheDeepWood, CathedralOfDoubt, WarrantOfTheVoid, TheSchismarch, GravewardKeeper,
         ProsecutorOfTheReal, TheLastConsensus, AxiomBreaker, PallbearerOfReason, TheTerminalProof,
+        // Phase 127 — third enemy family (ancient-ruins theme)
+        BonewardSentinel, VoidwroughtConstruct, CindergeistRevenantElemental, ObsidianColossus,
+        TheLichOfMissingSteps,
     ],
 } as const;
 
@@ -2186,6 +2452,12 @@ export const ENEMY_REGISTRY = {
     'axiom-breaker':            AxiomBreaker,
     'pallbearer-of-reason':     PallbearerOfReason,
     'the-terminal-proof':       TheTerminalProof,
+    // Phase 127 ancient-ruins family.
+    'boneward-sentinel':            BonewardSentinel,
+    'voidwrought-construct':        VoidwroughtConstruct,
+    'cindergeist-revenant':         CindergeistRevenantElemental,
+    'obsidian-colossus':            ObsidianColossus,
+    'the-lich-of-missing-steps':   TheLichOfMissingSteps,
 } as const;
 
 export type EnemySlug = keyof typeof ENEMY_REGISTRY;

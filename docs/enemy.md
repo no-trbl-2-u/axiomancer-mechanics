@@ -165,9 +165,10 @@ grant nothing.
 
 ## Library
 
-[`src/Enemy/enemy.library.ts`](../src/Enemy/enemy.library.ts) — 25 production
-enemies across the Coastal Continent, with the original Spec 07 foundation
-and Phase 114's northern-forest class family expansion.
+[`src/Enemy/enemy.library.ts`](../src/Enemy/enemy.library.ts) — 30 production
+enemies across the Coastal Continent, with the original Spec 07 foundation,
+Phase 114's northern-forest class family expansion, and Phase 127's ancient-ruins
+themed third family (undead/construct/elemental archetypes).
 
 ### Original Coastal Family (Spec 07)
 **Simple (3)** — Tidepool Crab (body), Sea-Mist Wisp (mind), Lullaby Moth (heart).
@@ -182,6 +183,13 @@ Forest Sprite (mind), Hollow-Eyed Beggar (heart), Argumentative Crow (mind).
 **Elite (3)** — Frostbound Hunter (body, tracking warmth), Mistwalker Shade (mind, between certainties), Verdant Protector (heart, shepherd of growth).
 **Boss (2)** — Nightmare Stag (mind+body, crystallized fear), The Forest Mind (mind+heart, thousand-year thoughts).
 **Unique (2)** — Eternal Autumn (all three, season refusing to pass), Shadow of the First (body+heart, pre-philosophy wildness).
+
+### Ancient-Ruins Third Family (Phase 127)
+**Normal (2)** — Boneward Sentinel (body, ossified duty), Voidwrought Construct (mind, crystallized absence).
+**Elite (2)** — Cindergeist Revenant (heart, ghost of flame), Obsidian Colossus (body, volcanic glass guardian).
+**Boss (1)** — The Lich of Missing Steps (mind+heart, undead philosopher-king with flawed eternal proof).
+
+The ancient-ruins family explores undead/construct/elemental themes with comprehensive befriendability configurations, skill rotations using Tier 3 effects, rich friendship reward content including unique items and alignment shifts, complete aftermath narrative (finalBlowLines/pactLines/causeLines), and journal entries that unlock ancient lore. All five enemies are thematically placed in the northern-forest map but represent a distinct archetype family focused on philosophical examination of existence, duty, and transformation.
 
 `EnemiesByMap` indexes them per map for `generateEncounter`. `ENEMY_REGISTRY`
 keys them by CLI slug (`tidepool-crab`, `thorned-sentinel`, `disatree`, `sandbag`, ...) for the
