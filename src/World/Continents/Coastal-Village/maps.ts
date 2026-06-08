@@ -14,8 +14,8 @@
 
 import { MapDefinition, Quest } from '../../types';
 import { NPC, DialogueTree } from '../../../NPCs/types';
-import { captainBlackwater, fishermansDaughter } from './npcs';
-import { shrineKeeper, chronicler, wanderingPhilosopher } from '../Northern-Forest/npcs';
+import { captainBlackwater, fishermansDaughter, villageHealer, unionLeader, merchantWidow } from './npcs';
+import { shrineKeeper, chronicler, wanderingPhilosopher, forestRanger, hermitSage, lostTrader } from '../Northern-Forest/npcs';
 
 /**
  * CoastalContinentMapNames are all the maps in the Coastal Continent
@@ -372,7 +372,7 @@ const fishingVillage: MapDefinition = {
         { id: 'fv-24', location: [8, 2], connectedNodes: ['fv-21', 'fv-23', 'fv-25'] },
         { id: 'fv-25', location: [9, 2], connectedNodes: ['fv-24'] },
     ],
-    npcs: [oldMarrow, tideShopkeeper, coastalBeggar, captainBlackwater, fishermansDaughter],
+    npcs: [oldMarrow, tideShopkeeper, coastalBeggar, captainBlackwater, fishermansDaughter, villageHealer, unionLeader, merchantWidow],
     enemies: [],
     uniqueEvents: [],
     quests: [startingQuest],
@@ -431,7 +431,7 @@ const northernForest: MapDefinition = {
         { id: 'nf-24', location: [7, -1], connectedNodes: ['nf-23', 'nf-25'] },
         { id: 'nf-25', location: [8, -1], connectedNodes: ['nf-24'] },
     ],
-    npcs: [shrineKeeper, chronicler, wanderingPhilosopher],
+    npcs: [shrineKeeper, chronicler, wanderingPhilosopher, forestRanger, hermitSage, lostTrader],
     enemies: [],
     uniqueEvents: [],
     quests: [],

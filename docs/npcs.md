@@ -179,6 +179,42 @@ shape.
 Hermetic coverage at
 [`src/Game/e2e/old-marrow-observer.engine.test.ts`](../src/Game/e2e/old-marrow-observer.engine.test.ts).
 
+## Talk + Choice Structure (Phase 128)
+
+**Canonical dialogue pattern:** Each NPC encounter offers a `*Talk` option that provides contextual information without ending the encounter, followed by 3+ mutually-exclusive philosophical-alignment responses with distinct consequence shapes.
+
+### Structure Pattern
+
+1. **Initial greeting** — Sets the scene and NPC personality
+2. **Talk option** — Reveals the NPC's situation, conflict, or dilemma without ending the encounter
+3. **Philosophical response choices** — Alignment-gated options expressing different ethical approaches:
+   - **Divine/transcendent responses** — Trust in higher forces or spiritual solutions
+   - **Collaborative/community responses** — Offering personal help or resources to solve problems
+   - **Pragmatic/individual responses** — Self-interested or purely practical approaches
+
+### Consequence Shape Categories
+
+Following T-specified guidance for diverse outcome types:
+
+- **Alignment-only consequences** — Pure philosophical positioning (`alignmentDelta` only)
+- **Self-sacrificial consequences** — Help others at personal cost (`alignmentDelta` + `grantCurrency: -N` or `moralDelta: +N`)
+- **Self-interested consequences** — Gain advantage through others' situations (`alignmentDelta` + `grantCurrency: +N`)
+- **Balanced consequences** — Mixed outcomes reflecting complex moral choices
+
+### Phase 128 NPCs
+
+**Coastal Village:**
+- **Village Healer** — Medical ethics dilemmas around obtaining supplies for the needy
+- **Dockworker's Union Leader** — Labor rights tensions between collective action and individual survival
+- **Merchant's Widow** — Grief and justice choices between forgiveness and retribution
+
+**Northern Forest:**
+- **Forest Ranger** — Conservation vs. exploitation balancing environmental and human needs
+- **Hermit Sage** — Isolation vs. community obligation around sharing wisdom
+- **Lost Trader** — Trust and deception in crisis situations requiring mutual aid
+
+Each NPC demonstrates the alignment system across diverse life situations with memorable character conflicts designed for replayability across different philosophical paths.
+
 ## Pending
 
 - **Dialogue-driven combat triggers** — currently choices can start quests

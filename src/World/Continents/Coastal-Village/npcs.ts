@@ -348,7 +348,258 @@ const fishermansDaughter: NPC = {
     dialogueTree: fishermansDaughterTree,
 };
 
+// ─── The Village Healer (Medical ethics dilemmas) ──────────────────────────
+
+const villageHealerTree: DialogueTree = {
+    id: 'village-healer',
+    rootId: 'greet',
+    nodes: {
+        greet: {
+            id: 'greet',
+            text: "The Village Healer tends to a patient in their modest clinic, hands steady despite obvious fatigue. They look up with weary but kind eyes as you approach.",
+            choices: [
+                {
+                    text: "*Talk — Learn about the healer's situation",
+                    nextNodeId: 'talk_situation',
+                },
+                {
+                    text: "I need healing services.",
+                    nextNodeId: 'healing_services',
+                },
+                {
+                    text: "Leave quietly to avoid disturbing their work.",
+                    nextNodeId: undefined,
+                },
+            ],
+        },
+        talk_situation: {
+            id: 'talk_situation',
+            text: "\"Thank you for asking. I've been working without rest—there's a fever spreading through the poor quarter, but the wealthy district hoards the rare herbs I need. I could save more lives with proper supplies, but acquiring them would mean... difficult choices. I face this dilemma daily: how far should a healer go to obtain what their patients need?\"",
+            choices: [
+                {
+                    text: "Trust in divine providence—God will provide what's needed.",
+                    nextNodeId: 'divine_providence',
+                    requires: { requiresAlignment: { axis: 'epistemology', op: 'gte', value: 15 } },
+                    effect: { alignmentDelta: { epistemology: 2, scope: 1 } },
+                },
+                {
+                    text: "I'll help you acquire those herbs, whatever it takes.",
+                    nextNodeId: 'offer_help',
+                    requires: { requiresAlignment: { axis: 'scope', op: 'gte', value: 10 } },
+                    effect: { 
+                        alignmentDelta: { scope: 2, outlook: 1 },
+                        moralDelta: 2,
+                        grantCurrency: -15 
+                    },
+                },
+                {
+                    text: "Those wealthy folk won't miss a few herbs—take what you need.",
+                    nextNodeId: 'take_what_needed',
+                    requires: { requiresAlignment: { axis: 'outlook', op: 'lte', value: -5 } },
+                    effect: { 
+                        alignmentDelta: { outlook: -2, scope: 1 },
+                        moralDelta: -1,
+                        grantCurrency: 10,
+                        setFlag: 'aided_healer_questionable_means'
+                    },
+                },
+            ],
+        },
+        healing_services: {
+            id: 'healing_services',
+            text: "\"Of course—healing is my calling. Though I must warn you, my supplies are limited due to the shortage I mentioned.\"",
+        },
+        divine_providence: {
+            id: 'divine_providence',
+            text: "\"You speak of faith... yes, perhaps I've been trying too hard to control outcomes. Sometimes the greatest healing comes from trusting in forces greater than ourselves.\"",
+        },
+        offer_help: {
+            id: 'offer_help',
+            text: "\"Your generosity moves me deeply. With your support, I can acquire the herbs through proper channels—it will cost more, but we'll save lives with clean consciences.\"",
+        },
+        take_what_needed: {
+            id: 'take_what_needed',
+            text: "\"I... I cannot ask you to steal, but I understand the logic. Lives hang in the balance. If you're willing to acquire those herbs by any means necessary, I won't ask questions.\"",
+        },
+    },
+};
+
+const villageHealer: NPC = {
+    name: 'Village Healer',
+    description: 'A dedicated healer facing ethical dilemmas about how far to go to obtain medical supplies for the needy.',
+    dialogueTree: villageHealerTree,
+};
+
+// ─── The Dockworker's Union Leader (Labor rights and collective action) ────────
+
+const unionLeaderTree: DialogueTree = {
+    id: 'union-leader',
+    rootId: 'greet',
+    nodes: {
+        greet: {
+            id: 'greet',
+            text: "The Union Leader stands among a group of dock workers, their voice carrying authority earned through years of hard labor. They turn to address you with a mixture of wariness and respect.",
+            choices: [
+                {
+                    text: "*Talk — Ask about the workers' situation",
+                    nextNodeId: 'talk_workers_situation',
+                },
+                {
+                    text: "Looking for work at the docks.",
+                    nextNodeId: 'seeking_work',
+                },
+                {
+                    text: "Continue on without getting involved.",
+                    nextNodeId: undefined,
+                },
+            ],
+        },
+        talk_workers_situation: {
+            id: 'talk_workers_situation',
+            text: "\"Appreciate you asking, friend. The dock owners are cutting wages again while their profits soar—third time this year. My people are struggling to feed their families. We're organizing a strike, but some workers are too scared to join. They'd rather accept scraps than risk losing everything. I understand their fear, but sometimes individual survival conflicts with collective justice. What would you do in their place?\"",
+            choices: [
+                {
+                    text: "The divine order teaches us to accept our lot and trust in higher justice.",
+                    nextNodeId: 'accept_divine_order',
+                    requires: { requiresAlignment: { axis: 'epistemology', op: 'gte', value: 20 } },
+                    effect: { alignmentDelta: { epistemology: 1, scope: -2 } },
+                },
+                {
+                    text: "I'll stand with you—injustice anywhere threatens justice everywhere.",
+                    nextNodeId: 'solidarity_support',
+                    requires: { requiresAlignment: { axis: 'scope', op: 'gte', value: 15 } },
+                    effect: { 
+                        alignmentDelta: { scope: 3, outlook: 1 },
+                        moralDelta: 3,
+                        grantCurrency: -20,
+                        setFlag: 'union_supporter'
+                    },
+                },
+                {
+                    text: "Smart workers look out for themselves—I'll pay the scared ones to cross your picket.",
+                    nextNodeId: 'undermine_strike',
+                    requires: { requiresAlignment: { axis: 'scope', op: 'lte', value: -10 } },
+                    effect: { 
+                        alignmentDelta: { scope: -3, outlook: -1 },
+                        moralDelta: -3,
+                        grantCurrency: 25,
+                        setFlag: 'strike_breaker'
+                    },
+                },
+            ],
+        },
+        seeking_work: {
+            id: 'seeking_work',
+            text: "\"Honest work's always welcome, though I'll warn you—conditions aren't fair right now. That's what we're fighting to change.\"",
+        },
+        accept_divine_order: {
+            id: 'accept_divine_order',
+            text: "\"I respect your faith, but divine justice seems mighty slow when children are going hungry. Still, perhaps there's wisdom in patience I haven't grasped.\"",
+        },
+        solidarity_support: {
+            id: 'solidarity_support',
+            text: "\"Now that's the spirit! Your support means more than coin—it shows the workers they're not alone in this fight. Together we're stronger than any dock owner's greed.\"",
+        },
+        undermine_strike: {
+            id: 'undermine_strike',
+            text: "The leader's eyes flash with anger and disappointment. \"So that's how it is. Thirty pieces of silver to betray honest workers. You'll find your strikebreakers, but you'll also find the weight of that choice in your conscience.\"",
+        },
+    },
+};
+
+const unionLeader: NPC = {
+    name: "Dockworker's Union Leader",
+    description: 'A labor organizer fighting for workers\' rights while navigating the tension between collective action and individual survival.',
+    dialogueTree: unionLeaderTree,
+};
+
+// ─── The Merchant's Widow (Grief and justice themes) ───────────────────────────
+
+const merchantWidowTree: DialogueTree = {
+    id: 'merchant-widow',
+    rootId: 'greet',
+    nodes: {
+        greet: {
+            id: 'greet',
+            text: "The Merchant's Widow sits alone at a tavern table, staring into an untouched cup of ale. Her black mourning dress contrasts sharply with the defiant fire still burning in her eyes.",
+            choices: [
+                {
+                    text: "*Talk — Ask what troubles her",
+                    nextNodeId: 'talk_troubles',
+                },
+                {
+                    text: "My condolences for your loss.",
+                    nextNodeId: 'condolences',
+                },
+                {
+                    text: "Respectfully leave her to her solitude.",
+                    nextNodeId: undefined,
+                },
+            ],
+        },
+        talk_troubles: {
+            id: 'talk_troubles',
+            text: "\"My husband was murdered three weeks ago—stabbed in an alley for his purse. I know who did it, a desperate man with starving children. The constables won't act because he's already fled the village. I have the means to hire bounty hunters, but... part of me wonders if justice should temper with mercy. His children will starve if he's caught, yet my husband's blood cries out for justice. What is the right path when justice and mercy seem to war with each other?\"",
+            choices: [
+                {
+                    text: "Forgiveness is divine—let heaven judge while you heal your heart.",
+                    nextNodeId: 'divine_forgiveness',
+                    requires: { requiresAlignment: { axis: 'epistemology', op: 'gte', value: 20 } },
+                    effect: { alignmentDelta: { epistemology: 2, outlook: 2 } },
+                },
+                {
+                    text: "I'll help you find a path that serves both justice and mercy.",
+                    nextNodeId: 'justice_with_mercy',
+                    requires: { requiresAlignment: { axis: 'scope', op: 'gte', value: 10 } },
+                    effect: { 
+                        alignmentDelta: { scope: 2, outlook: 1 },
+                        moralDelta: 3,
+                        grantCurrency: -30,
+                        setFlag: 'widow_mediator'
+                    },
+                },
+                {
+                    text: "Justice demands payment—I'll help you hire the best hunters available.",
+                    nextNodeId: 'pursue_vengeance',
+                    requires: { requiresAlignment: { axis: 'outlook', op: 'lte', value: 0 } },
+                    effect: { 
+                        alignmentDelta: { outlook: -2, scope: -1 },
+                        moralDelta: -1,
+                        grantCurrency: 40,
+                        setFlag: 'widow_vengeance_supporter'
+                    },
+                },
+            ],
+        },
+        condolences: {
+            id: 'condolences',
+            text: "\"Thank you for your kindness. These days, simple human decency feels rarer than gold.\"",
+        },
+        divine_forgiveness: {
+            id: 'divine_forgiveness',
+            text: "\"You speak wisdom that my heart struggles to accept. Perhaps the greatest victory over evil is refusing to let it turn us into something we're not. My husband was a kind man—he would want mercy.\"",
+        },
+        justice_with_mercy: {
+            id: 'justice_with_mercy',
+            text: "\"Yes... perhaps there's a way to serve justice without creating more suffering. With your help, maybe we can find him and offer help to his family while still making him answer for what he's done.\"",
+        },
+        pursue_vengeance: {
+            id: 'pursue_vengeance',
+            text: "\"You understand what justice means. My husband deserves that much. Those bounty hunters will find him, and when they do, his children can learn what happens when you spill innocent blood.\"",
+        },
+    },
+};
+
+const merchantWidow: NPC = {
+    name: "Merchant's Widow",
+    description: 'A grieving woman torn between seeking justice for her murdered husband and showing mercy to his desperate killer.',
+    dialogueTree: merchantWidowTree,
+};
+
 export {
     captainBlackwater,
     fishermansDaughter,
+    villageHealer,
+    unionLeader,
+    merchantWidow,
 };

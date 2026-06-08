@@ -391,8 +391,258 @@ const wanderingPhilosopher: NPC = {
     dialogueTree: wanderingPhilosopherTree,
 };
 
+// ─── The Forest Ranger (Conservation vs exploitation themes) ───────────────────
+
+const forestRangerTree: DialogueTree = {
+    id: 'forest-ranger',
+    rootId: 'greet',
+    nodes: {
+        greet: {
+            id: 'greet',
+            text: "The Forest Ranger emerges from behind an ancient oak, bow in hand and eyes alert. Their weathered face shows both the serenity of forest life and the weight of constant vigilance.",
+            choices: [
+                {
+                    text: "*Talk — Ask about their duties here",
+                    nextNodeId: 'talk_duties',
+                },
+                {
+                    text: "Can you guide me through these woods?",
+                    nextNodeId: 'request_guidance',
+                },
+                {
+                    text: "Nod respectfully and continue deeper into the forest.",
+                    nextNodeId: undefined,
+                },
+            ],
+        },
+        talk_duties: {
+            id: 'talk_duties',
+            text: "\"I guard these ancient groves from those who would strip them bare for profit. There's a logging operation pushing north—they want the heartwood of the eldest trees, worth a fortune in the southern markets. I could stop them, but their families depend on the wages, and the village needs the trade income. How do we balance the forest's future against people's immediate needs? Sometimes I wonder if one person can make a difference against such forces.\"",
+            choices: [
+                {
+                    text: "Trust that nature's wisdom will prevail—the forest will endure as it always has.",
+                    nextNodeId: 'nature_wisdom_endures',
+                    requires: { requiresAlignment: { axis: 'epistemology', op: 'gte', value: 15 } },
+                    effect: { alignmentDelta: { epistemology: 2, scope: 2 } },
+                },
+                {
+                    text: "I'll help you find alternative livelihoods for the loggers—sustainable forest trades.",
+                    nextNodeId: 'sustainable_alternatives',
+                    requires: { requiresAlignment: { axis: 'scope', op: 'gte', value: 15 } },
+                    effect: { 
+                        alignmentDelta: { scope: 3, outlook: 2 },
+                        moralDelta: 3,
+                        grantCurrency: -25,
+                        setFlag: 'forest_conservation_supporter'
+                    },
+                },
+                {
+                    text: "Trees grow back—people need to eat today. Let them take what they need.",
+                    nextNodeId: 'pragmatic_exploitation',
+                    requires: { requiresAlignment: { axis: 'scope', op: 'lte', value: -5 } },
+                    effect: { 
+                        alignmentDelta: { scope: -2, outlook: -1 },
+                        moralDelta: -2,
+                        grantCurrency: 35,
+                        setFlag: 'forest_exploitation_supporter'
+                    },
+                },
+            ],
+        },
+        request_guidance: {
+            id: 'request_guidance',
+            text: "\"These woods can be treacherous for the unwary. I know the safe paths—it would be my honor to guide a respectful traveler.\"",
+        },
+        nature_wisdom_endures: {
+            id: 'nature_wisdom_endures',
+            text: "\"You speak truth that goes deeper than immediate concerns. These trees have weathered ice ages and droughts. Perhaps my role is to trust in larger cycles while doing what I can in this moment.\"",
+        },
+        sustainable_alternatives: {
+            id: 'sustainable_alternatives',
+            text: "\"Yes! There are other ways—mushroom cultivation, guided tours for scholars, carefully managed timber harvests. With your support, we can show the loggers a path that feeds families without destroying the forest's heart.\"",
+        },
+        pragmatic_exploitation: {
+            id: 'pragmatic_exploitation',
+            text: "\"I... I cannot agree with that, but I understand your reasoning. Perhaps you're right that immediate human needs must outweigh distant environmental concerns. The forest will have to fend for itself.\"",
+        },
+    },
+};
+
+const forestRanger: NPC = {
+    name: 'Forest Ranger',
+    description: 'A dedicated guardian of the northern woods torn between conservation duties and human economic needs.',
+    dialogueTree: forestRangerTree,
+};
+
+// ─── The Hermit Sage (Isolation vs community obligation) ───────────────────────
+
+const hermitSageTree: DialogueTree = {
+    id: 'hermit-sage',
+    rootId: 'greet',
+    nodes: {
+        greet: {
+            id: 'greet',
+            text: "The Hermit Sage sits in meditation beside a small forest shrine, eyes closed in deep contemplation. They sense your approach and slowly open ancient, knowing eyes.",
+            choices: [
+                {
+                    text: "*Talk — Ask why they chose solitude",
+                    nextNodeId: 'talk_solitude_choice',
+                },
+                {
+                    text: "I seek wisdom, master.",
+                    nextNodeId: 'seek_wisdom',
+                },
+                {
+                    text: "Withdraw quietly to respect their meditation.",
+                    nextNodeId: undefined,
+                },
+            ],
+        },
+        talk_solitude_choice: {
+            id: 'talk_solitude_choice',
+            text: "\"I retreated here decades ago to pursue understanding beyond the noise of daily concerns. In solitude, I've found clarity about existence, suffering, and transcendence. But lately, I question whether wisdom earned in isolation serves anyone but myself. The villages below struggle with moral crises that my knowledge might help resolve. Is enlightenment selfish if it's not shared? Yet sharing it means abandoning the very isolation that made it possible. Can you see the paradox that troubles my final years?\"",
+            choices: [
+                {
+                    text: "Wisdom flows from the divine source—trust that it reaches those who need it.",
+                    nextNodeId: 'divine_wisdom_flows',
+                    requires: { requiresAlignment: { axis: 'epistemology', op: 'gte', value: 20 } },
+                    effect: { alignmentDelta: { epistemology: 3, scope: -1 } },
+                },
+                {
+                    text: "I'll help you share your wisdom while preserving your contemplative practice.",
+                    nextNodeId: 'balanced_sharing',
+                    requires: { requiresAlignment: { axis: 'scope', op: 'gte', value: 10 } },
+                    effect: { 
+                        alignmentDelta: { scope: 2, epistemology: 1 },
+                        moralDelta: 2,
+                        grantCurrency: -10,
+                        setFlag: 'hermit_wisdom_bridge'
+                    },
+                },
+                {
+                    text: "Keep your secrets—the world profits more from your example than your advice.",
+                    nextNodeId: 'wisdom_through_example',
+                    requires: { requiresAlignment: { axis: 'scope', op: 'lte', value: 0 } },
+                    effect: { 
+                        alignmentDelta: { scope: -1, epistemology: 1 },
+                        grantCurrency: 15,
+                        setFlag: 'hermit_isolation_supporter'
+                    },
+                },
+            ],
+        },
+        seek_wisdom: {
+            id: 'seek_wisdom',
+            text: "\"Wisdom cannot be given, only discovered. But I can share what the silence has taught me, if you have ears to hear.\"",
+        },
+        divine_wisdom_flows: {
+            id: 'divine_wisdom_flows',
+            text: "\"Perhaps you're right. True wisdom transcends the vessel that contains it. If my understanding matters, it will find its way to those who need it through means I cannot foresee.\"",
+        },
+        balanced_sharing: {
+            id: 'balanced_sharing',
+            text: "\"A thoughtful solution. Perhaps I can mentor a few seekers while preserving the solitude necessary for continued insight. Your offer of assistance in creating that balance touches my heart deeply.\"",
+        },
+        wisdom_through_example: {
+            id: 'wisdom_through_example',
+            text: "\"An interesting perspective. Perhaps the sight of someone choosing contemplation over accumulation teaches more than any words could. There is wisdom in your counsel to trust the power of witness.\"",
+        },
+    },
+};
+
+const hermitSage: NPC = {
+    name: 'Hermit Sage',
+    description: 'An enlightened recluse questioning whether wisdom gained in isolation should be shared with struggling communities.',
+    dialogueTree: hermitSageTree,
+};
+
+// ─── The Lost Trader (Trust and deception in crisis) ───────────────────────────
+
+const lostTraderTree: DialogueTree = {
+    id: 'lost-trader',
+    rootId: 'greet',
+    nodes: {
+        greet: {
+            id: 'greet',
+            text: "A trader sits slumped against a fallen log, their cart overturned and goods scattered. They look up with desperate, calculating eyes as you approach through the forest gloom.",
+            choices: [
+                {
+                    text: "*Talk — Ask what happened here",
+                    nextNodeId: 'talk_what_happened',
+                },
+                {
+                    text: "Do you need assistance?",
+                    nextNodeId: 'offer_assistance',
+                },
+                {
+                    text: "Keep walking—their problems aren't your concern.",
+                    nextNodeId: undefined,
+                },
+            ],
+        },
+        talk_what_happened: {
+            id: 'talk_what_happened',
+            text: "\"Bandits took everything—my horses, most of my cargo, even my coin purse. Left me here to die, they did. But here's the thing... I have one valuable item hidden that they missed. Worth enough to rebuild my trade, feed my family for a year. Problem is, I need someone to help me carry it to the next village, but... well, trusting a stranger with something that valuable after being robbed? Yet I can't move it alone, and staying here means slow death. Would you trust a desperate man in my position? And more importantly, should I trust you?\"",
+            choices: [
+                {
+                    text: "Providence brought us together—trust is a sacred bond between strangers.",
+                    nextNodeId: 'sacred_trust_bond',
+                    requires: { requiresAlignment: { axis: 'epistemology', op: 'gte', value: 15 } },
+                    effect: { alignmentDelta: { epistemology: 2, scope: 1 } },
+                },
+                {
+                    text: "I'll help you transport it safely—we can build trust through honest action.",
+                    nextNodeId: 'honest_mutual_aid',
+                    requires: { requiresAlignment: { axis: 'scope', op: 'gte', value: 10 } },
+                    effect: { 
+                        alignmentDelta: { scope: 2, outlook: 1 },
+                        moralDelta: 2,
+                        grantCurrency: -5,
+                        setFlag: 'trader_honest_helper'
+                    },
+                },
+                {
+                    text: "Show me this valuable item first—then we'll discuss terms that benefit us both.",
+                    nextNodeId: 'pragmatic_verification',
+                    requires: { requiresAlignment: { axis: 'outlook', op: 'lte', value: 5 } },
+                    effect: { 
+                        alignmentDelta: { outlook: -1, scope: -1 },
+                        grantCurrency: 20,
+                        setFlag: 'trader_pragmatic_partner'
+                    },
+                },
+            ],
+        },
+        offer_assistance: {
+            id: 'offer_assistance',
+            text: "\"You'd help a stranger? That's... that's kind. Though I warn you, kindness in these woods can be dangerous for both giver and receiver.\"",
+        },
+        sacred_trust_bond: {
+            id: 'sacred_trust_bond',
+            text: "\"You speak of sacred bonds... yes, perhaps that's what separates civilization from wilderness. I choose to trust you, stranger, and hope you'll honor that faith.\"",
+        },
+        honest_mutual_aid: {
+            id: 'honest_mutual_aid',
+            text: "\"Honest action builds trust—I like that. You help me reach town, I'll share fair portion of the profits. We both benefit, we both take risks, we both prove ourselves worthy of trust.\"",
+        },
+        pragmatic_verification: {
+            id: 'pragmatic_verification',
+            text: "\"Clever—verify before you commit. Can't fault a person for being practical after what I've been through. Here's the item... now, shall we discuss our mutually beneficial arrangement?\"",
+        },
+    },
+};
+
+const lostTrader: NPC = {
+    name: 'Lost Trader',
+    description: 'A desperate merchant robbed by bandits, facing difficult choices about trust and deception in a crisis situation.',
+    dialogueTree: lostTraderTree,
+};
+
 export {
     shrineKeeper,
     chronicler, 
     wanderingPhilosopher,
+    forestRanger,
+    hermitSage,
+    lostTrader,
 };
