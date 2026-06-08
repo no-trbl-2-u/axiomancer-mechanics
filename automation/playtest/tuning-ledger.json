@@ -76,7 +76,55 @@
       "kept": false,
       "significant": false,
       "confidence": "low"
+    },
+    {
+      "timestamp": "2026-06-08T02-58-00-788Z",
+      "paramId": "effect.tier1_heart_defend.healthPerRound",
+      "oldValue": 2,
+      "newValue": 3,
+      "direction": "up",
+      "deltaHealth": -0.00584709972530692,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "Focus on early game and mid game status effects and skills"
+    },
+    {
+      "timestamp": "2026-06-08T02-58-00-788Z",
+      "paramId": "effect.debuff_poison.damagePerRound",
+      "oldValue": 3,
+      "newValue": 4,
+      "direction": "up",
+      "deltaHealth": 0,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "Focus on early game and mid game status effects and skills"
+    },
+    {
+      "timestamp": "2026-06-08T02-58-00-788Z",
+      "paramId": "effect.debuff_poison.duration",
+      "oldValue": 4,
+      "newValue": 5,
+      "direction": "up",
+      "deltaHealth": 0,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "Focus on early game and mid game status effects and skills"
+    },
+    {
+      "timestamp": "2026-06-08T02-58-00-788Z",
+      "paramId": "effect.debuff_confusion.duration",
+      "oldValue": 4,
+      "newValue": 5,
+      "direction": "up",
+      "deltaHealth": 0.00007757148501483235,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "Focus on early game and mid game status effects and skills"
     }
   ],
-  "updatedAt": "2026-06-08T00:04:32.161Z"
+  "updatedAt": "2026-06-08T02:58:32.244Z"
 }
