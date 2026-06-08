@@ -89,8 +89,8 @@ The barrel at `src/index.ts` is the contract surface. Groups:
 | Group | Key exports |
 |---|---|
 | Character | `createCharacter`, `Character`, `BaseStats`, `DerivedStats` |
-| Enemy | `createEnemy`, `Enemy`, `EnemyLogic`, `decideEnemyAction` |
-| Combat | `determineAdvantage`, `getAttackStat`, `applyDamage`, `heal`, `Stance`, `Action`, `CombatState` |
+| Enemy | `createEnemy`, `Enemy`, `EnemyLogic`, `decideEnemyAction`, `enemyStatBudget` |
+| Combat | `determineAdvantage`, `getAttackStat`, `applyDamage`, `heal`, `Stance`, `Action`, `CombatState`, `getEffectsResolutionOutcome` |
 | Effects | `applyEffect`, `applyTier1CombatEffect`, `lookupEffect`, `Effect`, `ActiveEffect` |
 | Items | `addItem`, `removeItem`, `useConsumable`, `Item` |
 | Game | `createGameStore`, `GameState`, persistence adapters |
