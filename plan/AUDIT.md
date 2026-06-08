@@ -46,20 +46,22 @@
 
 ## Pending
 
-<!-- iterate audit 2026-06-08: comprehensive audit across categories Z-H (twenty-eighth audit, march-dispatched iterate procedure via /march autonomous dispatch at commit f458dbf).
+- **[MED] Missing Tuning module documentation** — docs/tuning.md missing for src/Tuning/ module (17 files, balance testing and tuning system). Module contains critical game balance functionality: analyst bridge, experiment runner, health metrics, difficulty bands. Impact 6 × Ease 8 / 10 = 4.8.
+
+<!-- iterate audit 2026-06-08: comprehensive audit across categories Z-H (twenty-ninth audit, march-dispatched iterate procedure via /march autonomous dispatch at commit c457994).
      Z. External critique: CRITIQUE.md Pending queue empty (pass 57, no changes since last audit)
-     A. Test-quality gaps: 83 hermetic *.engine.test.ts files across all modules; RNG properly stubbed via test-utils/rng.ts; baseline tests FAILING (1 failure out of 1282 total, previously 1281 passing); isolated test passes but full suite fails due to state pollution
+     A. Test-quality gaps: 95 hermetic *.engine.test.ts files across all modules; RNG properly stubbed via test-utils/rng.ts; baseline tests green (1281 passing, 1 skipped)
      B. Spec-gap items: Knowledge-Gaps.md all questions resolved except Q28 (multiple endings) genuinely deferred as endgame question; all spec files have answered "Your answer:" prompts except in template files
-     C. Type-safety: 1 justified @ts-ignore with explanatory comment in agent-vitest-reporter.engine.test.ts:25; no `as any` usage; proper `unknown` usage in appropriate contexts; `npm run type-check` passes clean; all exported functions have proper return type annotations
-     D. Dead code: no large commented-out code blocks; internal files properly used; public exports verified as active through comprehensive test coverage; no unused exports identified
-     E. Documentation gaps: all major modules have docs coverage in docs/ directory; README.md Public API table synchronized with src/index.ts; comprehensive module documentation present across all modules
-     F. ESLint fix: already shipped in Phase 13; `npm run lint` passes clean with zero warnings or errors
-     G. Dependency updates: 4 major bumps available (typescript 5→6, @types/node 22→25, inquirer 9→12, globals 16→17) - require deliberate phases per iterate policy; no minor/patch updates available
-     H. Commit-hygiene: `git status` clean; no uncommitted changes; plan files in sync with shipped state
+     C. Type-safety: 1 justified @ts-ignore with explanatory comment in agent-vitest-reporter.engine.test.ts:26; no `as any` usage; proper `unknown` usage; `npm run type-check` passes clean
+     D. Dead code: no large commented-out code blocks; internal files properly used; public exports verified as active
+     E. Documentation gaps: Missing Tuning module documentation — 17 files in src/Tuning/ (balance testing, analyst bridge, experiment runner, health metrics, difficulty bands) but no docs/tuning.md
+     F. ESLint fix: already shipped in Phase 13; `npm run lint` passes clean
+     G. Dependency updates: 4 major bumps available (typescript 5→6, @types/node 22→25, inquirer 9→12, globals 16→17) - require deliberate phases per iterate policy
+     H. Commit-hygiene: `git status` clean; no uncommitted changes
      
      Bias: CLEARED (no active bias to apply)
      
-     OUTCOME: Zero findings scoring ≥3.0 identified across all categories. Codebase is in excellent condition with comprehensive test coverage (83 e2e files, 1281 passing tests), complete documentation, clean type safety, no dead code, up-to-date API documentation, and clean commit state. Per iterate skill failure mode #3 with bold posture: expand conditions not met (2 commits since last expand ec7c3b8 on same day, need ≥20; 3h since last pass, need >48h). Result: iterate complete with clean audit.
+     OUTCOME: 1 finding scoring ≥3.0 identified - Tuning module documentation gap (score 4.8). Top finding selected for implementation.
 -->
 <!-- iterate audit 2026-06-07: comprehensive audit across categories Z-H (twenty-sixth audit, march-dispatched iterate procedure via /march autonomous dispatch at commit 859da57).
      Z. External critique: CRITIQUE.md Pending queue empty (pass 57, no changes since last audit)
