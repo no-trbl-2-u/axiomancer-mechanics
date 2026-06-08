@@ -26,8 +26,12 @@ export { runMatrix, MATRIX_MAX_ROUNDS } from './matrix.runner';
 export type { RunMatrixOptions } from './matrix.runner';
 export {
     scoreHealth, compareHealth, ENGAGEMENT_FLOOR, BAND_WEIGHT, ENGAGEMENT_WEIGHT,
+    WITNESS_REGRESSION_DELTA,
 } from './health.metrics';
-export { cellEngagementShare, runEngagementShare } from './engagement.metrics';
+export {
+    cellEngagementShare, runEngagementShare,
+    cellActivityShare, runActivityShare, OUTCOME_LEVERAGE,
+} from './engagement.metrics';
 export { bandFor, bandDeviation, DIFFICULTY_BANDS, NORMAL_BAND } from './difficulty.bands';
 export { runExperiment } from './experiment.runner';
 export type { ExperimentDeps } from './experiment.runner';

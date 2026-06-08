@@ -26,7 +26,7 @@ import type { ApplyResult, SourceBackup } from './tunable.applier';
 function inertComparison(note: string): HealthComparison {
     return {
         winner: 'A', delta: 0, significant: false, confidence: 'low',
-        regression: false, engagementRegression: false,
+        regression: false, engagementRegression: false, witnessRegression: false,
         stats: { meanDelta: 0, stdErr: 0, n: 0, ciMargin: 0 }, note,
     };
 }

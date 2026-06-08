@@ -181,6 +181,10 @@ export interface TargetBand { low: number; high: number; }
 
 export interface CellHealth {
     cellId: string;
+    /** Player level for this cell (lets the witness metric group matchups). */
+    level: number;
+    /** Playstyle for this cell — the witness compares strategist vs aggressive. */
+    playstyle: PlaytestPolicy;
     difficulty: Difficulty;
     weight: number;
     resolutionSuccessRate: number;
@@ -190,11 +194,19 @@ export interface CellHealth {
     /** Squared distance from this cell's band (0 ⇒ inside the band). */
     bandDeviation: number;
     /**
-     * Status-effect engagement share in [0,1] (rounds where the player applied
-     * or exploited a status effect / action rounds). `undefined` when the cell
-     * carries no transcript (e.g. synthetic test reports) ⇒ no penalty.
+     * Status-effect LEVERAGE share in [0,1] — raw activity discounted by whether
+     * the fight resolved (status that ends fights counts; status sprayed into a
+     * timeout barely does). This is what the objective penalises shortfall below.
+     * `undefined` when the cell carries no transcript ⇒ no penalty.
      */
     engagementShare?: number;
+    /**
+     * Raw status-effect ACTIVITY share in [0,1] (was status used at all),
+     * undiscounted. Diagnostic only — reported alongside leverage so the gap
+     * between "status used" and "status mattered" is legible. `undefined` when
+     * the cell carries no transcript.
+     */
+    activityShare?: number;
     /** Squared shortfall below the engagement floor (0 ⇒ at/above floor). */
     engagementDeviation: number;
     /**
@@ -202,6 +214,25 @@ export interface CellHealth {
      * healthier. This is the paired sample the A/B significance test consumes.
      */
     deviation: number;
+}
+
+/**
+ * The witness test, made mathematical. Doctrine: if basic-attack trading is a
+ * more attractive route than status play, the design has failed. So we compare,
+ * across the matrix, how well the status-first STRATEGIST resolves fights versus
+ * the basic-attack AGGRESSIVE. `strategistEdge > 0` ⇒ status play out-resolves
+ * basic play (healthy); `< 0` ⇒ basic attacks win more (a doctrine failure the
+ * objective should not reward). Present only when the matrix ran both playstyles.
+ */
+export interface WitnessMetric {
+    /** Weighted-mean resolution success of strategist (status-first) cells. */
+    strategistResolution: number;
+    /** Weighted-mean resolution success of aggressive (basic-attack) cells. */
+    aggressiveResolution: number;
+    /** strategistResolution − aggressiveResolution; >0 ⇒ status play wins more. */
+    strategistEdge: number;
+    /** Number of (strategist, aggressive) cells the comparison drew from. */
+    cells: number;
 }
 
 export interface HealthScore {
@@ -212,8 +243,12 @@ export interface HealthScore {
     aggregateBand: number;
     /** Engagement-shortfall component of the aggregate (for diagnostics). */
     aggregateEngagement: number;
-    /** Mean status-effect engagement share across cells (HIGHER is healthier). */
+    /** Mean status-effect LEVERAGE share across cells (HIGHER is healthier). */
     meanEngagement: number;
+    /** Mean raw status-effect ACTIVITY share across cells (diagnostic). */
+    meanActivity: number;
+    /** Strategist-vs-aggressive witness comparison (when both ran). */
+    witness?: WitnessMetric;
     /** The normal-difficulty band, retained for display/back-compat. */
     targetBand: TargetBand;
     /** The engagement floor the objective penalizes shortfall below. */
@@ -237,6 +272,12 @@ export interface HealthComparison {
     regression: boolean;
     /** Engagement-collapse guard tripped (status play got materially worse). */
     engagementRegression: boolean;
+    /**
+     * Witness guard tripped: the candidate made basic-attack play (aggressive)
+     * out-resolve status play (strategist) materially more than the baseline did
+     * — a doctrine regression even if the aggregate improved.
+     */
+    witnessRegression: boolean;
     /** Paired-cell statistics behind `significant` / `confidence`. */
     stats: { meanDelta: number; stdErr: number; n: number; ciMargin: number };
     note: string;

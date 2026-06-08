@@ -10,11 +10,17 @@
 
 Per `VISION.md` / `CLAUDE.md`, **status effects are the primary fun of combat.**
 This is no longer just prose the optimiser ignores: status-effect engagement is
-now a **term in the health objective** (`health.metrics.ts`). A change that
-holds win rates but collapses combat into basic-attack trades scores WORSE, and
-the A/B comparison rejects any change that materially drops engagement
-(`engagementRegression`). The STRATEGIST playstyle is the witness for this path
-and learns to win by applying/exploiting effects, not by raw damage.
+now a **term in the health objective** (`health.metrics.ts`), and the metric
+measures **leverage, not activity** (`engagement.metrics.ts`). Status that
+*converts* a fight to a resolution earns full credit; status sprayed into a
+fight that times out is heavily discounted — so the loop is pushed to make
+effects DECISIVE, not merely present. A change that holds win rates but collapses
+combat into basic-attack trades scores WORSE, and the A/B comparison rejects any
+change that materially drops leverage (`engagementRegression`) OR lets
+basic-attack play (AGGRESSIVE) out-resolve status play (STRATEGIST) — the
+**witness** guard (`witnessRegression`, `health.metrics.ts`). The STRATEGIST
+playstyle is the witness for this path and learns to win by applying/exploiting
+effects, not by raw damage.
 
 ## 1. Purpose
 
@@ -123,9 +129,15 @@ generalized offline heuristic, which is a valid lighter pass.)
   - Body: the headline health delta; each kept change (`param: old → new`) with
     a one-line *why*; the suggestions' supporting game-state snapshots for the
     most off-band cells; and the propose-only section for human follow-up.
-- If there are **no kept winners**, still open the PR carrying the data report +
-  the suggestions (propose-only recommendations + evidence snapshots) so the
-  findings are reviewable. If there is genuinely nothing to report, say so.
+- If there are **no kept winners**, open a PR **only when the tick has something
+  new to say** — a fresh propose-only finding, or off-band cells that differ from
+  the previous tick's. **Do not open a no-op PR.** Before pushing, compare this
+  tick's suggestions' propose-only section against the most recent prior
+  `suggestions-*.md`: if the findings are materially the same (the loop is just
+  re-reporting a known structural wall it cannot act on), **skip the PR** and say
+  so in the report-back message instead — a duplicate PR every tick is noise that
+  causes review fatigue. A 0-winner tick that DOES surface a new finding still
+  opens a PR carrying the data report + suggestions + evidence snapshots.
 
 ### Step 4 — Report back
 - One concise message: the PR URL and the headline health + engagement delta.

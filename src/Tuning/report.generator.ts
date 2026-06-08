@@ -72,28 +72,48 @@ function focusLine(tick: TuningTickResult): string {
  */
 function engagementTable(tick: TuningTickResult): string {
     const cells = tick.baselineCells;
-    const shareByCell = new Map(tick.baseline.perCell.map(c => [c.cellId, c.engagementShare]));
+    const leverageByCell = new Map(tick.baseline.perCell.map(c => [c.cellId, c.engagementShare]));
+    const activityByCell = new Map(tick.baseline.perCell.map(c => [c.cellId, c.activityShare]));
     const groups = new Map<string, CellResult[]>();
     for (const c of cells) {
         const k = c.cell.playstyle;
         (groups.get(k) ?? groups.set(k, []).get(k)!).push(c);
     }
     const floor = tick.baseline.engagementFloor;
-    const rows = [...groups.entries()].map(([key, group]) => {
-        const skillPerRun = avg(group.map(g => g.snapshot?.combat.skillUsePerRun ?? 0));
-        const statusShares = group
-            .map(g => shareByCell.get(g.cell.cellId))
+    const meanShare = (group: CellResult[], by: Map<string, number | undefined>): number => {
+        const xs = group
+            .map(g => by.get(g.cell.cellId))
             .filter((s): s is number => typeof s === 'number');
-        const statusShare = statusShares.length ? avg(statusShares) : NaN;
-        return { key, skillPerRun, statusShare };
-    }).sort((a, b) => a.key.localeCompare(b.key));
+        return xs.length ? avg(xs) : NaN;
+    };
+    const rows = [...groups.entries()].map(([key, group]) => ({
+        key,
+        skillPerRun: avg(group.map(g => g.snapshot?.combat.skillUsePerRun ?? 0)),
+        activity: meanShare(group, activityByCell),
+        leverage: meanShare(group, leverageByCell),
+    })).sort((a, b) => a.key.localeCompare(b.key));
     return [
         `### Status-effect engagement (by playstyle) — floor ${pct(floor)}`,
         '',
-        '| Playstyle | Skill uses / run | Status play (objective) | vs floor |',
-        '| --- | --- | --- | --- |',
-        ...rows.map(r => `| ${r.key} | ${round(r.skillPerRun, 1)} | ${Number.isFinite(r.statusShare) ? pct(r.statusShare) : 'n/a'} | ${Number.isFinite(r.statusShare) ? (r.statusShare >= floor ? 'ok' : 'BELOW') : '—'} |`),
+        '_Activity = status was used; Leverage = status converted to a resolution'
+        + ' (the objective term). A big Activity→Leverage drop means status play is'
+        + ' present but inert (spam into timeouts)._',
+        '',
+        '| Playstyle | Skill uses / run | Activity (raw) | Leverage (objective) | vs floor |',
+        '| --- | --- | --- | --- | --- |',
+        ...rows.map(r => `| ${r.key} | ${round(r.skillPerRun, 1)} | ${Number.isFinite(r.activity) ? pct(r.activity) : 'n/a'} | ${Number.isFinite(r.leverage) ? pct(r.leverage) : 'n/a'} | ${Number.isFinite(r.leverage) ? (r.leverage >= floor ? 'ok' : 'BELOW') : '—'} |`),
     ].join('\n');
+}
+
+/** Witness line: does status play (strategist) out-resolve basic play (aggressive)? */
+function witnessLine(tick: TuningTickResult): string {
+    const w = tick.baseline.witness;
+    if (!w) return '';
+    const verdict = w.strategistEdge >= 0
+        ? 'status play out-resolves basic play (healthy)'
+        : '**basic attacks out-resolve status play (doctrine failure)**';
+    return `**Witness:** strategist ${pct(w.strategistResolution)} vs aggressive `
+        + `${pct(w.aggressiveResolution)} resolution → edge ${pct(w.strategistEdge)} — ${verdict}.`;
 }
 
 /** Data report — aggregate facts only. No recommendations. Rides the PR. */
@@ -105,6 +125,7 @@ export function renderDataReport(tick: TuningTickResult): string {
         `**Focus:** ${focusLine(tick)}`,
         `**Cells:** ${cells.length} · **Total runs:** ${cells.reduce((s, c) => s + c.cell.runs, 0)}`,
         `**Baseline health:** ${tick.baseline.summary}`,
+        ...(witnessLine(tick) ? ['', witnessLine(tick)] : []),
         '',
         '## Aggregate summaries',
         '',
@@ -159,6 +180,7 @@ export function renderDataReportJson(tick: TuningTickResult): string {
             band: h?.band,
             bandDeviation: h?.bandDeviation,
             engagementShare: h?.engagementShare,
+            activityShare: h?.activityShare,
             engagementDeviation: h?.engagementDeviation,
         };
     });
@@ -172,6 +194,7 @@ export function renderDataReportJson(tick: TuningTickResult): string {
         confidence: e.comparison.confidence,
         regression: e.comparison.regression,
         engagementRegression: e.comparison.engagementRegression,
+        witnessRegression: e.comparison.witnessRegression,
         stats: e.comparison.stats,
         kept: e.kept,
         verifyPassed: e.verifyPassed,

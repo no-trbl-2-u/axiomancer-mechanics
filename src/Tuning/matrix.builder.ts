@@ -9,7 +9,14 @@ import type { PlaytestPolicy } from '../Playtest/types';
 import type { Difficulty, FocusFilter, MatrixCell, MatrixPlan } from './types';
 import { levelToBand } from './focus.parser';
 
-export const DEFAULT_LEVELS = [1, 15, 30, 50];
+/**
+ * Default matrix levels — early + mid game (≤ L30). End-game (L50) is omitted
+ * by default while base mechanics are still being built, so the loop spends its
+ * signal on the band the game is actually being shaped in rather than against
+ * placeholder late-game content. Re-include it explicitly with `--levels=…,50`
+ * once end-game content solidifies.
+ */
+export const DEFAULT_LEVELS = [1, 15, 30];
 export const DEFAULT_PLAYSTYLES: PlaytestPolicy[] = ['aggressive', 'defensive', 'mixed', 'strategist'];
 export const DEFAULT_DIFFICULTIES: Difficulty[] = ['easy', 'normal', 'hard'];
 export const DEFAULT_BASE_RUNS = 50;

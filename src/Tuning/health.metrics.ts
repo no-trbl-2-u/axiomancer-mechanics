@@ -18,10 +18,10 @@
  */
 
 import type {
-    CellHealth, CellResult, Confidence, HealthComparison, HealthScore,
+    CellHealth, CellResult, Confidence, HealthComparison, HealthScore, WitnessMetric,
 } from './types';
 import { bandFor, bandDeviation, NORMAL_BAND } from './difficulty.bands';
-import { cellEngagementShare } from './engagement.metrics';
+import { cellEngagementShare, cellActivityShare } from './engagement.metrics';
 
 /** Minimum status-effect engagement share before the objective is penalised. */
 export const ENGAGEMENT_FLOOR = 0.35;
@@ -30,8 +30,14 @@ export const BAND_WEIGHT = 1;
 export const ENGAGEMENT_WEIGHT = 1.5;
 /** A variant is a regression if it worsens the worst-cell defeat rate by this. */
 const DEFEAT_REGRESSION_DELTA = 0.1;
-/** ...or if it drops mean status-effect engagement share by this. */
+/** ...or if it drops mean status-effect engagement (leverage) share by this. */
 const ENGAGEMENT_REGRESSION_DELTA = 0.08;
+/**
+ * ...or if it drops the witness edge (strategist resolution − aggressive
+ * resolution) by this, i.e. basic-attack play gained on status play. The
+ * doctrine's "basic attacks must not out-attract status play" as a guard.
+ */
+export const WITNESS_REGRESSION_DELTA = 0.08;
 /** Fallback noise floor on the aggregate delta when n<2 (can't compute a CI). */
 const SIGNIFICANCE_EPSILON = 0.005;
 
@@ -46,10 +52,13 @@ export function scoreHealth(cells: CellResult[]): HealthScore {
         const rate = report.metrics.resolutionSuccessRate;
         const bandDev = bandDeviation(rate, band);
         const engagementShare = cellEngagementShare(report);
+        const activityShare = cellActivityShare(report);
         const engagementDeviation = engagementShortfall(engagementShare);
         const deviation = BAND_WEIGHT * bandDev + ENGAGEMENT_WEIGHT * engagementDeviation;
         return {
             cellId: cell.cellId,
+            level: cell.level,
+            playstyle: cell.playstyle,
             difficulty: cell.difficulty,
             weight: cell.weight,
             resolutionSuccessRate: rate,
@@ -57,6 +66,7 @@ export function scoreHealth(cells: CellResult[]): HealthScore {
             band,
             bandDeviation: bandDev,
             engagementShare,
+            activityShare,
             engagementDeviation,
             deviation,
         };
@@ -70,17 +80,28 @@ export function scoreHealth(cells: CellResult[]): HealthScore {
     const aggregateBand = weighted(c => BAND_WEIGHT * c.bandDeviation);
     const aggregateEngagement = weighted(c => ENGAGEMENT_WEIGHT * c.engagementDeviation);
 
-    // Mean engagement over cells that actually measured it (default 1 ⇒ no
-    // shortfall when nothing was measurable, so synthetic reports don't lie).
+    // Mean leverage/activity over cells that actually measured them (default
+    // 1 ⇒ no shortfall when nothing was measurable, so synthetic reports don't
+    // lie). Weighted by cell weight, like the aggregate.
+    const weightedShare = (pick: (c: CellHealth) => number | undefined): number => {
+        const m = perCell.filter(c => typeof pick(c) === 'number');
+        if (!m.length) return 1;
+        const w = m.reduce((s, c) => s + c.weight, 0) || 1;
+        return m.reduce((s, c) => s + (pick(c) ?? 0) * c.weight, 0) / w;
+    };
     const measured = perCell.filter(c => typeof c.engagementShare === 'number');
-    const meanEngagement = measured.length
-        ? measured.reduce((s, c) => s + (c.engagementShare ?? 0) * c.weight, 0)
-            / (measured.reduce((s, c) => s + c.weight, 0) || 1)
-        : 1;
+    const meanEngagement = weightedShare(c => c.engagementShare);
+    const meanActivity = weightedShare(c => c.activityShare);
+    const witness = computeWitness(perCell);
 
     const maxDefeatRate = perCell.reduce((max, c) => Math.max(max, c.defeatRate), 0);
     const inBand = perCell.filter(c => c.bandDeviation === 0).length;
     const lowEng = measured.filter(c => (c.engagementShare ?? 1) < ENGAGEMENT_FLOOR).length;
+
+    const witnessSummary = witness
+        ? `; witness edge ${(witness.strategistEdge * 100).toFixed(0)}% `
+            + `(strat ${(witness.strategistResolution * 100).toFixed(0)}% vs aggr ${(witness.aggressiveResolution * 100).toFixed(0)}%)`
+        : '';
 
     return {
         perCell,
@@ -88,15 +109,44 @@ export function scoreHealth(cells: CellResult[]): HealthScore {
         aggregateBand,
         aggregateEngagement,
         meanEngagement,
+        meanActivity,
+        witness,
         targetBand: NORMAL_BAND,
         engagementFloor: ENGAGEMENT_FLOOR,
         maxDefeatRate,
         summary:
             `${inBand}/${perCell.length} cells in band; aggregate ${aggregate.toFixed(4)} `
             + `(band ${aggregateBand.toFixed(4)} + engage ${aggregateEngagement.toFixed(4)}); `
-            + `mean engagement ${(meanEngagement * 100).toFixed(0)}%`
+            + `mean leverage ${(meanEngagement * 100).toFixed(0)}% / activity ${(meanActivity * 100).toFixed(0)}%`
             + (measured.length ? ` (${lowEng}/${measured.length} cells below floor)` : '')
+            + witnessSummary
             + `; worst defeat ${(maxDefeatRate * 100).toFixed(0)}%`,
+    };
+}
+
+/**
+ * The witness comparison: across the matrix, does the status-first STRATEGIST
+ * resolve fights at least as well as the basic-attack AGGRESSIVE? Returns
+ * undefined unless BOTH playstyles ran (so it's inert for synthetic/partial
+ * matrices). Resolution is weighted by cell weight, matching the aggregate.
+ */
+function computeWitness(perCell: CellHealth[]): WitnessMetric | undefined {
+    const meanResolution = (playstyle: string): number | undefined => {
+        const cells = perCell.filter(c => c.playstyle === playstyle);
+        if (!cells.length) return undefined;
+        const w = cells.reduce((s, c) => s + c.weight, 0) || 1;
+        return cells.reduce((s, c) => s + c.resolutionSuccessRate * c.weight, 0) / w;
+    };
+    const strat = meanResolution('strategist');
+    const aggr = meanResolution('aggressive');
+    if (typeof strat !== 'number' || typeof aggr !== 'number') return undefined;
+    const stratCells = perCell.filter(c => c.playstyle === 'strategist').length;
+    const aggrCells = perCell.filter(c => c.playstyle === 'aggressive').length;
+    return {
+        strategistResolution: strat,
+        aggressiveResolution: aggr,
+        strategistEdge: strat - aggr,
+        cells: stratCells + aggrCells,
     };
 }
 
@@ -160,32 +210,43 @@ export function compareHealth(a: HealthScore, b: HealthScore): HealthComparison 
     const regression = b.maxDefeatRate > a.maxDefeatRate + DEFEAT_REGRESSION_DELTA;
     const engagementRegression =
         a.meanEngagement - b.meanEngagement > ENGAGEMENT_REGRESSION_DELTA;
+    // Witness guard: only when BOTH scores measured the strategist-vs-aggressive
+    // edge. A drop means basic-attack play gained on status play — reject it.
+    const witnessRegression = !!a.witness && !!b.witness
+        && a.witness.strategistEdge - b.witness.strategistEdge > WITNESS_REGRESSION_DELTA;
     const confidence = classify(meanDelta, ciMargin, n, significant);
 
     if (regression) {
         return {
             winner: 'A', delta, significant, confidence, regression: true,
-            engagementRegression, stats,
+            engagementRegression, witnessRegression, stats,
             note: `Candidate rejected: worst-cell defeat rose ${(a.maxDefeatRate * 100).toFixed(0)}% → ${(b.maxDefeatRate * 100).toFixed(0)}%.`,
         };
     }
     if (engagementRegression) {
         return {
             winner: 'A', delta, significant, confidence, regression: false,
-            engagementRegression: true, stats,
-            note: `Candidate rejected: status-effect engagement fell ${(a.meanEngagement * 100).toFixed(0)}% → ${(b.meanEngagement * 100).toFixed(0)}% (basic-attack collapse).`,
+            engagementRegression: true, witnessRegression, stats,
+            note: `Candidate rejected: status-effect leverage fell ${(a.meanEngagement * 100).toFixed(0)}% → ${(b.meanEngagement * 100).toFixed(0)}% (basic-attack collapse).`,
+        };
+    }
+    if (witnessRegression) {
+        return {
+            winner: 'A', delta, significant, confidence, regression: false,
+            engagementRegression: false, witnessRegression: true, stats,
+            note: `Candidate rejected: witness edge fell ${((a.witness!.strategistEdge) * 100).toFixed(0)}% → ${((b.witness!.strategistEdge) * 100).toFixed(0)}% (basic attacks gained on status play).`,
         };
     }
     if (delta > 0 && significant) {
         return {
             winner: 'B', delta, significant, confidence, regression: false,
-            engagementRegression: false, stats,
+            engagementRegression: false, witnessRegression: false, stats,
             note: `Candidate improves aggregate by ${delta.toFixed(4)} (${confidence} confidence, n=${n}).`,
         };
     }
     return {
         winner: 'A', delta, significant: false, confidence, regression: false,
-        engagementRegression: false, stats,
+        engagementRegression: false, witnessRegression: false, stats,
         note: n >= 2 && delta > 0
             ? `Improvement ${delta.toFixed(4)} not significant (CI margin ${ciMargin.toFixed(4)}, n=${n}); keeping baseline.`
             : delta > 0

@@ -16,6 +16,7 @@ import type { FocusFilter, TunableParam } from './types';
 
 const CONSTANTS_FILE = 'src/Game/game-mechanics.constants.ts';
 const BUFFS_FILE = 'src/Effects/buffs.library.json';
+const DEBUFFS_FILE = 'src/Effects/debuffs.library.json';
 
 export const TUNABLE_REGISTRY: TunableParam[] = [
     {
@@ -246,6 +247,99 @@ export const TUNABLE_REGISTRY: TunableParam[] = [
         magnitudeCapPct: 0.5,
         tags: ['effect', 'damage', 'status-effect', 'resolution', 'timeout'],
         rationale: 'Minimum DoT damage per round to force erosion victory route.',
+        effect: { difficulty: 'lowers', engagement: 'raises' },
+    },
+
+    // ── Per-effect potency (the levers the resolution routes actually read) ────
+    // The resolution routes in src/Combat/effect-resolution.ts sum per-effect
+    // DoT damage and effect duration/intensity, then compare to the thresholds
+    // above. Tuning the thresholds alone does nothing if no authored effect's
+    // values approach them — so expose the workhorse DoT/control effects' base
+    // values directly. This is the registry gap the 2026-06-08 focused tick
+    // surfaced: status play can only become DECISIVE if the loop can scale the
+    // effects themselves toward the erosion / saturation routes.
+    {
+        id: 'effect.debuff_poison.damagePerRound',
+        kind: 'constant',
+        category: 'effect',
+        file: DEBUFFS_FILE,
+        locator: { idField: 'id', id: 'debuff_poison', field: ['payload', 'damageOverTime', 'damagePerRound'] },
+        min: 2, max: 8, step: 1,
+        magnitudeCapPct: 0.5,
+        tags: ['effect', 'damage', 'status-effect', 'debuff', 'dot', 'resolution'],
+        rationale: 'Base DoT/round of poison — the workhorse damage effect feeding the erosion victory route.',
+        effect: { difficulty: 'lowers', engagement: 'raises' },
+    },
+    {
+        id: 'effect.debuff_poison.duration',
+        kind: 'effect-duration',
+        category: 'effect',
+        file: DEBUFFS_FILE,
+        locator: { idField: 'id', id: 'debuff_poison', field: ['duration'] },
+        min: 2, max: 8, step: 1,
+        magnitudeCapPct: 0.5,
+        tags: ['effect', 'damage', 'status-effect', 'debuff', 'dot', 'resolution'],
+        rationale: 'Base duration of poison — longer DoT accumulates toward the erosion route before timeout.',
+        effect: { difficulty: 'lowers', engagement: 'raises' },
+    },
+    {
+        id: 'effect.debuff_bleed.damagePerRound',
+        kind: 'constant',
+        category: 'effect',
+        file: DEBUFFS_FILE,
+        locator: { idField: 'id', id: 'debuff_bleed', field: ['payload', 'damageOverTime', 'damagePerRound'] },
+        min: 2, max: 8, step: 1,
+        magnitudeCapPct: 0.5,
+        tags: ['effect', 'damage', 'status-effect', 'debuff', 'dot', 'resolution'],
+        rationale: 'Base DoT/round of bleed — a second workhorse DoT for the erosion route.',
+        effect: { difficulty: 'lowers', engagement: 'raises' },
+    },
+    {
+        id: 'effect.debuff_burn.damagePerRound',
+        kind: 'constant',
+        category: 'effect',
+        file: DEBUFFS_FILE,
+        locator: { idField: 'id', id: 'debuff_burn', field: ['payload', 'damageOverTime', 'damagePerRound'] },
+        min: 2, max: 9, step: 1,
+        magnitudeCapPct: 0.5,
+        tags: ['effect', 'damage', 'status-effect', 'debuff', 'dot', 'resolution'],
+        rationale: 'Base DoT/round of burn — high-tempo DoT for the erosion route.',
+        effect: { difficulty: 'lowers', engagement: 'raises' },
+    },
+    {
+        id: 'effect.debuff_strong_poison.damagePerRound',
+        kind: 'constant',
+        category: 'effect',
+        file: DEBUFFS_FILE,
+        locator: { idField: 'id', id: 'debuff_strong_poison', field: ['payload', 'damageOverTime', 'damagePerRound'] },
+        min: 3, max: 12, step: 1,
+        magnitudeCapPct: 0.5,
+        tags: ['effect', 'damage', 'status-effect', 'debuff', 'dot', 'resolution'],
+        rationale: 'Base DoT/round of strong poison — the heavy DoT meant to finish enemies via erosion.',
+        effect: { difficulty: 'lowers', engagement: 'raises' },
+    },
+    {
+        id: 'effect.debuff_confusion.duration',
+        kind: 'effect-duration',
+        category: 'effect',
+        file: DEBUFFS_FILE,
+        locator: { idField: 'id', id: 'debuff_confusion', field: ['duration'] },
+        min: 2, max: 7, step: 1,
+        magnitudeCapPct: 0.5,
+        tags: ['effect', 'control', 'status-effect', 'debuff', 'resolution'],
+        rationale: 'Base duration of confusion — longer control persists toward the saturation yield route.',
+        effect: { difficulty: 'lowers', engagement: 'raises' },
+    },
+    {
+        id: 'effect.debuff_fear.duration',
+        kind: 'effect-duration',
+        category: 'effect',
+        file: DEBUFFS_FILE,
+        locator: { idField: 'id', id: 'debuff_fear', field: ['duration'] },
+        min: 2, max: 6, step: 1,
+        magnitudeCapPct: 0.5,
+        tags: ['effect', 'control', 'status-effect', 'debuff', 'resolution'],
+        rationale: 'Base duration of fear — longer control persists toward the saturation yield route.',
         effect: { difficulty: 'lowers', engagement: 'raises' },
     },
 ];

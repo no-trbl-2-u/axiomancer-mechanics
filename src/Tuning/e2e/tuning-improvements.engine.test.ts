@@ -16,7 +16,7 @@ import * as os from 'os';
 import * as path from 'path';
 
 import { scoreHealth, compareHealth, ENGAGEMENT_FLOOR } from '../health.metrics';
-import { cellEngagementShare } from '../engagement.metrics';
+import { cellEngagementShare, cellActivityShare } from '../engagement.metrics';
 import { bandFor } from '../difficulty.bands';
 import { heuristicRecommendations, validateCandidates } from '../analyst.bridge';
 import {
@@ -65,28 +65,77 @@ function bandCell(cellId: string, difficulty: Difficulty, resolution: number): C
 const EFFECT_EV: Ev = { phase: 'skill', kind: 'effect-applied', skillId: 'curse', appliedTo: 'enemy', effect: {}, message: '' };
 const DMG_EV: Ev = { phase: 'scenario', kind: 'damage-applied', defender: 'enemy', finalDamage: 20 };
 
-function runWith(rounds: unknown[]): { transcript: unknown[] } {
-    return { transcript: rounds };
+function runWith(rounds: unknown[], outcome?: string): { transcript: unknown[]; outcome?: string } {
+    return { transcript: rounds, ...(outcome ? { outcome } : {}) };
 }
 
-// ─── Engagement metric ──────────────────────────────────────────────────────────
+// ─── Engagement metric (activity vs leverage) ─────────────────────────────────────
 
 describe('engagement metric', () => {
-    it('measures the share of action rounds with status play', () => {
-        const report = {
-            runs: [runWith([
-                statusRound('skill', 'mind', [EFFECT_EV]), // status
-                statusRound('attack', 'body', [DMG_EV]),   // no status
-                statusRound('attack', 'body', [DMG_EV]),   // no status
-                statusRound('attack', 'body', [DMG_EV]),   // no status
-            ])],
-        } as never;
+    const oneInFour = () => [
+        statusRound('skill', 'mind', [EFFECT_EV]), // status
+        statusRound('attack', 'body', [DMG_EV]),   // no status
+        statusRound('attack', 'body', [DMG_EV]),   // no status
+        statusRound('attack', 'body', [DMG_EV]),   // no status
+    ];
+
+    it('activity measures the raw share of action rounds with status play', () => {
+        const report = { runs: [runWith(oneInFour())] } as never;
+        expect(cellActivityShare(report)).toBeCloseTo(0.25, 5);
+    });
+
+    it('leverage equals activity when the outcome is unknown (synthetic transcript)', () => {
+        const report = { runs: [runWith(oneInFour())] } as never;
+        expect(cellEngagementShare(report)).toBeCloseTo(0.25, 5);
+    });
+
+    it('leverage discounts status that timed out, but activity is unchanged', () => {
+        const report = { runs: [runWith(oneInFour(), 'timeout')] } as never;
+        // Same status activity...
+        expect(cellActivityShare(report)).toBeCloseTo(0.25, 5);
+        // ...but it converted nothing — leverage is heavily discounted (×0.25).
+        expect(cellEngagementShare(report)).toBeCloseTo(0.25 * 0.25, 5);
+    });
+
+    it('leverage gives full credit when status play resolves the fight', () => {
+        const report = { runs: [runWith(oneInFour(), 'victory')] } as never;
         expect(cellEngagementShare(report)).toBeCloseTo(0.25, 5);
     });
 
     it('is undefined when there is no transcript', () => {
         expect(cellEngagementShare({ } as never)).toBeUndefined();
+        expect(cellActivityShare({ } as never)).toBeUndefined();
         expect(cellEngagementShare({ runs: [] } as never)).toBeUndefined();
+    });
+});
+
+// ─── Witness metric (strategist vs aggressive) ────────────────────────────────────
+
+describe('witness metric', () => {
+    /** A transcript-free cell at a given playstyle/resolution (no engagement penalty). */
+    function psCell(playstyle: string, resolution: number): CellResult {
+        return {
+            cell: { cellId: `l1-${playstyle}-normal`, level: 1, playstyle, enemySlug: 'x', difficulty: 'normal', runs: 10, weight: 1 },
+            report: { metrics: { resolutionSuccessRate: resolution, defeatRate: 0.1 } },
+        } as unknown as CellResult;
+    }
+
+    it('reports a positive edge when status play out-resolves basic play', () => {
+        const h = scoreHealth([psCell('strategist', 0.7), psCell('aggressive', 0.5)]);
+        expect(h.witness).toBeDefined();
+        expect(h.witness!.strategistEdge).toBeCloseTo(0.2, 5);
+    });
+
+    it('is undefined unless both playstyles ran', () => {
+        expect(scoreHealth([psCell('strategist', 0.7)]).witness).toBeUndefined();
+    });
+
+    it('rejects a candidate that lets basic attacks gain on status play', () => {
+        const a = scoreHealth([psCell('strategist', 0.7), psCell('aggressive', 0.5)]); // edge +0.2
+        const b = scoreHealth([psCell('strategist', 0.7), psCell('aggressive', 0.69)]); // edge +0.01
+        const cmp = compareHealth(a, b);
+        expect(cmp.witnessRegression).toBe(true);
+        expect(cmp.winner).toBe('A');
     });
 });
 
@@ -246,7 +295,7 @@ function experiment(paramId: string, oldV: number, newV: number, kept: boolean):
         candidate: { paramId, proposedValue: newV, rationale: 't', source: 'heuristic' },
         paramId, oldValue: oldV, newValue: newV,
         variantA: {} as never, variantB: {} as never,
-        comparison: { winner: kept ? 'B' : 'A', delta: 0.01, significant: kept, confidence: 'medium', regression: false, engagementRegression: false, stats: { meanDelta: 0.01, stdErr: 0, n: 4, ciMargin: 0 }, note: '' },
+        comparison: { winner: kept ? 'B' : 'A', delta: 0.01, significant: kept, confidence: 'medium', regression: false, engagementRegression: false, witnessRegression: false, stats: { meanDelta: 0.01, stdErr: 0, n: 4, ciMargin: 0 }, note: '' },
         kept, verifyPassed: kept, notes: [],
     };
 }
