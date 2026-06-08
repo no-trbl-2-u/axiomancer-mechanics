@@ -76,7 +76,67 @@
       "kept": false,
       "significant": false,
       "confidence": "low"
+    },
+    {
+      "timestamp": "2026-06-08T03-57-28-577Z",
+      "paramId": "effect.maxIntensity",
+      "oldValue": 10,
+      "newValue": 11,
+      "direction": "up",
+      "deltaHealth": 0.000049942207198450106,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "Status effects and skill usage"
+    },
+    {
+      "timestamp": "2026-06-08T03-57-28-577Z",
+      "paramId": "effect.maxDuration",
+      "oldValue": 10,
+      "newValue": 11,
+      "direction": "up",
+      "deltaHealth": 0.00006666666666665932,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "Status effects and skill usage"
+    },
+    {
+      "timestamp": "2026-06-08T03-57-28-577Z",
+      "paramId": "effect.buff_regeneration.duration",
+      "oldValue": 6,
+      "newValue": 7,
+      "direction": "up",
+      "deltaHealth": 0,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "Status effects and skill usage"
+    },
+    {
+      "timestamp": "2026-06-08T03-57-28-577Z",
+      "paramId": "effect.tier1_heart_defend.healthPerRound",
+      "oldValue": 2,
+      "newValue": 3,
+      "direction": "up",
+      "deltaHealth": -0.00584709972530692,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "Status effects and skill usage"
+    },
+    {
+      "timestamp": "2026-06-08T03-57-28-577Z",
+      "paramId": "effect.tier1_body_attack.duration",
+      "oldValue": 3,
+      "newValue": 4,
+      "direction": "up",
+      "deltaHealth": -0.0019496859222699614,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "Status effects and skill usage"
     }
   ],
-  "updatedAt": "2026-06-08T00:04:32.161Z"
+  "updatedAt": "2026-06-08T03:58:12.733Z"
 }
