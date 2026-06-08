@@ -47,22 +47,6 @@
 - score: 6 × 6 / 10 = 3.6
 - recommended-slot: next balance/playtest phase (after Phase 121)
 
-### Candidate: Story Content NPCs Dialogue Expansion
-- signal: spec.md 6-month horizon "Story content: named NPCs with moral dialogue trees" listed as "Partial" - Phase 63 shipped observers but more named NPCs still queued
-- scope: Author 8-12 additional named NPCs with philosophical alignment-gated dialogue trees, leveraging the completed dialogue.runtime.ts + alignment cube + flagSet system. Focus on fishing-village and northern-forest regions to populate current maps with memorable characters that demonstrate the alignment system in practice.
-- unblocks: Narrative depth expansion; demonstrates philosophical alignment system value; creates replayability through different alignment paths
-- blocked-by: None - all infrastructure shipped (dialogue runtime, alignment system, flagSet gates)
-- score: 6 × 6 / 10 = 3.6
-- recommended-slot: Post-balance-phase content expansion
-
-### Candidate: Second Enemy Class Family Implementation
-- signal: spec.md 6-month horizon item "Second+ enemy class families" + natural follow-up to Phase 114 (first additional family was northern-forest beast archetype)
-- scope: Design and implement a third enemy family archetype (e.g., undead/construct/elemental) with 4-5 enemies spanning normal/elite/boss tiers. Include family-specific mechanics, befriendability patterns, and philosophical alignment distributions. Extend enemy spawn pools in existing regions.
-- unblocks: Bestiary variety for mid/late-game; demonstrates enemy design patterns extensibility; provides more befriend/mercy route variety
-- blocked-by: None - enemy engine, befriendability system, alignment integration all complete
-- score: 7 × 6 / 10 = 4.2
-- recommended-slot: Content expansion after balance stabilization
-
 ### Candidate: Northern Forest Region Content Extension
 - signal: Phase 117 expanded fishing-village from 10→25 nodes; northern-forest remains at baseline size but is a major progression gate. Natural follow-up to successful fishing-village expansion pattern.
 - scope: Expand northern-forest from current node count to 20-25 nodes with 2-3 sub-areas, following Phase 117's proven pattern. Add region-specific encounters, hazards, and NPCs that leverage the forest theme and higher difficulty tier.
@@ -88,6 +72,12 @@
 - recommended-slot: Balance/analysis phase
 
 ## Promoted
+
+### Phase 127 — Third enemy class family (undead/construct/elemental)
+- promoted: 2026-06-08 (oversight Q2 — T picked Second Enemy Family to refill the empty build-plan queue). Was "Second Enemy Class Family Implementation" (score 7 × 6 / 10 = 4.2); renumbered Phase 127 since Phase 114 already shipped the second family. Build-plan row added under "Next up". Scope: 4–5 enemies (undead/construct/elemental) across normal/elite/boss with family mechanics + befriendability + alignment distributions + friendship rewards/journal entries; extend spawn pools. Source: expand-31.
+
+### Phase 128 — Story content NPCs dialogue expansion (alignment-gated, Talk + moral-choice structure)
+- promoted: 2026-06-08 (oversight Q2 — T picked Story NPCs to refill the empty queue, and specified a dialogue-choice structure). Was "Story Content NPCs Dialogue Expansion" (score 6 × 6 / 10 = 3.6). Build-plan row added under "Next up". T-specified structure (example, NOT doctrine): each encounter offers a `*Talk` option (more context, does not end the encounter) plus ~3 alignment-differentiated options with distinct consequence shapes — e.g. "God will help you" (alignment change only) / "I will help you" (alignment change + item/health lost) / "I'll take what you have unseen" (alignment change + item gained). Map to `alignmentDelta` + effect/item surfaces; pick per-NPC consequences. Source: expand-31 + T oversight directive.
 
 ### Phase 121 — Three-anchor playtest balance scaffold
 - promoted: 2026-06-05 (T direct order after Sage/enemy balance planning pass). User priority override; no score needed.
