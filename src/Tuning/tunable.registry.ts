@@ -249,6 +249,36 @@ export const TUNABLE_REGISTRY: TunableParam[] = [
         rationale: 'Minimum DoT damage per round to force erosion victory route.',
         effect: { difficulty: 'lowers', engagement: 'raises' },
     },
+    {
+        id: 'effect.resolutionDotMaxRoundsToKill',
+        kind: 'constant',
+        category: 'effect',
+        file: CONSTANTS_FILE,
+        locator: { exportName: 'EFFECTS_RESOLUTION_DOT_MAX_ROUNDS_TO_KILL' },
+        min: 5, max: 40, step: 5,
+        magnitudeCapPct: 1.0,
+        tags: ['effect', 'damage', 'status-effect', 'resolution', 'timeout', 'dot'],
+        rationale: 'Rounds-to-kill horizon for the DoT erosion route. The binding '
+            + 'constraint at L30+ (rounds-to-kill scales with enemy HP, so the default '
+            + '10 is unreachable on high-HP enemies). Raising it lets a strong, '
+            + 'sustained DoT resolve a fight it will demonstrably win before the cap.',
+        effect: { difficulty: 'lowers', engagement: 'raises' },
+    },
+    {
+        id: 'effect.baseProcIntensity',
+        kind: 'constant',
+        category: 'effect',
+        file: CONSTANTS_FILE,
+        locator: { exportName: 'EFFECT_BASE_PROC_INTENSITY' },
+        min: 1, max: 3, step: 1,
+        magnitudeCapPct: 1.0,
+        tags: ['effect', 'control', 'status-effect', 'intensity', 'resolution'],
+        rationale: 'Base intensity per proc-applied effect. Control effects stack by '
+            + 'duration (intensity stays at this base), so the saturation-yield route '
+            + 'is only reachable when this is raised or several control effects stack. '
+            + 'Symmetric across combatants — the defeat-regression guard bounds it.',
+        effect: { engagement: 'raises' },
+    },
 
     // ── Per-effect potency (the levers the resolution routes actually read) ────
     // The resolution routes in src/Combat/effect-resolution.ts sum per-effect

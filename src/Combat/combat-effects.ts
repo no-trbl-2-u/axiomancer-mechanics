@@ -44,6 +44,7 @@ import { applyEffect } from '../Effects';
 import { getBaseStat } from './stats';
 import { EquipmentProcTrigger } from '../Items/types';
 import { getRng } from '../Utils/rng';
+import { EFFECT_BASE_PROC_INTENSITY } from '../Game/game-mechanics.constants';
 
 /** A single Stance × action × tier proc candidate, as authored in JSON. */
 export interface CombatEffectTrigger {
@@ -308,7 +309,7 @@ export function applyProcOutcome(
 } {
     const { trigger, effect, intensityBonus, durationBonus, appliedTo } = outcome;
 
-    const intensityDelta = (trigger.intensityOverride ?? 1) + intensityBonus;
+    const intensityDelta = (trigger.intensityOverride ?? EFFECT_BASE_PROC_INTENSITY) + intensityBonus;
     const durationDelta  = (trigger.durationOverride  ?? effect.duration) + durationBonus;
 
     const targetCombatant = appliedTo === 'self' ? actor : opponent;

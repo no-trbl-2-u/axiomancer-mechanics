@@ -7,7 +7,7 @@
 
 import { CombatState } from './types';
 import { lookupEffect } from '../Effects/effects.library';
-import { EFFECTS_RESOLUTION_DEBUFF_INTENSITY_THRESHOLD, EFFECTS_RESOLUTION_DOT_DAMAGE_THRESHOLD } from '../Game/game-mechanics.constants';
+import { EFFECTS_RESOLUTION_DEBUFF_INTENSITY_THRESHOLD, EFFECTS_RESOLUTION_DOT_DAMAGE_THRESHOLD, EFFECTS_RESOLUTION_DOT_MAX_ROUNDS_TO_KILL } from '../Game/game-mechanics.constants';
 
 /**
  * Effect-based resolution analysis result.
@@ -125,9 +125,12 @@ function analyzeDotErosion(state: CombatState): { canFinish: boolean; reason: st
     const enemyHp = state.enemy.health;
     const roundsToKill = Math.ceil(enemyHp / totalDotDamagePerRound);
 
-    // Conservative threshold: DoT should be able to finish enemy within ~10 rounds
-    // This prevents very weak DoTs from forcing premature victories
-    if (totalDotDamagePerRound >= EFFECTS_RESOLUTION_DOT_DAMAGE_THRESHOLD && roundsToKill <= 10) {
+    // Conservative horizon: DoT should be able to finish the enemy within the
+    // tunable rounds-to-kill window. This prevents very weak DoTs from forcing
+    // premature victories while letting a strong, sustained DoT resolve a fight
+    // it will demonstrably win before the round cap.
+    if (totalDotDamagePerRound >= EFFECTS_RESOLUTION_DOT_DAMAGE_THRESHOLD
+        && roundsToKill <= EFFECTS_RESOLUTION_DOT_MAX_ROUNDS_TO_KILL) {
         return {
             canFinish: true,
             reason: `DoT effects (${dotEffectCount}) deal ${totalDotDamagePerRound} dmg/round, can finish enemy in ${roundsToKill} rounds`,

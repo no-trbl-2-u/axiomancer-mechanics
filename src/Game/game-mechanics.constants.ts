@@ -105,8 +105,25 @@ export const FRIENDSHIP_COUNTER_MAX = 3;
 // Phase 125 — Effects-driven resolution thresholds
 // Combined intensity of control/debuff effects needed to force saturation yield (friendship route)
 export const EFFECTS_RESOLUTION_DEBUFF_INTENSITY_THRESHOLD = 6;
-// Minimum DoT damage per round needed to force erosion victory route  
+// Minimum DoT damage per round needed to force erosion victory route
 export const EFFECTS_RESOLUTION_DOT_DAMAGE_THRESHOLD = 5;
+// Horizon (in rounds) for the DoT-erosion victory route: DoT forces an early
+// victory only if it could finish the enemy within this many rounds. This is
+// the conservative gate that decides whether sustained status damage "clearly
+// closes the fight" — NOT the combat timeout (that is the ~80-round cap in the
+// playtest/combat loop). On high-HP enemies the default 10 is unreachable
+// (rounds-to-kill scales with HP), which is why lowering the damage threshold
+// alone never resolved L30+ timeouts; raising this horizon lets a strong DoT
+// resolve a fight it will demonstrably win before the cap. Tuned by the loop.
+export const EFFECTS_RESOLUTION_DOT_MAX_ROUNDS_TO_KILL = 10;
+
+// Base intensity granted per proc-applied status effect when the trigger does
+// not override it. Control effects stack by DURATION (their intensity stays at
+// this base), so the saturation-yield route's combined-intensity threshold is
+// only reachable when several control effects are active OR this base is raised.
+// Symmetric (applies to whoever procs the effect), so the defeat-regression
+// guard bounds it; engagement-positive (more decisive status). Tuned by the loop.
+export const EFFECT_BASE_PROC_INTENSITY = 1;
 
 // ============================================================================
 // ENEMY — STAT BUDGET PER LEVEL
