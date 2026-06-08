@@ -43,7 +43,40 @@
       "kept": false,
       "significant": false,
       "confidence": "low"
+    },
+    {
+      "timestamp": "2026-06-08T00-03-22-624Z",
+      "paramId": "effect.resolutionDotDamageThreshold",
+      "oldValue": 5,
+      "newValue": 3,
+      "direction": "down",
+      "deltaHealth": 0.0002812499999999829,
+      "kept": false,
+      "significant": false,
+      "confidence": "low"
+    },
+    {
+      "timestamp": "2026-06-08T00-03-22-624Z",
+      "paramId": "effect.resolutionDebuffIntensityThreshold",
+      "oldValue": 8,
+      "newValue": 6,
+      "direction": "down",
+      "deltaHealth": 0.01035833333333333,
+      "kept": true,
+      "significant": true,
+      "confidence": "medium"
+    },
+    {
+      "timestamp": "2026-06-08T00-03-22-624Z",
+      "paramId": "progression.statPointsPerLevel",
+      "oldValue": 3,
+      "newValue": 4,
+      "direction": "up",
+      "deltaHealth": 0,
+      "kept": false,
+      "significant": false,
+      "confidence": "low"
     }
   ],
-  "updatedAt": "2026-06-07T13:38:01.136Z"
+  "updatedAt": "2026-06-08T00:04:32.161Z"
 }
