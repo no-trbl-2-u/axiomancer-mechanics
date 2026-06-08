@@ -5,8 +5,8 @@
 > `## Promoted`, `## Deferred`, or `## Rejected`.
 
 <!-- Metadata (updated by /expand after each pass):
-> Last pass: 2026-06-07 at commit 35359ee
-> Pass count: 37
+> Last pass: 2026-06-08 at commit 330c15a
+> Pass count: 38
 -->
 <!-- Pass 34 (2026-06-06 at commit 9a3bd90): 5 candidates proposed. Dispatched from /march→/iterate failure mode 3 (zero findings ≥3.0 + bold posture bypasses normal rate-limits). Signal sources: AUDIT.md Pending 0 actionable findings; CRITIQUE.md Pending empty (pass 54); Knowledge-Gaps only Q28 deferred (endgame); specs/ all recommended-order DONE; braindump/ unchanged since 2026-05-12; spec.md 6-month horizon Story NPCs + Second enemy families; recent commits show Phase 121 ship + iterate maintenance pattern (0-finding audits). Primary signal cluster: **content expansion leveraging completed infrastructure** — dialogue system, enemy engine, befriendability configs, region authoring patterns, equipment/resource systems all mature post-Phase-121. Filed 5 candidates spanning narrative depth (Story NPCs 3.6), bestiary variety (Second Enemy Family 4.2), region content (Northern Forest Extension 3.0), and balance analysis opportunities (Equipment Rarity 2.8, Resource Economy 2.5). Pool grows 1 → 6 Pending. Acknowledges oversight-2026-06-05 balance/playtest bias but files content candidates as the primary actionable signal cluster post-infrastructure completion. -->
 <!-- oversight 2026-06-05 (post-Phase-120 ship): with all queues empty (phases: only Phase 121 pending; candidates/AUDIT/CRITIQUE: 0), once Phase 121 ships /march falls straight through to /expand. Two directives set this oversight:
