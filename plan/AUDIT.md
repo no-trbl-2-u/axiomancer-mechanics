@@ -46,7 +46,6 @@
 
 ## Pending
 
-- **[MED] Missing Tuning module documentation** — docs/tuning.md missing for src/Tuning/ module (17 files, balance testing and tuning system). Module contains critical game balance functionality: analyst bridge, experiment runner, health metrics, difficulty bands. Impact 6 × Ease 8 / 10 = 4.8.
 
 <!-- iterate audit 2026-06-08: comprehensive audit across categories Z-H (twenty-ninth audit, march-dispatched iterate procedure via /march autonomous dispatch at commit c457994).
      Z. External critique: CRITIQUE.md Pending queue empty (pass 57, no changes since last audit)
@@ -401,6 +400,7 @@
 
 ## Done
 
+- [x] **[MED] Missing Tuning module documentation** — resolved at iterate commit 0cf71df (2026-06-08). Created docs/tuning.md documenting the balance testing and tuning system covering all 17 files in src/Tuning/ module. Documented experiment runner, health metrics, analyst bridge, matrix testing, strategist knowledge, tuning registry, status-effect-first doctrine, A/B statistical testing, and safety guards. Includes API examples, CLI interface, and integration points. Impact 6 × Ease 8 / 10 = 4.8.
 - [x] **[HIGH] Test isolation failure in tier3-synergy-skills.engine.test.ts** — resolved at iterate commit `90b4e3b` (2026-06-08). logical-recursion synergy test failed when run with full test suite but passed in isolation due to RNG state pollution between test files. Added restoreOriginalRng() import and call in map-events.engine.test.ts afterEach; added proper afterEach cleanup with vi.restoreAllMocks() + restoreOriginalRng() + _clearMapEventPoolRegistry() in alignment-authoring.engine.test.ts. npm run verify stays green (1281/1281 tests). Impact 9 × Ease 7 / 10 = 6.3. Source: /iterate baseline test verification finding.
 - [x] **[LOW] Dead code — `clearTier1EffectsForType` legacy alias unused on public barrel** — resolved at iterate commit `aca1b1a` (2026-06-06). Removed unused legacy alias from src/index.ts barrel export and src/Effects/index.ts definition. Updated docs/effects.md and docs/api.md to remove stale references. The alias was redundant since clearTier1EffectsForStance is properly used throughout. Removal reduces API surface area (-1 runtime export) and eliminates potentially confusing duplicate naming. Impact 3 × Ease 9 / 10 = 2.7. Source: /iterate audit category D (dead code) finding.
 - [x] **[LOW] isValidCombatAction export potentially unused** — evaluated at iterate (this commit). Export intentionally retained on public barrel for external consumer validation of partial CombatAction objects. Type guard functions are conventionally provided for API consumers even when zero in-repo usage. No breaking change applied per iterate Hard Rule 4. Impact 2 × Ease 8 / 10 = 1.6. Source: /iterate audit category Z (external critique) finding.
