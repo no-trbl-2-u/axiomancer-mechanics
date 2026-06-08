@@ -13,7 +13,7 @@ import {
     setDefaultMapEventPool,
     _clearMapEventPoolRegistry,
 } from '../resolve-map-event';
-import { mockSequentialRng } from '../../../test-utils/rng';
+import { mockSequentialRng, restoreOriginalRng } from '../../../test-utils/rng';
 import { createStartingWorld } from '../../index';
 import { createNewGameState } from '../../../Game/game.reducer';
 import type { GameState } from '../../../Game/types';
@@ -32,6 +32,7 @@ function withPool(state: GameState, pool: MapEventPool): GameState {
 
 afterEach(() => {
     vi.restoreAllMocks();
+    restoreOriginalRng();
     _clearMapEventPoolRegistry();
 });
 

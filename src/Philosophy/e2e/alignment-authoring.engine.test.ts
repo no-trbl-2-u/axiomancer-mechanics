@@ -7,7 +7,7 @@
  * Unit 3 will extend with a full-store / gameReducer-driven case.
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { applyDialogueChoice } from '../../World/dialogue.runtime';
 import {
     resolveMapEvent,
@@ -18,7 +18,7 @@ import {
 import { createNewGameState } from '../../Game/game.reducer';
 import type { DialogueChoice, DialogueTree } from '../../NPCs/types';
 import type { MapEventPool } from '../../World/MapEvents/types';
-import { mockSequentialRng } from '../../test-utils/rng';
+import { mockSequentialRng, restoreOriginalRng } from '../../test-utils/rng';
 
 function makeTree(): DialogueTree {
     return {
@@ -28,6 +28,12 @@ function makeTree(): DialogueTree {
         },
     };
 }
+
+afterEach(() => {
+    vi.restoreAllMocks();
+    restoreOriginalRng();
+    _clearMapEventPoolRegistry();
+});
 
 describe('Phase 43 — dialogue alignmentDelta', () => {
     it('applies a partial alignmentDelta on a dialogue choice and surfaces philosophicalShift', () => {
