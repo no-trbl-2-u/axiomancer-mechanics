@@ -134,6 +134,7 @@ describe('Phase 94 — Tier 3 synergy skills (5 patterns)', () => {
 
     describe('logical-recursion', () => {
         it('synergy fires when caster has debuff_confusion ≥2 duration — applies buff_critical_rate_up to self', () => {
+            mockSequentialRng(0.5); // Tier-2 self-buff applyEffectOnFire rolls; keep this hermetic.
             const state = fixtureState();
             const caster = state.player;
             const playerWithConfusion = { ...caster, effects: [seedEffect({ effectId: 'debuff_confusion', intensity: 1, remainingDuration: 3 })] };
