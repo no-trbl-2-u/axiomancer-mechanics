@@ -70,13 +70,7 @@
 - score: 5 × 6 / 10 = 3.0
 - recommended-slot: Content expansion phase
 
-### Candidate: Equipment Rarity Distribution Rebalancing
-- signal: braindump/2026-05-12-rarity-modifiers notes concern about "4×3 item matrix impossible to balance" + Phase 54 set items shipped but no evidence of rarity distribution tuning since original implementation
-- scope: Audit current equipment drop rates, rarity weights, and modifier distributions. Rebalance drop weights and level-gating to ensure meaningful progression feel. Add telemetry/logging for equipment generation patterns to guide future tuning.
-- unblocks: Equipment progression satisfaction; foundation for future equipment content
-- blocked-by: None - item generation system, rarity system, modifier catalogue all shipped
-- score: 4 × 7 / 10 = 2.8
-- recommended-slot: Balance/tuning phase
+<!-- Equipment Rarity Distribution Rebalancing — promoted to Phase 133 via oversight 2026-06-09 (Q3 T pick). See ## Promoted. -->
 
 ### Candidate: Combat Resource Economy Analysis
 - signal: braindump/ skill resource economy was completely redesigned from mana→5-resource system, but no systematic analysis of resource generation/consumption balance has been performed since Spec 04 implementation
@@ -86,15 +80,15 @@
 - score: 5 × 5 / 10 = 2.5
 - recommended-slot: Balance/analysis phase
 
-### Candidate: Game Module Documentation Coverage
-- signal: AUDIT.md LOW finding — Game module (src/Game/) lacks docs/game.md despite exporting 20+ significant functions including game store (createGameStore, selectors), persistence (migrate, GameState types), reducers, and constants. All other major modules have documentation coverage.
-- scope: Author docs/game.md covering Game module exports: store creation and selectors, GameState type hierarchy, persistence adapters and migration system, game reducers and actions, game mechanics constants. Follow established module documentation pattern from docs/character.md, docs/combat.md etc.
-- unblocks: Complete documentation coverage for public API; consistent developer experience across all modules
-- blocked-by: None - Game module fully implemented and stable
-- score: 4 × 7 / 10 = 2.8
-- recommended-slot: Documentation phase
+<!-- Game Module Documentation Coverage — promoted to Phase 132 via oversight 2026-06-09 (Q3 T pick). See ## Promoted. -->
 
 ## Promoted
+
+### Phase 133 — Equipment Rarity Distribution Rebalancing
+- promoted: 2026-06-09 (oversight Q3 — T pick). Was "Equipment Rarity Distribution Rebalancing" (score 4 × 7 / 10 = 2.8). Build-plan row added as Phase 133. Scope: audit drop rates, rarity weights, modifier distributions since Phase 54; rebalance for meaningful progression feel; config/balance only — no formula rewrites. Source: expand-34.
+
+### Phase 132 — Game Module Documentation Coverage
+- promoted: 2026-06-09 (oversight Q3 — T pick). Was "Game Module Documentation Coverage" (score 4 × 7 / 10 = 2.8). Build-plan row added as Phase 132. Scope: author docs/game.md covering store, selectors, GameState, persistence, reducers, constants; follows established module doc pattern. Source: expand-46 (AUDIT.md LOW).
 
 ### Phase 127 — Third enemy class family (undead/construct/elemental)
 - promoted: 2026-06-08 (oversight Q2 — T picked Second Enemy Family to refill the empty build-plan queue). Was "Second Enemy Class Family Implementation" (score 7 × 6 / 10 = 4.2); renumbered Phase 127 since Phase 114 already shipped the second family. Build-plan row added under "Next up". Scope: 4–5 enemies (undead/construct/elemental) across normal/elite/boss with family mechanics + befriendability + alignment distributions + friendship rewards/journal entries; extend spawn pools. Source: expand-31.
