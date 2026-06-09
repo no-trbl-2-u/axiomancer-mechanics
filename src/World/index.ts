@@ -71,3 +71,6 @@ export {
     applyDialogueChoice,
 } from './dialogue.runtime';
 export type { ApplyDialogueChoiceResult } from './dialogue.runtime';
+
+// Hazard Minigame (Phase 131)
+export * from './Hazard';

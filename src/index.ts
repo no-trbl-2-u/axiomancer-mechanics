@@ -182,6 +182,15 @@ export {
     startQuest, progressQuest, completeQuest, discoverQuest,
     reachableObjectives, killObjectives,
 } from './World';
+
+// Hazard Minigame
+export {
+    initializeHazard, drawOpeningHand, selectRoute, rollDiceAndStartRound,
+    playCardInRound, resolveRound, advanceToNextRound, computeFinalScore,
+    rollManaDice, canAffordCost, spendMana, hasXDice, countAvailableDice,
+    HAZARD_CARD_LIBRARY, ACTION_CARD_LIBRARY, STARTER_DECK_CARD_IDS,
+    getHazardCard, getActionCard, getRandomHazardCard,
+} from './World/Hazard';
 export {
     changeMap, completeMap, unlockMap,
     completeNode, unlockNode, changeContinent, completeUniqueEvent,
@@ -210,6 +219,10 @@ export type {
     MapDefinition, MapState, QuestObjective, QuestObjectiveType, QuestStatus, QuestLog,
     GenerateEncounterOptions,
     ApplyDialogueChoiceResult,
+    // Hazard Minigame Types
+    HazardMinigameState, HazardCard, HazardActionCard, HazardManaDie,
+    HazardProgressType, HazardDieColor, HazardPhase, HazardMark,
+    HazardRoundState, HazardRoundResult, HazardRoute, HazardReward, HazardPenalty,
 } from './World';
 
 // ─── Philosophy (Phase 42 — 3-axis alignment cube + 27-cell registry) ────────
