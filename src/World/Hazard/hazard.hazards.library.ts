@@ -54,7 +54,7 @@ export const HAZARD_CARD_LIBRARY: HazardCard[] = [
     rounds: 4,
     topRoute: {
       progressType: 'escape',
-      roundThresholds: [2, 3, 3, 5],
+      roundThresholds: [2, 3, 3, 4],
       reward: {
         vitae: 0,
         supplyTokens: 2,
@@ -84,7 +84,7 @@ export const HAZARD_CARD_LIBRARY: HazardCard[] = [
     rounds: 5,
     topRoute: {
       progressType: 'stability',
-      roundThresholds: [1, 2, 3, 3, 4],
+      roundThresholds: [2, 3, 4, 4, 5],
       reward: {
         items: ['torch', 'cave-map'],
       },
@@ -94,7 +94,7 @@ export const HAZARD_CARD_LIBRARY: HazardCard[] = [
     },
     bottomRoute: {
       progressType: 'escape',
-      roundThresholds: [2, 3, 4, 4, 6],
+      roundThresholds: [2, 3, 4, 4, 5],
       reward: {
         vitae: 1,
         supplyTokens: 3,
@@ -114,7 +114,7 @@ export const HAZARD_CARD_LIBRARY: HazardCard[] = [
     rounds: 3,
     topRoute: {
       progressType: 'supply',
-      roundThresholds: [3, 4, 5],
+      roundThresholds: [2, 3, 4],
       reward: {
         supplyTokens: 4,
         items: ['preserved-food'],
@@ -141,7 +141,7 @@ export const HAZARD_CARD_LIBRARY: HazardCard[] = [
     rounds: 4,
     topRoute: {
       progressType: 'escape',
-      roundThresholds: [3, 4, 4, 6],
+      roundThresholds: [2, 2, 3, 4],
       reward: {
         vitae: 2,
       },
