@@ -73,3 +73,23 @@ export {
   STARTER_DECK_CARD_IDS,
   validateCardLibrary,
 } from './hazard.cards.library';
+
+// Hazard library
+export {
+  HAZARD_CARD_LIBRARY,
+  getHazardCard,
+  getRandomHazardCard,
+  validateHazardLibrary,
+} from './hazard.hazards.library';
+
+// Core engine
+export {
+  initializeHazard,
+  drawOpeningHand,
+  selectRoute,
+  rollDiceAndStartRound,
+  playCardInRound,
+  resolveRound,
+  advanceToNextRound,
+  computeFinalScore,
+} from './hazard.engine';
