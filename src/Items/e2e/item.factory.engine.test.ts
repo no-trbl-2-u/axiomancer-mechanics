@@ -233,17 +233,18 @@ describe('dropItem: validation', () => {
 // ─── Rarity weight table ────────────────────────────────────────────────────
 
 describe('rarityWeightTable: weighted draw', () => {
-    it('exports the documented Spec 05c §9 weights', () => {
+    it('exports the Phase 133 rebalanced rarity weights', () => {
         const map = new Map(rarityWeightTable);
-        expect(map.get('common')).toBe(60);
-        expect(map.get('uncommon')).toBe(30);
-        expect(map.get('rare')).toBe(9);
+        // Phase 133 rebalanced weights for improved progression feel
+        expect(map.get('common')).toBe(50);
+        expect(map.get('uncommon')).toBe(35);
+        expect(map.get('rare')).toBe(14);
         expect(map.get('unique')).toBe(1);
     });
 
     it('omitting rarity on a regular template draws from the table', () => {
-        // 500 draws from a single seeded rng — common (60/99) should dominate
-        // by a wide margin. Rare (9/99) appears infrequently. Unique never
+        // 500 draws from a single seeded rng — common (50/100) should dominate
+        // by a wide margin. Rare (14/100) appears infrequently. Unique never
         // appears for a regular template (the row is excluded by design).
         const rng = seededRng(424242);
         const counts: Record<string, number> = { common: 0, uncommon: 0, rare: 0, unique: 0 };

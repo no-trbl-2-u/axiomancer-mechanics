@@ -602,6 +602,34 @@ More sets is iterate-tier content authoring, not a phase. Unique-item
 membership (`UniqueItemTemplate.setMembership`) is reserved for a
 future phase per Spec 05e Q1.
 
+## Rarity Distribution & Progression
+
+The equipment rarity system balances meaningful loot discovery against steady progression. Current distribution weights from `RARITY_WEIGHTS` in `src/Items/item.factory.ts`:
+
+| Rarity | Weight | Percentage | Modifier Count | Description |
+|--------|--------|------------|----------------|-------------|
+| Common | 50 | 50% | 0 | Baseline progression items with template stats only |
+| Uncommon | 35 | 35% | 1 | Single procedural modifier for specialization |
+| Rare | 14 | 14% | 2 | Two distinct procedural modifiers for build-enabling combinations |
+| Unique | 1 | 1% | 3 | Three fixed modifiers with authored identity and power |
+
+### Progression Philosophy
+
+**Early Game (Levels 1-15)**: Common items provide steady stat progression while uncommon/rare drops offer build experimentation. Rarity feels meaningful because base power levels are low.
+
+**Mid Game (Levels 16-35)**: Rare items become more significant for build optimization. Set items (Phase 54) start competing with procedural rarity for equipment slots. Unique items are extremely special finds.
+
+**Late Game (Levels 36-50)**: High-level modifier tiers make rare items substantially more powerful. Set bonus completion becomes a primary progression driver alongside rarity. Unique items represent pinnacle equipment choices.
+
+### Set Item Integration
+
+Since Phase 54, set items use the same rarity system but add set bonus considerations:
+- Set items can roll at any rarity, with bonus completion providing additional power scaling
+- Players balance individual item rarity vs. set completion for optimal builds  
+- Set item rarity affects the procedural modifiers while set membership provides the themed bonuses
+
+This creates a progression matrix where both rarity and set membership matter for equipment decisions.
+
 ## Out of scope / future work
 
 - Modifier catalogue content (Spec 05d) — the in-factory mod catalogue

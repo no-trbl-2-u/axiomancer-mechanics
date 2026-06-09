@@ -53,10 +53,22 @@ import {
 
 // ─── Rarity weight table (Spec 05c §9) ───────────────────────────────────────
 
+// Phase 133 rebalancing: Improved progression feel with more exciting drops
+// while maintaining common items as viable baseline progression.
+//
+// Previous: Common 60%, Uncommon 30%, Rare 9%, Unique 1%
+// Updated:  Common 50%, Uncommon 35%, Rare 14%, Unique 1%
+//
+// Rationale:
+// - Reduced common weight to make upgrades more frequent and exciting
+// - Increased uncommon weight to provide more build experimentation opportunities
+// - Significantly increased rare weight for better late-game engagement
+// - Maintained unique rarity at 1% to preserve their special status
+//
 const RARITY_WEIGHTS: ReadonlyArray<readonly [Exclude<ItemRarity, 'unique'>, number]> = [
-    ['common',   60],
-    ['uncommon', 30],
-    ['rare',      9],
+    ['common',   50],
+    ['uncommon', 35],
+    ['rare',     14],
 ];
 const RARITY_WEIGHTS_WITH_UNIQUE: ReadonlyArray<readonly [ItemRarity, number]> = [
     ...RARITY_WEIGHTS,
