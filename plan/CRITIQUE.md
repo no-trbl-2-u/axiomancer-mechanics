@@ -6,8 +6,8 @@
 > by `/iterate`.
 
 <!-- Metadata (updated by /critique after each pass):
-> Last pass: 2026-06-08 at commit bd29f54
-> Pass count: 59
+> Last pass: 2026-06-09 at commit 1e3f6b3
+> Pass count: 60
 -->
 <!-- Pass 59 (2026-06-08 at commit bd29f54): 0 findings. Post-Phase-128 window + 18 commits since pass 58 (Phase 128 Story Content NPCs Dialogue Expansion ship + minor commits). Comprehensive audit across all areas (A-F): **Public API surface** — zero new exports vs spec.md Contracts section; all src/index.ts exports align with bearings.md contract groups, no API drift detected. **E2e coverage** — comprehensive across all 17 modules (Character, Combat, Effects, Enemy, Game, Items, Skills, World, Utils, NPCs, Philosophy, Playtest, CLI, Faction, Tuning, test-utils); each has *.engine.test.ts files with hermetic coverage including story-npcs.engine.test.ts (from Phase 115). **Module structure** — clean consistency; logic in resolvers/reducers, constants properly organized in dedicated files, test-utils/rng.ts properly stubbed (only acceptable vi.spyOn in test-utils). **Documentation completeness** — docs/ folder current for all modules with proper API coverage. **Type safety** — clean (zero @ts-ignore except expected .mjs import case at src/test-utils/e2e/agent-vitest-reporter.engine.test.ts:25; zero `as any` casts; no implicit return types). **Dead code** — no large commented-out blocks; no unused exports identified. Found codebase in excellent architectural health post-Phase-128 dialogue expansion. Pool: empty. -->
 <!-- Pass 58 (2026-06-08 at commit 5f68b7f): 1 finding (0H/0M/1L). Post-expand window + 1 commit since pass 57 (expand pass 40 with 0 candidates). Comprehensive audit across all areas (A-F): **Public API surface** — src/index.ts exports align with module groups but two exports not documented in spec.md Contracts section: `enemyStatBudget` (Enemy group) and `getEffectsResolutionOutcome` (Combat group), both present since pass 57 but lacking contract documentation. **E2e coverage** — comprehensive across all 16+ modules; each has *.engine.test.ts files with hermetic coverage. **Module structure** — clean consistency; logic in resolvers/reducers, constants properly organized in dedicated files, test-utils/rng.ts properly stubbed (only acceptable vi.spyOn in test-utils). **Documentation completeness** — docs/ folder current for all modules with proper API coverage. **Type safety** — clean (zero @ts-ignore except expected .mjs import case at src/test-utils/e2e/agent-vitest-reporter.engine.test.ts:25; zero `as any` casts; no implicit return types). **Dead code** — no large commented-out blocks; no unused exports identified. Found codebase in excellent architectural health with one minor spec documentation gap. -->
@@ -35,6 +35,22 @@
 ---
 
 ## Pending
+
+### [HIGH] Character — missing RNG stubbing for deterministic tests
+- pass: critique-60 (commit 1e3f6b3)
+- area: tests
+- observation: Character module uses getRng() for character ID generation, but e2e tests don't stub RNG via test-utils/rng.ts helpers
+- evidence: src/Character/e2e/character.engine.test.ts
+- suggested_fix: Add mockAlternatingRng() import and usage with afterEach(vi.restoreAllMocks)
+- source: critique
+
+### [HIGH] Utils — missing primary entry point e2e test coverage
+- pass: critique-60 (commit 1e3f6b3)
+- area: tests
+- observation: Utils module has substantial RNG-dependent logic including stat calculations and die rolling but lacks src/Utils/e2e/utils.engine.test.ts covering the main entry point
+- evidence: src/Utils/e2e/ (directory missing utils.engine.test.ts)
+- suggested_fix: Create utils.engine.test.ts covering deriveStats, randomInt, createDie functions with proper RNG stubbing
+- source: critique
 
 
 
