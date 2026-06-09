@@ -40,3 +40,36 @@ export {
   refreshDiceBetweenRounds,
   validateDiceState,
 } from './hazard.dice';
+
+// Deck management
+export {
+  shuffleDeck,
+  drawCards,
+  playCard,
+  initializeHazardDeck,
+  discardHand,
+  validateDeckState,
+} from './hazard.deck';
+
+// Card system
+export {
+  addProgress,
+  addMultiProgress,
+  addFocusBuff,
+  createDirectProgressEffect,
+  createFocusEffect,
+  createMultiProgressEffect,
+  noOpEffect,
+  createActionCard,
+  validateCard,
+} from './hazard.cards';
+
+// Card library
+export {
+  ACTION_CARD_LIBRARY,
+  getActionCard,
+  getCardsByClass,
+  getCardsByRarity,
+  STARTER_DECK_CARD_IDS,
+  validateCardLibrary,
+} from './hazard.cards.library';
