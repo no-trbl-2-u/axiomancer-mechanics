@@ -22,18 +22,25 @@ from the PRD are the objective function.
 ## 1. Purpose
 
 `/hazard-tuning` is the hazard balance loop. It reads the shipped content
-libraries, exercises the hermetic e2e suite (`npm test`), interprets results
-against CDR-0006 design targets, and delivers a report — with any auto-applied
-numeric changes and any propose-only structural findings — together on one branch
-and PR.
+libraries, exercises the hazard CLI flow (`npm run hazard -- ...`) and the
+hermetic e2e suite, interprets results against CDR-0006 design targets, and
+delivers a report — with any auto-applied numeric changes and any propose-only
+structural findings — together on one branch and PR.
 
-**No hazard tuning CLI exists today.** `npm run tune` is the combat engine;
-there is no `npm run hazard-tune`. The first version of this skill is an
-**evidence-and-report workflow**: read the libraries, run the test suite,
-analyse the numbers, apply numeric changes directly to the library files, and
-deliver. If the absence of a simulation harness blocks meaningful tuning of a
-specific axis, the skill files a harness-gap entry in `plan/PHASE_CANDIDATES.md`
-instead of pretending automation exists.
+**There is now a hazard testing CLI flow.** Use `npm run hazard -- [flags]`
+(convenience alias for `npm run game -- hazard`) as the empirical witness before
+applying tuning changes. `npm run tune` remains the combat engine; there is no
+separate `npm run hazard-tune` yet. The hazard CLI provides deterministic seeded
+runs, route/hazard selection, greedy auto play, JSON events, and JSONL state logs:
+
+```bash
+npm run hazard -- --auto --seed 42 --runs 1 --hazard H01 --route top --json-events --state-log /tmp/hazard-H01-top-42.jsonl
+npm run hazard -- --auto --seed 5 --runs 3 --hazard H02 --route bottom --json-events --state-log /tmp/hazard-H02-bottom-5.jsonl
+```
+
+Use those logs to measure actual `computeFinalScore` and `hazard:summary`
+outcomes. If the CLI still cannot measure a specific axis directly, say exactly
+which axis is blocked and why; do not invent a fake harness measurement.
 
 ## 2. Invocation
 
@@ -63,6 +70,11 @@ axes in the quick-reference table below.
   current shipped values. The report records `old → new` with a one-line
   rationale for each change. No change is applied without a documented reason
   grounded in the design targets below.
+- **CLI evidence before edits.** Before applying any numeric tuning change, run
+  the hazard CLI against the relevant hazard/route/seed matrix and save the
+  JSONL state logs outside the repo or under an ignored artifact path. The report
+  cites the exact command(s), seed(s), route(s), pass count, mark strings, and
+  total score evidence that motivated the change.
 - **The verify gate is non-negotiable.** After any change, `npm run verify`
   must pass before the change is staged. If a change breaks any test, revert
   it and record it under "Considered but not applied".
@@ -109,6 +121,8 @@ Final-round +2–+3 uplift requires at least one die entering the final round
 
 - Ensure a clean working tree. Note the base branch (usually `main`).
 - `npm ci` if `node_modules` is absent.
+- Run the hazard CLI e2e smoke cold:
+  `npx vitest run src/CLI/e2e/hazard.cli.engine.test.ts`.
 - Run `npm test` cold. If any test fails before you touch anything, stop
   and report the pre-existing failure — do not proceed.
 
@@ -125,35 +139,81 @@ Read these files in full before forming any hypothesis:
 
 Identify the current values for every axis in the design targets table.
 
-### Step 2 — Map evidence against targets
+### Step 2 — Run the hazard CLI evidence matrix
+
+Use the CLI before changing values. Minimum sweep for a full run:
+
+- top route and bottom route for every relevant hazard in scope;
+- at least 5 fixed seeds per route for broad sweeps (`1 2 3 4 5` is acceptable
+  for a first pass; use more if the result is noisy);
+- `--auto`, `--json-events`, and `--state-log` on every run;
+- logs written to `/tmp` or another ignored artifact location unless the task
+  explicitly asks for committed evidence artifacts.
+
+Example one-off command:
+
+```bash
+npm run hazard -- --auto --seed 42 --runs 1 --hazard H01 --route top --json-events --state-log /tmp/hazard-H01-top-42.jsonl
+```
+
+Example shell loop for a focused hazard:
+
+```bash
+for route in top bottom; do
+  for seed in 1 2 3 4 5; do
+    npm run hazard -- --auto --seed "$seed" --runs 1 --hazard H01 --route "$route" \
+      --json-events --state-log "/tmp/hazard-H01-${route}-${seed}.jsonl"
+  done
+done
+```
+
+Parse each JSONL log for:
+
+- `computeFinalScore.event.finalScore`
+- `computeFinalScore.event.marks`
+- `computeFinalScore.event.route`
+- `computeFinalScore.event.ledger`
+- `illegalHazardAction` records, if present
+- the final `hazard:summary` event when using multi-run commands
+
+Report actual clear rate as `finalScore > 0`. Track mark strings (`OOX`, `OXX`,
+etc.), total score, threatened-X, and any illegal-action skips. Treat repeated
+illegal-action records as driver/policy evidence, not as player balance truth,
+unless the same illegal action is player-facing and reproducible manually.
+
+### Step 3 — Map evidence against targets
 
 For each design target:
 
-1. **Compute expected rates from the current numbers.** Apply the threshold
+1. **Measure actual CLI rates first.** Use `finalScore > 0` from the hazard CLI
+   logs for clear/pass rate. Compare top and bottom route rates against the
+   targets. Keep the seed list fixed between baseline and after-change runs.
+
+2. **Compute expected rates from the current numbers.** Apply the threshold
    calibration baseline. For each hazard card on each route, determine whether
    the round-by-round thresholds are clearable at the top-action floor, at
    one-bottom-action level, and at two-bottom-action level. Flag any round that
    falls outside its intended range.
 
-2. **Compute X-interaction draw probability.** Given the current count of
+3. **Compute X-interaction draw probability.** Given the current count of
    X-interaction cards in the 30-card pool, calculate the probability of
    drawing at least one in a 5-card hand. Compare against the 40% target.
    The current pool has 3 X-interaction cards; expected draw probability ≈ 43%
    against a 5-card draw from 30. Flag if a changed ratio drops below 40%.
 
-3. **Map deck ratios.** Tally cards by class (direct-progress, focus,
+4. **Map deck ratios.** Tally cards by class (direct-progress, focus,
    mana-conversion, mana-creation, card-draw, risk-sacrifice,
    failure-mitigation, synergy-combo, x-die-interaction, persistent-enchantment).
    Flag if direct-progress cards exceed 50% of the pool (flat-round risk per
    CDR-0006 §Design Tensions).
 
-4. **Identify mana-cliff hazards.** For hazards with ≥3 rounds and no
+5. **Identify mana-cliff hazards.** For hazards with ≥3 rounds and no
    automatic refresh: after 2 dice spent per round, entering round 3 with zero
    available mana is the intended cliff. Identify any hazard where the final
    round threshold is clearable only with mana, on the top route — this is a
    balance failure per CDR-0006.
 
-### Step 3 — Propose and apply numeric changes
+### Step 4 — Propose and apply numeric changes
 
 For each axis that deviates from its target:
 
@@ -162,16 +222,19 @@ For each axis that deviates from its target:
 
 2. **Apply the change** to the library file.
 
-3. **Re-run `npm test`.** If any test fails: revert the change, record it
+3. **Re-run the same CLI matrix with the same seeds.** Record before/after
+   clear rate, mark distribution, and score deltas.
+
+4. **Re-run `npm test`.** If any test fails: revert the change, record it
    under "Considered but not applied" with the failure mode.
 
-4. **Re-evaluate the target** with the new numbers. Record the updated
+5. **Re-evaluate the target** with the new numbers. Record the updated
    expected rate.
 
 Do not apply more than one change per axis at a time. Measure each change
 before the next.
 
-### Step 4 — Record known engine gaps
+### Step 5 — Record known engine gaps
 
 Before closing the report, cross-check the following known gaps between CDR-0006
 doctrine and the shipped engine. Do not tune numbers around them — flag them.
@@ -184,11 +247,12 @@ doctrine and the shipped engine. Do not tune numbers around them — flag them.
 | Persistent map benefits | Types defined but not wired to world state | H08, H12, H15 emit map events |
 
 If a gap materially affects a tuning axis (e.g., the penalty gap means VITAE
-drain cannot be measured), file a harness-gap entry in
-`plan/PHASE_CANDIDATES.md` with the blocking axis noted, and exclude that axis
-from the applied changes.
+drain cannot be fully measured), record it in the report with the blocking axis
+noted. If no existing CLI or test surface can expose the axis, file a narrowly
+scoped harness-gap entry in `plan/PHASE_CANDIDATES.md`; otherwise prefer the
+existing hazard CLI evidence flow over new harness requests.
 
-### Step 5 — Deliver on ONE PR
+### Step 6 — Deliver on ONE PR
 
 - Create a branch off base: `git checkout -b balance/hazard-<ts>`.
 - Stage the findings report, the suggestions writeup, and any changed library
@@ -196,33 +260,32 @@ from the applied changes.
 - Commit: `balance(hazard): <ts> report + suggestions (<n> changes applied)`.
 - Push and open a PR (ready for review):
   - Title: `balance(hazard): tuning <ts> (<n> applied)`
-  - Body: headline deviation from targets; each applied change with `old → new`
-    and one-line rationale; the propose-only section for structural findings;
-    the engine-gap table for known blockers.
+  - Body: headline deviation from targets; exact hazard CLI command matrix;
+    seed list; before/after clear rates and mark distributions; each applied
+    change with `old → new` and one-line rationale; the propose-only section for
+    structural findings; the engine-gap table for known blockers.
 - If no numeric changes are applied but there are new propose-only findings or
   newly-flagged engine gaps, open the PR carrying the report only. Do not open
   a no-op PR if nothing has changed from the previous tick's findings.
 
-### Step 6 — Harness gap filing
+### Step 7 — Harness gap filing
 
-If the absence of a simulation harness blocks any tuning axis, file an entry
-in `plan/PHASE_CANDIDATES.md` following the existing candidate format:
+The hazard CLI now covers deterministic seeded playthrough evidence. Only file a
+harness-gap entry when the CLI cannot expose the needed metric even through
+`--auto`, fixed seeds, `--runs`, `--json-events`, and `--state-log`. Follow the
+existing candidate format:
 
 ```markdown
 ### Hazard simulation harness
-**Why:** Without a Monte Carlo harness analogous to `src/Tuning/`, route clear
-rates and mana-cliff frequencies cannot be measured empirically — only estimated
-from probability calculations against fixed decks. The hazard-tuning skill is
-blocked on the [axis] target.
-**Scope:** `src/World/Hazard/cli.ts` + simulation loop over the
-`src/World/Hazard/` engine functions with stubbed RNG; report in the format of
-the existing tuning reports.
-**Unlocks:** `/hazard-tuning --runs=N` flag; empirical rather than analytic
-evidence for all design targets.
+**Why:** The existing `npm run hazard -- --auto --seed ... --json-events --state-log ...`
+flow cannot expose [axis] because [specific blocker].
+**Scope:** Extend `src/CLI/hazard.cli.ts` or add a thin parser/report helper that
+keeps the existing CLI contract and emits [missing metric].
+**Unlocks:** Empirical evidence for [axis] without manual log reconstruction.
 ```
 
-Do not invent a fake harness invocation. Do not claim a measurement was taken
-that was not.
+Do not invent a fake invocation. Do not claim a measurement was taken that was
+not present in CLI output, JSON events, state logs, or committed tests.
 
 ## 6. Hard rules
 
@@ -264,9 +327,11 @@ that was not.
    change under "Considered but not applied" with the test name and failure
    message. Continue with other axes.
 
-4. **An engine gap blocks measurement of a target axis.** File a harness-gap
-   entry in `plan/PHASE_CANDIDATES.md`. Exclude the axis from applied changes.
-   Report it clearly in the PR body.
+4. **An engine gap blocks measurement of a target axis.** First try the hazard
+   CLI evidence flow (`--auto`, fixed seeds, `--json-events`, `--state-log`). If
+   the axis still cannot be measured, file a narrowly-scoped harness-gap entry in
+   `plan/PHASE_CANDIDATES.md`. Exclude that axis from applied changes and report
+   it clearly in the PR body.
 
 5. **No axis deviates from target / no change is warranted.** Open a PR with
    the report only if the analysis surfaces anything new (a freshly-identified
@@ -291,9 +356,13 @@ that was not.
 - Deck: `src/World/Hazard/hazard.deck.ts`
 - Public barrel: `src/World/Hazard/index.ts`
 
-**Tests:**
-- Hermetic e2e: `src/World/Hazard/e2e/hazard.engine.test.ts`
-- Run: `npm test` (vitest run — includes all e2e suites)
+**Tests and CLI evidence:**
+- Hazard CLI: `src/CLI/hazard.cli.ts`
+- CLI command: `npm run hazard -- --auto --seed <seed> --runs <n> --hazard H01 --route top --json-events --state-log /tmp/hazard.jsonl`
+- CLI e2e: `src/CLI/e2e/hazard.cli.engine.test.ts`
+- Engine e2e: `src/World/Hazard/e2e/hazard.engine.test.ts`
+- Run targeted CLI test: `npx vitest run src/CLI/e2e/hazard.cli.engine.test.ts`
+- Run full suite: `npm test` (vitest run — includes all e2e suites)
 
 **Design doctrine:**
 - CDR-0006 rules + card set: `docs/hazard-minigame.md`

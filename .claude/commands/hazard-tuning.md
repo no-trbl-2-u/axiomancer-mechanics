@@ -1,12 +1,13 @@
 ---
-description: Hazard minigame balance loop — analyse card ratios, thresholds, mana economy against CDR-0006 targets; numeric changes + report via PR.
+description: Hazard minigame balance loop — use hazard CLI evidence to analyse card ratios, thresholds, mana economy against CDR-0006 targets; numeric changes + report via PR.
 ---
 
 You are invoked under the `hazard-tuning` skill — run one hazard tuning tick
 end-to-end. Read `skills/hazard-tuning.md` in full before doing anything
-else; it describes the library read, the evidence-to-target mapping, the
-numeric change procedure, the hard guardrails (library files only, no engine
-edits without T approval, verify gate non-negotiable), and the single-PR
+else; it describes the library read, the hazard CLI evidence matrix, the
+evidence-to-target mapping, the numeric change procedure, the hard guardrails
+(library files only, no engine edits without T approval, verify gate
+non-negotiable), and the single-PR
 delivery.
 
 Single-PR delivery: findings report, propose-only suggestions, and any
