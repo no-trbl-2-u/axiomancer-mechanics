@@ -36,14 +36,6 @@
 
 ## Pending
 
-### [HIGH] Character — missing RNG stubbing for deterministic tests
-- pass: critique-60 (commit 1e3f6b3)
-- area: tests
-- observation: Character module uses getRng() for character ID generation, but e2e tests don't stub RNG via test-utils/rng.ts helpers
-- evidence: src/Character/e2e/character.engine.test.ts
-- suggested_fix: Add mockAlternatingRng() import and usage with afterEach(vi.restoreAllMocks)
-- source: critique
-
 ### [HIGH] Utils — missing primary entry point e2e test coverage
 - pass: critique-60 (commit 1e3f6b3)
 - area: tests
@@ -61,6 +53,7 @@
 
 ## Done
 
+- [x] **[HIGH] Character — missing RNG stubbing for deterministic tests** — resolved at commit 6abd897 (2026-06-09). Added mockSequentialRng() calls to all tests using buildPlayer() in src/Character/e2e/character.engine.test.ts, proper test cleanup with afterEach(), and distinct RNG values for ID generation tests. Source: critique-60 (commit 1e3f6b3).
 - [x] **[LOW] api — spec.md Contracts section missing recent exports** — resolved at iterate commit 3ddca75 (2026-06-08). Added enemyStatBudget (Enemy group) and getEffectsResolutionOutcome (Combat group) to spec.md Contracts table. Two exports present in src/index.ts were not documented in spec.md Contracts section for external consumers. Source: critique-58 (commit 5f68b7f).
 - [x] **[LOW] Combat — isValidCombatAction export potentially unused** — evaluated at iterate (this commit). Export intentionally retained on public barrel for external consumer validation of partial CombatAction objects. Type guard functions are conventionally provided for API consumers even when zero in-repo usage. No breaking change applied per iterate Hard Rule 4. Source: critique-53 (commit `8c0b942`).
 - [x] **[LOW] test-utils — @ts-ignore without explanatory comment violates type-safety standards** — resolved at iterate commit `6b1f258` (2026-06-03). Added explanatory comment above the @ts-ignore at `src/test-utils/e2e/agent-vitest-reporter.engine.test.ts:25` describing why .mjs import bypasses TS module graph validation. Source: critique-48 (commit `fed2b01`).
