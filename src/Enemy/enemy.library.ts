@@ -1308,6 +1308,24 @@ export const AuditSentinel = createEnemy({
     loot: [none(50), drop('clarity-serum', 30), drop('healing-potion', 20)],
     philosophicalAlignment: { epistemology: 67, outlook: 0, scope: 0 }, // logic-mid-relational
     skills: [skill('false-dilemma'), skill('ad-hominem-strike')], // 1-2 low-tier skills
+    // Phase 130 — befriendability config: l15 timeout cell fix
+    befriendabilityConfig: {
+        hpGate: { belowPct: 0.4 },
+        requiredStances: ['mind'],
+        roundsThreshold: 3
+    },
+    // Phase 130 — friendship reward: methodical audit finds mercy in the books
+    friendshipReward: {
+        items: [
+            { ...getConsumableById('clarity-serum')! },
+            { ...getConsumableById('healing-potion')! }
+        ],
+        xpBonus: 50,
+        alignmentDelta: { outlook: +2 }, // finds optimism in orderly process
+        narrative: "The Audit Sentinel closes its ledger with a satisfied nod. 'The books balance after all,' " +
+                  "it says, methodical as ever. 'There was one entry I kept missing: the value of being heard.'",
+        flagSet: 'befriended-audit-sentinel'
+    },
     finalBlowLines: {
         brutal: 'The audit ends in your favor. The sentinel accepts the verdict.',
         quiet:  'A methodical collapse, each error catalogued to the end.',
@@ -1541,9 +1559,9 @@ export const TheMarketArbiter = createEnemy({
     philosophicalAlignment: { epistemology: 67, outlook: 0, scope: 0 },
     skills: [skill('false-dilemma'), skill('appeal-to-pity')],
     befriendabilityConfig: {
-        hpGate: { belowPct: 0.35 },
+        hpGate: { belowPct: 0.3 }, // Phase 130 — lowered from 0.35 for l15 timeout fix
         requiredStances: ['mind'],
-        roundsThreshold: 4,
+        roundsThreshold: 3, // Phase 130 — reduced from 4 for l15 timeout fix
     },
     friendshipReward: {
         items: [
@@ -1575,6 +1593,24 @@ export const RimeclawProwler = createEnemy({
     loot: [none(45), drop('body-elixir', 30), drop('berserker-brew', 15), drop('healing-potion', 10)],
     philosophicalAlignment: { epistemology: 67, outlook: -67, scope: -67 },
     skills: [skill('achilles-gambit')],
+    // Phase 130 — befriendability config: l15 timeout cell fix
+    befriendabilityConfig: {
+        hpGate: { belowPct: 0.35 },
+        requiredStances: ['body'],
+        roundsThreshold: 3
+    },
+    // Phase 130 — friendship reward: winter hunter stops the endless pursuit
+    friendshipReward: {
+        items: [
+            { ...getConsumableById('body-elixir')! },
+            { ...getConsumableById('healing-potion')! }
+        ],
+        xpBonus: 45,
+        alignmentDelta: { outlook: +3 }, // finds hope despite winter's lessons
+        narrative: "The Rimeclaw Prowler stops its patient circling. 'Winter taught me to track everything that moves,' " +
+                  "it says, breath visible in the cold air. 'I never learned when to stop hunting.'",
+        flagSet: 'befriended-rimeclaw-prowler'
+    },
     addedIn: ADDED,
     tags: ['mid-game', 'enemy'],
 });

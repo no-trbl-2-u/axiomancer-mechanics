@@ -104,9 +104,9 @@ export const FRIENDSHIP_COUNTER_MAX = 3;
 
 // Phase 125 — Effects-driven resolution thresholds
 // Combined intensity of control/debuff effects needed to force saturation yield (friendship route)
-export const EFFECTS_RESOLUTION_DEBUFF_INTENSITY_THRESHOLD = 4;
+export const EFFECTS_RESOLUTION_DEBUFF_INTENSITY_THRESHOLD = 3;
 // Minimum DoT damage per round needed to force erosion victory route
-export const EFFECTS_RESOLUTION_DOT_DAMAGE_THRESHOLD = 3;
+export const EFFECTS_RESOLUTION_DOT_DAMAGE_THRESHOLD = 2;
 // Horizon (in rounds) for the DoT-erosion victory route: DoT forces an early
 // victory only if it could finish the enemy within this many rounds. This is
 // the conservative gate that decides whether sustained status damage "clearly
@@ -123,7 +123,7 @@ export const EFFECTS_RESOLUTION_DOT_MAX_ROUNDS_TO_KILL = 10;
 // only reachable when several control effects are active OR this base is raised.
 // Symmetric (applies to whoever procs the effect), so the defeat-regression
 // guard bounds it; engagement-positive (more decisive status). Tuned by the loop.
-export const EFFECT_BASE_PROC_INTENSITY = 1;
+export const EFFECT_BASE_PROC_INTENSITY = 2; // Phase 130 — raised from 1 for l15 STRATEGIST targeting
 
 // ============================================================================
 // ENEMY — STAT BUDGET PER LEVEL
