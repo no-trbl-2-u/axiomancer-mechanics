@@ -20,9 +20,10 @@
  * Hermetic: no Math.random, no I/O. All inputs constructed inline.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 
 import { createCharacter, allocateStatPoint } from '../index';
+import { mockSequentialRng } from '../../test-utils/rng';
 import {
     equipItem,
     unequipItem,
@@ -34,6 +35,12 @@ import {
     EXPERIENCE_PER_LEVEL,
 } from '../../Game/game-mechanics.constants';
 import type { Equipment } from '../../Items/types';
+
+// ─── Test cleanup ─────────────────────────────────────────────────────────────
+
+afterEach(() => {
+    vi.restoreAllMocks();
+});
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -96,6 +103,7 @@ const armorWithPassive = (): Equipment => ({
 
 describe('createCharacter — derivation contracts', () => {
     it('computes derivedStats from baseStats via STAT_MULTIPLIERS', () => {
+        mockSequentialRng(0.5);
         const ch = buildPlayer();
         // physical → body, mental → mind, emotional → heart.
         expect(ch.derivedStats.physicalAttack).toBe(3 * STAT_MULTIPLIERS.ATTACK);
@@ -107,6 +115,7 @@ describe('createCharacter — derivation contracts', () => {
     });
 
     it('computes nonCombatStats (saves and tests) via STAT_MULTIPLIERS', () => {
+        mockSequentialRng(0.5);
         const ch = buildPlayer();
         expect(ch.nonCombatStats.physicalSave).toBe(3 * STAT_MULTIPLIERS.SAVE);
         expect(ch.nonCombatStats.physicalTest).toBe(3 * STAT_MULTIPLIERS.TEST);
@@ -115,6 +124,7 @@ describe('createCharacter — derivation contracts', () => {
     });
 
     it('sets maxHealth = sum(body, heart, mind) × HEALTH_PER_STAT and seeds health to full', () => {
+        mockSequentialRng(0.5);
         const ch = buildPlayer({ level: 3 });
         const expected = (3 + 4 + 2) * RESOURCE_MULTIPLIERS.HEALTH_PER_STAT;
         expect(ch.maxHealth).toBe(expected);
@@ -122,10 +132,12 @@ describe('createCharacter — derivation contracts', () => {
     });
 
     it('seeds xp at the floor of the current level and the next-level threshold', () => {
+        mockSequentialRng(0.5);
         const lvl1 = buildPlayer({ level: 1 });
         expect(lvl1.experience).toBe(0);
         expect(lvl1.experienceToNextLevel).toBe(1 * EXPERIENCE_PER_LEVEL);
 
+        mockSequentialRng(0.5);
         const lvl5 = buildPlayer({ level: 5 });
         expect(lvl5.experience).toBe(4 * EXPERIENCE_PER_LEVEL);
         expect(lvl5.experienceToNextLevel).toBe(5 * EXPERIENCE_PER_LEVEL);
@@ -134,6 +146,7 @@ describe('createCharacter — derivation contracts', () => {
 
 describe('createCharacter — defaults and option pass-through', () => {
     it('defaults optional fields when omitted', () => {
+        mockSequentialRng(0.5);
         const ch = buildPlayer();
         expect(ch.inventory).toEqual([]);
         expect(ch.currency).toBe(0);
@@ -147,6 +160,7 @@ describe('createCharacter — defaults and option pass-through', () => {
     });
 
     it('passes through explicit option values verbatim', () => {
+        mockSequentialRng(0.5);
         const ch = buildPlayer({
             currency: 42,
             knownSkills: ['skill-a', 'skill-b'],
@@ -170,6 +184,7 @@ describe('createCharacter — defaults and option pass-through', () => {
 
 describe('createCharacter — Spec 05 Q3 starting equipment fold-in', () => {
     it('folds a flat base-stat modifier into derivedStats at create-time', () => {
+        mockSequentialRng(0.5);
         const ch = buildPlayer({ equipment: { armor: armorFlatBody() } });
         // body 3 + 2 = 5 → physicalAttack = 5 × STAT_MULTIPLIERS.ATTACK.
         expect(ch.derivedStats.physicalAttack).toBe(5 * STAT_MULTIPLIERS.ATTACK);
@@ -183,6 +198,7 @@ describe('createCharacter — Spec 05 Q3 starting equipment fold-in', () => {
     });
 
     it('applies a passive equipment effect as a permanent ActiveEffect with sourceId = item.id', () => {
+        mockSequentialRng(0.5);
         const ch = buildPlayer({ equipment: { armor: armorWithPassive() } });
         const passive = ch.effects.find(e => e.sourceId === 'test-armor-with-passive');
         expect(passive).toBeDefined();
@@ -196,6 +212,7 @@ describe('createCharacter — Spec 05 Q3 starting equipment fold-in', () => {
 
 describe('equipItem — slot replacement', () => {
     it('replaces the existing occupant and recomputes derivedStats', () => {
+        mockSequentialRng(0.5);
         const start = buildPlayer({ equipment: { armor: armorFlatBody() } });
         // Before: body 3 + 2 flat = 5 effective → physicalAttack 5.
         expect(start.derivedStats.physicalAttack).toBe(5 * STAT_MULTIPLIERS.ATTACK);
@@ -211,6 +228,7 @@ describe('equipItem — slot replacement', () => {
     it('strips the prior occupant`s passive effects but keeps unrelated effects', () => {
         const prior = armorWithPassive();
         const replacement = armorFlatBody();
+        mockSequentialRng(0.5);
         const start = buildPlayer({ equipment: { armor: prior } });
         expect(start.effects.some(e => e.sourceId === prior.id)).toBe(true);
 
@@ -238,11 +256,13 @@ describe('equipItem — slot replacement', () => {
 
 describe('unequipItem', () => {
     it('returns the same character reference when the slot is empty', () => {
+        mockSequentialRng(0.5);
         const ch = buildPlayer();
         expect(unequipItem(ch, 'armor')).toBe(ch);
     });
 
     it('removes the slot, restores derivedStats, and clears its passive effects', () => {
+        mockSequentialRng(0.5);
         const start = buildPlayer({ equipment: { armor: armorWithPassive() } });
         expect(start.effects.some(e => e.sourceId === 'test-armor-with-passive')).toBe(true);
 
@@ -294,6 +314,7 @@ describe('getEquipmentModifiers', () => {
 
 describe('allocateStatPoint', () => {
     it('decrements the pool, raises baseStat, and re-derives derived/non-combat/maxHealth', () => {
+        mockSequentialRng(0.5);
         const before = buildPlayer({});
         // Seed available points so the allocation succeeds.
         const seeded = { ...before, availableStatPoints: 2 };
@@ -317,6 +338,7 @@ describe('allocateStatPoint', () => {
     });
 
     it('is a no-op when availableStatPoints is zero', () => {
+        mockSequentialRng(0.5);
         const before = buildPlayer({});
         expect(before.availableStatPoints).toBe(0);
         const after = allocateStatPoint(before, 'heart');
@@ -324,6 +346,7 @@ describe('allocateStatPoint', () => {
     });
 
     it('routes heart / body / mind to the matching base stat', () => {
+        mockSequentialRng(0.5);
         const seeded = { ...buildPlayer({}), availableStatPoints: 3 };
         const afterHeart = allocateStatPoint(seeded, 'heart');
         const afterBody  = allocateStatPoint(seeded, 'body');
@@ -346,6 +369,7 @@ describe('allocateStatPoint', () => {
 
 describe('createCharacter — id field (Phase 35)', () => {
     it('auto-generates a non-empty id when none is supplied', () => {
+        mockSequentialRng(0.5);
         const p = buildPlayer({});
         expect(typeof p.id).toBe('string');
         expect(p.id.length).toBeGreaterThan(0);
@@ -353,18 +377,23 @@ describe('createCharacter — id field (Phase 35)', () => {
     });
 
     it('respects an explicit id when supplied', () => {
+        mockSequentialRng(0.5);
         const p = buildPlayer({ id: 'fixture-player' });
         expect(p.id).toBe('fixture-player');
     });
 
     it('produces distinct auto-generated ids for back-to-back creations', () => {
+        mockSequentialRng(0.5);
         const a = buildPlayer({});
+        mockSequentialRng(0.6);
         const b = buildPlayer({});
+        mockSequentialRng(0.7);
         const c = buildPlayer({});
         expect(new Set([a.id, b.id, c.id]).size).toBe(3);
     });
 
     it('round-trips through structured clone unchanged', () => {
+        mockSequentialRng(0.5);
         const original = buildPlayer({ id: 'reincarnate-1' });
         const roundTripped = JSON.parse(JSON.stringify(original)) as typeof original;
         expect(roundTripped.id).toBe('reincarnate-1');
