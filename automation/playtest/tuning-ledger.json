@@ -136,7 +136,151 @@
       "significant": false,
       "confidence": "low",
       "focus": "Status effects and skill usage"
+    },
+    {
+      "timestamp": "2026-06-08T23-26-39-206Z",
+      "paramId": "effect.buff_regeneration.duration",
+      "oldValue": 6,
+      "newValue": 5,
+      "direction": "down",
+      "deltaHealth": 0,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "Really focus on early game mechanics and keeping \"elite\" and \"boss\" flights win ratio above 65% but below 75%. Call out any strategies found that heavily deviate from the player focusing on status effects, skills, and resource management"
+    },
+    {
+      "timestamp": "2026-06-08T23-26-39-206Z",
+      "paramId": "effect.tier1_heart_defend.healthPerRound",
+      "oldValue": 2,
+      "newValue": 1,
+      "direction": "down",
+      "deltaHealth": -0.001148792648935859,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "Really focus on early game mechanics and keeping \"elite\" and \"boss\" flights win ratio above 65% but below 75%. Call out any strategies found that heavily deviate from the player focusing on status effects, skills, and resource management"
+    },
+    {
+      "timestamp": "2026-06-08T23-26-39-206Z",
+      "paramId": "effect.tier1_body_attack.duration",
+      "oldValue": 3,
+      "newValue": 2,
+      "direction": "down",
+      "deltaHealth": -0.0012219663833628047,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "Really focus on early game mechanics and keeping \"elite\" and \"boss\" flights win ratio above 65% but below 75%. Call out any strategies found that heavily deviate from the player focusing on status effects, skills, and resource management"
+    },
+    {
+      "timestamp": "2026-06-08T23-26-39-206Z",
+      "paramId": "effect.debuff_confusion.rollModifier",
+      "oldValue": -5,
+      "newValue": -4,
+      "direction": "up",
+      "deltaHealth": -0.0003673355468750139,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "Really focus on early game mechanics and keeping \"elite\" and \"boss\" flights win ratio above 65% but below 75%. Call out any strategies found that heavily deviate from the player focusing on status effects, skills, and resource management"
+    },
+    {
+      "timestamp": "2026-06-08T23-26-39-206Z",
+      "paramId": "effect.debuff_fear.rollModifier",
+      "oldValue": -4,
+      "newValue": -3,
+      "direction": "up",
+      "deltaHealth": -0.00010666666666669933,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "Really focus on early game mechanics and keeping \"elite\" and \"boss\" flights win ratio above 65% but below 75%. Call out any strategies found that heavily deviate from the player focusing on status effects, skills, and resource management"
+    },
+    {
+      "timestamp": "2026-06-08T23-26-39-206Z",
+      "paramId": "effect.resolutionDebuffIntensityThreshold",
+      "oldValue": 4,
+      "newValue": 4,
+      "direction": "up",
+      "deltaHealth": 0,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "Really focus on early game mechanics and keeping \"elite\" and \"boss\" flights win ratio above 65% but below 75%. Call out any strategies found that heavily deviate from the player focusing on status effects, skills, and resource management"
+    },
+    {
+      "timestamp": "2026-06-08T23-26-39-206Z",
+      "paramId": "effect.resolutionDotMaxRoundsToKill",
+      "oldValue": 10,
+      "newValue": 5,
+      "direction": "down",
+      "deltaHealth": 0.0000021434701092393205,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "Really focus on early game mechanics and keeping \"elite\" and \"boss\" flights win ratio above 65% but below 75%. Call out any strategies found that heavily deviate from the player focusing on status effects, skills, and resource management"
+    },
+    {
+      "timestamp": "2026-06-08T23-26-39-206Z",
+      "paramId": "effect.debuff_poison.damagePerRound",
+      "oldValue": 4,
+      "newValue": 3,
+      "direction": "down",
+      "deltaHealth": 0,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "Really focus on early game mechanics and keeping \"elite\" and \"boss\" flights win ratio above 65% but below 75%. Call out any strategies found that heavily deviate from the player focusing on status effects, skills, and resource management"
+    },
+    {
+      "timestamp": "2026-06-08T23-29-07-335Z",
+      "paramId": "effect.resolutionDotMaxRoundsToKill",
+      "oldValue": 10,
+      "newValue": 15,
+      "direction": "up",
+      "deltaHealth": 0.00035031914744532155,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "Really focus on early game mechanics and keeping \"elite\" and \"boss\" flights win ratio above 65% but below 75%. Call out any strategies found that heavily deviate from the player focusing on status effects, skills, and resource management"
+    },
+    {
+      "timestamp": "2026-06-08T23-29-07-335Z",
+      "paramId": "effect.debuff_poison.damagePerRound",
+      "oldValue": 4,
+      "newValue": 5,
+      "direction": "up",
+      "deltaHealth": 0,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "Really focus on early game mechanics and keeping \"elite\" and \"boss\" flights win ratio above 65% but below 75%. Call out any strategies found that heavily deviate from the player focusing on status effects, skills, and resource management"
+    },
+    {
+      "timestamp": "2026-06-08T23-29-07-335Z",
+      "paramId": "effect.baseProcIntensity",
+      "oldValue": 1,
+      "newValue": 2,
+      "direction": "up",
+      "deltaHealth": 0.011616987832512887,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "Really focus on early game mechanics and keeping \"elite\" and \"boss\" flights win ratio above 65% but below 75%. Call out any strategies found that heavily deviate from the player focusing on status effects, skills, and resource management"
+    },
+    {
+      "timestamp": "2026-06-08T23-29-07-335Z",
+      "paramId": "effect.resolutionDotDamageThreshold",
+      "oldValue": 3,
+      "newValue": 2,
+      "direction": "down",
+      "deltaHealth": 0,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "Really focus on early game mechanics and keeping \"elite\" and \"boss\" flights win ratio above 65% but below 75%. Call out any strategies found that heavily deviate from the player focusing on status effects, skills, and resource management"
     }
   ],
-  "updatedAt": "2026-06-08T03:58:12.733Z"
+  "updatedAt": "2026-06-08T23:29:35.266Z"
 }
