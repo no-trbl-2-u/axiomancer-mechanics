@@ -173,6 +173,7 @@ automation/                # standalone walkthrough script + replay fixtures
 - [`braindump/BRAINDUMP.md`](./braindump/BRAINDUMP.md) — unorganised idea backlog
 - [`docs/testing.md`](./docs/testing.md) — **hermetic e2e testing standard (required for every implementation)**
 - [`docs/playtest.md`](./docs/playtest.md) — automated playtest module and Phase 107 fix/playthrough difficulty-tuning loop
+- [`docs/hazard-minigame.md`](./docs/hazard-minigame.md) — accepted v0 doctrine for the Mage Knight-like Hazard minigame: route choice, 4 dice, 5-card hand, card/enchantment lifecycle, `O - X` scoring, 30 action cards, and 15 hazard cards
 - [`automation/playtest/BALANCE_LEDGER.md`](./automation/playtest/BALANCE_LEDGER.md) — Phase 107 marker ledger and final sound-mechanics summary stats
 - [`specs/`](./specs) — implementation specs (`00-how-to-use-specs.md` is the template; `story/` / `world/` / `characters/` hold the Phase 22 narrative specs)
 - [`docs/`](./docs) — per-system references (combat, effects, character, world, etc.)

@@ -126,6 +126,13 @@ values:
 | `loot-cache`   | `{ kind: 'loot-cache', items, currency }` — fixed grant.                  |
 | `none`         | Consumed node (one-shot) or no pool registered.                            |
 
+Hazard events now have accepted v0 minigame doctrine in
+[`docs/hazard-minigame.md`](./hazard-minigame.md): top/bottom route choice,
+4 persistent mana dice, 5-card action hands, persistent enchantments,
+`O - X` scoring, and the first 30 action / 15 hazard card content set. The
+current `ResolvedEvent.kind === 'hazard'` payload remains the shipped simple
+effects/damage surface until that doctrine is implemented.
+
 The dispatcher reveals adjacent nodes on consumption (fog-of-war) and
 marks the active node consumed so subsequent visits no-op.
 
