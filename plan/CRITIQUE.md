@@ -36,13 +36,6 @@
 
 ## Pending
 
-### [HIGH] Utils — missing primary entry point e2e test coverage
-- pass: critique-60 (commit 1e3f6b3)
-- area: tests
-- observation: Utils module has substantial RNG-dependent logic including stat calculations and die rolling but lacks src/Utils/e2e/utils.engine.test.ts covering the main entry point
-- evidence: src/Utils/e2e/ (directory missing utils.engine.test.ts)
-- suggested_fix: Create utils.engine.test.ts covering deriveStats, randomInt, createDie functions with proper RNG stubbing
-- source: critique
 
 
 
@@ -53,6 +46,7 @@
 
 ## Done
 
+- [x] **[HIGH] Utils — missing primary entry point e2e test coverage** — resolved at commit c68a9c6 (2026-06-09). Added comprehensive src/Utils/e2e/utils.engine.test.ts with 18 test cases covering math utilities, string utilities, die rolling, and stat derivation functions. All tests hermetic with proper RNG stubbing via test-utils/rng.ts. Source: critique-60 (commit 1e3f6b3).
 - [x] **[HIGH] Character — missing RNG stubbing for deterministic tests** — resolved at commit 6abd897 (2026-06-09). Added mockSequentialRng() calls to all tests using buildPlayer() in src/Character/e2e/character.engine.test.ts, proper test cleanup with afterEach(), and distinct RNG values for ID generation tests. Source: critique-60 (commit 1e3f6b3).
 - [x] **[LOW] api — spec.md Contracts section missing recent exports** — resolved at iterate commit 3ddca75 (2026-06-08). Added enemyStatBudget (Enemy group) and getEffectsResolutionOutcome (Combat group) to spec.md Contracts table. Two exports present in src/index.ts were not documented in spec.md Contracts section for external consumers. Source: critique-58 (commit 5f68b7f).
 - [x] **[LOW] Combat — isValidCombatAction export potentially unused** — evaluated at iterate (this commit). Export intentionally retained on public barrel for external consumer validation of partial CombatAction objects. Type guard functions are conventionally provided for API consumers even when zero in-repo usage. No breaking change applied per iterate Hard Rule 4. Source: critique-53 (commit `8c0b942`).
