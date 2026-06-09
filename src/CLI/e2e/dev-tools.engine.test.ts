@@ -176,24 +176,24 @@ describe('devSetMoralMeter', () => {
 describe('devSetAlignment', () => {
     it('sets all three axes', () => {
         const store = freshStore();
-        devSetAlignment(store, { logic: 50, outlook: -30, scope: 80 });
+        devSetAlignment(store, { epistemology: 50, outlook: -30, scope: 80 });
         const a = store.getState().philosophicalAlignment;
-        expect(a.logic).toBe(50);
+        expect(a.epistemology).toBe(50);
         expect(a.outlook).toBe(-30);
         expect(a.scope).toBe(80);
     });
 
     it('clamps to [-100, 100]', () => {
         const store = freshStore();
-        devSetAlignment(store, { logic: 999 });
-        expect(store.getState().philosophicalAlignment.logic).toBe(100);
+        devSetAlignment(store, { epistemology: 999 });
+        expect(store.getState().philosophicalAlignment.epistemology).toBe(100);
     });
 
     it('preserves unset axes', () => {
         const store = freshStore();
-        devSetAlignment(store, { logic: 50 });
+        devSetAlignment(store, { epistemology: 50 });
         const a = store.getState().philosophicalAlignment;
-        expect(a.logic).toBe(50);
+        expect(a.epistemology).toBe(50);
         expect(a.outlook).toBe(0);
     });
 });

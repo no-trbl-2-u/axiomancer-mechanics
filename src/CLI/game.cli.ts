@@ -821,7 +821,17 @@ async function devTab(store: GameStoreHandle): Promise<void> {
 }
 
 async function main(): Promise<void> {
-    const flags = parseArgv(process.argv.slice(2));
+    const rawArgs = process.argv.slice(2);
+
+    // Subcommand: `npm run game -- hazard [flags]` hands off to the standalone
+    // hazard mini-game driver, which owns its own flag set.
+    if (rawArgs[0] === 'hazard') {
+        const { runHazardCli } = await import('./hazard.cli');
+        await runHazardCli(rawArgs.slice(1));
+        return;
+    }
+
+    const flags = parseArgv(rawArgs);
     if (flags.jsonEvents) setOutputMode('json');
     if (flags.scriptPath) {
         const raw = fs.readFileSync(flags.scriptPath, 'utf-8');

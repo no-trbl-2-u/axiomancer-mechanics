@@ -29,6 +29,59 @@ npm run game
 - Save/load functionality
 - Development cheats and debugging
 
+### `hazard.cli.ts` - Hazard Mini-Game Driver
+
+A standalone driver for the hazard mini-game, reachable as a **subcommand** of
+the game CLI. It reuses the same `io.ts` layer (tty / `--script` / `--stdin`,
+plus `--json-events` and `--state-log`) so a person, a replay file, or an agent
+can all drive it the same way.
+
+**Usage:**
+```bash
+npm run game -- hazard [flags]
+npm run hazard -- [flags]            # convenience alias
+```
+
+**Flags:**
+
+| Flag | Effect |
+| --- | --- |
+| `--hazard <id>` | Pick a hazard card (e.g. `H01`). Prompts from the library when omitted. |
+| `--route top\|bottom` | Choose the route. Prompts when omitted. |
+| `--auto` | A greedy heuristic plays each round (focus first, then matching progress cards, preferring affordable bottom actions). Otherwise the player picks cards by hand. |
+| `--seed <n\|str>` | Seed the shared RNG so dice rolls and the deck shuffle are reproducible. |
+| `--runs <n>` | Play N hazards back-to-back (default **5**). |
+| `--script <path>` | Scripted answers (JSON array), as in `game.cli.ts`. |
+| `--stdin` | Line-buffered stdin answers. |
+| `--json-events` | Emit `hazard:complete` / `hazard:summary` events as JSON on stdout. |
+| `--state-log <path>` | Append a per-decision JSONL trace (init, route, dice, each round, final score). |
+
+**Encounter vs. player state.** Each run creates a fresh per-encounter *hazard
+state* (the engine's `HazardMinigameState`); dice exhaustion / refresh and deck
+state persist **within** that encounter and are discarded when it ends. A
+cross-run *player ledger* (vitae / supply / items / threatened-X) persists
+across `--runs` and is only reset when the process exits.
+
+> Reward/penalty application is a CLI-layer policy (the engine's `resolveRound`
+> does not yet apply them): each `X` round applies the route `failurePenalty`
+> (plus `finalRoundFailurePenalty` on the last round), and the route `reward` is
+> granted when the encounter nets positive.
+
+**Illegal actions** (unaffordable bottom cost, unknown card, wrong phase) are
+**warned and skipped** rather than aborting the run — and logged to the state
+log as an `illegalHazardAction` record carrying the attempted action and a full
+hazard-state snapshot, so automated tuning can learn from them.
+
+**Examples:**
+```bash
+# Reproducible auto run of one hazard, machine-readable trace
+npm run hazard -- --auto --seed 42 --runs 1 --hazard H01 --route top \
+  --json-events --state-log /tmp/hazard.jsonl
+
+# Interactive manual play, prompted for hazard + route
+npm run hazard -- --runs 1
+```
+
 ### `dev-tools.ts` - Development Utilities
 
 Development utilities for testing and debugging the game engine.

@@ -177,12 +177,12 @@ export function devSetAlignment(store: Store, alignment: Partial<PhilosophicalAl
     const state = store.getState();
     const current = state.philosophicalAlignment;
     const next: PhilosophicalAlignment = {
-        logic: clamp(alignment.logic ?? current.logic, -100, 100),
+        epistemology: clamp(alignment.epistemology ?? current.epistemology, -100, 100),
         outlook: clamp(alignment.outlook ?? current.outlook, -100, 100),
         scope: clamp(alignment.scope ?? current.scope, -100, 100),
     };
     store.setState({ philosophicalAlignment: next });
-    return { ok: true, detail: `Alignment: L:${next.logic} O:${next.outlook} S:${next.scope}` };
+    return { ok: true, detail: `Alignment: E:${next.epistemology} O:${next.outlook} S:${next.scope}` };
 }
 
 export function devSpawnEnemy(store: Store, slug: EnemySlug): DevResult {

@@ -21,6 +21,7 @@
     "check": "npm run lint && npm run type-check",
     "clean": "rm -rf dist",
     "game": "ts-node src/CLI/game.cli.ts",
+    "hazard": "ts-node src/CLI/game.cli.ts hazard",
     "playtest": "ts-node src/Playtest/cli.ts",
     "tune": "ts-node src/Tuning/cli.ts",
     "agent-e2e": "node automation/agent-e2e.mjs",
