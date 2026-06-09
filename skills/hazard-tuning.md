@@ -85,6 +85,14 @@ axes in the quick-reference table below.
 - **One PR carries everything.** The findings report, the suggestions (with
   library snapshots), and any applied numeric changes all ride a single new
   branch + PR. The PR is ready for review, never draft, never auto-merged.
+- **Standing law.** Unknown is an acceptable terminal state; false certainty is
+  not. If evidence remains insufficient after the hazard CLI matrix, tests, and
+  repo inspection, report the knowns, unknowns, blocker, changed state, and next
+  evidence-bearing step instead of pretending certainty.
+- **Fail together.** Verified failure beats unverified success. Do not fabricate
+  measurements, PR state, test output, file contents, or completion. Preserve the
+  partial state, name the failed gate, and keep the report useful to the next
+  worker.
 - **Ambiguity → document and proceed.** If a focus target is unclear or a
   propose-only idea is architecturally significant, make the most reasonable
   assumption, document it under `## Open questions` in the suggestions file,

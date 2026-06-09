@@ -19,6 +19,14 @@ name: hazard-tuning
 # The auto-provisioned GITHUB_TOKEN is used to push the hazard tuning branch and
 # open the PR. The workflow itself is the trust boundary, so Claude runs with
 # permissions bypassed (the equivalent of --dangerously-skip-permissions).
+#
+# Standing law: unknown is an acceptable terminal state; false certainty is not.
+# If the run cannot verify a claim, it must say so plainly, preserve the partial
+# state, name the blocker, and identify the next evidence-bearing step.
+#
+# Fail together: verified failure beats unverified success. The worker must not
+# fabricate PR state, test output, file contents, measurements, or completion to
+# satisfy momentum.
 
 on:
   workflow_dispatch:
