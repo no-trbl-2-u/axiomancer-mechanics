@@ -363,6 +363,7 @@ not present in CLI output, JSON events, state logs, or committed tests.
 - Engine e2e: `src/World/Hazard/e2e/hazard.engine.test.ts`
 - Run targeted CLI test: `npx vitest run src/CLI/e2e/hazard.cli.engine.test.ts`
 - Run full suite: `npm test` (vitest run — includes all e2e suites)
+- CI: `.github/workflows/hazard-tuning.yml` (manual `workflow_dispatch`, optional `focus` input)
 
 **Design doctrine:**
 - CDR-0006 rules + card set: `docs/hazard-minigame.md`
