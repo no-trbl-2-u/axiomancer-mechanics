@@ -53,16 +53,6 @@
 - next: /ship-a-phase
 - notes: Implement canonical Hazard Minigame engine with safe/risk routes, dice persistence, dual-meter mechanics
 
-### [HIGH] Hazard CLI broken after Phase 134 mobile v2 alignment
-- category: regression
-- impact: 9
-- ease: 6
-- source: baseline test failures
-- observation: 3 CLI tests failing with "Cannot read properties of undefined (reading 'progressType')" at hazard.cli.ts:414
-- evidence: activeRouteForChoice(state, route).progressType accesses undefined route object
-- suggested_fix: Fix route resolution logic in hazard CLI after mobile v2 structural changes
-- score: 9 × 6 / 10 = 5.4
-
 ### [HIGH] Hazard Engine test failures after Phase 134
 - category: regression  
 - impact: 8
@@ -89,6 +79,7 @@ Found 2 HIGH findings scoring ≥3.0: CLI breakage (5.4) + engine failures (4.8)
 
 ## Done
 
+- [x] **[HIGH] Hazard CLI broken after Phase 134 mobile v2 alignment** — resolved at commit 5d9ef41 (2026-06-10). Fixed route resolution logic to use v2 structure (safeRoute/riskRoute instead of topRoute/bottomRoute); updated threshold handling for v2 combined vs dual meter systems; removed player-choice logic (not in v2); fixed selectRoute() call to use 'safe'/'risk'; updated computeFinalScore() usage for v2 API; fixed round marks generation; added stubs for v2 reward/penalty system; cleaned up lint errors from v2 migration. CLI no longer crashes with "Cannot read properties of undefined (reading 'progressType')" errors. Impact 9 × Ease 6 / 10 = 5.4.
 - [x] **[LOW] Combat — potential dead export isValidCombatAction** — resolved at commit 9f20558 (2026-06-09). Added isValidCombatAction to Combat contract in bearings.md. Function is useful type guard for external consumers validating CombatAction objects. Export retained per iterate Hard Rule 4 (non-breaking changes only). Impact 3 × Ease 8 / 10 = 2.4.
 - [x] **[HIGH] Character module RNG stubbing gap** — resolved at commit 6abd897 (2026-06-09). Added mockSequentialRng() calls to all tests using buildPlayer() in src/Character/e2e/character.engine.test.ts, proper test cleanup with afterEach(), and distinct RNG values for ID generation tests. Impact 8 × Ease 7 / 10 = 5.6.
 - [x] **[HIGH] Utils module e2e coverage gap** — resolved at commit c68a9c6 (2026-06-09). Added comprehensive src/Utils/e2e/utils.engine.test.ts with 18 test cases covering math utilities, string utilities, die rolling, and stat derivation functions. All tests hermetic with proper RNG stubbing via test-utils/rng.ts. Impact 8 × Ease 7 / 10 = 5.6.
