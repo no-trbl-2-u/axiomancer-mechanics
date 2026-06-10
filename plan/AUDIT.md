@@ -46,7 +46,12 @@
 
 ## Pending
 
-(No pending findings)
+### [feature] GH#154 — Extract Hazard Minigame mechanics from mobile
+- category: feature
+- impact: 8
+- ease: 4
+- next: /ship-a-phase
+- notes: Implement canonical Hazard Minigame engine with safe/risk routes, dice persistence, dual-meter mechanics
 
 <!-- Audit pass (2026-06-10): Comprehensive categories Z-H review:
 - Z. External critique: CRITIQUE.md all findings resolved, 0 pending
