@@ -37,13 +37,14 @@
 
 ## Pending
 
-### [LOW] Combat — potential dead export isValidCombatAction
+### [x] [LOW] Combat — potential dead export isValidCombatAction
 - pass: critique-61 (commit 9b8c4c4)
 - area: dead-code
 - observation: `isValidCombatAction` is exported from the public barrel but has zero in-repo callers and is not documented in spec.md Contracts section
 - evidence: src/index.ts:64 exports it; grep shows no usage outside of src/Combat/index.ts definition
 - suggested_fix: verify external usage and either document in spec or remove from barrel export
 - source: critique
+- **RESOLVED** at commit 9f20558 (2026-06-09): Added isValidCombatAction to Combat contract in bearings.md. Function is useful type guard for external consumers.
 
 
 

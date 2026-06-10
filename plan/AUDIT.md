@@ -46,21 +46,13 @@
 
 ## Pending
 
-**[LOW] Combat — potential dead export isValidCombatAction**
-- pass: iterate-audit (commit 3fd2773)
-- category: dead-code
-- observation: `isValidCombatAction` is exported from the public barrel but has zero in-repo callers and is not documented in spec.md Contracts section
-- evidence: src/index.ts exports it; grep shows no usage outside of src/Combat/index.ts definition
-- impact: 3 (API noise, no functional impact)
-- ease: 8 (simple verification and removal)
-- score: 2.4
-- suggested_fix: verify external usage and either document in spec or remove from barrel export
-- source: critique
+(No pending findings)
 
 ---
 
 ## Done
 
+- [x] **[LOW] Combat — potential dead export isValidCombatAction** — resolved at commit 9f20558 (2026-06-09). Added isValidCombatAction to Combat contract in bearings.md. Function is useful type guard for external consumers validating CombatAction objects. Export retained per iterate Hard Rule 4 (non-breaking changes only). Impact 3 × Ease 8 / 10 = 2.4.
 - [x] **[HIGH] Character module RNG stubbing gap** — resolved at commit 6abd897 (2026-06-09). Added mockSequentialRng() calls to all tests using buildPlayer() in src/Character/e2e/character.engine.test.ts, proper test cleanup with afterEach(), and distinct RNG values for ID generation tests. Impact 8 × Ease 7 / 10 = 5.6.
 - [x] **[HIGH] Utils module e2e coverage gap** — resolved at commit c68a9c6 (2026-06-09). Added comprehensive src/Utils/e2e/utils.engine.test.ts with 18 test cases covering math utilities, string utilities, die rolling, and stat derivation functions. All tests hermetic with proper RNG stubbing via test-utils/rng.ts. Impact 8 × Ease 7 / 10 = 5.6.
 
