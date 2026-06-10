@@ -53,23 +53,17 @@
 - next: /ship-a-phase
 - notes: Implement canonical Hazard Minigame engine with safe/risk routes, dice persistence, dual-meter mechanics
 
-### [docs] Missing docs/test-utils.md file
-- category: docs
-- impact: 4
-- ease: 8
-- score: 3.2
-- notes: test-utils module is exported in public barrel but lacks documentation for external consumers
-<!-- Audit pass (2026-06-10 at commit b5dccf3): Comprehensive categories Z-H review - 1 new finding added:
+<!-- Audit pass (2026-06-10 at commit b5dccf3): Comprehensive categories Z-H review - 0 new findings, previously misdiagnosed finding corrected:
 - Z. External critique: CRITIQUE.md all findings resolved, 0 pending
 - A. Test-quality gaps: All modules have hermetic *.engine.test.ts files; proper RNG stubbing via test-utils/rng.ts; baseline tests green (1359 passing, 2 skipped); CLI I/O tests use legitimate filesystem access for CLI functionality
 - B. Spec-gap items: No open questions in specs/, AUDIT.md pending reviewed; Knowledge-Gaps.md shows Q28 (multiple endings) genuinely deferred as endgame question
 - C. Type-safety: Clean (zero @ts-ignore except justified .mjs import case in test-utils with explanatory comment, zero `as any` casts)
 - D. Dead code: No large commented-out blocks, no unused exports identified
-- E. Documentation gaps: Missing docs/test-utils.md file (score 3.2) - test-utils is exported in public barrel but lacks external consumer documentation
+- E. Documentation gaps: test-utils initially misdiagnosed as missing docs/test-utils.md, but test-utils is excluded from build (tsconfig.json line 46) and not part of public API - no documentation needed
 - F. ESLint fix: Phase 13 shipped, `npm run lint` passes clean with zero warnings
 - G. Dependency updates: Only major bumps available (typescript 5→6, @types/node 22→25, inquirer 9→12, globals 16→17) - all skipped per iterate rules for deliberate phases
 - H. Commit-hygiene: git status clean, no uncommitted drift
-Found 1 actionable finding scoring ≥3.0 threshold alongside 1 existing feature item (GH#154). Top pending: docs/test-utils.md gap (3.2). -->
+Found 0 actionable findings scoring ≥3.0 threshold. Only existing feature item (GH#154) remains pending. -->
 <!-- Audit pass (2026-06-10 at commit 63258f8): Comprehensive categories Z-H review - all findings resolved. Previous pass found 2 HIGH findings from Phase 134 hazard v2 alignment issues, both now resolved:
 - Z. External critique: CRITIQUE.md all findings resolved, 0 pending
 - A. Test-quality gaps: All modules have hermetic *.engine.test.ts files; proper RNG stubbing via test-utils/rng.ts; baseline tests green (1359 passing, 2 skipped); CLI I/O tests use legitimate filesystem access for CLI functionality
