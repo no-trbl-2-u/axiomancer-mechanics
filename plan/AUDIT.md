@@ -48,6 +48,18 @@
 
 (No pending findings)
 
+<!-- Audit pass (2026-06-10): Comprehensive categories Z-H review:
+- Z. External critique: CRITIQUE.md all findings resolved, 0 pending
+- A. Test-quality gaps: All modules have *.engine.test.ts files, test-utils/rng.ts properly stubbed throughout
+- B. Spec-gap items: No open questions in specs/, AUDIT.md pending = 0
+- C. Type-safety: Clean (zero @ts-ignore except expected .mjs import case in test-utils, zero `as any`)
+- D. Dead code: No large commented-out blocks, no unused exports beyond legitimate TODOs in hazard system
+- E. Documentation gaps: docs/ comprehensive for all modules, no API drift
+- F. ESLint fix: Phase 13 shipped, lint clean
+- G. Dependency updates: Only major bumps available (globals 16→17, inquirer 9→12, typescript 5→6, @types/node 22→25) - all skipped per iterate rules
+- H. Commit-hygiene: git status clean
+Zero findings scoring ≥3.0 found. Triggering failure mode 3 (bold posture) → dispatch to /expand. -->
+
 ---
 
 ## Done
