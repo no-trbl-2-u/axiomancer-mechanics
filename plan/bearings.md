@@ -73,7 +73,7 @@ Enemy:      createEnemy, Enemy, EnemyLogic, decideEnemyAction, randomLogic,
 Combat:     determineAdvantage, getAttackStat, getDefenseStat, getSaveStat,
             getResistStat (deprecated), applyDamage, heal, tickAllEffects,
             applyRegen, getActiveRollModifier, getThornsReflect,
-            resolveEffectApplication, Stance, Action, CombatState, Combatant
+            resolveEffectApplication, isValidCombatAction, Stance, Action, CombatState, Combatant
             (+ Phase 80 always-land: Tier 2 debuff + Tier 3 always land;
             target-resist roll removed; only Tier 2 buff caster fumble/crit
             survives. SkillEvent `effect-resisted` renamed `buff-fumbled`,
