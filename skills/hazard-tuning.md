@@ -105,12 +105,12 @@ measures reported evidence against them; deviations are candidates for tuning.
 
 | Axis | Target |
 |---|---|
-| Top route clear rate (sessions 1–2) | 70–80% |
-| Bottom route clear rate (sessions 1–2) | 40–60% |
+| Safe route (top) clear rate (sessions 1–2) | 70–80% |
+| Risk route (bottom) clear rate (sessions 1–2) | 40–60% |
 | Final round mana crisis rate | >50% of runs enter the final round with ≤1 available die |
 | Flat round rate | <2 per session |
-| X-interaction card appearance rate against 2+ X dice | >40% |
-| Top-route final round completable without mana | Always (top-action progress floor ≥ threshold) |
+| X-interaction card appearance rate against 2+ X dice | >40% (note: expected X dice per roll is now ~1.3 with 2 X faces) |
+| Safe-route final round completable without mana | Always (top-action progress floor ≥ threshold) |
 
 Threshold calibration baseline (from CDR-0006 §Balance Notes):
 
@@ -118,10 +118,14 @@ Threshold calibration baseline (from CDR-0006 §Balance Notes):
 - **1 mana-enabled bottom action:** ~10–12 per round.
 - **2 bottom actions:** ~14–16 per round.
 
-This means top-route thresholds of 5–7 clear without mana (correct), and
-bottom-route thresholds of 8–11 require at least one available die (correct).
+This means safe-route thresholds of 5–7 clear without mana (correct), and
+risk-route thresholds of 8–11 per meter require at least one available die (correct).
 Final-round +2–+3 uplift requires at least one die entering the final round
 (the intended cliff).
+
+Die X frequency is now 2/6 per die (expected ~1.3 X per opening roll). Factor this into
+mana availability estimates. Safe route final-round completability without mana is more
+critical than before, since available dice are scarcer at baseline.
 
 ## 5. The procedure
 
@@ -250,9 +254,11 @@ doctrine and the shipped engine. Do not tune numbers around them — flag them.
 | Gap | Shipped state | CDR-0006 doctrine |
 |---|---|---|
 | Per-round failure penalties | Not yet applied (`penaltiesApplied: []` TODO in `hazard.engine.ts:221`) | Applied per round on X resolution |
-| Dice refresh between rounds | `refreshDiceBetweenRounds` resets all spent dice to available | No auto-refresh; only enchantments can refresh dice |
-| Dual-type round resolution | Not verified against full dual-type check | Both types must be met to score O |
+| Dice refresh between rounds (spent) | `refreshDiceBetweenRounds` resets all spent dice to available | Spent dice do not auto-refresh; only enchantments can refresh spent dice |
+| Exhausted dice reset | Not verified | Exhausted dice reset to available between rounds automatically (not spent dice) |
+| Dual-type round resolution | Not verified against full dual-type check | Risk route: both types must be met to score O (BOTH REQUIRED); safe route: single threshold |
 | Persistent map benefits | Types defined but not wired to world state | H08, H12, H15 emit map events |
+| Die color set | Engine may reference green/yellow | Accepted die colors: red, blue, purple, gold, x (×2). No green or yellow. |
 
 If a gap materially affects a tuning axis (e.g., the penalty gap means VITAE
 drain cannot be fully measured), record it in the report with the blocking axis
@@ -400,6 +406,8 @@ not present in CLI output, JSON events, state logs, or committed tests.
 | Gap | File | Marker |
 |---|---|---|
 | Per-round failure penalties not applied | `hazard.engine.ts:221` | `TODO: Apply penalties for failed rounds` |
-| Dice refresh between rounds (resets all spent) | `hazard.engine.ts` `advanceToNextRound` | Contradicts CDR-0006 §Mana Dice |
-| Dual-type round resolution incomplete | `hazard.engine.ts` `resolveRound` | Single-type check only |
+| Dice refresh between rounds (resets all spent) | `hazard.engine.ts` `advanceToNextRound` | Contradicts CDR-0006 §Mana Dice: spent dice should not auto-reset |
+| Exhausted dice reset between rounds | `hazard.engine.ts` `processBetweenRounds` | CDR-0006: exhausted dice should reset to available; spent dice should not |
+| Dual-type (risk route) round resolution incomplete | `hazard.engine.ts` `resolveRound` | Single-type check only; risk route requires both types to be met |
+| Die color set in engine | `hazard.types.ts`, `hazard.dice.ts` | Engine may use old 6-color set; accepted colors are red/blue/purple/gold/x only |
 | Persistent map benefits not wired | `hazard.types.ts` | `⚑ future phase` comments |

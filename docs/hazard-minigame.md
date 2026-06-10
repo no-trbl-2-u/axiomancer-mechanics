@@ -7,7 +7,7 @@
 > - [`docs/hazard-minigame-tdd.md`](./hazard-minigame-tdd.md) — Technical architecture, types, state machine, and integration points
 > - [`docs/hazard-minigame-bdd.md`](./hazard-minigame-bdd.md) — Behavior-driven test scenarios (maps to hermetic e2e cases)
 
-Date: 2026-06-09
+Date: 2026-06-10
 Status: Accepted v0 doctrine
 Owner: T / SomberSoft
 
@@ -32,7 +32,7 @@ The system must not become simple card-number comparison. The player should solv
 2. The game draws/reveals a **Hazard card**.
 3. The player draws **5 action cards** from their personal deck.
 4. The player sees their hand and chooses **top route** or **bottom route**.
-5. **4 colored mana dice** are rolled and persist as board objects for the entire hazard.
+5. **4 colored mana dice** are rolled. Safe route dice persist as board objects; Risk route dice re-cast between rounds.
 6. The player uses action card effects and available mana to meet the round's hazard requirement.
 7. Each round resolves as:
    - `O` = completed / success
@@ -52,7 +52,7 @@ successes O - failures X
 
 The clickable prototype should model the intended player pass, not merely the engine state labels. A normal hazard round plays as follows:
 
-1. The player enters a hazard from the map and sees the hazard card, scenario, round count, and the safe/top and risk/bottom routes. The exact route layout is still a UX problem, but both routes must reveal their thresholds, reward promise, and consequence risk before commitment.
+1. The player enters a hazard from the map and sees the hazard card, scenario, round count, and the safe/top and risk/bottom routes. Route layout is a Mobile UX concern, but mechanics data must support **stacked full-width route presentation**: each route card is presented at full width, one above the other, showing at minimum the progress type(s), per-round threshold(s), reward, and failure penalty before commitment. Route data must carry enough information to populate this layout without additional lookups.
 2. The player's 5-card hand appears at the bottom of the screen as compact card stock. It must fit without horizontal scrolling; slight overlap/stacking is acceptable. Card stock may carry a subtle color tint based on the single mana color its bottom action can consume.
 3. Tapping a compact hand card opens the readable card view with full text and keyword explanations.
 4. The player drags candidate cards into a play area that can hold up to 6 cards. Cards shrink when placed there. Tapping a staged card returns it to the hand.
@@ -76,10 +76,10 @@ Reward and consequence rules for the prototype:
 
 A hazard card represents a dangerous situation: traps, starvation, cliff edges, dangerous terrain, corruption, collapsing structures, hostile weather, and similar crises.
 
-Each hazard card has a **top** and **bottom** route:
+Each hazard card has a **safe route** and a **risk route**:
 
-- **Top route:** easier to clear, safer, lower reward.
-- **Bottom route:** harder to clear, better reward, greater temptation/risk.
+- **Safe route (top):** easier to clear, single-meter requirement, lower reward.
+- **Risk route (bottom):** harder to clear, dual "BOTH REQUIRED" meters, better reward, greater temptation/risk.
 
 **Top and bottom routes use different progress types** — the routes are not the same goal at different difficulty numbers. They represent genuinely different approaches to the crisis. A hazard that forces both routes to measure the same thing is a design failure.
 
@@ -109,39 +109,66 @@ V0 uses exactly **four** progress types. No new types until these prove readable
 
 **Focus is not a progress type.** Focus is a card mechanic that buffs the progress value of other cards — see Action Cards.
 
-Dual-requirement rounds (e.g., clear 5 Stability + 4 Force) are valid, especially on bottom routes and final rounds. They are interesting precisely because the player may not have mana in both colors.
+**Safe routes use a single meter. Risk routes always use dual meters (BOTH REQUIRED).** The player must satisfy both progress type thresholds in the same round to score O on a Risk route; meeting only one threshold is a round failure. Cards must clearly contribute to one meter or the other unless explicitly designated dual-contribution or utility. Single-meter play on a Risk route is a design error, not a design option.
+
+Dual requirements are interesting precisely because the player may not have mana in both colors.
 
 ## Mana Dice
 
-Each hazard uses **4 mana dice**, rolled once at the start of the hazard (after route choice, before round 1). They persist as board objects for the entire hazard.
+Each hazard uses **4 mana dice**, rolled after route choice and before round 1. On Safe, they persist as board objects for the hazard path. On Risk, all four dice re-cast between rounds.
 
-Die faces:
+Die faces (6 faces; two are wild X):
 
 - Red
-- Green
 - Blue
-- Yellow
 - Purple
+- Gold
+- X *(wild/blocked — appears twice on each die)*
 - X
 
 Rules:
 
-- Dice do **not** automatically reroll or refresh between rounds.
+- Safe route dice are persistent board objects: they do **not** automatically reroll or refresh between rounds unless card text or enchantments say so.
+- Risk route dice are re-cast/rerolled between rounds as a compensating mechanic for dual "BOTH REQUIRED" meters. Spent and exhausted dice from a resolved Risk round do not persist into the next advanced round.
 - Mana does **not** freely carry over by default.
 - **X is blocked mana — it cannot be spent or used unless a card specifically enables interaction with X dice.**
-- Cards and enchantments may explicitly reroll, refresh, preserve, exhaust, discard, lock, or transform dice.
-- Specific card text is permitted to override the default dice law.
+- **Exhausted state never carries over after a valid resolve.** On Safe, exhausted dice return to `available` during between-rounds processing. On Risk, the entire four-die set is re-cast.
+- **Spent dice persist only on Safe** unless an enchantment or card effect refreshes them. On Risk, the re-cast replaces the previous round's spent dice.
+- Cards and enchantments may explicitly reroll, refresh, preserve, exhaust, discard, lock, or transform dice, but they cannot revoke the Risk route's between-round re-cast unless a future accepted rule says so.
+- Specific card text is permitted to override the Safe-route default dice law.
 
-This makes dice into board objects with persistent state, not just per-round random numbers.
+This makes dice into route-sensitive board objects: persistent on Safe, freshly re-cast between Risk rounds.
 
 A die should be modeled with both color and state:
 
 ```ts
 type HazardManaDie = {
-  color: 'red' | 'green' | 'blue' | 'yellow' | 'purple' | 'x';
+  color: 'red' | 'blue' | 'purple' | 'gold' | 'x';
   state: 'available' | 'spent' | 'exhausted' | 'discarded' | 'locked' | 'preserved';
 };
+// Face distribution: red 1/6, blue 1/6, purple 1/6, gold 1/6, x 2/6.
+// Safe: exhausted resets to available at between-rounds; spent does not auto-reset.
+// Risk: the four-die set is re-cast between rounds; prior spent/exhausted state is discarded.
 ```
+
+## Card Color System
+
+Cards carry a primary color identity — **Red, Blue, Purple, or Gold** — that determines what mana they consume and signals their tactical role.
+
+| Color | Mana | Progress bias | Notes |
+|---|---|---|---|
+| **Red** | Red | Commonly high in the first required meter (Type A); sometimes low in the second (Type B) | Force/physical archetypes |
+| **Blue** | Blue | Commonly high in the second required meter (Type B); sometimes low in the first (Type A) | Escape/finesse archetypes |
+| **Purple** | Purple | Mid-range in either meter; one Purple card may favor Type A, another may favor Type B | Situational, combo, X-interaction |
+| **Gold** | Gold | Most powerful effects; can only be powered by Gold mana | Rare; enchantments, game-altering effects |
+
+**Gold cards are the premium tier.** Gold appears once per 6 die faces (1/6 per die), making Gold mana genuinely scarce. Gold cards should feel like a payoff moment, not routine spending.
+
+All four colors may include utility cards: draw, convert dice, reroll/refresh, exhaust, etc. Color identity is a signal, not a content restriction.
+
+The "Type A / Type B" terminology refers to the two progress types on whichever Risk route the player has chosen. Red cards tend to serve one; Blue cards tend to serve the other. Purple cards sit between. The exact Stability/Escape/Supply/Force mapping depends on the specific hazard card.
+
+> **Green and Yellow have been removed from the system.** Any card text or implementation referencing `spend 1 green`, `spend 1 yellow`, `create 1 yellow`, or `change 1 die to green` is outdated and must be remapped. See the Card Color Migration note at the end of the Action Cards section.
 
 ## Action Cards
 
@@ -248,7 +275,7 @@ By round two, the mana economy shows its shape. An enchantment played in round o
 
 Round three is debt collection. Everything the player conserved or spent carelessly in the first two rounds comes to judgment.
 
-The top-bottom route choice functions as the session's first commitment. The player who chooses the bottom route and fails has no one to blame but their own ambition.
+The Safe/Risk route choice functions as the session's first commitment. The player who chooses the Risk route and fails has no one to blame but their own ambition.
 
 **Where it breaks:**
 
@@ -258,7 +285,7 @@ The top-bottom route choice functions as the session's first commitment. The pla
 
 **Homogeneous hands.** A player drawing four direct progress cards plays the same round every time: add numbers, check threshold. Enchantment and X-interaction cards break this flatness, but they must show up. Watch deck ratios. If flat rounds appear twice in a session, the direct progress share is too high.
 
-**Bottom route as tax, not temptation.** If the reward delta between top and bottom routes is not genuinely meaningful — not just larger numbers but things the player *wants* — the choice collapses into a difficulty toggle. Rewards on the bottom route must be worth the risk, or the design is lying to the player.
+**Risk route as tax, not temptation.** If the reward delta between Safe and Risk routes is not genuinely meaningful — not just larger numbers but things the player *wants* — the choice collapses into a difficulty toggle. Rewards on the Risk route must be worth the dual-meter pressure, or the design is lying to the player.
 
 ## Comparable Systems
 
@@ -319,8 +346,10 @@ Recommended v0 content set:
 
 The following questions were raised during v0 design and resolved.
 
-**Q1 — Dice lifecycle.**
-Roll all four dice once, after route choice and before round 1. They persist as board objects for the entire hazard. No automatic refresh between rounds. By round three, a player without refresh effects may have zero available mana. Cards and enchantments are the only mechanisms for extending, transforming, or recovering that luck.
+**Q1 — Dice lifecycle.** *(Updated 2026-06-10.)*
+Safe route rolls all four dice once, after route choice and before round 1. They persist as board objects for the Safe hazard path unless cards or enchantments explicitly refresh, preserve, reroll, or transform them.
+
+Risk route re-casts all four dice between rounds. This is an accepted compensating mechanic for the dual "BOTH REQUIRED" meters. A spent or exhausted die from a resolved Risk round does not carry into the next advanced round.
 
 **Q2 — Action card lifecycle.**
 Players draw from their personal deck — the 30 cards represent the full content pool, not a flat per-hazard deck. Shuffle the personal deck at hazard start. Draw 5 each round. Played cards go to the hazard discard. If the deck empties, shuffle the discard and continue. ENCHANT cards occupy the enchantment zone and are not reshuffled. Draw and filtering effects are meaningful because the deck is finite and has history.
@@ -328,8 +357,8 @@ Players draw from their personal deck — the 30 cards represent the full conten
 **Q3 — Progress types in v0.**
 Four types only: **Stability, Escape, Supply, Force.** Focus is not a hazard progress type — it is a card buff mechanic that amplifies other progress cards. Dual-type requirements (e.g., 5 Stability + 4 Force in one round) are permitted on bottom routes and final rounds.
 
-**Q4 — Bottom route timing.**
-The player chooses top or bottom after drawing their opening hand but before the dice are rolled. They know their cards; they do not yet know their mana. This preserves the identity commitment of the choice while giving the player one layer of tactical information.
+**Q4 — Risk route timing.**
+The player chooses Safe or Risk route after drawing their opening hand but before the dice are rolled. They know their cards; they do not yet know their mana. This preserves the identity commitment of the choice while giving the player one layer of tactical information.
 
 ## Test Protocol
 
@@ -601,13 +630,41 @@ Rarity: R | Class: Persistent Enchantment
 
 ---
 
+### Card Color Migration Required
+
+The 30 cards above were authored under the old 6-color system (Red, Green, Blue, Yellow, Purple, X). The pool must be remapped to the 4-color system (Red, Blue, Purple, Gold) before implementation. Green and Yellow no longer exist.
+
+Cards whose mana costs or die-creation text must be remapped:
+
+| Card | Old color reference | Migration decision required |
+|---|---|---|
+| #3 Iron Rations | `spend 1 yellow` | Remap to Gold or Purple |
+| #4 Scout the Way | `spend 1 green` | Remap to Blue |
+| #7 Redirect | `Change 1 die to red` (top stays; bottom `spend 1 any` stays) | No green/yellow present — no change |
+| #8 Reflow | `Change 1 die to blue` stays; `spend 1 blue` stays | Update "any single other color" list to new 4 colors |
+| #9 Temper | `Change 1 die to green`; `spend 1 green` | Remap both to Blue |
+| #10 Find the Vein | `Create 1 yellow die`; `spend 1 yellow` | Remap to Gold |
+| #11 Draw on Darkness | `Create 1 die of any color (not X)` | Update parenthetical to new color list |
+| #15 Rapid Assessment | `spend 1 green` | Remap to Blue |
+| #19 Brace | `spend 1 yellow` | Remap to Gold or Purple |
+| #20 Retreat to Safety | `spend 1 yellow` | Remap to Gold or Purple |
+| #21 Hold the Line | `spend 1 yellow` | Remap to Gold or Purple |
+| #29 Iron Discipline | `spend 1 yellow` (Rare ENCHANT) | Remap to Gold |
+
+Remapping decisions must be approved by T before they are applied to implementation files. Do not guess; flag the card and await direction.
+
+---
+
 ## Hazard Cards (15)
 
 **Route selection:** chosen after the player draws their opening hand, before dice are rolled.
 **Final round:** listed separately per card; always harder.
 **Progress types:** Stability, Escape, Supply, Force.
-**Dual requirements** (e.g., 5 Escape + 4 Force) must both be met in the same round to resolve O.
-**Top and bottom routes use different progress types.**
+**Safe route (top):** single-meter requirement per round.
+**Risk route (bottom):** dual "BOTH REQUIRED" meters; both progress type thresholds must be met in the same round to resolve O.
+**Routes use different progress types.**
+
+> **Migration note:** Several existing hazard cards (H01, H02, H04, H06, H07, H12) have single-type bottom routes. These must be updated to dual-meter Risk routes before the Risk route rule is fully enforced. Treat them as draft content requiring redesign; do not use them as reference for what a valid Risk route looks like.
 
 ---
 
@@ -795,9 +852,13 @@ Reward: clear the narrows permanently (⚑ persistent map benefit: hazard remove
 
 ### Dice Economy
 
-Starting roll of 4 dice: expected ~0.7 X dice (1-in-6 per die). Expected colored available dice: ~3.3.
+Starting roll of 4 dice: expected ~1.3 X dice (2-in-6 per die). Expected colored available dice: ~2.7.
 
-Without any refresh effects, and assuming 2 dice spent per round, the player enters round 3 with zero available mana. This is the intended cliff — but it means The Watcher's Lamp and Iron Discipline are not convenience cards; they are survival cards. If neither appears, the top route must remain completable on top-action progress alone (no mana required). Verify this in Session 1.
+With two X faces per die, X frequency is roughly double the old 6-color system (was ~0.7 expected X; now ~1.3). X-interaction cards and between-round dice recast effects are more important than ever. A starting roll with 2 X dice is now a realistic baseline expectation, not an edge case.
+
+Without any refresh effects, and assuming 2 dice spent per round, the player enters round 3 with fewer than 1 available die on average. This is the intended cliff — but it means The Watcher's Lamp and Iron Discipline are not convenience cards; they are survival cards. If neither appears, the Safe route must remain completable on top-action progress alone (no mana required). Verify this in Session 1.
+
+On the Risk route, the dual-meter requirement means between-round dice re-cast is expected and automatic. Hazard card authors and card designers must account for this: Risk routes should still be difficult within a round, but they should not punish the player with cross-round spent/exhausted dice attrition.
 
 ### Threshold Calibration
 
@@ -818,7 +879,9 @@ This validates the threshold targets:
 
 ### X-Die Interaction Rate
 
-Three X-interaction cards in 30: ~43% probability of at least one appearing in a 5-card draw. Against 2+ X dice showing, this rate may feel too low to deliver the recovery fantasy. Two options:
+Three X-interaction cards in 30: ~43% probability of at least one appearing in a 5-card draw. With the new die distribution (2 X faces, expected 1.3 X dice per opening roll), a hand without an X-interaction card against 2 or more X dice is now a common failure mode, not an edge case. The rate of 43% is borderline; watch this closely in Session 4.
+
+Against 2+ X dice showing, this rate may feel too low to deliver the recovery fantasy. Two options:
 
 **(a)** Increase X-interaction cards from 3 to 5 (cut 2 direct progress cards from 6 to 4).
 

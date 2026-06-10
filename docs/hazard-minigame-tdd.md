@@ -31,14 +31,17 @@ src/World/Hazard/
 // Progress types — exactly four in v0
 type HazardProgressType = 'stability' | 'escape' | 'supply' | 'force';
 
-// Mana die face — X is blocked by default
-type HazardDieColor = 'red' | 'green' | 'blue' | 'yellow' | 'purple' | 'x';
+// Mana die face — X is blocked by default. Die has two X faces; X appears 2/6 ≈ 33% per die.
+// No Green or Yellow. Four named colors: Red, Blue, Purple, Gold.
+type HazardDieColor = 'red' | 'blue' | 'purple' | 'gold' | 'x';
 
 // Die state transitions:
 //   available → spent (card bottom action cost)
 //   available → exhausted (card effect: exhaust without spending)
 //   available → preserved (enchantment: carries to next round as available)
-//   spent/exhausted → available (enchantment: refresh between rounds)
+//   Safe route: spent → available only through explicit card/enchantment refresh
+//   Safe route: exhausted → available during between-rounds processing
+//   Risk route: all four dice are re-cast between rounds; prior spent/exhausted state is discarded
 //   available → locked (card effect: cannot be changed or spent this round)
 type HazardDieState =
   | 'available'
@@ -87,7 +90,7 @@ type HazardActionCard = {
   isEnchant: boolean;                          // if true, moves to enchantment zone on bottom play
 };
 
-// Mana cost entry
+// Mana cost entry — valid colors: 'red' | 'blue' | 'purple' | 'gold' | 'any'. No 'green' or 'yellow'.
 type HazardManaCost = {
   color: HazardDieColor | 'any';  // 'any' = spend any available non-X die
   count: number;
@@ -155,7 +158,7 @@ type HazardMinigameState = {
   hazardCard: HazardCard;
   chosenRoute: 'top' | 'bottom' | null;
   playerChoiceProgressType: HazardProgressType | null; // H07 player-choice mechanic
-  mana: HazardManaDie[];              // 4 dice; persist entire hazard
+  mana: HazardManaDie[];              // 4 dice; Safe persists, Risk re-casts between rounds
   deck: string[];                     // card IDs in draw order
   hand: string[];                     // current hand (up to 5)
   discard: string[];                  // played / discarded cards
@@ -207,7 +210,7 @@ type HazardRoundResult = {
     │ player picks top / bottom
     ▼
 [dice-roll]
-    │ roll 4 dice (fixed for entire hazard)
+    │ roll 4 dice (Safe persists; Risk re-casts between rounds)
     ▼
 [round-play]  ◄──────────────────────────────────────────────────────┐
     │ player plays cards, spends mana                                │
@@ -244,11 +247,12 @@ type HazardRoundResult = {
 - Advance `phase` to `'route-select'`.
 
 ### `selectRoute(state, route, playerChoiceType?): HazardMinigameState`
-- Set `chosenRoute`, advance `phase` to `'dice-roll'`.
+- Set `chosenRoute` ('top' = safe route; 'bottom' = risk route), advance `phase` to `'dice-roll'`.
 - For H07 player-choice bottom: set `playerChoiceProgressType`.
 
 ### `rollDice(state, rng): HazardMinigameState`
 - Roll 4 dice using `rng`. Create `HazardManaDie[]`.
+- Die face distribution: Red (1/6), Blue (1/6), Purple (1/6), Gold (1/6), X (2/6). No Green or Yellow.
 - Advance `phase` to `'round-play'`.
 - Initialize `currentRound` with `round: 1`, zeroed progress, empty `cardsPlayed`.
 
@@ -262,6 +266,8 @@ type HazardRoundResult = {
 
 ### `resolveRound(state): HazardMinigameState`
 - Compare `currentRound.progress` against `getThresholdForRound(state)`.
+- For risk route (bottom): both progress type thresholds must be met. Meeting only one is a round failure.
+- For safe route (top): single threshold must be met.
 - Determine `mark: 'O' | 'X'`.
 - If `X`: apply per-round `failurePenalty` from the chosen route.
 - If final round and `X`: additionally apply `finalRoundFailurePenalty`.
@@ -272,8 +278,8 @@ type HazardRoundResult = {
 ### `processBetweenRounds(state): HazardMinigameState`
 - Fire each ENCHANT card's between-rounds effect on `state.mana`.
 - Expire temporary dice (set `state: 'discarded'`).
-- Preserved dice: carry `state: 'available'` into next round.
-- All `'spent'` and `'exhausted'` dice remain as-is (no auto-refresh).
+- Safe route: preserved dice carry `state: 'available'` into next round; `'exhausted'` dice reset to `'available'`; `'spent'` dice remain spent unless card/enchantment text refreshes them.
+- Risk route: re-cast all four base dice before the next round; prior spent/exhausted states do not persist. Temporary dice still expire unless explicitly preserved by accepted card text.
 - Draw 5 new cards into `state.hand`.
 - Initialize new `HazardRoundState`.
 - Advance `phase` to `'round-play'`.
@@ -317,6 +323,7 @@ function canAffordCost(
 ): boolean
 // Returns true if enough available non-X dice exist to satisfy each cost entry.
 // 'any' costs match any available die except X.
+// Valid specific colors: 'red', 'blue', 'purple', 'gold'. 'green' and 'yellow' are not valid costs.
 // Does not mutate dice.
 
 function spendMana(

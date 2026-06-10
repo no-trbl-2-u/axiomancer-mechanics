@@ -43,7 +43,7 @@ Currently, hazard events in Axiomancer are passive damage popups. The player has
 
 5. **As a player,** I want to feel like I "built something" within a hazard — setting up tools in round 1 to cash them in at round 3.
 
-6. **As a player,** I want the bottom route to genuinely tempt me with a meaningful reward, not just be a harder version of the top route.
+6. **As a player,** I want the risk route to genuinely tempt me with a meaningful reward — not just be a harder dual-meter version of the safe route — so the choice has real stakes.
 
 7. **As a player,** I want to feel that a bad outcome was due to my choices or bad luck I could account for — not an unfair random state I couldn't recover from.
 
@@ -54,6 +54,8 @@ Currently, hazard events in Axiomancer are passive damage popups. The player has
 9. **As a designer,** I want to author action cards with top/bottom actions, rarity tiers, and verb class metadata, so they can be balanced and tuned independently.
 
 10. **As a designer,** I want access to a dev mode hand-injection tool so I can test specific card combinations without grinding to unlock them.
+
+11. **As a designer,** I want cards to carry a color identity (Red, Blue, Purple, Gold) so their mana cost, tactical role, and progress-type bias are legible at a glance.
 
 ---
 
@@ -68,15 +70,19 @@ Currently, hazard events in Axiomancer are passive damage popups. The player has
 - The player sees their full opening hand before committing to a route.
 
 ### FR-03 — Route Selection
-- After card draw and before dice roll, the player selects top or bottom route.
+- After card draw and before dice roll, the player selects **safe route (top)** or **risk route (bottom)**.
 - The choice is binding for the entire hazard.
+- Safe route uses a single progress meter per round.
+- Risk route uses dual meters ("BOTH REQUIRED"): both progress type thresholds must be met in the same round to score O.
 - Exception: H07 (Crumbling Aqueduct) allows progress type selection at reveal; this is a card-specific mechanic, not a general rule.
 
 ### FR-04 — Mana Dice Roll
 - After route selection, 4 mana dice are rolled.
-- Results: Red, Green, Blue, Yellow, Purple, or X.
-- Dice persist as board objects (with color and state) for the entire hazard.
-- Dice do not automatically refresh or reroll between rounds.
+- Results: Red, Blue, Purple, Gold, or X. Each die has two X faces (2/6 ≈ 33% per die). There is no Green or Yellow.
+- Dice are route-sensitive board objects: Safe route dice persist for the hazard path; Risk route dice re-cast between rounds.
+- Safe route: spent dice do not automatically refresh or reroll between rounds; exhausted dice reset to available.
+- Risk route: all four dice re-cast/reroll between rounds as compensation for dual "BOTH REQUIRED" meters. Spent and exhausted dice from a resolved Risk round do not persist into the next advanced round.
+- Card and enchantment effects may still refresh, reroll, preserve, or transform dice, but the Risk route's between-round re-cast is baseline doctrine.
 
 ### FR-05 — Round Play
 - Each round the player may play any number of cards from hand.
@@ -88,6 +94,7 @@ Currently, hazard events in Axiomancer are passive damage popups. The player has
 ### FR-06 — Round Resolution
 - At end of each round, compare total progress accumulated against the round's threshold.
 - Meeting or exceeding the threshold → mark `O`.
+- **Risk route dual-meter rounds:** both progress type thresholds must be met. Meeting only one is a round failure.
 - Failing to meet the threshold → mark `X`. Apply any per-round failure penalties listed on the hazard card.
 - Draw 5 new cards at the start of the next round.
 

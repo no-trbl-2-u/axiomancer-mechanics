@@ -170,12 +170,12 @@ The effect functions themselves are engine data. Mobile should use `playCardInRo
 
 ## Mana dice display
 
-The minigame uses four persistent mana dice. Each die has a color and a state:
+The minigame uses four mana dice. Safe route dice persist as board objects; Risk route dice re-cast between rounds. Each die has a color and a state:
 
 ```ts
 type HazardManaDie = {
   id: string;
-  color: 'red' | 'green' | 'blue' | 'yellow' | 'purple' | 'x';
+  color: 'red' | 'blue' | 'purple' | 'gold' | 'x'; // x appears on two die faces
   state: 'available' | 'spent' | 'exhausted' | 'discarded' | 'locked' | 'preserved';
   temporary: boolean;
 };
@@ -186,8 +186,9 @@ Important laws:
 - `x` is blocked mana by default.
 - X dice cannot pay normal costs.
 - Only X-interaction card text can make X dice useful.
-- Dice persist across rounds as board objects.
-- Between-round transitions are engine-owned; do not reset dice locally.
+- Safe route dice persist across rounds as board objects.
+- Risk route dice re-cast between rounds; prior spent/exhausted state does not carry into the next advanced round.
+- Between-round transitions are engine-owned; mobile must not invent local dice resets.
 
 Mobile affordance guidance:
 

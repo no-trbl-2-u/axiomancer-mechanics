@@ -7,6 +7,11 @@
 > Scenarios here map directly to hermetic e2e test cases in
 > `src/World/Hazard/e2e/hazard.engine.test.ts`.
 > Every scenario is testable with stubbed RNG — no UI, no async.
+>
+> **Terminology:** "top route" = safe route; "bottom route" = risk route.
+> Risk route rounds always require dual meters (BOTH REQUIRED).
+> Mana die colors: Red, Blue, Purple, Gold, X (×2). No Green or Yellow.
+> Exhausted dice reset to available between rounds; spent dice do not auto-reset.
 
 ---
 
@@ -53,9 +58,9 @@ And no dice have been rolled yet
 ```
 Given the chosen route is 'bottom'
 And the phase is 'dice-roll'
-When the dice are rolled with a fixed RNG producing [red, blue, yellow, x]
+When the dice are rolled with a fixed RNG producing [red, blue, gold, x]
 Then there are exactly 4 mana dice
-And their colors are red, blue, yellow, X
+And their colors are red, blue, gold, X
 And all dice are in state 'available'
 And the phase advances to 'round-play'
 ```
@@ -66,15 +71,15 @@ And the phase advances to 'round-play'
 
 ---
 
-**Scenario: Dice persist between rounds without auto-refresh**
+**Scenario: Safe route dice persist between rounds without auto-refresh**
 
 ```
-Given a hazard in round 1 with dice [red, blue, yellow, green] all 'available'
+Given a Safe route hazard in round 1 with dice [red, blue, purple, gold] all 'available'
 When the player spends the red die (bottom action cost)
 And round 1 resolves
 And between-rounds processing completes (no enchantments active)
 Then at the start of round 2, the red die is still 'spent'
-And the blue, yellow, green dice remain 'available'
+And the blue, purple, gold dice remain 'available'
 ```
 
 ---
@@ -82,10 +87,10 @@ And the blue, yellow, green dice remain 'available'
 **Scenario: X die cannot be spent**
 
 ```
-Given a hazard in round 1 with dice [red, x, yellow, green]
+Given a hazard in round 1 with dice [red, x, blue, gold]
 When the player attempts to play a bottom action with cost '1 any'
 Then the X die cannot satisfy the 'any' cost
-And only the red, yellow, and green dice are eligible to spend
+And only the red, blue, and gold dice are eligible to spend
 ```
 
 ---
@@ -94,14 +99,46 @@ And only the red, yellow, and green dice are eligible to spend
 
 ```
 Given a hazard in round 1
-And the player plays 'Find the Vein' (top action: create 1 yellow temporary die)
+And the player plays a mana-creation card that creates 1 temporary die
+  (Note: 'Find the Vein' creates a Gold die post-color-migration; card text must be confirmed
+   after the card color migration is completed — see docs/hazard-minigame.md Card Color Migration)
 Then there are now 5 dice total
-And the new yellow die has temporary = true
+And the new die has temporary = true
 
 When round 1 resolves
 And between-rounds processing runs
-Then the temporary yellow die is removed (state = 'discarded' / expired)
+Then the temporary die is removed (state = 'discarded' / expired)
 And there are 4 dice total again in round 2
+```
+
+---
+
+**Scenario: Safe route exhausted die resets to available at round end**
+
+```
+Given a Safe route hazard in round 1 with a blue die in state 'available'
+When the player plays 'Bitter Harvest' top action (Exhaust 1 die; +3 Force)
+And the blue die is marked 'exhausted'
+And round 1 resolves
+And between-rounds processing completes (no enchantments active)
+Then at the start of round 2, the blue die is in state 'available'
+And the die's color is unchanged
+```
+
+*(On Safe, exhausted state does not persist between rounds — it resets automatically in between-rounds processing, unlike spent dice which persist until explicitly refreshed by a card or enchantment.)*
+
+---
+
+**Scenario: Risk route re-casts dice between rounds**
+
+```
+Given a Risk route hazard in round 1 with dice [red, blue, purple, gold]
+And the red die is 'spent'
+And the blue die is 'exhausted'
+When round 1 resolves
+And between-rounds processing completes
+Then round 2 has four freshly rolled dice
+And no die carries the prior round's 'spent' or 'exhausted' state
 ```
 
 ---
@@ -296,19 +333,21 @@ And the top route failure penalty is applied (H01 top: no extra penalty)
 
 ---
 
-**Scenario: Dual-type round requires BOTH types to be met**
+**Scenario: Risk route requires BOTH meters to be met (dual-meter)**
 
 ```
-Given hazard H03 bottom route, round 1, threshold = 5 Escape + 5 Force
+Given hazard H03 risk route (bottom), round 1, threshold = 5 Escape + 5 Force
 And the player has accumulated 7 Escape and 3 Force
 When round 1 resolves
-Then round 1 is marked X (Force threshold not met)
+Then round 1 is marked X (Force threshold not met — BOTH REQUIRED)
 
 Given the same hazard, round 2, threshold = 5 Escape + 5 Force
 And the player has accumulated 5 Escape and 5 Force
 When round 2 resolves
-Then round 2 is marked O
+Then round 2 is marked O (both thresholds met)
 ```
+
+*(Risk route rounds always require dual meters. A player who clears one meter but not the other has failed the round. This is the defining property of the risk route — it is not single-meter play at harder numbers.)*
 
 ---
 
