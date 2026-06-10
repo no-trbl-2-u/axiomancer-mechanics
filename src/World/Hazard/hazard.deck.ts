@@ -179,7 +179,7 @@ export function playCard_v0(
   discard: string[],
   enchantmentZone: string[],
   cardId: string,
-  isEnchantment: boolean
+  _isEnchantment: boolean
 ) {
   const result = playCard(hand, discard, cardId);
   return {

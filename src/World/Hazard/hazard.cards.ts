@@ -103,7 +103,7 @@ export function createMomentumEffect(bonus: number): HazardCardEffect {
   });
 }
 
-export function createDrawEffect(cardCount: number): HazardCardEffect {
+export function createDrawEffect(_cardCount: number): HazardCardEffect {
   return (state: HazardRoundState) => {
     // Draw effect is handled by the engine (adds cards to hand)
     // This just marks that the effect occurred
@@ -257,7 +257,7 @@ export function createActionCard(
   bottomAction: HazardCardEffect,
   bottomManaCost: HazardManaCost[] = [],
   progressType?: HazardProgressType | 'any',
-  isEnchant = false
+  _isEnchant = false
 ): HazardActionCard {
   // This is a legacy compatibility function
   // In v2, cards are created directly with the new format
@@ -266,7 +266,7 @@ export function createActionCard(
     name,
     color: 'red', // Default color
     rarity,
-    class: cardClass as any,
+    class: cardClass as HazardCardClass,
     forceValue: 1,
     escapeValue: 1,
     poweredForceValue: 2,

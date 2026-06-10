@@ -176,39 +176,44 @@ function applyPenalty(ledger: PlayerLedger, penalty: HazardPenalty | undefined):
  *     (finalScore > 0, i.e. more O than X).
  */
 function applyEncounterOutcome(ledger: PlayerLedger, state: HazardMinigameState): void {
-    const route = activeRoute(state);
-    for (const result of state.rounds) {
-        if (result.mark === 'X') {
-            applyPenalty(ledger, route.failurePenalty);
-            if (result.round >= state.hazardCard.rounds) {
-                applyPenalty(ledger, route.finalRoundFailurePenalty);
-            }
-        }
+    // FIXME: This function needs to be updated for v2 tiered reward/penalty system
+    // For now, just prevent crashes - the reward/penalty logic is broken
+    if (!state.hazardCard) {
+        console.warn('applyEncounterOutcome: state.hazardCard is undefined');
+        return;
     }
-    if ((state.finalScore ?? 0) > 0) applyReward(ledger, route.reward);
+    
+    const route = activeRoute(state);
+    console.warn('applyEncounterOutcome: v2 reward/penalty system not yet implemented in CLI');
+    // TODO: Implement v2 tiered rewards/penalties based on final outcome
 }
 
 // ─── Engine helpers ───────────────────────────────────────────────────────────
 
 function activeRoute(state: HazardMinigameState): HazardRoute {
     return state.chosenRoute === 'bottom'
-        ? state.hazardCard.bottomRoute
-        : state.hazardCard.topRoute;
+        ? state.hazardCard.riskRoute
+        : state.hazardCard.safeRoute;
 }
 
-/** The progress type a round is judged against, or null for player-choice (sum of all). */
+/** The progress type a round is judged against - v2 always uses combined force+escape. */
 function requiredProgressType(state: HazardMinigameState): HazardProgressType | null {
-    const route = activeRoute(state);
-    if (route.progressType === 'player-choice') {
-        return state.playerChoiceProgressType; // may be null → sum across all types
-    }
-    return route.progressType;
+    // v2 always uses combined force+escape progress, no single progress types
+    return null;
 }
 
 function thresholdForCurrentRound(state: HazardMinigameState): number {
     const route = activeRoute(state);
     const idx = (state.currentRound?.round ?? 1) - 1;
-    return route.roundThresholds[idx] ?? 0;
+    
+    if (route.type === 'safe') {
+        return route.combinedThresholds[idx] ?? 0;
+    } else {
+        // For risk routes, return combined force + escape requirement
+        const forceThreshold = route.forceThresholds[idx] ?? 0;
+        const escapeThreshold = route.escapeThresholds[idx] ?? 0;
+        return forceThreshold + escapeThreshold;
+    }
 }
 
 function progressTowardThreshold(state: HazardMinigameState): number {
@@ -283,10 +288,8 @@ function autoPlayRound(state: HazardMinigameState): HazardMinigameState {
         if (!state.hand.includes(cardId)) continue;
         const card = getActionCard(cardId);
         if (!card || card.class !== 'direct-progress') continue;
-        const matches =
-            req === null ||
-            card.progressType === req ||
-            card.progressType === 'any';
+        // v2: all cards provide force/escape progress, no specific progress type matching needed
+        const matches = true;
         if (!matches) continue;
         const useBottom = card.bottomManaCost.length > 0 && canPayBottom(state, cardId);
         state = tryPlayCard(state, cardId, useBottom);
@@ -315,7 +318,7 @@ async function manualPlayRound(state: HazardMinigameState): Promise<HazardMiniga
 
         const cardChoices = state.hand.map((cardId, idx) => {
             const card = getActionCard(cardId);
-            const tag = card ? `${card.name} [${card.class}/${card.progressType ?? '—'}]` : cardId;
+            const tag = card ? `${card.name} [${card.class}/force:${card.forceValue}/escape:${card.escapeValue}]` : cardId;
             return { name: `${cardId}: ${tag}`, value: `${idx}` };
         });
         cardChoices.push({ name: 'Resolve round (stop playing cards)', value: 'resolve' });
@@ -379,8 +382,14 @@ async function pickHazardCard(flags: HazardCliFlags): Promise<HazardCard> {
 
 async function pickRoute(state: HazardMinigameState, flags: HazardCliFlags): Promise<'top' | 'bottom'> {
     if (flags.route) return flags.route;
-    const { top, bottom } = { top: state.hazardCard.topRoute, bottom: state.hazardCard.bottomRoute };
-    const describe = (r: HazardRoute) => `${r.progressType} · thresholds [${r.roundThresholds.join(', ')}]`;
+    const { top, bottom } = { top: state.hazardCard.safeRoute, bottom: state.hazardCard.riskRoute };
+    const describe = (r: HazardRoute) => {
+        if (r.type === 'safe') {
+            return `safe · combined [${r.combinedThresholds.join(', ')}]`;
+        } else {
+            return `risk · force [${r.forceThresholds.join(', ')}] escape [${r.escapeThresholds.join(', ')}]`;
+        }
+    };
     const { route } = await prompt<{ route: 'top' | 'bottom' }>([{
         type: 'rawlist', name: 'route', message: 'Choose a route:',
         choices: [
@@ -408,20 +417,14 @@ async function playEncounter(
 
     const route = await pickRoute(state, flags);
 
-    // H07-style player-choice routes ask which progress type to commit to. None
-    // of the v0 library cards use it, but handle it so the driver never wedges.
-    let playerChoice: HazardProgressType | undefined;
-    if (activeRouteForChoice(state, route).progressType === 'player-choice') {
-        const { type } = await prompt<{ type: HazardProgressType }>([{
-            type: 'rawlist', name: 'type', message: 'Commit to which progress type?',
-            choices: ['stability', 'escape', 'supply', 'force'],
-        }]);
-        playerChoice = type;
-    }
-
+    // v2 doesn't have player-choice routes - all routes have fixed progress requirements
+    
+    // Convert CLI route names to engine route names
+    const engineRoute = route === 'bottom' ? 'risk' : 'safe';
+    
     const before = state;
-    state = selectRoute(state, route, playerChoice);
-    logState('selectRoute', before, state, { route, playerChoice: playerChoice ?? null });
+    state = selectRoute(state, engineRoute);
+    logState('selectRoute', before, state, { route, engineRoute });
 
     state = rollDiceAndStartRound(state, rng);
     logState('rollDiceAndStartRound', null, state, { dice: state.mana.map(d => d.color) });
@@ -445,18 +448,18 @@ async function playEncounter(
         }
     }
 
-    const scored = computeFinalScore(state);
-    applyEncounterOutcome(ledger, scored);
+    const finalScore = computeFinalScore(state);
+    applyEncounterOutcome(ledger, state);
 
-    const marks = scored.rounds.map(r => r.mark).join('');
+    const marks = state.rounds.map(r => r.succeeded ? 'O' : 'X').join('');
     const result: EncounterResult = {
         hazardId: hazardCard.id,
         route,
         marks,
-        finalScore: scored.finalScore ?? 0,
+        finalScore,
     };
     log(`  Result: [${marks}]  score ${result.finalScore}  (route: ${route})`);
-    logState('computeFinalScore', null, scored, {
+    logState('computeFinalScore', null, state, {
         ...result,
         ledger: { ...ledger, items: [...ledger.items] },
     });
@@ -466,7 +469,7 @@ async function playEncounter(
 
 /** Helper mirrors activeRoute but for a route not yet committed to state. */
 function activeRouteForChoice(state: HazardMinigameState, route: 'top' | 'bottom'): HazardRoute {
-    return route === 'bottom' ? state.hazardCard.bottomRoute : state.hazardCard.topRoute;
+    return route === 'bottom' ? state.hazardCard.riskRoute : state.hazardCard.safeRoute;
 }
 
 // ─── Entry point ────────────────────────────────────────────────────────────────

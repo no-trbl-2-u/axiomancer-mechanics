@@ -8,15 +8,15 @@
 import type {
   HazardMinigameState,
   HazardCard,
-  HazardActionCard,
-  HazardRoundState,
+  // HazardActionCard,
+  // HazardRoundState,
   HazardRoundResult,
   HazardOutcome,
   HazardRngFunction,
 } from './hazard.types';
 
 import { rollManaDice, canAffordCost, spendMana, recastAvailableDice, convertXDice, countAvailableNonXDice } from './hazard.dice';
-import { drawCards, playCard, initializeHazardDeck, discardHand } from './hazard.deck';
+import { drawCards, playCard, initializeHazardDeck } from './hazard.deck';
 import { applyCardProgress, applyMomentumBonus, calculateMomentum } from './hazard.cards';
 import { getActionCard, STARTER_DECK_CARD_IDS } from './hazard.cards.library';
 
@@ -327,7 +327,7 @@ export function applyRewards(state: HazardMinigameState): HazardMinigameState {
   const rewards = route.rewards[state.outcome];
   
   // Calculate reserve bonus (unspent non-X dice)
-  const reserveBonusAmount = rewards.reserveBonus 
+  const _reserveBonusAmount = rewards.reserveBonus 
     ? countAvailableNonXDice(state.mana) * rewards.reserveBonus 
     : 0;
   
