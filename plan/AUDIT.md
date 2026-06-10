@@ -53,17 +53,37 @@
 - next: /ship-a-phase
 - notes: Implement canonical Hazard Minigame engine with safe/risk routes, dice persistence, dual-meter mechanics
 
-<!-- Audit pass (2026-06-10): Comprehensive categories Z-H review:
+### [HIGH] Hazard CLI broken after Phase 134 mobile v2 alignment
+- category: regression
+- impact: 9
+- ease: 6
+- source: baseline test failures
+- observation: 3 CLI tests failing with "Cannot read properties of undefined (reading 'progressType')" at hazard.cli.ts:414
+- evidence: activeRouteForChoice(state, route).progressType accesses undefined route object
+- suggested_fix: Fix route resolution logic in hazard CLI after mobile v2 structural changes
+- score: 9 × 6 / 10 = 5.4
+
+### [HIGH] Hazard Engine test failures after Phase 134
+- category: regression  
+- impact: 8
+- ease: 6
+- source: baseline test failures
+- observation: 3 engine tests failing with mana cost errors and assertion failures on Perfect/Complete outcomes
+- evidence: "Cannot afford mana cost for A07" + tiered outcome logic broken
+- suggested_fix: Update hazard engine cost/reward mechanics to match mobile v2 alignment
+- score: 8 × 6 / 10 = 4.8
+
+<!-- Audit pass (2026-06-10): Comprehensive categories Z-H review with 6 failing baseline tests from Phase 134:
 - Z. External critique: CRITIQUE.md all findings resolved, 0 pending
-- A. Test-quality gaps: All modules have *.engine.test.ts files, test-utils/rng.ts properly stubbed throughout
-- B. Spec-gap items: No open questions in specs/, AUDIT.md pending = 0
+- A. Test-quality gaps: 6 test failures due to Phase 134 mobile v2 alignment breaking Hazard CLI + engine
+- B. Spec-gap items: No open questions in specs/, AUDIT.md pending = 0  
 - C. Type-safety: Clean (zero @ts-ignore except expected .mjs import case in test-utils, zero `as any`)
 - D. Dead code: No large commented-out blocks, no unused exports beyond legitimate TODOs in hazard system
 - E. Documentation gaps: docs/ comprehensive for all modules, no API drift
 - F. ESLint fix: Phase 13 shipped, lint clean
 - G. Dependency updates: Only major bumps available (globals 16→17, inquirer 9→12, typescript 5→6, @types/node 22→25) - all skipped per iterate rules
 - H. Commit-hygiene: git status clean
-Zero findings scoring ≥3.0 found. Triggering failure mode 3 (bold posture) → dispatch to /expand. -->
+Found 2 HIGH findings scoring ≥3.0: CLI breakage (5.4) + engine failures (4.8). -->
 
 ---
 
