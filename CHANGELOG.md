@@ -10,6 +10,43 @@ Pre-1.0.0 status: minor bumps may carry breaking public-API changes
 map exposes `.` (top-level barrel) and `./node` (Node.js adapter); no
 deep imports are part of the supported surface.
 
+## [0.16.0] — 2026-06-10
+
+Hazard minigame documentation and mobile-consumer release. This bump packages the
+Hazard design doctrine and a new API guide alongside the existing public Hazard
+barrel exports, so downstream clients can consume the card/dice crisis loop without
+reading implementation files or inventing local rules.
+
+### Added
+
+- **Hazard consumer docs** — `docs/hazard-minigame-api.md` documents top-level
+  package imports, legal state-machine sequence, route-choice flow, card and dice
+  display contracts, score handling, presenter guidance, and current v0 caveats.
+- **Published Hazard docs** — package `files` now includes the Hazard docs,
+  `CHANGELOG.md`, `RELEASES.md`, and `RELEASING.md` so npm consumers receive the
+  relevant release and integration material.
+
+### Changed
+
+- README install guidance now reflects that `axiomancer-mechanics` is published
+  on npm and names the Hazard public API surface available to mobile.
+
+### Mobile migration notes
+
+- Update `axiomancer-mobile` from `axiomancer-mechanics@0.15.1` to
+  `0.16.0`.
+- Use only top-level package imports for Hazard. Do not deep-import
+  `World/Hazard` implementation files.
+- Treat the mechanics package as owner of Hazard state transitions, card effects,
+  dice state, route thresholds, round marks, and final `O - X` score. Mobile owns
+  presentation and player affordances.
+- Current v0 caveats remain: map-state benefit/penalty mutation and full penalty
+  application are typed but not yet complete live world integration surfaces.
+- Run mobile `npm run typecheck`, `npm run verify`, and focused presenter tests
+  for route choice, dice board, card affordance, round ledger, and final score.
+
+### Security
+
 ## [0.15.1] — 2026-06-08
 
 Balance and resolution hardening release. Phases 122–126 close the mid/late-game

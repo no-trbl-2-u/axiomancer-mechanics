@@ -24,7 +24,13 @@ architecture and product decisions that govern mechanics work.
 
 ## Install
 
-The package is not yet published. To consume it locally:
+The package is published to npm:
+
+```bash
+npm install axiomancer-mechanics
+```
+
+For local engine development:
 
 ```bash
 npm install
@@ -93,6 +99,10 @@ in `automation/scripts/walkthroughs/` (Phase 81); CLI codex + reset tabs
 (Phase 82); 824 hermetic tests (Phase 83 skill coverage + Phase 88
 effect coverage sweep); 5 per-module quickstart pages at
 [`docs/quickstart-*.md`](./docs/) (Phase 87).
+
+### Hazard public API
+
+`axiomancer-mechanics@0.16.0` ships the Hazard minigame through the top-level barrel. Consumers can import `initializeHazard`, `drawOpeningHand`, `selectRoute`, `rollDiceAndStartRound`, `playCardInRound`, `resolveRound`, `advanceToNextRound`, `computeFinalScore`, `HAZARD_CARD_LIBRARY`, `ACTION_CARD_LIBRARY`, `STARTER_DECK_CARD_IDS`, and Hazard types such as `HazardMinigameState`, `HazardCard`, `HazardActionCard`, `HazardManaDie`, and `HazardRoundResult`. See [`docs/hazard-minigame-api.md`](./docs/hazard-minigame-api.md).
 
 ## CLIs
 
@@ -174,6 +184,7 @@ automation/                # standalone walkthrough script + replay fixtures
 - [`docs/testing.md`](./docs/testing.md) — **hermetic e2e testing standard (required for every implementation)**
 - [`docs/playtest.md`](./docs/playtest.md) — automated playtest module and Phase 107 fix/playthrough difficulty-tuning loop
 - [`docs/hazard-minigame.md`](./docs/hazard-minigame.md) — accepted v0 doctrine for the Mage Knight-like Hazard minigame: route choice, 4 dice, 5-card hand, card/enchantment lifecycle, `O - X` scoring, 30 action cards (Common/Uncommon/Rare), and 15 hazard cards
+- [`docs/hazard-minigame-api.md`](./docs/hazard-minigame-api.md) — Hazard minigame package-consumer guide: public exports, legal state-machine sequence, mobile presenter boundary, and v0 caveats
 - [`docs/hazard-minigame-prd.md`](./docs/hazard-minigame-prd.md) — Hazard minigame PRD: user stories, functional requirements, and success metrics
 - [`docs/hazard-minigame-tdd.md`](./docs/hazard-minigame-tdd.md) — Hazard minigame TDD: module layout, types, state machine, engine functions, and integration points
 - [`docs/hazard-minigame-bdd.md`](./docs/hazard-minigame-bdd.md) — Hazard minigame BDD: Gherkin scenarios mapping directly to hermetic e2e test cases

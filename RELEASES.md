@@ -4,6 +4,15 @@ Short-form per-version summaries. For per-phase detail see
 [`CHANGELOG.md`](./CHANGELOG.md); for the release-cut ceremony see
 [`RELEASING.md`](./RELEASING.md).
 
+## 0.16.0 — 2026-06-10
+
+Hazard minigame mobile-consumer release: publishes the Hazard doctrine/API docs with the npm package and documents the top-level Hazard public surface for downstream clients.
+
+- **Hazard docs:** adds `docs/hazard-minigame-api.md` with import examples, legal state-machine order, route/card/dice contracts, scoring, presenter guidance, and v0 caveats.
+- **Package contents:** includes Hazard docs plus release docs in the published npm tarball so consumers can read integration guidance from the package.
+- **README:** updates install guidance for the published npm package and calls out Hazard exports.
+- **Mobile needs:** bump to `axiomancer-mechanics@0.16.0`; use top-level imports only; preserve engine-owned Hazard state, dice, route thresholds, card effects, and scoring; run typecheck, verify, focused presenter tests, and visual smoke around the Hazard screen.
+
 ## 0.15.1 — 2026-06-08
 
 Balance/resolution hardening release for the manual mobile-build line: Phase 122–126 enemy balance, gear-tier counterweight, stronger status effects/skills, status-effect-driven victory/friendship resolution, public effect-resolution helpers, and the recent skills/equipment content expansion.
