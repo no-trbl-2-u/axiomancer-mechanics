@@ -46,6 +46,13 @@
 
 ## Pending
 
+### [deps] @types/node patch update 22.19.20 → 22.19.21
+- category: deps  
+- impact: 3
+- ease: 9
+- score: 2.7
+- notes: Minor patch update for @types/node, safe to apply
+
 ### [feature] GH#154 — Extract Hazard Minigame mechanics from mobile
 - category: feature
 - impact: 8
@@ -53,6 +60,17 @@
 - next: /ship-a-phase
 - notes: Implement canonical Hazard Minigame engine with safe/risk routes, dice persistence, dual-meter mechanics
 
+<!-- Audit pass (2026-06-10 at commit 530211d): Comprehensive categories Z-H review - 1 new finding:
+- Z. External critique: CRITIQUE.md has 0 pending findings (pass 62 clean)
+- A. Test-quality gaps: All modules have hermetic *.engine.test.ts files (89 total e2e files for 14 modules + CLI); proper RNG stubbing via test-utils/rng.ts; baseline tests green (1359 passing, 2 skipped)
+- B. Spec-gap items: No open questions in specs/, AUDIT.md pending reviewed; Knowledge-Gaps.md shows Q28 (multiple endings) genuinely deferred as endgame question  
+- C. Type-safety: Clean (zero @ts-ignore except justified .mjs import case in test-utils with explanatory comment, zero `as any` casts)
+- D. Dead code: No large commented-out blocks, no unused exports identified
+- E. Documentation gaps: docs/ comprehensive for all modules (38 files), all API groups documented
+- F. ESLint fix: Phase 13 shipped, `npm run lint` passes clean with zero warnings
+- G. Dependency updates: 1 patch update available: @types/node 22.19.20 → 22.19.21 (safe minor patch); major bumps (typescript 5→6, @types/node 22→25, inquirer 9→12, globals 16→17) skipped per iterate rules
+- H. Commit-hygiene: git status clean, no uncommitted drift
+Found 1 finding scoring 2.7 (below ≥3.0 threshold). Posture is bold - would trigger expand via failure mode 3. -->
 <!-- Audit pass (2026-06-10 at commit b5dccf3): Comprehensive categories Z-H review - 0 new findings, previously misdiagnosed finding corrected:
 - Z. External critique: CRITIQUE.md all findings resolved, 0 pending
 - A. Test-quality gaps: All modules have hermetic *.engine.test.ts files; proper RNG stubbing via test-utils/rng.ts; baseline tests green (1359 passing, 2 skipped); CLI I/O tests use legitimate filesystem access for CLI functionality
