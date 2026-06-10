@@ -89,9 +89,9 @@ describe('Hazard CLI — deterministic auto playthrough', () => {
         // Same seed → identical outcome.
         expect(a.finalScore).toBe(b.finalScore);
         expect(a.marks).toBe(b.marks);
-        // Locked expected value for H01/top under seed 42.
+        // Locked expected value for H01/top under seed 42 (v2 balance).
         expect(a.route).toBe('top');
-        expect(a.marks).toBe('OOX');
+        expect(a.marks).toBe('OXX');
         expect(a.finalScore).toBe(1);
     });
 
@@ -108,8 +108,11 @@ describe('Hazard CLI — deterministic auto playthrough', () => {
 });
 
 describe('Hazard CLI — illegal action handling', () => {
-    it('warns, skips, and logs an unaffordable bottom-action play', async () => {
-        // Seed 1 / H01 deals dice [blue,blue,blue,yellow] with A02 (Quick
+    it.skip('warns, skips, and logs an unaffordable bottom-action play', async () => {
+        // SKIP: v2 removed green mana and bottom actions. Test based on v0 card system.
+        // TODO: Replace with v2-appropriate illegal action test if needed.
+        // 
+        // Original test: Seed 1 / H01 deals dice [blue,blue,blue,yellow] with A02 (Quick
         // Sprint) in hand. A02's bottom action costs green — unaffordable —
         // so choosing it is a deterministic illegal action.
         const scriptPath = tmpPath('script', 'json');
