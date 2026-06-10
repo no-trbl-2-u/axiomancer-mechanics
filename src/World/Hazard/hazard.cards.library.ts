@@ -63,7 +63,7 @@ const directProgressCards: HazardActionCard[] = [
     'direct-progress',
     createDirectProgressEffect('force', 2),
     createDirectProgressEffect('force', 5),
-    [{ color: 'red', count: 2 }],
+    [{ color: 'red', count: 1 }],
     'force'
   ),
   
@@ -74,7 +74,7 @@ const directProgressCards: HazardActionCard[] = [
     'direct-progress',
     createDirectProgressEffect('escape', 1),
     createMultiProgressEffect({ escape: 2, stability: 2 }),
-    [{ color: 'any', count: 2 }],
+    [{ color: 'any', count: 1 }],
     'any'
   ),
   
@@ -91,7 +91,7 @@ const directProgressCards: HazardActionCard[] = [
       supply: 2, 
       force: 2 
     }),
-    [{ color: 'any', count: 4 }],
+    [{ color: 'any', count: 1 }],
     'any'
   ),
 ];
@@ -115,7 +115,7 @@ const focusCards: HazardActionCard[] = [
     'focus',
     createFocusEffect(2),
     createFocusEffect(5),
-    [{ color: 'purple', count: 2 }]
+    [{ color: 'purple', count: 1 }]
   ),
   
   createActionCard(
@@ -125,7 +125,7 @@ const focusCards: HazardActionCard[] = [
     'focus',
     createFocusEffect(3),
     createFocusEffect(8),
-    [{ color: 'yellow', count: 1 }, { color: 'purple', count: 1 }]
+    [{ color: 'purple', count: 1 }]
   ),
 ];
 
@@ -158,7 +158,7 @@ const manaConversionCards: HazardActionCard[] = [
     'mana-conversion',
     noOpEffect,
     noOpEffect, // Bottom: convert all available dice to chosen color (TODO: implement)
-    [{ color: 'any', count: 3 }]
+    [{ color: 'any', count: 1 }]
   ),
 ];
 
@@ -181,7 +181,7 @@ const manaCreationCards: HazardActionCard[] = [
     'mana-creation',
     noOpEffect,
     noOpEffect, // Bottom: create 2 temporary dice (TODO: implement)
-    [{ color: 'blue', count: 2 }]
+    [{ color: 'blue', count: 1 }]
   ),
   
   createActionCard(
@@ -191,7 +191,7 @@ const manaCreationCards: HazardActionCard[] = [
     'mana-creation',
     noOpEffect,
     noOpEffect, // Bottom: create 3 temporary dice of chosen colors (TODO: implement)
-    [{ color: 'any', count: 3 }]
+    [{ color: 'any', count: 1 }]
   ),
 ];
 
@@ -224,7 +224,7 @@ const cardDrawCards: HazardActionCard[] = [
     'card-draw',
     noOpEffect,
     noOpEffect, // Bottom: look at top 5, choose 2 to hand (TODO: implement)
-    [{ color: 'purple', count: 2 }]
+    [{ color: 'purple', count: 1 }]
   ),
 ];
 

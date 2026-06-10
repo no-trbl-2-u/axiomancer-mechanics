@@ -47,6 +47,31 @@ successes O - failures X
 
 11. Final score determines outcome, reward, and/or penalty.
 
+
+## Expected Playthrough / UX Contract
+
+The clickable prototype should model the intended player pass, not merely the engine state labels. A normal hazard round plays as follows:
+
+1. The player enters a hazard from the map and sees the hazard card, scenario, round count, and the safe/top and risk/bottom routes. The exact route layout is still a UX problem, but both routes must reveal their thresholds, reward promise, and consequence risk before commitment.
+2. The player's 5-card hand appears at the bottom of the screen as compact card stock. It must fit without horizontal scrolling; slight overlap/stacking is acceptable. Card stock may carry a subtle color tint based on the single mana color its bottom action can consume.
+3. Tapping a compact hand card opens the readable card view with full text and keyword explanations.
+4. The player drags candidate cards into a play area that can hold up to 6 cards. Cards shrink when placed there. Tapping a staged card returns it to the hand.
+5. The player drags a die onto a staged card to power that card's bottom action. Cards never require more than 1 mana to power up.
+6. Progress meters preview the would-be result of the staged set before commitment. The preview must show current value, projected value, and threshold.
+7. The player confirms the staged set with a **Play** button. Until Play is pressed, staged cards and dice assignment are reversible UI intent, not resolved engine truth.
+8. The round resolves, the `O`/`X` ledger updates, played cards move to discard/enchantment zones as appropriate, remaining hand cards are discarded, and the next round draws a new set of 5.
+9. Repeat until the hazard's 3-5 rounds are complete.
+10. Completion shows a result modal: **Perfect** when all rounds succeeded, **Complete** when at least 1 round succeeded, and **Failure** when no rounds succeeded.
+11. A rewards/consequences modal follows the result. It shows granted rewards, consequences, and 3 card-reward choices when applicable.
+
+Reward and consequence rules for the prototype:
+
+- **Perfect:** 1 guaranteed rare card appears among the 3 card choices; the player may also skip card reward via an `X` button in the modal's bottom-right corner. Perfect applies 0 consequences.
+- **Complete / normal success:** the player must choose 1 of 3 offered cards. Rarity ranges from common to rare by RNG, except a one-round-only success has 0% rare chance. Consequences scale with rounds lost.
+- **Failure / 0 successful rounds:** no success reward; apply maximum consequences for that hazard.
+- Consequences can include dead cards added to the deck, maximum VITAE loss, minimum VITAE loss, loss of all current paradox/fallacy tokens, or other hazard-authored penalties.
+- Rewards and consequences may share the same modal area, but every reward and consequence needs an icon plus tooltip/explainer copy.
+
 ## Hazard Cards
 
 A hazard card represents a dangerous situation: traps, starvation, cliff edges, dangerous terrain, corruption, collapsing structures, hostile weather, and similar crises.
@@ -126,6 +151,7 @@ Each action card has:
 
 - **Top action:** free to play.
 - **Bottom action:** costs mana and is stronger, stranger, or more tactical.
+- **Single-mana law:** no bottom action may require more than 1 mana to power up.
 
 The action deck must include different tactical verbs. It must not be only direct progress.
 
@@ -371,7 +397,7 @@ Rarity: C | Class: Focus
 **6. Gut It Through**
 Rarity: U | Class: Direct Progress | Type: Any
 *Top:* +1 to any progress type.
-*Bottom (spend 1 red, 1 any):* +5 to any progress type.
+*Bottom (spend 1 red):* +5 to any progress type.
 
 ---
 
@@ -489,14 +515,14 @@ Rarity: C | Class: Failure Mitigation
 **20. Retreat to Safety**
 Rarity: U | Class: Failure Mitigation
 *Top:* If this round fails, reduce any single failure penalty by 1 step.
-*Bottom (spend 2 yellow):* At end of hazard scoring, convert 1 X mark to O. Discard this card after use.
+*Bottom (spend 1 yellow):* At end of hazard scoring, convert 1 X mark to O. Discard this card after use.
 
 ---
 
 **21. Hold the Line**
 Rarity: R | Class: Failure Mitigation | Type: Stability
 *Top:* +1 Stability.
-*Bottom (spend 1 yellow, 1 any):* If this round would resolve as X, resolve it as O instead; lose 1 VITAE.
+*Bottom (spend 1 yellow):* If this round would resolve as X, resolve it as O instead; lose 1 VITAE.
 
 ---
 
@@ -664,7 +690,7 @@ Rounds: 3
 Top (Stability): Rounds 1–2: clear 6. Round 3: clear 8.
 Reward: safe crossing. Failure: no extra penalty.
 
-Bottom (Player's Choice): At hazard reveal, before dice roll, choose Stability or Escape for the entire hazard. Rounds 1–2: clear 9 of chosen type. Round 3: clear 12.
+Bottom (Player's Choice): After the opening hand is drawn and before dice roll, choose Stability or Escape for the entire hazard. Rounds 1–2: clear 9 of chosen type. Round 3: clear 12.
 Reward: rare salvage from the structure. Final round failure: lose 1 VITAE.
 
 ---

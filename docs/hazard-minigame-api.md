@@ -106,6 +106,22 @@ Mobile should render these engine-owned fields directly:
 
 Mobile may derive display labels, colors, animations, and affordance hints, but it must not simulate route thresholds, dice legality, scoring, card effects, or hand/discard/enchantment movement separately from the mechanics package.
 
+
+## Expected mobile playthrough contract
+
+Mobile should stage player intent before resolving a round:
+
+1. Render the compact 5-card hand at the bottom of the screen; avoid horizontal scrolling by shrinking or slightly overlapping cards.
+2. Tapping a card opens readable details and keyword explanations.
+3. Dragging a card into the play area stages it; the play area should support up to 6 staged cards.
+4. Tapping a staged card unstages it and returns it to the hand.
+5. Dragging a die onto a staged card assigns the single mana needed for that card's bottom action. No card should require more than 1 mana.
+6. The progress presenter previews staged values before state resolution.
+7. The **Play** button commits the staged cards and calls the engine helpers in legal order.
+8. After round resolution, remaining hand cards are discarded, played cards move to discard/enchantment zones, a new 5-card hand is drawn for the next round, and the round ledger updates.
+
+The mechanics package remains the rule owner. The staging surface is mobile intent; it must not mutate or invent card effects before the Play confirmation dispatches engine actions.
+
 ## Hazard card display
 
 A `HazardCard` has:
@@ -148,6 +164,7 @@ Every card has two effects:
 
 - **Top action:** free, usually smaller or safer.
 - **Bottom action:** costs mana when `bottomManaCost` is non-empty; stronger, stranger, or persistent.
+- **Single-mana law:** no card should expose more than 1 mana cost in v0; mobile may tint compact card stock by that one cost color.
 
 The effect functions themselves are engine data. Mobile should use `playCardInRound(state, cardId, useBottomAction)` rather than attempting to run equivalent local card logic.
 
