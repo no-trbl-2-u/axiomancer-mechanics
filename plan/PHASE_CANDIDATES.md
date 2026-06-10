@@ -94,6 +94,9 @@
 
 ## Promoted
 
+### Phase 134 — Hazard Mobile v2 Alignment
+- promoted: 2026-06-10 (T direct order). Source: mobile shipped local hazard v2 engine and divergence catalogue `axiomancer-mobile/docs/hazard-v2-vs-mechanics-divergence.md`; copied into mechanics as `docs/hazard-v2-vs-mechanics-divergence.md`. Scope: replace Phase 131 / CDR-0006 v0 hazard semantics with mobile v2 force/escape rules; port mobile cards, dice, hazards, reward/penalty tiers, no-recast dice economy, deterministic RNG, and parity tests; update docs/API so mobile can consume the mechanics package and retire duplicated local rules. Brief: `plan/phases/phase_134_hazard_mobile_v2_alignment.md`. Tracks mechanics #154 and unblocks mobile #333.
+
 ### Phase 133 — Equipment Rarity Distribution Rebalancing
 - promoted: 2026-06-09 (oversight Q3 — T pick). Was "Equipment Rarity Distribution Rebalancing" (score 4 × 7 / 10 = 2.8). Build-plan row added as Phase 133. Scope: audit drop rates, rarity weights, modifier distributions since Phase 54; rebalance for meaningful progression feel; config/balance only — no formula rewrites. Source: expand-34.
 
