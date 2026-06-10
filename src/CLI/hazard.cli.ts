@@ -232,9 +232,8 @@ function availableDiceSummary(state: HazardMinigameState): string {
 
 function canPayBottom(state: HazardMinigameState, cardId: string): boolean {
     const card = getActionCard(cardId);
-    if (!card) return false;
-    if (card.bottomManaCost.length === 0) return true;
-    return canAffordCost(state.mana, card.bottomManaCost, card.class === 'x-die-interaction');
+    if (!card || !card.manaCost) return false;
+    return canAffordCost(state.mana, card.manaCost);
 }
 
 /**
@@ -291,7 +290,7 @@ function autoPlayRound(state: HazardMinigameState): HazardMinigameState {
         // v2: all cards provide force/escape progress, no specific progress type matching needed
         const matches = true;
         if (!matches) continue;
-        const useBottom = card.bottomManaCost.length > 0 && canPayBottom(state, cardId);
+        const useBottom = card.manaCost !== null && canAffordCost(state.mana, card.manaCost);
         state = tryPlayCard(state, cardId, useBottom);
     }
 
@@ -301,7 +300,7 @@ function autoPlayRound(state: HazardMinigameState): HazardMinigameState {
 // ─── Card play: manual ─────────────────────────────────────────────────────────
 
 async function manualPlayRound(state: HazardMinigameState): Promise<HazardMinigameState> {
-    while (state.phase === 'round-play') {
+    while (state.phase === 'play') {
         const req = requiredProgressType(state);
         const reqLabel = req ?? 'any (player-choice sum)';
         log(
@@ -330,12 +329,11 @@ async function manualPlayRound(state: HazardMinigameState): Promise<HazardMiniga
 
         const cardId = state.hand[Number(pick)]!;
         const card = getActionCard(cardId);
-        const hasBottom = (card?.bottomManaCost.length ?? 0) > 0 || card?.isEnchant;
+        const hasBottom = card?.manaCost !== null;
         let useBottom = false;
         if (hasBottom) {
             const affordable = canPayBottom(state, cardId);
-            const costLabel = (card?.bottomManaCost ?? [])
-                .map(c => `${c.count} ${c.color}`).join(', ') || 'free';
+            const costLabel = card?.manaCost ? `${card.manaCost.count} ${card.manaCost.color}` : 'free';
             const { side } = await prompt<{ side: 'top' | 'bottom' }>([{
                 type: 'rawlist', name: 'side', message: 'Top or bottom action?',
                 choices: [
@@ -413,7 +411,7 @@ async function playEncounter(
     let state = initializeHazard(hazardCard, STARTER_DECK_CARD_IDS, rng);
     logState('initializeHazard', null, state, { hazardId: hazardCard.id, runIndex });
 
-    state = drawOpeningHand(state, rng);
+    state = drawOpeningHand(state);
 
     const route = await pickRoute(state, flags);
 
@@ -426,10 +424,10 @@ async function playEncounter(
     state = selectRoute(state, engineRoute);
     logState('selectRoute', before, state, { route, engineRoute });
 
-    state = rollDiceAndStartRound(state, rng);
+    state = rollDiceAndStartRound(state);
     logState('rollDiceAndStartRound', null, state, { dice: state.mana.map(d => d.color) });
 
-    while (state.phase === 'round-play') {
+    while (state.phase === 'play') {
         const roundBefore = state;
         state = flags.auto ? autoPlayRound(state) : await manualPlayRound(state);
 
@@ -441,11 +439,6 @@ async function playEncounter(
         );
         logState('resolveRound', roundBefore, resolved, lastResult);
         state = resolved;
-
-        if (state.phase === 'between-rounds') {
-            state = advanceToNextRound(state, rng);
-            logState('advanceToNextRound', null, state, { round: state.currentRound?.round });
-        }
     }
 
     const finalScore = computeFinalScore(state);
