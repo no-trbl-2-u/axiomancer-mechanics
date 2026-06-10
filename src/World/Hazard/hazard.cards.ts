@@ -1,87 +1,233 @@
 /**
- * Hazard Minigame — Card Effect System
+ * Hazard Minigame — Card System (v2)
  * 
- * Core card effect functions and utilities for implementing
- * the 10 verb classes and card interaction mechanics.
+ * Mobile v2 card mechanics: unified force/escape progress values,
+ * single-die powering, and special effects for utility cards.
  */
 
 import type {
+  HazardActionCard,
+  HazardCardEffect,
   HazardRoundState,
   HazardProgressType,
-  HazardActionCard,
-  HazardCardClass,
   HazardCardRarity,
-  HazardCardEffect,
+  HazardCardClass,
   HazardManaCost,
 } from './hazard.types';
 
 /**
- * Add progress to a specific type with focus buffer application.
+ * Apply a card's progress values to the round state.
+ * v2: cards have direct force/escape values instead of complex effects.
  */
+export function applyCardProgress(
+  state: HazardRoundState, 
+  card: HazardActionCard, 
+  powered: boolean = false
+): HazardRoundState {
+  const forceValue = powered ? card.poweredForceValue : card.forceValue;
+  const escapeValue = powered ? card.poweredEscapeValue : card.escapeValue;
+  
+  return {
+    ...state,
+    progress: {
+      force: state.progress.force + forceValue,
+      escape: state.progress.escape + escapeValue,
+    },
+  };
+}
+
+/**
+ * Apply momentum bonus to progress values.
+ * v2: momentum adds to both force and escape.
+ */
+export function applyMomentumBonus(
+  state: HazardRoundState,
+  momentumBonus: number = 0
+): HazardRoundState {
+  if (momentumBonus <= 0) return state;
+  
+  return {
+    ...state,
+    progress: {
+      force: state.progress.force + momentumBonus,
+      escape: state.progress.escape + momentumBonus,
+    },
+  };
+}
+
+/**
+ * Calculate momentum for next round.
+ * v2: carries ⌊surplus/2⌋ (cap 3) into the next round.
+ */
+export function calculateMomentum(
+  achieved: { force: number; escape: number },
+  required: number | { force: number; escape: number }
+): number {
+  let surplus = 0;
+  
+  if (typeof required === 'number') {
+    // Safe route: combined meter
+    const totalAchieved = achieved.force + achieved.escape;
+    surplus = Math.max(0, totalAchieved - required);
+  } else {
+    // Risk route: both meters must exceed threshold, use minimum surplus
+    const forceSurplus = Math.max(0, achieved.force - required.force);
+    const escapeSurplus = Math.max(0, achieved.escape - required.escape);
+    surplus = Math.min(forceSurplus, escapeSurplus);
+  }
+  
+  // Carry ⌊surplus/2⌋, capped at 3
+  return Math.min(3, Math.floor(surplus / 2));
+}
+
+/**
+ * Focus effect: next card +2 to both stats (applied in engine)
+ */
+export function applyFocusBonus(
+  state: HazardRoundState,
+  card: HazardActionCard,
+  powered: boolean = false
+): HazardRoundState {
+  // Focus bonus is handled by the engine when applying card progress
+  return applyCardProgress(state, card, powered);
+}
+
+/**
+ * Create effect functions for special cards
+ */
+
+export function createMomentumEffect(bonus: number): HazardCardEffect {
+  return (state: HazardRoundState) => ({
+    ...state,
+    momentum: state.momentum + bonus,
+  });
+}
+
+export function createDrawEffect(cardCount: number): HazardCardEffect {
+  return (state: HazardRoundState) => {
+    // Draw effect is handled by the engine (adds cards to hand)
+    // This just marks that the effect occurred
+    return state;
+  };
+}
+
+export function createSecondWindEffect(): HazardCardEffect {
+  return (state: HazardRoundState) => {
+    // Second Wind effect is handled by the engine (re-casts available dice)
+    return state;
+  };
+}
+
+export function createConvertEffect(): HazardCardEffect {
+  return (state: HazardRoundState) => {
+    // Convert effect is handled by the engine (converts X dice to colors)
+    return state;
+  };
+}
+
+/**
+ * v2: No enchantment system. This function is kept for compatibility.
+ */
+export function noOpEffect(state: HazardRoundState): HazardRoundState {
+  return state;
+}
+
+/**
+ * Check if a card can be played (not CRACK dead card)
+ */
+export function canPlayCard(card: HazardActionCard): boolean {
+  return card.id !== 'CRACK';
+}
+
+/**
+ * Check if a card is a utility card with special effects
+ */
+export function hasSpecialEffect(card: HazardActionCard): boolean {
+  return card.effect !== undefined;
+}
+
+/**
+ * Get card power level for balance analysis
+ */
+export function getCardPowerLevel(card: HazardActionCard, powered: boolean = false): number {
+  const forceValue = powered ? card.poweredForceValue : card.forceValue;
+  const escapeValue = powered ? card.poweredEscapeValue : card.escapeValue;
+  
+  return forceValue + escapeValue;
+}
+
+/**
+ * Validate card structure for v2
+ */
+export function validateCard(card: HazardActionCard): string[] {
+  const errors: string[] = [];
+  
+  if (!card.id || !card.name || !card.color || !card.rarity || !card.class) {
+    errors.push('Card missing required properties');
+  }
+  
+  if (typeof card.forceValue !== 'number' || typeof card.escapeValue !== 'number') {
+    errors.push('Card missing force/escape values');
+  }
+  
+  if (typeof card.poweredForceValue !== 'number' || typeof card.poweredEscapeValue !== 'number') {
+    errors.push('Card missing powered force/escape values');
+  }
+  
+  const validColors = ['red', 'blue', 'purple', 'gold'];
+  if (!validColors.includes(card.color)) {
+    errors.push('Invalid card color');
+  }
+  
+  const validRarities = ['common', 'uncommon', 'rare'];
+  if (!validRarities.includes(card.rarity)) {
+    errors.push('Invalid card rarity');
+  }
+  
+  return errors;
+}
+
+// Legacy compatibility functions - simplified for v2 
 export function addProgress(
   state: HazardRoundState,
   progressType: HazardProgressType,
   amount: number
 ): HazardRoundState {
-  const totalAmount = amount + state.focusBuffer;
-  
   return {
     ...state,
     progress: {
       ...state.progress,
-      [progressType]: state.progress[progressType] + totalAmount,
+      [progressType]: state.progress[progressType] + amount,
     },
-    focusBuffer: 0, // Focus buffer consumed
   };
 }
 
-/**
- * Add progress to multiple types with focus buffer application.
- */
 export function addMultiProgress(
   state: HazardRoundState,
   progressAmounts: Partial<Record<HazardProgressType, number>>
 ): HazardRoundState {
-  let remainingFocus = state.focusBuffer;
-  let newProgress = { ...state.progress };
-  
-  // Apply focus to first progress type only
-  let firstType = true;
+  const newProgress = { ...state.progress };
   
   for (const [progressType, amount] of Object.entries(progressAmounts)) {
     if (typeof amount === 'number') {
-      const totalAmount = firstType ? amount + remainingFocus : amount;
-      newProgress[progressType as HazardProgressType] += totalAmount;
-      if (firstType) {
-        remainingFocus = 0;
-        firstType = false;
-      }
+      newProgress[progressType as HazardProgressType] += amount;
     }
   }
   
   return {
     ...state,
     progress: newProgress,
-    focusBuffer: remainingFocus,
   };
 }
 
-/**
- * Add focus buff for next progress card.
- */
 export function addFocusBuff(
   state: HazardRoundState,
   amount: number
 ): HazardRoundState {
-  return {
-    ...state,
-    focusBuffer: state.focusBuffer + amount,
-  };
+  // v2: Focus handled differently, but keep compatibility
+  return { ...state, momentum: state.momentum + amount };
 }
 
-/**
- * Create a direct progress card effect.
- */
 export function createDirectProgressEffect(
   progressType: HazardProgressType,
   amount: number
@@ -89,16 +235,10 @@ export function createDirectProgressEffect(
   return (state: HazardRoundState) => addProgress(state, progressType, amount);
 }
 
-/**
- * Create a focus buff card effect.
- */
 export function createFocusEffect(amount: number): HazardCardEffect {
   return (state: HazardRoundState) => addFocusBuff(state, amount);
 }
 
-/**
- * Create a multi-progress card effect.
- */
 export function createMultiProgressEffect(
   progressAmounts: Partial<Record<HazardProgressType, number>>
 ): HazardCardEffect {
@@ -106,12 +246,7 @@ export function createMultiProgressEffect(
 }
 
 /**
- * No-op effect for cards that don't affect progress directly.
- */
-export const noOpEffect: HazardCardEffect = (state: HazardRoundState) => state;
-
-/**
- * Create a basic action card with common patterns.
+ * Legacy function for v0 compatibility - now simplified for v2
  */
 export function createActionCard(
   id: string,
@@ -124,44 +259,18 @@ export function createActionCard(
   progressType?: HazardProgressType | 'any',
   isEnchant = false
 ): HazardActionCard {
+  // This is a legacy compatibility function
+  // In v2, cards are created directly with the new format
   return {
     id,
     name,
+    color: 'red', // Default color
     rarity,
-    class: cardClass,
-    progressType,
-    topAction,
-    bottomAction,
-    bottomManaCost,
-    isEnchant,
+    class: cardClass as any,
+    forceValue: 1,
+    escapeValue: 1,
+    poweredForceValue: 2,
+    poweredEscapeValue: 2,
+    manaCost: bottomManaCost.length > 0 ? bottomManaCost[0] : null,
   };
-}
-
-/**
- * Validate a card definition (for debugging/testing).
- */
-export function validateCard(card: HazardActionCard): string[] {
-  const errors: string[] = [];
-  
-  if (!card.id) {
-    errors.push('Card missing ID');
-  }
-  
-  if (!card.name) {
-    errors.push('Card missing name');
-  }
-  
-  if (card.isEnchant && card.class !== 'persistent-enchantment') {
-    errors.push('Only persistent-enchantment cards can be enchantments');
-  }
-  
-  if (card.bottomManaCost.length > 0) {
-    for (const cost of card.bottomManaCost) {
-      if (cost.count <= 0) {
-        errors.push(`Invalid mana cost: ${cost.count} ${cost.color}`);
-      }
-    }
-  }
-  
-  return errors;
 }

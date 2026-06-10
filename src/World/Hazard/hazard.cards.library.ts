@@ -1,334 +1,445 @@
 /**
- * Hazard Minigame — Action Card Library
+ * Hazard Minigame — Action Card Library (v2)
  * 
- * Complete library of 30 action cards across 10 verb classes and 3 rarity tiers.
- * Each card has a free top action and a mana-cost bottom action.
+ * Mobile v2 card set: 14 starter cards + 6 reward-pool cards + CRACK dead card.
+ * Cards have color identity with force/escape stats and single-die powering.
  */
 
 import type { HazardActionCard } from './hazard.types';
-import {
-  createActionCard,
-  createDirectProgressEffect,
-  createFocusEffect,
-  createMultiProgressEffect,
-  noOpEffect,
-} from './hazard.cards';
 
 /**
- * All action cards available in the hazard minigame.
- * Organized by class and rarity for easier maintenance.
+ * All action cards available in the hazard minigame v2.
+ * Ported from mobile state/hazard/content.ts with exact stats, weights, and flavor.
  */
 
-// DIRECT PROGRESS CLASS (6 cards)
-const directProgressCards: HazardActionCard[] = [
-  // Common (3 cards)
-  createActionCard(
-    'A01',
-    'Steady Footing',
-    'common',
-    'direct-progress',
-    createDirectProgressEffect('stability', 1),
-    createDirectProgressEffect('stability', 3),
-    [{ color: 'any', count: 1 }],
-    'stability'
-  ),
+// STARTER CARDS (14 cards) - Basic deck for every hazard
+const STARTER_CARDS: HazardActionCard[] = [
+  // Red cards (high FORCE)
+  {
+    id: 'A01',
+    name: 'Strike',
+    flavor: 'Direct approach. Hit hard, hit fast.',
+    color: 'red',
+    rarity: 'common',
+    class: 'direct-progress',
+    forceValue: 3,
+    escapeValue: 1,
+    poweredForceValue: 6,
+    poweredEscapeValue: 2,
+    manaCost: { color: 'red', count: 1 },
+  },
   
-  createActionCard(
-    'A02',
-    'Quick Sprint',
-    'common',
-    'direct-progress',
-    createDirectProgressEffect('escape', 1),
-    createDirectProgressEffect('escape', 3),
-    [{ color: 'green', count: 1 }],
-    'escape'
-  ),
+  {
+    id: 'A02', 
+    name: 'Charge',
+    flavor: 'Momentum builds. Break through their line.',
+    color: 'red',
+    rarity: 'common',
+    class: 'direct-progress',
+    forceValue: 4,
+    escapeValue: 0,
+    poweredForceValue: 8,
+    poweredEscapeValue: 1,
+    manaCost: { color: 'red', count: 1 },
+  },
+
+  {
+    id: 'A03',
+    name: 'Rally',
+    flavor: 'Together we stand. Together we fight.',
+    color: 'red',
+    rarity: 'uncommon',
+    class: 'utility',
+    forceValue: 2,
+    escapeValue: 1,
+    poweredForceValue: 4,
+    poweredEscapeValue: 3,
+    manaCost: { color: 'red', count: 1 },
+    effect: (state) => {
+      // Rally: +1 momentum
+      return { ...state, momentum: state.momentum + 1 };
+    },
+  },
+
+  // Blue cards (high ESCAPE)
+  {
+    id: 'A04',
+    name: 'Dodge',
+    flavor: 'Step left. Duck right. Stay alive.',
+    color: 'blue',
+    rarity: 'common',
+    class: 'direct-progress',
+    forceValue: 1,
+    escapeValue: 3,
+    poweredForceValue: 2,
+    poweredEscapeValue: 6,
+    manaCost: { color: 'blue', count: 1 },
+  },
   
-  createActionCard(
-    'A03',
-    'Gather Supplies',
-    'common',
-    'direct-progress',
-    createDirectProgressEffect('supply', 1),
-    createDirectProgressEffect('supply', 3),
-    [{ color: 'blue', count: 1 }],
-    'supply'
-  ),
+  {
+    id: 'A05',
+    name: 'Sprint',
+    flavor: 'When in doubt, run faster.',
+    color: 'blue',
+    rarity: 'common',
+    class: 'direct-progress',
+    forceValue: 0,
+    escapeValue: 4,
+    poweredForceValue: 1,
+    poweredEscapeValue: 8,
+    manaCost: { color: 'blue', count: 1 },
+  },
+
+  {
+    id: 'A06',
+    name: 'Misdirection',
+    flavor: 'Look here. Move there. Escape everywhere.',
+    color: 'blue',
+    rarity: 'uncommon',
+    class: 'utility',
+    forceValue: 1,
+    escapeValue: 2,
+    poweredForceValue: 3,
+    poweredEscapeValue: 4,
+    manaCost: { color: 'blue', count: 1 },
+    effect: (state) => {
+      // Misdirection: +1 momentum
+      return { ...state, momentum: state.momentum + 1 };
+    },
+  },
+
+  // Purple cards (balanced FORCE/ESCAPE)
+  {
+    id: 'A07',
+    name: 'Adapt',
+    flavor: 'Bend, don\'t break. Flow with the challenge.',
+    color: 'purple',
+    rarity: 'common',
+    class: 'direct-progress',
+    forceValue: 2,
+    escapeValue: 2,
+    poweredForceValue: 4,
+    poweredEscapeValue: 4,
+    manaCost: { color: 'purple', count: 1 },
+  },
   
-  // Uncommon (2 cards)
-  createActionCard(
-    'A04',
-    'Forceful Push',
-    'uncommon',
-    'direct-progress',
-    createDirectProgressEffect('force', 2),
-    createDirectProgressEffect('force', 5),
-    [{ color: 'red', count: 1 }],
-    'force'
-  ),
-  
-  createActionCard(
-    'A05',
-    'Adaptive Movement',
-    'uncommon',
-    'direct-progress',
-    createDirectProgressEffect('escape', 1),
-    createMultiProgressEffect({ escape: 2, stability: 2 }),
-    [{ color: 'any', count: 1 }],
-    'any'
-  ),
-  
-  // Rare (1 card)
-  createActionCard(
-    'A06',
-    'All-Out Effort',
-    'rare',
-    'direct-progress',
-    createDirectProgressEffect('force', 1),
-    createMultiProgressEffect({ 
-      stability: 2, 
-      escape: 2, 
-      supply: 2, 
-      force: 2 
-    }),
-    [{ color: 'any', count: 1 }],
-    'any'
-  ),
+  {
+    id: 'A08',
+    name: 'Balance',
+    flavor: 'Equal parts courage and caution.',
+    color: 'purple',
+    rarity: 'common',
+    class: 'direct-progress',
+    forceValue: 3,
+    escapeValue: 2,
+    poweredForceValue: 5,
+    poweredEscapeValue: 4,
+    manaCost: { color: 'purple', count: 1 },
+  },
+
+  {
+    id: 'A09',
+    name: 'Flow State',
+    flavor: 'Mind clear. Body ready. Spirit focused.',
+    color: 'purple',
+    rarity: 'uncommon',
+    class: 'utility',
+    forceValue: 2,
+    escapeValue: 2,
+    poweredForceValue: 3,
+    poweredEscapeValue: 3,
+    manaCost: { color: 'purple', count: 1 },
+    effect: (state) => {
+      // Flow State: +1 momentum
+      return { ...state, momentum: state.momentum + 1 };
+    },
+  },
+
+  // Gold cards (strong both)
+  {
+    id: 'A10',
+    name: 'Masterful Strike',
+    flavor: 'Precision and power in perfect harmony.',
+    color: 'gold',
+    rarity: 'rare',
+    class: 'direct-progress',
+    forceValue: 4,
+    escapeValue: 3,
+    poweredForceValue: 7,
+    poweredEscapeValue: 6,
+    manaCost: { color: 'gold', count: 1 }, // Gold-only, no substitution
+  },
+
+  // Utility cards
+  {
+    id: 'A11',
+    name: 'Draw',
+    flavor: 'Knowledge is preparation. Preparation is survival.',
+    color: 'purple',
+    rarity: 'common',
+    class: 'draw',
+    forceValue: 1,
+    escapeValue: 1,
+    poweredForceValue: 1,
+    poweredEscapeValue: 1,
+    manaCost: null, // Free to play powered action
+    effect: (state) => {
+      // Draw: +1 card when powered (implemented in engine)
+      return state;
+    },
+  },
+
+  {
+    id: 'A12',
+    name: 'Second Wind',
+    flavor: 'The body tires. The spirit endures.',
+    color: 'red',
+    rarity: 'uncommon',
+    class: 'recast',
+    forceValue: 1,
+    escapeValue: 0,
+    poweredForceValue: 2,
+    poweredEscapeValue: 1,
+    manaCost: { color: 'red', count: 1 },
+    effect: (state) => {
+      // Second Wind: re-cast available dice (implemented in engine)
+      return state;
+    },
+  },
+
+  {
+    id: 'A13',
+    name: 'Convert',
+    flavor: 'Transform weakness into strength.',
+    color: 'blue',
+    rarity: 'uncommon',
+    class: 'conversion',
+    forceValue: 0,
+    escapeValue: 1,
+    poweredForceValue: 1,
+    poweredEscapeValue: 2,
+    manaCost: { color: 'blue', count: 1 },
+    effect: (state) => {
+      // Convert: change X dice to available (implemented in engine)
+      return state;
+    },
+  },
+
+  {
+    id: 'A14',
+    name: 'Focus',
+    flavor: 'Clear the mind. Sharpen the intent.',
+    color: 'purple',
+    rarity: 'common',
+    class: 'utility',
+    forceValue: 1,
+    escapeValue: 1,
+    poweredForceValue: 2,
+    poweredEscapeValue: 2,
+    manaCost: { color: 'purple', count: 1 },
+    effect: (state) => {
+      // Focus: next card +2 to both stats (implemented in engine)
+      return state;
+    },
+  },
 ];
 
-// FOCUS CLASS (3 cards)
-const focusCards: HazardActionCard[] = [
-  createActionCard(
-    'A07',
-    'Center Yourself',
-    'common',
-    'focus',
-    createFocusEffect(1),
-    createFocusEffect(3),
-    [{ color: 'yellow', count: 1 }]
-  ),
-  
-  createActionCard(
-    'A08',
-    'Deep Concentration',
-    'uncommon',
-    'focus',
-    createFocusEffect(2),
-    createFocusEffect(5),
-    [{ color: 'purple', count: 1 }]
-  ),
-  
-  createActionCard(
-    'A09',
-    'Meditation Mastery',
-    'rare',
-    'focus',
-    createFocusEffect(3),
-    createFocusEffect(8),
-    [{ color: 'purple', count: 1 }]
-  ),
+// REWARD POOL CARDS (6 cards) - Rare cards available as rewards
+const REWARD_POOL_CARDS: HazardActionCard[] = [
+  {
+    id: 'R01',
+    name: 'Overwhelming Force',
+    flavor: 'When subtlety fails, use more force.',
+    color: 'red',
+    rarity: 'rare',
+    class: 'direct-progress',
+    forceValue: 6,
+    escapeValue: 2,
+    poweredForceValue: 12,
+    poweredEscapeValue: 3,
+    manaCost: { color: 'red', count: 1 },
+    weight: 3,
+  },
+
+  {
+    id: 'R02',
+    name: 'Perfect Escape',
+    flavor: 'Gone without a trace. Present without detection.',
+    color: 'blue',
+    rarity: 'rare',
+    class: 'direct-progress',
+    forceValue: 2,
+    escapeValue: 6,
+    poweredForceValue: 3,
+    poweredEscapeValue: 12,
+    manaCost: { color: 'blue', count: 1 },
+    weight: 3,
+  },
+
+  {
+    id: 'R03',
+    name: 'Transcendence',
+    flavor: 'Beyond force, beyond escape. Beyond limitation.',
+    color: 'gold',
+    rarity: 'rare',
+    class: 'direct-progress',
+    forceValue: 5,
+    escapeValue: 5,
+    poweredForceValue: 10,
+    poweredEscapeValue: 10,
+    manaCost: { color: 'gold', count: 1 },
+    weight: 2,
+  },
+
+  {
+    id: 'R04',
+    name: 'Unlimited Draw',
+    flavor: 'Every option available. Every path clear.',
+    color: 'purple',
+    rarity: 'rare',
+    class: 'draw',
+    forceValue: 2,
+    escapeValue: 2,
+    poweredForceValue: 2,
+    poweredEscapeValue: 2,
+    manaCost: null,
+    effect: (state) => {
+      // Unlimited Draw: +3 cards when powered
+      return state;
+    },
+    weight: 2,
+  },
+
+  {
+    id: 'R05',
+    name: 'Perfect Conversion',
+    flavor: 'Turn every setback into advantage.',
+    color: 'gold',
+    rarity: 'rare',
+    class: 'conversion',
+    forceValue: 3,
+    escapeValue: 3,
+    poweredForceValue: 4,
+    poweredEscapeValue: 4,
+    manaCost: { color: 'gold', count: 1 },
+    effect: (state) => {
+      // Perfect Conversion: convert all X dice + re-cast available dice
+      return state;
+    },
+    weight: 1,
+  },
+
+  {
+    id: 'R06',
+    name: 'Momentum Master',
+    flavor: 'Every action builds. Every success multiplies.',
+    color: 'purple',
+    rarity: 'rare',
+    class: 'utility',
+    forceValue: 3,
+    escapeValue: 3,
+    poweredForceValue: 5,
+    poweredEscapeValue: 5,
+    manaCost: { color: 'purple', count: 1 },
+    effect: (state) => {
+      // Momentum Master: +3 momentum
+      return { ...state, momentum: state.momentum + 3 };
+    },
+    weight: 2,
+  },
 ];
 
-// MANA CONVERSION CLASS (3 cards - placeholder implementations)
-const manaConversionCards: HazardActionCard[] = [
-  createActionCard(
-    'A10',
-    'Transmute Energy',
-    'common',
-    'mana-conversion',
-    noOpEffect, // Top: no effect (mana conversion is bottom-only)
-    noOpEffect, // Bottom: convert 1 die to different color (TODO: implement)
-    [{ color: 'any', count: 1 }]
-  ),
-  
-  createActionCard(
-    'A11',
-    'Elemental Shift',
-    'uncommon',
-    'mana-conversion',
-    noOpEffect,
-    noOpEffect, // Bottom: convert 2 dice (TODO: implement)
-    [{ color: 'any', count: 1 }]
-  ),
-  
-  createActionCard(
-    'A12',
-    'Prismatic Flow',
-    'rare',
-    'mana-conversion',
-    noOpEffect,
-    noOpEffect, // Bottom: convert all available dice to chosen color (TODO: implement)
-    [{ color: 'any', count: 1 }]
-  ),
+// DEAD CARD - Penalty card that cannot be played
+const DEAD_CARDS: HazardActionCard[] = [
+  {
+    id: 'CRACK',
+    name: 'CRACK',
+    flavor: 'Broken. Useless. A reminder of failure.',
+    color: 'red', // Dead cards take up red slots typically
+    rarity: 'common',
+    class: 'utility',
+    forceValue: 0,
+    escapeValue: 0,
+    poweredForceValue: 0,
+    poweredEscapeValue: 0,
+    manaCost: null, // Cannot be played
+    effect: (state) => {
+      // CRACK: Dead card, no effect
+      return state;
+    },
+  },
 ];
 
-// MANA CREATION CLASS (3 cards - placeholder implementations)
-const manaCreationCards: HazardActionCard[] = [
-  createActionCard(
-    'A13',
-    'Spark',
-    'common',
-    'mana-creation',
-    noOpEffect,
-    noOpEffect, // Bottom: create 1 temporary die (TODO: implement)
-    [{ color: 'red', count: 1 }]
-  ),
-  
-  createActionCard(
-    'A14',
-    'Surge',
-    'uncommon',
-    'mana-creation',
-    noOpEffect,
-    noOpEffect, // Bottom: create 2 temporary dice (TODO: implement)
-    [{ color: 'blue', count: 1 }]
-  ),
-  
-  createActionCard(
-    'A15',
-    'Overflow',
-    'rare',
-    'mana-creation',
-    noOpEffect,
-    noOpEffect, // Bottom: create 3 temporary dice of chosen colors (TODO: implement)
-    [{ color: 'any', count: 1 }]
-  ),
-];
-
-// CARD DRAW CLASS (3 cards - placeholder implementations)
-const cardDrawCards: HazardActionCard[] = [
-  createActionCard(
-    'A16',
-    'Survey Options',
-    'common',
-    'card-draw',
-    noOpEffect, // Top: draw 1 card (TODO: implement)
-    noOpEffect, // Bottom: draw 3 cards (TODO: implement)
-    [{ color: 'green', count: 1 }]
-  ),
-  
-  createActionCard(
-    'A17',
-    'Tactical Review',
-    'uncommon',
-    'card-draw',
-    noOpEffect,
-    noOpEffect, // Bottom: draw 2 cards, discard 1 (TODO: implement)
-    [{ color: 'blue', count: 1 }]
-  ),
-  
-  createActionCard(
-    'A18',
-    'Perfect Insight',
-    'rare',
-    'card-draw',
-    noOpEffect,
-    noOpEffect, // Bottom: look at top 5, choose 2 to hand (TODO: implement)
-    [{ color: 'purple', count: 1 }]
-  ),
-];
-
-// Additional classes will be implemented in subsequent units...
-// For now, create placeholder arrays to maintain the 30-card structure
-
-const riskSacrificeCards: HazardActionCard[] = [];
-const failureMitigationCards: HazardActionCard[] = [];
-const synergyComboCards: HazardActionCard[] = [];
-const xDieInteractionCards: HazardActionCard[] = [];
-const persistentEnchantmentCards: HazardActionCard[] = [];
-
-/**
- * Complete action card library - all 30 cards.
- */
+// COMBINED LIBRARY
 export const ACTION_CARD_LIBRARY: HazardActionCard[] = [
-  ...directProgressCards,
-  ...focusCards,
-  ...manaConversionCards,
-  ...manaCreationCards,
-  ...cardDrawCards,
-  ...riskSacrificeCards,
-  ...failureMitigationCards,
-  ...synergyComboCards,
-  ...xDieInteractionCards,
-  ...persistentEnchantmentCards,
+  ...STARTER_CARDS,
+  ...REWARD_POOL_CARDS,
+  ...DEAD_CARDS,
 ];
 
+// DECK CONFIGURATIONS
+export const STARTER_DECK_CARD_IDS: string[] = STARTER_CARDS.map(card => card.id);
+export const REWARD_POOL_CARD_IDS: string[] = REWARD_POOL_CARDS.map(card => card.id);
+
 /**
- * Get card by ID.
+ * Get a card by ID from the library
  */
-export function getActionCard(cardId: string): HazardActionCard | null {
-  return ACTION_CARD_LIBRARY.find(card => card.id === cardId) || null;
+export function getActionCard(id: string): HazardActionCard | null {
+  return ACTION_CARD_LIBRARY.find(card => card.id === id) || null;
 }
 
 /**
- * Get all cards of a specific class.
+ * Get cards by class
  */
 export function getCardsByClass(cardClass: string): HazardActionCard[] {
   return ACTION_CARD_LIBRARY.filter(card => card.class === cardClass);
 }
 
 /**
- * Get all cards of a specific rarity.
+ * Get cards by rarity
  */
 export function getCardsByRarity(rarity: string): HazardActionCard[] {
   return ACTION_CARD_LIBRARY.filter(card => card.rarity === rarity);
 }
 
 /**
- * Basic starter deck for new players (common cards only).
+ * Get cards by color
  */
-export const STARTER_DECK_CARD_IDS = [
-  'A01', 'A01', 'A02', 'A02', 'A03', 'A03', // Direct progress basics (2x each)
-  'A07', 'A07', // Focus basics (2x)
-  'A10', 'A13', 'A16', // One of each other common class
-];
+export function getCardsByColor(color: string): HazardActionCard[] {
+  return ACTION_CARD_LIBRARY.filter(card => card.color === color);
+}
 
 /**
- * Validate the complete card library.
+ * Get reward pool cards with weights for selection
  */
-export function validateCardLibrary(): string[] {
-  const errors: string[] = [];
+export function getWeightedRewardCards(): HazardActionCard[] {
+  return REWARD_POOL_CARDS.filter(card => card.weight && card.weight > 0);
+}
+
+/**
+ * Validate the card library for consistency
+ */
+export function validateCardLibrary(): boolean {
+  const allIds = ACTION_CARD_LIBRARY.map(card => card.id);
+  const uniqueIds = new Set(allIds);
   
-  // Check for duplicate IDs
-  const seenIds = new Set<string>();
+  if (allIds.length !== uniqueIds.size) {
+    console.error('Card library has duplicate IDs');
+    return false;
+  }
+  
+  // Check that all cards have required properties
   for (const card of ACTION_CARD_LIBRARY) {
-    if (seenIds.has(card.id)) {
-      errors.push(`Duplicate card ID: ${card.id}`);
+    if (!card.id || !card.name || !card.color || !card.rarity || !card.class) {
+      console.error('Card missing required properties:', card.id);
+      return false;
     }
-    seenIds.add(card.id);
-  }
-  
-  // Check total count
-  const expectedCount = 30;
-  if (ACTION_CARD_LIBRARY.length !== expectedCount) {
-    errors.push(`Expected ${expectedCount} cards, got ${ACTION_CARD_LIBRARY.length}`);
-  }
-  
-  // Check class distribution (6/3/3/3/3/3/3/3/3/3)
-  const classCounts: Record<string, number> = {};
-  for (const card of ACTION_CARD_LIBRARY) {
-    classCounts[card.class] = (classCounts[card.class] || 0) + 1;
-  }
-  
-  const expectedClassCounts = {
-    'direct-progress': 6,
-    'focus': 3,
-    'mana-conversion': 3,
-    'mana-creation': 3,
-    'card-draw': 3,
-    'risk-sacrifice': 3,
-    'failure-mitigation': 3,
-    'synergy-combo': 3,
-    'x-die-interaction': 3,
-    'persistent-enchantment': 3,
-  };
-  
-  for (const [cardClass, expectedCount] of Object.entries(expectedClassCounts)) {
-    const actualCount = classCounts[cardClass] || 0;
-    if (actualCount !== expectedCount) {
-      errors.push(`Class ${cardClass}: expected ${expectedCount}, got ${actualCount}`);
+    
+    if (typeof card.forceValue !== 'number' || typeof card.escapeValue !== 'number') {
+      console.error('Card missing force/escape values:', card.id);
+      return false;
     }
   }
   
-  return errors;
+  return true;
 }

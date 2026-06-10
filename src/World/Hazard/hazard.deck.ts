@@ -1,8 +1,8 @@
 /**
- * Hazard Minigame — Deck Management
+ * Hazard Minigame — Deck Management (v2)
  * 
- * Handles deck shuffling, card drawing, discard pile management, 
- * and enchantment zone mechanics with deterministic RNG.
+ * Handles deck shuffling, card drawing, discard pile management.
+ * v2: No enchantment zone, simplified deck persistence across hazards.
  */
 
 import type { HazardRngFunction } from './hazard.types';
@@ -24,13 +24,12 @@ export function shuffleDeck<T>(deck: T[], rng: HazardRngFunction): T[] {
 
 /**
  * Draw cards from deck into hand. If deck empties, reshuffle discard pile.
- * Returns updated deck, hand, and discard state.
+ * v2: No enchantment zone, simplified reshuffling.
  */
 export function drawCards(
   deck: string[],
   hand: string[],
   discard: string[],
-  enchantmentZone: string[],
   count: number,
   rng: HazardRngFunction
 ): {
@@ -45,24 +44,15 @@ export function drawCards(
   let cardsDrawn = 0;
   
   while (cardsDrawn < count) {
-    // If deck is empty, reshuffle discard pile (excluding enchantments)
+    // If deck is empty, reshuffle discard pile
     if (workingDeck.length === 0) {
       if (workingDiscard.length === 0) {
         // No more cards available
         break;
       }
       
-      // Filter out enchantment cards from discard before reshuffling
-      const reshufflableCards = workingDiscard.filter(
-        cardId => !enchantmentZone.includes(cardId)
-      );
-      
-      if (reshufflableCards.length === 0) {
-        // No reshufflable cards available
-        break;
-      }
-      
-      workingDeck = shuffleDeck(reshufflableCards, rng);
+      // v2: Simple reshuffle of all discard cards
+      workingDeck = shuffleDeck(workingDiscard, rng);
       workingDiscard = [];
     }
     
@@ -83,18 +73,15 @@ export function drawCards(
 
 /**
  * Play a card from hand to discard pile.
- * Enchantment cards go to enchantment zone instead of discard.
+ * v2: All cards go to discard pile, no enchantment zone.
  */
 export function playCard(
   hand: string[],
   discard: string[],
-  enchantmentZone: string[],
-  cardId: string,
-  isEnchantment: boolean
+  cardId: string
 ): {
   newHand: string[];
   newDiscard: string[];
-  newEnchantmentZone: string[];
 } {
   const cardIndex = hand.indexOf(cardId);
   if (cardIndex === -1) {
@@ -104,24 +91,15 @@ export function playCard(
   const newHand = [...hand];
   newHand.splice(cardIndex, 1);
   
-  if (isEnchantment) {
-    return {
-      newHand,
-      newDiscard: [...discard],
-      newEnchantmentZone: [...enchantmentZone, cardId],
-    };
-  } else {
-    return {
-      newHand,
-      newDiscard: [...discard, cardId],
-      newEnchantmentZone: [...enchantmentZone],
-    };
-  }
+  return {
+    newHand,
+    newDiscard: [...discard, cardId],
+  };
 }
 
 /**
  * Initialize a player deck for a hazard. 
- * In v0, this is the player's current hazard deck.
+ * v2: Uses starter deck + any acquired cards from previous hazards.
  */
 export function initializeHazardDeck(
   playerDeckCardIds: string[],
@@ -148,12 +126,12 @@ export function discardHand(
 
 /**
  * Validate deck state consistency (for debugging/testing).
+ * v2: No enchantment zone to validate.
  */
 export function validateDeckState(
   deck: string[],
   hand: string[],
-  discard: string[],
-  enchantmentZone: string[]
+  discard: string[]
 ): string[] {
   const errors: string[] = [];
   
@@ -171,17 +149,42 @@ export function validateDeckState(
     }
   }
   
-  // Check enchantment zone doesn't overlap with other zones
-  for (const enchantCard of enchantmentZone) {
-    if (allCards.includes(enchantCard)) {
-      errors.push(`Enchantment card ${enchantCard} also appears in deck/hand/discard`);
-    }
-  }
-  
   // Hand size should not exceed 5 during play
   if (hand.length > 5) {
     errors.push(`Hand size ${hand.length} exceeds maximum of 5`);
   }
   
   return errors;
+}
+
+// Legacy compatibility functions for v0 API
+export function drawCards_v0(
+  deck: string[],
+  hand: string[],
+  discard: string[],
+  enchantmentZone: string[],
+  count: number,
+  rng: HazardRngFunction
+) {
+  const result = drawCards(deck, hand, discard, count, rng);
+  return {
+    newDeck: result.newDeck,
+    newHand: result.newHand,
+    newDiscard: result.newDiscard,
+  };
+}
+
+export function playCard_v0(
+  hand: string[],
+  discard: string[],
+  enchantmentZone: string[],
+  cardId: string,
+  isEnchantment: boolean
+) {
+  const result = playCard(hand, discard, cardId);
+  return {
+    newHand: result.newHand,
+    newDiscard: result.newDiscard,
+    newEnchantmentZone: enchantmentZone, // unchanged in v2
+  };
 }

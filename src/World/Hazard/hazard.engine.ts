@@ -1,74 +1,77 @@
 /**
- * Hazard Minigame — Core Engine
+ * Hazard Minigame — Core Engine (v2)
  * 
- * State machine implementation for hazard minigame progression.
- * Handles initialization, round resolution, scoring, and state transitions.
+ * Mobile v2 engine: reveal → hand → route → cast → play → resolve → outcome → rewards
+ * Safe combined meter and risk dual-meter logic with no-recast dice persistence.
  */
 
 import type {
   HazardMinigameState,
   HazardCard,
+  HazardActionCard,
   HazardRoundState,
   HazardRoundResult,
-  HazardProgressType,
-  HazardPhase,
-  HazardMark,
-  HazardManaDie,
+  HazardOutcome,
   HazardRngFunction,
 } from './hazard.types';
-import { rollManaDice, spendMana, canAffordCost, refreshDiceBetweenRounds } from './hazard.dice';
-import { initializeHazardDeck, drawCards, playCard, discardHand } from './hazard.deck';
-import { getActionCard } from './hazard.cards.library';
+
+import { rollManaDice, canAffordCost, spendMana, recastAvailableDice, convertXDice, countAvailableNonXDice } from './hazard.dice';
+import { drawCards, playCard, initializeHazardDeck, discardHand } from './hazard.deck';
+import { applyCardProgress, applyMomentumBonus, calculateMomentum } from './hazard.cards';
+import { getActionCard, STARTER_DECK_CARD_IDS } from './hazard.cards.library';
 
 /**
  * Initialize a new hazard minigame session.
+ * v2: includes session seed for deterministic RNG.
  */
 export function initializeHazard(
   hazardCard: HazardCard,
-  playerDeckCardIds: string[],
-  rng: HazardRngFunction
+  playerDeckCardIds: string[] = STARTER_DECK_CARD_IDS,
+  sessionSeed: number
 ): HazardMinigameState {
+  // Create seeded RNG function
+  const rng: HazardRngFunction = createSeededRng(sessionSeed);
+  
   const shuffledDeck = initializeHazardDeck(playerDeckCardIds, rng);
   
   return {
     phase: 'reveal',
     hazardCard,
     chosenRoute: null,
-    playerChoiceProgressType: null,
-    mana: [],
+    mana: [], // Will be rolled during cast phase
     deck: shuffledDeck,
     hand: [],
     discard: [],
-    enchantmentZone: [],
     rounds: [],
     currentRound: null,
-    finalScore: null,
+    outcome: null,
+    sessionSeed,
   };
 }
 
 /**
- * Draw opening hand and advance to route selection.
+ * Draw opening hand (typically 5 cards).
  */
 export function drawOpeningHand(
   state: HazardMinigameState,
-  rng: HazardRngFunction
+  handSize: number = 5
 ): HazardMinigameState {
   if (state.phase !== 'reveal') {
-    throw new Error(`Cannot draw hand in phase: ${state.phase}`);
+    throw new Error('Can only draw opening hand during reveal phase');
   }
   
+  const rng = createSeededRng(state.sessionSeed);
   const { newDeck, newHand, newDiscard } = drawCards(
     state.deck,
     state.hand,
     state.discard,
-    state.enchantmentZone,
-    5,
+    handSize,
     rng
   );
   
   return {
     ...state,
-    phase: 'route-select',
+    phase: 'hand',
     deck: newDeck,
     hand: newHand,
     discard: newDiscard,
@@ -76,236 +79,315 @@ export function drawOpeningHand(
 }
 
 /**
- * Select route (top or bottom) and advance to dice rolling.
+ * Select safe or risk route.
  */
 export function selectRoute(
   state: HazardMinigameState,
-  route: 'top' | 'bottom',
-  playerChoiceProgressType?: HazardProgressType
+  route: 'safe' | 'risk'
 ): HazardMinigameState {
-  if (state.phase !== 'route-select') {
-    throw new Error(`Cannot select route in phase: ${state.phase}`);
+  if (state.phase !== 'hand') {
+    throw new Error('Can only select route during hand phase');
   }
   
   return {
     ...state,
-    phase: 'dice-roll',
+    phase: 'cast',
     chosenRoute: route,
-    playerChoiceProgressType: playerChoiceProgressType || null,
   };
 }
 
 /**
- * Roll mana dice and start first round.
+ * Cast dice once for the entire hazard.
+ * v2: Dice are cast once and persist through all rounds.
  */
-export function rollDiceAndStartRound(
-  state: HazardMinigameState,
-  rng: HazardRngFunction
-): HazardMinigameState {
-  if (state.phase !== 'dice-roll') {
-    throw new Error(`Cannot roll dice in phase: ${state.phase}`);
+export function castDice(state: HazardMinigameState): HazardMinigameState {
+  if (state.phase !== 'cast') {
+    throw new Error('Can only cast dice during cast phase');
   }
   
+  const rng = createSeededRng(state.sessionSeed + 1); // Different seed for dice
   const mana = rollManaDice(rng);
-  const currentRound = createRoundState(1, mana);
   
   return {
     ...state,
-    phase: 'round-play',
+    phase: 'play',
     mana,
-    currentRound,
+    currentRound: {
+      round: 1,
+      progress: { force: 0, escape: 0 },
+      momentum: 0,
+      cardsPlayed: [],
+      manaCopy: [...mana],
+    },
   };
 }
 
 /**
- * Play a card during the round-play phase.
+ * Play a card during the play phase.
+ * v2: Cards have direct force/escape values and optional special effects.
  */
 export function playCardInRound(
   state: HazardMinigameState,
   cardId: string,
-  useBottomAction = false
+  powered: boolean = false
 ): HazardMinigameState {
-  if (state.phase !== 'round-play') {
-    throw new Error(`Cannot play card in phase: ${state.phase}`);
-  }
-  
-  if (!state.currentRound) {
-    throw new Error('No current round active');
+  if (state.phase !== 'play' || !state.currentRound) {
+    throw new Error('Can only play cards during play phase');
   }
   
   const card = getActionCard(cardId);
   if (!card) {
-    throw new Error(`Card not found: ${cardId}`);
+    throw new Error(`Card ${cardId} not found in library`);
   }
   
-  // Check mana cost for bottom action
-  if (useBottomAction && card.bottomManaCost.length > 0) {
-    const canInteractWithX = card.class === 'x-die-interaction';
-    if (!canAffordCost(state.mana, card.bottomManaCost, canInteractWithX)) {
-      throw new Error(`Cannot afford bottom action of ${cardId}`);
+  if (!state.hand.includes(cardId)) {
+    throw new Error(`Card ${cardId} not in hand`);
+  }
+  
+  if (card.id === 'CRACK') {
+    throw new Error('Cannot play CRACK dead card');
+  }
+  
+  // Check mana cost if powered
+  if (powered && card.manaCost) {
+    if (!canAffordCost(state.mana, card.manaCost)) {
+      throw new Error(`Cannot afford mana cost for ${cardId}`);
     }
   }
   
-  // Update deck state
-  const { newHand, newDiscard, newEnchantmentZone } = playCard(
-    state.hand,
-    state.discard,
-    state.enchantmentZone,
-    cardId,
-    useBottomAction && card.isEnchant
-  );
-  
-  // Spend mana if bottom action
+  // Spend mana if powered
   let newMana = state.mana;
-  if (useBottomAction && card.bottomManaCost.length > 0) {
-    const canInteractWithX = card.class === 'x-die-interaction';
-    newMana = spendMana(state.mana, card.bottomManaCost, canInteractWithX);
+  if (powered && card.manaCost) {
+    newMana = spendMana(state.mana, card.manaCost);
   }
   
-  // Apply card effect
-  const cardEffect = useBottomAction ? card.bottomAction : card.topAction;
-  const updatedRound = cardEffect(state.currentRound);
+  // Remove card from hand and add to discard
+  const { newHand, newDiscard } = playCard(state.hand, state.discard, cardId);
+  
+  // Apply card progress
+  let newRoundState = applyCardProgress(state.currentRound, card, powered);
+  
+  // Apply special effects
+  if (card.effect) {
+    newRoundState = card.effect(newRoundState);
+  }
+  
+  // Handle special card effects
+  if (card.id === 'A12' && powered) {
+    // Second Wind: re-cast available dice
+    const rng = createSeededRng(state.sessionSeed + state.rounds.length + 2);
+    newMana = recastAvailableDice(newMana, rng);
+  }
+  
+  if (card.id === 'A13' && powered) {
+    // Convert: change X dice to colors
+    const rng = createSeededRng(state.sessionSeed + state.rounds.length + 3);
+    newMana = convertXDice(newMana, rng);
+  }
+  
+  if (card.id === 'A11' && powered) {
+    // Draw: add cards to hand
+    const rng = createSeededRng(state.sessionSeed + state.rounds.length + 4);
+    const { newDeck: updatedDeck, newHand: updatedHand } = drawCards(
+      state.deck, newHand, newDiscard, 1, rng
+    );
+    return {
+      ...state,
+      mana: newMana,
+      deck: updatedDeck,
+      hand: updatedHand,
+      discard: newDiscard,
+      currentRound: {
+        ...newRoundState,
+        cardsPlayed: [...newRoundState.cardsPlayed, cardId],
+      },
+    };
+  }
   
   return {
     ...state,
     mana: newMana,
     hand: newHand,
     discard: newDiscard,
-    enchantmentZone: newEnchantmentZone,
     currentRound: {
-      ...updatedRound,
-      cardsPlayed: [...updatedRound.cardsPlayed, cardId],
+      ...newRoundState,
+      cardsPlayed: [...newRoundState.cardsPlayed, cardId],
     },
   };
 }
 
 /**
- * Resolve the current round (mark O or X, apply penalties).
+ * Resolve the current round and check success/failure.
+ * v2: Safe route uses combined meter, risk route requires BOTH meters.
  */
 export function resolveRound(state: HazardMinigameState): HazardMinigameState {
-  if (state.phase !== 'round-play') {
-    throw new Error(`Cannot resolve round in phase: ${state.phase}`);
+  if (state.phase !== 'play' || !state.currentRound) {
+    throw new Error('Can only resolve during play phase with active round');
   }
   
-  if (!state.currentRound || !state.chosenRoute) {
-    throw new Error('No current round or chosen route');
+  if (!state.chosenRoute) {
+    throw new Error('No route selected');
   }
   
-  const route = state.chosenRoute === 'top' 
-    ? state.hazardCard.topRoute 
-    : state.hazardCard.bottomRoute;
+  const route = state.chosenRoute === 'safe' 
+    ? state.hazardCard.safeRoute 
+    : state.hazardCard.riskRoute;
   
   const roundIndex = state.currentRound.round - 1;
-  const thresholdRequired = route.roundThresholds[roundIndex] || 0;
   
-  // Determine required progress type
-  let requiredProgressType = route.progressType;
-  if (requiredProgressType === 'player-choice' && state.playerChoiceProgressType) {
-    requiredProgressType = state.playerChoiceProgressType;
+  // Get threshold for this round
+  let required: number | { force: number; escape: number };
+  if (route.type === 'safe') {
+    required = route.combinedThresholds[roundIndex];
+  } else {
+    required = {
+      force: route.forceThresholds[roundIndex],
+      escape: route.escapeThresholds[roundIndex],
+    };
   }
   
-  // Check if threshold is met
-  const progressAchieved = requiredProgressType === 'player-choice'
-    ? Object.values(state.currentRound.progress).reduce((sum, val) => sum + val, 0)
-    : state.currentRound.progress[requiredProgressType as HazardProgressType];
+  // Apply momentum bonus
+  const finalProgress = applyMomentumBonus(state.currentRound, state.currentRound.momentum).progress;
   
-  const mark: HazardMark = progressAchieved >= thresholdRequired ? 'O' : 'X';
+  // Check success
+  let succeeded = false;
+  if (typeof required === 'number') {
+    // Safe route: combined meter
+    succeeded = (finalProgress.force + finalProgress.escape) >= required;
+  } else {
+    // Risk route: BOTH meters must succeed
+    succeeded = finalProgress.force >= required.force && finalProgress.escape >= required.escape;
+  }
   
-  // Create round result
+  // Calculate momentum for next round
+  const momentum = calculateMomentum(finalProgress, required);
+  
   const roundResult: HazardRoundResult = {
     round: state.currentRound.round,
-    mark,
-    progressAchieved: { [requiredProgressType]: progressAchieved } as Record<HazardProgressType, number>,
-    thresholdRequired: { [requiredProgressType]: thresholdRequired } as Record<HazardProgressType, number>,
-    penaltiesApplied: [], // TODO: Apply penalties for failed rounds
+    mark: succeeded ? 'O' : 'X',
+    progressAchieved: finalProgress,
+    thresholdRequired: required,
+    succeeded,
+    momentum,
   };
   
+  const newRounds = [...state.rounds, roundResult];
   const isLastRound = state.currentRound.round >= state.hazardCard.rounds;
-  const nextPhase: HazardPhase = isLastRound ? 'complete' : 'between-rounds';
   
-  return {
-    ...state,
-    phase: nextPhase,
-    rounds: [...state.rounds, roundResult],
-    currentRound: null,
-  };
+  if (isLastRound) {
+    // Hazard complete, determine outcome
+    const successfulRounds = newRounds.filter(r => r.succeeded).length;
+    const totalRounds = state.hazardCard.rounds;
+    
+    let outcome: HazardOutcome;
+    if (successfulRounds === totalRounds) {
+      outcome = 'perfect';
+    } else if (successfulRounds > 0) {
+      outcome = 'complete';
+    } else {
+      outcome = 'failure';
+    }
+    
+    return {
+      ...state,
+      phase: 'outcome',
+      rounds: newRounds,
+      currentRound: null,
+      outcome,
+    };
+  } else {
+    // Start next round
+    return {
+      ...state,
+      rounds: newRounds,
+      currentRound: {
+        round: state.currentRound.round + 1,
+        progress: { force: 0, escape: 0 },
+        momentum,
+        cardsPlayed: [],
+        manaCopy: [...state.mana],
+      },
+    };
+  }
 }
 
 /**
- * Transition between rounds (refresh dice, draw new hand).
+ * Apply rewards based on outcome.
+ * v2: Tiered rewards with card offers and reserve bonus.
  */
-export function advanceToNextRound(
-  state: HazardMinigameState,
-  rng: HazardRngFunction
-): HazardMinigameState {
-  if (state.phase !== 'between-rounds') {
-    throw new Error(`Cannot advance round in phase: ${state.phase}`);
+export function applyRewards(state: HazardMinigameState): HazardMinigameState {
+  if (state.phase !== 'outcome' || !state.outcome) {
+    throw new Error('Can only apply rewards during outcome phase');
   }
   
-  const nextRoundNumber = state.rounds.length + 1;
+  const route = state.chosenRoute === 'safe' 
+    ? state.hazardCard.safeRoute 
+    : state.hazardCard.riskRoute;
   
-  // Discard current hand
-  const { newHand, newDiscard } = discardHand(state.hand, state.discard);
+  const rewards = route.rewards[state.outcome];
   
-  // Refresh dice
-  const refreshedMana = refreshDiceBetweenRounds(state.mana);
-  
-  // Draw new hand
-  const { newDeck, newHand: finalHand, newDiscard: finalDiscard } = drawCards(
-    state.deck,
-    newHand,
-    newDiscard,
-    state.enchantmentZone,
-    5,
-    rng
-  );
-  
-  // Create next round
-  const currentRound = createRoundState(nextRoundNumber, refreshedMana);
+  // Calculate reserve bonus (unspent non-X dice)
+  const reserveBonusAmount = rewards.reserveBonus 
+    ? countAvailableNonXDice(state.mana) * rewards.reserveBonus 
+    : 0;
   
   return {
     ...state,
-    phase: 'round-play',
-    mana: refreshedMana,
-    deck: newDeck,
-    hand: finalHand,
-    discard: finalDiscard,
-    currentRound,
+    phase: 'rewards',
+    // Note: Actual reward application (VITAE, tokens, etc.) happens at GameState integration level
   };
 }
 
 /**
- * Compute final score and complete the hazard.
+ * Create a simple seeded RNG function using mulberry32.
+ * v2: Deterministic session RNG for replay consistency.
  */
-export function computeFinalScore(state: HazardMinigameState): HazardMinigameState {
-  if (state.phase !== 'complete') {
-    throw new Error(`Cannot compute score in phase: ${state.phase}`);
+function createSeededRng(seed: number): HazardRngFunction {
+  let state = seed;
+  return () => {
+    state |= 0;
+    state = state + 0x6D2B79F5 | 0;
+    let t = Math.imul(state ^ state >>> 15, state | 1);
+    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+/**
+ * Get current route thresholds for display/UI.
+ */
+export function getCurrentThresholds(state: HazardMinigameState): number[] | { force: number[]; escape: number[] } {
+  if (!state.chosenRoute) return [];
+  
+  const route = state.chosenRoute === 'safe' 
+    ? state.hazardCard.safeRoute 
+    : state.hazardCard.riskRoute;
+  
+  if (route.type === 'safe') {
+    return route.combinedThresholds;
+  } else {
+    return {
+      force: route.forceThresholds,
+      escape: route.escapeThresholds,
+    };
   }
-  
-  const oCount = state.rounds.filter(r => r.mark === 'O').length;
-  const xCount = state.rounds.filter(r => r.mark === 'X').length;
-  const finalScore = oCount - xCount;
-  
-  return {
-    ...state,
-    finalScore,
-  };
 }
 
 /**
- * Create initial round state.
+ * Legacy function names for compatibility
  */
-function createRoundState(roundNumber: number, mana: HazardManaDie[]): HazardRoundState {
-  return {
-    round: roundNumber,
-    progress: {
-      stability: 0,
-      escape: 0,
-      supply: 0,
-      force: 0,
-    },
-    focusBuffer: 0,
-    cardsPlayed: [],
-    manaCopy: [...mana],
-  };
+export function rollDiceAndStartRound(state: HazardMinigameState): HazardMinigameState {
+  return castDice(state);
+}
+
+export function advanceToNextRound(state: HazardMinigameState): HazardMinigameState {
+  return resolveRound(state);
+}
+
+export function computeFinalScore(state: HazardMinigameState): number {
+  // v2: No numeric score, but return a score for compatibility
+  if (!state.outcome) return 0;
+  
+  const successfulRounds = state.rounds.filter(r => r.succeeded).length;
+  return successfulRounds;
 }
