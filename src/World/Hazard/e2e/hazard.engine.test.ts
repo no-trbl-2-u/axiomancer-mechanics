@@ -204,14 +204,14 @@ describe('Hazard Minigame Engine v2', () => {
       // Capture initial dice state (for reference)
       const _initialDice = [...state.mana];
       
-      // Play a powered card (A07 powered costs red die)
-      // Assume we have at least one red die available
-      const redDieAvailable = state.mana.some(die => die.color === 'red' && die.state === 'available');
+      // Play a powered card (A07 powered costs purple die)
+      // Assume we have at least one purple die available
+      const purpleDieAvailable = state.mana.some(die => die.color === 'purple' && die.state === 'available');
       
-      if (redDieAvailable) {
+      if (purpleDieAvailable) {
         state = playCardInRound(state, 'A07', true); // Powered action
         
-        // Check that red die was spent
+        // Check that purple die was spent
         const spentDice = state.mana.filter(die => die.state === 'spent');
         expect(spentDice.length).toBeGreaterThan(0);
         
@@ -238,13 +238,15 @@ describe('Hazard Minigame Engine v2', () => {
       state = selectRoute(state, 'safe');
       state = castDice(state);
       
-      // Round 1: Play strong card to ensure success
+      // Round 1: Play multiple cards to ensure success (need 9+ combined)
       state = playCardInRound(state, 'A10', false); // Masterful Strike: 4+3=7 combined
+      state = playCardInRound(state, 'A10', false); // Another Masterful Strike: 4+3=7 combined, total 14
       state = resolveRound(state);
       expect(state.rounds[0].succeeded).toBe(true);
       
-      // Round 2: Play another strong card
-      state = playCardInRound(state, 'A10', false);
+      // Round 2: Play multiple cards to ensure success (need 10+ combined) 
+      state = playCardInRound(state, 'A10', false); // Masterful Strike: 4+3=7 combined
+      state = playCardInRound(state, 'A10', false); // Another Masterful Strike: 4+3=7 combined, total 14  
       state = resolveRound(state);
       expect(state.rounds[1].succeeded).toBe(true);
       
@@ -255,14 +257,15 @@ describe('Hazard Minigame Engine v2', () => {
     
     it('achieves Complete outcome when some rounds succeed', () => {
       const hazardCard = getHazardCard('H03'); // 2-round hazard
-      let state = initializeHazard(hazardCard!, ['A10', 'A11'], 77777);
+      let state = initializeHazard(hazardCard!, ['A10', 'A11', 'A11', 'A11'], 77777);
       
-      state = drawOpeningHand(state, 2);
+      state = drawOpeningHand(state, 4);
       state = selectRoute(state, 'safe');
       state = castDice(state);
       
-      // Round 1: Succeed with strong card
-      state = playCardInRound(state, 'A10', false); // 7 combined >= threshold
+      // Round 1: Succeed with multiple cards (need 9+ combined)
+      state = playCardInRound(state, 'A10', false); // 7 combined 
+      state = playCardInRound(state, 'A11', false); // 2 combined, total 9
       state = resolveRound(state);
       expect(state.rounds[0].succeeded).toBe(true);
       
