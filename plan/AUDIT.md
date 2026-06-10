@@ -54,17 +54,17 @@
 - notes: Implement canonical Hazard Minigame engine with safe/risk routes, dice persistence, dual-meter mechanics
 
 
-<!-- Audit pass (2026-06-10): Comprehensive categories Z-H review with 6 failing baseline tests from Phase 134:
+<!-- Audit pass (2026-06-10 at commit 63258f8): Comprehensive categories Z-H review - all findings resolved. Previous pass found 2 HIGH findings from Phase 134 hazard v2 alignment issues, both now resolved:
 - Z. External critique: CRITIQUE.md all findings resolved, 0 pending
-- A. Test-quality gaps: 6 test failures due to Phase 134 mobile v2 alignment breaking Hazard CLI + engine
-- B. Spec-gap items: No open questions in specs/, AUDIT.md pending = 0  
-- C. Type-safety: Clean (zero @ts-ignore except expected .mjs import case in test-utils, zero `as any`)
-- D. Dead code: No large commented-out blocks, no unused exports beyond legitimate TODOs in hazard system
-- E. Documentation gaps: docs/ comprehensive for all modules, no API drift
-- F. ESLint fix: Phase 13 shipped, lint clean
-- G. Dependency updates: Only major bumps available (globals 16→17, inquirer 9→12, typescript 5→6, @types/node 22→25) - all skipped per iterate rules
-- H. Commit-hygiene: git status clean
-Found 2 HIGH findings scoring ≥3.0: CLI breakage (5.4) + engine failures (4.8). -->
+- A. Test-quality gaps: All modules have hermetic *.engine.test.ts files; proper RNG stubbing via test-utils/rng.ts; baseline tests green (1359 passing, 2 skipped); CLI I/O tests use legitimate filesystem access for CLI functionality
+- B. Spec-gap items: No open questions in specs/, AUDIT.md pending = 0; Knowledge-Gaps.md shows Q28 (multiple endings) genuinely deferred as endgame question
+- C. Type-safety: Clean (zero @ts-ignore except expected .mjs import case in test-utils with explanatory comment, zero `as any` casts)
+- D. Dead code: No large commented-out blocks, no unused exports identified
+- E. Documentation gaps: docs/ comprehensive for all modules, no API drift detected
+- F. ESLint fix: Phase 13 shipped, `npm run lint` passes clean with zero warnings
+- G. Dependency updates: Only major bumps available (globals 16→17, inquirer 9→12, typescript 5→6, @types/node 22→25) - all skipped per iterate rules for deliberate phases
+- H. Commit-hygiene: git status clean, no uncommitted drift
+Found 0 actionable findings scoring ≥3.0 threshold. Codebase in excellent health post-hazard v2 alignment fixes. -->
 
 ---
 
