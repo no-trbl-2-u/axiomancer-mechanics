@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Hazard Minigame CLI — standalone driver for the hazard mini-game.
+ * Hazard Minigame CLI — standalone driver for the hazard mini-game (v2).
  *
  * Reachable as a SUBCOMMAND of the game CLI:
  *
@@ -12,55 +12,49 @@
  * `--stdin`, plus `--json-events` and `--state-log`) so a person, a replay
  * file, or an agent can all drive it through the same surface as game.cli.ts.
  *
- * Scope (per the scoping questionnaire):
- *   • `--hazard <id>`   pick a hazard card (H01..); prompts from the library
- *                       when omitted.
- *   • `--route top|bottom`  choose the route; prompts when omitted.
- *   • `--auto`          let a greedy heuristic play each round; otherwise the
- *                       player picks cards by hand.
- *   • `--seed <n|str>`  seed the shared RNG so a run is fully reproducible.
- *   • `--runs <n>`      play N hazards back-to-back (default 5). A fresh
- *                       per-encounter "hazard state" is created for each run;
- *                       the cross-run player ledger (vitae / supply / items)
- *                       persists and is only reset when this process exits.
+ *   • `--hazard <id>`   pick a hazard (`cracked-cliff`…); prompts from the
+ *                       library when omitted.
+ *   • `--route top|bottom`  top = safe route, bottom = risk route.
+ *   • `--auto`          a greedy heuristic stages/powers cards each round;
+ *                       otherwise the player drives the round by hand.
+ *   • `--seed <n|str>`  seeds the engine's embedded RNG so a run is fully
+ *                       reproducible.
+ *   • `--runs <n>`      play N hazards back-to-back (default 5).
  *
- * Dice exhaustion / refresh and deck state persist WITHIN an encounter (the
- * engine's HazardMinigameState carries them across rounds); that state is
- * discarded once the encounter completes, exactly as a real hazard would end.
- *
- * Logic stays in the hazard engine. This file only parses flags, prompts,
- * dispatches engine verbs, applies the reward/penalty ledger, and formats.
+ * The v2 engine is a pure, self-seeded state machine: every transition takes a
+ * session and returns a NEW session, returning the SAME reference when the
+ * action is illegal. The CLI exploits that — a no-op return is logged as an
+ * `illegalHazardAction` with a full state snapshot. Logic stays in the engine;
+ * this file only parses flags, prompts, dispatches engine verbs, and formats.
  */
 
 import {
     prompt, emit, log, logState,
     setIoMode, setOutputMode, setStateLogPath,
 } from './io';
-import { setSeed, getRng } from '../Utils/rng';
 import {
-    initializeHazard,
-    drawOpeningHand,
-    selectRoute,
-    rollDiceAndStartRound,
-    playCardInRound,
-    resolveRound,
-    advanceToNextRound,
-    computeFinalScore,
-    getHazardCard,
-    getActionCard,
-    canAffordCost,
-    HAZARD_CARD_LIBRARY,
-    STARTER_DECK_CARD_IDS,
+    createHazardSession,
+    selectHazardRoute,
+    finishHazardRolling,
+    stageHazardCard,
+    powerHazardCard,
+    discardHazardCard,
+    resolveHazardRound,
+    continueHazardAfterResolve,
+    acknowledgeHazardOutcome,
+    claimHazardRewards,
+    hazardCardValue,
+    hazardProjectedProgress,
+    getHazardCardDef,
+    getHazardDef,
+    hazardStarterBag,
+    HAZARD_LIBRARY,
 } from '../World/Hazard';
 import type {
-    HazardCard,
-    HazardMinigameState,
-    HazardProgressType,
-    HazardRoute,
-    HazardReward,
-    HazardPenalty,
-    HazardRngFunction,
-} from '../World/Hazard/hazard.types';
+    HazardDef,
+    HazardRouteKey,
+    HazardSessionState,
+} from '../World/Hazard';
 
 // ─── Flags ──────────────────────────────────────────────────────────────────
 
@@ -134,335 +128,285 @@ export function parseHazardArgv(args: string[]): HazardCliFlags {
     return flags;
 }
 
-// ─── Player ledger (persists across --runs, cleared on process exit) ──────────
-
-interface PlayerLedger {
-    vitae: number;
-    supplyTokens: number;
-    items: string[];
-    /**
-     * Extra X marks a failed round threatened to inflict. The engine does not
-     * yet retroactively re-mark rounds (resolveRound leaves penaltiesApplied
-     * empty — TODO in hazard.engine.ts), so we only tally them here so a tester
-     * can see the pressure a route applied.
-     */
-    threatenedX: number;
-}
-
-function freshLedger(): PlayerLedger {
-    return { vitae: 0, supplyTokens: 0, items: [], threatenedX: 0 };
-}
-
-function applyReward(ledger: PlayerLedger, reward: HazardReward | undefined): void {
-    if (!reward) return;
-    ledger.vitae += reward.vitae ?? 0;
-    ledger.supplyTokens += reward.supplyTokens ?? 0;
-    if (reward.items) ledger.items.push(...reward.items);
-}
-
-function applyPenalty(ledger: PlayerLedger, penalty: HazardPenalty | undefined): void {
-    if (!penalty) return;
-    ledger.vitae += penalty.vitae ?? 0;
-    ledger.supplyTokens += penalty.supplyTokens ?? 0;
-    ledger.threatenedX += penalty.additionalX ?? 0;
-}
-
-/**
- * Apply an encounter's outcome to the cross-run ledger. CLI-layer policy
- * (the engine's resolveRound does not yet apply rewards/penalties):
- *   • each round marked X applies the route failurePenalty, plus the
- *     finalRoundFailurePenalty on the last round;
- *   • the route reward is granted when the encounter nets positive
- *     (finalScore > 0, i.e. more O than X).
- */
-function applyEncounterOutcome(ledger: PlayerLedger, state: HazardMinigameState): void {
-    // FIXME: This function needs to be updated for v2 tiered reward/penalty system
-    // For now, just prevent crashes - the reward/penalty logic is broken
-    if (!state.hazardCard) {
-        console.warn('applyEncounterOutcome: state.hazardCard is undefined');
-        return;
+/** Derive a stable uint32 engine seed from the `--seed` flag (numeric or string). */
+function seedToNumber(seed: string | undefined, runIndex: number): number {
+    if (seed === undefined) {
+        // Deterministic-enough default for a CLI session without --seed.
+        return (0x9e3779b9 ^ (runIndex * 2654435761)) >>> 0;
     }
-    
-    const route = activeRoute(state);
-    console.warn('applyEncounterOutcome: v2 reward/penalty system not yet implemented in CLI');
-    // TODO: Implement v2 tiered rewards/penalties based on final outcome
-}
-
-// ─── Engine helpers ───────────────────────────────────────────────────────────
-
-function activeRoute(state: HazardMinigameState): HazardRoute {
-    return state.chosenRoute === 'bottom'
-        ? state.hazardCard.riskRoute
-        : state.hazardCard.safeRoute;
-}
-
-/** The progress type a round is judged against - v2 always uses combined force+escape. */
-function requiredProgressType(state: HazardMinigameState): HazardProgressType | null {
-    // v2 always uses combined force+escape progress, no single progress types
-    return null;
-}
-
-function thresholdForCurrentRound(state: HazardMinigameState): number {
-    const route = activeRoute(state);
-    const idx = (state.currentRound?.round ?? 1) - 1;
-    
-    if (route.type === 'safe') {
-        return route.combinedThresholds[idx] ?? 0;
-    } else {
-        // For risk routes, return combined force + escape requirement
-        const forceThreshold = route.forceThresholds[idx] ?? 0;
-        const escapeThreshold = route.escapeThresholds[idx] ?? 0;
-        return forceThreshold + escapeThreshold;
+    const asNum = Number(seed);
+    if (Number.isFinite(asNum) && seed.trim() !== '') {
+        return ((asNum >>> 0) + runIndex) >>> 0;
     }
+    let h = 2166136261 >>> 0;
+    for (let i = 0; i < seed.length; i++) {
+        h ^= seed.charCodeAt(i);
+        h = Math.imul(h, 16777619);
+    }
+    return ((h >>> 0) + runIndex) >>> 0;
 }
 
-function progressTowardThreshold(state: HazardMinigameState): number {
-    const req = requiredProgressType(state);
-    const progress = state.currentRound?.progress;
-    if (!progress) return 0;
-    if (req === null) return Object.values(progress).reduce((a, b) => a + b, 0);
-    return progress[req];
+// ─── Greedy auto policy (ported from the mobile balance sim) ──────────────────
+
+interface RoundNeed {
+    needF: number;
+    needE: number;
+    combined: boolean;
 }
 
-function availableDiceSummary(state: HazardMinigameState): string {
-    const avail = state.mana.filter(d => d.state === 'available');
-    if (avail.length === 0) return '(no dice available)';
-    return avail.map(d => d.color).join(', ');
+function roundNeed(s: HazardSessionState): RoundNeed {
+    const def = getHazardDef(s.hazardId);
+    if (s.route === 'risk') {
+        const [needF, needE] = def.risk.thresholds[s.round - 1];
+        return { needF, needE, combined: false };
+    }
+    return { needF: def.safe.thresholds[s.round - 1], needE: 0, combined: true };
 }
 
-function canPayBottom(state: HazardMinigameState, cardId: string): boolean {
-    const card = getActionCard(cardId);
-    if (!card || !card.manaCost) return false;
-    return canAffordCost(state.mana, card.manaCost);
+function shortfall(s: HazardSessionState): number {
+    const need = roundNeed(s);
+    const p = hazardProjectedProgress(s);
+    if (need.combined) return Math.max(0, need.needF - (p.force + p.escape));
+    return Math.max(0, need.needF - p.force) + Math.max(0, need.needE - p.escape);
 }
 
-/**
- * Attempt a card play. On an illegal action (unknown card, unaffordable bottom
- * cost, wrong phase) we WARN and SKIP — returning the unchanged state — and log
- * the attempted action together with a full hazard-state snapshot so automated
- * tuning runs can learn what the driver tried to do. (Scoping decision Q9.)
- */
-function tryPlayCard(
-    state: HazardMinigameState,
-    cardId: string,
-    useBottom: boolean,
-): HazardMinigameState {
-    try {
-        return playCardInRound(state, cardId, useBottom);
-    } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        log(`  ⚠ illegal action skipped: play ${cardId} (${useBottom ? 'bottom' : 'top'}) — ${message}`);
-        logState('illegalHazardAction', state, state, {
-            attempted: { kind: 'playCard', cardId, useBottom },
-            error: message,
-            hazardState: state,
-        });
+function freeValueToward(s: HazardSessionState, cardId: string): number {
+    const def = getHazardCardDef(cardId);
+    if (def.dead) return 0;
+    const need = roundNeed(s);
+    const p = hazardProjectedProgress(s);
+    if (need.combined) return def.f + def.e;
+    const fGap = Math.max(0, need.needF - p.force);
+    const eGap = Math.max(0, need.needE - p.escape);
+    return Math.min(def.f, fGap + 2) + Math.min(def.e, eGap + 2);
+}
+
+function autoPlayRound(s: HazardSessionState, bag: readonly string[]): HazardSessionState {
+    // 1. Fire free draw utilities first — more options.
+    for (const h of s.hand.slice()) {
+        const def = getHazardCardDef(h.cardId);
+        if (def.effect === 'draw') s = stageHazardCard(s, h.uid, bag);
+    }
+    // 2. Convert hex dice when present and we hold cards of that colour.
+    const hexCount = s.dice.filter((d) => d.kind === 'hex' && d.state === 'available').length;
+    if (hexCount > 0) {
+        for (const h of s.hand.slice()) {
+            const def = getHazardCardDef(h.cardId);
+            if (def.effect === 'convert') {
+                const holdsColour = s.hand.some((x) => {
+                    const d = getHazardCardDef(x.cardId);
+                    return !d.effect && !d.dead && d.kind === def.kind;
+                });
+                if (holdsColour) s = stageHazardCard(s, h.uid, bag);
+            }
+        }
+    }
+    // 3. Stage value cards, best contribution first (uncapped play area).
+    let guard = 0;
+    while (guard++ < 20) {
+        const candidates = s.hand
+            .map((h) => ({ h, v: freeValueToward(s, h.cardId) }))
+            .filter((c) => c.v > 0)
+            .sort((a, b) => b.v - a.v);
+        if (candidates.length === 0) break;
+        s = stageHazardCard(s, candidates[0].h.uid, bag);
+    }
+    // 4. Scrap dead weight for salvage.
+    const anyHex = s.dice.some((d) => d.kind === 'hex');
+    for (const h of s.hand.slice()) {
+        const def = getHazardCardDef(h.cardId);
+        const worthless = def.dead || (!def.effect && freeValueToward(s, h.cardId) === 0);
+        const staleUtility = (def.effect === 'convert' && !anyHex) || def.effect === 'recast';
+        if (worthless || staleUtility) s = discardHazardCard(s, h.uid);
+    }
+    // 5. Spend matching dice while still short. Best powered delta first.
+    guard = 0;
+    while (shortfall(s) > 0 && guard++ < 12) {
+        const need = roundNeed(s);
+        const p = hazardProjectedProgress(s);
+        let best: { uid: string; dieId: string; delta: number } | null = null;
+        for (const e of s.play) {
+            if (e.dieId) continue;
+            const def = getHazardCardDef(e.cardId);
+            if (def.dead) continue;
+            const die =
+                s.dice.find((d) => d.kind === def.kind && d.state === 'available') ??
+                s.dice.find((d) => d.kind === 'gold' && d.state === 'available');
+            if (!die) continue;
+            const free = hazardCardValue(e);
+            const powered = { force: def.fp ?? def.f, escape: def.ep ?? def.e };
+            let delta: number;
+            if (need.combined) {
+                delta = powered.force + powered.escape - (free.force + free.escape);
+            } else {
+                const fGap = Math.max(0, need.needF - p.force);
+                const eGap = Math.max(0, need.needE - p.escape);
+                delta =
+                    Math.min(powered.force - free.force, fGap) +
+                    Math.min(powered.escape - free.escape, eGap);
+            }
+            if (delta > 0 && (!best || delta > best.delta)) {
+                best = { uid: e.uid, dieId: die.id, delta };
+            }
+        }
+        if (!best) break;
+        s = powerHazardCard(s, best.uid, best.dieId, bag);
+    }
+    // Stage at least one card so the engine can judge the round.
+    if (s.play.length === 0 && s.hand.length > 0) {
+        s = stageHazardCard(s, s.hand[0].uid, bag);
+    }
+    return s;
+}
+
+// ─── Manual round driver (script / stdin / tty) ───────────────────────────────
+
+/** Applies a transition, logging an `illegalHazardAction` when it no-ops. */
+function step(
+    action: string,
+    state: HazardSessionState,
+    next: HazardSessionState,
+    meta: Record<string, unknown>,
+): HazardSessionState {
+    if (next === state) {
+        log(`  ⚠ illegal action skipped: ${action} — ${JSON.stringify(meta)}`);
+        logState('illegalHazardAction', state, state, { attempted: { action, ...meta }, hazardState: state });
         return state;
     }
+    logState(action, state, next, meta);
+    return next;
 }
 
-// ─── Card play: auto heuristic ────────────────────────────────────────────────
-
-/**
- * Greedy round policy: spend free focus cards first to load the buffer, then
- * play progress cards that advance the required type — preferring the bottom
- * action (bigger payoff) whenever its mana cost is affordable.
- */
-function autoPlayRound(state: HazardMinigameState): HazardMinigameState {
-    const req = requiredProgressType(state);
-
-    // 1) Focus cards (free top action) build the focus buffer for the next
-    //    progress card.
-    for (const cardId of [...state.hand]) {
-        if (!state.hand.includes(cardId)) continue;
-        const card = getActionCard(cardId);
-        if (card?.class === 'focus') {
-            state = tryPlayCard(state, cardId, false);
-        }
-    }
-
-    // 2) Progress cards matching the required type (or 'any', or all when the
-    //    route is player-choice).
-    for (const cardId of [...state.hand]) {
-        if (!state.hand.includes(cardId)) continue;
-        const card = getActionCard(cardId);
-        if (!card || card.class !== 'direct-progress') continue;
-        // v2: all cards provide force/escape progress, no specific progress type matching needed
-        const matches = true;
-        if (!matches) continue;
-        const useBottom = card.manaCost !== null && canAffordCost(state.mana, card.manaCost);
-        state = tryPlayCard(state, cardId, useBottom);
-    }
-
-    return state;
-}
-
-// ─── Card play: manual ─────────────────────────────────────────────────────────
-
-async function manualPlayRound(state: HazardMinigameState): Promise<HazardMinigameState> {
-    while (state.phase === 'play') {
-        const req = requiredProgressType(state);
-        const reqLabel = req ?? 'any (player-choice sum)';
+async function manualPlayRound(state: HazardSessionState, bag: readonly string[]): Promise<HazardSessionState> {
+    while (state.phase === 'playing') {
+        const p = hazardProjectedProgress(state);
+        const need = roundNeed(state);
         log(
-            `\n  Round ${state.currentRound?.round}/${state.hazardCard.rounds} — ` +
-            `need ${reqLabel} ≥ ${thresholdForCurrentRound(state)}, ` +
-            `have ${progressTowardThreshold(state)}.`,
+            `\n  Round ${state.round}/${state.totalRounds} — ` +
+            (need.combined
+                ? `need combined ≥ ${need.needF}, have ${p.force + p.escape}.`
+                : `need force ≥ ${need.needF} & escape ≥ ${need.needE}, have ${p.force}/${p.escape}.`),
         );
-        log(`  Dice available: ${availableDiceSummary(state)}`);
+        const dice = state.dice.filter((d) => d.state === 'available').map((d) => d.kind).join(', ') || '(none)';
+        log(`  Dice available: ${dice}`);
 
-        if (state.hand.length === 0) {
-            log('  Hand empty — resolving round.');
-            return state;
+        const choices: Array<{ name: string; value: string }> = [];
+        for (const h of state.hand) {
+            const def = getHazardCardDef(h.cardId);
+            choices.push({ name: `stage ${def.name} [${def.f}F/${def.e}E]`, value: `stage:${h.uid}` });
+            choices.push({ name: `discard ${def.name}`, value: `discard:${h.uid}` });
         }
-
-        const cardChoices = state.hand.map((cardId, idx) => {
-            const card = getActionCard(cardId);
-            const tag = card ? `${card.name} [${card.class}/force:${card.forceValue}/escape:${card.escapeValue}]` : cardId;
-            return { name: `${cardId}: ${tag}`, value: `${idx}` };
-        });
-        cardChoices.push({ name: 'Resolve round (stop playing cards)', value: 'resolve' });
+        for (const e of state.play) {
+            if (e.dieId || e.applied) continue;
+            for (const d of state.dice.filter((x) => x.state === 'available')) {
+                const def = getHazardCardDef(e.cardId);
+                choices.push({ name: `power ${def.name} with ${d.kind}`, value: `power:${e.uid}:${d.id}` });
+            }
+        }
+        choices.push({ name: 'Resolve round', value: 'resolve' });
 
         const { pick } = await prompt<{ pick: string }>([{
-            type: 'rawlist', name: 'pick', message: 'Play which card?', choices: cardChoices,
+            type: 'rawlist', name: 'pick', message: 'Action?', choices,
         }]);
         if (pick === 'resolve') return state;
 
-        const cardId = state.hand[Number(pick)]!;
-        const card = getActionCard(cardId);
-        const hasBottom = card?.manaCost !== null;
-        let useBottom = false;
-        if (hasBottom) {
-            const affordable = canPayBottom(state, cardId);
-            const costLabel = card?.manaCost ? `${card.manaCost.count} ${card.manaCost.color}` : 'free';
-            const { side } = await prompt<{ side: 'top' | 'bottom' }>([{
-                type: 'rawlist', name: 'side', message: 'Top or bottom action?',
-                choices: [
-                    { name: 'Top — free effect', value: 'top' },
-                    {
-                        name: `Bottom — costs ${costLabel}${affordable ? '' : ' (UNAFFORDABLE)'}`,
-                        value: 'bottom',
-                    },
-                ],
-            }]);
-            useBottom = side === 'bottom';
+        const [verb, a, b] = pick.split(':');
+        if (verb === 'stage') {
+            state = step('stageHazardCard', state, stageHazardCard(state, a!, bag), { uid: a });
+        } else if (verb === 'discard') {
+            state = step('discardHazardCard', state, discardHazardCard(state, a!), { uid: a });
+        } else if (verb === 'power') {
+            state = step('powerHazardCard', state, powerHazardCard(state, a!, b!, bag), { uid: a, dieId: b });
         }
-        state = tryPlayCard(state, cardId, useBottom);
     }
     return state;
 }
 
-// ─── A single encounter ─────────────────────────────────────────────────────────
+// ─── A single encounter ───────────────────────────────────────────────────────
 
 interface EncounterResult {
     hazardId: string;
-    route: 'top' | 'bottom';
+    route: HazardRouteKey;
     marks: string;
-    finalScore: number;
+    tier: string;
+    wins: number;
 }
 
-async function pickHazardCard(flags: HazardCliFlags): Promise<HazardCard> {
+async function pickHazard(flags: HazardCliFlags): Promise<HazardDef> {
     if (flags.hazardId) {
-        const card = getHazardCard(flags.hazardId);
-        if (!card) {
-            const known = HAZARD_CARD_LIBRARY.map(c => c.id).join(', ');
+        const def = HAZARD_LIBRARY.find((h) => h.id === flags.hazardId);
+        if (!def) {
+            const known = HAZARD_LIBRARY.map((c) => c.id).join(', ');
             throw new Error(`Unknown hazard id '${flags.hazardId}'. Known: ${known}.`);
         }
-        return card;
+        return def;
     }
     const { id } = await prompt<{ id: string }>([{
         type: 'rawlist', name: 'id', message: 'Which hazard?',
-        choices: HAZARD_CARD_LIBRARY.map(c => ({
-            name: `${c.id} — ${c.name} (${c.rounds} rounds)`, value: c.id,
-        })),
+        choices: HAZARD_LIBRARY.map((c) => ({ name: `${c.id} — ${c.title} (${c.rounds} rounds)`, value: c.id })),
     }]);
-    return getHazardCard(id)!;
+    return getHazardDef(id);
 }
 
-async function pickRoute(state: HazardMinigameState, flags: HazardCliFlags): Promise<'top' | 'bottom'> {
-    if (flags.route) return flags.route;
-    const { top, bottom } = { top: state.hazardCard.safeRoute, bottom: state.hazardCard.riskRoute };
-    const describe = (r: HazardRoute) => {
-        if (r.type === 'safe') {
-            return `safe · combined [${r.combinedThresholds.join(', ')}]`;
-        } else {
-            return `risk · force [${r.forceThresholds.join(', ')}] escape [${r.escapeThresholds.join(', ')}]`;
-        }
-    };
+async function pickRoute(def: HazardDef, flags: HazardCliFlags): Promise<HazardRouteKey> {
+    if (flags.route) return flags.route === 'bottom' ? 'risk' : 'safe';
     const { route } = await prompt<{ route: 'top' | 'bottom' }>([{
         type: 'rawlist', name: 'route', message: 'Choose a route:',
         choices: [
-            { name: `Top    — ${describe(top)}`, value: 'top' },
-            { name: `Bottom — ${describe(bottom)}`, value: 'bottom' },
+            { name: `Top    — safe · combined [${def.safe.thresholds.join(', ')}]`, value: 'top' },
+            { name: `Bottom — risk · [${def.risk.thresholds.map((t) => t.join('/')).join(', ')}]`, value: 'bottom' },
         ],
     }]);
-    return route;
+    return route === 'bottom' ? 'risk' : 'safe';
 }
 
-async function playEncounter(
-    flags: HazardCliFlags,
-    rng: HazardRngFunction,
-    ledger: PlayerLedger,
-    runIndex: number,
-): Promise<EncounterResult> {
-    const hazardCard = await pickHazardCard(flags);
-    log(`\n═══ Run ${runIndex} — ${hazardCard.id}: ${hazardCard.name} (${hazardCard.rounds} rounds) ═══`);
-    log(`  ${hazardCard.scenario}`);
+async function playEncounter(flags: HazardCliFlags, bag: readonly string[], runIndex: number): Promise<EncounterResult> {
+    const def = await pickHazard(flags);
+    const route = await pickRoute(def, flags);
+    const seed = seedToNumber(flags.seed, runIndex);
 
-    let state = initializeHazard(hazardCard, STARTER_DECK_CARD_IDS, rng);
-    logState('initializeHazard', null, state, { hazardId: hazardCard.id, runIndex });
+    log(`\n═══ Run ${runIndex} — ${def.id}: ${def.title} (${def.rounds} rounds, ${route}) ═══`);
+    log(`  ${def.scenario}`);
 
-    state = drawOpeningHand(state);
+    let state = createHazardSession(seed, bag, def.id);
+    logState('createHazardSession', null, state, { hazardId: def.id, seed, runIndex });
 
-    const route = await pickRoute(state, flags);
+    state = selectHazardRoute(state, route, bag);
+    state = finishHazardRolling(state);
+    logState('selectHazardRoute', null, state, { route, dice: state.dice.map((d) => d.kind) });
 
-    // v2 doesn't have player-choice routes - all routes have fixed progress requirements
-    
-    // Convert CLI route names to engine route names
-    const engineRoute = route === 'bottom' ? 'risk' : 'safe';
-    
-    const before = state;
-    state = selectRoute(state, engineRoute);
-    logState('selectRoute', before, state, { route, engineRoute });
-
-    state = rollDiceAndStartRound(state);
-    logState('rollDiceAndStartRound', null, state, { dice: state.mana.map(d => d.color) });
-
-    while (state.phase === 'play') {
-        const roundBefore = state;
-        state = flags.auto ? autoPlayRound(state) : await manualPlayRound(state);
-
-        const resolved = resolveRound(state);
-        const lastResult = resolved.rounds[resolved.rounds.length - 1]!;
-        log(
-            `  Round ${lastResult.round} → ${lastResult.mark}` +
-            ` (had ${progressTowardThreshold(state)} / need ${thresholdForCurrentRound(state)})`,
-        );
-        logState('resolveRound', roundBefore, resolved, lastResult);
-        state = resolved;
+    while (state.phase === 'playing') {
+        const before = state;
+        state = flags.auto ? autoPlayRound(state, bag) : await manualPlayRound(state, bag);
+        const resolved = resolveHazardRound(state, bag);
+        if (resolved === state) {
+            // Nothing was staged (and none could be) — bail to avoid a stall.
+            log('  Nothing to resolve; ending encounter.');
+            break;
+        }
+        const info = resolved.resolveInfo!;
+        log(`  Round ${info.round} → ${info.cleared ? 'O' : 'X'} (F ${info.force} / E ${info.escape})`);
+        logState('resolveHazardRound', before, resolved, info);
+        state = continueHazardAfterResolve(resolved, bag);
     }
 
-    const finalScore = computeFinalScore(state);
-    applyEncounterOutcome(ledger, state);
+    let wins = state.marks.filter((m) => m === 'O').length;
+    let tier = 'incomplete';
+    if (state.phase === 'outcome' && state.outcome) {
+        tier = state.outcome.tier;
+        wins = state.outcome.wins;
+        state = acknowledgeHazardOutcome(state);
+        const offer = state.outcome.offerCards;
+        const pick = state.outcome.canSkip ? null : (offer[0]?.id ?? null);
+        state = claimHazardRewards(state, pick);
+        logState('claimHazardRewards', null, state, { tier, wins, picked: state.pickedRewardCardId });
+    }
 
-    const marks = state.rounds.map(r => r.succeeded ? 'O' : 'X').join('');
-    const result: EncounterResult = {
-        hazardId: hazardCard.id,
-        route,
-        marks,
-        finalScore,
-    };
-    log(`  Result: [${marks}]  score ${result.finalScore}  (route: ${route})`);
-    logState('computeFinalScore', null, state, {
-        ...result,
-        ledger: { ...ledger, items: [...ledger.items] },
-    });
+    const marks = state.marks.map((m) => (m === 'pending' ? '·' : m)).join('');
+    const result: EncounterResult = { hazardId: def.id, route, marks, tier, wins };
+    log(`  Result: [${marks}]  tier ${tier}  wins ${wins}  (route: ${route})`);
     emit({ type: 'hazard:complete', payload: result });
     return result;
-}
-
-/** Helper mirrors activeRoute but for a route not yet committed to state. */
-function activeRouteForChoice(state: HazardMinigameState, route: 'top' | 'bottom'): HazardRoute {
-    return route === 'bottom' ? state.hazardCard.riskRoute : state.hazardCard.safeRoute;
 }
 
 // ─── Entry point ────────────────────────────────────────────────────────────────
@@ -482,38 +426,31 @@ export async function runHazardCli(argv: string[]): Promise<void> {
         setIoMode({ kind: 'stdin' });
     }
     if (flags.stateLogPath) setStateLogPath(flags.stateLogPath);
-    if (flags.seed !== undefined) setSeed(flags.seed);
 
-    const rng: HazardRngFunction = () => getRng().random();
-    const ledger = freshLedger();
+    const bag = hazardStarterBag();
 
-    log('Axiomancer — hazard mini-game.');
+    log('Axiomancer — hazard mini-game (v2).');
     log(`Mode: ${flags.auto ? 'auto' : 'manual'}  ·  runs: ${flags.runs}` +
         (flags.seed !== undefined ? `  ·  seed: ${flags.seed}` : ''));
 
     const results: EncounterResult[] = [];
     for (let run = 1; run <= flags.runs; run++) {
-        results.push(await playEncounter(flags, rng, ledger, run));
+        results.push(await playEncounter(flags, bag, run));
     }
 
-    const totalScore = results.reduce((sum, r) => sum + r.finalScore, 0);
-    const passed = results.filter(r => r.finalScore > 0).length;
+    const totalWins = results.reduce((sum, r) => sum + r.wins, 0);
+    const cleared = results.filter((r) => r.tier === 'perfect' || r.tier === 'complete').length;
     log('\n═══ Summary ═══');
     for (const r of results) {
-        log(`  ${r.hazardId} (${r.route}): [${r.marks}] → ${r.finalScore}`);
+        log(`  ${r.hazardId} (${r.route}): [${r.marks}] → ${r.tier} (${r.wins} wins)`);
     }
-    log(`  ${passed}/${results.length} encounters net-positive · total score ${totalScore}`);
-    log(`  Ledger — vitae ${ledger.vitae}, supply ${ledger.supplyTokens}, ` +
-        `items [${ledger.items.join(', ') || 'none'}], threatened-X ${ledger.threatenedX}`);
-    emit({
-        type: 'hazard:summary',
-        payload: { results, totalScore, passed, ledger: { ...ledger, items: [...ledger.items] } },
-    });
+    log(`  ${cleared}/${results.length} encounters cleared at least one round · total wins ${totalWins}`);
+    emit({ type: 'hazard:summary', payload: { results, totalWins, cleared } });
 }
 
 // Allow direct execution: `ts-node src/CLI/hazard.cli.ts [flags]`.
 if (require.main === module) {
-    runHazardCli(process.argv.slice(2)).catch(err => {
+    runHazardCli(process.argv.slice(2)).catch((err) => {
         emit({ type: 'cli:exit', payload: { reason: 'error', message: String(err) } });
         process.exitCode = 1;
         log(String(err));

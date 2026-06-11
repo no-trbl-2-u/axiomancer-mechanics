@@ -1,142 +1,102 @@
 /**
- * Hazard Minigame — Public API (v2)
- * 
- * Re-exports all public types and functions for the hazard minigame system.
- * Mobile v2 aligned interface for package consumption.
+ * Hazard Minigame — Public API (v2).
+ *
+ * Faithful port of the mobile v2 Hazard engine, the living rules source
+ * (`../axiomancer-mobile/state/hazard/`). The package exports the exact
+ * mobile surface so mobile can delete its local engine and consume these
+ * exports instead. See `docs/hazard-v2-vs-mechanics-divergence.md`.
  */
 
-// Core types (v2)
+// ── Engine types ───────────────────────────────────────────────────────────
 export type {
-  HazardProgressType,
-  HazardDieColor,
-  HazardDieState,
-  HazardManaDie,
-  HazardMark,
-  HazardCardRarity,
-  HazardCardColor,
-  HazardCardClass,
-  HazardManaCost,
-  HazardRoundState,
-  HazardCardEffect,
-  HazardActionCard,
-  HazardSafeRoute,
-  HazardRiskRoute,
-  HazardRoute,
-  HazardTieredRewards,
-  HazardTieredPenalties,
-  HazardReward,
-  HazardPenalty,
-  HazardCardOffer,
-  HazardCard,
-  HazardPhase,
-  HazardRoundResult,
-  HazardMinigameState,
-  HazardOutcome,
-  HazardRngFunction,
+    HazardColor,
+    HazardDieKind,
+    HazardProgressKey,
+    HazardDieState,
+    HazardDie,
+    HazardCardRarity,
+    HazardUtilityEffect,
+    HazardKeywordId,
+    HazardSalvage,
+    HazardCardDef,
+    HazardHandEntry,
+    HazardRouteKey,
+    HazardSafeRouteDef,
+    HazardRiskRouteDef,
+    HazardRouteDef,
+    HazardDef,
+    HazardMark,
+    HazardResolveInfo,
+    HazardOutcomeTier,
+    HazardRewardId,
+    HazardConsequenceId,
+    HazardOutcome,
+    HazardPhase,
+    HazardSessionState,
 } from './hazard.types';
 
-// Dice system (v2)
 export {
-  rollManaDice,
-  canAffordCost,
-  spendMana,
-  hasXDice,
-  countAvailableDice,
-  countAvailableNonXDice,
-  transitionDiceState,
-  recastAvailableDice,
-  convertXDice,
-  refreshDiceBetweenRounds, // v2: no-op but kept for compatibility
-  resetDiceStates,
-  validateDiceState,
-  getDiceColorDistribution,
-} from './hazard.dice';
+    HAZARD_DICE_COUNT,
+    HAZARD_HAND_SIZE,
+    HAZARD_MOMENTUM_CAP,
+} from './hazard.types';
 
-// Deck management (v2)
-export {
-  shuffleDeck,
-  drawCards,
-  playCard,
-  initializeHazardDeck,
-  discardHand,
-  validateDeckState,
-} from './hazard.deck';
+// ── Seeded RNG ─────────────────────────────────────────────────────────────
+export type { HazardRngState } from './hazard.rng';
+export { seedRng, nextFloat, nextInt, shuffle } from './hazard.rng';
 
-// Card system (v2)
-export {
-  applyCardProgress,
-  applyMomentumBonus,
-  calculateMomentum,
-  applyFocusBonus,
-  createMomentumEffect,
-  createDrawEffect,
-  createSecondWindEffect,
-  createConvertEffect,
-  canPlayCard,
-  hasSpecialEffect,
-  getCardPowerLevel,
-  // Legacy compatibility functions
-  addProgress,
-  addMultiProgress,
-  addFocusBuff,
-  createDirectProgressEffect,
-  createFocusEffect,
-  createMultiProgressEffect,
-  noOpEffect,
-  createActionCard,
-  validateCard,
-} from './hazard.cards';
+// ── Tuning ─────────────────────────────────────────────────────────────────
+export { HAZARD_TUNING, HAZARD_DIE_FACES } from './hazard.tuning';
 
-// Card library (v2)
+// ── Authored content (cards, rewards, hazards, keywords, catalogues) ────────
 export {
-  ACTION_CARD_LIBRARY,
-  STARTER_DECK_CARD_IDS,
-  REWARD_POOL_CARD_IDS,
-  getActionCard,
-  getCardsByClass,
-  getCardsByRarity,
-  getCardsByColor,
-  getWeightedRewardCards,
-  validateCardLibrary,
-} from './hazard.cards.library';
+    HAZARD_KEYWORDS,
+    HAZARD_DECK,
+    HAZARD_CRACK_CARD,
+    HAZARD_REWARD_CARDS,
+    getHazardCardDef,
+    HAZARD_REWARDS,
+    HAZARD_CONSEQUENCES,
+    HAZARD_VITAE_REWARD,
+    HAZARD_CACHE_SHILLINGS,
+    HAZARD_RELIC_SHILLINGS,
+    HAZARD_MINHP_LOSS,
+    HAZARD_MAXHP_SCAR,
+    HAZARD_TYPES,
+    HAZARD_LIBRARY,
+    getHazardDef,
+} from './hazard.content';
 
-// Hazard library (v2)
+// ── Deck persistence (GameState.flags codec) ────────────────────────────────
 export {
-  HAZARD_CARD_LIBRARY,
-  getHazardCard,
-  getRandomHazardCard,
-  getHazardsByRounds,
-  getSafeRouteDifficulty,
-  getRiskRouteDifficulty,
-  validateHazardLibrary,
-  purifySpringEffect,
-  bridgeRepairEffect,
-  bridgeCollapseEffect,
-  clearNarrowsEffect,
-} from './hazard.hazards.library';
+    HAZARD_CARD_FLAG_PREFIX,
+    hazardStarterBag,
+    decodeAcquiredCards,
+    hazardDeckBag,
+    appendAcquiredCard,
+} from './hazard.deck-flags';
 
-// Core engine (v2)
+// ── Pure engine transitions ─────────────────────────────────────────────────
 export {
-  initializeHazard,
-  drawOpeningHand,
-  selectRoute,
-  castDice,
-  playCardInRound,
-  resolveRound,
-  applyRewards,
-  getCurrentThresholds,
-  applyHazardPersistenceEffects,
-  // Legacy compatibility functions
-  rollDiceAndStartRound,
-  advanceToNextRound,
-  computeFinalScore,
+    // selectors
+    hazardCardValue,
+    hazardStagedProgress,
+    hazardProjectedProgress,
+    dieCanPower,
+    hazardTierOf,
+    // lifecycle
+    createHazardSession,
+    selectHazardRoute,
+    finishHazardRolling,
+    // round play
+    stageHazardCard,
+    unstageHazardCard,
+    powerHazardCard,
+    applyHazardCard,
+    discardHazardCard,
+    // resolve / outcome / rewards
+    resolveHazardRound,
+    continueHazardAfterResolve,
+    acknowledgeHazardOutcome,
+    claimHazardRewards,
 } from './hazard.engine';
-
-// Phase 135: Modifier system
-export {
-  buildModifierTable,
-  applyHazardModifiers,
-  isHazardPermanentlyCleared,
-  getActiveModifierDescriptions,
-} from './hazard.modifiers';
-export type { HazardModifierTable } from './hazard.modifiers';

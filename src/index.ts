@@ -181,18 +181,12 @@ export {
     reachableObjectives, killObjectives,
 } from './World';
 
-// Hazard Minigame
-export {
-    initializeHazard, drawOpeningHand, selectRoute, rollDiceAndStartRound,
-    playCardInRound, resolveRound, advanceToNextRound, computeFinalScore,
-    rollManaDice, canAffordCost, spendMana, hasXDice, countAvailableDice,
-    HAZARD_CARD_LIBRARY, ACTION_CARD_LIBRARY, STARTER_DECK_CARD_IDS,
-    getHazardCard, getActionCard, getRandomHazardCard,
-    // Phase 135: Persistence system
-    applyHazardPersistenceEffects, buildModifierTable, applyHazardModifiers,
-    isHazardPermanentlyCleared, getActiveModifierDescriptions,
-    purifySpringEffect, bridgeRepairEffect, bridgeCollapseEffect, clearNarrowsEffect,
-} from './World/Hazard';
+// Hazard Minigame (v2 — faithful port of the mobile living rules source).
+// The full public surface (engine transitions, content, tuning, deck-flag
+// codec, seeded RNG, and types) is exported directly from the Hazard module
+// so mobile can delete its local engine and import these instead.
+// See `docs/hazard-v2-vs-mechanics-divergence.md`.
+export * from './World/Hazard';
 export {
     changeMap, completeMap, unlockMap,
     completeNode, unlockNode, changeContinent, completeUniqueEvent,
@@ -226,12 +220,7 @@ export type {
     ApplyDialogueChoiceResult,
     // Phase 135: Persistence types
     HazardModifierEntry, HazardNodeOutcome, BlockedRoute, RouteValidationResult,
-    // Hazard Minigame Types
-    HazardMinigameState, HazardCard, HazardActionCard, HazardManaDie,
-    HazardProgressType, HazardDieColor, HazardPhase, HazardMark,
-    HazardRoundState, HazardRoundResult, HazardRoute, HazardReward, HazardPenalty,
 } from './World';
-export type { HazardModifierTable } from './World/Hazard';
 
 // ─── Philosophy (Phase 42 — 3-axis alignment cube + 27-cell registry) ────────
 export {

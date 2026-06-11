@@ -1,14 +1,13 @@
 /**
- * Hermetic e2e — Hazard mini-game CLI (`src/CLI/hazard.cli.ts`).
+ * Hermetic e2e — Hazard mini-game CLI (`src/CLI/hazard.cli.ts`), v2 engine.
  *
- * Unlike game.cli.ts (which trips over inquirer/ESM under child_process), the
- * hazard driver is plain async functions over the deterministic hazard engine,
- * so we can drive it in-process:
+ * The hazard driver is plain async functions over the deterministic,
+ * self-seeded v2 hazard engine, so we can drive it in-process:
  *   - flag parsing is pure;
  *   - `--auto --seed` produces a reproducible playthrough (asserted via the
  *     `--state-log` JSONL trace);
- *   - `--script` manual play exercises the warn-and-skip illegal-action path,
- *     which must log an `illegalHazardAction` record with a state snapshot.
+ *   - `--script` manual play exercises the no-op illegal-action path, which
+ *     must log an `illegalHazardAction` record with a state snapshot.
  */
 
 import { describe, it, expect, afterEach } from 'vitest';
@@ -38,19 +37,19 @@ afterEach(() => {
 describe('Hazard CLI — flag parsing', () => {
     it('parses hazard-specific and shared io flags', () => {
         const flags = parseHazardArgv([
-            '--hazard', 'H03', '--route', 'bottom', '--auto',
+            '--hazard', 'ashfall-crossing', '--route', 'bottom', '--auto',
             '--seed', '99', '--runs', '4',
             '--json-events', '--state-log', 'log.jsonl',
         ]);
         expect(flags).toMatchObject({
-            hazardId: 'H03', route: 'bottom', auto: true,
+            hazardId: 'ashfall-crossing', route: 'bottom', auto: true,
             seed: '99', runs: 4, jsonEvents: true, stateLogPath: 'log.jsonl',
         });
     });
 
     it('supports --flag=value form and sensible defaults', () => {
-        const flags = parseHazardArgv(['--hazard=H01']);
-        expect(flags.hazardId).toBe('H01');
+        const flags = parseHazardArgv(['--hazard=cracked-cliff']);
+        expect(flags.hazardId).toBe('cracked-cliff');
         expect(flags.runs).toBe(5);          // default
         expect(flags.auto).toBe(false);      // default
         expect(flags.route).toBeUndefined(); // prompts when omitted
@@ -70,64 +69,61 @@ describe('Hazard CLI — flag parsing', () => {
 });
 
 describe('Hazard CLI — deterministic auto playthrough', () => {
-    it('produces a reproducible final score for a fixed seed', async () => {
+    it('produces a reproducible outcome for a fixed seed', async () => {
         const runOnce = async () => {
             const logPath = tmpPath('auto');
             await runHazardCli([
                 '--auto', '--seed', '42', '--runs', '1',
-                '--hazard', 'H01', '--route', 'top',
+                '--hazard', 'cracked-cliff', '--route', 'top',
                 '--json-events', '--state-log', logPath,
             ]);
-            const final = readLog(logPath).find(r => r.action === 'computeFinalScore');
-            expect(final).toBeDefined();
-            return final!.event as { finalScore: number; marks: string; route: string };
+            const logs = readLog(logPath);
+            const marks = logs
+                .filter(r => r.action === 'resolveHazardRound')
+                .map(r => (r.event.cleared ? 'O' : 'X'))
+                .join('');
+            const claim = logs.find(r => r.action === 'claimHazardRewards');
+            expect(claim).toBeDefined();
+            return { marks, tier: claim!.event.tier as string };
         };
 
         const a = await runOnce();
         const b = await runOnce();
 
         // Same seed → identical outcome.
-        expect(a.finalScore).toBe(b.finalScore);
-        expect(a.marks).toBe(b.marks);
-        // Locked expected value for H01/top under seed 42 (v2 balance).
-        expect(a.route).toBe('top');
-        expect(a.marks).toBe('OXX');
-        expect(a.finalScore).toBe(1);
+        expect(a).toEqual(b);
+        // A full 3-round hazard was played to an outcome.
+        expect(a.marks).toHaveLength(3);
+        expect(['perfect', 'complete', 'failure']).toContain(a.tier);
     });
 
     it('plays --runs N encounters back-to-back', async () => {
         const logPath = tmpPath('runs');
         await runHazardCli([
             '--auto', '--seed', '5', '--runs', '3',
-            '--hazard', 'H02', '--route', 'bottom',
+            '--hazard', 'flooded-undercroft', '--route', 'bottom',
             '--json-events', '--state-log', logPath,
         ]);
-        const finals = readLog(logPath).filter(r => r.action === 'computeFinalScore');
-        expect(finals).toHaveLength(3);
+        const sessions = readLog(logPath).filter(r => r.action === 'createHazardSession');
+        expect(sessions).toHaveLength(3);
     });
 });
 
 describe('Hazard CLI — illegal action handling', () => {
-    it.skip('warns, skips, and logs an unaffordable bottom-action play', async () => {
-        // SKIP: v2 removed green mana and bottom actions. Test based on v0 card system.
-        // TODO: Replace with v2-appropriate illegal action test if needed.
-        // 
-        // Original test: Seed 1 / H01 deals dice [blue,blue,blue,yellow] with A02 (Quick
-        // Sprint) in hand. A02's bottom action costs green — unaffordable —
-        // so choosing it is a deterministic illegal action.
+    it('warns, skips, and logs a no-op power attempt with a state snapshot', async () => {
+        // Powering a card that is still in HAND (not staged) is a deterministic
+        // no-op regardless of the seed: the engine looks for the uid in `play`,
+        // finds nothing, and returns the same state reference.
         const scriptPath = tmpPath('script', 'json');
         fs.writeFileSync(scriptPath, JSON.stringify([
-            { pick: '4' },        // A02 (index 4 in the round-1 hand)
-            { side: 'bottom' },   // its green-costed bottom action — unaffordable
-            { pick: 'resolve' },  // stop round 1
-            { pick: 'resolve' },  // round 2
-            { pick: 'resolve' },  // round 3
+            { pick: 'power:c1:d6' }, // illegal — c1 is in hand, not staged
+            { pick: 'resolve' },     // stop round 1 (empty play ends the run)
         ]));
 
         const logPath = tmpPath('illegal');
         await runHazardCli([
             '--seed', '1', '--runs', '1',
-            '--hazard', 'H01', '--route', 'top',
+            '--hazard', 'cracked-cliff', '--route', 'top',
             '--script', scriptPath, '--json-events', '--state-log', logPath,
         ]);
 
@@ -135,13 +131,9 @@ describe('Hazard CLI — illegal action handling', () => {
         expect(illegal).toHaveLength(1);
         const record = illegal[0]!;
         // The attempted action is captured for tuning…
-        expect(record.event.attempted).toMatchObject({ kind: 'playCard', cardId: 'A02', useBottom: true });
-        expect(record.event.error).toMatch(/afford/i);
+        expect(record.event.attempted).toMatchObject({ action: 'powerHazardCard', uid: 'c1', dieId: 'd6' });
         // …along with a full hazard-state snapshot.
-        expect(record.event.hazardState.phase).toBe('round-play');
-        expect(Array.isArray(record.event.hazardState.mana)).toBe(true);
-        // The run still completes despite the skipped illegal play.
-        const final = readLog(logPath).find(r => r.action === 'computeFinalScore');
-        expect(final).toBeDefined();
+        expect(record.event.hazardState.phase).toBe('playing');
+        expect(Array.isArray(record.event.hazardState.dice)).toBe(true);
     });
 });
