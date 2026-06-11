@@ -47,13 +47,6 @@
 ## Pending
 
 
-### [dead-code] Character presets deprecated functions still exported after v0.13.0 deadline
-- category: dead-code
-- impact: 8
-- ease: 7
-- score: 5.6
-- notes: Multiple deprecated functions in src/Character/presets.ts are marked @deprecated for removal at v0.13.0 but still exported at v0.16.0. Functions characterPresets, getPresetById, buildCharacterFromPreset have replacements via dev-tools and should be removed from public API.
-
 
 ### [type-safety] Exported functions missing return type annotations  
 - category: type-safety
@@ -117,6 +110,7 @@ Found 0 actionable findings scoring ≥3.0 threshold. Codebase in excellent heal
 
 ## Done
 
+- [x] **[dead-code] Character presets deprecated functions still exported after v0.13.0 deadline** — resolved at commit d17f2db (2026-06-11). Removed characterPresets, getPresetById, buildCharacterFromPreset from public API exports (src/index.ts, src/Character/index.ts). Functions remain available internally for playtest.runner.ts usage. Preset functions were marked @deprecated for v0.13.0 removal but still exported at v0.16.0. Score: 8 × 7 / 10 = 5.6.
 - [x] **[feature] GH#154 — Extract Hazard Minigame mechanics from mobile** — drained via oversight 2026-06-11. Phase 131 (base hazard minigame: 18 action cards, complete state machine, hermetic e2e) + Phase 134 (mobile v2 alignment: force/escape-only progress, v2 dice/cards/hazards, parity tests) together delivered the full extraction scope. Row carried `next: /ship-a-phase` but both phases shipped. Impact 8 × Ease 4 / 10 = 3.2.
 - [x] **[test-quality] World/Continents module has no engine tests** — resolved at commit 1b2a4de (2026-06-11). Added comprehensive hermetic e2e tests covering map definitions, NPC dialogue trees, quest integration for coastal village and northern forest. Tests validate map structure/connectivity, all NPCs with alignment-gated choices, moral effects, flag systems, dialogue runtime integration patterns. All 25 test cases pass with proper RNG stubbing. Score: 7 × 8 / 10 = 5.6.
 - [x] **[deps] @types/node patch update 22.19.20 → 22.19.21** — resolved at commit 2bc1c8e (2026-06-10). Updated @types/node to latest patch version for security/compatibility. Minor dependency update with zero breaking changes. Impact 3 × Ease 9 / 10 = 2.7.
