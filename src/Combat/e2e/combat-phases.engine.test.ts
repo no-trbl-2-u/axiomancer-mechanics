@@ -13,6 +13,7 @@ import { runActionRestrictionPhase } from '../phases/action-restriction';
 import { runAdvantagePhase } from '../phases/advantage';
 import { createCharacter } from '../../Character';
 import { createEnemy } from '../../Enemy';
+import type { RoundEvent } from '../combat.resolver';
 
 // ─── Test Lifecycle ──────────────────────────────────────────────────────────
 
@@ -43,7 +44,7 @@ describe('runActionRestrictionPhase', () => {
         
         const playerAction = { stance: 'heart', action: 'attack' } as const;
         const enemyAction = { stance: 'mind', action: 'defend' } as const;
-        const events: any[] = [];
+        const events: RoundEvent[] = [];
 
         const result = runActionRestrictionPhase(
             player, enemy, playerAction, enemyAction, events
@@ -77,7 +78,7 @@ describe('runActionRestrictionPhase', () => {
 
         const playerAction = { stance: 'heart', action: 'attack' } as const;
         const enemyAction = { stance: 'body', action: 'attack' } as const;
-        const events: any[] = [];
+        const events: RoundEvent[] = [];
 
         const result = runActionRestrictionPhase(
             player, enemy, playerAction, enemyAction, events
@@ -113,7 +114,7 @@ describe('runAdvantagePhase', () => {
             gearLevel: 1
         });
         
-        const events: any[] = [];
+        const events: RoundEvent[] = [];
         
         const result = runAdvantagePhase(
             player, enemy, 'heart', 'body', 'attack', 'attack', events
@@ -145,7 +146,7 @@ describe('runAdvantagePhase', () => {
             gearLevel: 1
         });
         
-        const events: any[] = [];
+        const events: RoundEvent[] = [];
         
         const result = runAdvantagePhase(
             player, enemy, 'heart', 'heart', 'attack', 'attack', events
@@ -179,7 +180,7 @@ describe('Combat Phase Integration', () => {
         
         const playerAction = { stance: 'heart', action: 'attack' } as const;
         const enemyAction = { stance: 'body', action: 'defend' } as const;
-        let events: any[] = [];
+        let events: RoundEvent[] = [];
 
         // Step 1: Action Restriction Phase
         const restrictionResult = runActionRestrictionPhase(
