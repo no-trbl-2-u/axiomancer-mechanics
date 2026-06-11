@@ -47,6 +47,41 @@
 ## Pending
 
 
+### [dead-code] Character presets deprecated functions still exported after v0.13.0 deadline
+- category: dead-code
+- impact: 8
+- ease: 7
+- score: 5.6
+- notes: Multiple deprecated functions in src/Character/presets.ts are marked @deprecated for removal at v0.13.0 but still exported at v0.16.0. Functions characterPresets, getPresetById, buildCharacterFromPreset have replacements via dev-tools and should be removed from public API.
+
+### [test-quality] World/Continents module has no engine tests
+- category: test-quality
+- impact: 7
+- ease: 8
+- score: 5.6
+- notes: World/Continents contains 3 TypeScript source files (Coastal-Village/maps.ts, Coastal-Village/npcs.ts, Northern-Forest/npcs.ts) but has zero *.engine.test.ts coverage. These modules contain map and NPC definitions that are core to the game world but completely untested.
+
+### [type-safety] Exported functions missing return type annotations  
+- category: type-safety
+- impact: 6
+- ease: 9
+- score: 5.4
+- notes: Multiple exported functions lack explicit return type annotations, particularly drawCards_v0 and playCard_v0 in src/World/Hazard/hazard.deck.ts. These legacy compatibility functions return objects but lack proper return type specifications.
+
+### [test-quality] Tuning module significantly under-tested for its scope
+- category: test-quality
+- impact: 8
+- ease: 6
+- score: 4.8
+- notes: Tuning module has 19 source files but only 4 engine tests, leaving major gaps in coverage for analyst.bridge.ts, engagement.metrics.ts, health.metrics.ts, matrix.builder.ts, matrix.runner.ts, experiment.runner.ts.
+
+### [documentation] References to deprecated getResistStat function in docs
+- category: documentation
+- impact: 6
+- ease: 8
+- score: 4.8
+- notes: Multiple documentation files still reference deprecated getResistStat function including docs/effects/debuffs/debuff_all_stats_down.md, docs/effects/README.md, docs/effects.md. Could confuse consumers who might try to use deprecated API.
+
 ### [feature] GH#154 — Extract Hazard Minigame mechanics from mobile
 - category: feature
 - impact: 8
@@ -54,14 +89,16 @@
 - next: /ship-a-phase
 - notes: Implement canonical Hazard Minigame engine with safe/risk routes, dice persistence, dual-meter mechanics
 
-<!-- Audit pass (2026-06-10 at commit 530211d): Comprehensive categories Z-H review - 1 new finding:
+<!-- Audit pass (2026-06-11 at commit 131cce1): Comprehensive categories Z-H review - 5 new findings:
 - Z. External critique: CRITIQUE.md has 0 pending findings (pass 62 clean)
-- A. Test-quality gaps: All modules have hermetic *.engine.test.ts files (89 total e2e files for 14 modules + CLI); proper RNG stubbing via test-utils/rng.ts; baseline tests green (1359 passing, 2 skipped)
-- B. Spec-gap items: No open questions in specs/, AUDIT.md pending reviewed; Knowledge-Gaps.md shows Q28 (multiple endings) genuinely deferred as endgame question  
-- C. Type-safety: Clean (zero @ts-ignore except justified .mjs import case in test-utils with explanatory comment, zero `as any` casts)
-- D. Dead code: No large commented-out blocks, no unused exports identified
-- E. Documentation gaps: docs/ comprehensive for all modules (38 files), all API groups documented
+- A. Test-quality gaps: Found 2 significant gaps - World/Continents module completely untested (score 5.6), Tuning module under-tested for scope (score 4.8)  
+- B. Spec-gap items: Zero actionable spec-gap findings - all Knowledge-Gaps.md questions resolved, no blank spec placeholders
+- C. Type-safety: Found 1 gap - exported functions missing return type annotations in hazard.deck.ts legacy functions (score 5.4)
+- D. Dead code: Found 1 significant issue - deprecated Character presets still exported after v0.13.0 deadline (score 5.6)
+- E. Documentation gaps: Found 1 gap - multiple docs still reference deprecated getResistStat function (score 4.8)
 - F. ESLint fix: Phase 13 shipped, `npm run lint` passes clean with zero warnings
+- G. Dependencies: npm outdated shows @types/node, globals, inquirer, typescript have newer versions but all are major bumps requiring deliberate phases
+- H. Commit hygiene: Clean - no uncommitted changes, no plan file drift
 - G. Dependency updates: 1 patch update available: @types/node 22.19.20 → 22.19.21 (safe minor patch); major bumps (typescript 5→6, @types/node 22→25, inquirer 9→12, globals 16→17) skipped per iterate rules
 - H. Commit-hygiene: git status clean, no uncommitted drift
 Found 1 finding scoring 2.7 (below ≥3.0 threshold). Posture is bold - would trigger expand via failure mode 3. -->
