@@ -54,12 +54,6 @@
 - notes: ESLint now reports 6 warnings for `as any` usage in src/World/Hazard/e2e/hazard.persistence.engine.test.ts (lines 151, 260, 386) and src/World/Hazard/hazard.engine.ts (lines 32, 414, 417). These were likely introduced in recent hazard minigame implementation but weren't caught in prior audits.
 
 
-### [type-safety] Exported functions missing return type annotations  
-- category: type-safety
-- impact: 6
-- ease: 9
-- score: 5.4
-- notes: Multiple exported functions lack explicit return type annotations, particularly drawCards_v0 and playCard_v0 in src/World/Hazard/hazard.deck.ts. These legacy compatibility functions return objects but lack proper return type specifications.
 
 ### [test-quality] Tuning module significantly under-tested for its scope
 - category: test-quality
@@ -116,6 +110,7 @@ Found 0 actionable findings scoring ≥3.0 threshold. Codebase in excellent heal
 
 ## Done
 
+- [x] **[type-safety] Exported functions missing return type annotations** — resolved at commit b4302ca (2026-06-11). Added explicit return type annotations to drawCards_v0 and playCard_v0 in src/World/Hazard/hazard.deck.ts. Legacy compatibility functions now properly annotate their object return types, improving type safety for external API consumers. Score: 6 × 9 / 10 = 5.4.
 - [x] **[dead-code] Character presets deprecated functions still exported after v0.13.0 deadline** — resolved at commit d17f2db (2026-06-11). Removed characterPresets, getPresetById, buildCharacterFromPreset from public API exports (src/index.ts, src/Character/index.ts). Functions remain available internally for playtest.runner.ts usage. Preset functions were marked @deprecated for v0.13.0 removal but still exported at v0.16.0. Score: 8 × 7 / 10 = 5.6.
 - [x] **[feature] GH#154 — Extract Hazard Minigame mechanics from mobile** — drained via oversight 2026-06-11. Phase 131 (base hazard minigame: 18 action cards, complete state machine, hermetic e2e) + Phase 134 (mobile v2 alignment: force/escape-only progress, v2 dice/cards/hazards, parity tests) together delivered the full extraction scope. Row carried `next: /ship-a-phase` but both phases shipped. Impact 8 × Ease 4 / 10 = 3.2.
 - [x] **[test-quality] World/Continents module has no engine tests** — resolved at commit 1b2a4de (2026-06-11). Added comprehensive hermetic e2e tests covering map definitions, NPC dialogue trees, quest integration for coastal village and northern forest. Tests validate map structure/connectivity, all NPCs with alignment-gated choices, moral effects, flag systems, dialogue runtime integration patterns. All 25 test cases pass with proper RNG stubbing. Score: 7 × 8 / 10 = 5.6.
