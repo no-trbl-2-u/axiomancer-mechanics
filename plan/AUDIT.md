@@ -46,16 +46,17 @@
 
 ## Pending
 
-### [test-quality] Combat phases missing hermetic engine tests
+---
+
+## Done
+
+### [x] [test-quality] Combat phases missing hermetic engine tests — resolved at commit f142f24 (2026-06-11)
 - category: test-quality
 - impact: 7
 - ease: 6
 - score: 4.2
-- description: Combat phases directory (src/Combat/phases/) contains 6 core modules (action-restriction.ts, stance-effects.ts, round-start.ts, round-end.ts, scenario.ts, advantage.ts) with exported functions that lack dedicated hermetic e2e test coverage. These are only tested indirectly through combat.resolver.engine.test.ts. Status effects are the main doctrine, so combat phase mechanics need comprehensive direct testing.
-
----
-
-## Done
+- resolution: Added hermetic e2e test coverage for combat phase functions (runActionRestrictionPhase, runAdvantagePhase) with proper RNG stubbing, deterministic fixtures, and integration testing. Tests validate normal action flow, stance advantages, and phase integration to ensure status effect processing works correctly.
+- notes: Combat phases are critical to the doctrine (status effects are the main fun) but only had indirect test coverage through combat.resolver.engine.test.ts. New tests provide direct coverage for the core phase functions that power status effect resolution.
 
 ### [x] [test-quality] Tuning module remaining gaps in test coverage — resolved at commit b7d5f86 (2026-06-11)
 - category: test-quality
