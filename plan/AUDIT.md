@@ -47,10 +47,11 @@
 ## Pending
 
 <!-- Comprehensive audit findings (updated by /iterate after each audit):
-> Last pass: 2026-06-11 at commit 5cad49a
-> Findings: 0
+> Last pass: 2026-06-11 at commit a653dc0
+> Findings: 2
 -->
-<!-- Pass at commit 5cad49a: 0 findings. Dispatched from /march after verify gate green, baseline tests pass, no pending phases, critique not due, expand not due. Comprehensive audit across categories Z-H: **External critique (Z)** — plan/CRITIQUE.md Pending section empty. **Test-quality (A)** — 94 hermetic e2e test files for 133 source modules; proper RNG stubbing via test-utils/rng.ts throughout; only acceptable vi.spyOn(Math, 'random') in test-utils/rng.ts itself. **Spec-gap (B)** — Knowledge-Gaps.md only Q28 (multiple endings) genuinely deferred; all other questions resolved with shipping commits; no blank "Your answer:" placeholders in specs/. **Type-safety (C)** — clean; only approved @ts-ignore at src/test-utils/e2e/agent-vitest-reporter.engine.test.ts:25 for .mjs import case. **Dead code (D)** — no large commented-out blocks found. **Documentation (E)** — all major modules (Character, Combat, Effects, Enemy, Faction, Game, Items, NPCs, Philosophy, Playtest, Skills, Tuning, Utils, World) have corresponding docs/ files. **ESLint (F)** — Phase 13 already shipped; npm run lint passes green. **Dependencies (G)** — npm outdated shows 4 packages (typescript 5.9.3→6.0.3, @types/node 22→25, globals 16→17, inquirer 9→12) but all are major bumps requiring deliberate phases per iterate guidance. **Commit hygiene (H)** — git status clean; no uncommitted changes. Found codebase in excellent health with zero actionable findings ≥3.0 threshold. Per iterate failure mode 3, bold posture should dispatch to /expand, but march dispatch already confirmed expand conditions not met. -->
+- [ ] **[HIGH] Tuning module test infrastructure fundamentally broken** — Complete test failure across health.metrics, matrix.builder, and related tests. Function imports fixed (calculateHealthScore→scoreHealth, compareHealthScores→compareHealth) but test mocks use wrong structure for CellResult/PlaytestReport. Requires comprehensive test infrastructure overhaul. Impact 9 × Ease 3 / 10 = 2.7.
+- [ ] **[MED] 27 test failures block npm test baseline** — Critical module failure prevents development workflow. Mix of import mismatches (fixed), structural mock issues (root cause), and matrix builder test logic errors. Impact 8 × Ease 4 / 10 = 3.2.
 
 ---
 

@@ -5,8 +5,8 @@
 
 import { describe, it, expect, afterEach } from 'vitest';
 import {
-    calculateHealthScore,
-    compareHealthScores,
+    scoreHealth,
+    compareHealth,
     ENGAGEMENT_FLOOR,
     WITNESS_REGRESSION_DELTA,
 } from '../health.metrics';
@@ -19,28 +19,57 @@ describe('health.metrics', () => {
     });
 
     // Test fixture data
-    const createMockCellResult = (overrides: Partial<CellResult> = {}): CellResult => ({
-        cellId: 'test-cell',
-        difficulty: 'normal',
-        weight: 1.0,
-        resolutionSuccessRate: 0.6,
-        defeatRate: 0.4,
-        engagementShare: 0.4,
-        band: { low: 0.5, high: 0.7 },
-        deviation: 0,
-        runs: 50,
-        playstyle: 'mixed',
-        level: 15,
-        enemySlug: 'test-enemy' as const,
-        witnessMetric: {
-            strategistRate: 0.65,
-            aggressiveRate: 0.55,
-            edge: 0.10,
-        },
-        ...overrides,
-    });
+    const createMockCellResult = (overrides: Partial<{
+        cellId: string;
+        difficulty: 'easy' | 'normal' | 'hard';
+        level: number;
+        playstyle: 'aggressive' | 'defensive' | 'mixed' | 'strategist';
+        weight: number;
+        runs: number;
+        enemySlug: string;
+        resolutionSuccessRate: number;
+        defeatRate: number;
+        engagementShare?: number;
+    }> = {}): CellResult => {
+        const cellDefaults = {
+            cellId: 'test-cell',
+            difficulty: 'normal' as const,
+            level: 15,
+            playstyle: 'mixed' as const,
+            weight: 1.0,
+            runs: 50,
+            enemySlug: 'test-enemy',
+        };
+        const reportDefaults = {
+            resolutionSuccessRate: 0.6,
+            defeatRate: 0.4,
+        };
+        const merged = { ...cellDefaults, ...reportDefaults, ...overrides };
+        
+        return {
+            cell: {
+                cellId: merged.cellId,
+                level: merged.level,
+                playstyle: merged.playstyle,
+                difficulty: merged.difficulty,
+                enemySlug: merged.enemySlug,
+                runs: merged.runs,
+                weight: merged.weight,
+            },
+            report: {
+                metrics: {
+                    resolutionSuccessRate: merged.resolutionSuccessRate,
+                    defeatRate: merged.defeatRate,
+                },
+                // Additional fields for complete PlaytestReport if needed
+                transcript: merged.engagementShare !== undefined ? {
+                    statusEngagementShare: merged.engagementShare,
+                } : undefined,
+            } as any, // Type assertion for simplified test mock
+        };
+    };
 
-    describe('calculateHealthScore', () => {
+    describe('scoreHealth', () => {
         it('calculates baseline health score correctly', () => {
             mockFixedRng([0.5, 0.3, 0.7]); // deterministic for any internal RNG
 
@@ -63,7 +92,7 @@ describe('health.metrics', () => {
                 }),
             ];
 
-            const result = calculateHealthScore(cells);
+            const result = scoreHealth(cells);
 
             expect(result.meanEngagement).toBeCloseTo((0.4 + 0.3) / 2);
             expect(result.engagementFloor).toBe(ENGAGEMENT_FLOOR);
@@ -91,8 +120,8 @@ describe('health.metrics', () => {
                 }),
             ];
 
-            const lowScore = calculateHealthScore(lowEngagementCells);
-            const highScore = calculateHealthScore(highEngagementCells);
+            const lowScore = scoreHealth(lowEngagementCells);
+            const highScore = scoreHealth(highEngagementCells);
 
             expect(lowScore.meanEngagement).toBeLessThan(highScore.meanEngagement);
             expect(lowScore.summary).toContain('20%'); // engagement percentage
@@ -115,7 +144,7 @@ describe('health.metrics', () => {
                 }),
             ];
 
-            const result = calculateHealthScore(cells);
+            const result = scoreHealth(cells);
 
             expect(result.aggregateBand).toBeGreaterThan(0);
             expect(result.perCell[0].deviation).toBeCloseTo(0.1);
@@ -136,7 +165,7 @@ describe('health.metrics', () => {
                 }),
             ];
 
-            const result = calculateHealthScore(cells);
+            const result = scoreHealth(cells);
 
             // Weighted average should be closer to the heavy-weight cell
             const expectedWeightedMean = (0.2 * 3.0 + 0.8 * 1.0) / (3.0 + 1.0);
@@ -144,7 +173,7 @@ describe('health.metrics', () => {
         });
     });
 
-    describe('compareHealthScores', () => {
+    describe('compareHealth', () => {
         const baseline = {
             meanEngagement: 0.35,
             engagementFloor: ENGAGEMENT_FLOOR,
@@ -160,7 +189,7 @@ describe('health.metrics', () => {
                 aggregateBand: 0.03, // less band deviation
             };
 
-            const result = compareHealthScores(baseline, improved);
+            const result = compareHealth(baseline, improved);
 
             expect(result.verdict).toBe('improvement');
             expect(result.confidence).toBe('high');
@@ -175,7 +204,7 @@ describe('health.metrics', () => {
                 meanEngagement: 0.25, // dropped below regression threshold
             };
 
-            const result = compareHealthScores(baseline, regressed);
+            const result = compareHealth(baseline, regressed);
 
             expect(result.verdict).toBe('regression');
             expect(result.confidence).toBe('high');
@@ -194,7 +223,7 @@ describe('health.metrics', () => {
                 perCell: [createMockCellResult({ defeatRate: 0.5 })], // much higher defeat rate
             };
 
-            const result = compareHealthScores(baselineWithDefeat, regressed);
+            const result = compareHealth(baselineWithDefeat, regressed);
 
             expect(result.verdict).toBe('regression');
             expect(result.summary).toContain('defeat rate');
@@ -207,7 +236,7 @@ describe('health.metrics', () => {
                 aggregateBand: 0.051, // tiny worsening
             };
 
-            const result = compareHealthScores(baseline, marginal);
+            const result = compareHealth(baseline, marginal);
 
             expect(result.verdict).toBe('inconclusive');
             expect(result.confidence).toBe('low');
@@ -237,7 +266,7 @@ describe('health.metrics', () => {
                 })],
             };
 
-            const result = compareHealthScores(baselineWithWitness, regressedWitness);
+            const result = compareHealth(baselineWithWitness, regressedWitness);
 
             expect(result.verdict).toBe('regression');
             expect(result.summary).toContain('witness');
@@ -250,7 +279,7 @@ describe('health.metrics', () => {
                 aggregateBand: 0.03,
             };
 
-            const result = compareHealthScores(baseline, improved);
+            const result = compareHealth(baseline, improved);
 
             expect(result.engagementDelta).toBeCloseTo(0.07);
             expect(result.bandDelta).toBeCloseTo(-0.02);
@@ -262,7 +291,7 @@ describe('health.metrics', () => {
 
     describe('edge cases', () => {
         it('handles empty cell arrays gracefully', () => {
-            const result = calculateHealthScore([]);
+            const result = scoreHealth([]);
 
             expect(result.meanEngagement).toBe(0);
             expect(result.aggregateBand).toBe(0);
@@ -276,7 +305,7 @@ describe('health.metrics', () => {
                 resolutionSuccessRate: 0.6,
             })];
 
-            const result = calculateHealthScore(singleCell);
+            const result = scoreHealth(singleCell);
 
             expect(result.meanEngagement).toBe(0.5);
             expect(result.perCell).toHaveLength(1);
@@ -288,7 +317,7 @@ describe('health.metrics', () => {
                 createMockCellResult({ weight: 1, engagementShare: 0.3 }),
             ];
 
-            const result = calculateHealthScore(cells);
+            const result = scoreHealth(cells);
 
             expect(result.meanEngagement).toBe(0.3); // zero-weight cell ignored
         });

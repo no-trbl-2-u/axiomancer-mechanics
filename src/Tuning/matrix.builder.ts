@@ -91,7 +91,7 @@ export function buildMatrix(opts: BuildMatrixOptions): MatrixPlan {
     for (const level of levels) {
         for (const playstyle of playstyles) {
             for (const difficulty of difficulties) {
-                const cellId = `l${level}-${playstyle}-${difficulty}`;
+                const cellId = `L${level}-${playstyle}-${difficulty}`;
                 const focused = cellMatchesFocus(level, focus);
                 // Focused cells get the scaled run count; unfocused cells stay
                 // at baseline (when a focus is present) or full (when not).
@@ -112,5 +112,16 @@ export function buildMatrix(opts: BuildMatrixOptions): MatrixPlan {
         }
     }
 
-    return { cells, baseSeed: opts.seed, focus };
+    return { 
+        cells, 
+        baseSeed: opts.seed, 
+        focus,
+        metadata: {
+            levels,
+            playstyles,
+            difficulties,
+            baseRuns,
+            seed: opts.seed,
+        },
+    };
 }

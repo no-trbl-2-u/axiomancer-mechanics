@@ -126,6 +126,13 @@ export interface MatrixPlan {
     cells: MatrixCell[];
     baseSeed: string;
     focus: FocusFilter;
+    metadata: {
+        levels: number[];
+        playstyles: PlaytestPolicy[];
+        difficulties: Difficulty[];
+        baseRuns: number;
+        seed: string;
+    };
 }
 
 /** Compact stat block for a combatant, embedded in the suggestions evidence. */
