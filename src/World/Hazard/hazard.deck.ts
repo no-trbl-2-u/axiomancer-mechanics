@@ -165,7 +165,11 @@ export function drawCards_v0(
   enchantmentZone: string[],
   count: number,
   rng: HazardRngFunction
-) {
+): {
+  newDeck: string[];
+  newHand: string[];
+  newDiscard: string[];
+} {
   const result = drawCards(deck, hand, discard, count, rng);
   return {
     newDeck: result.newDeck,
@@ -180,7 +184,11 @@ export function playCard_v0(
   enchantmentZone: string[],
   cardId: string,
   _isEnchantment: boolean
-) {
+): {
+  newHand: string[];
+  newDiscard: string[];
+  newEnchantmentZone: string[];
+} {
   const result = playCard(hand, discard, cardId);
   return {
     newHand: result.newHand,
