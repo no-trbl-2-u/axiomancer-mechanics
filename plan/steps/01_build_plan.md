@@ -32,7 +32,7 @@ future oversight). `/march` dispatches only `[ ]` rows.
 
 **Next up (autonomous loop's queue):**
 
-- [ ] Phase 136 — Tuning module comprehensive test coverage. Promoted via oversight 2026-06-11 (Q1: T pick — "Both"). Add comprehensive hermetic e2e tests for the Tuning module's 19 source files (currently 4 tests total). Focus on `analyst.bridge.ts`, `engagement.metrics.ts`, `health.metrics.ts`, `matrix.builder.ts`, `matrix.runner.ts`, `experiment.runner.ts`. All tests hermetic with proper RNG stubbing via `test-utils/rng.ts`. Verification: tuning e2e green + `npm run verify`. Source: PHASE_CANDIDATES expand-51 AUDIT finding. Score 8 × 6 / 10 = 4.8.
+- [x] Phase 136 — Tuning module comprehensive test coverage. Promoted via oversight 2026-06-11 (Q1: T pick — "Both"). Add comprehensive hermetic e2e tests for the Tuning module's 19 source files (currently 4 tests total). Focus on `analyst.bridge.ts`, `engagement.metrics.ts`, `health.metrics.ts`, `matrix.builder.ts`, `matrix.runner.ts`, `experiment.runner.ts`. All tests hermetic with proper RNG stubbing via `test-utils/rng.ts`. Verification: tuning e2e green + `npm run verify`. Source: PHASE_CANDIDATES expand-51 AUDIT finding. Score 8 × 6 / 10 = 4.8. (2890c80)
 
 - [ ] Phase 137 — ESLint hazard as-any cast cleanup. Promoted via oversight 2026-06-11 (Q1: T pick — "Both"). Remove 6 `as any` casts from `hazard.persistence.engine.test.ts` and `hazard.engine.ts`; add proper TypeScript typing throughout. Verification: `npm run lint` zero warnings + `npm run verify`. Source: PHASE_CANDIDATES expand-51 AUDIT finding. Score 6 × 7 / 10 = 4.2.
 
