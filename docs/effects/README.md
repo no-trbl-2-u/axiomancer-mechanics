@@ -23,7 +23,7 @@ What's actually live as of 2026-05-15:
 
 | Payload field          | Live? | Wired via                                                                    |
 |------------------------|-------|------------------------------------------------------------------------------|
-| `statModifiers`        | LIVE  | `getEffectiveStats` aggregates and folds into `getAttackStat` / `getDefenseStat` / `getResistStat` / `getSaveStat` (`src/Combat/stats.ts` + `src/Combat/effect-modifiers.ts`). |
+| `statModifiers`        | LIVE  | `getEffectiveStats` aggregates and folds into `getAttackStat` / `getDefenseStat` / `getSaveStat` (`src/Combat/stats.ts` + `src/Combat/effect-modifiers.ts`). |
 | `defenseModifier`      | LIVE  | `getEffectiveStats().defenseDelta` plus the scenario-phase passive-defense path (`src/Combat/phases/scenario.ts`).                                                            |
 | `rollModifier` / `rollModifierPerIntensity` | LIVE | `getActiveRollModifier` (`src/Combat/effects.ts`); applied to attack and damage rolls in the scenario phase.                                                                  |
 | `reflectDamage`        | LIVE  | `getThornsReflect` (`src/Combat/effects.ts`); paid out after damage application in the scenario phase.                                                                       |

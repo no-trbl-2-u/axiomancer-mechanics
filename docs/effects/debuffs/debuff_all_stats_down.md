@@ -66,7 +66,7 @@ Broad penalty to all combat stats. **PENDING (Phase 2).**
 
 ```
 DR   = 13 + attacker.baseStats.heart + equipBonus
-Roll = d20 + target.derivedStats.heartDefence (via getResistStat)
+Roll = d20 + target.derivedStats.heartDefence (via getSaveStat)
 ```
 
 - Nat 20 → rebounds to attacker at 2× intensity

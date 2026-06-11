@@ -236,7 +236,7 @@ applyEffect (rolls intensity / duration / resist)
             → { statFlat, statMultBonus, defenseDelta, ... }
                 → getEffectiveStats(combatant)     // folds into stats
                     → { baseStats, derivedStats, nonCombatStats, defenseDelta }
-                        → getAttackStat / getDefenseStat / getResistStat
+                        → getAttackStat / getDefenseStat / getSaveStat
                           getBaseStat / getSaveStat                    // src/Combat/stats.ts
                             → resolveCombatRound (every stat read)
 ```
@@ -273,7 +273,7 @@ library effects (`buff_body_attack_up`, `buff_max_hp_up`,
 | `rollModifierPerIntensity` | **LIVE** | `getActiveRollModifier()` — scaled by `intensity` |
 | `reflectDamage`           | **LIVE** | `getThornsReflect()` — `src/Combat/effects.ts` |
 | `regeneration.healthPerRound` | **LIVE** | `applyRegen()` (positive) / `applyDrain()` (negative) — `src/Combat/effects.ts` |
-| `statModifiers`           | **LIVE** | `getEffectiveStats()` re-derives stats; consumed by `getAttackStat` / `getDefenseStat` / `getResistStat` / `getSaveStat` — `src/Combat/stats.ts` |
+| `statModifiers`           | **LIVE** | `getEffectiveStats()` re-derives stats; consumed by `getAttackStat` / `getDefenseStat` / `getSaveStat` — `src/Combat/stats.ts` |
 | `defenseModifier`         | **LIVE** | `getEffectiveStats().defenseDelta`; folded into defending paths via `getDefenseStat` and into passive damage paths via the scenario phase — `src/Combat/stats.ts`, `src/Combat/phases/scenario.ts` |
 | `damageOverTime`          | **LIVE** | `processDamageOverTime()` — `src/Combat/effects.ts`, split by `tickPhase` (`'start'` / `'end'`) |
 | `advantageModifier`       | **LIVE** | `resolveEffectiveAdvantage()` — `src/Combat/advantage.ts` (grants override matchup per Q8) |
@@ -443,7 +443,7 @@ here. Called once per combatant per round, before Tier 1 application.
 
 Post-Phase-80 (direction (a) pure split): Tier 2 debuffs and Tier 3
 effects **always land** — no target-resist roll. Only Tier 2 buffs still
-roll (caster-side d20 for fumble/crit). `getResistStat` remains on the
+roll (caster-side d20 for fumble/crit). `getSaveStat` remains on the
 public barrel for consumer use but is no longer called by this pipeline.
 
 ---

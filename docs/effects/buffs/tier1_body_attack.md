@@ -66,7 +66,7 @@ Adds `+1` to `physicalAttack`. This is a **flat** additive bonus to the derived 
 
 > **Implementation status — LIVE (since Spec 01):** `statModifiers` are folded into the
 > combat math via `getEffectiveStats()` (`src/Combat/effect-modifiers.ts`), which feeds
-> `getAttackStat` / `getDefenseStat` / `getResistStat` / `getSaveStat`
+> `getAttackStat` / `getDefenseStat` / `getSaveStat`
 > (`src/Combat/stats.ts`) and the scenario phase (`src/Combat/phases/scenario.ts`).
 > The "Phase 2" framing in older buff/debuff docs predates the engine wiring — see
 > `docs/effects/README.md` for the full live-vs-pending table.
