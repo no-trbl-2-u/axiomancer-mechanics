@@ -55,12 +55,12 @@
 
 
 
-### [test-quality] Tuning module significantly under-tested for its scope
+### [test-quality] Tuning module remaining gaps in test coverage
 - category: test-quality
-- impact: 8
+- impact: 7
 - ease: 6
-- score: 4.8
-- notes: Tuning module has 19 source files but only 4 engine tests, leaving major gaps in coverage for analyst.bridge.ts, engagement.metrics.ts, health.metrics.ts, matrix.builder.ts, matrix.runner.ts, experiment.runner.ts.
+- score: 4.2
+- notes: Tuning module has 19 source files but only 5 engine tests, leaving gaps in coverage for engagement.metrics.ts, health.metrics.ts, matrix.builder.ts, matrix.runner.ts, experiment.runner.ts. analyst.bridge.ts now has comprehensive coverage as of 2bc140e.
 
 ### [documentation] References to deprecated getResistStat function in docs
 - category: documentation
@@ -110,6 +110,7 @@ Found 0 actionable findings scoring ≥3.0 threshold. Codebase in excellent heal
 
 ## Done
 
+- [x] **[test-quality] Tuning module significantly under-tested for its scope** — resolved at commit 2bc140e (2026-06-11). Added comprehensive hermetic e2e coverage for analyst.bridge.ts with 17 test cases covering heuristic recommendations, API path validation, candidate filtering, engagement vs difficulty prioritization, cooldown handling, and error fallback. Core balance recommendation engine now has proper test coverage. Score: 8 × 6 / 10 = 4.8.
 - [x] **[type-safety] Exported functions missing return type annotations** — resolved at commit b4302ca (2026-06-11). Added explicit return type annotations to drawCards_v0 and playCard_v0 in src/World/Hazard/hazard.deck.ts. Legacy compatibility functions now properly annotate their object return types, improving type safety for external API consumers. Score: 6 × 9 / 10 = 5.4.
 - [x] **[dead-code] Character presets deprecated functions still exported after v0.13.0 deadline** — resolved at commit d17f2db (2026-06-11). Removed characterPresets, getPresetById, buildCharacterFromPreset from public API exports (src/index.ts, src/Character/index.ts). Functions remain available internally for playtest.runner.ts usage. Preset functions were marked @deprecated for v0.13.0 removal but still exported at v0.16.0. Score: 8 × 7 / 10 = 5.6.
 - [x] **[feature] GH#154 — Extract Hazard Minigame mechanics from mobile** — drained via oversight 2026-06-11. Phase 131 (base hazard minigame: 18 action cards, complete state machine, hermetic e2e) + Phase 134 (mobile v2 alignment: force/escape-only progress, v2 dice/cards/hazards, parity tests) together delivered the full extraction scope. Row carried `next: /ship-a-phase` but both phases shipped. Impact 8 × Ease 4 / 10 = 3.2.
