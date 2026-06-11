@@ -45,13 +45,7 @@
 
 ## Pending
 
-### Candidate: Hazard Minigame — Persistent World-State Tracking
-- signal: CDR-0006 (docs/hazard-minigame.md, accepted v0 doctrine) specifies that three hazard cards (H08, H12, H15) produce persistent map benefits — e.g., a purified spring reducing future Supply hazard thresholds, a repaired bridge allowing future Stability auto-successes, and a cleared narrows permanently removing a hazard node. H12's failure condition also blocks a map route and requires an alternate path. None of these effects can be implemented without world-state tracking outside the current `ResolvedEvent` payload surface. The hazard docs flag these with ⚑ and explicitly defer them to a future phase.
-- scope: Extend `WorldState` / `MapState` to support hazard-outcome persistence: (a) per-node outcome flags (cleared, blocked, modified); (b) a `HazardModifierTable` that adjusts threshold values on future hazard encounters at tagged nodes; (c) route-blocking state that the map dispatcher can read to mark alternate path requirements. Wire the three flagged hazard cards (H08, H12, H15) to emit and consume these flags. Hermetic e2e coverage + docs update to `docs/hazard-minigame.md` removing the ⚑ deferral notes.
-- unblocks: The three hazard cards can ship with their full designed behavior rather than stripped-down fallbacks. Establishes the pattern for future hazard cards that affect world state. Critical for the hazard minigame to feel consequential at the map level.
-- blocked-by: The core hazard minigame must be implemented first (Phase TBD from CDR-0006 implementation). World-state tracking is a follow-on after the base minigame proves out.
-- score: 8 × 8 / 10 = 6.4
-- recommended-slot: immediately after the base hazard minigame implementation phase ships.
+<!-- Hazard Minigame — Persistent World-State Tracking — promoted to Phase 135 via oversight 2026-06-11 (Q1: T pick). See ## Promoted. -->
 
 <!-- oversight 2026-06-07: balance/playtest expand-bias CLEARED. T decision Q2: "Clear bias — let /expand re-cluster naturally." Bias was set 2026-06-05 (post-Phase-120) and kept 2026-06-06 (post-Phase-121); it steered the 2026-06-07 tuning cycle correctly (Phases 122-125 are all balance/mechanics). With that cycle now queued, no single category dominates the post-125 candidate pool (top scores: Second Enemy Family 4.2, Friendship Route / Story NPCs 3.6 each). /expand weights all categories evenly from this point until signals re-cluster naturally. -->
 
@@ -83,17 +77,14 @@
 - score: 5 × 5 / 10 = 2.5
 - recommended-slot: Balance/analysis phase
 
-### Candidate: Character module RNG stubbing fix
-- signal: CRITIQUE.md HIGH finding (critique-60) about missing RNG stubbing for Character tests — Character module uses getRng() for character ID generation, but e2e tests don't stub RNG via test-utils/rng.ts helpers
-- scope: Fix Character module e2e tests to use proper RNG stubbing via test-utils/rng.ts helpers instead of unstubbed getRng() calls for character ID generation. Ensure test determinism and consistency with other modules' RNG stubbing pattern established by Spec 11.
-- unblocks: Clean critique queue, eliminates test flakiness in Character module, maintains test hermetic property across all modules
-- blocked-by: None - test-utils/rng.ts infrastructure already implemented
-- score: 7 × 4 / 10 = 2.8
-- recommended-slot: after Phase 133
+<!-- Character module RNG stubbing fix — rejected via oversight 2026-06-11 (Q3: T pick — "Yes — reject it"). Underlying AUDIT finding already resolved by /iterate at commit 6abd897. See ## Rejected. -->
 
 <!-- Game Module Documentation Coverage — promoted to Phase 132 via oversight 2026-06-09 (Q3 T pick). See ## Promoted. -->
 
 ## Promoted
+
+### Phase 135 — Hazard Minigame — Persistent World-State Tracking
+- promoted: 2026-06-11 (oversight Q1 — T pick). Was "Hazard Minigame — Persistent World-State Tracking" (score 8 × 8 / 10 = 6.4). Blocker (Phase 131 base hazard + Phase 134 mobile v2 alignment) both shipped. Build-plan row added as Phase 135. Scope: extend `WorldState` / `MapState` for hazard-outcome persistence — per-node outcome flags (cleared/blocked/modified), `HazardModifierTable` for future threshold adjustments, route-blocking state for map dispatcher; wire H08/H12/H15 hazard cards to emit and consume these flags; hermetic e2e + `docs/hazard-minigame.md` ⚑ deferral note removal. Source: CDR-0006 doctrine + expand candidate.
 
 ### Phase 134 — Hazard Mobile v2 Alignment
 - promoted: 2026-06-10 (T direct order). Source: mobile shipped local hazard v2 engine and divergence catalogue `axiomancer-mobile/docs/hazard-v2-vs-mechanics-divergence.md`; copied into mechanics as `docs/hazard-v2-vs-mechanics-divergence.md`. Scope: replace Phase 131 / CDR-0006 v0 hazard semantics with mobile v2 force/escape rules; port mobile cards, dice, hazards, reward/penalty tiers, no-recast dice economy, deterministic RNG, and parity tests; update docs/API so mobile can consume the mechanics package and retire duplicated local rules. Brief: `plan/phases/phase_134_hazard_mobile_v2_alignment.md`. Tracks mechanics #154 and unblocks mobile #333.
@@ -1146,6 +1137,9 @@
 
 ### Candidate: Damage Calculation Audit for Level Scaling
 - rejected: 2026-06-06 (oversight, attended; Q1 user pick "Reject all 3, file real thread"). Same contradicted premise. The claim "damage scaling insufficient for level 15+ enemy defeat... all policies fail to achieve kills within 50 rounds" is false: both anchors resolve by lethal damage in-band at this oversight's live re-run (avg damage-to-enemy 367 normal / 339 difficult; avg rounds 40 / 25). Damage scaling is adequate for the canonical anchors. No audit phase warranted.
+
+### Candidate: Character module RNG stubbing fix
+- rejected: 2026-06-11 (oversight Q3 — T pick: "Yes — reject it"). The underlying AUDIT finding (Character module RNG stubbing gap) was already resolved via /iterate drain at commit 6abd897 — tests updated with mockSequentialRng() calls and proper afterEach() cleanup. No phase-level work remains. Candidate was filed before /iterate completed the drain.
 
 ### Candidate: Character presets deprecation schedule cleanup
 - rejected: 2026-06-02 (oversight-28; Q1 user write-in: "remove phase item about presets. I'm trying to remove them"). The user is removing the deprecated Character presets directly, so the candidate is superseded by hands-on work. The underlying critique-46 MED ("presets deprecation schedule contradicts live use") was already drained at iterate `841d9ae` ("Character presets deprecation schedule updated"). No autonomous phase warranted — the preset-removal decision and execution sit with the user.

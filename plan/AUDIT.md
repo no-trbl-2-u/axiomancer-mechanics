@@ -76,12 +76,6 @@
 - score: 4.8
 - notes: Multiple documentation files still reference deprecated getResistStat function including docs/effects/debuffs/debuff_all_stats_down.md, docs/effects/README.md, docs/effects.md. Could confuse consumers who might try to use deprecated API.
 
-### [feature] GH#154 — Extract Hazard Minigame mechanics from mobile
-- category: feature
-- impact: 8
-- ease: 4
-- next: /ship-a-phase
-- notes: Implement canonical Hazard Minigame engine with safe/risk routes, dice persistence, dual-meter mechanics
 
 <!-- Audit pass (2026-06-11 at commit 131cce1): Comprehensive categories Z-H review - 5 new findings:
 - Z. External critique: CRITIQUE.md has 0 pending findings (pass 62 clean)
@@ -123,6 +117,7 @@ Found 0 actionable findings scoring ≥3.0 threshold. Codebase in excellent heal
 
 ## Done
 
+- [x] **[feature] GH#154 — Extract Hazard Minigame mechanics from mobile** — drained via oversight 2026-06-11. Phase 131 (base hazard minigame: 18 action cards, complete state machine, hermetic e2e) + Phase 134 (mobile v2 alignment: force/escape-only progress, v2 dice/cards/hazards, parity tests) together delivered the full extraction scope. Row carried `next: /ship-a-phase` but both phases shipped. Impact 8 × Ease 4 / 10 = 3.2.
 - [x] **[test-quality] World/Continents module has no engine tests** — resolved at commit 1b2a4de (2026-06-11). Added comprehensive hermetic e2e tests covering map definitions, NPC dialogue trees, quest integration for coastal village and northern forest. Tests validate map structure/connectivity, all NPCs with alignment-gated choices, moral effects, flag systems, dialogue runtime integration patterns. All 25 test cases pass with proper RNG stubbing. Score: 7 × 8 / 10 = 5.6.
 - [x] **[deps] @types/node patch update 22.19.20 → 22.19.21** — resolved at commit 2bc1c8e (2026-06-10). Updated @types/node to latest patch version for security/compatibility. Minor dependency update with zero breaking changes. Impact 3 × Ease 9 / 10 = 2.7.
 - [x] **[HIGH] Hazard Engine test failures after Phase 134** — resolved at commit 8276fde (2026-06-10). Fixed test expectations to match v2 balance changes: updated seed 42 expected marks from 'OOX' to 'OXX'; skipped obsolete illegal action test since v2 removed green mana and bottom actions. All hazard CLI tests now pass with 7 passing, 1 skipped. Engine functionality confirmed working. Impact 8 × Ease 6 / 10 = 4.8.
