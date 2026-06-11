@@ -8,6 +8,8 @@ Axiomancer Mechanics is a TypeScript TTRPG game engine (Node.js CLI). No databas
 
 **Load-bearing doctrine (2026-06):** Status effects are the MAIN fun and the most engaging aspect of combat. Balance/tuning/content work optimises first for status-effect-centric play; treat low status-effect engagement as a balance failure even when win/loss rates look healthy. Canonical in `VISION.md`.
 
+**Scheduled evidence doctrine (2026-06):** Command-green playtests can still be design-red. Treat late-game/boss witnesses as failed evidence when they sit outside the 65–75% resolution-success band, record 0 player damage, never exercise Heart/Befriend/mercy attempts, or collapse into low-status Body/damage dominance. Capture generated playtest metrics in the dated report, then revert generated tracked reports unless the task explicitly updates those fixtures.
+
 ### Key commands
 
 All commands are in `package.json`:
