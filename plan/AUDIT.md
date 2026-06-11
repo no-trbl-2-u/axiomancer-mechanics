@@ -50,8 +50,8 @@
 > Last pass: 2026-06-11 at commit a653dc0
 > Findings: 2
 -->
-- [ ] **[HIGH] Tuning module test infrastructure fundamentally broken** — Complete test failure across health.metrics, matrix.builder, and related tests. Function imports fixed (calculateHealthScore→scoreHealth, compareHealthScores→compareHealth) but test mocks use wrong structure for CellResult/PlaytestReport. Requires comprehensive test infrastructure overhaul. Impact 9 × Ease 3 / 10 = 2.7.
-- [ ] **[MED] 27 test failures block npm test baseline** — Critical module failure prevents development workflow. Mix of import mismatches (fixed), structural mock issues (root cause), and matrix builder test logic errors. Impact 8 × Ease 4 / 10 = 3.2.
+- [ ] **[MED] Tuning health.metrics test infrastructure needs mock structure overhaul** — Test mocks use wrong structure for CellResult/PlaytestReport interfaces. Function imports fixed (calculateHealthScore→scoreHealth, compareHealthScores→compareHealth) but mock data needs proper {cell, report, runs[]} nesting. Impact 6 × Ease 3 / 10 = 1.8.
+- [x] **[HIGH] Matrix builder critical structural issues** — resolved at commit d1306c2 (2026-06-11). Fixed missing metadata in MatrixPlan interface, cellId format (l15→L15), and function naming mismatches. Core functionality now operational. Impact 8 × Ease 9 / 10 = 7.2.
 
 ---
 
