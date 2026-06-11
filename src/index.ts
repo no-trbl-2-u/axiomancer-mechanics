@@ -14,13 +14,11 @@ export {
     allocateStatPoint,
     previewStatAllocation,
     equipItem, unequipItem, getEquipmentModifiers,
-    characterPresets, getPresetById, buildCharacterFromPreset,
 } from './Character';
 export type {
     Character, BaseStats, DerivedStats, NonCombatStats,
     PreviewAllocation, PreviewResult,
     CreateCharacterOptions, AggregatedEquipmentModifiers,
-    CharacterPreset, CharacterPresetEquipmentEntry,
 } from './Character';
 
 // ─── Enemy ────────────────────────────────────────────────────────────────────
