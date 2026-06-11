@@ -159,7 +159,7 @@ describe('Reference Fixtures (Phase 104)', () => {
             // All mercy runs should have HP gate traces
             mercyRuns.forEach(run => {
                 expect(run.hpGateTrace).toBeDefined();
-                expect(run.hpGateTrace!.hpThreshold).toBe(0.4); // Coastal Tyrant's HP gate
+                expect(run.hpGateTrace!.hpThreshold).toBe(0.7); // Coastal Tyrant's HP gate (Phase 138)
                 expect(run.hpGateTrace!.finalEnemyHpPct).toBeGreaterThanOrEqual(0);
                 expect(run.hpGateTrace!.finalEnemyHpPct).toBeLessThanOrEqual(1);
             });

@@ -28,9 +28,9 @@ describe('Phase 130 — Constants and config verification', () => {
     describe('L15-tier enemy befriendability improvements', () => {
         it('AuditSentinel should now be befriendable', () => {
             expect(AuditSentinel.befriendabilityConfig).toBeDefined();
-            expect(AuditSentinel.befriendabilityConfig?.hpGate?.belowPct).toBe(0.4);
+            expect(AuditSentinel.befriendabilityConfig?.hpGate?.belowPct).toBe(0.7); // Phase 138 tuning
             expect(AuditSentinel.befriendabilityConfig?.requiredStances).toContain('mind');
-            expect(AuditSentinel.befriendabilityConfig?.roundsThreshold).toBe(3);
+            expect(AuditSentinel.befriendabilityConfig?.roundsThreshold).toBe(1); // Phase 138 tuning
             expect(AuditSentinel.friendshipReward).toBeDefined();
             expect(AuditSentinel.friendshipReward?.flagSet).toBe('befriended-audit-sentinel');
         });

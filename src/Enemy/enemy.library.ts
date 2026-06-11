@@ -615,10 +615,11 @@ export const CoastalTyrant = createEnemy({
     // opens only after he's been brought low (hpGate 40%), the player has shown
     // empathy at least once (heart stance), and 3 both-defend rounds have passed.
     // Phase 101 — rounds reduced from 5→3 to improve mercy policy decisiveness.
+    // Phase 138 — HP gate tuned to 70% and rounds set to 1 for Easy friendship expressiveness.
     befriendabilityConfig: {
-        hpGate: { belowPct: 0.4 },
+        hpGate: { belowPct: 0.7 }, // Phase 138 — tuned from 0.8 to 0.7 for 80-90% friendship rate
         requiredStances: ['heart'],
-        roundsThreshold: 3, // Phase 101 — reduced from 5 to improve mercy policy viability
+        roundsThreshold: 1, // Phase 138 — kept at 1 for fast friendship route
     },
     // Phase 70 — boss-tier friendshipReward demonstrating the full Phase 60
     // + 62 + 68 + 69 stack on one high-stakes encounter. The fallen-priest's
@@ -1309,10 +1310,11 @@ export const AuditSentinel = createEnemy({
     philosophicalAlignment: { epistemology: 67, outlook: 0, scope: 0 }, // logic-mid-relational
     skills: [skill('false-dilemma'), skill('ad-hominem-strike')], // 1-2 low-tier skills
     // Phase 130 — befriendability config: l15 timeout cell fix
+    // Phase 138 — Normal friendship expressiveness tuning for three-anchor route.
     befriendabilityConfig: {
-        hpGate: { belowPct: 0.4 },
-        requiredStances: ['mind'],
-        roundsThreshold: 3
+        hpGate: { belowPct: 0.7 }, // Phase 138 — raised from 0.4 to 0.7 for better Normal friendship access
+        requiredStances: ['mind'], // Phase 138 — kept mind stance for thematic consistency
+        roundsThreshold: 1 // Phase 138 — reduced from 3 to 1 for more achievable friendship
     },
     // Phase 130 — friendship reward: methodical audit finds mercy in the books
     friendshipReward: {
