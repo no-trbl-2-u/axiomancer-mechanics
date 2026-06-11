@@ -54,12 +54,6 @@
 - score: 5.6
 - notes: Multiple deprecated functions in src/Character/presets.ts are marked @deprecated for removal at v0.13.0 but still exported at v0.16.0. Functions characterPresets, getPresetById, buildCharacterFromPreset have replacements via dev-tools and should be removed from public API.
 
-### [test-quality] World/Continents module has no engine tests
-- category: test-quality
-- impact: 7
-- ease: 8
-- score: 5.6
-- notes: World/Continents contains 3 TypeScript source files (Coastal-Village/maps.ts, Coastal-Village/npcs.ts, Northern-Forest/npcs.ts) but has zero *.engine.test.ts coverage. These modules contain map and NPC definitions that are core to the game world but completely untested.
 
 ### [type-safety] Exported functions missing return type annotations  
 - category: type-safety
@@ -129,6 +123,7 @@ Found 0 actionable findings scoring ≥3.0 threshold. Codebase in excellent heal
 
 ## Done
 
+- [x] **[test-quality] World/Continents module has no engine tests** — resolved at commit 1b2a4de (2026-06-11). Added comprehensive hermetic e2e tests covering map definitions, NPC dialogue trees, quest integration for coastal village and northern forest. Tests validate map structure/connectivity, all NPCs with alignment-gated choices, moral effects, flag systems, dialogue runtime integration patterns. All 25 test cases pass with proper RNG stubbing. Score: 7 × 8 / 10 = 5.6.
 - [x] **[deps] @types/node patch update 22.19.20 → 22.19.21** — resolved at commit 2bc1c8e (2026-06-10). Updated @types/node to latest patch version for security/compatibility. Minor dependency update with zero breaking changes. Impact 3 × Ease 9 / 10 = 2.7.
 - [x] **[HIGH] Hazard Engine test failures after Phase 134** — resolved at commit 8276fde (2026-06-10). Fixed test expectations to match v2 balance changes: updated seed 42 expected marks from 'OOX' to 'OXX'; skipped obsolete illegal action test since v2 removed green mana and bottom actions. All hazard CLI tests now pass with 7 passing, 1 skipped. Engine functionality confirmed working. Impact 8 × Ease 6 / 10 = 4.8.
 - [x] **[HIGH] Hazard CLI broken after Phase 134 mobile v2 alignment** — resolved at commit 5d9ef41 (2026-06-10). Fixed route resolution logic to use v2 structure (safeRoute/riskRoute instead of topRoute/bottomRoute); updated threshold handling for v2 combined vs dual meter systems; removed player-choice logic (not in v2); fixed selectRoute() call to use 'safe'/'risk'; updated computeFinalScore() usage for v2 API; fixed round marks generation; added stubs for v2 reward/penalty system; cleaned up lint errors from v2 migration. CLI no longer crashes with "Cannot read properties of undefined (reading 'progressType')" errors. Impact 9 × Ease 6 / 10 = 5.4.
