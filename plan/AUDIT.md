@@ -46,6 +46,12 @@
 
 ## Pending
 
+### [type-safety] New as any casts introduced causing ESLint warnings
+- category: type-safety
+- impact: 6
+- ease: 7
+- score: 4.2
+- notes: ESLint now reports 6 warnings for `as any` usage in src/World/Hazard/e2e/hazard.persistence.engine.test.ts (lines 151, 260, 386) and src/World/Hazard/hazard.engine.ts (lines 32, 414, 417). These were likely introduced in recent hazard minigame implementation but weren't caught in prior audits.
 
 
 ### [type-safety] Exported functions missing return type annotations  
