@@ -5,9 +5,10 @@
 > `## Promoted`, `## Deferred`, or `## Rejected`.
 
 <!-- Metadata (updated by /expand after each pass):
-> Last pass: 2026-06-10 at commit b83f69e
-> Pass count: 50
+> Last pass: 2026-06-11 at commit d13dcfe
+> Pass count: 51
 -->
+<!-- Pass 51 (2026-06-11 at commit d13dcfe): 2 candidates proposed. Dispatched from /march after 21 commits since last expand (meets ≥20 threshold) + bold posture + signal sources present. Signal sources: AUDIT.md Pending 2 actionable findings (test-quality 4.8: Tuning module significantly under-tested, 4 tests for 19 source files; type-safety 4.2: 6 ESLint warnings from new as any casts in hazard files); CRITIQUE.md Pending empty (all findings resolved); Knowledge-Gaps only Q28 deferred (endgame); specs/ all recommended-order DONE; braindump/ unchanged since 2026-05-12; spec.md 6-month horizon Continent 2 scored 2.0 (below filing threshold); recent commits show clean progression pattern (Phase 135 hazard persistence shipped, docs improvements, iterate/audit cycles). Signal cluster: **test coverage + type safety polish** — first actionable AUDIT signals since pass 48. Both candidates exceed ≥2.5 filing threshold and address concrete technical debt. Pool grows 8 → 10 Pending. -->
 <!-- Pass 50 (2026-06-10 at commit b83f69e): 0 candidates proposed. Dispatched from /march→/iterate failure mode 3 (zero findings ≥3.0 + bold posture bypasses normal rate-limits; 15 commits since pass 49 does not meet ≥20 threshold but iterate failure mode 3 bypasses rate-limit). Signal sources: AUDIT.md Pending 0 actionable findings (comprehensive categories Z-H review confirmed excellent health - misdiagnosed docs/test-utils.md gap corrected as test-utils excluded from build per tsconfig.json); CRITIQUE.md Pending empty (all findings resolved); Knowledge-Gaps only Q28 deferred (endgame); specs/ all recommended-order DONE; braindump/ unchanged since 2026-05-12 (all noted ideas already implemented); spec.md 6-month horizon items (More named NPCs, Second+ enemy class families, Additional world content) already covered by existing candidates or are content-authoring rather than engine gaps; recent commits show clean audit + correction pattern (audit passes, hazard test fix cycles, iterate correction flows). Signal cluster: **continued mature codebase with no actionable expansion paths** — identical to passes 45/47/49. All core engine infrastructure complete, zero technical debt, no user-visible gaps requiring immediate phases. The comprehensive signal source walk confirms continued excellent health with no signals meeting the ≥2.5 filing threshold given current project maturity. Pool unchanged at 8 Pending (awaiting oversight review). -->
 <!-- Pass 49 (2026-06-10 at commit 2a122ca): 0 candidates proposed. Dispatched from /march→/iterate failure mode 3 (zero findings ≥3.0 + bold posture bypasses normal rate-limits; 17 commits since pass 48 does not meet ≥20 threshold but iterate failure mode 3 bypasses rate-limit). Signal sources: AUDIT.md Pending 0 actionable findings (comprehensive categories Z-H review confirmed excellent health); CRITIQUE.md Pending empty (all findings resolved); Knowledge-Gaps only Q28 deferred (endgame); specs/ all recommended-order DONE; braindump/ unchanged since 2026-05-12 (all noted ideas already implemented); spec.md 6-month horizon items (More named NPCs, Second+ enemy class families, Additional world content) already covered by existing candidates or are content-authoring rather than engine gaps; recent commits show clean release + docs pattern (0.16.0 release, PR template, hazard tuning, balanced iterate/audit cycles). Signal cluster: **continued mature codebase with no actionable expansion paths** — identical to passes 45/47. All core engine infrastructure complete, zero technical debt, no user-visible gaps requiring immediate phases. The comprehensive signal source walk confirms continued excellent health with no signals meeting the ≥2.5 filing threshold given current project maturity. Pool unchanged at 8 Pending (awaiting oversight review). -->
 <!-- Pass 48 (2026-06-09 at commit 78be476): 1 candidate proposed. Dispatched from /march after 21 commits since last expand (meets ≥20 threshold) + bold posture + signal sources present. Signal sources: AUDIT.md Pending 0 actionable findings (audit pass 43 — comprehensive categories Z-H review confirmed excellent health); CRITIQUE.md Pending 1 HIGH finding (Character module RNG stubbing gap, score 2.8) meets the ≥2.5 filing threshold; Knowledge-Gaps only Q28 deferred (endgame); specs/ all recommended-order DONE; braindump/ unchanged since 2026-05-12; spec.md 6-month horizon items already covered by existing candidates; recent commits show clean progression pattern (critique pass 60, hazard mini-game CLI terminal work, balance test fixes). Signal cluster: **test infrastructure polish** — the Character module e2e tests use unstubbed getRng() calls for character ID generation, breaking test determinism and consistency with other modules' RNG stubbing via test-utils/rng.ts. Pure technical debt / test hygiene finding scoring 2.8. Pool grows 7 → 8 Pending. -->
@@ -76,6 +77,22 @@
 - blocked-by: None - resource system fully implemented
 - score: 5 × 5 / 10 = 2.5
 - recommended-slot: Balance/analysis phase
+
+### Candidate: Tuning module comprehensive test coverage
+- signal: AUDIT.md test-quality finding (score 4.8) - Tuning module significantly under-tested with only 4 tests for 19 source files
+- scope: Add comprehensive engine tests for the Tuning module's 19 source files (currently only 4 tests). Focus on analyst.bridge.ts, engagement.metrics.ts, health.metrics.ts, matrix.builder.ts, matrix.runner.ts, experiment.runner.ts.
+- unblocks: Audit finding resolution, improved test confidence for balance tuning infrastructure
+- blocked-by: None
+- score: 8 × 6 / 10 = 4.8
+- recommended-slot: Phase 136
+
+### Candidate: ESLint type-safety cleanup for hazard files
+- signal: AUDIT.md type-safety finding (score 4.2) - 6 ESLint warnings from new `as any` casts in hazard files
+- scope: Remove 6 `as any` casts from hazard.persistence.engine.test.ts and hazard.engine.ts, add proper typing
+- unblocks: ESLint warning cleanup, improved type safety
+- blocked-by: None
+- score: 6 × 7 / 10 = 4.2
+- recommended-slot: Phase 137
 
 <!-- Character module RNG stubbing fix — rejected via oversight 2026-06-11 (Q3: T pick — "Yes — reject it"). Underlying AUDIT finding already resolved by /iterate at commit 6abd897. See ## Rejected. -->
 
