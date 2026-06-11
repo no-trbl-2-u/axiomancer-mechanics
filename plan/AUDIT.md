@@ -62,12 +62,6 @@
 - score: 4.2
 - notes: Tuning module has 19 source files but only 5 engine tests, leaving gaps in coverage for engagement.metrics.ts, health.metrics.ts, matrix.builder.ts, matrix.runner.ts, experiment.runner.ts. analyst.bridge.ts now has comprehensive coverage as of 2bc140e.
 
-### [documentation] References to deprecated getResistStat function in docs
-- category: documentation
-- impact: 6
-- ease: 8
-- score: 4.8
-- notes: Multiple documentation files still reference deprecated getResistStat function including docs/effects/debuffs/debuff_all_stats_down.md, docs/effects/README.md, docs/effects.md. Could confuse consumers who might try to use deprecated API.
 
 
 <!-- Audit pass (2026-06-11 at commit 131cce1): Comprehensive categories Z-H review - 5 new findings:
@@ -110,6 +104,7 @@ Found 0 actionable findings scoring ≥3.0 threshold. Codebase in excellent heal
 
 ## Done
 
+- [x] **[documentation] References to deprecated getResistStat function in docs** — resolved at commit b269da6 (2026-06-11). Updated 5 documentation files to reference getSaveStat instead of deprecated getResistStat: docs/effects/debuffs/debuff_all_stats_down.md, docs/effects/README.md, docs/effects.md, docs/api.md, docs/effects/buffs/tier1_body_attack.md. Fixes confusion for API consumers who might try to use deprecated function. Score: 6 × 8 / 10 = 4.8.
 - [x] **[test-quality] Tuning module significantly under-tested for its scope** — resolved at commit 2bc140e (2026-06-11). Added comprehensive hermetic e2e coverage for analyst.bridge.ts with 17 test cases covering heuristic recommendations, API path validation, candidate filtering, engagement vs difficulty prioritization, cooldown handling, and error fallback. Core balance recommendation engine now has proper test coverage. Score: 8 × 6 / 10 = 4.8.
 - [x] **[type-safety] Exported functions missing return type annotations** — resolved at commit b4302ca (2026-06-11). Added explicit return type annotations to drawCards_v0 and playCard_v0 in src/World/Hazard/hazard.deck.ts. Legacy compatibility functions now properly annotate their object return types, improving type safety for external API consumers. Score: 6 × 9 / 10 = 5.4.
 - [x] **[dead-code] Character presets deprecated functions still exported after v0.13.0 deadline** — resolved at commit d17f2db (2026-06-11). Removed characterPresets, getPresetById, buildCharacterFromPreset from public API exports (src/index.ts, src/Character/index.ts). Functions remain available internally for playtest.runner.ts usage. Preset functions were marked @deprecated for v0.13.0 removal but still exported at v0.16.0. Score: 8 × 7 / 10 = 5.6.
