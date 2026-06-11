@@ -114,6 +114,7 @@ export type HazardReward = {
   reserveBonus?: number;        // v2: +1 VITAE per unspent non-X die
   cacheReward?: number;         // v2: currency/loot reward
   relicReward?: string;         // v2: item ID
+  persistenceEffect?: string;   // Phase 135: world-state modification id
 };
 
 export type HazardCardOffer = {

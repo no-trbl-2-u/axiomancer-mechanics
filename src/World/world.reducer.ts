@@ -3,7 +3,7 @@
  * makes sense (locking/unlocking, completing).
  */
 
-import { WorldState, MapState, MapNode, NodeId } from './types';
+import { WorldState, MapState, MapNode, NodeId, HazardNodeOutcome } from './types';
 import { MapName, ContinentName } from './map.library';
 import { getMapDefinition } from './map.registry';
 
@@ -63,6 +63,13 @@ export function moveToNode(state: WorldState, nodeId: NodeId): WorldState {
     }
     if (map.lockedNodes.includes(nodeId)) {
         throw new IllegalMoveError(`moveToNode: '${nodeId}' is locked.`);
+    }
+    const blockedRoute = map.blockedRoutes.find(
+        route => (route.from === map.currentNode && route.to === nodeId) ||
+                 (route.from === nodeId && route.to === map.currentNode)
+    );
+    if (blockedRoute) {
+        throw new IllegalMoveError(`moveToNode: route from '${map.currentNode}' to '${nodeId}' is blocked — ${blockedRoute.reason}`);
     }
     return {
         ...state,
@@ -257,4 +264,57 @@ export function unlockAdjacent(state: MapState, nodeId: NodeId): MapState {
         availableNodes: [...state.availableNodes, ...newlyAvailable],
         lockedNodes: stillLocked,
     };
+}
+
+// ── Hazard Persistence (Phase 135) ─────────────────────────────────────────
+
+/**
+ * Records a persistent hazard outcome for a specific node. Used by hazard 
+ * cards H08, H12, H15 to emit world-state modifications that affect future 
+ * encounters. Idempotent — overwrites existing outcome for same hazardId/nodeId.
+ */
+export function recordHazardOutcome(state: MapState, outcome: HazardNodeOutcome): MapState {
+    const existing = state.hazardOutcomes.filter(
+        h => !(h.nodeId === outcome.nodeId && h.hazardId === outcome.hazardId)
+    );
+    return {
+        ...state,
+        hazardOutcomes: [...existing, outcome]
+    };
+}
+
+/**
+ * Blocks a bidirectional route between two nodes. Used by H12 "Riddled Bridge" 
+ * final round failure to prevent passage. Idempotent — overwrites existing 
+ * block for same route pair.
+ */
+export function blockMapRoute(state: MapState, from: NodeId, to: NodeId, reason: string): MapState {
+    const existing = state.blockedRoutes.filter(
+        route => !((route.from === from && route.to === to) || 
+                   (route.from === to && route.to === from))
+    );
+    return {
+        ...state,
+        blockedRoutes: [...existing, { from, to, reason }]
+    };
+}
+
+/**
+ * Query all hazard outcomes affecting a specific node. Used by the 
+ * HazardModifierTable system to compute threshold adjustments.
+ */
+export function getHazardOutcomesForNode(state: MapState, nodeId: NodeId): HazardNodeOutcome[] {
+    return state.hazardOutcomes.filter(outcome => outcome.nodeId === nodeId);
+}
+
+/**
+ * Check if a route between two nodes is blocked by hazard outcomes.
+ * Returns the blocking reason if blocked, undefined otherwise.
+ */
+export function isRouteBlocked(state: MapState, from: NodeId, to: NodeId): string | undefined {
+    const blockedRoute = state.blockedRoutes.find(
+        route => (route.from === from && route.to === to) ||
+                 (route.from === to && route.to === from)
+    );
+    return blockedRoute?.reason;
 }

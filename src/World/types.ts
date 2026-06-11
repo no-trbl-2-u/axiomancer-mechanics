@@ -136,6 +136,40 @@ export interface MapDefinition {
     readonly images?: { mapImage: Image; combatImage: Image };
 }
 
+// ─── Hazard Persistence (Phase 135) ────────────────────────────────────────
+
+/**
+ * Hazard modifier effect applied to future encounters at tagged nodes.
+ * Used by H08 (supply threshold -2), H12 (stability auto-success ≤6), etc.
+ */
+export interface HazardModifierEntry {
+    hazardType: 'supply' | 'stability' | 'escape' | 'force';
+    thresholdAdjustment: number; // negative = easier, positive = harder
+    description: string;
+}
+
+/**
+ * Persistent outcome of a completed hazard encounter at a specific node.
+ * Enables world-state modifications that affect future hazard encounters.
+ */
+export interface HazardNodeOutcome {
+    nodeId: NodeId;
+    hazardId: string;
+    outcome: 'cleared' | 'blocked' | 'modified';
+    appliedDate: string; // ISO timestamp
+    modifierEffects?: HazardModifierEntry[];
+}
+
+/**
+ * Blocked route between two connected nodes due to hazard outcome.
+ * Used by H12 "Riddled Bridge" final round failure to block bridge passage.
+ */
+export interface BlockedRoute {
+    from: NodeId;
+    to: NodeId;
+    reason: string;
+}
+
 /**
  * Runtime, per-save state for a map.
  *
@@ -150,6 +184,10 @@ export interface MapDefinition {
  * @property consumedNodes   - Spec 23: nodes whose MapEvent has been resolved.
  *                             One-shot: a consumed node returns `{ kind: 'none' }`
  *                             from `resolveMapEvent`.
+ * @property hazardOutcomes   - Phase 135: persistent hazard effects applied to this map.
+ *                             Tracks modifier effects and cleared/blocked/modified states.
+ * @property blockedRoutes    - Phase 135: routes blocked by hazard outcomes (e.g., collapsed bridge).
+ *                             Checked by moveToNode validation for path availability.
  */
 export interface MapState {
     name: MapName;
@@ -161,6 +199,8 @@ export interface MapState {
     uniqueEvents: UniqueEvent[];
     discoveredNodes: NodeId[];
     consumedNodes: NodeId[];
+    hazardOutcomes: HazardNodeOutcome[];
+    blockedRoutes: BlockedRoute[];
 }
 
 /** A region containing several maps. */

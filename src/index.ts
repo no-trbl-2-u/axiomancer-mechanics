@@ -188,12 +188,19 @@ export {
     rollManaDice, canAffordCost, spendMana, hasXDice, countAvailableDice,
     HAZARD_CARD_LIBRARY, ACTION_CARD_LIBRARY, STARTER_DECK_CARD_IDS,
     getHazardCard, getActionCard, getRandomHazardCard,
+    // Phase 135: Persistence system
+    applyHazardPersistenceEffects, buildModifierTable, applyHazardModifiers,
+    isHazardPermanentlyCleared, getActiveModifierDescriptions,
+    purifySpringEffect, bridgeRepairEffect, bridgeCollapseEffect, clearNarrowsEffect,
 } from './World/Hazard';
 export {
     changeMap, completeMap, unlockMap,
     completeNode, unlockNode, changeContinent, completeUniqueEvent,
     revealAdjacent, markNodeConsumed, unlockAdjacent,
-} from './World/world.reducer';
+    // Phase 135: Persistence functions
+    recordHazardOutcome, blockMapRoute, getHazardOutcomesForNode, isRouteBlocked,
+    validateMoveToNode, findAlternativePaths, getBlockedRoutesFromNode, getReachableNodes,
+} from './World';
 export {
     resolveMapEvent,
     registerMapEventPool,
@@ -217,11 +224,14 @@ export type {
     MapDefinition, MapState, QuestObjective, QuestObjectiveType, QuestStatus, QuestLog,
     GenerateEncounterOptions,
     ApplyDialogueChoiceResult,
+    // Phase 135: Persistence types
+    HazardModifierEntry, HazardNodeOutcome, BlockedRoute, RouteValidationResult,
     // Hazard Minigame Types
     HazardMinigameState, HazardCard, HazardActionCard, HazardManaDie,
     HazardProgressType, HazardDieColor, HazardPhase, HazardMark,
     HazardRoundState, HazardRoundResult, HazardRoute, HazardReward, HazardPenalty,
 } from './World';
+export type { HazardModifierTable } from './World/Hazard';
 
 // ─── Philosophy (Phase 42 — 3-axis alignment cube + 27-cell registry) ────────
 export {

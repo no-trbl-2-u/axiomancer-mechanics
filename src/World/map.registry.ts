@@ -70,6 +70,9 @@ export function createMapState(def: MapDefinition): MapState {
         // Spec 23 — fog-of-war seeded with the starting node; nothing consumed yet.
         discoveredNodes: [startId],
         consumedNodes: [],
+        // Phase 135 — hazard persistence extensions, initialized as empty.
+        hazardOutcomes: [],
+        blockedRoutes: [],
     };
 }
 

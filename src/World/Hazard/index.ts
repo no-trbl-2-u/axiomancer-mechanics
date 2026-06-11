@@ -109,6 +109,10 @@ export {
   getSafeRouteDifficulty,
   getRiskRouteDifficulty,
   validateHazardLibrary,
+  purifySpringEffect,
+  bridgeRepairEffect,
+  bridgeCollapseEffect,
+  clearNarrowsEffect,
 } from './hazard.hazards.library';
 
 // Core engine (v2)
@@ -121,8 +125,18 @@ export {
   resolveRound,
   applyRewards,
   getCurrentThresholds,
+  applyHazardPersistenceEffects,
   // Legacy compatibility functions
   rollDiceAndStartRound,
   advanceToNextRound,
   computeFinalScore,
 } from './hazard.engine';
+
+// Phase 135: Modifier system
+export {
+  buildModifierTable,
+  applyHazardModifiers,
+  isHazardPermanentlyCleared,
+  getActiveModifierDescriptions,
+} from './hazard.modifiers';
+export type { HazardModifierTable } from './hazard.modifiers';

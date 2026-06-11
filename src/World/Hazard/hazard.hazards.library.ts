@@ -207,6 +207,202 @@ export const HAZARD_CARD_LIBRARY: HazardCard[] = [
       },
     },
   },
+
+  // H08 - Poisoned Spring (Phase 135 persistent: supply threshold -2)
+  {
+    id: 'H08',
+    name: 'Poisoned Spring',
+    scenario: 'A corrupted water source blocks your path. The spring runs black with toxic sludge, but you can see pure water bubbling beneath. Purify it for future travelers or force your way around.',
+    rounds: 2,
+    safeRoute: {
+      type: 'safe',
+      combinedThresholds: [8, 9], // Total: 17 combined FORCE+ESCAPE
+      rewards: {
+        perfect: {
+          vitae: 2,
+          tokens: 2,
+          cardOffers: [{ cards: ['A02', 'A07', 'A10'], guaranteedRare: false, skippable: true }],
+          persistenceEffect: 'purify-spring', // Phase 135: triggers world-state modification
+        },
+        complete: {
+          vitae: 1,
+          tokens: 1,
+          cardOffers: [{ cards: ['A01', 'A03'], guaranteedRare: false, skippable: false }],
+        },
+        failure: {
+          vitae: 0,
+          tokens: 0,
+        },
+      },
+      penalties: {
+        roundOne: { vitae: -2 },
+        roundTwo: { vitae: -4, tokens: -1 },
+        roundThree: { vitae: -6, tokens: -1 },
+        routePenalty: { vitae: -2 },
+      },
+    },
+    riskRoute: {
+      type: 'risk',
+      forceThresholds: [5, 6], // Total: 11 force required
+      escapeThresholds: [4, 5], // Total: 9 escape required
+      rewards: {
+        perfect: {
+          vitae: 3,
+          tokens: 3,
+          cardOffers: [{ cards: ['R01', 'R04'], guaranteedRare: true, skippable: true }],
+          cacheReward: 15,
+        },
+        complete: {
+          vitae: 2,
+          tokens: 2,
+          cacheReward: 10,
+        },
+        failure: {
+          vitae: 0,
+          tokens: 0,
+        },
+      },
+      penalties: {
+        roundOne: { vitae: -3 },
+        roundTwo: { vitae: -5, tokens: -1 },
+        roundThree: { vitae: -7, tokens: -1 },
+        routePenalty: { vitae: -3 },
+      },
+    },
+  },
+
+  // H12 - Riddled Bridge (Phase 135 persistent: auto-success ≤6 + route blocking)
+  {
+    id: 'H12',
+    name: 'Riddled Bridge',
+    scenario: 'A stone bridge riddled with structural damage spans a rushing river. Repair it properly for safe future passage, or risk everything on a dangerous crossing.',
+    rounds: 3,
+    safeRoute: {
+      type: 'safe',
+      combinedThresholds: [7, 8, 9], // Total: 24 combined FORCE+ESCAPE
+      rewards: {
+        perfect: {
+          vitae: 4,
+          tokens: 3,
+          cardOffers: [{ cards: ['R02', 'R05', 'R06'], guaranteedRare: true, skippable: true }],
+          persistenceEffect: 'repair-bridge', // Phase 135: enables auto-success for stability ≤6
+        },
+        complete: {
+          vitae: 2,
+          tokens: 2,
+          cardOffers: [{ cards: ['A08', 'A11'], guaranteedRare: false, skippable: false }],
+          persistenceEffect: 'repair-bridge',
+        },
+        failure: {
+          vitae: 0,
+          tokens: 0,
+          persistenceEffect: 'collapse-bridge', // Phase 135: blocks route permanently
+        },
+      },
+      penalties: {
+        roundOne: { vitae: -1 },
+        roundTwo: { vitae: -3, tokens: -1 },
+        roundThree: { vitae: -6, maxVitae: -2, tokens: -1 },
+        routePenalty: { vitae: -2 },
+      },
+    },
+    riskRoute: {
+      type: 'risk',
+      forceThresholds: [6, 7, 8], // Total: 21 force required
+      escapeThresholds: [5, 6, 7], // Total: 18 escape required
+      rewards: {
+        perfect: {
+          vitae: 5,
+          tokens: 4,
+          cardOffers: [{ cards: ['R03', 'R07'], guaranteedRare: true, skippable: true }],
+          relicReward: 'bridge-relic',
+          cacheReward: 25,
+          persistenceEffect: 'master-bridge',
+        },
+        complete: {
+          vitae: 3,
+          tokens: 3,
+          cacheReward: 20,
+          persistenceEffect: 'repair-bridge',
+        },
+        failure: {
+          vitae: 0,
+          tokens: 0,
+          persistenceEffect: 'collapse-bridge',
+        },
+      },
+      penalties: {
+        roundOne: { vitae: -2 },
+        roundTwo: { vitae: -4, tokens: -1 },
+        roundThree: { vitae: -7, maxVitae: -3, tokens: -2 },
+        routePenalty: { vitae: -3 },
+      },
+    },
+  },
+
+  // H15 - Dark Narrows (Phase 135 persistent: hazard removal)
+  {
+    id: 'H15',
+    name: 'Dark Narrows',
+    scenario: 'An unnatural darkness chokes this narrow passage, whispering threats and sapping strength. Cleanse the corruption to ensure safe future travel, or endure its malice.',
+    rounds: 2,
+    safeRoute: {
+      type: 'safe',
+      combinedThresholds: [10, 11], // Total: 21 combined FORCE+ESCAPE
+      rewards: {
+        perfect: {
+          vitae: 3,
+          tokens: 3,
+          cardOffers: [{ cards: ['R01', 'R08'], guaranteedRare: true, skippable: true }],
+          persistenceEffect: 'cleanse-narrows', // Phase 135: removes hazard permanently
+        },
+        complete: {
+          vitae: 2,
+          tokens: 2,
+          cardOffers: [{ cards: ['A04', 'A09'], guaranteedRare: false, skippable: false }],
+        },
+        failure: {
+          vitae: 0,
+          tokens: 0,
+        },
+      },
+      penalties: {
+        roundOne: { vitae: -3, maxVitae: -1 },
+        roundTwo: { vitae: -5, maxVitae: -2, tokens: -1, hexed: true },
+        roundThree: { vitae: -8, maxVitae: -3, tokens: -2, hexed: true },
+        routePenalty: { vitae: -3 },
+      },
+    },
+    riskRoute: {
+      type: 'risk',
+      forceThresholds: [7, 8], // Total: 15 force required
+      escapeThresholds: [6, 7], // Total: 13 escape required
+      rewards: {
+        perfect: {
+          vitae: 4,
+          tokens: 4,
+          cardOffers: [{ cards: ['R04', 'R09'], guaranteedRare: true, skippable: true }],
+          relicReward: 'darkness-relic',
+          cacheReward: 30,
+        },
+        complete: {
+          vitae: 2,
+          tokens: 3,
+          cacheReward: 20,
+        },
+        failure: {
+          vitae: 0,
+          tokens: 0,
+        },
+      },
+      penalties: {
+        roundOne: { vitae: -4, maxVitae: -2 },
+        roundTwo: { vitae: -7, maxVitae: -3, tokens: -1, hexed: true },
+        roundThree: { vitae: -10, maxVitae: -4, tokens: -2, hexed: true },
+        routePenalty: { vitae: -4 },
+      },
+    },
+  },
 ];
 
 /**
@@ -214,6 +410,81 @@ export const HAZARD_CARD_LIBRARY: HazardCard[] = [
  */
 export function getHazardCard(id: string): HazardCard | null {
   return HAZARD_CARD_LIBRARY.find(hazard => hazard.id === id) || null;
+}
+
+// ── Phase 135 Persistence Effects ─────────────────────────────────────────
+
+import { MapState, NodeId, HazardModifierEntry } from '../types';
+import { recordHazardOutcome } from '../world.reducer';
+
+/**
+ * H08 - Poisoned Spring bottom route success effect.
+ * Records a supply threshold -2 modifier for future hazards at this node.
+ */
+export function purifySpringEffect(mapState: MapState, nodeId: NodeId): MapState {
+  const outcome = {
+    nodeId,
+    hazardId: 'H08',
+    outcome: 'modified' as const,
+    appliedDate: new Date().toISOString(),
+    modifierEffects: [{
+      hazardType: 'supply' as const,
+      thresholdAdjustment: -2,
+      description: 'Purified spring makes supply hazards easier (-2 threshold)'
+    } as HazardModifierEntry]
+  };
+  return recordHazardOutcome(mapState, outcome);
+}
+
+/**
+ * H12 - Riddled Bridge repair effect.
+ * Records a stability auto-success modifier for thresholds ≤6.
+ */
+export function bridgeRepairEffect(mapState: MapState, nodeId: NodeId): MapState {
+  const outcome = {
+    nodeId,
+    hazardId: 'H12',
+    outcome: 'modified' as const,
+    appliedDate: new Date().toISOString(),
+    modifierEffects: [{
+      hazardType: 'stability' as const,
+      thresholdAdjustment: -6, // Effectively auto-succeeds thresholds ≤6
+      description: 'Repaired bridge enables auto-success for stability challenges ≤6'
+    } as HazardModifierEntry]
+  };
+  return recordHazardOutcome(mapState, outcome);
+}
+
+/**
+ * H12 - Riddled Bridge collapse effect.
+ * Blocks the route permanently due to bridge destruction.
+ */
+export function bridgeCollapseEffect(mapState: MapState, nodeId: NodeId): MapState {
+  const outcome = {
+    nodeId,
+    hazardId: 'H12',
+    outcome: 'blocked' as const,
+    appliedDate: new Date().toISOString(),
+  };
+  
+  // Also add to blocked routes - we need to know the connected nodes
+  // For now, we'll record the outcome and let the route blocking be handled
+  // by the integration layer that knows the map topology
+  return recordHazardOutcome(mapState, outcome);
+}
+
+/**
+ * H15 - Dark Narrows bottom route success effect.
+ * Permanently removes the hazard for future encounters.
+ */
+export function clearNarrowsEffect(mapState: MapState, nodeId: NodeId): MapState {
+  const outcome = {
+    nodeId,
+    hazardId: 'H15',
+    outcome: 'cleared' as const,
+    appliedDate: new Date().toISOString(),
+  };
+  return recordHazardOutcome(mapState, outcome);
 }
 
 /**

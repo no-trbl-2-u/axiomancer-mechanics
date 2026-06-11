@@ -26,7 +26,9 @@ export type {
     WorldState, Continent, Quest, UniqueEvent,
     Reward, MapNode, NodeId, Encounter,
     MapDefinition, MapState, QuestObjective, QuestObjectiveType, QuestStatus, QuestLog,
+    HazardModifierEntry, HazardNodeOutcome, BlockedRoute,
 } from './types';
+export type { RouteValidationResult } from './map.dispatcher';
 export type { MapName, ContinentName } from './map.library';
 export type { QuestName } from './quest.library';
 
@@ -47,7 +49,12 @@ export {
     changeMap, completeMap, unlockMap,
     completeNode, unlockNode, changeContinent, completeUniqueEvent,
     revealAdjacent, markNodeConsumed, unlockAdjacent,
+    recordHazardOutcome, blockMapRoute, getHazardOutcomesForNode, isRouteBlocked,
 } from './world.reducer';
+
+export {
+    validateMoveToNode, findAlternativePaths, getBlockedRoutesFromNode, getReachableNodes,
+} from './map.dispatcher';
 
 // Spec 23 — MapEvents engine.
 // Importing `./MapEvents/content` for its side effect registers the

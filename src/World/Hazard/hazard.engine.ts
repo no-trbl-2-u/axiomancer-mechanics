@@ -19,6 +19,7 @@ import { rollManaDice, canAffordCost, spendMana, recastAvailableDice, convertXDi
 import { drawCards, playCard, initializeHazardDeck } from './hazard.deck';
 import { applyCardProgress, applyMomentumBonus, calculateMomentum } from './hazard.cards';
 import { getActionCard, STARTER_DECK_CARD_IDS } from './hazard.cards.library';
+import { applyHazardModifiers } from './hazard.modifiers';
 
 /**
  * Initialize a new hazard minigame session.
@@ -27,16 +28,23 @@ import { getActionCard, STARTER_DECK_CARD_IDS } from './hazard.cards.library';
 export function initializeHazard(
   hazardCard: HazardCard,
   playerDeckCardIds: string[] = STARTER_DECK_CARD_IDS,
-  sessionSeed: number
+  sessionSeed: number,
+  mapState?: any, // MapState import would create circular dependency, so using any
+  currentNode?: string // NodeId
 ): HazardMinigameState {
   // Create seeded RNG function
   const rng: HazardRngFunction = createSeededRng(sessionSeed);
+  
+  // Apply world-state modifiers if context is provided (Phase 135)
+  const modifiedHazardCard = (mapState && currentNode) 
+    ? applyHazardModifiers(hazardCard, mapState, currentNode)
+    : hazardCard;
   
   const shuffledDeck = initializeHazardDeck(playerDeckCardIds, rng);
   
   return {
     phase: 'reveal',
-    hazardCard,
+    hazardCard: modifiedHazardCard,
     chosenRoute: null,
     mana: [], // Will be rolled during cast phase
     deck: shuffledDeck,
@@ -390,4 +398,63 @@ export function computeFinalScore(state: HazardMinigameState): number {
   
   const successfulRounds = state.rounds.filter(r => r.succeeded).length;
   return successfulRounds;
+}
+
+// ── Phase 135 Persistence Integration ─────────────────────────────────────
+
+import { purifySpringEffect, bridgeRepairEffect, bridgeCollapseEffect, clearNarrowsEffect } from './hazard.hazards.library';
+
+/**
+ * Applies persistence effects based on hazard completion outcome and route.
+ * Called by the world orchestrator after hazard completion to emit world-state
+ * modifications. Returns updated MapState with persistent effects applied.
+ */
+export function applyHazardPersistenceEffects(
+  state: HazardMinigameState,
+  mapState: any, // MapState to avoid circular dependency  
+  currentNode: string, // NodeId
+  chosenRoute: 'safe' | 'risk'
+): any { // MapState
+  if (state.phase !== 'outcome' || !state.outcome) {
+    return mapState; // No persistence effects for incomplete hazards
+  }
+
+  const hazardId = state.hazardCard.id;
+  const outcome = state.outcome;
+  const route = chosenRoute === 'safe' ? state.hazardCard.safeRoute : state.hazardCard.riskRoute;
+  
+  // Check if this outcome has a persistence effect
+  const reward = route.rewards[outcome];
+  if (!reward?.persistenceEffect) {
+    return mapState; // No persistence effect for this outcome
+  }
+
+  // Apply the specific persistence effect based on card ID and effect name
+  switch (hazardId) {
+    case 'H08': // Poisoned Spring
+      if (reward.persistenceEffect === 'purify-spring') {
+        return purifySpringEffect(mapState, currentNode);
+      }
+      break;
+      
+    case 'H12': // Riddled Bridge  
+      if (reward.persistenceEffect === 'repair-bridge' || reward.persistenceEffect === 'master-bridge') {
+        return bridgeRepairEffect(mapState, currentNode);
+      } else if (reward.persistenceEffect === 'collapse-bridge') {
+        return bridgeCollapseEffect(mapState, currentNode);
+      }
+      break;
+      
+    case 'H15': // Dark Narrows
+      if (reward.persistenceEffect === 'cleanse-narrows') {
+        return clearNarrowsEffect(mapState, currentNode);
+      }
+      break;
+      
+    default:
+      // Unknown hazard ID or persistence effect - no-op
+      break;
+  }
+
+  return mapState; // No matching persistence effect
 }
