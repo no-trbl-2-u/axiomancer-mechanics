@@ -53,13 +53,7 @@
 
 <!-- oversight 2026-06-06 (post-Phase-121 ship; attended): expand-33's three combat-scaling candidates (Combat Scaling Mechanics Investigation 4.0 / Health Formula Rebalancing 3.2 / Damage Calculation Audit 2.8) were REJECTED — their shared premise was contradicted by Phase 121's own evidence and a live re-run at this oversight. See ## Rejected. The user (Q1) directed filing the one thread Phase 121's closeout actually names: friendship / nonlethal expressiveness is absent on the lethal anchors. Balance/playtest expand-bias from oversight-2026-06-05 is KEPT (Q2) but the live signal it should weight is route-expressiveness, not HP/damage scaling. -->
 
-### Candidate: Friendship / nonlethal route expressiveness on lethal anchors
-- signal: Phase 121 closeout (BALANCE_LEDGER.md tail) judged the three lethal anchors "mechanics sound for this gate" but flagged "friendship/nonlethal play is still absent from these lethal anchors and should be probed separately." Confirmed by a live re-run at oversight 2026-06-06: sage-anchor-normal (L15 audit-sentinel) 23/25 wins / 92% / max friendship counter **0**; sage-anchor-difficult (L18 balance-judge) 8/25 wins / 32% / max friendship counter **2**. STRATEGIST builds counters but the HP gate never opens, so the mercy route — the project's signature identity — never resolves on these anchors.
-- scope: Make the friendship / nonlethal route a reachable outcome on at least the Easy and Normal anchors without breaking the lethal-anchor win bands (Easy 100%, Normal 75-100%, Difficult 25-50%). Candidate levers (to be decided at brief time, NOT pre-committed here): friendship-route policy depth (a dedicated befriend-seeking policy/witness vs. the current STRATEGIST), HP-gate-vs-counter interaction tuning on these specific anchors, befriendability configs on audit-sentinel / balance-judge, and a friendship-rate target band added to the three-anchor matrix. Pure balance/content + playtest-witness work; core combat resolution stays as-is unless evidence forces otherwise.
-- unblocks: Mercy-route expressiveness on the canonical anchors; closes the "improving, not complete" expressiveness verdict the Phase 121 closeout left open; gives the friendship system playtest coverage at level-15/18 tiers (today it only resolves at low level).
-- blocked-by: None — Phase 121 scaffold + BefriendabilityConfig (Phase 68) + Befriend skill (Phase 108) + mercy-route tuning (Phase 101) all shipped.
-- score: 6 × 6 / 10 = 3.6
-- recommended-slot: next balance/playtest phase (after Phase 121)
+<!-- Friendship / nonlethal route expressiveness on lethal anchors — promoted to Phase 138 via oversight 2026-06-11 (Q2: T pick). See ## Promoted. -->
 
 ### Candidate: Northern Forest Region Content Extension
 - signal: Phase 117 expanded fishing-village from 10→25 nodes; northern-forest remains at baseline size but is a major progression gate. Natural follow-up to successful fishing-village expansion pattern.
@@ -71,35 +65,32 @@
 
 <!-- Equipment Rarity Distribution Rebalancing — promoted to Phase 133 via oversight 2026-06-09 (Q3 T pick). See ## Promoted. -->
 
-### Candidate: Combat Resource Economy Analysis
-- signal: braindump/ skill resource economy was completely redesigned from mana→5-resource system, but no systematic analysis of resource generation/consumption balance has been performed since Spec 04 implementation
-- scope: Comprehensive analysis of resource generation rates vs skill costs across combat scenarios. Measure resource-starved vs resource-flooded patterns. Tune basic action generation rates and skill costs for optimal combat pacing. Add resource economy telemetry.
-- unblocks: Combat pacing optimization; resource system satisfaction; foundation for future skill content
-- blocked-by: None - resource system fully implemented
-- score: 5 × 5 / 10 = 2.5
-- recommended-slot: Balance/analysis phase
+<!-- Combat Resource Economy Analysis — promoted to Phase 139 via oversight 2026-06-11 (Q2: T pick). See ## Promoted. -->
 
-### Candidate: Tuning module comprehensive test coverage
-- signal: AUDIT.md test-quality finding (score 4.8) - Tuning module significantly under-tested with only 4 tests for 19 source files
-- scope: Add comprehensive engine tests for the Tuning module's 19 source files (currently only 4 tests). Focus on analyst.bridge.ts, engagement.metrics.ts, health.metrics.ts, matrix.builder.ts, matrix.runner.ts, experiment.runner.ts.
-- unblocks: Audit finding resolution, improved test confidence for balance tuning infrastructure
-- blocked-by: None
-- score: 8 × 6 / 10 = 4.8
-- recommended-slot: Phase 136
+<!-- Tuning module comprehensive test coverage — promoted to Phase 136 via oversight 2026-06-11 (Q1: T pick — "Both"). See ## Promoted. -->
 
-### Candidate: ESLint type-safety cleanup for hazard files
-- signal: AUDIT.md type-safety finding (score 4.2) - 6 ESLint warnings from new `as any` casts in hazard files
-- scope: Remove 6 `as any` casts from hazard.persistence.engine.test.ts and hazard.engine.ts, add proper typing
-- unblocks: ESLint warning cleanup, improved type safety
-- blocked-by: None
-- score: 6 × 7 / 10 = 4.2
-- recommended-slot: Phase 137
+<!-- ESLint type-safety cleanup for hazard files — promoted to Phase 137 via oversight 2026-06-11 (Q1: T pick — "Both"). See ## Promoted. -->
 
 <!-- Character module RNG stubbing fix — rejected via oversight 2026-06-11 (Q3: T pick — "Yes — reject it"). Underlying AUDIT finding already resolved by /iterate at commit 6abd897. See ## Rejected. -->
 
 <!-- Game Module Documentation Coverage — promoted to Phase 132 via oversight 2026-06-09 (Q3 T pick). See ## Promoted. -->
 
 ## Promoted
+
+### Phase 140 — Hazard minigame vs divergence documentation audit
+- promoted: 2026-06-11 (oversight T write-in: "double check the current hazard minigame against the deviations documentation"). Build-plan row added as Phase 140. Scope: verify current hazard implementation (post-Phase-134 + Phase-135) satisfies every item in `docs/hazard-v2-vs-mechanics-divergence.md`; walk each divergence item for implementation status and parity-test coverage; surface any gaps to T before patching. Source: T oversight 2026-06-11.
+
+### Phase 139 — Combat Resource Economy Analysis
+- promoted: 2026-06-11 (oversight Q2 — T pick). Was "Combat Resource Economy Analysis" (score 5 × 5 / 10 = 2.5). Build-plan row added as Phase 139. Scope: comprehensive analysis of resource generation rates vs skill costs; measure resource-starved/flooded patterns; tune action generation rates and skill costs for pacing; add telemetry where gaps found. Source: expand candidate.
+
+### Phase 138 — Friendship/nonlethal route expressiveness on lethal anchors
+- promoted: 2026-06-11 (oversight Q2 — T pick). Was "Friendship / nonlethal route expressiveness on lethal anchors" (score 6 × 6 / 10 = 3.6). Build-plan row added as Phase 138. Scope: make mercy route reachable on Easy/Normal three-anchor enemies without breaking lethal-anchor win bands; tune befriendability configs, HP-gate interaction, and/or friendship-rate policy; add friendship-rate target band to three-anchor matrix. Source: Phase-121-closeout signal.
+
+### Phase 137 — ESLint hazard as-any cast cleanup
+- promoted: 2026-06-11 (oversight Q1 — T pick: "Both"). Was "ESLint type-safety cleanup for hazard files" (score 6 × 7 / 10 = 4.2). Build-plan row added as Phase 137. Scope: remove 6 `as any` casts from `hazard.persistence.engine.test.ts` and `hazard.engine.ts`; add proper TypeScript typing. Source: expand-51 AUDIT finding.
+
+### Phase 136 — Tuning module comprehensive test coverage
+- promoted: 2026-06-11 (oversight Q1 — T pick: "Both"). Was "Tuning module comprehensive test coverage" (score 8 × 6 / 10 = 4.8). Build-plan row added as Phase 136. Scope: add comprehensive hermetic e2e tests for Tuning module's 19 source files (analyst.bridge.ts, engagement.metrics.ts, health.metrics.ts, matrix.builder.ts, matrix.runner.ts, experiment.runner.ts). Source: expand-51 AUDIT finding.
 
 ### Phase 135 — Hazard Minigame — Persistent World-State Tracking
 - promoted: 2026-06-11 (oversight Q1 — T pick). Was "Hazard Minigame — Persistent World-State Tracking" (score 8 × 8 / 10 = 6.4). Blocker (Phase 131 base hazard + Phase 134 mobile v2 alignment) both shipped. Build-plan row added as Phase 135. Scope: extend `WorldState` / `MapState` for hazard-outcome persistence — per-node outcome flags (cleared/blocked/modified), `HazardModifierTable` for future threshold adjustments, route-blocking state for map dispatcher; wire H08/H12/H15 hazard cards to emit and consume these flags; hermetic e2e + `docs/hazard-minigame.md` ⚑ deferral note removal. Source: CDR-0006 doctrine + expand candidate.
