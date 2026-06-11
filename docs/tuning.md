@@ -235,3 +235,26 @@ All tuning decisions optimize for the game's core design principle from `VISION.
 - **Source backups** — original values are preserved and can be restored
 - **Change attribution** — each kept change includes rationale and confidence level
 - **Report generation** — human-readable summaries of all experiments and outcomes
+
+## Test Coverage
+
+The Tuning module has comprehensive hermetic end-to-end test coverage across all 19 source files:
+
+### Core Analytics Tests
+- `health.metrics.engine.test.ts` — Health scoring algorithms, band deviation calculations, A/B comparisons
+- `matrix.builder.engine.test.ts` — Matrix enumeration, focus filtering, enemy assignment, run scaling
+- `analyst.bridge.engine.test.ts` — Recommendation generation, API integration, candidate validation
+
+### Matrix Execution Tests  
+- `matrix.runner.engine.test.ts` — Matrix execution workflows, cell processing, strategist knowledge integration
+- `experiment.runner.engine.test.ts` — A/B experiment orchestration, baseline/variant comparison, result analysis
+
+### Supporting Module Tests
+- `loadout.builder.engine.test.ts` — Character loadout construction for different playstyles and levels
+- `tunable.applier.engine.test.ts` — Parameter validation, value application, rollback functionality
+- `tunable.registry.engine.test.ts` — Registry loading, filtering, integrity validation
+- `strategist.knowledge.engine.test.ts` — Knowledge storage, enemy weakness tracking, strategic recommendations
+- `report.generator.engine.test.ts` — Experiment report generation, markdown formatting, data visualization
+- `verify.gate.engine.test.ts` — Verification logic, safety checks, integration validation
+
+All tests use proper RNG stubbing via `test-utils/rng.ts` for deterministic outcomes and include both golden path coverage and error case handling. The test suite ensures the tuning system maintains reliability and correctness as it automatically modifies game balance parameters.
