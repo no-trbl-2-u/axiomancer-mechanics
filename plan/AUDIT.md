@@ -48,9 +48,9 @@
 
 <!-- Comprehensive audit findings (updated by /iterate after each audit):
 > Last pass: 2026-06-12 at commit 2f73096
-> Findings: 1
+> Findings: 0
 -->
-- **[LOW] Dead export isValidCombatAction in barrel** — `isValidCombatAction` exported from `src/index.ts` (line 62) but has zero in-repo callers. Not documented in spec.md Contracts section. Impact 2 × Ease 9 / 10 = 1.8.
+- [x] **[LOW] Dead export isValidCombatAction in barrel** — resolved at commit 30cda55 (2026-06-12). Removed `isValidCombatAction` from `src/index.ts` exports (line 62). Function existed in Combat/index.ts but had zero in-repo callers. Not documented in spec.md Contracts section, confirming unused status. Impact 2 × Ease 9 / 10 = 1.8.
 
 <!-- Comprehensive audit across categories Z-H:
 **Category Z (External critique)** — plan/CRITIQUE.md Pending queue empty (pass 65, no changes since last audit).
