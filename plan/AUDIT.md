@@ -47,22 +47,22 @@
 ## Pending
 
 <!-- Comprehensive audit findings (updated by /iterate after each audit):
-> Last pass: 2026-06-12 at commit 2f73096
+> Last pass: 2026-06-12 at commit 701e4fb
 > Findings: 0
 -->
 - [x] **[LOW] Dead export isValidCombatAction in barrel** — resolved at commit 30cda55 (2026-06-12). Removed `isValidCombatAction` from `src/index.ts` exports (line 62). Function existed in Combat/index.ts but had zero in-repo callers. Not documented in spec.md Contracts section, confirming unused status. Impact 2 × Ease 9 / 10 = 1.8.
 
 <!-- Comprehensive audit across categories Z-H:
 **Category Z (External critique)** — plan/CRITIQUE.md Pending queue empty (pass 65, no changes since last audit).
-**Category A (Test gaps)** — 90+ hermetic *.engine.test.ts files across all modules; proper RNG stubbing via test-utils/rng.ts; baseline tests green (1557 passing, 1 skipped); all source modules have comprehensive test coverage.
-**Category B (Spec gaps)** — plan/AUDIT.md has zero Pending spec-gap rows; Knowledge-Gaps.md shows Q28 (multiple endings) genuinely deferred as endgame question; all spec files have answered questions (no blank placeholders).
+**Category A (Test gaps)** — 80+ hermetic *.engine.test.ts files across all modules; proper RNG stubbing via test-utils/rng.ts only in test-utils; baseline tests green (1623 passing, 1 skipped); all source modules have comprehensive test coverage.
+**Category B (Spec gaps)** — plan/AUDIT.md has zero Pending spec-gap rows; Knowledge-Gaps.md shows Q28 (multiple endings) genuinely deferred as endgame question; all spec files have answered questions (blank placeholders only in template files).
 **Category C (Type safety)** — one justified @ts-ignore at agent-vitest-reporter.engine.test.ts:25 with explanatory comment; test-only `as any` casts with proper eslint-disable comments; TypeScript compilation passes clean; exported functions have proper return type annotations.
-**Category D (Dead code)** — one unused export identified: `isValidCombatAction` exported from barrel but has zero in-repo callers and is not in spec contract; no large commented-out blocks; internal files properly used.
-**Category E (Documentation)** — complete docs/ coverage for all 16+ source modules; README.md properly defers to docs/api.md; docs appear current with exports including recent expansions.
+**Category D (Dead code)** — no large commented-out blocks; internal files properly used; no unused exports identified.
+**Category E (Documentation)** — complete docs/ coverage for all 16+ source modules (Character, Enemy, Combat, Effects, Items, Skills, Game, World, Utils, NPCs, Philosophy, Playtest, CLI, Faction, Tuning, test-utils); README.md properly defers to docs/api.md; docs appear current with exports.
 **Category F (ESLint)** — `npm run lint` passes clean with zero warnings or errors.
 **Category G (Dependencies)** — 4 major bumps available (typescript 5→6, @types/node 22→25, inquirer 9→12, globals 16→17) requiring deliberate phases per iterate policy; no minor/patch updates available within current major ranges.
 **Category H (Commit hygiene)** — clean git status, no uncommitted drift; plan files in sync with shipped state.
-Found 1 actionable finding scoring ≥1.8 threshold.
+Found 0 actionable findings scoring ≥3.0 threshold.
 -->
 - [x] **[MED] Tuning health.metrics test infrastructure needs mock structure overhaul** — resolved at commit d69e343 (2026-06-12). Fixed createMockCellResult function to create proper CellResult structure with nested PlaytestReport. Updated mock runs to include proper PlaytestRunSummary objects with transcript data containing proper RoundEvent objects. Corrected test expectations to match actual function behavior. All 11 health.metrics test cases now pass. Impact 6 × Ease 3 / 10 = 1.8.
 - [x] **[HIGH] Matrix builder critical structural issues** — resolved at commit d1306c2 (2026-06-11). Fixed missing metadata in MatrixPlan interface, cellId format (l15→L15), and function naming mismatches. Core functionality now operational. Impact 8 × Ease 9 / 10 = 7.2.
