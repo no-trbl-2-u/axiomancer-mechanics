@@ -197,6 +197,18 @@ export * from './World/Hazard';
 // and import these instead. Seeded-RNG helpers are aliased (`gathering*`)
 // to avoid ambiguous star-exports with the Hazard module's RNG.
 export * from './World/Gathering';
+
+// Quest Board minigame ("The Boy's Almanac" — the story-quest encounter:
+// each main-story beat plays as an authored tabletop board inside the
+// fiction; fully sandboxed, only the completion record flows back).
+// Seeded-RNG helpers are aliased (`questBoard*`) per the same doctrine.
+export * from './World/QuestBoard';
+
+// Rest encounter ("The Night Watch" — one night at camp in three watches)
+// and Loot-cache encounter ("The Reliquary" — three layers, sealed trap
+// fates, one probe). RNG aliased `rest*` / `lootCache*`.
+export * from './World/Rest';
+export * from './World/LootCache';
 export {
     changeMap, completeMap, unlockMap,
     completeNode, unlockNode, changeContinent, completeUniqueEvent,
@@ -215,7 +227,7 @@ export type {
     MapEventKind, MapEventPayload, MapEventPool, MapEventPoolEntry,
     EncounterPayload, InteractionPayload, GatheringPayload, RestPayload,
     VillagePayload, CutscenePayload, HazardPayload, LootCachePayload,
-    ResolvedEvent, ResolveMapEventResult,
+    QuestEventPayload, ResolvedEvent, ResolveMapEventResult,
 } from './World';
 export {
     generateEncounter, scaleEnemyToLevel, scaledEncounterLevel,

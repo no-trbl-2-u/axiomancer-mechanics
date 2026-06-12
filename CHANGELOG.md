@@ -12,7 +12,44 @@ deep imports are part of the supported surface.
 
 ## [unreleased]
 
-_Nothing yet._
+Encounter release: the story-quest board game lands, and rest / loot-cache
+graduate from silent grants to full encounters.
+
+### Added
+
+- **Quest Board minigame** (`World/QuestBoard`, "The Boy's Almanac") — the
+  story-quest encounter: each main-story beat from
+  `content/story/story-overview.md` plays as an authored tabletop board
+  inside the fiction. First board: `build-the-boat` (Fishing Village main
+  quest) — a 16-space loop, a carved bone die, boat parts fitted at the
+  slipway, charms, vows, and dusk. Spaces echo every other encounter kind
+  (gather / duel / snag / hearth / market / parley / cache / omen) without
+  launching them. Fully sandboxed: the session reads nothing from
+  `GameState`; only the completion record (board id + outcome tier) flows
+  back. Can't fail — vigor collapse ends the day, never the quest; play
+  quality decides the cosmetic tier (masterwork / seaworthy / driftwood).
+- **`'quest'` MapEvent kind** — the ninth kind. `QuestEventPayload`
+  (`boardId`) resolves to `{ kind: 'quest', boardId }`; the handler
+  validates the board id and hands the launch to the host (same contract
+  as the hazard/gathering minigames).
+- **Rest encounter** (`World/Rest`, "The Night Watch") — one night at camp
+  in three watches: posture (deep / doze / watch), the fire's warmth
+  against a small store of wood, authored dreams (hold the keepsake or
+  take the comfort), stirs, still hours. Dawn outcome carries
+  `healFraction` / `cleansed` / keepsakes for the host to apply. A night
+  can be meagre but never lethal.
+- **Loot-cache encounter** (`World/LootCache`, "The Reliquary") — three
+  layers (the lid, the false bottom, the keeper's tithe), trap fates
+  sealed at creation, one probe to read the next seam, push-your-luck.
+  The engine deals in item refs; the host maps kept uids back to real
+  items and settles the bite at claim.
+
+### Changed
+
+- **`ResolvedEvent` rest payload** now carries `healFraction` alongside
+  `healed`, so hosts replacing the passive heal with the Night Watch keep
+  the authored baseline. (Breaking for literal `{ kind: 'rest' }`
+  fixtures — add the new field.)
 
 ## [0.18.0] — 2026-06-13
 

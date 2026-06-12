@@ -24,10 +24,11 @@ import type { ActiveEffect } from '../../Effects/types';
 import { generateEncounter, scaleEnemyToLevel } from '../encounter';
 import { getMapDefinition } from '../map.registry';
 import { ENEMY_REGISTRY, type EnemySlug } from '../../Enemy/enemy.library';
+import { getQuestBoardDef } from '../QuestBoard/quest-board.content';
 import type {
     EncounterPayload, InteractionPayload, GatheringPayload, RestPayload,
     VillagePayload, CutscenePayload, HazardPayload, LootCachePayload,
-    ResolveMapEventResult,
+    QuestEventPayload, ResolveMapEventResult,
 } from './types';
 
 function withPlayer(state: GameState, next: Character): GameState {
@@ -114,7 +115,9 @@ export function resolveRest(
     const player: Character = { ...state.player, health: newHp };
     return {
         state: withPlayer(state, player),
-        event: { kind: 'rest', healed },
+        // healFraction rides along so hosts that replace the passive heal
+        // with the Night Watch minigame keep the authored baseline.
+        event: { kind: 'rest', healed, healFraction: fraction },
     };
 }
 
@@ -203,6 +206,25 @@ export function resolveLootCache(
     };
 }
 
+// ─── quest ────────────────────────────────────────────────────────────────────
+
+/**
+ * Quest events hand the host a quest-board id; the host starts a
+ * `World/QuestBoard` session from it (the same launch contract the
+ * hazard and gathering minigames use). The board is fully sandboxed,
+ * so the handler touches no state — it only validates the id.
+ */
+export function resolveQuest(
+    state: GameState,
+    payload: QuestEventPayload,
+): ResolveMapEventResult {
+    getQuestBoardDef(payload.boardId); // throws on unknown board ids
+    return {
+        state,
+        event: { kind: 'quest', boardId: payload.boardId },
+    };
+}
+
 // ─── dispatch table ───────────────────────────────────────────────────────────
 
 import type { MapEventPayload } from './types';
@@ -221,5 +243,6 @@ export function applyPayload(
         case 'cutscene':    return resolveCutscene(state, payload);
         case 'hazard':      return resolveHazard(state, payload, rng);
         case 'loot-cache':  return resolveLootCache(state, payload);
+        case 'quest':       return resolveQuest(state, payload);
     }
 }

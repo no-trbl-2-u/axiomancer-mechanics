@@ -15,7 +15,7 @@ import type { EnemySlug } from '../../Enemy/enemy.library';
 import type { Encounter, NodeId } from '../types';
 import type { PhilosophicalAlignment } from '../../Philosophy/types';
 
-/** The eight final MapEvent kinds. */
+/** The nine MapEvent kinds ('quest' joined the original eight in Phase 137). */
 export type MapEventKind =
     | 'encounter'
     | 'interaction'
@@ -24,7 +24,8 @@ export type MapEventKind =
     | 'village'
     | 'cutscene'
     | 'hazard'
-    | 'loot-cache';
+    | 'loot-cache'
+    | 'quest';
 
 // ─── Per-kind authoring payloads ──────────────────────────────────────────────
 
@@ -95,6 +96,13 @@ export interface LootCachePayload {
     description?: string;
 }
 
+export interface QuestEventPayload {
+    kind: 'quest';
+    /** Quest-board id from `World/QuestBoard` (e.g. 'build-the-boat'). */
+    boardId: string;
+    description?: string;
+}
+
 /** Discriminated union of all authoring payloads. */
 export type MapEventPayload =
     | EncounterPayload
@@ -104,7 +112,8 @@ export type MapEventPayload =
     | VillagePayload
     | CutscenePayload
     | HazardPayload
-    | LootCachePayload;
+    | LootCachePayload
+    | QuestEventPayload;
 
 // ─── Pools ────────────────────────────────────────────────────────────────────
 
@@ -134,11 +143,12 @@ export type ResolvedEvent =
     | { kind: 'encounter';   encounter: Encounter; isBoss: boolean }
     | { kind: 'interaction'; npcName: string; dialogue?: DialogueTree }
     | { kind: 'gathering';   items: Item[] }
-    | { kind: 'rest';        healed: number }
+    | { kind: 'rest';        healed: number; healFraction: number }
     | { kind: 'village';     villageName: string; merchants: NPC[]; shop?: ShopInventory }
     | { kind: 'cutscene';    lines: readonly string[] }
     | { kind: 'hazard';      effects: ActiveEffect[]; damage: number }
     | { kind: 'loot-cache';  items: Item[]; currency: number }
+    | { kind: 'quest';       boardId: string }
     | { kind: 'none' };
 
 export interface ResolveMapEventResult {

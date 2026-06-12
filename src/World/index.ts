@@ -71,7 +71,7 @@ export type {
     MapEventKind, MapEventPayload, MapEventPool, MapEventPoolEntry,
     EncounterPayload, InteractionPayload, GatheringPayload, RestPayload,
     VillagePayload, CutscenePayload, HazardPayload, LootCachePayload,
-    ResolvedEvent, ResolveMapEventResult,
+    QuestEventPayload, ResolvedEvent, ResolveMapEventResult,
 } from './MapEvents/types';
 
 export {
@@ -81,3 +81,8 @@ export type { ApplyDialogueChoiceResult } from './dialogue.runtime';
 
 // Hazard Minigame (Phase 131)
 export * from './Hazard';
+
+// Quest Board minigame, Rest encounter, Loot-cache encounter (Phase 137)
+export * from './QuestBoard';
+export * from './Rest';
+export * from './LootCache';
