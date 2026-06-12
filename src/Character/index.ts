@@ -168,3 +168,8 @@ export function previewStatAllocation(
 export type { Character, BaseStats, DerivedStats, NonCombatStats, PreviewAllocation, PreviewResult } from './types';
 export { equipItem, unequipItem, getEquipmentModifiers } from './equipment.reducer';
 export type { AggregatedEquipmentModifiers } from './equipment.reducer';
+export {
+    characterPresets, apprenticePreset, wandererPreset, sagePreset,
+    getPresetById, buildCharacterFromPreset,
+} from './presets';
+export type { CharacterPreset, CharacterPresetEquipmentEntry } from './presets';
