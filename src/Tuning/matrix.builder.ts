@@ -1,14 +1,16 @@
 /**
  * Matrix builder — enumerates the (level × playstyle × difficulty) test cells
  * and assigns a level-appropriate enemy to each. Run counts are scaled by the
- * focus directive (focused cells get more runs / weight).
+ * focus directive (focused cells get more runs / weight), enemy assignment is
+ * seed-dependent (same seed ⇒ same matrix; new seed ⇒ fresh opponents), and
+ * every cell carries its per-difficulty target band.
  */
 
 import { ENEMY_REGISTRY, type EnemySlug } from '../Enemy/enemy.library';
 import type { PlaytestPolicy } from '../Playtest/types';
-import type { Difficulty, FocusFilter, MatrixCell, MatrixPlan, TuningCategory } from './types';
-import { levelToBand } from './focus.parser';
+import type { Difficulty, FocusFilter, MatrixCell, MatrixPlan } from './types';
 import { bandFor } from './difficulty.bands';
+import { levelToBand } from './focus.parser';
 
 /**
  * Default matrix levels — early + mid game (≤ L30). End-game (L50) is omitted
@@ -23,9 +25,9 @@ export const DEFAULT_DIFFICULTIES: Difficulty[] = ['easy', 'normal', 'hard'];
 export const DEFAULT_BASE_RUNS = 50;
 
 interface BuildMatrixOptions {
-    levels?: number[];
-    playstyles?: PlaytestPolicy[];
-    difficulties?: Difficulty[];
+    levels?: readonly number[];
+    playstyles?: readonly PlaytestPolicy[];
+    difficulties?: readonly Difficulty[];
     baseRuns?: number;
     focus: FocusFilter;
     seed: string;
@@ -53,9 +55,11 @@ const BAND_TAG: Record<string, string> = {
 /**
  * Pick a deterministic, level-appropriate enemy slug for a cell. Prefers
  * enemies tagged for the level band whose `level` is within range of the
- * player level; falls back to the nearest-level enemy overall.
+ * player level; falls back to the nearest-level enemy overall. The `key`
+ * carries the plan seed, so a new seed reshuffles opponents while the same
+ * seed reproduces the matrix exactly.
  */
-export function pickEnemyForCell(level: number, difficulty: Difficulty, key: string, seed?: string): EnemySlug {
+export function pickEnemyForCell(level: number, difficulty: Difficulty, key: string): EnemySlug {
     const band = levelToBand(level);
     const bandTag = BAND_TAG[band];
     const tagged = ALL_SLUGS.filter(slug => ENEMY_REGISTRY[slug].tags?.includes(bandTag));
@@ -72,58 +76,25 @@ export function pickEnemyForCell(level: number, difficulty: Difficulty, key: str
     );
     const finalPool = preferred.length > 0 ? preferred : pool;
     const sorted = [...finalPool].sort((a, b) => a.localeCompare(b));
-    const hashKey = seed ? `${key}-${seed}` : key;
-    return sorted[hash(hashKey) % sorted.length]!;
+    return sorted[hash(key) % sorted.length]!;
 }
 
-function cellMatchesFocus(
-    level: number, 
-    playstyle: PlaytestPolicy, 
-    difficulty: Difficulty, 
-    enemySlug: string,
-    focus: FocusFilter
-): { focused: boolean; score: number } {
-    let hasAnyFilter = false;
-    let score = 0;
-
-    // Level bands
-    if (focus.levelBands?.length) {
-        hasAnyFilter = true;
-        if (focus.levelBands.includes(levelToBand(level))) {
-            score++;
-        }
-    }
-
-    // Categories (treat playstyles as categories)
-    if (focus.categories?.length) {
-        hasAnyFilter = true;
-        if (focus.categories.includes(playstyle as TuningCategory)) {
-            score++;
-        }
-    }
-
-    // Difficulties
-    if (focus.difficulties?.length) {
-        hasAnyFilter = true;
-        if (focus.difficulties.includes(difficulty)) {
-            score++;
-        }
-    }
-
-    // Enemies
-    if (focus.enemies?.length) {
-        hasAnyFilter = true;
-        if (focus.enemies.includes(enemySlug)) {
-            score++;
-        }
-    }
-
-    // If no filters are set, everything matches
-    if (!hasAnyFilter) {
-        return { focused: true, score: 0 };
-    }
-
-    return { focused: score > 0, score };
+/**
+ * Multiplicative cell weight from the focus directive. Each matching axis
+ * doubles the weight, so a cell matching playstyle AND difficulty weighs 4×.
+ * An empty focus leaves every cell at exactly 1.
+ */
+function cellWeight(
+    playstyle: PlaytestPolicy,
+    difficulty: Difficulty,
+    level: number,
+    focus: FocusFilter,
+): number {
+    let weight = 1;
+    if (focus.categories?.some(c => c === playstyle)) weight *= 2;
+    if (focus.difficulties?.includes(difficulty)) weight *= 2;
+    if (focus.levelBands?.length && focus.levelBands.includes(levelToBand(level))) weight *= 2;
+    return weight;
 }
 
 export function buildMatrix(opts: BuildMatrixOptions): MatrixPlan {
@@ -131,10 +102,9 @@ export function buildMatrix(opts: BuildMatrixOptions): MatrixPlan {
     const playstyles = opts.playstyles ?? DEFAULT_PLAYSTYLES;
     const difficulties = opts.difficulties ?? DEFAULT_DIFFICULTIES;
     const baseRuns = opts.baseRuns ?? DEFAULT_BASE_RUNS;
-
-    if (levels.length === 0) {
-        throw new Error('Cannot build matrix with empty levels array');
-    }
+    if (levels.length === 0) throw new Error('buildMatrix: levels must be non-empty');
+    if (playstyles.length === 0) throw new Error('buildMatrix: playstyles must be non-empty');
+    if (difficulties.length === 0) throw new Error('buildMatrix: difficulties must be non-empty');
     const focus = opts.focus;
     const sampleScale = focus.sampleScale ?? 1;
 
@@ -143,26 +113,16 @@ export function buildMatrix(opts: BuildMatrixOptions): MatrixPlan {
         for (const playstyle of playstyles) {
             for (const difficulty of difficulties) {
                 const cellId = `L${level}-${playstyle}-${difficulty}`;
-                const enemySlug = pickEnemyForCell(level, difficulty, cellId, opts.seed);
-                const focusResult = cellMatchesFocus(level, playstyle, difficulty, enemySlug, focus);
-                
-                // Focused cells get the scaled run count; unfocused cells stay
-                // at baseline (when a focus is present) or full (when not).
-                const hasAnyFocus = (focus.levelBands?.length || 0) > 0 || 
-                                   (focus.categories?.filter(c => c).length || 0) > 0 || 
-                                   (focus.difficulties?.filter(d => d).length || 0) > 0 || 
-                                   (focus.enemies?.filter(e => e).length || 0) > 0;
-                const scale = hasAnyFocus
-                    ? (focusResult.focused ? sampleScale : 0.5)
-                    : sampleScale;
-                const runs = Math.max(1, Math.round(baseRuns * scale));
-                const weight = hasAnyFocus ? (focusResult.score > 0 ? 1 + focusResult.score : 1) : 1;
+                const weight = cellWeight(playstyle, difficulty, level, focus);
+                // Focused cells get proportionally more runs; an empty focus
+                // leaves every cell at baseRuns × sampleScale.
+                const runs = Math.max(1, Math.round(baseRuns * sampleScale * weight));
                 cells.push({
                     cellId,
                     level,
                     playstyle,
                     difficulty,
-                    enemySlug,
+                    enemySlug: pickEnemyForCell(level, difficulty, `${opts.seed}|${cellId}`),
                     runs,
                     weight,
                     band: bandFor(difficulty),
@@ -171,14 +131,14 @@ export function buildMatrix(opts: BuildMatrixOptions): MatrixPlan {
         }
     }
 
-    return { 
-        cells, 
-        baseSeed: opts.seed, 
+    return {
+        cells,
+        baseSeed: opts.seed,
         focus,
         metadata: {
-            levels,
-            playstyles,
-            difficulties,
+            levels: [...levels],
+            playstyles: [...playstyles],
+            difficulties: [...difficulties],
             baseRuns,
             seed: opts.seed,
         },

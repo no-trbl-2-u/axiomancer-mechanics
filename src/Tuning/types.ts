@@ -20,6 +20,11 @@ export type LevelBand = 'early' | 'mid' | 'late' | 'end';
 export type TuningCategory =
     | 'fundamental' | 'enemy' | 'item' | 'effect' | 'skill' | 'loot';
 
+/** Every registry-facing tuning category (for narrowing mixed focus lists). */
+export const TUNING_CATEGORIES: readonly TuningCategory[] = [
+    'fundamental', 'enemy', 'item', 'effect', 'skill', 'loot',
+];
+
 /**
  * Parsed `--focus` directive. Every field optional; an empty filter means
  * "test everything at default weighting".
@@ -27,14 +32,19 @@ export type TuningCategory =
 export interface FocusFilter {
     /** Raw focus string, retained for the report. */
     raw?: string;
-    categories?: TuningCategory[];
+    /**
+     * Registry categories AND/OR playstyle names. Playstyle entries weight
+     * matching matrix cells; registry entries narrow the tunable registry
+     * (`contentMatchesFocus` ignores playstyle entries).
+     */
+    categories?: (TuningCategory | PlaytestPolicy)[];
     tags?: string[];
     /** ISO date (`YYYY-MM-DD`); matches content/tunables with `addedIn` ≥ this. */
     addedAfter?: string;
     levelBands?: LevelBand[];
-    /** Specific difficulties to focus on. */
-    difficulties?: string[];
-    /** Specific enemies to focus on. */
+    /** Difficulties to weight higher in the matrix. */
+    difficulties?: Difficulty[];
+    /** Enemy slugs to prefer when assigning cell opponents. */
     enemies?: string[];
     /** Multiplier applied to per-cell run counts for focused cells (≥0). */
     sampleScale?: number;
@@ -124,7 +134,7 @@ export interface MatrixCell {
     enemySlug: string;
     runs: number;
     weight: number;
-    /** Target success rate band for this difficulty. */
+    /** Per-difficulty target band (see `difficulty.bands.ts`). */
     band: TargetBand;
 }
 

@@ -6,7 +6,8 @@
  * tests are hermetic. No LLM here — keyword + light date parsing only.
  */
 
-import type { FocusFilter, LevelBand, TuningCategory } from './types';
+import type { PlaytestPolicy } from '../Playtest/types';
+import { TUNING_CATEGORIES, type Difficulty, type FocusFilter, type LevelBand, type TuningCategory } from './types';
 
 const CATEGORY_KEYWORDS: [RegExp, TuningCategory][] = [
     [/\b(effects?|status[\s-]?effects?|buffs?|debuffs?)\b/, 'effect'],
@@ -15,6 +16,21 @@ const CATEGORY_KEYWORDS: [RegExp, TuningCategory][] = [
     [/\b(skills?|abilit(y|ies)|fallac(y|ies)|paradox(es)?)\b/, 'skill'],
     [/\b(loot|drops?|drop[\s-]?rates?)\b/, 'loot'],
     [/\b(fundamentals?|core[\s-]?mechanics?|multipliers?|formula)\b/, 'fundamental'],
+];
+
+/** Playstyle focus — weights matching matrix cells (e.g. `--focus="strategist"`). */
+const PLAYSTYLE_KEYWORDS: [RegExp, PlaytestPolicy][] = [
+    [/\baggressive\b/, 'aggressive'],
+    [/\bdefensive\b/, 'defensive'],
+    [/\bmixed\b/, 'mixed'],
+    [/\bstrategist\b/, 'strategist'],
+];
+
+/** Difficulty focus — weights matching matrix cells (e.g. `--focus="hard fights"`). */
+const DIFFICULTY_KEYWORDS: [RegExp, Difficulty][] = [
+    [/\beasy\b/, 'easy'],
+    [/\bnormal\b/, 'normal'],
+    [/\bhard\b/, 'hard'],
 ];
 
 const LEVEL_BAND_KEYWORDS: [RegExp, LevelBand][] = [
@@ -59,8 +75,14 @@ export function parseFocus(raw: string | undefined, now: Date = new Date()): Foc
     const text = raw.toLowerCase();
     const filter: FocusFilter = { raw };
 
-    const categories = CATEGORY_KEYWORDS.filter(([re]) => re.test(text)).map(([, c]) => c);
+    const categories: (TuningCategory | PlaytestPolicy)[] = [
+        ...CATEGORY_KEYWORDS.filter(([re]) => re.test(text)).map(([, c]) => c),
+        ...PLAYSTYLE_KEYWORDS.filter(([re]) => re.test(text)).map(([, p]) => p),
+    ];
     if (categories.length) filter.categories = uniq(categories);
+
+    const difficulties = DIFFICULTY_KEYWORDS.filter(([re]) => re.test(text)).map(([, d]) => d);
+    if (difficulties.length) filter.difficulties = uniq(difficulties);
 
     const bands = LEVEL_BAND_KEYWORDS.filter(([re]) => re.test(text)).map(([, b]) => b);
     if (bands.length) filter.levelBands = uniq(bands);
@@ -90,7 +112,13 @@ export function contentMatchesFocus(
     meta: { addedIn?: string; tags?: string[]; category?: TuningCategory },
     focus: FocusFilter,
 ): boolean {
-    if (focus.categories?.length && meta.category && !focus.categories.includes(meta.category)) {
+    // Playstyle entries in `categories` weight MATRIX cells, not registry
+    // content — only registry categories narrow the tunable list, so a
+    // `--focus="strategist"` run doesn't empty the registry.
+    const registryCategories = (focus.categories ?? []).filter(
+        (c): c is TuningCategory => (TUNING_CATEGORIES as readonly string[]).includes(c),
+    );
+    if (registryCategories.length && meta.category && !registryCategories.includes(meta.category)) {
         return false;
     }
     if (focus.tags?.length && !(meta.tags ?? []).some(t => focus.tags!.includes(t))) {
