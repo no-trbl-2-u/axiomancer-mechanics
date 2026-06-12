@@ -10,6 +10,52 @@ Pre-1.0.0 status: minor bumps may carry breaking public-API changes
 map exposes `.` (top-level barrel) and `./node` (Node.js adapter); no
 deep imports are part of the supported surface.
 
+## [0.17.0] — 2026-06-12
+
+Minigame ownership release. The package becomes the source of truth for BOTH
+encounter minigames: the Hazard v2 rules (formerly mobile's local engine) and
+the new Gathering minigame ("The Gleaning"). Mobile keeps only UI.
+
+### Added
+
+- **Hazard v2 engine** — `src/World/Hazard/` now carries a byte-faithful port
+  of the mobile living rules source (design handoff 2026-06-10): no-re-cast
+  dice doctrine, momentum carry, reserves, salvage, enchant auras, gold vows,
+  sub-quests, and the full card library. The exported surface matches the
+  mobile engine exactly so mobile can delete `state/hazard/`'s rule files and
+  import these instead. Parity is guarded by
+  `src/World/Hazard/audit/e2e/parity.audit.test.ts`.
+- **Gathering minigame ("The Gleaning")** — `src/World/Gathering/`, the
+  Forage-archetype push-your-luck harvest: GLEAN/STRIP stances, three one-way
+  strata, the WRATH meter with reprisal thresholds and eruption, offerings and
+  GRACE, one-use field tools, rolled boons, family-set refinements, and a
+  deterministic policy sim guarding the incentive gradient
+  (greed < restraint < skill). Exported from the package root; seeded-RNG
+  helpers aliased (`gathering*`) to avoid clashing with the Hazard RNG exports.
+- **Tuning pipeline** — combat resource economy analysis (Phase 139),
+  friendship-route tuning for three-anchor enemies (Phase 138), and a matrix
+  builder aligned with the Phase 136 contract: seed-dependent enemy
+  assignment, multiplicative focus weights (playstyle / difficulty / level
+  band), per-cell difficulty bands, and focus parsing for playstyle and
+  difficulty keywords.
+- **Test gates** — test files are now type-checked (`npm run
+  type-check:tests`, fifth hard gate in `verify`), and a hermeticity guard
+  suite enforces the testing standard mechanically.
+
+### Removed
+
+- Dead export `isValidCombatAction` (never consumed; pre-1.0 minor per the
+  deprecation policy).
+
+### Mobile migration notes
+
+- Update `axiomancer-mobile` to `axiomancer-mechanics@0.17.0`.
+- Delete the local hazard rule files (`state/hazard/engine.ts`, `types.ts`,
+  `content.ts`, `tuning.ts`, `rng.ts`, `sim.ts`, `deck-flags.ts`) and import
+  the same names from the package root. `store-actions.ts` (host glue) stays.
+- The gathering engine may be migrated the same way at leisure
+  (`state/gathering/` ⇄ package-root exports; `store-actions.ts` stays).
+
 ## [0.16.0] — 2026-06-10
 
 Hazard minigame documentation and mobile-consumer release. This bump packages the
