@@ -831,6 +831,14 @@ async function main(): Promise<void> {
         return;
     }
 
+    // Subcommand: `npm run game -- gathering [flags]` hands off to the
+    // standalone gleaning driver, which owns its own flag set.
+    if (rawArgs[0] === 'gathering') {
+        const { runGatheringCli } = await import('./gathering.cli');
+        await runGatheringCli(rawArgs.slice(1));
+        return;
+    }
+
     const flags = parseArgv(rawArgs);
     if (flags.jsonEvents) setOutputMode('json');
     if (flags.scriptPath) {

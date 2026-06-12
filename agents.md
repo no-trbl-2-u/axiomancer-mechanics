@@ -162,6 +162,7 @@ an open question in a spec.
 | `jot` | `skills/jot.md` | Drop a quick observation into CRITIQUE.md. |
 | `mechanics-tuning` | `skills/mechanics-tuning.md` | Run the balance matrix, A/B-test numeric changes; data report → `main`, suggestions + winners → PR. |
 | `hazard-tuning` | `skills/hazard-tuning.md` | Hazard minigame balance loop — use hazard CLI evidence to analyse card ratios, thresholds, mana economy against CDR-0006 targets; numeric changes + report via PR. |
+| `gathering-tuning` | `skills/gathering-tuning.md` | Gathering minigame (The Gleaning) balance loop — policy-sim + CLI evidence against the greed<restraint<skill doctrine; numeric changes + report via PR. |
 
 Also available (project-specific):
 
@@ -186,6 +187,7 @@ Also available (project-specific):
 /loop 30m /march        # autonomous loop
 /jot <observation>      # quick CRITIQUE.md note
 /hazard-tuning [--focus="..."] # hazard minigame tuning evidence + guarded balance PR
+/gathering-tuning [--focus="..."] # gleaning tuning evidence + guarded balance PR
 ```
 
 ### Sub-agents
