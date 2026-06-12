@@ -89,6 +89,20 @@ those modules.
 No removals or renames of existing exports without a semver major
 phase. Adding new exports is always fine.
 
+**`@deprecated` does not override this rule.** A deprecation tag (even
+one with a passed removal deadline) never authorises removing an
+export in a minor/patch — `axiomancer-mobile` consumes this package
+and builds against the barrel. Before ANY export removal:
+
+1. `grep` the export name across `../axiomancer-mobile` (the repos are
+   siblings on the loop machine). A hit = a live consumer; removal is
+   blocked until a mobile migration ships FIRST.
+2. Even with zero hits, removal still waits for a semver major phase.
+
+Precedent: the loop removed the deprecated preset exports in a minor
+(`d17f2db`), 0.17.0 shipped the break, and mobile's build went red —
+reverted in 0.17.1. Do not repeat this.
+
 ### 10. The status-effect doctrine governs balance work.
 
 **Status effects are the MAIN fun and the most engaging aspect of combat**
