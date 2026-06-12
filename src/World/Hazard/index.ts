@@ -100,3 +100,23 @@ export {
     acknowledgeHazardOutcome,
     claimHazardRewards,
 } from './hazard.engine';
+
+// ── Divergence audit (Phase 140) ───────────────────────────────────────────
+export type {
+    DivergenceItem,
+    ImplementationGap,
+    VerificationResult,
+} from './audit/divergence.verification';
+
+export {
+    verifyHazardDivergence,
+    formatDivergenceReport,
+} from './audit/divergence.verification';
+
+export type { GapAnalysis } from './audit/gap.report';
+
+export {
+    analyzeHazardGaps,
+    formatGapReport,
+    executeGapAudit,
+} from './audit/gap.report';
