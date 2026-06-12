@@ -282,6 +282,10 @@ export function createHazardSession(
         goldVow: null,
         momentumCap: HAZARD_MOMENTUM_CAP,
         vitaeCost: 0,
+        vitaeRestore: 0,
+        bountyShillings: 0,
+        wardPenaltyReduction: 0,
+        carryFloor: 0,
         resolveInfo: null,
         outcome: null,
         pickedRewardCardId: null,
@@ -427,6 +431,64 @@ function applyUtilityEffect(
     if (def.effect === 'goldvow') {
         if (!def.goldVow) return s;
         return { ...s, goldVow: { ...def.goldVow } };
+    }
+    if (def.effect === 'purge') {
+        // PURGE: cut the dead weight. Minor removes ONE crack — from hand
+        // first, then the draw pile; major scours hand, pile, AND discard
+        // (so a refill never shuffles the flaw back in this session).
+        const isCrack = (cardId: string) => getHazardCardDef(cardId).dead === true;
+        if (major) {
+            return {
+                ...s,
+                hand: s.hand.filter((h) => !isCrack(h.cardId)),
+                drawPile: s.drawPile.filter((id) => !isCrack(id)),
+                discardPile: s.discardPile.filter((id) => !isCrack(id)),
+            };
+        }
+        const handIdx = s.hand.findIndex((h) => isCrack(h.cardId));
+        if (handIdx >= 0) {
+            return { ...s, hand: s.hand.filter((_, i) => i !== handIdx) };
+        }
+        const pileIdx = s.drawPile.findIndex(isCrack);
+        if (pileIdx >= 0) {
+            return { ...s, drawPile: s.drawPile.filter((_, i) => i !== pileIdx) };
+        }
+        return s;
+    }
+    if (def.effect === 'transmute') {
+        // TRANSMUTE: recolor available dice to THIS card's colour (hex
+        // stays hostile — that's CONVERT's business). Minor turns the
+        // first off-colour die; major turns them all.
+        const target = def.kind;
+        const candidates = s.dice.filter(
+            (d) => d.state === 'available' && d.kind !== 'hex' && d.kind !== target,
+        );
+        if (candidates.length === 0) return s;
+        const ids = major ? candidates.map((d) => d.id) : [candidates[0].id];
+        return {
+            ...s,
+            dice: s.dice.map((d) => (ids.includes(d.id) ? { ...d, kind: target } : d)),
+        };
+    }
+    if (def.effect === 'mend') {
+        const amount = (major ? def.mendPowered ?? def.mendBase : def.mendBase) ?? 0;
+        if (amount <= 0) return s;
+        return { ...s, vitaeRestore: s.vitaeRestore + amount };
+    }
+    if (def.effect === 'bounty') {
+        const amount = (major ? def.bountyPowered ?? def.bountyBase : def.bountyBase) ?? 0;
+        if (amount <= 0) return s;
+        return { ...s, bountyShillings: s.bountyShillings + amount };
+    }
+    if (def.effect === 'ward') {
+        const amount = (major ? def.wardPowered ?? def.wardBase : def.wardBase) ?? 0;
+        if (amount <= 0) return s;
+        return { ...s, wardPenaltyReduction: s.wardPenaltyReduction + amount };
+    }
+    if (def.effect === 'anchor') {
+        const amount = (major ? def.anchorPowered ?? def.anchorBase : def.anchorBase) ?? 0;
+        if (amount <= 0) return s;
+        return { ...s, carryFloor: Math.min(s.momentumCap, s.carryFloor + amount) };
     }
     return s;
 }
@@ -690,6 +752,16 @@ export function resolveHazardRound(s: HazardSessionState, deckBag: readonly stri
             carryEscape: 0,
         };
     }
+    // ANCHOR: the momentum floor guarantees a minimum TOTAL carry into
+    // the next round — even off a failed round (it is insurance, not a
+    // reward). Topped up on the FORCE side (where the safe route banks
+    // its combined carry), capped by the session momentum cap.
+    if (!lastRound && s.carryFloor > 0 && info.carryForce + info.carryEscape < s.carryFloor) {
+        info = {
+            ...info,
+            carryForce: Math.min(s.momentumCap, s.carryFloor - info.carryEscape),
+        };
+    }
     const marks = s.marks.slice();
     marks[s.round - 1] = info.cleared ? 'O' : 'X';
 
@@ -872,8 +944,14 @@ function computeOutcome(s: HazardSessionState): { outcome: HazardOutcome; rng: H
         offerCards,
         canSkip: tier === 'perfect',
         reserveBonus,
-        penaltyVitae: route.penaltyVitae * losses,
+        // WARD shaves the route penalty as a flat total, floored at 0.
+        penaltyVitae: Math.max(0, route.penaltyVitae * losses - s.wardPenaltyReduction),
         vitaeCost: s.vitaeCost,
+        // MEND and BOUNTY pay only on a survived crossing (a total
+        // failure forfeits them, like the sub-quest bonuses); SACRIFICE
+        // is charged regardless — the blood was already spent.
+        vitaeRestore: survived ? s.vitaeRestore : 0,
+        bountyShillings: survived ? s.bountyShillings : 0,
         subquests,
         questShillings,
         questVitae,

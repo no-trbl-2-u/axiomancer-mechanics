@@ -49,7 +49,14 @@ export type HazardUtilityEffect =
     | 'convert'
     | 'aura'
     | 'burst'
-    | 'goldvow';
+    | 'goldvow'
+    // ── codex-library mechanics (2026-06-13 expansion) ──
+    | 'purge'
+    | 'transmute'
+    | 'mend'
+    | 'bounty'
+    | 'ward'
+    | 'anchor';
 
 export type HazardKeywordId =
     | 'surge'
@@ -67,7 +74,14 @@ export type HazardKeywordId =
     | 'rally'
     | 'sacrifice'
     | 'vow'
-    | 'choose';
+    | 'choose'
+    // ── codex-library mechanics (2026-06-13 expansion) ──
+    | 'purge'
+    | 'transmute'
+    | 'mend'
+    | 'bounty'
+    | 'ward'
+    | 'anchor';
 
 /**
  * Persistent enchantment modifiers (auras). Accumulated on the session by
@@ -171,6 +185,27 @@ export interface HazardCardDef {
     goldVow?: { force: number; escape: number };
     /** Rider: raise the session momentum cap on apply (SAINT'S PATIENCE). */
     momentumBonus?: number;
+    /**
+     * MEND (`effect: 'mend'`): VITAE restored at claim on a survived
+     * crossing (the opposite ledger line to SACRIFICE's `vitaeCost`).
+     */
+    mendBase?: number;
+    mendPowered?: number;
+    /** BOUNTY (`effect: 'bounty'`): shillings banked at claim on a
+     *  survived crossing. */
+    bountyBase?: number;
+    bountyPowered?: number;
+    /** WARD (`effect: 'ward'`): flat reduction of the route's total
+     *  VITAE penalty at the outcome (floored at 0). */
+    wardBase?: number;
+    wardPowered?: number;
+    /**
+     * ANCHOR (`effect: 'anchor'`): raises the session's momentum FLOOR —
+     * the minimum total carry banked into the next round, even off a
+     * failed round (insurance). Capped by the session momentum cap.
+     */
+    anchorBase?: number;
+    anchorPowered?: number;
     /**
      * Dead cards (consequence CRACK cards) cannot be powered and
      * contribute nothing — they only clog the hand.
@@ -373,10 +408,16 @@ export interface HazardOutcome {
      * dice you didn't burn are worth something.
      */
     reserveBonus: number;
-    /** Vitae lost to the route penalty: penaltyVitae × lost rounds. */
+    /** Vitae lost to the route penalty: penaltyVitae × lost rounds,
+     *  reduced by accrued WARD (floored at 0). */
     penaltyVitae: number;
     /** Vitae spent in-run by SACRIFICE cards (BLOODPRICE), applied at claim. */
     vitaeCost: number;
+    /** Vitae restored by MEND cards (0 on a failure — the cure needs a
+     *  survivor), applied at claim. */
+    vitaeRestore: number;
+    /** Shillings banked by BOUNTY cards (0 on a failure), applied at claim. */
+    bountyShillings: number;
     /** Rolled sub-quests, each judged done/failed/active at outcome. */
     subquests: HazardSubquestResult[];
     /** Bonus shillings from completed sub-quests (0 on a failure). */
@@ -428,6 +469,15 @@ export interface HazardSessionState {
     momentumCap: number;
     /** VITAE spent by sacrifice cards this hazard, applied at claim. */
     vitaeCost: number;
+    /** VITAE restored by MEND cards (paid at claim on a survived crossing). */
+    vitaeRestore: number;
+    /** Shillings banked by BOUNTY cards (paid at claim on a survived crossing). */
+    bountyShillings: number;
+    /** Flat reduction of the route's total VITAE penalty (WARD cards). */
+    wardPenaltyReduction: number;
+    /** Momentum FLOOR: minimum total carry banked into the next round,
+     *  even off a failed round (ANCHOR cards). Respects `momentumCap`. */
+    carryFloor: number;
     resolveInfo: HazardResolveInfo | null;
     outcome: HazardOutcome | null;
     /** Reward card picked in the rewards phase (null = skipped / none). */

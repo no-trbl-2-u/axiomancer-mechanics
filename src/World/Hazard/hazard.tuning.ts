@@ -129,6 +129,40 @@ export const HAZARD_TUNING = {
             /** SAINT'S PATIENCE. */
             saint: { number: 3, draw: 2, momentum: 2 },
         },
+        /**
+         * CODEX LIBRARY magnitudes (2026-06-13 — the 150-card roster).
+         * All codex cards live in the reward pool, so the starter-bag
+         * balance sim is untouched; these numbers shape the acquired-card
+         * power curve instead.
+         */
+        codex: {
+            /** Single-meter number ladder [free, powered] per rarity. */
+            numbers: {
+                common: { free: 3, powered: 6 },
+                uncommon: { free: 4, powered: 8 },
+                rare: { free: 5, powered: 10 },
+            },
+            /** Dual (both-meter) ladder per rarity. */
+            dual: {
+                common: { free: 2, powered: 3 },
+                uncommon: { free: 2, powered: 4 },
+                rare: { free: 3, powered: 5 },
+            },
+            /** Two-tone pivot ladder (free one meter, surge the other). */
+            pivot: { uncommon: { free: 4, powered: 7 }, rare: { free: 5, powered: 9 } },
+            /** PURGE cards: numbers carried alongside the cut. */
+            purge: { number: 2, rareNumber: 4 },
+            /** TRANSMUTE cards. */
+            transmute: { number: 2, rareNumber: 4 },
+            /** MEND: vitae restored at claim (minor / major tier). */
+            mend: { minor: 2, major: 4, rareMajor: 6 },
+            /** BOUNTY: shillings banked at claim (minor / major tier). */
+            bounty: { minor: 4, major: 8, rareMajor: 12 },
+            /** WARD: route-penalty reduction (minor / major tier). */
+            ward: { minor: 2, major: 4 },
+            /** ANCHOR: momentum floor raised (minor / major tier). */
+            anchor: { minor: 1, major: 2 },
+        },
     },
 
     // -- rewards & consequences -------------------------------------------
