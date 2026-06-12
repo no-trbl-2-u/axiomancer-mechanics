@@ -27,7 +27,7 @@ canonical entry points. Cross-link to the per-module doc for depth.
 | **NPCs** | `getDialogueNode` + `visibleChoices`, alignment gates (Phase 46), tree-id observer cache (Phase 63) | 14, 22, 46, 63 | [npcs.md](./npcs.md) |
 | **Philosophy** | 3-axis alignment cube + 27-cell library, `alignmentDelta` authoring, fallacies-as-spells (Phase 44), enemy alignment + AI bias (Phase 45), alignment-gated content (Phase 46) | 42-46 | [philosophy.md](./philosophy.md) |
 | **Skills** | `executeSkill` caster-agnostic (Phase 49), `learnSkill` + runtime learning (Phase 30), Tier 1-3 skill library + Tier 2 synergy clauses (Phase 66) | 4, 4b, 30, 33, 44, 49, 66 | [skills.md](./skills.md) |
-| **World** | `createStartingWorld` + per-continent maps, MapEvents engine (`resolveMapEvent`, 8-kind pool taxonomy — Phase 23/24), expanded fishing-village (Phase 65 — 25 nodes, 3 sub-areas) | 8, 23, 24, 25, 31, 65 | [world.md](./world.md) |
+| **World** | `createStartingWorld` + per-continent maps, MapEvents engine (`resolveMapEvent`, nine-kind pool taxonomy — Phase 23/24, 'quest' added Phase 137), expanded fishing-village (Phase 65 — 25 nodes, 3 sub-areas) | 8, 23, 24, 25, 31, 65 | [world.md](./world.md) |
 | **Utils** | RNG harness, derived stats, dice / type guards | 11 | — |
 
 Marquee mechanics shipped end-to-end: moral meter (Phase 10), set
@@ -170,9 +170,9 @@ The starting map `fishing-village` is a 25-node branching grid since
 Phase 65 (preserved spine `fv-1` → `fv-10` along `y=0` plus three
 sub-areas: Harbor District `fv-11..fv-15`, Inland Streets
 `fv-16..fv-20`, Cliff Path `fv-21..fv-25`). Each node fires a
-weighted `MapEventPool` on entry per the Phase 23 8-kind taxonomy
+weighted `MapEventPool` on entry per the Phase 23 taxonomy
 (encounter / interaction / gathering / rest / village / cutscene /
-hazard / loot-cache). See [`world.md` § "Demo Content"](./world.md#demo-content-fishing-village)
+hazard / loot-cache, plus 'quest' since Phase 137). See [`world.md` § "Demo Content"](./world.md#demo-content-fishing-village)
 for the full layout.
 
 ### Save / load

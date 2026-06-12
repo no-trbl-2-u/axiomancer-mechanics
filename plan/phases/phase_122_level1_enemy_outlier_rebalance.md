@@ -12,7 +12,7 @@ enemies that are already in band are left untouched.
 
 ## Source
 
-Promoted by owner direct order on 2026-06-07 from the `mechanics-tuning` tick
+Promoted by owner direct order on 2026-06-07 from the `combat-tuning` tick
 (merged PR #125). The data report
 `automation/playtest/reports/tuning-2026-06-07T13-37-51-907Z.md` and its
 suggestions writeup identified this as a **per-enemy**, not global, problem:

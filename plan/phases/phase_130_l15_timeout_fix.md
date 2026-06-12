@@ -72,7 +72,7 @@ No specific implementation spec — this is a balance/tuning phase per oversight
 - `npm run type-check`
 - `npm test -- --run` (hermetic e2e for new thresholds + befriendability changes)
 - `npm run verify` + `npm run deploy:check`
-- Run `/mechanics-tuning` against both target cells after changes to confirm they move into band
+- Run `/combat-tuning` against both target cells after changes to confirm they move into band
 
 ## Commit body template
 

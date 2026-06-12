@@ -12,6 +12,41 @@ deep imports are part of the supported surface.
 
 ## [unreleased]
 
+Cleanup release: dead code from the encounter migrations removed, the
+tuning skill family reorganised.
+
+### Removed
+
+- **`COMBAT_ACTION` / `CombatActionName`** (`Game/actions.constants`) —
+  legacy combat-action constants with zero consumers in the engine, CLI,
+  tests, or mobile. (Minor breaking: anything importing them moves to the
+  `Action` type.)
+
+### Changed
+
+- **Character presets un-deprecated.** The "scheduled for removal at
+  v0.13.0" notices were stale — presets are load-bearing (mobile DEV
+  preset picker, Playtest runner, Tuning difficulty bands) and are a
+  supported surface until those consumers migrate.
+- **`mechanics-tuning` skill renamed `combat-tuning`** everywhere
+  (skills/, .claude/commands/, agents.md, CLAUDE.md, VISION.md,
+  plan/bearings.md, Tuning CLI comments).
+- Docs trued up to the nine-kind MapEvents taxonomy (`docs/world.md`,
+  `docs/quickstart.md`, Spec 23 addendum) and the actual `equippedSkills`
+  deprecation state (`docs/character.md`).
+
+### Added
+
+- **Three new tuning skills** for the Phase 137 encounters:
+  `quest-board-tuning`, `rest-tuning`, `loot-cache-tuning` — each with
+  locked design contracts, numeric-only guardrails, seeded policy-probe
+  evidence matrices, and single-PR delivery, mirroring
+  `gathering-tuning`.
+- **`NEEDS_ATTENTION.md`** — repo-level audit ledger of known debt and
+  half-finished migrations.
+
+## [0.20.0] — 2026-06-12
+
 Encounter release: the story-quest board game lands, and rest / loot-cache
 graduate from silent grants to full encounters.
 

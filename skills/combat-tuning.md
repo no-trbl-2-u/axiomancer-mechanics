@@ -1,4 +1,4 @@
-# Skill: mechanics-tuning
+# Skill: combat-tuning
 
 > **High autonomy within hard guardrails.** Run the character × playstyle ×
 > enemy balance matrix, A/B-test numeric changes, and deliver everything —
@@ -24,7 +24,7 @@ effects, not by raw damage.
 
 ## 1. Purpose
 
-`/mechanics-tuning` is the self-improving balance loop. It drives `npm run tune`
+`/combat-tuning` is the self-improving balance loop. It drives `npm run tune`
 (the `src/Tuning/` engine), reads the generated logs, optionally consults the
 `balance-analyst` subagent for richer recommendations, and ships the outcome.
 It exists so balance work is evidence-driven and reproducible instead of
@@ -36,10 +36,10 @@ playtest harness do that. The skill is the orchestrator + the delivery layer.
 ## 2. Invocation
 
 ```
-/mechanics-tuning
-/mechanics-tuning --focus="new status effects since April"
-/mechanics-tuning --focus="early-game enemy balance" --runs=50
-/loop 6h /mechanics-tuning            # periodic autonomous tuning
+/combat-tuning
+/combat-tuning --focus="new status effects since April"
+/combat-tuning --focus="early-game enemy balance" --runs=50
+/loop 6h /combat-tuning            # periodic autonomous tuning
 ```
 
 Arguments are forwarded to `npm run tune` (`--focus`, `--runs`, `--levels`,
@@ -181,4 +181,4 @@ generalized offline heuristic, which is a valid lighter pass.)
   `--dry-run`, `--focus`, `--runs`, `--levels`, `--playstyles`,
   `--difficulties`, `--max-iterations`, `--use-api`
 - Subagent: `.claude/agents/balance-analyst.md`
-- CI: `.github/workflows/mechanics-tuning.yml` (manual `workflow_dispatch`)
+- CI: `.github/workflows/combat-tuning.yml` (manual `workflow_dispatch`)

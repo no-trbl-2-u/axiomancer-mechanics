@@ -1,8 +1,11 @@
 /**
- * Character presets — pre-built characters for testing.
+ * Character presets — pre-built characters for testing and tooling.
  *
- * @deprecated Scheduled for removal at v0.13.0. Use the DEV menu
- * (`src/CLI/dev-tools.ts`) for testing, or `createCharacter()` directly.
+ * Deprecation rescinded 2026-06-12: the v0.13.0 removal never landed
+ * because presets became load-bearing — mobile's DEV preset picker
+ * (`applyCharacterPreset`), the Playtest runner, and the Tuning
+ * difficulty bands all consume them. They are a supported public
+ * surface until those consumers migrate.
  *
  * Each preset is a declarative recipe. `buildCharacterFromPreset` lifts
  * the recipe into a real `Character` by calling `createCharacter`
@@ -25,7 +28,6 @@ export interface CharacterPresetEquipmentEntry {
     slot: EquipmentSlot;
 }
 
-/** @deprecated Scheduled for removal at v0.13.0. Use dev-tools instead. */
 export interface CharacterPreset {
     id: string;
     name: string;
@@ -142,19 +144,16 @@ export const sagePreset: CharacterPreset = {
     currency: 75,
 };
 
-/** @deprecated Scheduled for removal at v0.13.0. */
 export const characterPresets: CharacterPreset[] = [
     apprenticePreset, wandererPreset, sagePreset,
 ];
 
-/** @deprecated Scheduled for removal at v0.13.0. */
 export function getPresetById(id: string): CharacterPreset | undefined {
     return characterPresets.find(p => p.id === id);
 }
 
 // ─── Builder ──────────────────────────────────────────────────────────────────
 
-/** @deprecated Scheduled for removal at v0.13.0. Use dev-tools instead. */
 export function buildCharacterFromPreset(
     preset: CharacterPreset,
     rng: () => number = Math.random,

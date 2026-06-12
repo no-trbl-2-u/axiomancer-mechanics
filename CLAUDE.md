@@ -16,7 +16,7 @@ status-effect engagement as a balance failure even when win/loss rates look
 healthy. The STRATEGIST playstyle is the witness for this path.
 
 Canonical: `VISION.md` → Combat vision. Echoed in `plan/bearings.md`, `agents.md`
-(standing rule 10), `AGENTS.md`, and the `mechanics-tuning` skill +
+(standing rule 10), `AGENTS.md`, and the `combat-tuning` skill +
 `balance-analyst` agent.
 
 ## Pointers

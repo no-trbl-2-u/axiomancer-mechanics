@@ -13,7 +13,7 @@ cap.
 
 ## Source
 
-Promoted by owner direct order on 2026-06-07 from the merged `mechanics-tuning`
+Promoted by owner direct order on 2026-06-07 from the merged `combat-tuning`
 suggestions (PR #125). The owner explicitly **declined** expanding the round cap
 ("keep combat streamlined") and chose the effects-to-resolution path.
 

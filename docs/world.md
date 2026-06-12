@@ -111,20 +111,28 @@ player-side helpers under `Effects/`:
 The current dispatcher is `resolveMapEvent(state, rng?)` from
 `src/World/MapEvents/resolve-map-event.ts`, shipped in Spec 23 and
 populated with content in Phase 24. It returns `{ state, event }`
-where `event` is a discriminated union over the eight `MapEventKind`
-values:
+where `event` is a discriminated union over the nine `MapEventKind`
+values ('quest' joined the original eight in Phase 137):
 
 | Event kind     | Result shape                                                              |
 |----------------|---------------------------------------------------------------------------|
 | `encounter`    | `{ kind: 'encounter', encounter, isBoss }` — caller invokes `startCombat`. |
 | `interaction`  | `{ kind: 'interaction', npcName, dialogue? }` — branching tree.           |
 | `gathering`    | `{ kind: 'gathering', items }` — items added to inventory.                |
-| `rest`         | `{ kind: 'rest', healed }` — heals by `healFraction × maxHealth`.         |
-| `village`      | `{ kind: 'village', villageName, merchants }` — settlement scene.         |
+| `rest`         | `{ kind: 'rest', healed, healFraction }` — heals by `healFraction × maxHealth`; the fraction rides along for hosts that replace the passive heal with the Night Watch minigame. |
+| `village`      | `{ kind: 'village', villageName, merchants, shop? }` — settlement scene.  |
 | `cutscene`     | `{ kind: 'cutscene', lines }` — narration only.                           |
 | `hazard`       | `{ kind: 'hazard', effects, damage }` — applies effects + damage.         |
 | `loot-cache`   | `{ kind: 'loot-cache', items, currency }` — fixed grant.                  |
+| `quest`        | `{ kind: 'quest', boardId }` — hands the host a Quest Board id (`World/QuestBoard`); the host starts the board-game minigame. |
 | `none`         | Consumed node (one-shot) or no pool registered.                            |
+
+Note (Phase 137): the engine handlers above remain the CLI's behaviour.
+The mobile host intercepts `rest` / `gathering` / `loot-cache` / `hazard`
+/ `quest` results and launches the dedicated minigames instead
+(`World/Rest` "The Night Watch", `World/Gathering` "The Gleaning",
+`World/LootCache` "The Reliquary", `World/Hazard`, `World/QuestBoard`
+"The Boy's Almanac").
 
 Hazard events now have accepted v0 minigame doctrine in
 [`docs/hazard-minigame.md`](./hazard-minigame.md): top/bottom route choice,

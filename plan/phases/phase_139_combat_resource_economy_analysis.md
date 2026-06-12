@@ -46,7 +46,7 @@ This phase addresses resource economy balance identified in PHASE_CANDIDATES exp
 ## Verify gate
 
 - `npm run verify` (type-check + tests + build)
-- `npm run mechanics-tuning` for resource economy evidence collection
+- `npm run combat-tuning` for resource economy evidence collection
 - Resource metrics show clear patterns of starvation vs flooding across difficulty tiers
 
 ## Commit body template
@@ -74,7 +74,7 @@ Decisions:
 - [ ] Evidence shows clear resource flow patterns across STRATEGIST playstyle scenarios
 - [ ] No changes to game constants or skill costs (analysis phase only)
 - [ ] `npm run verify` passes
-- [ ] `npm run mechanics-tuning` includes resource economy telemetry
+- [ ] `npm run combat-tuning` includes resource economy telemetry
 
 ## Follow-ups (out of scope)
 

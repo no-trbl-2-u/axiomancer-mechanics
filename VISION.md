@@ -17,7 +17,7 @@ the most engaging aspect of combat. Every balance decision, tuning run, content
 addition, and skill/effect design is judged first by "does this make applying
 and exploiting status effects more central and more satisfying?" If a change
 makes basic-attack trading more attractive than status-effect play, it works
-against the vision. The mechanics-tuning loop and the balance-analyst must treat
+against the vision. The combat-tuning loop and the balance-analyst must treat
 low status-effect engagement as a balance failure even when win/loss rates look
 healthy.
 

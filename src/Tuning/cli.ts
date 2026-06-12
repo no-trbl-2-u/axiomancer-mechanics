@@ -8,7 +8,7 @@
  * A and B are measured by the same ruler), apply winners that pass the verify
  * gate AND the significance test, record the ledger, and write the artifacts.
  *
- * Git / PR orchestration lives in the `mechanics-tuning` skill, not here.
+ * Git / PR orchestration lives in the `combat-tuning` skill, not here.
  *
  * Modes:
  *   --internal-run-matrix   score one variant against current on-disk source.

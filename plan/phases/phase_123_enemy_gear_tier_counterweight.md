@@ -7,14 +7,14 @@
 ## Outcome
 
 Enemies gain a level-scaled "equipment tier" bonus, weighted toward HP and
-defenses/resists, exposed as a new registry tunable so the `mechanics-tuning`
+defenses/resists, exposed as a new registry tunable so the `combat-tuning`
 loop can A/B its magnitude. The bonus is ≈0 at level 1 (so the early game is
 untouched) and large by level 50 (so the player's compounding gear+skill power
 no longer trivializes endgame).
 
 ## Source
 
-Promoted by owner direct order on 2026-06-07 from the merged `mechanics-tuning`
+Promoted by owner direct order on 2026-06-07 from the merged `combat-tuning`
 suggestions (PR #125), Q3 with its **corrected root cause**:
 
 - Player and enemy stat budgets are BOTH linear in level — player `level × 5`,
@@ -104,7 +104,7 @@ all 1.0 resolution; the whole L50 row resolves ~100% across easy/normal/hard.
 - **D3 — Level-shaped, ≈0 at L1.** The early game must be left to Phase 122/124;
   this term only bites at mid/high level.
 - **D4 — Magnitude is the loop's job.** Ship a sane default + tight registry
-  bounds; let `mechanics-tuning` dial it.
+  bounds; let `combat-tuning` dial it.
 
 ## Verify gate
 

@@ -1,5 +1,12 @@
 # Spec 23 — MapEvents engine + node discovery
 
+> **Addendum (Phase 137, 2026-06-12):** this spec shipped with a fixed
+> 8-kind taxonomy. A ninth kind, `quest` (`QuestEventPayload { boardId }`
+> → `{ kind: 'quest', boardId }`), was added for the Quest Board
+> minigame (`World/QuestBoard`), and the `rest` resolved event now
+> carries `healFraction` alongside `healed`. The text below is the
+> original point-in-time contract; read "eight" as "the original eight".
+
 ## Goal
 
 Replace the bespoke `processNode` dispatcher (Spec 08) with a

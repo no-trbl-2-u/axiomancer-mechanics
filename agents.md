@@ -160,9 +160,12 @@ an open question in a spec.
 | `march` | `skills/march.md` | Outer dispatcher: triage → critique → phase → expand → iterate. |
 | `oversight` | `skills/oversight.md` | **User-in-the-loop.** The only skill that asks anything. |
 | `jot` | `skills/jot.md` | Drop a quick observation into CRITIQUE.md. |
-| `mechanics-tuning` | `skills/mechanics-tuning.md` | Run the balance matrix, A/B-test numeric changes; data report → `main`, suggestions + winners → PR. |
+| `combat-tuning` | `skills/combat-tuning.md` | Run the balance matrix, A/B-test numeric changes; data report → `main`, suggestions + winners → PR. |
 | `hazard-tuning` | `skills/hazard-tuning.md` | Hazard minigame balance loop — use hazard CLI evidence to analyse card ratios, thresholds, mana economy against CDR-0006 targets; numeric changes + report via PR. |
 | `gathering-tuning` | `skills/gathering-tuning.md` | Gathering minigame (The Gleaning) balance loop — policy-sim + CLI evidence against the greed<restraint<skill doctrine; numeric changes + report via PR. |
+| `quest-board-tuning` | `skills/quest-board-tuning.md` | Quest Board (The Boy's Almanac) balance loop — seeded policy probes against the naive-finishes / deliberate-finishes-well doctrine; numeric changes + report via PR. |
+| `rest-tuning` | `skills/rest-tuning.md` | Rest (The Night Watch) balance loop — posture × policy probes against the meagre-but-never-lethal doctrine; numeric changes + report via PR. |
+| `loot-cache-tuning` | `skills/loot-cache-tuning.md` | Loot-cache (The Reliquary) balance loop — policy-EV probes against the informed > blind > coward doctrine; numeric changes + report via PR. |
 
 Also available (project-specific):
 
@@ -188,6 +191,9 @@ Also available (project-specific):
 /jot <observation>      # quick CRITIQUE.md note
 /hazard-tuning [--focus="..."] # hazard minigame tuning evidence + guarded balance PR
 /gathering-tuning [--focus="..."] # gleaning tuning evidence + guarded balance PR
+/quest-board-tuning [--focus="..."] # quest board tuning evidence + guarded balance PR
+/rest-tuning [--focus="..."]   # night-watch tuning evidence + guarded balance PR
+/loot-cache-tuning [--focus="..."] # reliquary tuning evidence + guarded balance PR
 ```
 
 ### Sub-agents
