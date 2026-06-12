@@ -1,15 +1,13 @@
 /**
  * Hazard balance simulator — a greedy bot that plays full hazards
- * through the real engine. Used by `e2e/hazard.balance.sim.test.ts` to
- * keep the tuned thresholds inside their target winrate bands.
+ * through the real engine. Used by `balance.sim.test.ts` to keep the
+ * tuned thresholds inside their target winrate bands, and by the
+ * tuning work documented in `docs/hazard-balance-recommendations.md`.
  *
  * The bot is deliberately decent-but-not-optimal: it stages the best
  * value cards for the unmet meters, fires draw/convert utilities when
  * they obviously help, and spends matching dice only while still short
  * of the round threshold (dice are precious — they never re-cast).
- *
- * Faithful port of the mobile v2 source of truth
- * (`../axiomancer-mobile/state/hazard/sim.ts`).
  */
 
 import {
@@ -99,8 +97,10 @@ function playGreedyRound(s: HazardSessionState, bag: readonly string[]): HazardS
         s = stageHazardCard(s, candidates[0].h.uid, bag);
     }
     // 4. Scrap the dead weight: hand cards contributing nothing this
-    //    round go to the bin for their salvage. Convert cards are held
-    //    while hex dice could still appear from a re-cast.
+    //    round (CRACKs, off-meter stat cards, utilities with no current
+    //    use) go to the bin for their salvage — a player with a trash
+    //    bin doesn't hoard clutter. Convert cards are held while hex
+    //    dice could still appear from a re-cast.
     const anyHex = s.dice.some((d) => d.kind === 'hex');
     for (const h of s.hand.slice()) {
         const def = getHazardCardDef(h.cardId);

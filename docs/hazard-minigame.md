@@ -6,6 +6,10 @@
 > - [`docs/hazard-minigame-prd.md`](./hazard-minigame-prd.md) — Product requirements, user stories, success metrics, and out-of-scope list
 > - [`docs/hazard-minigame-tdd.md`](./hazard-minigame-tdd.md) — Technical architecture, types, state machine, and integration points
 > - [`docs/hazard-minigame-bdd.md`](./hazard-minigame-bdd.md) — Behavior-driven test scenarios (maps to hermetic e2e cases)
+> - [`docs/hazard-minigame-api.md`](./hazard-minigame-api.md) — Consumer/export guide for mobile and other hosts
+> - [`docs/hazard-card-expansion-2026-06-11-spec.md`](./hazard-card-expansion-2026-06-11-spec.md) — Expanded card roster and advanced keyword rules ported from mobile
+> - [`docs/hazard-balance-recommendations.md`](./hazard-balance-recommendations.md) — Tuning evidence and current balance bands
+> - [`docs/hazard-playtest-2026-06-10-spec.md`](./hazard-playtest-2026-06-10-spec.md) — Playtest findings from the mobile/prototype pass
 
 Date: 2026-06-10
 Status: Accepted v0 doctrine
@@ -32,7 +36,7 @@ The system must not become simple card-number comparison. The player should solv
 2. The game draws/reveals a **Hazard card**.
 3. The player draws **5 action cards** from their personal deck.
 4. The player sees their hand and chooses **top route** or **bottom route**.
-5. **4 colored mana dice** are rolled. Safe route dice persist as board objects; Risk route dice re-cast between rounds.
+5. **4 colored mana dice** are rolled. dice are cast once at route selection and persist as board objects on both routes; neither Safe nor Risk auto-recasts between rounds.
 6. The player uses action card effects and available mana to meet the round's hazard requirement.
 7. Each round resolves as:
    - `O` = completed / success
@@ -115,7 +119,7 @@ Dual requirements are interesting precisely because the player may not have mana
 
 ## Mana Dice
 
-Each hazard uses **4 mana dice**, rolled after route choice and before round 1. On Safe, they persist as board objects for the hazard path. On Risk, all four dice re-cast between rounds.
+Each hazard uses **4 mana dice**, rolled after route choice and before round 1. They persist as board objects for the whole hazard path on both Safe and Risk; Risk is harder because it demands dual BOTH REQUIRED meters, not because it refreshes dice.
 
 Die faces (6 faces; two are wild X):
 
@@ -129,15 +133,15 @@ Die faces (6 faces; two are wild X):
 Rules:
 
 - Safe route dice are persistent board objects: they do **not** automatically reroll or refresh between rounds unless card text or enchantments say so.
-- Risk route dice are re-cast/rerolled between rounds as a compensating mechanic for dual "BOTH REQUIRED" meters. Spent and exhausted dice from a resolved Risk round do not persist into the next advanced round.
+- Risk route dice are **not** automatically re-cast/rerolled between rounds. The same spent/available dice economy persists; cards and enchantments are the only normal way to manipulate the pool.
 - Mana does **not** freely carry over by default.
 - **X is blocked mana — it cannot be spent or used unless a card specifically enables interaction with X dice.**
-- **Exhausted state never carries over after a valid resolve.** On Safe, exhausted dice return to `available` during between-rounds processing. On Risk, the entire four-die set is re-cast.
-- **Spent dice persist only on Safe** unless an enchantment or card effect refreshes them. On Risk, the re-cast replaces the previous round's spent dice.
-- Cards and enchantments may explicitly reroll, refresh, preserve, exhaust, discard, lock, or transform dice, but they cannot revoke the Risk route's between-round re-cast unless a future accepted rule says so.
+- **Exhausted/temporary states are card-effect concerns, not a route refresh.** Base dice do not freely refresh between rounds unless card or enchantment text says so.
+- **Spent dice persist on both Safe and Risk** unless an enchantment or card effect refreshes, re-casts, preserves, exhausts, discards, locks, or transforms them.
+- Cards and enchantments may explicitly reroll, refresh, preserve, exhaust, discard, lock, or transform dice; those effects are the exception to the no-free-refresh law.
 - Specific card text is permitted to override the Safe-route default dice law.
 
-This makes dice into route-sensitive board objects: persistent on Safe, freshly re-cast between Risk rounds.
+This makes dice load-bearing board objects: persistent across rounds on both routes, with Risk pressure coming from dual-meter requirements.
 
 A die should be modeled with both color and state:
 
@@ -147,8 +151,8 @@ type HazardManaDie = {
   state: 'available' | 'spent' | 'exhausted' | 'discarded' | 'locked' | 'preserved';
 };
 // Face distribution: red 1/6, blue 1/6, purple 1/6, gold 1/6, x 2/6.
-// Safe: exhausted resets to available at between-rounds; spent does not auto-reset.
-// Risk: the four-die set is re-cast between rounds; prior spent/exhausted state is discarded.
+// No route auto-refreshes or auto-recasts dice between rounds.
+// Spent dice stay spent unless card/enchantment text changes them.
 ```
 
 ## Card Color System
@@ -349,7 +353,7 @@ The following questions were raised during v0 design and resolved.
 **Q1 — Dice lifecycle.** *(Updated 2026-06-10.)*
 Safe route rolls all four dice once, after route choice and before round 1. They persist as board objects for the Safe hazard path unless cards or enchantments explicitly refresh, preserve, reroll, or transform them.
 
-Risk route re-casts all four dice between rounds. This is an accepted compensating mechanic for the dual "BOTH REQUIRED" meters. A spent or exhausted die from a resolved Risk round does not carry into the next advanced round.
+Risk route does **not** re-cast dice between rounds. The dual "BOTH REQUIRED" meters are the risk premium; spent dice from a resolved Risk round still tax the shared hazard pool until a card/enchantment changes them.
 
 **Q2 — Action card lifecycle.**
 Players draw from their personal deck — the 30 cards represent the full content pool, not a flat per-hazard deck. Shuffle the personal deck at hazard start. Draw 5 each round. Played cards go to the hazard discard. If the deck empties, shuffle the discard and continue. ENCHANT cards occupy the enchantment zone and are not reshuffled. Draw and filtering effects are meaningful because the deck is finite and has history.
@@ -858,7 +862,7 @@ With two X faces per die, X frequency is roughly double the old 6-color system (
 
 Without any refresh effects, and assuming 2 dice spent per round, the player enters round 3 with fewer than 1 available die on average. This is the intended cliff — but it means The Watcher's Lamp and Iron Discipline are not convenience cards; they are survival cards. If neither appears, the Safe route must remain completable on top-action progress alone (no mana required). Verify this in Session 1.
 
-On the Risk route, the dual-meter requirement means between-round dice re-cast is expected and automatic. Hazard card authors and card designers must account for this: Risk routes should still be difficult within a round, but they should not punish the player with cross-round spent/exhausted dice attrition.
+On the Risk route, the dual-meter requirement is the difficulty engine. Hazard card authors and card designers must account for persistent dice attrition: Risk routes should offer better rewards, but should not assume free between-round dice refresh.
 
 ### Threshold Calibration
 

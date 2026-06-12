@@ -2,12 +2,9 @@
  * Deterministic RNG for the Hazard minigame engine (mulberry32).
  *
  * The engine threads explicit RNG state through every transition so a
- * session is fully reproducible from its seed — hermetic suites pin
- * seeds instead of stubbing Math.random. The engine NEVER calls
- * Math.random directly.
- *
- * Ported from the mobile v2 source of truth (`state/hazard/rng.ts`);
- * see `docs/hazard-v2-vs-mechanics-divergence.md`.
+ * session is fully reproducible from its seed — hermetic Jest suites
+ * and the Playwright playthrough both pin seeds instead of stubbing
+ * Math.random. The engine NEVER calls Math.random directly.
  */
 
 export interface HazardRngState {

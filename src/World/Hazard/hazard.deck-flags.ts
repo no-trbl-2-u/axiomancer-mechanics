@@ -1,7 +1,7 @@
 /**
  * Hazard deck persistence — encoded in `GameState.flags`.
  *
- * The host engine persists `flags: string[]` with every save, so the
+ * The engine persists `flags: string[]` with every save, so the
  * player's hazard action deck rides the existing save/load/migration
  * pipeline for free, stays atomic with the run, and resets on a new
  * run — no parallel storage key to keep in sync.
@@ -10,9 +10,6 @@
  * where `<n>` disambiguates duplicates (`hazard-card:r_grip:1`,
  * `hazard-card:r_grip:2`, …). The starter bag is implicit and never
  * written.
- *
- * Ported from the mobile v2 source of truth
- * (`../axiomancer-mobile/state/hazard/deck-flags.ts`).
  */
 
 import { HAZARD_DECK } from './hazard.content';

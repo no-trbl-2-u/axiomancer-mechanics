@@ -129,16 +129,17 @@ And the die's color is unchanged
 
 ---
 
-**Scenario: Risk route re-casts dice between rounds**
+**Scenario: Risk route does not re-cast dice between rounds**
 
 ```
 Given a Risk route hazard in round 1 with dice [red, blue, purple, gold]
 And the red die is 'spent'
-And the blue die is 'exhausted'
+And the blue die is 'available'
 When round 1 resolves
-And between-rounds processing completes
-Then round 2 has four freshly rolled dice
-And no die carries the prior round's 'spent' or 'exhausted' state
+And between-rounds processing completes without a re-cast card
+Then round 2 has the same four dice
+And the red die still carries the prior round's 'spent' state
+And the blue die remains 'available'
 ```
 
 ---

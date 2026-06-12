@@ -13,12 +13,11 @@
  *  - `dice`     — the die-face bag, i.e. colour spread + hex (✕) odds.
  *  - `cards`    — per-colour number bands + utility base/powered amounts.
  *  - `rewards`  — reward / consequence payouts and reward-rarity odds.
+ *  - `hand`     — the fanned-hand arch geometry.
  *
  * The authored hazard thresholds stay in `hazard.content.ts` (they are
  * per-hazard, not global), but they are the other half of the
- * difficulty dial.
- *
- * Ported from the mobile v2 source of truth (`state/hazard/tuning.ts`).
+ * difficulty dial and are guarded by `__tests__/balance.sim.test.ts`.
  */
 
 import type { HazardDieKind } from './hazard.types';
@@ -81,6 +80,55 @@ export const HAZARD_TUNING = {
             /** Gold's free draw is already "major" and does not grow on power. */
             drawMajor: 2,
         },
+        /**
+         * Reward-pool EXPANSION magnitudes (2026-06-11 roster). These cards
+         * are acquired, never in the starter bag, so they do not move the
+         * balance sim — but they still read every number from here.
+         */
+        expansion: {
+            /** Two-tone pivots: free one meter, surge the other (bigger). */
+            pivot: { uncFree: 4, uncPowered: 7, rareFree: 5, rarePowered: 10 },
+            /** Lopsided purple duals (strong/weak meter split). */
+            dual: { strong: 5, strongPowered: 7, weak: 2, weakPowered: 3 },
+            /** Number+utility hybrids. */
+            hybrid: {
+                /** PATHFINDER / WINDCALLER: flat number, die upgrades the utility. */
+                flatNumber: 5,
+                /** STONE/TIDEREADER: number grows on power, draw grows too. */
+                drawFree: 3,
+                drawPowered: 5,
+            },
+            /** Enchantments (auras). */
+            aura: {
+                redBlueFree: 3,
+                redBluePowered: 6,
+                redBlueAmount: 2,
+                purpleNumber: 2,
+                purpleMinor: 1,
+                purpleMajor: 2,
+                goldNumber: 6,
+                goldAmount: 3,
+                /** RELIC OF FURY surge-row boost. */
+                surgeBoost: 2,
+            },
+            /** Bursts (this-round-only). */
+            burst: {
+                base: 5,
+                powered: 8,
+                warcryPerDie: 1,
+                bloodForce: 8,
+                bloodPowered: 12,
+                bloodVitae: 4,
+                goldDual: 4,
+                goldNumber: 6,
+            },
+            /** GILDED VOW one-shot. */
+            vow: { force: 7, escape: 7 },
+            /** TWIN PATHS choose value. */
+            choose: 8,
+            /** SAINT'S PATIENCE. */
+            saint: { number: 3, draw: 2, momentum: 2 },
+        },
     },
 
     // -- rewards & consequences -------------------------------------------
@@ -95,6 +143,43 @@ export const HAZARD_TUNING = {
         minhpLoss: 8,
         /** Maximum-vitae reduction from the `maxhp` consequence. */
         maxhpScar: 5,
+    },
+
+    // -- sub-quests (optional per-hazard objectives) ----------------------
+    // Each hazard rolls `pickCount` objectives from the catalogue
+    // (`HAZARD_SUBQUESTS`). Completing one on a survived crossing pays its
+    // bonus on top of the main spoils. Bonuses are forfeit on a failure.
+    subquests: {
+        /** How many objectives are rolled per hazard. */
+        pickCount: 3,
+        /** Shillings paid by a `shillings`-reward objective. */
+        shillings: 9,
+        /** Vitae restored by a `vitae`-reward objective. */
+        vitae: 4,
+        /** Paradox tokens banked by a `token`-reward objective. */
+        token: 1,
+        /** TRAVEL LIGHT: commit no more than this many cards all hazard. */
+        travelLightCap: 12,
+        /** SURGE MASTER: power at least this many cards with dice. */
+        surgeMasterCount: 3,
+        /** STORMCALLER: fire at least this many re-cast / convert effects. */
+        stormcallerCount: 2,
+        /** SCAVENGER: salvage at least this many cards to the bin. */
+        scavengerCount: 2,
+        /** DICE IN RESERVE: hold at least this many dice at the final resolve. */
+        diceReserveCount: 2,
+    },
+
+    // -- fanned-hand geometry ---------------------------------------------
+    hand: {
+        /** Vertical lift (px) per card-step away from the centre card. */
+        archLiftPerStep: 9,
+        /** Outward rotation (deg) per card-step away from the centre. */
+        archRotatePerStep: 6,
+        /** Tighter spacing kicks in past this many cards. */
+        tightenAbove: 6,
+        /** Lift / rotate scale applied when the hand is tightened. */
+        tightenScale: 0.72,
     },
 } as const;
 

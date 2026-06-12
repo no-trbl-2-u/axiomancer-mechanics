@@ -41,7 +41,7 @@ type HazardDieColor = 'red' | 'blue' | 'purple' | 'gold' | 'x';
 //   available → preserved (enchantment: carries to next round as available)
 //   Safe route: spent → available only through explicit card/enchantment refresh
 //   Safe route: exhausted → available during between-rounds processing
-//   Risk route: all four dice are re-cast between rounds; prior spent/exhausted state is discarded
+//   Risk route: dice are not auto-recast between rounds; spent state persists unless card text changes it
 //   available → locked (card effect: cannot be changed or spent this round)
 type HazardDieState =
   | 'available'
@@ -158,7 +158,7 @@ type HazardMinigameState = {
   hazardCard: HazardCard;
   chosenRoute: 'top' | 'bottom' | null;
   playerChoiceProgressType: HazardProgressType | null; // H07 player-choice mechanic
-  mana: HazardManaDie[];              // 4 dice; Safe persists, Risk re-casts between rounds
+  mana: HazardManaDie[];              // 4 dice; both routes persist; no auto-recast between rounds
   deck: string[];                     // card IDs in draw order
   hand: string[];                     // current hand (up to 5)
   discard: string[];                  // played / discarded cards
@@ -210,7 +210,7 @@ type HazardRoundResult = {
     │ player picks top / bottom
     ▼
 [dice-roll]
-    │ roll 4 dice (Safe persists; Risk re-casts between rounds)
+    │ roll 4 dice (both routes persist; no auto-recast between rounds)
     ▼
 [round-play]  ◄──────────────────────────────────────────────────────┐
     │ player plays cards, spends mana                                │
@@ -279,7 +279,7 @@ type HazardRoundResult = {
 - Fire each ENCHANT card's between-rounds effect on `state.mana`.
 - Expire temporary dice (set `state: 'discarded'`).
 - Safe route: preserved dice carry `state: 'available'` into next round; `'exhausted'` dice reset to `'available'`; `'spent'` dice remain spent unless card/enchantment text refreshes them.
-- Risk route: re-cast all four base dice before the next round; prior spent/exhausted states do not persist. Temporary dice still expire unless explicitly preserved by accepted card text.
+- Risk route: do not re-cast base dice before the next round; spent states persist. Temporary dice still expire unless explicitly preserved by accepted card text.
 - Draw 5 new cards into `state.hand`.
 - Initialize new `HazardRoundState`.
 - Advance `phase` to `'round-play'`.

@@ -17,9 +17,17 @@ export type {
     HazardCardRarity,
     HazardUtilityEffect,
     HazardKeywordId,
+    HazardModifiers,
     HazardSalvage,
     HazardCardDef,
     HazardHandEntry,
+    HazardSubquestRewardKind,
+    HazardSubquestReward,
+    HazardSubquestDef,
+    HazardSubquestStatus,
+    HazardSubquestState,
+    HazardQuestMetrics,
+    HazardSubquestResult,
     HazardRouteKey,
     HazardSafeRouteDef,
     HazardRiskRouteDef,
@@ -36,6 +44,8 @@ export type {
 } from './hazard.types';
 
 export {
+    EMPTY_HAZARD_MODIFIERS,
+    EMPTY_HAZARD_QUEST_METRICS,
     HAZARD_DICE_COUNT,
     HAZARD_HAND_SIZE,
     HAZARD_MOMENTUM_CAP,
@@ -57,6 +67,8 @@ export {
     getHazardCardDef,
     HAZARD_REWARDS,
     HAZARD_CONSEQUENCES,
+    HAZARD_SUBQUESTS,
+    getHazardSubquestDef,
     HAZARD_VITAE_REWARD,
     HAZARD_CACHE_SHILLINGS,
     HAZARD_RELIC_SHILLINGS,
@@ -79,10 +91,12 @@ export {
 // ── Pure engine transitions ─────────────────────────────────────────────────
 export {
     // selectors
+    hazardCardPowerColors,
     hazardCardValue,
     hazardStagedProgress,
     hazardProjectedProgress,
     dieCanPower,
+    dieCanPowerCard,
     hazardTierOf,
     // lifecycle
     createHazardSession,
@@ -92,14 +106,21 @@ export {
     stageHazardCard,
     unstageHazardCard,
     powerHazardCard,
+    chooseHazardCardKey,
     applyHazardCard,
     discardHazardCard,
     // resolve / outcome / rewards
     resolveHazardRound,
+    hazardSubquestStatus,
+    hazardSubquestResults,
     continueHazardAfterResolve,
     acknowledgeHazardOutcome,
     claimHazardRewards,
 } from './hazard.engine';
+
+// ── Simulation / balance evidence ──────────────────────────────────────────
+export type { SimStats } from './hazard.sim';
+export { simulateHazard } from './hazard.sim';
 
 // ── Divergence audit (Phase 140) ───────────────────────────────────────────
 export type {

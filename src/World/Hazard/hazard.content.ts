@@ -1,13 +1,12 @@
 /**
  * Hazard Minigame v2 — authored content.
  *
- * Card, reward, and hazard data is a faithful port of the mobile v2
- * source of truth (`../axiomancer-mobile/state/hazard/content.ts`).
- * Route thresholds are tuned for the no-re-cast dice doctrine (4 dice
- * cast once per hazard, never refreshed between rounds).
- *
- * See `docs/hazard-v2-vs-mechanics-divergence.md` for the upstreaming
- * rationale.
+ * Card and reward data is a faithful port of the design-handoff
+ * prototype (`hazard-proto-engine.jsx`). Route thresholds are RETUNED
+ * for the no-re-cast dice doctrine (the prototype assumed a fresh cast
+ * every round; this build rolls 4 dice once per hazard) — tuning
+ * evidence lives in `src/World/Hazard/e2e/hazard.balance.sim.test.ts` and
+ * the rationale in `docs/hazard-balance-recommendations.md`.
  */
 
 import { HAZARD_TUNING } from './hazard.tuning';
@@ -18,11 +17,16 @@ import type {
     HazardKeywordId,
     HazardProgressKey,
     HazardRewardId,
+    HazardSubquestDef,
 } from './hazard.types';
 
 /** Card stat bands — the magnitudes the library draws from (see tuning). */
 const C = HAZARD_TUNING.cards;
 const U = C.utility;
+/** Reward-pool expansion magnitudes (2026-06-11 roster). */
+const X = C.expansion;
+/** Sub-quest tuning (reward magnitudes + thresholds). */
+const Q = HAZARD_TUNING.subquests;
 
 // ---------------------------------------------------------------------------
 // Keyword glossary (tap-to-read detail)
@@ -32,12 +36,19 @@ export const HAZARD_KEYWORDS: Record<HazardKeywordId, { name: string; desc: stri
     surge: { name: 'SURGE', desc: 'Drop a matching-colour die on this card for its stronger, lower effect.' },
     force: { name: 'FORCE', desc: 'Brawn against the rock — fills the FORCE meter.' },
     escape: { name: 'ESCAPE', desc: 'Speed across the gap — fills the ESCAPE meter.' },
-    convert: { name: 'CONVERT', desc: 'Turn hostile ✕-dice into usable mana dice of this card’s colour.' },
+    convert: { name: 'CONVERT', desc: 'Turn hostile ✕-dice into wild GOLD dice. Minor turns one; major turns them all.' },
     draw: { name: 'DRAW', desc: 'Pull more cards into your hand — more ways to cross.' },
     recast: { name: 'RE-CAST', desc: 'Re-roll all your unspent dice into fresh faces.' },
     gilded: { name: 'GILDED', desc: 'Yellow cards are rare. They give a major effect for free; apply a yellow die to add their numbers.' },
     salvage: { name: 'SALVAGE', desc: 'Drag this card to the bin to scrap it for a lesser benefit instead of playing it.' },
     crack: { name: 'CRACK', desc: 'Dead weight. This card does nothing and cannot be powered. It only clogs your hand.' },
+    twotone: { name: 'TWO-TONE', desc: 'Either of two colours of die can power this card.' },
+    enchant: { name: 'ENCHANT', desc: 'A lasting boon — it adds to every matching card you play for the rest of the hazard.' },
+    burst: { name: 'BURST', desc: 'A one-round shove — its progress counts THIS round only, then is spent.' },
+    rally: { name: 'RALLY', desc: 'Each unspent mana die you still hold adds progress this round.' },
+    sacrifice: { name: 'SACRIFICE', desc: 'Pay VITAE now for a surge of progress this round.' },
+    vow: { name: 'VOW', desc: 'Primes a one-time boon onto the next wild GOLD die you spend.' },
+    choose: { name: 'CHOOSE', desc: 'You pick which meter its powered value feeds when you apply it.' },
 };
 
 // ---------------------------------------------------------------------------
@@ -95,6 +106,49 @@ export const HAZARD_REWARD_CARDS: HazardCardDef[] = [
     // rare gold — utility-first, dual numbers on a wild die
     { id: 'r_oath', name: 'UNBROKEN OATH', kind: 'gold', rarity: 'rare', f: C.gold.free, e: C.gold.free, fp: C.gold.powered, ep: C.gold.powered, effect: 'draw', majorEffect: true, drawBase: U.drawMajor, drawPowered: U.drawMajor, salvage: { type: 'mana' }, flavor: 'You will not fall. You refuse.', keywords: ['gilded', 'draw', 'surge'] },
     { id: 'r_crown', name: 'CROWN RELIC', kind: 'gold', rarity: 'rare', f: C.gold.free, e: C.gold.free, fp: C.gold.strongPowered, ep: C.gold.strongPowered, effect: 'recast', majorEffect: true, salvage: { type: 'mana' }, flavor: 'A king died wearing this on a worse ledge.', keywords: ['gilded', 'recast', 'surge'] },
+
+    // ====================================================================
+    // EXPANSION ROSTER (2026-06-11) — all reward-pool; balance sim untouched.
+    // ====================================================================
+
+    // --- Two-tone pivots: free one meter, surge the OTHER (bigger). Either a
+    //     red OR a blue die powers them. ---
+    { id: 'r_pivot', name: 'STORM PIVOT', kind: 'red', colors: ['red', 'blue'], rarity: 'uncommon', f: X.pivot.uncFree, e: 0, fp: 0, ep: X.pivot.uncPowered, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'Plant your feet, then break and run.', keywords: ['force', 'escape', 'twotone', 'surge'] },
+    { id: 'r_drop', name: 'DEADWEIGHT DROP', kind: 'blue', colors: ['red', 'blue'], rarity: 'uncommon', f: 0, e: X.pivot.uncFree, fp: X.pivot.uncPowered, ep: 0, salvage: { type: 'progress', key: 'escape', amount: 1 }, flavor: 'Stop running. Set your shoulder.', keywords: ['escape', 'force', 'twotone', 'surge'] },
+    { id: 'r_last', name: 'LAST RESORT', kind: 'red', colors: ['red', 'blue'], rarity: 'rare', f: X.pivot.rareFree, e: 0, fp: 0, ep: X.pivot.rarePowered, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'When the rock wins, the gap is the only door.', keywords: ['force', 'escape', 'twotone', 'surge'] },
+
+    // --- Lopsided purple duals (both meters, weighted). ---
+    { id: 'r_heave', name: 'HEAVE-TO', kind: 'purple', rarity: 'uncommon', f: X.dual.strong, e: X.dual.weak, fp: X.dual.strongPowered, ep: X.dual.weakPowered, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'Mostly muscle, a little flight.', keywords: ['force', 'escape', 'surge'] },
+    { id: 'r_skitter', name: 'SKITTER', kind: 'purple', rarity: 'uncommon', f: X.dual.weak, e: X.dual.strong, fp: X.dual.weakPowered, ep: X.dual.strongPowered, salvage: { type: 'progress', key: 'escape', amount: 1 }, flavor: 'Mostly flight, a little grip.', keywords: ['force', 'escape', 'surge'] },
+
+    // --- Number + utility hybrids. ---
+    { id: 'r_path', name: 'PATHFINDER', kind: 'red', rarity: 'rare', f: X.hybrid.flatNumber, e: 0, fp: X.hybrid.flatNumber, ep: 0, effect: 'recast', salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'Strength, and the sense to re-throw.', keywords: ['force', 'recast', 'surge'] },
+    { id: 'r_windcall', name: 'WINDCALLER', kind: 'blue', rarity: 'rare', f: 0, e: X.hybrid.flatNumber, fp: 0, ep: X.hybrid.flatNumber, effect: 'convert', salvage: { type: 'progress', key: 'escape', amount: 1 }, flavor: 'Run, and bend the curse as you pass.', keywords: ['escape', 'convert', 'surge'] },
+    { id: 'r_stone', name: 'STONEREADER', kind: 'red', rarity: 'uncommon', f: X.hybrid.drawFree, e: 0, fp: X.hybrid.drawPowered, ep: 0, effect: 'draw', drawBase: U.drawMinorBase, drawPowered: U.drawMinorPowered, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'A foothold and a glance ahead.', keywords: ['force', 'draw', 'surge'] },
+    { id: 'r_tide', name: 'TIDEREADER', kind: 'blue', rarity: 'uncommon', f: 0, e: X.hybrid.drawFree, fp: 0, ep: X.hybrid.drawPowered, effect: 'draw', drawBase: U.drawMinorBase, drawPowered: U.drawMinorPowered, salvage: { type: 'progress', key: 'escape', amount: 1 }, flavor: 'A stride and a glance ahead.', keywords: ['escape', 'draw', 'surge'] },
+
+    // --- Enchantments (auras): persist for the rest of the hazard. ---
+    { id: 'r_aggr', name: 'AGGRESSION', kind: 'red', rarity: 'rare', f: X.aura.redBlueFree, e: 0, fp: X.aura.redBluePowered, ep: 0, effect: 'aura', auraBase: { auraForce: X.aura.redBlueAmount }, auraPowered: { auraForce: X.aura.redBlueAmount }, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'Stop climbing carefully. Climb angry.', keywords: ['force', 'enchant', 'surge'] },
+    { id: 'r_swift', name: 'SWIFTNESS', kind: 'blue', rarity: 'rare', f: 0, e: X.aura.redBlueFree, fp: 0, ep: X.aura.redBluePowered, effect: 'aura', auraBase: { auraEscape: X.aura.redBlueAmount }, auraPowered: { auraEscape: X.aura.redBlueAmount }, salvage: { type: 'progress', key: 'escape', amount: 1 }, flavor: 'Once you start running you do not stop.', keywords: ['escape', 'enchant', 'surge'] },
+    { id: 'r_zeal', name: 'ZEAL', kind: 'purple', rarity: 'rare', f: X.aura.purpleNumber, e: X.aura.purpleNumber, fp: X.aura.purpleNumber, ep: X.aura.purpleNumber, effect: 'aura', auraBase: { auraForce: X.aura.purpleMinor, auraEscape: X.aura.purpleMinor }, auraPowered: { auraForce: X.aura.purpleMajor, auraEscape: X.aura.purpleMajor }, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'Faith carries the whole body forward.', keywords: ['enchant', 'surge'] },
+    { id: 'r_martyr', name: "MARTYR'S RESOLVE", kind: 'gold', rarity: 'rare', f: 0, e: 0, fp: X.aura.goldNumber, ep: X.aura.goldNumber, effect: 'aura', majorEffect: true, auraBase: { auraForce: X.aura.goldAmount, auraEscape: X.aura.goldAmount }, auraPowered: { auraForce: X.aura.goldAmount, auraEscape: X.aura.goldAmount }, salvage: { type: 'mana' }, flavor: 'He decided not to die, and the cliff lost its vote.', keywords: ['gilded', 'enchant', 'surge'] },
+    { id: 'r_relic', name: 'RELIC OF FURY', kind: 'gold', rarity: 'rare', f: 0, e: 0, fp: X.aura.goldNumber, ep: X.aura.goldNumber, effect: 'aura', majorEffect: true, auraBase: { surgeForce: X.aura.surgeBoost, surgeEscape: X.aura.surgeBoost }, auraPowered: { surgeForce: X.aura.surgeBoost, surgeEscape: X.aura.surgeBoost }, salvage: { type: 'mana' }, flavor: 'Every spell after this one bites harder.', keywords: ['gilded', 'enchant', 'surge'] },
+
+    // --- Gold vow: one-shot priming on the next gold die used. ---
+    { id: 'r_vow', name: 'GILDED VOW', kind: 'gold', rarity: 'rare', f: 0, e: 0, fp: 0, ep: 0, effect: 'goldvow', majorEffect: true, goldVow: { force: X.vow.force, escape: X.vow.escape }, salvage: { type: 'mana' }, flavor: 'Swear it on the gold, and the next throw answers.', keywords: ['gilded', 'vow'] },
+
+    // --- Bursts (this-round-only). ---
+    { id: 'r_serk', name: 'BERSERK', kind: 'red', rarity: 'uncommon', f: 0, e: 0, fp: 0, ep: 0, effect: 'burst', burstBase: { force: X.burst.base }, burstPowered: { force: X.burst.powered }, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'Everything you have, right now.', keywords: ['force', 'burst', 'surge'] },
+    { id: 'r_bolt', name: 'BOLT', kind: 'blue', rarity: 'uncommon', f: 0, e: 0, fp: 0, ep: 0, effect: 'burst', burstBase: { escape: X.burst.base }, burstPowered: { escape: X.burst.powered }, salvage: { type: 'progress', key: 'escape', amount: 1 }, flavor: 'One breath, one sprint.', keywords: ['escape', 'burst', 'surge'] },
+    { id: 'r_warcry', name: 'WAR-CRY', kind: 'red', rarity: 'rare', f: 0, e: 0, fp: 0, ep: 0, effect: 'burst', burstPerUnspentDieForce: X.burst.warcryPerDie, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'He counts what is left and throws all of it.', keywords: ['force', 'rally'] },
+    { id: 'r_blood', name: 'BLOODPRICE', kind: 'red', rarity: 'rare', f: 0, e: 0, fp: 0, ep: 0, effect: 'burst', burstBase: { force: X.burst.bloodForce }, burstPowered: { force: X.burst.bloodPowered }, vitaeCost: X.burst.bloodVitae, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'The cliff takes its toll early, by arrangement.', keywords: ['force', 'sacrifice', 'surge'] },
+    { id: 'r_pwrath', name: "PILGRIM'S WRATH", kind: 'gold', rarity: 'rare', f: 0, e: 0, fp: X.burst.goldNumber, ep: X.burst.goldNumber, effect: 'burst', majorEffect: true, burstBase: { force: X.burst.goldDual, escape: X.burst.goldDual }, burstPowered: { force: X.burst.goldDual, escape: X.burst.goldDual }, salvage: { type: 'mana' }, flavor: 'The meek inherit nothing. He took the path by force.', keywords: ['gilded', 'burst', 'surge'] },
+
+    // --- Choose (TWIN PATHS): powered value feeds one meter you pick. ---
+    { id: 'r_twin', name: 'TWIN PATHS', kind: 'gold', rarity: 'rare', f: 0, e: 0, fp: X.choose, ep: X.choose, choose: true, salvage: { type: 'mana' }, flavor: 'Two ways down. Both yours.', keywords: ['gilded', 'choose', 'surge'] },
+
+    // --- Tempo snowball. ---
+    { id: 'r_saint', name: "SAINT'S PATIENCE", kind: 'purple', rarity: 'rare', f: X.saint.number, e: X.saint.number, fp: X.saint.number, ep: X.saint.number, effect: 'draw', drawBase: X.saint.draw, drawPowered: X.saint.draw, momentumBonus: X.saint.momentum, salvage: { type: 'mana' }, flavor: 'Bank the lead. Spend it later.', keywords: ['draw', 'surge'] },
 ];
 
 export function getHazardCardDef(cardId: string): HazardCardDef {
@@ -125,6 +179,39 @@ export const HAZARD_CONSEQUENCES: Record<HazardConsequenceId, { name: string; ic
     curse: { name: 'Hexed', icon: 'curse', desc: 'Begin your next combat with a hostile Curse die.' },
 };
 
+// ---------------------------------------------------------------------------
+// Sub-quest catalogue — optional per-hazard objectives.
+//
+// Each hazard rolls `HAZARD_TUNING.subquests.pickCount` of these (seeded,
+// independent of the card/dice stream). Completing one on a SURVIVED crossing
+// pays its bonus on top of the spoils; a failed crossing forfeits them. The
+// engine owns each id's pass/fail logic (`hazardSubquestStatus`); this table
+// is pure data.
+// ---------------------------------------------------------------------------
+
+const SHILLINGS_REWARD = { kind: 'shillings', amount: Q.shillings } as const;
+const VITAE_REWARD = { kind: 'vitae', amount: Q.vitae } as const;
+const TOKEN_REWARD = { kind: 'token', amount: Q.token } as const;
+
+export const HAZARD_SUBQUESTS: HazardSubquestDef[] = [
+    { id: 'travel-light', name: 'TRAVEL LIGHT', desc: `Commit no more than ${Q.travelLightCap} cards all crossing.`, reward: VITAE_REWARD },
+    { id: 'dice-reserve', name: 'DICE IN RESERVE', desc: `Hold ${Q.diceReserveCount}+ dice unspent at the final round.`, reward: SHILLINGS_REWARD },
+    { id: 'steady-hand', name: 'STEADY HAND', desc: 'Never empty your hand at a round resolve.', reward: SHILLINGS_REWARD },
+    { id: 'flawless', name: 'FLAWLESS', desc: 'Clear every round of the crossing.', reward: TOKEN_REWARD },
+    { id: 'surge-master', name: 'SURGE MASTER', desc: `Power ${Q.surgeMasterCount}+ cards with dice.`, reward: SHILLINGS_REWARD },
+    { id: 'stormcaller', name: 'STORMCALLER', desc: `Fire ${Q.stormcallerCount}+ re-cast or convert effects.`, reward: SHILLINGS_REWARD },
+    { id: 'scavenger', name: 'SCAVENGER', desc: `Salvage ${Q.scavengerCount}+ cards to the bin.`, reward: VITAE_REWARD },
+    { id: 'momentum', name: 'MOMENTUM', desc: 'Carry surplus momentum into a later round.', reward: SHILLINGS_REWARD },
+    { id: 'fast-start', name: 'FAST START', desc: 'Clear the first round.', reward: SHILLINGS_REWARD },
+    { id: 'finisher', name: 'FINISHER', desc: 'Clear the final round.', reward: VITAE_REWARD },
+];
+
+export function getHazardSubquestDef(id: string): HazardSubquestDef {
+    const def = HAZARD_SUBQUESTS.find((q) => q.id === id);
+    if (!def) throw new Error(`Unknown hazard sub-quest id: ${id}`);
+    return def;
+}
+
 /** Vitae restored by the `vitae` reward. */
 export const HAZARD_VITAE_REWARD = HAZARD_TUNING.rewards.vitae;
 /** Shillings granted by the `cache` reward. */
@@ -152,8 +239,16 @@ export { HAZARD_DIE_FACES } from './hazard.tuning';
 // ---------------------------------------------------------------------------
 // Authored hazards.
 //
-// Thresholds tuned for the no-re-cast doctrine: one cast of 4 dice must
-// last all 3 rounds, so totals sit well below a per-round-recast design.
+// Thresholds tuned for the no-re-cast doctrine via Monte-Carlo
+// simulation (balance.sim.test.ts): one cast of 4 dice must last all
+// 3 rounds, so totals sit well below the prototype's per-round values
+// (Safe 12/13/14, Risk 7/7→9/10) which assumed a fresh cast each round.
+//
+// DIFFICULTY PASS (2026-06-12): playtest reported the crossings had grown
+// too easy, so every threshold was raised a step (safe +1/+2/+2 per round,
+// risk +0/+1/+1 per meter). The greedy bot's safe perfect rate fell from
+// ~60-70% to ~30-40% and risk perfect from ~20% to ~10%, while safe stayed
+// near-always at least a partial clear. Bands re-blessed in balance.sim.test.ts.
 // ---------------------------------------------------------------------------
 
 export const HAZARD_LIBRARY: HazardDef[] = [
@@ -170,8 +265,8 @@ export const HAZARD_LIBRARY: HazardDef[] = [
         safeRouteDesc: 'One combined meter — any progress counts. Forgiving, but the prize is plain.',
         riskRouteDesc: 'Two meters, both required each round — split your hand between FORCE and ESCAPE.',
         rounds: 3,
-        safe: { key: 'safe', dual: false, thresholds: [19, 21, 23], rewardLabel: 'Normal reward', penaltyVitae: 2 },
-        risk: { key: 'risk', dual: true, thresholds: [[9, 9], [10, 10], [11, 11]], rewardLabel: 'Shrine cache + bonus relic', penaltyVitae: 4 },
+        safe: { key: 'safe', dual: false, thresholds: [20, 23, 25], rewardLabel: 'Normal reward', penaltyVitae: 2 },
+        risk: { key: 'risk', dual: true, thresholds: [[9, 9], [11, 11], [12, 12]], rewardLabel: 'Shrine cache + bonus relic', penaltyVitae: 4 },
     },
     {
         id: 'flooded-undercroft',
@@ -186,8 +281,8 @@ export const HAZARD_LIBRARY: HazardDef[] = [
         safeRouteDesc: 'One combined meter — slow, cold, survivable. The water takes its toll either way.',
         riskRouteDesc: 'Force the door and out-swim the surge. Both meters, every round.',
         rounds: 3,
-        safe: { key: 'safe', dual: false, thresholds: [18, 21, 24], rewardLabel: 'Normal reward', penaltyVitae: 2 },
-        risk: { key: 'risk', dual: true, thresholds: [[8, 10], [9, 11], [10, 12]], rewardLabel: 'Reliquary haul + bonus relic', penaltyVitae: 4 },
+        safe: { key: 'safe', dual: false, thresholds: [19, 23, 26], rewardLabel: 'Normal reward', penaltyVitae: 2 },
+        risk: { key: 'risk', dual: true, thresholds: [[8, 10], [10, 12], [11, 13]], rewardLabel: 'Reliquary haul + bonus relic', penaltyVitae: 4 },
     },
     {
         id: 'ashfall-crossing',
@@ -202,8 +297,8 @@ export const HAZARD_LIBRARY: HazardDef[] = [
         safeRouteDesc: 'One combined meter — keep to the high stones and grind it out.',
         riskRouteDesc: 'A dead sprint under falling ash. Both meters, and the last round is the worst.',
         rounds: 3,
-        safe: { key: 'safe', dual: false, thresholds: [20, 20, 22], rewardLabel: 'Normal reward', penaltyVitae: 2 },
-        risk: { key: 'risk', dual: true, thresholds: [[10, 8], [10, 10], [12, 10]], rewardLabel: 'Ember hoard + bonus relic', penaltyVitae: 4 },
+        safe: { key: 'safe', dual: false, thresholds: [22, 23, 25], rewardLabel: 'Normal reward', penaltyVitae: 2 },
+        risk: { key: 'risk', dual: true, thresholds: [[10, 8], [11, 11], [13, 11]], rewardLabel: 'Ember hoard + bonus relic', penaltyVitae: 4 },
     },
     {
         id: 'famine-march',
@@ -218,8 +313,8 @@ export const HAZARD_LIBRARY: HazardDef[] = [
         safeRouteDesc: 'One combined meter — grub roots, drink dew, keep your feet moving. Slow starvation against slow progress.',
         riskRouteDesc: 'March straight through on an empty belly. Both meters, every round, or the road keeps you.',
         rounds: 3,
-        safe: { key: 'safe', dual: false, thresholds: [19, 21, 23], rewardLabel: 'Normal reward', penaltyVitae: 2 },
-        risk: { key: 'risk', dual: true, thresholds: [[9, 9], [10, 10], [11, 11]], rewardLabel: 'Cached provisions + bonus relic', penaltyVitae: 4 },
+        safe: { key: 'safe', dual: false, thresholds: [20, 23, 25], rewardLabel: 'Normal reward', penaltyVitae: 2 },
+        risk: { key: 'risk', dual: true, thresholds: [[9, 9], [11, 11], [12, 12]], rewardLabel: 'Cached provisions + bonus relic', penaltyVitae: 4 },
     },
     {
         id: 'bandit-hunt',
@@ -234,8 +329,8 @@ export const HAZARD_LIBRARY: HazardDef[] = [
         safeRouteDesc: 'One combined meter — ditch, double back, wade the stream. Lose them slowly or not at all.',
         riskRouteDesc: 'Run straight at the thinnest point of the cordon. Both meters, every round — hesitate and they close.',
         rounds: 3,
-        safe: { key: 'safe', dual: false, thresholds: [18, 21, 24], rewardLabel: 'Normal reward', penaltyVitae: 2 },
-        risk: { key: 'risk', dual: true, thresholds: [[8, 10], [9, 11], [10, 12]], rewardLabel: 'Bandit spoils + bonus relic', penaltyVitae: 4 },
+        safe: { key: 'safe', dual: false, thresholds: [19, 23, 26], rewardLabel: 'Normal reward', penaltyVitae: 2 },
+        risk: { key: 'risk', dual: true, thresholds: [[8, 10], [10, 12], [11, 13]], rewardLabel: 'Bandit spoils + bonus relic', penaltyVitae: 4 },
     },
     {
         id: 'fever-rot',
@@ -250,8 +345,8 @@ export const HAZARD_LIBRARY: HazardDef[] = [
         safeRouteDesc: 'One combined meter — boil the wound, burn the chill, endure. The slow cure costs all the same.',
         riskRouteDesc: 'Outrun the rot to clean air and high ground. Both meters, every round, on failing legs.',
         rounds: 3,
-        safe: { key: 'safe', dual: false, thresholds: [20, 20, 22], rewardLabel: 'Normal reward', penaltyVitae: 2 },
-        risk: { key: 'risk', dual: true, thresholds: [[10, 8], [10, 10], [12, 10]], rewardLabel: 'Hermit tinctures + bonus relic', penaltyVitae: 4 },
+        safe: { key: 'safe', dual: false, thresholds: [22, 23, 25], rewardLabel: 'Normal reward', penaltyVitae: 2 },
+        risk: { key: 'risk', dual: true, thresholds: [[10, 8], [11, 11], [13, 11]], rewardLabel: 'Hermit tinctures + bonus relic', penaltyVitae: 4 },
     },
 ];
 

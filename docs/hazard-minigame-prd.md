@@ -79,10 +79,10 @@ Currently, hazard events in Axiomancer are passive damage popups. The player has
 ### FR-04 — Mana Dice Roll
 - After route selection, 4 mana dice are rolled.
 - Results: Red, Blue, Purple, Gold, or X. Each die has two X faces (2/6 ≈ 33% per die). There is no Green or Yellow.
-- Dice are route-sensitive board objects: Safe route dice persist for the hazard path; Risk route dice re-cast between rounds.
+- Dice are persistent board objects for the hazard path on both Safe and Risk; Risk does not auto-recast between rounds.
 - Safe route: spent dice do not automatically refresh or reroll between rounds; exhausted dice reset to available.
-- Risk route: all four dice re-cast/reroll between rounds as compensation for dual "BOTH REQUIRED" meters. Spent and exhausted dice from a resolved Risk round do not persist into the next advanced round.
-- Card and enchantment effects may still refresh, reroll, preserve, or transform dice, but the Risk route's between-round re-cast is baseline doctrine.
+- Risk route: no automatic re-cast/reroll between rounds; the dual "BOTH REQUIRED" meters are the compensation-worthy difficulty, and spent dice persist unless card/enchantment text changes them.
+- Card and enchantment effects may refresh, reroll, preserve, or transform dice; these effects are explicit exceptions to the no-auto-refresh baseline.
 
 ### FR-05 — Round Play
 - Each round the player may play any number of cards from hand.
