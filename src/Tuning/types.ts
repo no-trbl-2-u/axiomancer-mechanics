@@ -32,6 +32,10 @@ export interface FocusFilter {
     /** ISO date (`YYYY-MM-DD`); matches content/tunables with `addedIn` ≥ this. */
     addedAfter?: string;
     levelBands?: LevelBand[];
+    /** Specific difficulties to focus on. */
+    difficulties?: string[];
+    /** Specific enemies to focus on. */
+    enemies?: string[];
     /** Multiplier applied to per-cell run counts for focused cells (≥0). */
     sampleScale?: number;
 }
@@ -120,6 +124,8 @@ export interface MatrixCell {
     enemySlug: string;
     runs: number;
     weight: number;
+    /** Target success rate band for this difficulty. */
+    band: TargetBand;
 }
 
 export interface MatrixPlan {
