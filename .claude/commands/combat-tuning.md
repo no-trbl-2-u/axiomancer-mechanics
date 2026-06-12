@@ -2,8 +2,8 @@
 description: Self-improving balance loop — run the character × playstyle × enemy matrix, A/B-test numeric changes, deliver data report to main + suggestions/winners via PR.
 ---
 
-You are invoked under the `mechanics-tuning` skill — run one tuning tick
-end-to-end. Read `skills/mechanics-tuning.md` in full before doing anything
+You are invoked under the `combat-tuning` skill — run one tuning tick
+end-to-end. Read `skills/combat-tuning.md` in full before doing anything
 else; it describes the matrix run, the A/B + verify gate, the hard guardrails
 (numeric-only, ±25%/run, registry-allow-listed, never touch locked contracts),
 and the two-track delivery.

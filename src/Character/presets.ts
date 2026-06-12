@@ -1,9 +1,11 @@
 /**
- * Character presets — pre-built characters for testing.
+ * Character presets — pre-built characters for testing and tooling.
  *
- * @deprecated These presets remain in use by the Playtest harness.
- * For non-testing use cases, prefer the DEV menu (`src/CLI/dev-tools.ts`)
- * or `createCharacter()` directly.
+ * Deprecation rescinded 2026-06-12: the v0.13.0 removal never landed
+ * because presets became load-bearing — mobile's DEV preset picker
+ * (`applyCharacterPreset`), the Playtest runner, and the Tuning
+ * difficulty bands all consume them. They are a supported public
+ * surface until those consumers migrate.
  *
  * Each preset is a declarative recipe. `buildCharacterFromPreset` lifts
  * the recipe into a real `Character` by calling `createCharacter`
@@ -26,7 +28,6 @@ export interface CharacterPresetEquipmentEntry {
     slot: EquipmentSlot;
 }
 
-/** @deprecated Still used by Playtest harness. For other uses, prefer dev-tools. */
 export interface CharacterPreset {
     id: string;
     name: string;
@@ -99,9 +100,9 @@ export const wandererPreset: CharacterPreset = {
     level: 8,
     baseStats: { heart: 5, body: 4, mind: 4 },
     equipment: [
-        { templateId: 'iron-blade',  slot: 'weapon' },
-        { templateId: 'hide-vest',   slot: 'armor'  },
-        { templateId: 'leather-cap', slot: 'head'   },
+        { templateId: 'iron-blade', slot: 'weapon' },
+        { templateId: 'hide-vest', slot: 'armor' },
+        { templateId: 'leather-cap', slot: 'head' },
     ],
     knownSkills: [...TIER_1_SKILLS, ...TIER_2_SKILLS, ...TIER_2_SYNERGY_SKILLS],
     equippedSkills: [
@@ -112,7 +113,7 @@ export const wandererPreset: CharacterPreset = {
     ],
     consumables: [
         { id: 'healing-potion', quantity: 5 },
-        { id: 'antidote',       quantity: 2 },
+        { id: 'antidote', quantity: 2 },
     ],
     currency: 25,
 };
@@ -125,8 +126,8 @@ export const sagePreset: CharacterPreset = {
     baseStats: { heart: 20, body: 30, mind: 25 },
     equipment: [
         { templateId: 'steel-blade', slot: 'weapon' },
-        { templateId: 'chain-mail',  slot: 'armor'  },
-        { templateId: 'chain-coif',  slot: 'head'   },
+        { templateId: 'chain-mail', slot: 'armor' },
+        { templateId: 'chain-coif', slot: 'head' },
     ],
     knownSkills: [...TIER_1_SKILLS, ...TIER_2_SKILLS, ...TIER_3_SKILLS, ...TIER_2_SYNERGY_SKILLS],
     equippedSkills: [
@@ -137,25 +138,22 @@ export const sagePreset: CharacterPreset = {
     ],
     consumables: [
         { id: 'healing-potion', quantity: 6 },
-        { id: 'clarity-serum',  quantity: 2 },
-        { id: 'focus-vial',     quantity: 2 },
+        { id: 'clarity-serum', quantity: 2 },
+        { id: 'focus-vial', quantity: 2 },
     ],
     currency: 75,
 };
 
-/** @deprecated Still used by Playtest harness. */
 export const characterPresets: CharacterPreset[] = [
     apprenticePreset, wandererPreset, sagePreset,
 ];
 
-/** @deprecated Still used by Playtest harness. */
 export function getPresetById(id: string): CharacterPreset | undefined {
     return characterPresets.find(p => p.id === id);
 }
 
 // ─── Builder ──────────────────────────────────────────────────────────────────
 
-/** @deprecated Still used by Playtest harness. For other uses, prefer dev-tools. */
 export function buildCharacterFromPreset(
     preset: CharacterPreset,
     rng: () => number = Math.random,

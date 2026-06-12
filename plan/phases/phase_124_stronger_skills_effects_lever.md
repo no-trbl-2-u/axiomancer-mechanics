@@ -13,7 +13,7 @@ attractive (which would violate the doctrine).
 
 ## Source
 
-Promoted by owner direct order on 2026-06-07 from the merged `mechanics-tuning`
+Promoted by owner direct order on 2026-06-07 from the merged `combat-tuning`
 suggestions (PR #125). This is the owner-chosen direction: **lean on stronger
 skills/effects, keep combat streamlined.** It addresses three clusters:
 
@@ -63,7 +63,7 @@ fine-tune afterward.
 - Raise base intensity and/or duration on the core debuffs so applying and
   exploiting status effects out-trades basic attacks — the doctrine test.
 - Keep changes as *values*, not formula rewrites, where possible, so the
-  `mechanics-tuning` loop can continue to fine-tune them.
+  `combat-tuning` loop can continue to fine-tune them.
 - Where a value should be loop-tunable but isn't yet, add it to the registry
   (see Unit 3) rather than hard-coding a one-off.
 
@@ -100,7 +100,7 @@ fine-tune afterward.
 - **D2 — Values, not formulas.** Prefer tunable values; keep core combat formulas
   and `src/index.ts` contract untouched.
 - **D3 — Pair with Phase 123.** This buff widens the late-game gap on purpose;
-  Phase 123 is the counterweight. Tune the two together via `mechanics-tuning`
+  Phase 123 is the counterweight. Tune the two together via `combat-tuning`
   after both land.
 - **D4 — Streamlined.** No new round-cap / timeout machinery here (that is
   Phase 125's effects-to-resolution path).

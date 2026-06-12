@@ -239,7 +239,7 @@ Difficult anchor (Balance Judge):
 ### Phase 121 tuning rerun — witness calibration + anchor retune
 
 - Date: 2026-06-05T23:30:11Z
-- Commit: `3f3ebbd` base, working branch `judge-rpg-mechanics-tuning-20260605-230746`
+- Commit: `3f3ebbd` base, working branch `judge-rpg-combat-tuning-20260605-230746`
 - Report path(s):
   - `automation/playtest/reports/sage-anchor-easy.md`
   - `automation/playtest/reports/sage-anchor-normal.md`
@@ -287,7 +287,7 @@ Judgment:
 ### Phase 121 tuning rerun — class gate closure
 
 - Date: 2026-06-06T00:43:20Z
-- Commit: `61f69ad` base, working branch `judge-rpg-mechanics-tuning-20260605-230746`
+- Commit: `61f69ad` base, working branch `judge-rpg-combat-tuning-20260605-230746`
 - Report path(s):
   - `automation/playtest/reports/sage-anchor-easy.md`
   - `automation/playtest/reports/sage-anchor-normal.md`

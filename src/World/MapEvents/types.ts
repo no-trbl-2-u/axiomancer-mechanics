@@ -1,8 +1,9 @@
 /**
  * MapEvents (Spec 23) — type surface.
  *
- * Eight event kinds plus a weighted-pool authoring model. See
- * `specs/23-map-events.md` for the spec; see
+ * Nine event kinds ('quest' joined the original eight in Phase 137)
+ * plus a weighted-pool authoring model. See `specs/23-map-events.md`
+ * for the original spec; see
  * `src/World/MapEvents/resolve-map-event.ts` for the dispatcher.
  */
 

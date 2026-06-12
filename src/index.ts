@@ -187,10 +187,6 @@ export type {
     CodexEntry, CodexState, RegionConsequences,
 } from './Game';
 
-// Legacy combat-action constants (use Action type instead).
-export { COMBAT_ACTION } from './Game/actions.constants';
-export type { CombatActionName } from './Game/actions.constants';
-
 // ─── World ────────────────────────────────────────────────────────────────────
 export {
     createStartingWorld, MapNotFoundError,

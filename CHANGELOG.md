@@ -12,65 +12,43 @@ deep imports are part of the supported surface.
 
 ## [0.22.1] — unreleased
 
-### Added
+Cleanup release: dead code from the encounter migrations removed, the
+tuning skill family reorganised.
 
-- **Status-family affix expansion (Phase 153)** — 30 new prefixes and 30 new
-  suffixes (66 of each total), backed by 26 new catalogue modifiers. The pass
-  widens the status-effect families the affix layer can apply on a hit: burn,
-  wound, disease, hp-decay, strong-poison, stun, petrify, fear, curse, hex,
-  sleep, slow, mark, heart-vulnerability (weapon), plus root, knockdown,
-  exhaustion, fatigue, and charm (hands). A handful of buff-backed defensive /
-  utility affixes (foresight, open-mind, defend-up, mind-resist, stoic-bulwark,
-  mind-advantage, all-stats) round out non-weapon slot coverage. All new mods
-  reference existing effect-library debuffs/buffs; no new engine primitives.
+### Removed
+
+- **`COMBAT_ACTION` / `CombatActionName`** (`Game/actions.constants`) —
+  legacy combat-action constants with zero consumers in the engine, CLI,
+  tests, or mobile. (Minor breaking: anything importing them moves to the
+  `Action` type.)
 
 ### Changed
 
-### Fixed
-
-## [0.22.0] — 2026-06-17
-
-Affix release: regular equipment drops now carry structured prefix/suffix
-provenance and the equipment library has been trimmed into a smaller base set
-with curated affixed variants.
+- **Character presets un-deprecated.** The "scheduled for removal at
+  v0.13.0" notices were stale — presets are load-bearing (mobile DEV
+  preset picker, Playtest runner, Tuning difficulty bands) and are a
+  supported surface until those consumers migrate.
+- **`mechanics-tuning` skill renamed `combat-tuning`** everywhere
+  (skills/, .claude/commands/, agents.md, CLAUDE.md, VISION.md,
+  plan/bearings.md, Tuning CLI comments).
+- Docs trued up to the nine-kind MapEvents taxonomy (`docs/world.md`,
+  `docs/quickstart.md`, Spec 23 addendum) and the actual `equippedSkills`
+  deprecation state (`docs/character.md`).
 
 ### Added
 
-- **Structured affix provenance on Equipment** — runtime equipment now carries
-  optional `prefixId`, `suffixId`, `prefixName`, and `suffixName` fields so
-  consumers can render affixes without parsing display names.
-- **Curated affixed equipment variants** — each equipment slot keeps three base
-  templates and gains five affixed variants, backed by the existing modifier
-  catalogue rather than flavour-only names.
-- **Affix factory exports** — affix-aware item helpers are exposed through the
-  Items barrel and top-level public surface, with the public-surface snapshot
-  refreshed.
+- **Three new tuning skills** for the Phase 137 encounters:
+  `quest-board-tuning`, `rest-tuning`, `loot-cache-tuning` — each with
+  locked design contracts, numeric-only guardrails, seeded policy-probe
+  evidence matrices, and single-PR delivery, mirroring
+  `gathering-tuning`.
+- **`NEEDS_ATTENTION.md`** — repo-level audit ledger of known debt and
+  half-finished migrations.
 
-### Changed
+## [0.20.0] — 2026-06-12
 
-- **`dropItem` rarity affix defaults** — common drops remain plain, uncommon
-  drops receive exactly one prefix or suffix, rare drops receive both prefix and
-  suffix, and unique drops remain fixed/non-procedural.
-- **`dropItemWithAffixes` unified with `dropItem`** — both paths now share the
-  same affix construction logic and preserve affix metadata while still folding
-  mechanical payload into `rolledMods` / resolved stats, passives, procs, and
-  resource interactions.
-
-### Mobile migration notes
-
-- Update `axiomancer-mobile` to `axiomancer-mechanics@0.22.0`.
-- Inventory/equipment UI should read `prefixName` / `suffixName` and the
-  structured affix IDs directly; do not parse prefixes or suffixes from
-  `item.name`.
-- Re-run inventory equip/swap delta tests after the dependency bump because
-  rare/uncommon drops can now surface affix-backed modifiers by default.
-
-## [0.21.0] — 2026-06-14
-
-Encounter release: the story-quest board game lands, rest / loot-cache
-graduate from silent grants to full encounters, and the Quest Board gains
-distinct micro-game verbs so each board space stops feeling like the same
-binary die gate.
+Encounter release: the story-quest board game lands, and rest / loot-cache
+graduate from silent grants to full encounters.
 
 ### Added
 
