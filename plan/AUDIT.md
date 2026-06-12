@@ -47,18 +47,18 @@
 ## Pending
 
 <!-- Comprehensive audit findings (updated by /iterate after each audit):
-> Last pass: 2026-06-12 at commit 701e4fb
+> Last pass: 2026-06-12 at commit a2d5132
 > Findings: 0
 -->
 - [x] **[LOW] Dead export isValidCombatAction in barrel** — resolved at commit 30cda55 (2026-06-12). Removed `isValidCombatAction` from `src/index.ts` exports (line 62). Function existed in Combat/index.ts but had zero in-repo callers. Not documented in spec.md Contracts section, confirming unused status. Impact 2 × Ease 9 / 10 = 1.8.
 
 <!-- Comprehensive audit across categories Z-H:
-**Category Z (External critique)** — plan/CRITIQUE.md Pending queue empty (pass 65, no changes since last audit).
-**Category A (Test gaps)** — 80+ hermetic *.engine.test.ts files across all modules; proper RNG stubbing via test-utils/rng.ts only in test-utils; baseline tests green (1623 passing, 1 skipped); all source modules have comprehensive test coverage.
-**Category B (Spec gaps)** — plan/AUDIT.md has zero Pending spec-gap rows; Knowledge-Gaps.md shows Q28 (multiple endings) genuinely deferred as endgame question; all spec files have answered questions (blank placeholders only in template files).
-**Category C (Type safety)** — one justified @ts-ignore at agent-vitest-reporter.engine.test.ts:25 with explanatory comment; test-only `as any` casts with proper eslint-disable comments; TypeScript compilation passes clean; exported functions have proper return type annotations.
-**Category D (Dead code)** — no large commented-out blocks; internal files properly used; no unused exports identified.
-**Category E (Documentation)** — complete docs/ coverage for all 16+ source modules (Character, Enemy, Combat, Effects, Items, Skills, Game, World, Utils, NPCs, Philosophy, Playtest, CLI, Faction, Tuning, test-utils); README.md properly defers to docs/api.md; docs appear current with exports.
+**Category Z (External critique)** — plan/CRITIQUE.md Pending queue empty (pass 65, all findings resolved).
+**Category A (Test gaps)** — 117 hermetic *.engine.test.ts files across all modules; proper RNG stubbing via test-utils/rng.ts (verified no raw Math.random usage in production test flows); baseline tests green (1643 passing, 1 skipped); all source modules have comprehensive e2e coverage.
+**Category B (Spec gaps)** — Knowledge-Gaps.md shows only Q28 (multiple endings) genuinely deferred as endgame question; all active spec files have answered questions (blank placeholders only in template files).
+**Category C (Type safety)** — one justified @ts-ignore at agent-vitest-reporter.engine.test.ts:25 with explanatory comment; minor test-only `as any` casts in health.metrics test file with proper eslint-disable comments; TypeScript compilation passes clean; exported functions have proper return type annotations.
+**Category D (Dead code)** — no large commented-out blocks; internal files properly used; no unused exports identified in public barrel (src/index.ts).
+**Category E (Documentation)** — complete docs/ coverage for all 16+ source modules (Character, Enemy, Combat, Effects, Items, Skills, Game, World, Utils, NPCs, Philosophy, Playtest, CLI, Faction, Tuning, test-utils); README.md current; docs align with current exports.
 **Category F (ESLint)** — `npm run lint` passes clean with zero warnings or errors.
 **Category G (Dependencies)** — 4 major bumps available (typescript 5→6, @types/node 22→25, inquirer 9→12, globals 16→17) requiring deliberate phases per iterate policy; no minor/patch updates available within current major ranges.
 **Category H (Commit hygiene)** — clean git status, no uncommitted drift; plan files in sync with shipped state.
