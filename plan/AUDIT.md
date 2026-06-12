@@ -47,7 +47,7 @@
 ## Pending
 
 <!-- Comprehensive audit findings (updated by /iterate after each audit):
-> Last pass: 2026-06-12 at commit d69e343
+> Last pass: 2026-06-12 at commit 6da6062
 > Findings: 0
 -->
 - [x] **[MED] Tuning health.metrics test infrastructure needs mock structure overhaul** — resolved at commit d69e343 (2026-06-12). Fixed createMockCellResult function to create proper CellResult structure with nested PlaytestReport. Updated mock runs to include proper PlaytestRunSummary objects with transcript data containing proper RoundEvent objects. Corrected test expectations to match actual function behavior. All 11 health.metrics test cases now pass. Impact 6 × Ease 3 / 10 = 1.8.
