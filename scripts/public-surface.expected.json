@@ -184,7 +184,6 @@
     "isQuestComplete",
     "isQuestItem",
     "isRouteBlocked",
-    "isValidCombatAction",
     "isWorldMovedEvent",
     "isWorldProcessedEvent",
     "itemSetLibrary",
