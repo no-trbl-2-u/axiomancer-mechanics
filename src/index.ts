@@ -59,7 +59,7 @@ export {
     getActiveEffectModifiers, getEffectiveStats, canAct,
     resolveEffectApplication,
     calculateDamageResistance, getSkillDamageType,
-    determineEnemyAction, isCombatOngoing, determineCombatEnd, isValidCombatAction,
+    determineEnemyAction, isCombatOngoing, determineCombatEnd,
     getEffectsResolutionOutcome,
     healCharacter,
     calculateEnemyStatMultiplier, applyMoralMeterScaling,
