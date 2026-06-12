@@ -14,6 +14,39 @@ deep imports are part of the supported surface.
 
 _Nothing yet._
 
+## [0.18.0] — 2026-06-13
+
+Codex release: the hazard card library grows to a full 150 and the gleaning
+gets a CLI and its own balance loop.
+
+### Added
+
+- **Hazard codex library** — 108 new cards bring the full library to exactly
+  150 (starter bag untouched; the balance-sim bands hold). Six new engine
+  mechanics, all additive: PURGE (cut CRACK dead weight), TRANSMUTE (recolor
+  dice to the card's colour), MEND (vitae restored at claim), BOUNTY
+  (shillings banked at claim), WARD (blunts the route penalty), ANCHOR (a
+  momentum floor that pays even off a failed round). Magnitudes in
+  `HAZARD_TUNING.cards.codex`; session/outcome carry `vitaeRestore`,
+  `bountyShillings`, `wardPenaltyReduction`, `carryFloor` (additive fields).
+- **Gathering CLI** — `npm run gathering` (game.cli subcommand): seeded
+  deterministic runs, manual or `--auto` (the balance sim's balanced bot),
+  JSON events + JSONL state logs, illegal-action records. Hermetic CLI e2e.
+- **gathering-tuning skill** — the gleaning balance loop
+  (`skills/gathering-tuning.md`, `/gathering-tuning`): policy-sim bands as
+  the objective function (greed < restraint < skill), guarded tuning surface,
+  single-PR delivery.
+
+### Mobile migration notes
+
+- Update `axiomancer-mobile` to `axiomancer-mechanics@0.18.0`.
+- The hazard presenter needs labels + keyword glossary entries for the six
+  new effects (purge/transmute/mend/bounty/ward/anchor) and rewards-ledger
+  notes for `vitaeRestore` / `bountyShillings`; claim-time application adds
+  the two new ledger lines.
+- The gathering engine may now be consumed from the package root (the copy
+  is at parity); delete `state/gathering/`'s rule files the way hazard did.
+
 ## [0.17.1] — 2026-06-12
 
 ### Fixed
