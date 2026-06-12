@@ -134,8 +134,11 @@ describe('Phase 125 — Effects resolution analysis', () => {
             const enemy = createEnemy({
                 id: 'test-weak-enemy',
                 name: 'Weak Test Enemy',
-                health: 10, // Low HP so DoT can finish it
+                description: 'Low-HP enemy so DoT can finish it',
+                level: 1, // Low level keeps HP low so DoT can finish it
                 baseStats: { heart: 1, body: 1, mind: 1 },
+                mapName: 'fishing-village',
+                logic: 'balanced',
             });
             
             const store = setupEffectResolutionTest(
@@ -184,8 +187,11 @@ describe('Phase 125 — Effects-driven combat resolution', () => {
         const enemy = createEnemy({
             id: 'test-dot-enemy',
             name: 'DoT Test Enemy',
-            health: 15,
+            description: 'Low-HP enemy for the DoT resolution path',
+            level: 1,
             baseStats: { heart: 2, body: 2, mind: 2 },
+            mapName: 'fishing-village',
+            logic: 'balanced',
         });
         
         const store = setupEffectResolutionTest(enemy);
@@ -278,9 +284,12 @@ describe('Phase 125 — Effects-driven combat resolution', () => {
     it('integrates with store endCombat for effects-driven victory', () => {
         const enemy = createEnemy({
             id: 'test-integration-enemy',
-            name: 'Integration Test Enemy', 
-            health: 50,
+            name: 'Integration Test Enemy',
+            description: 'Enemy for the store endCombat integration path',
+            level: 3,
             baseStats: { heart: 3, body: 3, mind: 3 },
+            mapName: 'fishing-village',
+            logic: 'balanced',
         });
         
         const store = setupEffectResolutionTest(enemy);

@@ -13,6 +13,7 @@ import { describe, it, expect } from 'vitest';
 import { enemyStatBudget } from '../index';
 import { ENEMY_REGISTRY, EnemyLibrary } from '../enemy.library';
 import type { BaseStats } from '../../Character/types';
+import type { Enemy } from '../types';
 
 // Slugs introduced in the 2026-06-07 drop.
 const NEW_SLUGS = [
@@ -97,9 +98,7 @@ describe('2026-06-07: budget-scaled enemy tiers', () => {
     describe('derived resources are positive', () => {
         it('has positive maxHealth and derivedStats for every new enemy', () => {
             for (const slug of NEW_SLUGS) {
-                const enemy = (ENEMY_REGISTRY as Record<string, {
-                    maxHealth: number; health: number; derivedStats: Record<string, number>;
-                }>)[slug]!;
+                const enemy = (ENEMY_REGISTRY as Record<string, Enemy>)[slug]!;
                 expect(enemy.maxHealth, `slug ${slug} maxHealth`).toBeGreaterThan(0);
                 expect(enemy.health, `slug ${slug} health`).toBeGreaterThan(0);
                 for (const [key, value] of Object.entries(enemy.derivedStats)) {

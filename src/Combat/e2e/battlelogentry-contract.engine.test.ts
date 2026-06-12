@@ -7,14 +7,23 @@ import { mockFixedRng } from '../../test-utils/rng';
 import type { BattleLogEntry, CombatAction } from '../types';
 
 describe('BattleLogEntry contract verification', () => {
+    // Zero base stats give both combatants 0 maxHealth, so every round
+    // short-circuits at the round-start lethal check. This mirrors the
+    // behaviour the suite has always exercised (the original fixtures used a
+    // pre-rename stat shape that also produced non-positive health).
     const player = createCharacter({
         name: 'TestPlayer',
-        baseStats: { strength: 10, agility: 10, intellect: 10, vitality: 50 }
+        level: 1,
+        baseStats: { heart: 0, body: 0, mind: 0 }
     });
 
     const boss = createEnemy({
+        id: 'boss-enemy',
         name: 'BossEnemy',
-        baseStats: { strength: 50, agility: 10, intellect: 10, vitality: 100 },
+        description: 'Contract-test boss',
+        level: 1,
+        baseStats: { heart: 0, body: 0, mind: 0 },
+        mapName: 'northern-forest',
         logic: 'balanced'
     });
 
@@ -92,12 +101,17 @@ describe('BattleLogEntry contract verification', () => {
         // Create a scenario where the enemy might kill the player with a skill
         const weakPlayer = createCharacter({
             name: 'WeakPlayer',
-            baseStats: { strength: 5, agility: 5, intellect: 5, vitality: 1 } // Very low health
+            level: 1,
+            baseStats: { heart: 0, body: 0, mind: 0 } // Very low health
         });
 
         const strongBoss = createEnemy({
+            id: 'strong-boss',
             name: 'StrongBoss',
-            baseStats: { strength: 100, agility: 10, intellect: 10, vitality: 100 },
+            description: 'Contract-test killing-blow boss',
+            level: 1,
+            baseStats: { heart: 0, body: 0, mind: 0 },
+            mapName: 'northern-forest',
             logic: 'aggressive'
         });
 
@@ -138,11 +152,11 @@ describe('BattleLogEntry contract verification', () => {
         const combat = initializeCombat(player, boss);
         
         // Simulate various enemy actions including skills
-        const testScenarios = [
-            { stance: 'body', action: 'attack' as const },
-            { stance: 'mind', action: 'defend' as const },
-            { stance: 'heart', action: 'skill' as const, skillId: 'some-skill' },
-            { stance: 'body', action: 'skill' as const }, // skill without skillId
+        const testScenarios: CombatAction[] = [
+            { stance: 'body', action: 'attack' },
+            { stance: 'mind', action: 'defend' },
+            { stance: 'heart', action: 'skill', skillId: 'some-skill' },
+            { stance: 'body', action: 'skill' }, // skill without skillId
         ];
 
         testScenarios.forEach((enemyAction, index) => {

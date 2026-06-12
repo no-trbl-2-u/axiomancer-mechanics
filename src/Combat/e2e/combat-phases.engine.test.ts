@@ -35,11 +35,13 @@ describe('runActionRestrictionPhase', () => {
         });
         
         const enemy = createEnemy({
-            slug: 'test-enemy',
+            id: 'test-enemy',
             name: 'Test Enemy',
+            description: 'Phase-coverage test enemy',
+            level: 1,
             baseStats: { heart: 3, body: 4, mind: 2 },
-            health: 20,
-            gearLevel: 1
+            mapName: 'fishing-village',
+            logic: 'balanced'
         });
         
         const playerAction = { stance: 'heart', action: 'attack' } as const;
@@ -69,11 +71,13 @@ describe('runActionRestrictionPhase', () => {
         });
         
         const enemy = createEnemy({
-            slug: 'test-enemy',
-            name: 'Test Enemy', 
+            id: 'test-enemy',
+            name: 'Test Enemy',
+            description: 'Phase-coverage test enemy',
+            level: 1,
             baseStats: { heart: 3, body: 4, mind: 2 },
-            health: 20,
-            gearLevel: 1
+            mapName: 'fishing-village',
+            logic: 'balanced'
         });
 
         const playerAction = { stance: 'heart', action: 'attack' } as const;
@@ -107,11 +111,13 @@ describe('runAdvantagePhase', () => {
         });
         
         const enemy = createEnemy({
-            slug: 'test-enemy',
+            id: 'test-enemy',
             name: 'Test Enemy',
+            description: 'Phase-coverage test enemy',
+            level: 1,
             baseStats: { heart: 3, body: 4, mind: 2 },
-            health: 20,
-            gearLevel: 1
+            mapName: 'fishing-village',
+            logic: 'balanced'
         });
         
         const events: RoundEvent[] = [];
@@ -139,11 +145,13 @@ describe('runAdvantagePhase', () => {
         });
         
         const enemy = createEnemy({
-            slug: 'test-enemy',
+            id: 'test-enemy',
             name: 'Test Enemy',
+            description: 'Phase-coverage test enemy',
+            level: 1,
             baseStats: { heart: 3, body: 4, mind: 2 },
-            health: 20,
-            gearLevel: 1
+            mapName: 'fishing-village',
+            logic: 'balanced'
         });
         
         const events: RoundEvent[] = [];
@@ -171,11 +179,13 @@ describe('Combat Phase Integration', () => {
         });
         
         const enemy = createEnemy({
-            slug: 'test-enemy',
+            id: 'test-enemy',
             name: 'Test Enemy',
+            description: 'Phase-coverage test enemy',
+            level: 1,
             baseStats: { heart: 3, body: 4, mind: 2 },
-            health: 20,
-            gearLevel: 1
+            mapName: 'fishing-village',
+            logic: 'balanced'
         });
         
         const playerAction = { stance: 'heart', action: 'attack' } as const;

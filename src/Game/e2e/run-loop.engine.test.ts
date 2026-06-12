@@ -29,7 +29,6 @@ describe('Phase 72 — run-loop semantics', () => {
             ...before.player,
             health: 1,
         };
-        // @ts-expect-error — direct set for test setup.
         store.setState({ player: damaged });
         const next = store.getState().resetRun({ keepCharacter: true });
         expect(next.player.id).toBe(before.player.id);

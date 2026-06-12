@@ -16,7 +16,8 @@ import { FRIENDSHIP_COUNTER_MAX } from '../../Game/game-mechanics.constants';
 
 function player() {
     return {
-        ...buildCharacterFromPreset(apprenticePreset, 'Tester'),
+        ...buildCharacterFromPreset(apprenticePreset),
+        name: 'Tester',
         knownSkills: ['befriend'],
         equippedSkills: ['befriend'],
     };
@@ -30,7 +31,7 @@ function enemy(overrides: Partial<Enemy> = {}): Enemy {
             description: 'Test enemy for befriend authority.',
             level: 3,
             baseStats: { body: 3, mind: 3, heart: 3 },
-            mapName: 'test-region',
+            mapName: 'fishing-village',
             logic: 'defensive',
             befriendabilityConfig: { hpGate: { belowPct: 0.4 } },
         }),

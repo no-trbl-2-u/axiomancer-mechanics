@@ -59,7 +59,7 @@ describe('Phase 51 — autosave throttling restricts adapter.save to DURABLE_ACT
         // SHIFT_PHILOSOPHICAL_ALIGNMENT — not in durable set.
         store.getState().dispatch({
             type: 'SHIFT_PHILOSOPHICAL_ALIGNMENT',
-            payload: { delta: { epistemic: 5 } },
+            payload: { delta: { epistemology: 5 } },
         });
 
         expect(adapter.saves).toBe(0);

@@ -130,8 +130,16 @@ describe('Phase 38 — enemy proc applies debuff onto player', () => {
         };
 
         const outcome: ProcRollOutcome = {
-            trigger: { effectId: 'tier1_mind_mark', chance: 1.0 },
+            trigger: {
+                stance: 'mind',
+                action: 'attack',
+                tier: 1,
+                effectId: 'tier1_mind_mark',
+                target: 'opponent',
+                baseChance: 1.0,
+            },
             effect: tier1Debuff,
+            decision: 'normal',
             intensityBonus: 0,
             durationBonus: 0,
             appliedTo: 'opponent',
@@ -170,7 +178,7 @@ describe('Phase 38 — sourceId round-trips through JSON serialization (save/loa
         const after = restored.enemy.effects.find((e: { effectId: string }) => e.effectId === 'debuff_poison');
         expect(before).toBeDefined();
         expect(after).toBeDefined();
-        expect(after.sourceId).toBe(before.sourceId);
+        expect(after.sourceId).toBe(before!.sourceId);
         expect(after.sourceId).toBe('char-player-shopper');
     });
 });
@@ -186,6 +194,8 @@ describe('Phase 38 — regression: equipment passives keep sourceId === item.id'
             category: 'equipment' as const,
             slot: 'accessory' as const,
             tier: 1,
+            rarity: 'common' as const,
+            requiredLevel: 1,
             passiveEffects: ['tier1_heart_defend'],
         };
 

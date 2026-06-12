@@ -12,40 +12,66 @@ import {
     validateCandidates,
     requestRecommendations,
 } from '../analyst.bridge';
-import type { HealthScore, CellResult, FocusFilter, TunableParam } from '../types';
+import type { HealthScore, CellHealth, FocusFilter, TunableParam } from '../types';
 
 describe('analyst.bridge', () => {
     // Test fixture data
+    // Registry plumbing fields (kind/category/file/locator/magnitudeCapPct/tags)
+    // are required by TunableParam but unread by the analyst bridge.
     const mockTunables: TunableParam[] = [
         {
             id: 'player.baseHealth',
+            kind: 'constant',
+            category: 'fundamental',
+            file: 'src/Utils/index.ts',
+            locator: { exportName: 'PLAYER_BASE_HEALTH' },
             min: 80,
             max: 150,
             step: 5,
+            magnitudeCapPct: 0.25,
+            tags: [],
             rationale: 'Player starting health pool',
             effect: { difficulty: 'lowers' }, // more health = easier
         },
         {
             id: 'enemy.damageMultiplier',
+            kind: 'multiplier',
+            category: 'enemy',
+            file: 'src/Enemy/enemy.scaler.ts',
+            locator: { exportName: 'DAMAGE_MULTIPLIER' },
             min: 0.5,
             max: 2.0,
             step: 0.1,
+            magnitudeCapPct: 0.25,
+            tags: [],
             rationale: 'Enemy damage scaling factor',
             effect: { difficulty: 'raises' }, // more damage = harder
         },
         {
             id: 'statusEffect.procChance',
+            kind: 'constant',
+            category: 'effect',
+            file: 'src/Effects/effect.library.ts',
+            locator: { exportName: 'PROC_CHANCE' },
             min: 0.1,
             max: 0.9,
             step: 0.05,
+            magnitudeCapPct: 0.25,
+            tags: [],
             rationale: 'Base status effect proc rate',
             effect: { engagement: 'raises' }, // more procs = more engagement
         },
         {
             id: 'ambiguousParam',
+            kind: 'constant',
+            category: 'fundamental',
+            file: 'src/Utils/index.ts',
+            locator: { exportName: 'AMBIGUOUS_PARAM' },
             min: 1,
             max: 10,
             step: 1,
+            magnitudeCapPct: 0.25,
+            tags: [],
             rationale: 'Parameter with no declared effect direction',
         },
     ];
@@ -61,20 +87,29 @@ describe('analyst.bridge', () => {
         meanEngagement: number,
         engagementFloor: number,
         aggregateBand: number,
-        cells: Partial<CellResult>[],
+        cells: Partial<CellHealth>[],
     ): HealthScore => ({
         meanEngagement,
         engagementFloor,
         aggregateBand,
+        aggregate: aggregateBand,
+        aggregateEngagement: 0,
+        meanActivity: meanEngagement,
+        targetBand: { low: 0.5, high: 0.7 },
+        maxDefeatRate: 0.4,
         summary: `Test baseline: engagement ${(meanEngagement * 100).toFixed(0)}%`,
         perCell: cells.map((partial, i) => ({
             cellId: `cell-${i + 1}`,
+            level: 5,
+            playstyle: 'mixed' as const,
             difficulty: 'normal' as const,
             weight: 1.0,
             resolutionSuccessRate: 0.6,
             defeatRate: 0.4,
             engagementShare: meanEngagement,
             band: { low: 0.5, high: 0.7 },
+            bandDeviation: 0,
+            engagementDeviation: 0,
             deviation: 0,
             ...partial,
         })),
@@ -93,7 +128,7 @@ describe('analyst.bridge', () => {
 
             const req: AnalystRequest = {
                 baseline,
-                cells: baseline.perCell,
+                cells: [],
                 focus: mockFocus,
                 tunables: mockTunables,
                 currentValues: mockCurrentValues,
@@ -121,7 +156,7 @@ describe('analyst.bridge', () => {
 
             const req: AnalystRequest = {
                 baseline,
-                cells: baseline.perCell,
+                cells: [],
                 focus: mockFocus,
                 tunables: mockTunables,
                 currentValues: mockCurrentValues,
@@ -149,7 +184,7 @@ describe('analyst.bridge', () => {
 
             const req: AnalystRequest = {
                 baseline,
-                cells: baseline.perCell,
+                cells: [],
                 focus: mockFocus,
                 tunables: mockTunables,
                 currentValues: mockCurrentValues,
@@ -175,7 +210,7 @@ describe('analyst.bridge', () => {
 
             const req: AnalystRequest = {
                 baseline,
-                cells: baseline.perCell,
+                cells: [],
                 focus: mockFocus,
                 tunables: mockTunables,
                 currentValues: mockCurrentValues,
@@ -194,7 +229,7 @@ describe('analyst.bridge', () => {
 
             const req: AnalystRequest = {
                 baseline,
-                cells: baseline.perCell,
+                cells: [],
                 focus: mockFocus,
                 tunables: mockTunables,
                 currentValues: mockCurrentValues,
@@ -218,7 +253,7 @@ describe('analyst.bridge', () => {
 
             const req: AnalystRequest = {
                 baseline,
-                cells: baseline.perCell,
+                cells: [],
                 focus: mockFocus,
                 tunables: mockTunables,
                 currentValues: mockCurrentValues,
@@ -249,7 +284,7 @@ describe('analyst.bridge', () => {
 
             const req: AnalystRequest = {
                 baseline,
-                cells: baseline.perCell,
+                cells: [],
                 focus: mockFocus,
                 tunables: mockTunables,
                 currentValues: mockCurrentValues,
@@ -304,8 +339,19 @@ describe('analyst.bridge', () => {
                 { paramId: 'invalid.param', proposedValue: 50 },
             ];
 
-            const validTunables = [
-                { id: 'valid.param', min: 0, max: 200, rationale: 'Valid' },
+            const validTunables: TunableParam[] = [
+                {
+                    id: 'valid.param',
+                    kind: 'constant',
+                    category: 'fundamental',
+                    file: 'src/Utils/index.ts',
+                    locator: { exportName: 'VALID_PARAM' },
+                    min: 0,
+                    max: 200,
+                    magnitudeCapPct: 0.25,
+                    tags: [],
+                    rationale: 'Valid',
+                },
             ];
 
             const result = validateCandidates(rawCandidates, validTunables);
@@ -353,7 +399,7 @@ describe('analyst.bridge', () => {
             const baseline = createMockHealthScore(0.25, 0.30, 0.001, []);
             const req: AnalystRequest = {
                 baseline,
-                cells: baseline.perCell,
+                cells: [],
                 focus: mockFocus,
                 tunables: mockTunables,
                 currentValues: mockCurrentValues,
@@ -370,7 +416,7 @@ describe('analyst.bridge', () => {
             const baseline = createMockHealthScore(0.25, 0.30, 0.001, []);
             const req: AnalystRequest = {
                 baseline,
-                cells: baseline.perCell,
+                cells: [],
                 focus: mockFocus,
                 tunables: mockTunables,
                 currentValues: mockCurrentValues,
@@ -399,7 +445,7 @@ describe('analyst.bridge', () => {
             const baseline = createMockHealthScore(0.25, 0.30, 0.001, []);
             const req: AnalystRequest = {
                 baseline,
-                cells: baseline.perCell,
+                cells: [],
                 focus: mockFocus,
                 tunables: mockTunables,
                 currentValues: mockCurrentValues,
@@ -432,7 +478,7 @@ describe('analyst.bridge', () => {
             const baseline = createMockHealthScore(0.25, 0.30, 0.001, []);
             const req: AnalystRequest = {
                 baseline,
-                cells: baseline.perCell,
+                cells: [],
                 focus: mockFocus,
                 tunables: mockTunables,
                 currentValues: mockCurrentValues,
@@ -466,7 +512,7 @@ describe('analyst.bridge', () => {
             const baseline = createMockHealthScore(0.25, 0.30, 0.001, []);
             const req: AnalystRequest = {
                 baseline,
-                cells: baseline.perCell,
+                cells: [],
                 focus: mockFocus,
                 tunables: mockTunables,
                 currentValues: mockCurrentValues,

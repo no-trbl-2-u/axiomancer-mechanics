@@ -27,8 +27,10 @@ describe('Hazard Mobile Parity Audit', () => {
     let session: HazardSessionState;
 
     beforeEach(() => {
-        // Use fixed RNG for deterministic testing
-        mockFixedRng();
+        // Use fixed RNG for deterministic testing. The hazard engine derives
+        // all randomness from the numeric seed, so no Math.random calls are
+        // expected; an empty sequence makes any stray call fail loudly.
+        mockFixedRng([]);
         session = createHazardSession(12345, hazardStarterBag(), 'cracked-cliff');
     });
 
@@ -119,7 +121,8 @@ describe('Hazard Mobile Parity Audit', () => {
                 
                 if (goldDie && card.cardId !== 'CRACK') {
                     // Gold die should be able to power any non-gold card
-                    const poweredSession = powerHazardCard(sessionWithDice, card.uid, goldDie.id);
+                    // deckBag is unused (voided) by powerHazardCard.
+                    const poweredSession = powerHazardCard(sessionWithDice, card.uid, goldDie.id, []);
                     const poweredCard = poweredSession.hand.find(h => h.uid === card.uid);
                     expect(poweredCard?.dieId).toBe(goldDie.id);
                 }
@@ -139,7 +142,8 @@ describe('Hazard Mobile Parity Audit', () => {
             
             if (sessionInPlayingPhase.hand.length > 0) {
                 const card = sessionInPlayingPhase.hand[0];
-                const stagedSession = stageHazardCard(sessionInPlayingPhase, card.uid);
+                // deckBag is unused (voided) by stageHazardCard.
+                const stagedSession = stageHazardCard(sessionInPlayingPhase, card.uid, []);
                 
                 // Card should move to play area but not be applied yet
                 expect(stagedSession.play).toHaveLength(1);
@@ -153,8 +157,10 @@ describe('Hazard Mobile Parity Audit', () => {
             
             if (sessionInPlayingPhase.hand.length > 0) {
                 const card = sessionInPlayingPhase.hand[0];
-                let testSession = stageHazardCard(sessionInPlayingPhase, card.uid);
-                testSession = applyHazardCard(testSession, card.uid);
+                // deckBag is unused (voided) by stageHazardCard; applyHazardCard
+                // draws from it for utility effects, so pass the session's bag.
+                let testSession = stageHazardCard(sessionInPlayingPhase, card.uid, []);
+                testSession = applyHazardCard(testSession, card.uid, hazardStarterBag());
                 
                 const appliedCard = testSession.play.find(p => p.uid === card.uid);
                 expect(appliedCard?.applied).toBe(true);

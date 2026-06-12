@@ -6,6 +6,7 @@ import type { GameEvent } from '../events';
 import { Disatree_01, TidepoolCrab } from '../../Enemy/enemy.library';
 import {
     isCombatStartedEvent,
+    isCombatRoundEvent,
     isCombatEndedEvent,
 } from '../events.utils';
 
@@ -126,7 +127,7 @@ describe('Events engine', () => {
 
         store.getState().updateCombat(combat, fakeRoundEvents);
 
-        const roundEvt = capturedEvents.find(e => e.type === 'combat:round');
+        const roundEvt = capturedEvents.find(isCombatRoundEvent);
         expect(roundEvt).toBeDefined();
         expect(roundEvt!.payload.combatEvents).toEqual(fakeRoundEvents);
     });
@@ -139,7 +140,7 @@ describe('Events engine', () => {
         const combat = store.getState().combat!;
         store.getState().updateCombat(combat);
 
-        const roundEvt = capturedEvents.find(e => e.type === 'combat:round');
+        const roundEvt = capturedEvents.find(isCombatRoundEvent);
         expect(roundEvt).toBeDefined();
         expect(roundEvt!.payload.combatEvents).toBeUndefined();
     });

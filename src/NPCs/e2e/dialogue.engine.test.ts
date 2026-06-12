@@ -31,6 +31,11 @@ import type {
     DialogueNode,
     DialogueTree,
 } from '../types';
+import type { QuestName } from '../../World/quest.library';
+
+// Fabricated quest for these synthetic trees. It is not part of the QuestName
+// union (the gating logic only compares names), so cast once and reuse.
+const VOW_OF_SALT = 'Vow of Salt' as QuestName;
 
 const emptyCtx: DialogueContext = {
     activeQuests: new Set(),
@@ -84,7 +89,7 @@ describe('visibleChoices — gating logic', () => {
     it('hides choices whose `requires.quest` is neither active nor completed', () => {
         const node = makeNode('root', [
             { text: 'open', nextNodeId: 'a' },
-            { text: 'quest-gated', nextNodeId: 'b', requires: { quest: 'Vow of Salt' } },
+            { text: 'quest-gated', nextNodeId: 'b', requires: { quest: VOW_OF_SALT } },
         ]);
         const result = visibleChoices(node, emptyCtx);
         expect(result.map(c => c.text)).toEqual(['open']);
@@ -92,22 +97,22 @@ describe('visibleChoices — gating logic', () => {
 
     it('shows `requires.quest` choices when the quest is active', () => {
         const node = makeNode('root', [
-            { text: 'gated', nextNodeId: 'a', requires: { quest: 'Vow of Salt' } },
+            { text: 'gated', nextNodeId: 'a', requires: { quest: VOW_OF_SALT } },
         ]);
         const ctx: DialogueContext = {
             ...emptyCtx,
-            activeQuests: new Set(['Vow of Salt']),
+            activeQuests: new Set([VOW_OF_SALT]),
         };
         expect(visibleChoices(node, ctx)).toHaveLength(1);
     });
 
     it('shows `requires.quest` choices when the quest is completed', () => {
         const node = makeNode('root', [
-            { text: 'gated', nextNodeId: 'a', requires: { quest: 'Vow of Salt' } },
+            { text: 'gated', nextNodeId: 'a', requires: { quest: VOW_OF_SALT } },
         ]);
         const ctx: DialogueContext = {
             ...emptyCtx,
-            completedQuests: new Set(['Vow of Salt']),
+            completedQuests: new Set([VOW_OF_SALT]),
         };
         expect(visibleChoices(node, ctx)).toHaveLength(1);
     });
@@ -117,16 +122,16 @@ describe('visibleChoices — gating logic', () => {
             {
                 text: 'post-quest',
                 nextNodeId: 'a',
-                requires: { questCompleted: 'Vow of Salt' },
+                requires: { questCompleted: VOW_OF_SALT },
             },
         ]);
         const activeOnly: DialogueContext = {
             ...emptyCtx,
-            activeQuests: new Set(['Vow of Salt']),
+            activeQuests: new Set([VOW_OF_SALT]),
         };
         const completed: DialogueContext = {
             ...emptyCtx,
-            completedQuests: new Set(['Vow of Salt']),
+            completedQuests: new Set([VOW_OF_SALT]),
         };
         expect(visibleChoices(node, activeOnly)).toEqual([]);
         expect(visibleChoices(node, completed)).toHaveLength(1);
@@ -156,15 +161,15 @@ describe('visibleChoices — gating logic', () => {
                 text: 'all-three',
                 nextNodeId: 'a',
                 requires: {
-                    quest: 'Vow of Salt',
-                    questCompleted: 'Vow of Salt',
+                    quest: VOW_OF_SALT,
+                    questCompleted: VOW_OF_SALT,
                     flag: 'lit_candle',
                 },
             },
         ]);
         const partial: DialogueContext = {
             ...emptyCtx,
-            completedQuests: new Set(['Vow of Salt']),
+            completedQuests: new Set([VOW_OF_SALT]),
             flags: new Set(['lit_candle']),
             // activeQuests omitted — but `requires.quest` is satisfied by completed too.
         };
@@ -172,7 +177,7 @@ describe('visibleChoices — gating logic', () => {
 
         const missingFlag: DialogueContext = {
             ...emptyCtx,
-            completedQuests: new Set(['Vow of Salt']),
+            completedQuests: new Set([VOW_OF_SALT]),
         };
         expect(visibleChoices(node, missingFlag)).toEqual([]);
     });

@@ -98,8 +98,8 @@ describe('Moral meter system — complete pipeline', () => {
 
     it('beggar dialogue choices trigger correct moral shifts', () => {
         const fishingVillage = getMapDefinition('coastal-continent', 'fishing-village');
-        const beggar = fishingVillage.npcs.find(npc => npc.name === 'Coastal Beggar')!;
-        const beggarTree = beggar.dialogueTree;
+        const beggar = fishingVillage.npcs!.find(npc => npc.name === 'Coastal Beggar')!;
+        const beggarTree = beggar.dialogueTree!;
         
         let gameState = createNewGameState();
         gameState.player.currency = 50; // Ensure player has money for choices

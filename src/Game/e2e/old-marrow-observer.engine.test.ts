@@ -23,7 +23,7 @@ import { getAlignmentCell } from '../../Philosophy';
 
 function loadOldMarrow() {
     const fishingVillage = getMapDefinition('coastal-continent', 'fishing-village');
-    const npc = fishingVillage.npcs.find(n => n.name === 'Old Marrow')!;
+    const npc = fishingVillage.npcs!.find(n => n.name === 'Old Marrow')!;
     return { tree: npc.dialogueTree!, npc };
 }
 
@@ -104,7 +104,7 @@ describe('Phase 63 — Old Marrow alignment observer', () => {
     it('unidentified tree (no id) does NOT write to lastSeenAlignmentCells', () => {
         const store = createGameStore(nullAdapter);
         const fishingVillage = getMapDefinition('coastal-continent', 'fishing-village');
-        const beggar = fishingVillage.npcs.find(n => n.name === 'Coastal Beggar')!;
+        const beggar = fishingVillage.npcs!.find(n => n.name === 'Coastal Beggar')!;
         const beggarTree = beggar.dialogueTree!;
         // Sanity: beggar tree has no id (only Old Marrow's tree was authored
         // with one per Phase 63 D1).

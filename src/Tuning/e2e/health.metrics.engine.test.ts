@@ -10,6 +10,7 @@ import {
     ENGAGEMENT_FLOOR,
 } from '../health.metrics';
 import type { CellResult, HealthScore } from '../types';
+import { bandFor } from '../difficulty.bands';
 import { mockFixedRng, restoreOriginalRng } from '../../test-utils/rng';
 
 describe('health.metrics', () => {
@@ -100,6 +101,7 @@ describe('health.metrics', () => {
                 enemySlug: merged.enemySlug,
                 runs: merged.runs,
                 weight: merged.weight,
+                band: bandFor(merged.difficulty),
             },
             report: {
                 scenarioId: `test-scenario-${merged.cellId}`,

@@ -70,11 +70,13 @@ describe('Phase 44 — fallacies-as-spells (skills)', () => {
             equippedSkills: [skill.id],
         });
         const enemy = createEnemy({
+            id: 'sandbag',
             name: 'Sandbag',
+            description: 'Inert target for skill-resolution tests',
             level: 10,
             baseStats: { heart: 6, body: 6, mind: 6 },
-            health: 200,
-            maxHealth: 200,
+            mapName: 'fishing-village',
+            logic: 'defensive',
         });
         const combat = initializeCombat(player, enemy);
         // Player carries enough body resource via combatResources initial seed; budget a few rounds.
@@ -147,11 +149,13 @@ function testNirvana() {
         equippedSkills: [skill.id],
     });
     const enemy = createEnemy({
+        id: 'sandbag',
         name: 'Sandbag',
+        description: 'Inert target for skill-resolution tests',
         level: 10,
         baseStats: { heart: 6, body: 6, mind: 6 },
-        health: 200,
-        maxHealth: 200,
+        mapName: 'fishing-village',
+        logic: 'defensive',
     });
     const combat = initializeCombat(player, enemy);
     combat.combatResources.mind = 4;

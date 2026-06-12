@@ -13,18 +13,44 @@ import {
 } from '../engagement.metrics';
 import type { PlaytestRunSummary, PlaytestReport } from '../../Playtest/types';
 
+/**
+ * Synthetic fixtures carry only the fields the metrics read — the metrics are
+ * written defensively for exactly this kind of partial transcript (see the
+ * `undefined ⇒ no penalty` notes in engagement.metrics.ts). They are cast at
+ * the call boundary, matching the synthetic-transcript fixture pattern in
+ * tuning-improvements.engine.test.ts.
+ */
+type SyntheticRound = {
+    playerAction: { action: string };
+    combatEvents: Record<string, unknown>[];
+};
+type SyntheticRun = {
+    transcript: SyntheticRound[];
+    outcome?: string;
+    duration: number;
+};
+type SyntheticReport = {
+    runs: SyntheticRun[];
+    metadata: { policy: string; timestamp: string };
+};
+
+const asRun = (run: SyntheticRun): PlaytestRunSummary =>
+    run as unknown as PlaytestRunSummary;
+const asReport = (report: SyntheticReport): PlaytestReport =>
+    report as unknown as PlaytestReport;
+
 describe('Engagement metrics (isolated fixtures)', () => {
     it('runActivityShare: returns undefined for empty transcript', () => {
-        const run: PlaytestRunSummary = {
+        const run: SyntheticRun = {
             transcript: [],
             outcome: 'victory',
             duration: 10,
         };
-        expect(runActivityShare(run)).toBe(undefined);
+        expect(runActivityShare(asRun(run))).toBe(undefined);
     });
 
     it('runActivityShare: returns undefined for no action rounds', () => {
-        const run: PlaytestRunSummary = {
+        const run: SyntheticRun = {
             transcript: [
                 {
                     playerAction: { action: 'none' },
@@ -38,11 +64,11 @@ describe('Engagement metrics (isolated fixtures)', () => {
             outcome: 'victory',
             duration: 5,
         };
-        expect(runActivityShare(run)).toBe(undefined);
+        expect(runActivityShare(asRun(run))).toBe(undefined);
     });
 
     it('runActivityShare: calculates correct share for mixed rounds', () => {
-        const run: PlaytestRunSummary = {
+        const run: SyntheticRun = {
             transcript: [
                 {
                     playerAction: { action: 'attack' },
@@ -77,11 +103,11 @@ describe('Engagement metrics (isolated fixtures)', () => {
             duration: 20,
         };
         // 4 action rounds, 2 with status play = 0.5
-        expect(runActivityShare(run)).toBe(0.5);
+        expect(runActivityShare(asRun(run))).toBe(0.5);
     });
 
     it('runActivityShare: recognizes proc-applied status play', () => {
-        const run: PlaytestRunSummary = {
+        const run: SyntheticRun = {
             transcript: [
                 {
                     playerAction: { action: 'attack' },
@@ -103,11 +129,11 @@ describe('Engagement metrics (isolated fixtures)', () => {
             duration: 8,
         };
         // 2 action rounds, 1 with status play = 0.5
-        expect(runActivityShare(run)).toBe(0.5);
+        expect(runActivityShare(asRun(run))).toBe(0.5);
     });
 
     it('runActivityShare: ignores enemy procs', () => {
-        const run: PlaytestRunSummary = {
+        const run: SyntheticRun = {
             transcript: [
                 {
                     playerAction: { action: 'attack' },
@@ -125,11 +151,11 @@ describe('Engagement metrics (isolated fixtures)', () => {
             duration: 3,
         };
         // 1 action round, 0 with status play = 0
-        expect(runActivityShare(run)).toBe(0);
+        expect(runActivityShare(asRun(run))).toBe(0);
     });
 
     it('runEngagementShare: leverages activity by outcome', () => {
-        const baseRun: PlaytestRunSummary = {
+        const baseRun: SyntheticRun = {
             transcript: [
                 {
                     playerAction: { action: 'skill' },
@@ -147,15 +173,15 @@ describe('Engagement metrics (isolated fixtures)', () => {
         };
 
         // Activity = 1.0 for all cases
-        expect(runEngagementShare({ ...baseRun, outcome: 'victory' })).toBe(1.0);
-        expect(runEngagementShare({ ...baseRun, outcome: 'friendship' })).toBe(1.0);
-        expect(runEngagementShare({ ...baseRun, outcome: 'flee' })).toBe(0.5);
-        expect(runEngagementShare({ ...baseRun, outcome: 'defeat' })).toBe(0.5);
-        expect(runEngagementShare({ ...baseRun, outcome: 'timeout' })).toBe(0.25);
+        expect(runEngagementShare(asRun({ ...baseRun, outcome: 'victory' }))).toBe(1.0);
+        expect(runEngagementShare(asRun({ ...baseRun, outcome: 'friendship' }))).toBe(1.0);
+        expect(runEngagementShare(asRun({ ...baseRun, outcome: 'flee' }))).toBe(0.5);
+        expect(runEngagementShare(asRun({ ...baseRun, outcome: 'defeat' }))).toBe(0.5);
+        expect(runEngagementShare(asRun({ ...baseRun, outcome: 'timeout' }))).toBe(0.25);
     });
 
     it('runEngagementShare: handles undefined outcome', () => {
-        const run: PlaytestRunSummary = {
+        const run: SyntheticRun = {
             transcript: [
                 {
                     playerAction: { action: 'skill' },
@@ -173,11 +199,11 @@ describe('Engagement metrics (isolated fixtures)', () => {
         };
 
         // No outcome = leverage 1 (no penalty)
-        expect(runEngagementShare(run)).toBe(1.0);
+        expect(runEngagementShare(asRun(run))).toBe(1.0);
     });
 
     it('cellEngagementShare: aggregates across runs', () => {
-        const report: PlaytestReport = {
+        const report: SyntheticReport = {
             runs: [
                 {
                     transcript: [
@@ -211,11 +237,11 @@ describe('Engagement metrics (isolated fixtures)', () => {
         };
 
         // Mean of 1.0 and 0.125 = 0.5625
-        expect(cellEngagementShare(report)).toBeCloseTo(0.5625);
+        expect(cellEngagementShare(asReport(report))).toBeCloseTo(0.5625);
     });
 
     it('cellActivityShare: aggregates raw activity', () => {
-        const report: PlaytestReport = {
+        const report: SyntheticReport = {
             runs: [
                 {
                     transcript: [
@@ -249,22 +275,22 @@ describe('Engagement metrics (isolated fixtures)', () => {
         };
 
         // Mean of 1.0 and 0.5 = 0.75
-        expect(cellActivityShare(report)).toBeCloseTo(0.75);
+        expect(cellActivityShare(asReport(report))).toBeCloseTo(0.75);
     });
 
     it('cellEngagementShare: returns undefined for empty runs', () => {
-        const report: PlaytestReport = {
+        const report: SyntheticReport = {
             runs: [],
             metadata: {
                 policy: 'defensive',
                 timestamp: new Date().toISOString(),
             },
         };
-        expect(cellEngagementShare(report)).toBe(undefined);
+        expect(cellEngagementShare(asReport(report))).toBe(undefined);
     });
 
     it('cellEngagementShare: ignores runs with undefined activity', () => {
-        const report: PlaytestReport = {
+        const report: SyntheticReport = {
             runs: [
                 {
                     transcript: [],
@@ -289,7 +315,7 @@ describe('Engagement metrics (isolated fixtures)', () => {
         };
 
         // Only the valid run is included in the mean
-        expect(cellEngagementShare(report)).toBe(1.0);
+        expect(cellEngagementShare(asReport(report))).toBe(1.0);
     });
 
     it('OUTCOME_LEVERAGE: contains expected weights', () => {
@@ -301,7 +327,7 @@ describe('Engagement metrics (isolated fixtures)', () => {
     });
 
     it('runEngagementShare: handles complex transcript with mixed events', () => {
-        const run: PlaytestRunSummary = {
+        const run: SyntheticRun = {
             transcript: [
                 {
                     playerAction: { action: 'skill' },
@@ -350,6 +376,6 @@ describe('Engagement metrics (isolated fixtures)', () => {
         // 4 action rounds, 2 status rounds = 0.5 activity
         // defeat leverage = 0.5
         // engagement = 0.5 * 0.5 = 0.25
-        expect(runEngagementShare(run)).toBe(0.25);
+        expect(runEngagementShare(asRun(run))).toBe(0.25);
     });
 });

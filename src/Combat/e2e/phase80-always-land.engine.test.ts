@@ -71,7 +71,9 @@ describe('Phase 80 — Tier 2 debuff always lands (target-resist removed)', () =
 
         expect(result.success).toBe(true);
         expect(result.activeEffect).toBe(effect);
-        expect(result.rebounded).toBeUndefined();
+        // `rebounded` was removed from EffectApplicationResult at the Phase 84/86
+        // drain; assert the legacy field stays absent at runtime.
+        expect((result as { rebounded?: unknown }).rebounded).toBeUndefined();
         expect(result.message).toMatch(/Effect lands/);
     });
 

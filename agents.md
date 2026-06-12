@@ -31,15 +31,19 @@ content, or docs.
 `npm run verify` runs **before** every commit:
 
 ```
-npm run type-check    # tsc --noEmit
-npm run lint          # eslint "**/*.ts" (warnings advisory; errors fail)
-npm test              # vitest run (includes hermetic e2e)
-npm run build         # tsc && tsc-alias → dist/
+npm run type-check        # tsc --noEmit (production sources)
+npm run type-check:tests  # tsc -p tsconfig.tests.json (test files too)
+npm run lint              # eslint "**/*.ts" (warnings advisory; errors fail)
+npm test                  # vitest run (includes hermetic e2e)
+npm run build             # tsc && tsc-alias → dist/
 ```
 
-All four are hard gates. Lint was repaired in Phase 13 (commit
+All five are hard gates. Lint was repaired in Phase 13 (commit
 `4f58f66`) and is back in the gate; warnings are advisory but
-errors fail. Fix the root cause; never `--no-verify`.
+errors fail. The tests type-check was added 2026-06-12 after 263
+silent type drifts accumulated in test files (test sources are
+excluded from the build tsconfig, so they were never checked).
+Fix the root cause; never `--no-verify`.
 
 ### 4. The deploy gate runs **after** every push.
 

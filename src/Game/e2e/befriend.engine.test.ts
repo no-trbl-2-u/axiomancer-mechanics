@@ -170,8 +170,8 @@ describe('Phase 62 — quest-branch wire-in on outcome === friendship', () => {
         const { visibleChoices } = await import('../../NPCs');
         const { getMapDefinition } = await import('../../World/map.registry');
         const fishingVillage = getMapDefinition('coastal-continent', 'fishing-village');
-        const beggar = fishingVillage.npcs.find(npc => npc.name === 'Coastal Beggar')!;
-        const greetNode = beggar.dialogueTree.nodes.greet;
+        const beggar = fishingVillage.npcs!.find(npc => npc.name === 'Coastal Beggar')!;
+        const greetNode = beggar.dialogueTree!.nodes.greet;
 
         const baseCtx = {
             activeQuests: new Set<string>(),

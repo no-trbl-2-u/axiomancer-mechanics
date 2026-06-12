@@ -325,13 +325,10 @@ describe('Phase 65 — expanded fishing-village layout', () => {
                 ...state.world,
                 currentMap: {
                     ...state.world.currentMap,
-                    state: {
-                        ...state.world.currentMap.state,
-                        currentNodeId: node.id,
-                        availableNodes: [node.id],
-                        discoveredNodes: [node.id],
-                        consumedNodes: [],
-                    },
+                    currentNode: node.id,
+                    availableNodes: [node.id],
+                    discoveredNodes: [node.id],
+                    consumedNodes: [],
                 },
             };
             const result = resolveMapEvent(state);
@@ -392,18 +389,14 @@ describe('Phase 117 — expanded northern-forest layout', () => {
             const state = createNewGameState();
             state.world = {
                 ...state.world,
-                currentMapName: 'northern-forest',
                 currentMap: {
                     ...state.world.currentMap,
-                    mapName: 'northern-forest',
+                    name: 'northern-forest',
                     continent: 'coastal-continent',
-                    state: {
-                        ...state.world.currentMap.state,
-                        currentNodeId: node.id,
-                        availableNodes: [node.id],
-                        discoveredNodes: [node.id],
-                        consumedNodes: [],
-                    },
+                    currentNode: node.id,
+                    availableNodes: [node.id],
+                    discoveredNodes: [node.id],
+                    consumedNodes: [],
                 },
             };
             const result = resolveMapEvent(state);

@@ -18,6 +18,13 @@ import { createStartingWorld } from '../../index';
 import { createNewGameState } from '../../../Game/game.reducer';
 import type { GameState } from '../../../Game/types';
 import type { MapEventPool } from '../types';
+import type { Quest } from '../../types';
+import type { QuestName } from '../../quest.library';
+
+// Fabricated quest name for the reach-objective tests below. It is not part
+// of the QuestName union (the quest engine only compares names), so cast once
+// and reuse.
+const REACH_FV2 = 'reach-fv2' as QuestName;
 
 function freshState(): GameState {
     return { ...createNewGameState(), world: createStartingWorld() };
@@ -342,8 +349,8 @@ describe('resolveMapEvent — Phase 31 traversal fix', () => {
 
 describe('resolveMapEvent — reach-objective auto-advance', () => {
     function seedReachQuest(state: GameState, targetNodeId: string): GameState {
-        const reachQuest = {
-            name: 'reach-fv2',
+        const reachQuest: Quest = {
+            name: REACH_FV2,
             description: 'Arrive at fv-2.',
             mapName: state.world.currentMap.name,
             objectives: [{
@@ -371,7 +378,7 @@ describe('resolveMapEvent — reach-objective auto-advance', () => {
         const result = resolveMapEvent(state);
         expect(result.event.kind).toBe('none');
         // Reach completed → quest moves from active to completed (single-objective).
-        expect(result.state.quests.active.some(q => q.name === 'reach-fv2')).toBe(false);
+        expect(result.state.quests.active.some(q => q.name === REACH_FV2)).toBe(false);
         expect(result.state.quests.completed).toContain('reach-fv2');
     });
 
@@ -382,7 +389,7 @@ describe('resolveMapEvent — reach-objective auto-advance', () => {
             entries: [{
                 kind: 'rest',
                 weight: 1,
-                payload: { kind: 'rest', restoreFraction: 0.5 },
+                payload: { kind: 'rest', healFraction: 0.5 },
             }],
         });
         const atFv2 = { ...base, world: { ...base.world, currentMap: { ...base.world.currentMap, currentNode: 'fv-2' } } };
@@ -400,7 +407,7 @@ describe('resolveMapEvent — reach-objective auto-advance', () => {
 
         const result = resolveMapEvent(state);
         // Quest stays active — fv-5 wasn't reached.
-        expect(result.state.quests.active.some(q => q.name === 'reach-fv2')).toBe(true);
+        expect(result.state.quests.active.some(q => q.name === REACH_FV2)).toBe(true);
         expect(result.state.quests.completed).not.toContain('reach-fv2');
     });
 });

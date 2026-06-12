@@ -13,6 +13,7 @@ import {
     characterPresets, getPresetById, buildCharacterFromPreset,
 } from '../presets';
 import { mockSequentialRng } from '../../test-utils/rng';
+import type { Consumable } from '../../Items/types';
 
 afterEach(() => {
     vi.restoreAllMocks();
@@ -44,7 +45,7 @@ describe('buildCharacterFromPreset', () => {
         expect(player.equippedSkills).toHaveLength(4);
         expect(player.inventory).toHaveLength(1);
         expect(player.inventory[0]?.id).toBe('minor-healing-potion');
-        expect(player.inventory[0]?.quantity).toBe(3);
+        expect((player.inventory[0] as Consumable | undefined)?.quantity).toBe(3);
         expect(player.currency).toBe(0);
     });
 

@@ -68,6 +68,8 @@ function seedEffect(opts: {
         effectId: opts.effectId,
         intensity: opts.intensity ?? 1,
         remainingDuration: opts.remainingDuration ?? 3,
+        appliedAt: 0,
+        tier: effect.tier,
     };
 }
 

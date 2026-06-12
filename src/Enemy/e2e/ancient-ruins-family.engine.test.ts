@@ -87,10 +87,10 @@ describe('Phase 127 — ancient-ruins enemy family', () => {
                 const enemy = ENEMY_REGISTRY[slug as EnemySlug] as Enemy;
                 expect(enemy.skills, `${slug} should have skills defined`).toBeDefined();
                 expect(Array.isArray(enemy.skills), `${slug} skills should be an array`).toBe(true);
-                expect(enemy.skills.length, `${slug} should have at least one skill`).toBeGreaterThan(0);
-                
+                expect(enemy.skills!.length, `${slug} should have at least one skill`).toBeGreaterThan(0);
+
                 // Each skill should have required properties
-                for (const skill of enemy.skills) {
+                for (const skill of enemy.skills!) {
                     expect(skill.id, `${slug} skill should have id`).toBeDefined();
                     expect(skill.name, `${slug} skill should have name`).toBeDefined();
                     expect(skill.description, `${slug} skill should have description`).toBeDefined();
@@ -107,8 +107,8 @@ describe('Phase 127 — ancient-ruins enemy family', () => {
             for (const slug of [...eliteEnemies, ...bossEnemies]) {
                 const enemy = ENEMY_REGISTRY[slug as EnemySlug] as Enemy;
                 expect(enemy.befriendabilityConfig, `${slug} missing befriendabilityConfig`).toBeDefined();
-                expect(enemy.befriendabilityConfig.hpGate).toBeDefined();
-                expect(enemy.befriendabilityConfig.roundsThreshold).toBeGreaterThan(0);
+                expect(enemy.befriendabilityConfig!.hpGate).toBeDefined();
+                expect(enemy.befriendabilityConfig!.roundsThreshold).toBeGreaterThan(0);
             }
         });
 
@@ -116,19 +116,19 @@ describe('Phase 127 — ancient-ruins enemy family', () => {
             for (const slug of ANCIENT_RUINS_SLUGS) {
                 const enemy = ENEMY_REGISTRY[slug as EnemySlug] as Enemy;
                 expect(enemy.friendshipReward, `${slug} missing friendshipReward`).toBeDefined();
-                expect(enemy.friendshipReward.narrative).toBeDefined();
-                expect(enemy.friendshipReward.flagSet).toBeDefined();
-                expect(enemy.friendshipReward.items).toBeDefined();
-                expect(Array.isArray(enemy.friendshipReward.items)).toBe(true);
+                expect(enemy.friendshipReward!.narrative).toBeDefined();
+                expect(enemy.friendshipReward!.flagSet).toBeDefined();
+                expect(enemy.friendshipReward!.items).toBeDefined();
+                expect(Array.isArray(enemy.friendshipReward!.items)).toBe(true);
             }
         });
 
         it('friendship rewards include alignment deltas', () => {
             for (const slug of ANCIENT_RUINS_SLUGS) {
                 const enemy = ENEMY_REGISTRY[slug as EnemySlug] as Enemy;
-                expect(enemy.friendshipReward.alignmentDelta, `${slug} missing alignmentDelta`).toBeDefined();
+                expect(enemy.friendshipReward!.alignmentDelta, `${slug} missing alignmentDelta`).toBeDefined();
                 // At least one axis should be non-zero
-                const delta = enemy.friendshipReward.alignmentDelta;
+                const delta = enemy.friendshipReward!.alignmentDelta!;
                 const hasNonZero = delta.epistemology !== 0 || delta.outlook !== 0 || delta.scope !== 0;
                 expect(hasNonZero, `${slug} alignmentDelta should have at least one non-zero axis`).toBe(true);
             }
@@ -144,17 +144,17 @@ describe('Phase 127 — ancient-ruins enemy family', () => {
                 expect(enemy.causeLines, `${slug} missing causeLines`).toBeDefined();
 
                 // Each should have all three variants
-                expect(enemy.finalBlowLines.brutal).toBeTruthy();
-                expect(enemy.finalBlowLines.quiet).toBeTruthy();
-                expect(enemy.finalBlowLines.ironic).toBeTruthy();
+                expect(enemy.finalBlowLines!.brutal).toBeTruthy();
+                expect(enemy.finalBlowLines!.quiet).toBeTruthy();
+                expect(enemy.finalBlowLines!.ironic).toBeTruthy();
 
-                expect(enemy.pactLines.quiet).toBeTruthy();
-                expect(enemy.pactLines.setDown).toBeTruthy();
-                expect(enemy.pactLines.heavy).toBeTruthy();
+                expect(enemy.pactLines!.quiet).toBeTruthy();
+                expect(enemy.pactLines!.setDown).toBeTruthy();
+                expect(enemy.pactLines!.heavy).toBeTruthy();
 
-                expect(enemy.causeLines.brutal).toBeTruthy();
-                expect(enemy.causeLines.broken).toBeTruthy();
-                expect(enemy.causeLines.quiet).toBeTruthy();
+                expect(enemy.causeLines!.brutal).toBeTruthy();
+                expect(enemy.causeLines!.broken).toBeTruthy();
+                expect(enemy.causeLines!.quiet).toBeTruthy();
             }
         });
     });
@@ -164,18 +164,18 @@ describe('Phase 127 — ancient-ruins enemy family', () => {
             for (const slug of ANCIENT_RUINS_SLUGS) {
                 const enemy = ENEMY_REGISTRY[slug as EnemySlug] as Enemy;
                 expect(enemy.journalEntry, `${slug} missing journalEntry`).toBeDefined();
-                expect(enemy.journalEntry.id).toBeTruthy();
-                expect(enemy.journalEntry.title).toBeTruthy();
-                expect(enemy.journalEntry.body).toBeTruthy();
-                expect(enemy.journalEntry.id).toContain('codex-');
+                expect(enemy.journalEntry!.id).toBeTruthy();
+                expect(enemy.journalEntry!.title).toBeTruthy();
+                expect(enemy.journalEntry!.body).toBeTruthy();
+                expect(enemy.journalEntry!.id).toContain('codex-');
             }
         });
 
         it('journal entries have proper structure', () => {
             for (const slug of ANCIENT_RUINS_SLUGS) {
                 const enemy = ENEMY_REGISTRY[slug as EnemySlug] as Enemy;
-                const entry = enemy.journalEntry;
-                
+                const entry = enemy.journalEntry!;
+
                 expect(entry.id, `${slug} journal entry id should start with codex-`).toContain('codex-');
                 expect(entry.id, `${slug} journal entry id should be related to enemy`).toContain(slug.replace('the-', '').replace(/-/g, '-'));
                 expect(entry.title.length, `${slug} journal entry title should not be empty`).toBeGreaterThan(0);

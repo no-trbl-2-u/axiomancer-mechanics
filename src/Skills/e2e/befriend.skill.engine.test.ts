@@ -10,12 +10,12 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { mockFixedRng } from '../../test-utils/rng';
+import { mockSequentialRng } from '../../test-utils/rng';
 import { createCharacter } from '../../Character';
 import { executeSkill, canUseSkill } from '../skill.engine';
 import { getSkillById } from '../skill.library';
 import { initializeCombat, selectMercyChoice } from '../../Combat';
-import { createEnemy, randomLogic } from '../../Enemy';
+import { createEnemy } from '../../Enemy';
 
 // Test enemy with befriendability config for HP gate testing
 const befriendableEnemy = createEnemy({
@@ -24,8 +24,8 @@ const befriendableEnemy = createEnemy({
     description: 'Enemy for testing befriending',
     level: 1,
     baseStats: { heart: 5, body: 5, mind: 5 },
-    mapName: 'coastal-village',
-    logic: randomLogic,
+    mapName: 'fishing-village',
+    logic: 'random',
     befriendabilityConfig: {
         hpGate: { belowPct: 0.5 }, // Can befriend when below 50% HP
     }
@@ -33,7 +33,7 @@ const befriendableEnemy = createEnemy({
 
 describe('Befriend skill (Phase 108)', () => {
     beforeEach(() => {
-        mockFixedRng(0.5); // Fixed RNG for deterministic tests
+        mockSequentialRng(0.5); // Fixed RNG for deterministic tests
     });
 
     describe('Starting skill acquisition', () => {
@@ -64,8 +64,8 @@ describe('Befriend skill (Phase 108)', () => {
                 description: 'Simple test enemy',
                 level: 1,
                 baseStats: { heart: 5, body: 5, mind: 5 },
-                mapName: 'coastal-village',
-                logic: randomLogic
+                mapName: 'fishing-village',
+                logic: 'random'
             });
 
             const combatState = initializeCombat(character, enemy);

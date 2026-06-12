@@ -21,7 +21,8 @@ import { getMapDefinition, createMapState } from '../../World/map.registry';
 import { getConsumableById } from '../consumable.library';
 import { buyItem, sellItem } from '../shop.reducer';
 import { createCharacter } from '../../Character';
-import type { GameState, MapState } from '../../Game/types';
+import type { GameState } from '../../Game/types';
+import type { MapState } from '../../World/types';
 import type { Consumable } from '../types';
 
 // Pool registration lives in `content.ts`; import for side effect.

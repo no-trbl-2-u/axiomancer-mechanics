@@ -102,7 +102,12 @@ describe('health scoring', () => {
 
 // ─── Experiment runner ──────────────────────────────────────────────────────────
 
-const PLAN: MatrixPlan = { cells: [], baseSeed: 's', focus: {} };
+const PLAN: MatrixPlan = {
+    cells: [],
+    baseSeed: 's',
+    focus: {},
+    metadata: { levels: [], playstyles: [], difficulties: [], baseRuns: 0, seed: 's' },
+};
 
 function makeDeps(over: Partial<ExperimentDeps>): ExperimentDeps {
     return {

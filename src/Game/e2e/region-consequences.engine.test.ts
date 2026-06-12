@@ -11,7 +11,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { createCharacter } from '../../Character';
 import { createGameStore } from '../store';
 import { nullAdapter } from '../persistence/null.adapter';
-import { mockFixedRng } from '../../test-utils/rng';
+import { mockSequentialRng } from '../../test-utils/rng';
 import { Enemy } from '../../Enemy/types';
 import { resolveCombatRound, isBefriendAttemptEligible } from '../../Combat';
 
@@ -24,10 +24,11 @@ const testEliteEnemy: Enemy = {
     health: 50,
     maxHealth: 50,
     baseStats: { body: 3, mind: 2, heart: 3 },
-    derivedStats: { 
+    derivedStats: {
         physicalAttack: 6, physicalDefense: 6, physicalSkill: 6,
         mentalAttack: 4, mentalDefense: 4, mentalSkill: 4,
-        emotionalAttack: 6, emotionalDefense: 6, emotionalSkill: 6
+        emotionalAttack: 6, emotionalDefense: 6, emotionalSkill: 6,
+        luck: 3
     },
     mapName: 'fishing-village',
     difficulty: 'elite',
@@ -51,7 +52,8 @@ const testRegionBoss: Enemy = {
     derivedStats: {
         physicalAttack: 12, physicalDefense: 12, physicalSkill: 12,
         mentalAttack: 6, mentalDefense: 6, mentalSkill: 6,
-        emotionalAttack: 8, emotionalDefense: 8, emotionalSkill: 8
+        emotionalAttack: 8, emotionalDefense: 8, emotionalSkill: 8,
+        luck: 4
     },
     mapName: 'fishing-village', // Same region as elite
     difficulty: 'boss',
@@ -63,7 +65,7 @@ describe('Phase 109 — Region consequences for befriend choices', () => {
     let player: ReturnType<typeof createCharacter>;
 
     beforeEach(() => {
-        mockFixedRng(0.5);
+        mockSequentialRng(0.5);
         player = createCharacter({
             name: 'Test Player',
             level: 5,

@@ -22,7 +22,7 @@ import { mockSequentialRng, restoreOriginalRng } from '../../test-utils/rng';
 
 function makeTree(): DialogueTree {
     return {
-        rootNodeId: 'root',
+        rootId: 'root',
         nodes: {
             root: { id: 'root', text: 'root', choices: [] },
         },

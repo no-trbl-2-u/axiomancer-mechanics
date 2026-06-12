@@ -8,11 +8,50 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mockFixedRng } from '../../test-utils/rng';
 import { analyzeResourceEconomy, classifyResourcePattern, resourceHealthShare } from '../resource.metrics';
-import type { PlaytestReport } from '../../Playtest/types';
+import type { PlaytestMetrics, PlaytestReport, PlaytestRunSummary } from '../../Playtest/types';
+
+/**
+ * Full PlaytestMetrics fixture. analyzeResourceEconomy reads only `report.runs`,
+ * so the aggregate values here just need to be type-complete and plausible —
+ * each test overrides the ones it cares about narratively.
+ */
+function makeMetrics(overrides: Partial<PlaytestMetrics>): PlaytestMetrics {
+    return {
+        totalRuns: 5,
+        outcomes: { victory: 5, defeat: 0, friendship: 0, flee: 0, timeout: 0 },
+        winRate: 0.8,
+        defeatRate: 0.1,
+        friendshipRate: 0,
+        timeoutRate: 0.1,
+        resolutionSuccessRate: 0.8,
+        averageRounds: 8,
+        medianRounds: 8,
+        averageFinalPlayerHp: 60,
+        averageFinalEnemyHp: 10,
+        averageDamageToPlayer: 30,
+        averageDamageToEnemy: 80,
+        maxFriendshipCounter: 0,
+        stanceUse: { heart: 15, body: 15, mind: 10 },
+        actionUse: { attack: 20, defend: 10, skill: 10, item: 0 },
+        skillUse: {},
+        itemUse: {},
+        enemyActionUse: { attack: 25, defend: 15 },
+        policySummaries: [],
+        survivabilityRate: 0.8,
+        roundsToResolveDistribution: { min: 4, max: 15, q25: 6, q75: 10, stdDev: 2 },
+        damageRatio: { playerToEnemy: 2.5, playerEfficiency: 10, enemyEfficiency: 4 },
+        befriendAttempts: 0,
+        befriendFailures: 0,
+        befriendSuccesses: 0,
+        spareChoices: 0,
+        exploitChoices: 0,
+        ...overrides,
+    };
+}
 
 describe('Resource Economy Analysis', () => {
     beforeEach(() => {
-        mockFixedRng(0.5); // Deterministic outcomes for resource generation analysis
+        mockFixedRng([0.5]); // Deterministic outcomes for resource generation analysis
     });
 
     describe('Resource pattern classification', () => {
@@ -25,22 +64,22 @@ describe('Resource Economy Analysis', () => {
                 seed: 'test-seed',
                 maxRounds: 80,
                 policies: [],
-                metrics: {
+                metrics: makeMetrics({
                     totalRuns: 5,
                     resolutionSuccessRate: 0.8,
                     defeatRate: 0.1,
                     timeoutRate: 0.1,
                     averageRounds: 8,
-                    damageRatio: { playerToEnemy: 2.5, enemyToPlayer: 0.4 },
+                    damageRatio: { playerToEnemy: 2.5, playerEfficiency: 10, enemyEfficiency: 4 },
                     actionUse: { attack: 20, defend: 10, skill: 10, item: 0 },
                     stanceUse: { heart: 15, body: 15, mind: 10 },
                     skillUse: { 'intimidate': 5, 'appeal-to-pity': 5 },
                     itemUse: {},
                     enemyActionUse: { attack: 25, defend: 15 },
-                },
+                }),
                 findings: [],
                 replaySeeds: [],
-                runs: Array.from({ length: 5 }, (_, i) => ({
+                runs: Array.from({ length: 5 }, (_, i): PlaytestRunSummary => ({
                     run: i + 1,
                     seed: `seed-${i}`,
                     policy: 'aggressive',
@@ -56,6 +95,9 @@ describe('Resource Economy Analysis', () => {
                     skillsUsed: { 'intimidate': 1, 'appeal-to-pity': 1 },
                     itemsUsed: {},
                     enemyActions: { attack: 5, defend: 3 },
+                    damageToPlayer: 25,
+                    damageToEnemy: 80,
+                    transcript: [],
                 })),
             };
 
@@ -78,22 +120,22 @@ describe('Resource Economy Analysis', () => {
                 seed: 'test-seed',
                 maxRounds: 80,
                 policies: [],
-                metrics: {
+                metrics: makeMetrics({
                     totalRuns: 5,
                     resolutionSuccessRate: 0.4,
                     defeatRate: 0.3,
                     timeoutRate: 0.3,
                     averageRounds: 15,
-                    damageRatio: { playerToEnemy: 1.2, enemyToPlayer: 0.8 },
+                    damageRatio: { playerToEnemy: 1.2, playerEfficiency: 6, enemyEfficiency: 5 },
                     actionUse: { attack: 50, defend: 25, skill: 0, item: 0 },
                     stanceUse: { heart: 25, body: 25, mind: 25 },
                     skillUse: {},
                     itemUse: {},
                     enemyActionUse: { attack: 40, defend: 35 },
-                },
+                }),
                 findings: [],
                 replaySeeds: [],
-                runs: Array.from({ length: 5 }, (_, i) => ({
+                runs: Array.from({ length: 5 }, (_, i): PlaytestRunSummary => ({
                     run: i + 1,
                     seed: `seed-${i}`,
                     policy: 'defensive',
@@ -109,6 +151,9 @@ describe('Resource Economy Analysis', () => {
                     skillsUsed: {},
                     itemsUsed: {},
                     enemyActions: { attack: 8, defend: 7 },
+                    damageToPlayer: 100,
+                    damageToEnemy: 50,
+                    transcript: [],
                 })),
             };
 
@@ -131,22 +176,22 @@ describe('Resource Economy Analysis', () => {
                 seed: 'test-seed',
                 maxRounds: 80,
                 policies: [],
-                metrics: {
+                metrics: makeMetrics({
                     totalRuns: 5,
                     resolutionSuccessRate: 1.0,
                     defeatRate: 0.0,
                     timeoutRate: 0.0,
                     averageRounds: 4,
-                    damageRatio: { playerToEnemy: 5.0, enemyToPlayer: 0.1 },
+                    damageRatio: { playerToEnemy: 5.0, playerEfficiency: 20, enemyEfficiency: 2 },
                     actionUse: { attack: 15, defend: 5, skill: 2, item: 0 },
                     stanceUse: { heart: 8, body: 8, mind: 6 },
                     skillUse: { 'intimidate': 2 },
                     itemUse: {},
                     enemyActionUse: { attack: 10, defend: 10 },
-                },
+                }),
                 findings: [],
                 replaySeeds: [],
-                runs: Array.from({ length: 5 }, (_, i) => ({
+                runs: Array.from({ length: 5 }, (_, i): PlaytestRunSummary => ({
                     run: i + 1,
                     seed: `seed-${i}`,
                     policy: 'aggressive',
@@ -162,6 +207,9 @@ describe('Resource Economy Analysis', () => {
                     skillsUsed: {},
                     itemsUsed: {},
                     enemyActions: { attack: 2, defend: 2 },
+                    damageToPlayer: 10,
+                    damageToEnemy: 80,
+                    transcript: [],
                 })),
             };
 
@@ -183,22 +231,22 @@ describe('Resource Economy Analysis', () => {
                 seed: 'test-seed',
                 maxRounds: 80,
                 policies: [],
-                metrics: {
+                metrics: makeMetrics({
                     totalRuns: 10,
                     resolutionSuccessRate: 0.6,
                     defeatRate: 0.2,
                     timeoutRate: 0.2,
                     averageRounds: 12,
-                    damageRatio: { playerToEnemy: 1.8, enemyToPlayer: 0.6 },
+                    damageRatio: { playerToEnemy: 1.8, playerEfficiency: 9, enemyEfficiency: 5 },
                     actionUse: { attack: 60, defend: 30, skill: 30, item: 0 },
                     stanceUse: { heart: 40, body: 40, mind: 40 },
                     skillUse: { 'intimidate': 15, 'appeal-to-pity': 10, 'sunk-cost-fallacy': 5 },
                     itemUse: {},
                     enemyActionUse: { attack: 70, defend: 50 },
-                },
+                }),
                 findings: [],
                 replaySeeds: [],
-                runs: Array.from({ length: 10 }, (_, i) => ({
+                runs: Array.from({ length: 10 }, (_, i): PlaytestRunSummary => ({
                     run: i + 1,
                     seed: `seed-${i}`,
                     policy: 'strategist',
@@ -214,6 +262,9 @@ describe('Resource Economy Analysis', () => {
                     skillsUsed: { 'intimidate': Math.floor(i / 3), 'appeal-to-pity': Math.floor(i / 4) },
                     itemsUsed: {},
                     enemyActions: { attack: 7, defend: 5 },
+                    damageToPlayer: i % 2 === 0 ? 40 : 100,
+                    damageToEnemy: i % 2 === 0 ? 80 : 40,
+                    transcript: [],
                 })),
             };
 

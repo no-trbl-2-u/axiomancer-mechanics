@@ -11,7 +11,7 @@ import { createCharacter } from '../../Character';
 import { initializeCombat } from '../../Combat/combat.reducer';
 import { decideEnemyAction } from '../enemy.logic';
 import { bucketAxis } from '../../Philosophy';
-import { mockFixedRng, mockAlternatingRng } from '../../test-utils/rng';
+import { mockSequentialRng, mockAlternatingRng } from '../../test-utils/rng';
 import {
     ThornedSentinel, PackleaderWolf, WhisperingOak,
     FrostboundHunter, MistwalkerShade, VerdantProtector,
@@ -26,6 +26,7 @@ describe('Phase 114: Northern-forest enemy family', () => {
     beforeEach(() => {
         player = createCharacter({
             name: 'Test Player',
+            level: 5,
             baseStats: { body: 5, mind: 5, heart: 5 },
         });
         combatState = initializeCombat(player, ThornedSentinel);
@@ -123,7 +124,7 @@ describe('Phase 114: Northern-forest enemy family', () => {
 
     describe('AI behavior diversity', () => {
         beforeEach(() => {
-            mockFixedRng(0.5);
+            mockSequentialRng(0.5);
         });
 
         it('demonstrates strategic behavior patterns', () => {
@@ -134,7 +135,7 @@ describe('Phase 114: Northern-forest enemy family', () => {
         });
 
         it('shows defensive territorial behavior from ThornedSentinel', () => {
-            mockAlternatingRng([0.3, 0.7]); 
+            mockAlternatingRng();
             // ThornedSentinel uses defensive logic
             const action = decideEnemyAction(ThornedSentinel, combatState);
             
@@ -159,11 +160,11 @@ describe('Phase 114: Northern-forest enemy family', () => {
         it('applies enhanced configs for elite and boss tiers', () => {
             // Elite enemies should have befriendability configs
             expect(FrostboundHunter.befriendabilityConfig).toBeDefined();
-            expect(FrostboundHunter.befriendabilityConfig!.hpGate.belowPct).toBe(0.35);
+            expect(FrostboundHunter.befriendabilityConfig!.hpGate!.belowPct).toBe(0.35);
             expect(FrostboundHunter.befriendabilityConfig!.requiredStances).toContain('heart');
 
             expect(MistwalkerShade.befriendabilityConfig).toBeDefined();
-            expect(MistwalkerShade.befriendabilityConfig!.hpGate.belowPct).toBe(0.3);
+            expect(MistwalkerShade.befriendabilityConfig!.hpGate!.belowPct).toBe(0.3);
             expect(MistwalkerShade.befriendabilityConfig!.roundsThreshold).toBe(6);
 
             expect(VerdantProtector.befriendabilityConfig).toBeDefined();
@@ -171,11 +172,11 @@ describe('Phase 114: Northern-forest enemy family', () => {
 
             // Boss enemies should have more stringent requirements
             expect(NightmareStag.befriendabilityConfig).toBeDefined();
-            expect(NightmareStag.befriendabilityConfig!.hpGate.belowPct).toBe(0.25);
+            expect(NightmareStag.befriendabilityConfig!.hpGate!.belowPct).toBe(0.25);
             expect(NightmareStag.befriendabilityConfig!.roundsThreshold).toBe(7);
 
             expect(TheForestMind.befriendabilityConfig).toBeDefined();
-            expect(TheForestMind.befriendabilityConfig!.hpGate.belowPct).toBe(0.2);
+            expect(TheForestMind.befriendabilityConfig!.hpGate!.belowPct).toBe(0.2);
             expect(TheForestMind.befriendabilityConfig!.roundsThreshold).toBe(8);
             expect(TheForestMind.befriendabilityConfig!.requiredStances).toEqual(['mind', 'heart']);
         });
@@ -186,7 +187,7 @@ describe('Phase 114: Northern-forest enemy family', () => {
 
             eliteEnemies.forEach(enemy => {
                 expect(enemy.friendshipReward).toBeDefined();
-                expect(enemy.friendshipReward!.items.length).toBeGreaterThan(0);
+                expect(enemy.friendshipReward!.items!.length).toBeGreaterThan(0);
                 expect(enemy.friendshipReward!.xpBonus).toBeGreaterThan(30);
                 expect(enemy.friendshipReward!.narrative).toBeTruthy();
                 expect(enemy.friendshipReward!.flagSet).toBeTruthy();
@@ -194,7 +195,7 @@ describe('Phase 114: Northern-forest enemy family', () => {
 
             bossEnemies.forEach(enemy => {
                 expect(enemy.friendshipReward).toBeDefined();
-                expect(enemy.friendshipReward!.items.length).toBeGreaterThanOrEqual(3);
+                expect(enemy.friendshipReward!.items!.length).toBeGreaterThanOrEqual(3);
                 expect(enemy.friendshipReward!.xpBonus).toBeGreaterThan(80);
                 expect(enemy.friendshipReward!.narrative).toBeTruthy();
                 expect(enemy.friendshipReward!.flagSet).toBeTruthy();

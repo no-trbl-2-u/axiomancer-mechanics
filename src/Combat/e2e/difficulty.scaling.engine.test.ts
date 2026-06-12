@@ -14,7 +14,7 @@ import { calculateEnemyStatMultiplier, applyMoralMeterScaling } from '../difficu
 
 describe('Phase 92 — Difficulty scaling engine', () => {
     beforeEach(() => {
-        mockSequentialRng([0.5]);
+        mockSequentialRng(0.5);
     });
 
     afterEach(() => {
@@ -84,7 +84,7 @@ describe('Phase 92 — Difficulty scaling engine', () => {
                 description: 'Enemy for scaling test',
                 level: 5,
                 baseStats: { heart: 10, body: 10, mind: 10 },
-                mapName: 'test-map',
+                mapName: 'fishing-village',
                 logic: 'balanced',
             });
 
@@ -144,7 +144,7 @@ describe('Phase 92 — Difficulty scaling engine', () => {
                 description: 'Enemy for integrity test',
                 level: 1,
                 baseStats: { heart: 2, body: 2, mind: 2 },
-                mapName: 'test-map',
+                mapName: 'fishing-village',
                 logic: 'balanced',
             });
 

@@ -54,7 +54,7 @@ describe('Phase 93 — Damage-resist primitive', () => {
         defender.baseStats.body = 5; // Some resistance
 
         // Get a body-scaling skill
-        const bodySkill = getSkillById('ad-hominem-strike');
+        const bodySkill = getSkillById('ad-hominem-strike')!;
         expect(bodySkill.scalingStat).toBe('body');
 
         // Calculate damage with resistance applied
@@ -70,7 +70,7 @@ describe('Phase 93 — Damage-resist primitive', () => {
 
     it('maintains backward compatibility when target not provided', () => {
         const attacker = Player;
-        const skill = getSkillById('ad-hominem-strike');
+        const skill = getSkillById('ad-hominem-strike')!;
 
         // Without target should work as before (no resistance applied)
         const damageWithoutTarget = calculateSkillDamage(attacker, skill);

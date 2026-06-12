@@ -323,7 +323,20 @@ Before opening a PR, confirm:
 - [ ] `vi.restoreAllMocks()` (or equivalent) runs in `afterEach`.
 - [ ] If the change is CLI-only, the underlying engine logic was extracted
       and tested hermetically through its module's `e2e/*.engine.test.ts`.
-- [ ] `npm run type-check` and `npm test` are clean.
+- [ ] `npm run type-check`, `npm run type-check:tests`, and `npm test` are
+      clean. (Test files are excluded from the build tsconfig, so
+      `type-check:tests` is the only thing keeping fixtures honest.)
 
 If you cannot satisfy this list, write a one-paragraph "Hermetic-test debt"
 note in the PR description explaining why and what would unblock it.
+
+## The hermeticity guard
+
+`src/test-utils/e2e/hermeticity.audit.test.ts` enforces the contract above
+mechanically: every test imports from vitest, no `.only` lands, spies are
+restored, engine code never calls `Math.random()` directly, and only an
+explicit allowlist of tests may touch disk / network / subprocesses (the
+node persistence adapter, the CLI harnesses, the Tuning artifact writers).
+The guard itself reads committed repo sources — a sanctioned exception, the
+same carve-out the public-surface snapshot uses. If you legitimately need a
+new IO-touching test, grow the allowlist in the same commit and say why.

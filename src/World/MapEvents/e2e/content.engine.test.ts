@@ -15,7 +15,8 @@ import { createStartingWorld } from '../../index';
 import { createNewGameState } from '../../../Game/game.reducer';
 import { getMapDefinition } from '../../map.registry';
 import { createMapState } from '../../map.registry';
-import type { GameState, MapState } from '../../../Game/types';
+import type { GameState } from '../../../Game/types';
+import type { MapState } from '../../types';
 // Import for side effect — registers the pools when the test loads.
 import '../content';
 
