@@ -14,6 +14,17 @@ deep imports are part of the supported surface.
 
 _Nothing yet._
 
+## [0.17.1] — 2026-06-12
+
+### Fixed
+
+- Restored the deprecated character-preset exports (`characterPresets`,
+  `getPresetById`, `buildCharacterFromPreset`, `CharacterPreset` types)
+  that 0.17.0 dropped. Standing rule 9 locks the public barrel — removals
+  require a semver major phase — and `axiomancer-mobile` actively consumes
+  this surface (preset dev tooling). The `@deprecated` tags remain; removal
+  is re-queued behind a major bump plus a mobile migration.
+
 ## [0.17.0] — 2026-06-12
 
 Minigame ownership release. The package becomes the source of truth for BOTH
