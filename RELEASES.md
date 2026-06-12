@@ -4,6 +4,21 @@ Short-form per-version summaries. For per-phase detail see
 [`CHANGELOG.md`](./CHANGELOG.md); for the release-cut ceremony see
 [`RELEASING.md`](./RELEASING.md).
 
+## 0.17.0 — 2026-06-12
+
+- Hazard v2 rules ported byte-faithfully from mobile; the package is now the
+  source of truth for the minigame (mobile keeps UI only).
+- New Gathering minigame, "The Gleaning": GLEAN/STRIP stances, WRATH meter
+  with reprisals and eruption, offerings/grace, tools, boons, family sets,
+  plus a policy sim guarding greed < restraint < skill.
+- Tuning pipeline: matrix builder honours the Phase 136 contract (seeded
+  enemy picks, multiplicative focus weights, per-cell bands); resource
+  economy analysis; friendship-route tuning.
+- Test gates: test files now type-checked (fifth verify gate) after 263
+  silent drifts were repaired; hermeticity guard suite enforces the testing
+  standard mechanically.
+- Removed dead export isValidCombatAction.
+
 ## 0.16.0 — 2026-06-10
 
 Hazard minigame mobile-consumer release: publishes the Hazard doctrine/API docs with the npm package and documents the top-level Hazard public surface for downstream clients.
