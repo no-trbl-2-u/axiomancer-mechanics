@@ -4,6 +4,21 @@ Short-form per-version summaries. For per-phase detail see
 [`CHANGELOG.md`](./CHANGELOG.md); for the release-cut ceremony see
 [`RELEASING.md`](./RELEASING.md).
 
+## 0.18.0 — 2026-06-13
+
+- Hazard codex library: 150 cards total (108 new, all reward-pool; starter
+  bands hold) with six new mechanics — PURGE, TRANSMUTE, MEND, BOUNTY, WARD,
+  ANCHOR.
+- Gathering CLI (`npm run gathering`): seeded manual/auto play with JSON
+  events and JSONL state logs, mirrored on the hazard driver.
+- gathering-tuning skill: the gleaning balance loop guarded by the
+  greed < restraint < skill sim bands.
+
+## 0.17.1 — 2026-06-12
+
+- Restored the deprecated character-preset exports dropped in 0.17.0
+  (standing rule 9; live mobile consumer).
+
 ## 0.17.0 — 2026-06-12
 
 - Hazard v2 rules ported byte-faithfully from mobile; the package is now the
