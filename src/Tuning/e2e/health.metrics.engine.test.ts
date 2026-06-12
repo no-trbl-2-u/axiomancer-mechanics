@@ -12,6 +12,8 @@ import {
 import type { CellResult, HealthScore } from '../types';
 import { bandFor } from '../difficulty.bands';
 import { mockFixedRng, restoreOriginalRng } from '../../test-utils/rng';
+import type { CombatAction } from '../../Combat/types';
+import type { RoundEvent } from '../../Combat/combat.resolver';
 
 describe('health.metrics', () => {
     afterEach(() => {
@@ -71,10 +73,14 @@ describe('health.metrics', () => {
                 // Create transcript that yields the target engagement share
                 transcript: Array.from({ length: 5 }, (_, roundIdx) => ({
                     round: roundIdx + 1,
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    playerAction: { action: roundIdx < Math.floor(5 * targetEngagement) ? 'skill' : 'attack' } as any,
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    enemyAction: { action: 'attack' } as any,
+                    playerAction: {
+                        stance: 'heart',
+                        action: roundIdx < Math.floor(5 * targetEngagement) ? 'skill' : 'attack'
+                    } as CombatAction,
+                    enemyAction: {
+                        stance: 'mind',
+                        action: 'attack'
+                    } as CombatAction,
                     playerHp: 80,
                     enemyHp: 50 - (roundIdx * 10),
                     combatEvents: roundIdx < Math.floor(5 * targetEngagement) ? [
@@ -83,10 +89,9 @@ describe('health.metrics', () => {
                             kind: 'effect-applied' as const,
                             skillId: 'test-skill',
                             appliedTo: 'enemy' as const,
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            effect: { id: 'test-effect' } as any,
+                            effect: { id: 'test-effect', tier: 1, name: 'Test Effect' },
                             message: 'Test effect applied'
-                        }
+                        } as RoundEvent
                     ] : [],
                 })),
             }));
@@ -134,8 +139,7 @@ describe('health.metrics', () => {
                 findings: [],
                 replaySeeds: [],
                 runs: createMockRuns(3, merged.engagementShare), // Small number for test performance
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            } as any, // Type assertion for simplified test mock
+            } as unknown as CellResult['report'], // Simplified test mock with minimal required fields
         };
     };
 
