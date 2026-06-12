@@ -15,6 +15,7 @@ import type { EnemySlug } from '../Enemy/enemy.library';
 import { buildLoadoutCharacter } from './loadout.builder';
 import { scaleEnemyForCell } from './enemy.scaler';
 import { makeAdvisor, updateFromRun } from './strategist.knowledge';
+import { analyzeResourceEconomy, classifyResourcePattern, resourceHealthShare } from './resource.metrics';
 import type { CellResult, CellSnapshot, MatrixPlan, StrategistKnowledge } from './types';
 import type { Character } from '../Character/types';
 import type { Enemy } from '../Enemy/types';
@@ -43,6 +44,11 @@ function buildSnapshot(
         .slice(0, 4)
         .map(([id, n]) => `${id} (${n})`);
     const skillUseTotal = Object.values(m.skillUse).reduce((s, n) => s + n, 0);
+
+    // Phase 139 — Analyze resource economy patterns from the report
+    const resourceMetrics = analyzeResourceEconomy(report);
+    const resourcePattern = classifyResourcePattern(resourceMetrics);
+    const healthShare = resourceHealthShare(resourceMetrics);
 
     return {
         player: {
@@ -76,6 +82,14 @@ function buildSnapshot(
             topSkills,
             skillUsePerRun: m.totalRuns ? skillUseTotal / m.totalRuns : 0,
             skillActionShare: (m.actionUse.skill ?? 0) / totalActions,
+        },
+        resources: {
+            healthShare,
+            averagePool: resourceMetrics.averageResourcePool,
+            pattern: resourcePattern,
+            starvationRate: resourceMetrics.totalRounds > 0 ? 
+                resourceMetrics.starvationRounds / resourceMetrics.totalRounds : 0,
+            efficiency: resourceMetrics.efficiency,
         },
     };
 }

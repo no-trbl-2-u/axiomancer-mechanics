@@ -173,6 +173,19 @@ export interface CellSnapshot {
         /** Share of player actions that were skills (vs attack/defend/item). */
         skillActionShare: number;
     };
+    /** Phase 139 — Resource economy metrics for analysis */
+    resources?: {
+        /** Share of rounds with adequate resources (≥ 3 total) */
+        healthShare: number;
+        /** Average total resource pool size per round */
+        averagePool: number;
+        /** Resource starvation pattern classification */
+        pattern: 'healthy' | 'starved' | 'flooded' | 'unstable';
+        /** Percentage of rounds in starvation (< 3 total resources) */
+        starvationRate: number;
+        /** Resource consumption efficiency (spent / generated) */
+        efficiency: number;
+    };
 }
 
 export interface CellResult {

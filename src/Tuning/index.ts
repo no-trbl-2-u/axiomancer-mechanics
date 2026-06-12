@@ -48,3 +48,14 @@ export {
 export {
     renderDataReport, renderDataReportJson, renderSuggestions,
 } from './report.generator';
+export {
+    analyzeResourceEconomy, classifyResourcePattern, resourceHealthShare,
+    STARVATION_THRESHOLD, FLOODING_THRESHOLD, HEALTHY_RESOURCE_SHARE,
+} from './resource.metrics';
+export type { ResourceEconomyMetrics, ResourceFlowSnapshot, ResourcePattern } from './resource.metrics';
+export {
+    generateResourceTuningRecommendations,
+} from './resource.recommendations';
+export type {
+    ResourceTuningProposal, GenerationTuningProposal, SkillCostTuningProposal,
+} from './resource.recommendations';
