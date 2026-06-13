@@ -5,12 +5,12 @@
     "lib": [
       "ES2020"
     ],
+    "types": ["node"],
     /* Modules */
     "module": "commonjs",
     "rootDir": "./src",
-    "baseUrl": "./src",
     "paths": {},
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     /* Emit */
     "outDir": "./dist",
