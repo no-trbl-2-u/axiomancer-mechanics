@@ -49,11 +49,11 @@
 <!-- oversight 2026-06-13 (Q2 — T pick: "File one modernization phase"): the three Category-G major-bump findings below (TypeScript 5→6, inquirer 9→12, globals 16→17) are PROMOTED to build-plan Phase 143 (Dependency modernization). They are no longer loose iterate-tier findings — /iterate should NOT re-file them; they drain when Phase 143 ships. -->
 
 <!-- Comprehensive audit findings (updated by /iterate after each audit):
-> Last pass: 2026-06-13 at commit 7a7b840
+> Last pass: 2026-06-13 at commit 4f3c69d
 
-**Category G (Dependencies)** — 3 major bumps available: typescript 5→6 (score 3.6: impact 4, ease 9), inquirer 9→12 (score 2.8: impact 4, ease 7), globals 16→17 (score 2.7: impact 3, ease 9). Per iterate policy, major version jumps require deliberate phases rather than automated updates. All represent non-blocking improvements to dev experience.
+**Category G (Dependencies)** — 3 major bumps available: typescript 5→6 (score 3.6: impact 4, ease 9), inquirer 9→12 (score 2.8: impact 4, ease 7), globals 16→17 (score 2.7: impact 3, ease 9). Per iterate policy, major version jumps require deliberate phases rather than automated updates. All represent non-blocking improvements to dev experience. These are PROMOTED to Phase 143 (per oversight 2026-06-13) and should NOT be re-filed.
 
-All other categories (Z, A, B, C, D, E, F, H) found 0 findings. Test coverage comprehensive (121 hermetic *.engine.test.ts files), type safety clean (1 justified @ts-ignore), no dead code, commit status clean, documentation current.
+All other categories (Z, A, B, C, D, E, F, H) found 0 findings. Test coverage comprehensive (106 hermetic *.engine.test.ts files), type safety clean (1 justified @ts-ignore), no dead code, commit status clean, documentation current.
 
 **Zero findings scoring ≥ 3.0 and bold posture trigger iterate failure mode 3 — dispatching to /expand.**
 
