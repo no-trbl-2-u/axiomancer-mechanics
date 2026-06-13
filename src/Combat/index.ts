@@ -210,3 +210,13 @@ export function isValidCombatAction(action: Partial<CombatAction>): action is Co
 // Legacy export name retained for backward compatibility with any older code
 // that imported `applyDamage` and `healCharacter` separately.
 export { heal as healCharacter } from './health';
+
+// Phase 142 — Status effect resolution constants and interaction support
+export {
+    STATUS_RESOLUTION_DEBUFF_THRESHOLD,
+    STATUS_RESOLUTION_DOT_THRESHOLD,
+    STATUS_RESOLUTION_DOT_MAX_ROUNDS,
+    STATUS_ENGAGEMENT_FLOOR_PERCENT,
+    INTERACTION_AMPLIFICATION,
+    INTERACTION_PRIORITY
+} from './resolution.constants';

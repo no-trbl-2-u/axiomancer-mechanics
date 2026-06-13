@@ -65,6 +65,10 @@ export {
     getEffectsResolutionOutcome,
     healCharacter,
     calculateEnemyStatMultiplier, applyMoralMeterScaling,
+    // Phase 142 — Status effect resolution constants
+    STATUS_RESOLUTION_DEBUFF_THRESHOLD, STATUS_RESOLUTION_DOT_THRESHOLD,
+    STATUS_RESOLUTION_DOT_MAX_ROUNDS, STATUS_ENGAGEMENT_FLOOR_PERCENT,
+    INTERACTION_AMPLIFICATION, INTERACTION_PRIORITY,
 } from './Combat';
 export type {
     Stance, Action, Advantage, CritStyle, CombatAction, CombatPhase,
@@ -95,6 +99,10 @@ export {
     clearTier1EffectsForStance,
     lookupEffect, getEffectByName, getEffectsByType, effectsLibrary,
     processWorldEffectTick, getActiveHazards,
+    // Phase 142 — Status effect depth functionality
+    evaluateInteractions, checkInteractionTrigger, applyInteractionResult,
+    EFFECT_INTERACTIONS, getInteractionsForEffect, getAllInteractionIds,
+    getInteractionById, validateInteractions,
 } from './Effects';
 export type {
     Effect, EffectType, EffectTier, EffectStacking, EffectCategory, EffectPayload,
@@ -103,6 +111,8 @@ export type {
     EffectStatTarget,
     ApplyEffectOptions, Tier1Outcome,
     WorldTickResult, ActiveHazard,
+    // Phase 142 — Status effect interaction types
+    EffectInteraction, InteractionTrigger, InteractionResult, InteractionTriggerType,
 } from './Effects';
 
 // ─── Items ────────────────────────────────────────────────────────────────────
@@ -140,12 +150,17 @@ export type {
     SkillLearningRequirement, SkillCombatEffects,
     BasicActionOutcome, SkillEvent, SkillResolution, SkillLookup,
     SkillSynergy, SynergyPredicate,
+    // Phase 142 — Extended synergy predicates
+    ExtendedSynergyPredicate,
 } from './Skills';
 export {
     generateBasicActionResources, generatePhilosophicalResource,
     canUseSkill, spendResources, calculateSkillDamage, executeSkill,
     meetsLearningRequirement, getAvailableSkills, learnSkill,
     skillLibrary, getSkillById,
+    // Phase 142 — Extended synergy predicate functionality
+    evaluateExtendedSynergyPredicate, checkSinglePredicate, checkAnyCountPredicate,
+    checkAllRequiredPredicate, checkBuffDebuffCombo, checkTotalIntensityPredicate,
 } from './Skills';
 
 // ─── Game (state, store, persistence, constants) ──────────────────────────────

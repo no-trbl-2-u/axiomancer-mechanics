@@ -15,6 +15,19 @@ export type {
     SkillSynergy, SynergyPredicate,
 } from './types';
 
+// Phase 142 — Extended synergy predicate types
+export type { ExtendedSynergyPredicate } from './synergy-predicates';
+
+// Phase 142 — Extended synergy predicate functionality
+export {
+    evaluateExtendedSynergyPredicate,
+    checkSinglePredicate,
+    checkAnyCountPredicate,
+    checkAllRequiredPredicate,
+    checkBuffDebuffCombo,
+    checkTotalIntensityPredicate
+} from './synergy-predicates';
+
 export {
     generateBasicActionResources, generatePhilosophicalResource,
     canUseSkill, spendResources, calculateSkillDamage, executeSkill,
