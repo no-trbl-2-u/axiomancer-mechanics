@@ -392,6 +392,7 @@
     "PreviewAllocation",
     "PreviewResult",
     "Quest",
+    "QuestEventPayload",
     "QuestItem",
     "QuestLog",
     "QuestName",
