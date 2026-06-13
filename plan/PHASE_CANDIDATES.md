@@ -52,13 +52,13 @@
 
 ## Pending
 
-### Candidate: Unlocked Skill Access (Phase 99)
-- signal: specs/README.md lists Phase 99 as **NEXT** in recommended order; spec is fully written and ready for implementation
-- scope: Remove legacy equipped-skill/loadout gate from player skill access. Characters' learned/unlocked skills become the whole combat-accessible catalogue, filtered by current resources via canUseSkill(). 
-- unblocks: Aligns implementation with documented skill system design; removes confusing equipped-skill ritual; makes skill progression more intuitive for mobile consumers
-- blocked-by: None (spec shows no dependencies)
-- score: 4 × 8 / 10 = 3.2
-- recommended-slot: after Phase 140 (next available phase number)
+<!-- Unlocked Skill Access (Phase 99) — promoted to Phase 141 via oversight 2026-06-13 (Q1: T pick — "Promote Phase 99 (skill access)"). See ## Promoted. -->
+
+<!-- Status-effect depth (doctrine-central) — filed directly as Phase 142 via oversight 2026-06-13 (Q1: T pick — "File status-effect depth phase"); net-new direction, no prior candidate row. See build plan + ## Promoted. -->
+
+<!-- Dependency modernization (TS 5→6 / inquirer 9→12 / globals 16→17) — filed as Phase 143 via oversight 2026-06-13 (Q2: T pick — "File one modernization phase") from AUDIT.md Pending Category G. See ## Promoted. -->
+
+<!-- Count correction (oversight 2026-06-13): expand passes 39–56 repeatedly asserted "11 Pending" in their metadata, but the live ## Pending section held only 2 `### Candidate:` rows (Unlocked Skill Access + Northern Forest Region Extension); the rest had already been promoted/rejected and moved out. After this oversight, 1 live Pending candidate remains: Northern Forest Region Extension. /expand should count live `### Candidate:` headers, not historical comments. -->
 
 <!-- Hazard Minigame — Persistent World-State Tracking — promoted to Phase 135 via oversight 2026-06-11 (Q1: T pick). See ## Promoted. -->
 
@@ -89,6 +89,15 @@
 <!-- Game Module Documentation Coverage — promoted to Phase 132 via oversight 2026-06-09 (Q3 T pick). See ## Promoted. -->
 
 ## Promoted
+
+### Phase 143 — Dependency modernization (major bumps)
+- promoted: 2026-06-13 (oversight Q2 — T pick: "File one modernization phase"). Build-plan row added as Phase 143. Scope: drain the three live AUDIT major-version findings (Category G) in one deliberate phase — TypeScript 5→6 (3.6), inquirer 9→12 (2.8), globals 16→17 (2.7); resolve breaking changes; keep the gate green. Tooling/deps only. Source: AUDIT.md Pending pass 52.
+
+### Phase 142 — Status-effect depth (doctrine-central)
+- promoted: 2026-06-13 (oversight Q1 — T pick: "File status-effect depth phase"). Net-new direction, no prior candidate row. Build-plan row added as Phase 142. **Doctrine-load-bearing** (CLAUDE.md: status effects are the MAIN fun). Scope: deepen status-effect breadth/synergy and re-examine Phase 125/126/130 resolution thresholds so engaged-but-unresolved timeout cells yield/die, WITHOUT a basic-attack-trade regression (STRATEGIST status engagement ≥40% floor). Values/registry/content only — no core resolution-formula rewrites, no new outcome union members. Pin exact scope at an attended `/plan-a-phase` brief before shipping. Source: T oversight 2026-06-13 directive + Phase 126/130 closeout signal.
+
+### Phase 141 — Unlocked skill access (spec Phase 99)
+- promoted: 2026-06-13 (oversight Q1 — T pick: "Promote Phase 99 (skill access)"). Was "Unlocked Skill Access (Phase 99)" (score 4 × 8 / 10 = 3.2). Build-plan row added as Phase 141. Scope: remove the legacy equipped-skill/loadout gate; learned/unlocked skills become the whole combat catalogue, filtered at use-time by `canUseSkill()`. Implements specs/README **NEXT** recommended-order spec. Source: PHASE_CANDIDATES Pending + specs/README.
 
 ### Phase 140 — Hazard minigame vs divergence documentation audit
 - promoted: 2026-06-11 (oversight T write-in: "double check the current hazard minigame against the deviations documentation"). Build-plan row added as Phase 140. Scope: verify current hazard implementation (post-Phase-134 + Phase-135) satisfies every item in `docs/hazard-v2-vs-mechanics-divergence.md`; walk each divergence item for implementation status and parity-test coverage; surface any gaps to T before patching. Source: T oversight 2026-06-11.

@@ -46,6 +46,8 @@
 
 ## Pending
 
+<!-- oversight 2026-06-13 (Q2 — T pick: "File one modernization phase"): the three Category-G major-bump findings below (TypeScript 5→6, inquirer 9→12, globals 16→17) are PROMOTED to build-plan Phase 143 (Dependency modernization). They are no longer loose iterate-tier findings — /iterate should NOT re-file them; they drain when Phase 143 ships. -->
+
 <!-- Comprehensive audit findings (updated by /iterate after each audit):
 > Last pass: 2026-06-13 at commit 7a7b840
 
