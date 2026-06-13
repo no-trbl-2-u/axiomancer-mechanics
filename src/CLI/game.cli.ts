@@ -11,7 +11,7 @@
  *   • Combat     — drives `resolveCombatRound` against the active
  *                  encounter. Skipped when no combat is in progress.
  *   • Journal    — read-only: active / completed quests + alignment stub.
- *   • Skills     — read-only: known + equipped skills.
+ *   • Skills     — read-only: known/unlocked skills.
  *   • Inventory  — read-only listing of carried items.
  *
  * Logic stays in the store / reducer. This file only formats and dispatches.
@@ -103,7 +103,7 @@ async function pickTab(canFight: boolean): Promise<Tab> {
         { name: 'Map        — travel + resolve node events', value: 'map' },
         ...(canFight ? [{ name: 'Combat     — resume the active fight', value: 'combat' as Tab }] : []),
         { name: 'Journal    — quests + alignment', value: 'journal' },
-        { name: 'Skills     — known + equipped', value: 'skills' },
+        { name: 'Skills     — known/unlocked', value: 'skills' },
         { name: 'Codex      — unlocked journal entries from befriended foes (Phase 73)', value: 'codex' },
         { name: 'Inventory  — items in pack', value: 'inventory' },
         { name: 'Character  — full stats + equipment + effects sheet', value: 'character' },
@@ -671,7 +671,7 @@ async function devTab(store: GameStoreHandle): Promise<void> {
             { name: 'Set level',               value: 'set-level' },
             { name: 'Set base stats',           value: 'set-stats' },
             { name: 'Learn skills (pick/all)',   value: 'learn-skills' },
-            { name: 'Unlock skills (legacy)',   value: 'equip-skills' },
+            { name: 'Unlock skills (DEPRECATED)',   value: 'equip-skills' },
             { name: 'Grant all equipment',       value: 'grant-equipment' },
             { name: 'Grant all consumables',     value: 'grant-consumables' },
             { name: 'Equip specific item',       value: 'equip-item' },
@@ -728,21 +728,9 @@ async function devTab(store: GameStoreHandle): Promise<void> {
             break;
         }
         case 'equip-skills': {
-            log('\n[DEPRECATED] This tool is kept for backward compatibility.');
-            log('In Phase 99, all known skills are unlocked for combat use.');
-            log('Use \'Learn skills\' to add skills to your known catalogue.\n');
-            const known = store.getState().player.knownSkills;
-            if (known.length === 0) { log('\nNo skills known. Learn some first.\n'); break; }
-            const { skills } = await prompt<{ skills: string[] }>([{
-                type: 'checkbox', name: 'skills', message: 'Legacy equip (for testing only):',
-                choices: known.map(id => ({
-                    name: id,
-                    value: id,
-                    checked: store.getState().player.equippedSkills.includes(id),
-                })),
-            }]);
-            const r = devEquipSkills(store, skills.slice(0, 4));
-            log(`\n${r.detail}\n`);
+            log('\n[DEPRECATED] Skill equipment was removed in Phase 99.');
+            log('All known skills are automatically available for combat use.');
+            log('Use \'Learn skills\' to add skills to your known catalogue.');
             break;
         }
         case 'grant-equipment': {
