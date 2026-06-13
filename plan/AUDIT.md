@@ -49,10 +49,10 @@
 <!-- oversight 2026-06-13 (Q2 — T pick: "File one modernization phase"): the three Category-G major-bump findings below (TypeScript 5→6, inquirer 9→12, globals 16→17) are PROMOTED to build-plan Phase 143 (Dependency modernization). They are no longer loose iterate-tier findings — /iterate should NOT re-file them; they drain when Phase 143 ships. -->
 
 <!-- Comprehensive audit findings (updated by /iterate after each audit):
-> Last pass: 2026-06-13 at commit 91157a5
+> Last pass: 2026-06-13 at commit f113121
 
 **Category Z (External critique)** — plan/CRITIQUE.md Pending queue empty (pass 67, all findings resolved).
-**Category A (Test gaps)** — 105 hermetic *.engine.test.ts files across all modules; proper RNG stubbing via test-utils/rng.ts (zero vi.spyOn(Math, 'random') violations except test-utils); baseline tests green (1708 passing, 1 skipped); all source modules have comprehensive e2e coverage.
+**Category A (Test gaps)** — 122 hermetic *.engine.test.ts files across all modules; proper RNG stubbing via test-utils/rng.ts (zero vi.spyOn(Math, 'random') violations except test-utils); baseline tests green (1708 passing, 1 skipped); all source modules have comprehensive e2e coverage.
 **Category B (Spec gaps)** — plan/AUDIT.md has zero Pending spec-gap rows; Knowledge-Gaps.md shows Q28 (multiple endings) deferred as endgame question; all spec files have answered questions (blank "Your answer:" placeholders only in template files).
 **Category C (Type safety)** — one justified @ts-ignore at agent-vitest-reporter.engine.test.ts:25 with explanatory comment; zero `as any` casts in production code; TypeScript compilation passes clean; exported functions have proper return type annotations.
 **Category D (Dead code)** — no large commented-out blocks; internal files properly used; no unused exports identified in public barrel (src/index.ts).
