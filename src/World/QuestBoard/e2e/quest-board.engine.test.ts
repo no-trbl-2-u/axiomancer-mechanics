@@ -43,18 +43,34 @@ function idle(seed = 7): QuestBoardSession {
     return beginQuestBoard(fresh(seed));
 }
 
-/** Drives one full turn: roll → (auto-pick first enabled option) → continue. */
+/**
+ * The option a cautious naive player would take on an open card: leave the
+ * market without buying, take exactly one gather press then bank, otherwise
+ * the first enabled option.
+ */
+function naivePick(pending: NonNullable<QuestBoardSession['pending']>): string {
+    const enabled = pending.options.filter(o => !o.disabledReason);
+    if (pending.kind === 'market') return enabled.find(o => o.id === 'leave')!.id;
+    if (pending.kind === 'gather') {
+        const pressedOnce = (pending.presses ?? 0) >= 1;
+        const wants = pressedOnce ? 'stop' : 'press';
+        return (enabled.find(o => o.id === wants) ?? enabled[0]).id;
+    }
+    return enabled[0].id;
+}
+
+/** Drives one full turn: roll → (auto-pick the naive option) → continue. */
 function playTurn(s: QuestBoardSession): QuestBoardSession {
     let next = rollQuestBone(s);
     if (next.phase === 'outcome') return next;
-    // Resolve any open options (market: buy nothing, just leave).
+    // Resolve any open options the way a cautious naive player would:
+    // markets browse-and-leave; gathers take one press then bank (rather
+    // than pressing until they bust); everything else takes the first
+    // enabled option.
     while (next.phase === 'space' && next.pending !== null && next.pending.result === null) {
-        const enabled = next.pending.options.filter(o => !o.disabledReason);
-        const pick = next.pending.kind === 'market'
-            ? enabled.find(o => o.id === 'leave')!
-            : enabled[0];
-        const chosen = chooseQuestSpaceOption(next, pick.id);
-        if (chosen === next) throw new Error(`option ${pick.id} did not resolve`);
+        const pick = naivePick(next.pending);
+        const chosen = chooseQuestSpaceOption(next, pick);
+        if (chosen === next) throw new Error(`option ${pick} did not resolve`);
         next = chosen;
     }
     if (next.phase === 'space') next = continueQuestSpace(next);
@@ -189,52 +205,90 @@ describe('spaces', () => {
     function playTurnFrom(rolled: QuestBoardSession): QuestBoardSession {
         let next = rolled;
         while (next.phase === 'space' && next.pending !== null && next.pending.result === null) {
-            const enabled = next.pending.options.filter(o => !o.disabledReason);
-            const pick = next.pending.kind === 'market'
-                ? enabled.find(o => o.id === 'leave')!
-                : enabled[0];
-            next = chooseQuestSpaceOption(next, pick.id);
+            next = chooseQuestSpaceOption(next, naivePick(next.pending));
         }
         if (next.phase === 'space') next = continueQuestSpace(next);
         if (next.phase === 'dusk') next = acknowledgeQuestDusk(next);
         return next;
     }
 
-    it('gather: the safe take yields without risk; the deep take rolls', () => {
+    it('gather: pressing grows the wet haul; stopping banks it; a bust forfeits it', () => {
         const s = landOn('gather');
         const def = questBoardDefOf(s);
         const space = def.spaces[s.pos];
         if (space.kind !== 'gather') throw new Error('not gather');
-        const before = s.parts[space.gather.part];
+        const g = space.gather;
+        const beforeParts = s.parts[g.part];
 
-        const safe = chooseQuestSpaceOption(s, 'safe');
-        expect(safe.parts[space.gather.part]).toBe(before + space.gather.safeYield);
-        expect(safe.pending!.result).not.toBeNull();
+        // Stopping immediately at zero banks nothing and risks nothing.
+        const leftBe = chooseQuestSpaceOption(s, 'stop');
+        expect(leftBe.pending!.result).not.toBeNull();
+        expect(leftBe.parts[g.part]).toBe(beforeParts);
+        expect(leftBe.vigor).toBe(s.vigor);
 
-        const deep = chooseQuestSpaceOption(s, 'deep');
-        const roll = deep.pending!.result!.rolls[0];
-        if (roll >= space.gather.deepThreshold) {
-            expect(deep.parts[space.gather.part]).toBe(before + space.gather.deepYield);
-            expect(deep.vigor).toBe(s.vigor);
+        // One press either grows the haul (still open) or busts (closed).
+        const pressed = chooseQuestSpaceOption(s, 'press');
+        const roll = pressed.pending!.result?.rolls[0]
+            ?? pressed.pending!.options.length; // sentinel only used in the open branch
+        if (pressed.pending!.result !== null) {
+            // Bust: a face at or below the floor, haul forfeit, vigor bitten.
+            expect(pressed.pending!.result!.rolls[0]).toBeLessThanOrEqual(g.bustFloor);
+            expect(pressed.parts[g.part]).toBe(beforeParts);
+            expect(pressed.vigor).toBe(s.vigor - g.bustBite);
         } else {
-            expect(deep.parts[space.gather.part]).toBe(before + space.gather.safeYield);
-            expect(deep.vigor).toBe(s.vigor - space.gather.deepBite);
+            expect(roll).toBeGreaterThan(g.bustFloor);
+            expect(pressed.pending!.haul).toBe(g.perPress);
+            expect(pressed.pending!.presses).toBe(1);
+            // Now banking carries off exactly the wet haul.
+            const banked = chooseQuestSpaceOption(pressed, 'stop');
+            expect(banked.parts[g.part]).toBe(beforeParts + g.perPress);
+            expect(banked.pending!.result).not.toBeNull();
         }
     });
 
-    it('duel: fight wins spoils, loses vigor, or stands off; bribe costs fish', () => {
+    it('gather: the spot runs dry at maxPress, forcing a bank', () => {
+        // Seek any gather landing whose presses never bust up to the cap,
+        // then confirm PRESS disappears and only STOP remains.
+        for (let seed = 1; seed < 4000; seed++) {
+            let s = idle(seed);
+            for (let turn = 0; turn < 12 && s.phase === 'idle'; turn++) {
+                const rolled = rollQuestBone(s);
+                if (rolled.phase === 'space' && rolled.pending?.kind === 'gather') {
+                    const space = questBoardDefOf(rolled).spaces[rolled.pos];
+                    if (space.kind !== 'gather') break;
+                    const g = space.gather;
+                    let cur = rolled;
+                    let busted = false;
+                    for (let i = 0; i < g.maxPress; i++) {
+                        cur = chooseQuestSpaceOption(cur, 'press');
+                        if (cur.pending!.result !== null) { busted = true; break; }
+                    }
+                    if (busted) break;
+                    expect(cur.pending!.presses).toBe(g.maxPress);
+                    expect(cur.pending!.options.some(o => o.id === 'press')).toBe(false);
+                    expect(cur.pending!.options.some(o => o.id === 'stop')).toBe(true);
+                    return;
+                }
+                s = playTurnFrom(rolled);
+            }
+        }
+        throw new Error('no bust-free run to the cap found');
+    });
+
+    it('duel: a no-grit fight wins spoils, loses vigor, or stands off; bribe costs fish', () => {
         const s = landOn('duel');
         const def = questBoardDefOf(s);
         const space = def.spaces[s.pos];
         if (space.kind !== 'duel') throw new Error('not duel');
 
-        const fought = chooseQuestSpaceOption(s, 'fight');
+        const fought = chooseQuestSpaceOption(s, 'fight-0');
         const [yours, theirs] = fought.pending!.result!.rolls;
         const yourTotal = yours;
         const theirTotal = theirs + space.duel.foeBonus;
         if (yourTotal > theirTotal) {
             expect(fought.parts[space.duel.spoils.part]).toBe(s.parts[space.duel.spoils.part] + space.duel.spoils.count);
             expect(fought.metrics.duelsWon).toBe(1);
+            expect(fought.vigor).toBe(s.vigor); // no grit spent
         } else if (yourTotal < theirTotal) {
             expect(fought.vigor).toBe(s.vigor - space.duel.bite);
             expect(fought.metrics.duelsLost).toBe(1);
@@ -246,6 +300,39 @@ describe('spaces', () => {
         const bribed = chooseQuestSpaceOption(s, 'bribe');
         expect(bribed.fish).toBe(s.fish - space.duel.bribeFish);
         expect(bribed.metrics.fishSpent).toBe(s.metrics.fishSpent + space.duel.bribeFish);
+    });
+
+    it('duel: grit is spent up front (win or lose) and buys +1 per token on your die', () => {
+        const s = landOn('duel');
+        const space = questBoardDefOf(s).spaces[s.pos];
+        if (space.kind !== 'duel') throw new Error('not duel');
+        const grit = QUEST_BOARD_TUNING.duelMaxGrit;
+        const gritVigor = grit * QUEST_BOARD_TUNING.duelGritVigor;
+        const gritBonus = grit * QUEST_BOARD_TUNING.duelGritBonus;
+
+        const dug = chooseQuestSpaceOption(s, `fight-${grit}`);
+        const [yours, theirs] = dug.pending!.result!.rolls;
+        const won = yours + gritBonus > theirs + space.duel.foeBonus;
+        if (won) {
+            // Win: only the grit vigor is spent.
+            expect(dug.vigor).toBe(s.vigor - gritVigor);
+            expect(dug.metrics.duelsWon).toBe(1);
+        } else {
+            // Loss/standoff still costs the committed grit; a loss adds the bite.
+            const tie = yours + gritBonus === theirs + space.duel.foeBonus;
+            expect(dug.vigor).toBe(s.vigor - gritVigor - (tie ? 0 : space.duel.bite));
+        }
+    });
+
+    it('duel: grit beyond your vigor cannot be forced', () => {
+        // Pin vigor below the cost of max grit; the engine refuses it even
+        // if a stale card still offered it.
+        const s = { ...landOn('duel'), vigor: 1 };
+        expect(chooseQuestSpaceOption(s, `fight-${QUEST_BOARD_TUNING.duelMaxGrit}`)).toBe(s);
+        // The no-grit fight is always affordable.
+        const fought = chooseQuestSpaceOption(s, 'fight-0');
+        expect(fought).not.toBe(s);
+        expect(fought.pending!.result).not.toBeNull();
     });
 
     it('snag: a failed crossing bites and slips the piece back', () => {
@@ -288,6 +375,35 @@ describe('spaces', () => {
         expect(left.pending!.result!.body).toContain(def.partNames[offer.part]);
     });
 
+    it('market: repeat buys of the same stall cost more fish each time', () => {
+        const s = landOn('market', { fish: 30 });
+        const space = questBoardDefOf(s).spaces[s.pos];
+        if (space.kind !== 'market') throw new Error('not market');
+        const offer = space.market.offers[0];
+
+        const first = chooseQuestSpaceOption(s, 'offer-0');
+        expect(first.fish).toBe(s.fish - offer.fishCost);
+
+        const second = chooseQuestSpaceOption(first, 'offer-0');
+        const secondPrice = offer.fishCost + QUEST_BOARD_TUNING.marketRamp;
+        expect(second.fish).toBe(first.fish - secondPrice);
+        expect(second.pending!.purchases![0]).toBe(2);
+        // The reopened option advertises the climbed price.
+        expect(second.pending!.options.find(o => o.id === 'offer-0')!.desc).toContain(String(secondPrice + QUEST_BOARD_TUNING.marketRamp));
+    });
+
+    it('snag: bracing spends a held resource to cross (and can be declined for the bare roll)', () => {
+        const s = landOn('snag', { fish: 6 });
+        const space = questBoardDefOf(s).spaces[s.pos];
+        if (space.kind !== 'snag') throw new Error('not snag');
+        if (s.pending!.result !== null) return; // tar-twine auto-crossed; nothing to brace
+        const brace = s.pending!.options.find(o => o.id === 'brace-fish');
+        expect(brace).toBeDefined();
+        const braced = chooseQuestSpaceOption(s, 'brace-fish');
+        expect(braced.fish).toBe(s.fish - QUEST_BOARD_TUNING.snagBraceFish);
+        expect(braced.pending!.result).not.toBeNull();
+    });
+
     it('market: an unaffordable offer is disabled and cannot be forced', () => {
         const s = landOn('market', { fish: 0 });
         const offers = s.pending!.options.filter(o => o.id.startsWith('offer-'));
@@ -310,14 +426,53 @@ describe('spaces', () => {
         }
     });
 
-    it('hearth, cache, and omen resolve immediately into a result card', () => {
-        for (const kind of ['hearth', 'cache', 'omen'] as const) {
+    it('cache and omen resolve immediately into a result card', () => {
+        for (const kind of ['cache', 'omen'] as const) {
             const s = landOn(kind);
             expect(s.pending!.options).toHaveLength(0);
             expect(s.pending!.result).not.toBeNull();
             const cont = continueQuestSpace(s);
             expect(['idle', 'dusk']).toContain(cont.phase);
         }
+    });
+
+    /** Scans plays for a hearth ARRIVAL (options still open) matching pred. */
+    function findHearthArrival(pred: (s: QuestBoardSession) => boolean): QuestBoardSession | null {
+        for (let seed = 1; seed < 4000; seed++) {
+            let s = idle(seed);
+            for (let turn = 0; turn < 14 && s.phase === 'idle'; turn++) {
+                const rolled = rollQuestBone(s);
+                if (rolled.phase === 'space' && rolled.pending?.kind === 'hearth'
+                    && rolled.pending.result === null && pred(rolled)) {
+                    return rolled;
+                }
+                s = playTurnFrom(rolled);
+            }
+        }
+        return null;
+    }
+
+    it('hearth: REST is always offered and heals (or no-ops) in one tap', () => {
+        const s = findHearthArrival(() => true);
+        if (!s) throw new Error('no hearth arrival found');
+        expect(s.pending!.options.some(o => o.id === 'rest')).toBe(true);
+        const rested = chooseQuestSpaceOption(s, 'rest');
+        expect(rested.pending!.result).not.toBeNull();
+        expect(rested.vigor).toBeGreaterThanOrEqual(s.vigor);
+        expect(rested.vigor).toBeLessThanOrEqual(questBoardDefOf(s).maxVigor);
+    });
+
+    it('hearth: LINGER only appears when it helps, then costs fish for extra vigor', () => {
+        // At full vigor there is nothing to gain, so LINGER is hidden.
+        const full = findHearthArrival(s => s.vigor === questBoardDefOf(s).maxVigor);
+        if (full) expect(full.pending!.options.some(o => o.id === 'linger')).toBe(false);
+
+        // Hurt and provisioned, LINGER is on offer and out-heals plain rest.
+        const hurt = findHearthArrival(s => s.pending!.options.some(o => o.id === 'linger'));
+        if (!hurt) throw new Error('no hearth arrival offered LINGER');
+        const lingered = chooseQuestSpaceOption(hurt, 'linger');
+        expect(lingered.fish).toBe(hurt.fish - QUEST_BOARD_TUNING.hearthLingerFish);
+        expect(lingered.vigor).toBeGreaterThan(hurt.vigor);
     });
 
     it('omen banks wind that boosts and then clears on the next roll', () => {

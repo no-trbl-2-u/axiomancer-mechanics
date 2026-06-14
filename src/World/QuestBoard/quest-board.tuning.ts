@@ -30,6 +30,31 @@ export const QUEST_BOARD_TUNING = Object.freeze({
     fedLarderFish: 4,
     gullsBaneWins: 2,
     taleCollectorCount: 2,
+
+    // ── Micro-game dials (the per-space decision shapes) ────────────────────
+    // Each space kind plays a DIFFERENT verb so landing on it feels distinct;
+    // these centralise the shared numbers. See `docs/quest-board.md`.
+
+    /** DUEL — best-of-1 + grit. Grit assignable before the single roll. */
+    duelMaxGrit: 2,
+    /** Vigor each grit token costs (paid up front, win or lose). */
+    duelGritVigor: 1,
+    /** +die per grit committed. */
+    duelGritBonus: 1,
+
+    /** SNAG — bracing lowers the crossing threshold by this much. */
+    snagBraceDrop: 2,
+    /** Wind spent to brace (preferred over fish when both are offered). */
+    snagBraceWind: 1,
+    /** Fish spent to brace when no wind is banked. */
+    snagBraceFish: 1,
+
+    /** MARKET — each repeat buy of the SAME stall costs this much more fish. */
+    marketRamp: 1,
+
+    /** HEARTH — LINGER eats provisions for extra rest. */
+    hearthLingerFish: 1,
+    hearthLingerVigor: 2,
 });
 
 export const QUEST_STRETCHES_PER_DAY = QUEST_BOARD_TUNING.stretchesPerDay;

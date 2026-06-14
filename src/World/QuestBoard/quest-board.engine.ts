@@ -48,7 +48,9 @@ import {
     type QuestBoardSession,
     type QuestCharmId,
     type QuestCharmState,
+    type QuestMarketOffer,
     type QuestOutcomeTier,
+    type QuestParleyOption,
     type QuestPartTally,
     type QuestPendingSpace,
     type QuestSpaceDef,
@@ -378,32 +380,33 @@ function arriveAtSpace(s: QuestBoardSession): QuestBoardSession {
         }
 
         case 'gather': {
-            const g = space.gather;
-            const hooked = isPrimed(s, 'lucky-hook');
-            const options: QuestSpaceOption[] = [
-                {
-                    id: 'safe',
-                    label: 'TAKE WHAT LIES EASY',
-                    desc: `+${g.safeYield * (hooked ? 2 : 1)} ${def.partNames[g.part]}, no risk.`,
-                },
-                {
-                    id: 'deep',
-                    label: 'WADE IN DEEPER',
-                    desc: `Roll ${g.deepThreshold}+: +${g.deepYield * (hooked ? 2 : 1)} ${def.partNames[g.part]}. Fail: the easy take, −${g.deepBite} vigor.`,
-                },
-            ];
-            return openSpace(s, space, options, null);
+            // Press-your-luck: wade deeper for more, or bank the wet haul.
+            return openSpace(s, space, gatherOptions(def, space, 0, 0), null, {
+                haul: 0,
+                presses: 0,
+            });
         }
 
         case 'duel': {
+            // Best-of-1, but you allocate GRIT (vigor) before the single
+            // cast — each grit buys +1 on your die. The only space that
+            // asks you to price a roll before you make it.
             const d = space.duel;
-            const options: QuestSpaceOption[] = [
-                {
-                    id: 'fight',
-                    label: 'STAND AND FIGHT',
-                    desc: `Your bone against its tusk (+${d.foeBonus}). Win: +${d.spoils.count} ${def.partNames[d.spoils.part]}. Lose: −${d.bite} vigor.`,
-                },
-            ];
+            const locketBonus = isPrimed(s, 'mothers-locket') ? 2 : 0;
+            const spoils = `+${d.spoils.count} ${def.partNames[d.spoils.part]}`;
+            const options: QuestSpaceOption[] = [];
+            for (let grit = 0; grit <= T.duelMaxGrit; grit++) {
+                const vigCost = grit * T.duelGritVigor;
+                const bonus = grit * T.duelGritBonus + locketBonus;
+                options.push({
+                    id: `fight-${grit}`,
+                    label: grit === 0 ? 'STAND AND FIGHT' : `DIG IN (+${grit} GRIT)`,
+                    desc: `Your bone +${bonus} vs its tusk (+${d.foeBonus}).`
+                        + (vigCost > 0 ? ` Spend ${vigCost} vigor.` : '')
+                        + ` Win: ${spoils}. Lose: −${d.bite} vigor.`,
+                    ...(s.vigor <= vigCost ? { disabledReason: 'Not enough vigor to dig in.' } : {}),
+                });
+            }
             if (d.bribeFish > 0) {
                 options.push({
                     id: 'bribe',
@@ -431,6 +434,9 @@ function arriveAtSpace(s: QuestBoardSession): QuestBoardSession {
                     space, [], result,
                 );
             }
+            // Insurance ladder: cross bare (free, risky), BRACE (cheap,
+            // safer — spends a hoarded resource), or detour (dear, certain).
+            const braced = Math.max(1, n.threshold - T.snagBraceDrop);
             const options: QuestSpaceOption[] = [
                 {
                     id: 'risk',
@@ -438,6 +444,20 @@ function arriveAtSpace(s: QuestBoardSession): QuestBoardSession {
                     desc: `Roll ${n.threshold}+ to cross clean. Fail: −${n.bite} vigor, slip back ${n.slipBack}.`,
                 },
             ];
+            if (s.wind >= T.snagBraceWind) {
+                options.push({
+                    id: 'brace-wind',
+                    label: 'BRACE ON THE WIND',
+                    desc: `Spend ${T.snagBraceWind} wind: cross on ${braced}+ instead.`,
+                });
+            }
+            if (s.fish >= T.snagBraceFish) {
+                options.push({
+                    id: 'brace-fish',
+                    label: 'BRACE WITH A ROPE',
+                    desc: `−${T.snagBraceFish} fish: cross on ${braced}+ instead.`,
+                });
+            }
             if (n.detourFish > 0) {
                 options.push({
                     id: 'detour',
@@ -452,20 +472,33 @@ function arriveAtSpace(s: QuestBoardSession): QuestBoardSession {
         }
 
         case 'hearth': {
-            const healed = Math.min(space.hearth.vigor, getQuestBoardDef(s.boardId).maxVigor - s.vigor);
-            const result: QuestSpaceResult = {
-                ...emptyResult(),
-                title: 'STEW AND SILENCE',
-                body: healed > 0
-                    ? `The fire does its old work. +${healed} vigor.`
-                    : 'Nothing aches yet. The fire keeps its counsel for later.',
-                vigorDelta: healed,
-            };
-            return openSpace(s, space, [], result);
+            // Light by design: REST is a one-tap heal; LINGER only appears
+            // when it would actually help and you can pay for the meal.
+            const rest = Math.min(space.hearth.vigor, def.maxVigor - s.vigor);
+            const linger = Math.min(space.hearth.vigor + T.hearthLingerVigor, def.maxVigor - s.vigor);
+            const options: QuestSpaceOption[] = [
+                {
+                    id: 'rest',
+                    label: 'STEW AND SILENCE',
+                    desc: rest > 0 ? `+${rest} vigor by the fire.` : 'Nothing aches yet — sit a while anyway.',
+                },
+            ];
+            if (s.fish >= T.hearthLingerFish && linger > rest) {
+                options.push({
+                    id: 'linger',
+                    label: 'LINGER FOR A HOT MEAL',
+                    desc: `−${T.hearthLingerFish} fish, +${linger} vigor.`,
+                });
+            }
+            return openSpace(s, space, options, null);
         }
 
         case 'market': {
-            return openSpace(s, space, marketOptions(s, space), null, []);
+            const purchases = space.market.offers.map(() => 0);
+            return openSpace(s, space, marketOptions(s, space, purchases), null, {
+                ledger: [],
+                purchases,
+            });
         }
 
         case 'parley': {
@@ -474,7 +507,7 @@ function arriveAtSpace(s: QuestBoardSession): QuestBoardSession {
                 id: o.id,
                 label: o.label,
                 desc: o.desc,
-                ...((o.fish ?? 0) < 0 && s.fish < -(o.fish ?? 0)
+                ...(s.fish < parleyFishNeeded(o)
                     ? { disabledReason: 'Not enough fish.' }
                     : {}),
             }));
@@ -520,16 +553,46 @@ function arriveAtSpace(s: QuestBoardSession): QuestBoardSession {
     }
 }
 
-function marketOptions(s: QuestBoardSession, space: Extract<QuestSpaceDef, { kind: 'market' }>): QuestSpaceOption[] {
+/** Current fish price of a market offer given how often it's been bought. */
+function marketPrice(offer: QuestMarketOffer, bought: number): number {
+    return offer.fishCost + bought * T.marketRamp;
+}
+
+/**
+ * Fish a parley option needs in hand: the larger of what it spends and any
+ * `requires.fish` gate (a full purse the NPC respects without taking it).
+ */
+function parleyFishNeeded(o: QuestParleyOption): number {
+    const spent = (o.fish ?? 0) < 0 ? -(o.fish ?? 0) : 0;
+    return Math.max(spent, o.requires?.fish ?? 0);
+}
+
+function marketOptions(
+    s: QuestBoardSession,
+    space: Extract<QuestSpaceDef, { kind: 'market' }>,
+    purchases: readonly number[],
+): QuestSpaceOption[] {
     const def = getQuestBoardDef(s.boardId);
-    const options: QuestSpaceOption[] = space.market.offers.map((o, i) => ({
-        id: `offer-${i}`,
-        label: `${o.count} × ${def.partNames[o.part]}`,
-        desc: `−${o.fishCost} fish.`,
-        ...(s.fish < o.fishCost ? { disabledReason: 'Not enough fish.' } : {}),
-    }));
+    const options: QuestSpaceOption[] = space.market.offers.map((o, i) => {
+        const bought = purchases[i] ?? 0;
+        const price = marketPrice(o, bought);
+        return {
+            id: `offer-${i}`,
+            label: `${o.count} × ${def.partNames[o.part]}`,
+            desc: bought > 0 ? `−${price} fish (the stall has marked it up).` : `−${price} fish.`,
+            ...(s.fish < price ? { disabledReason: 'Not enough fish.' } : {}),
+        };
+    });
     options.push({ id: 'leave', label: 'LEAVE THE ROW', desc: 'Pocket what remains and move on.' });
     return options;
+}
+
+/** Extra per-space interaction state carried on the pending card. */
+interface OpenExtra {
+    ledger?: readonly string[];
+    purchases?: readonly number[];
+    haul?: number;
+    presses?: number;
 }
 
 /**
@@ -541,7 +604,7 @@ function openSpace(
     space: QuestSpaceDef,
     options: QuestSpaceOption[],
     result: QuestSpaceResult | null,
-    ledger?: string[],
+    extra?: OpenExtra,
 ): QuestBoardSession {
     const applied = result ? applyResultDeltas(s, result) : s;
     const pending: QuestPendingSpace = {
@@ -551,9 +614,40 @@ function openSpace(
         body: space.kind === 'parley' ? space.parley.prompt : space.flavor,
         options: result ? [] : options,
         result,
-        ...(ledger !== undefined ? { ledger } : {}),
+        ...extra,
     };
     return { ...applied, phase: 'space', pending };
+}
+
+/**
+ * GATHER's press/stop menu, rebuilt after every press so the labels track
+ * the growing wet haul and the spot running dry.
+ */
+function gatherOptions(
+    def: QuestBoardDef,
+    space: Extract<QuestSpaceDef, { kind: 'gather' }>,
+    haul: number,
+    presses: number,
+): QuestSpaceOption[] {
+    const g = space.gather;
+    const part = def.partNames[g.part];
+    const bust = g.bustFloor === 1 ? 'a 1' : `1–${g.bustFloor}`;
+    const options: QuestSpaceOption[] = [];
+    if (presses < g.maxPress) {
+        options.push({
+            id: 'press',
+            label: presses === 0 ? 'WADE IN' : 'PRESS DEEPER',
+            desc: `Cast the bone: ${g.bustFloor + 1}+ adds +${g.perPress} ${part} to the haul. ${bust} is the rogue wave — lose the ${haul} held, −${g.bustBite} vigor.`,
+        });
+    }
+    options.push({
+        id: 'stop',
+        label: haul > 0 ? `BANK THE HAUL (${haul})` : 'LEAVE IT BE',
+        desc: haul > 0
+            ? `Carry off +${haul} ${part}, dry and certain.`
+            : 'Wade back out empty-handed. Nothing risked.',
+    });
+    return options;
 }
 
 // ---------------------------------------------------------------------------
@@ -575,40 +669,49 @@ export function chooseQuestSpaceOption(s: QuestBoardSession, optionId: string): 
     switch (space.kind) {
         case 'gather': {
             const g = space.gather;
-            const hooked = isPrimed(s, 'lucky-hook');
-            const mult = hooked ? 2 : 1;
-            let next = hooked ? { ...s, charms: consumeCharm(s.charms, 'lucky-hook') } : s;
+            const haul = s.pending.haul ?? 0;
+            const presses = s.pending.presses ?? 0;
 
-            if (optionId === 'safe') {
+            if (optionId === 'stop') {
+                // Bank the wet haul. LUCKY HOOK doubles it on the way out.
+                const hooked = isPrimed(s, 'lucky-hook');
+                const next = hooked ? { ...s, charms: consumeCharm(s.charms, 'lucky-hook') } : s;
+                const banked = haul * (hooked ? 2 : 1);
                 const result: QuestSpaceResult = {
                     ...emptyResult(),
-                    title: 'AN EASY TAKE',
-                    body: `What lies loose comes along willingly. +${g.safeYield * mult} ${def.partNames[g.part]}.`,
-                    partsDelta: { [g.part]: g.safeYield * mult },
+                    title: haul > 0 ? 'THE HAUL COMES HOME DRY' : 'NOTHING VENTURED',
+                    body: haul > 0
+                        ? `${hooked ? 'The lucky hook all but doubles it. ' : ''}+${banked} ${def.partNames[g.part]}, banked before the tide could change its mind.`
+                        : 'He weighs the water, thinks better of it, and walks on with dry boots.',
+                    partsDelta: banked > 0 ? { [g.part]: banked } : {},
                 };
                 return settleResult(next, result);
             }
-            // deep
-            const roll = rollDie(next.rng);
-            next = { ...next, rng: roll.state };
-            const success = roll.value >= g.deepThreshold;
-            const result: QuestSpaceResult = success
-                ? {
+            if (optionId !== 'press' || presses >= g.maxPress) return s;
+
+            const roll = rollDie(s.rng);
+            const next: QuestBoardSession = { ...s, rng: roll.state };
+            if (roll.value <= g.bustFloor) {
+                // The rogue wave — the unbanked haul is forfeit.
+                const result: QuestSpaceResult = {
                     ...emptyResult(),
-                    title: 'THE DEEP TAKE',
-                    body: `Worth the wet boots. +${g.deepYield * mult} ${def.partNames[g.part]}.`,
+                    title: 'THE ROGUE WAVE',
+                    body: `The sea takes it all back at once — ${haul} ${def.partNames[g.part]} gone in the undertow, −${g.bustBite} vigor with it.`,
                     rolls: [roll.value],
-                    partsDelta: { [g.part]: g.deepYield * mult },
-                }
-                : {
-                    ...emptyResult(),
-                    title: 'THE PLACE BITES BACK',
-                    body: `It does not want to be taken from today. The easy pieces come along; the rest cost skin. +${g.safeYield * mult} ${def.partNames[g.part]}, −${g.deepBite} vigor.`,
-                    rolls: [roll.value],
-                    partsDelta: { [g.part]: g.safeYield * mult },
-                    vigorDelta: -g.deepBite,
+                    vigorDelta: -g.bustBite,
                 };
-            return settleResult(next, result);
+                return settleResult(next, result);
+            }
+            // A good press — the haul grows; the menu reopens.
+            const nextHaul = haul + g.perPress;
+            const nextPresses = presses + 1;
+            const pending: QuestPendingSpace = {
+                ...s.pending,
+                options: gatherOptions(def, space, nextHaul, nextPresses),
+                haul: nextHaul,
+                presses: nextPresses,
+            };
+            return { ...next, pending };
         }
 
         case 'duel': {
@@ -622,11 +725,18 @@ export function chooseQuestSpaceOption(s: QuestBoardSession, optionId: string): 
                 };
                 return settleResult(s, result);
             }
-            // fight
+            // fight-<grit>: the grit is committed (vigor spent) before the
+            // single cast, win or lose.
+            if (!optionId.startsWith('fight-')) return s;
+            const grit = Number(optionId.slice('fight-'.length));
+            if (!Number.isInteger(grit) || grit < 0 || grit > T.duelMaxGrit) return s;
+            const gritVigor = grit * T.duelGritVigor;
+            if (s.vigor <= gritVigor) return s;
+
             let next = s;
-            let yourBonus = 0;
+            let yourBonus = grit * T.duelGritBonus;
             if (isPrimed(next, 'mothers-locket')) {
-                yourBonus = 2;
+                yourBonus += 2;
                 next = { ...next, charms: consumeCharm(next.charms, 'mothers-locket') };
             }
             const yours = rollDie(next.rng);
@@ -634,14 +744,16 @@ export function chooseQuestSpaceOption(s: QuestBoardSession, optionId: string): 
             next = { ...next, rng: theirs.state };
             const yourTotal = yours.value + yourBonus;
             const theirTotal = theirs.value + d.foeBonus;
+            const gritNote = gritVigor > 0 ? ` (${gritVigor} vigor spent digging in)` : '';
 
             if (yourTotal > theirTotal) {
                 const result: QuestSpaceResult = {
                     ...emptyResult(),
                     title: `${d.foe} IS ROUTED`,
-                    body: `It remembers urgent business elsewhere. The hoard is yours: +${d.spoils.count} ${def.partNames[d.spoils.part]}.`,
+                    body: `It remembers urgent business elsewhere${gritNote}. The hoard is yours: +${d.spoils.count} ${def.partNames[d.spoils.part]}.`,
                     rolls: [yours.value, theirs.value],
                     partsDelta: { [d.spoils.part]: d.spoils.count },
+                    vigorDelta: -gritVigor,
                 };
                 next = { ...next, metrics: { ...next.metrics, duelsWon: next.metrics.duelsWon + 1 } };
                 return settleResult(next, result);
@@ -650,17 +762,18 @@ export function chooseQuestSpaceOption(s: QuestBoardSession, optionId: string): 
                 const result: QuestSpaceResult = {
                     ...emptyResult(),
                     title: 'A STANDOFF',
-                    body: 'Neither side blinks, so both pretend the whole thing was about something else. No spoils, no scars.',
+                    body: `Neither side blinks, so both pretend the whole thing was about something else${gritNote}. No spoils, no scars.`,
                     rolls: [yours.value, theirs.value],
+                    vigorDelta: -gritVigor,
                 };
                 return settleResult(next, result);
             }
             const result: QuestSpaceResult = {
                 ...emptyResult(),
                 title: 'DRIVEN OFF',
-                body: `${d.foe} holds the field and crows about it. −${d.bite} vigor.`,
+                body: `${d.foe} holds the field and crows about it. −${d.bite + gritVigor} vigor.`,
                 rolls: [yours.value, theirs.value],
-                vigorDelta: -d.bite,
+                vigorDelta: -(d.bite + gritVigor),
             };
             next = { ...next, metrics: { ...next.metrics, duelsLost: next.metrics.duelsLost + 1 } };
             return settleResult(next, result);
@@ -677,15 +790,35 @@ export function chooseQuestSpaceOption(s: QuestBoardSession, optionId: string): 
                 };
                 return settleResult(s, result);
             }
-            // risk
+            // risk (bare) / brace-wind / brace-fish: pay the brace cost up
+            // front, then roll against the (possibly lowered) threshold.
+            let threshold = n.threshold;
+            let preFish = 0;
+            let preWind = 0;
+            if (optionId === 'brace-wind') {
+                if (s.wind < T.snagBraceWind) return s;
+                preWind = T.snagBraceWind;
+                threshold = Math.max(1, n.threshold - T.snagBraceDrop);
+            } else if (optionId === 'brace-fish') {
+                if (s.fish < T.snagBraceFish) return s;
+                preFish = T.snagBraceFish;
+                threshold = Math.max(1, n.threshold - T.snagBraceDrop);
+            } else if (optionId !== 'risk') {
+                return s;
+            }
+            const braced = preFish > 0 || preWind > 0;
             const roll = rollDie(s.rng);
             let next: QuestBoardSession = { ...s, rng: roll.state };
-            if (roll.value >= n.threshold) {
+            if (roll.value >= threshold) {
                 const result: QuestSpaceResult = {
                     ...emptyResult(),
                     title: 'CLEAN ACROSS',
-                    body: 'Quick feet and no witnesses. The bad ground keeps its tax for the next one through.',
+                    body: braced
+                        ? 'Braced and steady, the bad ground passes underfoot like a rumor about somebody else.'
+                        : 'Quick feet and no witnesses. The bad ground keeps its tax for the next one through.',
                     rolls: [roll.value],
+                    fishDelta: -preFish,
+                    windDelta: -preWind,
                 };
                 return settleResult(next, result);
             }
@@ -701,7 +834,9 @@ export function chooseQuestSpaceOption(s: QuestBoardSession, optionId: string): 
                 title: 'TAKEN BY THE GROUND',
                 body: `Skin, pride, and ground all lost at once. −${n.bite} vigor, back ${n.slipBack} spaces.`,
                 rolls: [roll.value],
+                fishDelta: -preFish,
                 vigorDelta: -n.bite,
+                windDelta: -preWind,
                 slippedBack: n.slipBack,
             };
             return settleResult(next, result);
@@ -723,30 +858,63 @@ export function chooseQuestSpaceOption(s: QuestBoardSession, optionId: string): 
             }
             const index = Number(optionId.replace('offer-', ''));
             const offer = space.market.offers[index];
-            if (!offer || s.fish < offer.fishCost) return s;
+            if (!offer) return s;
+            const purchases = s.pending.purchases ?? space.market.offers.map(() => 0);
+            const bought = purchases[index] ?? 0;
+            const price = marketPrice(offer, bought);
+            if (s.fish < price) return s;
             const purchase: QuestSpaceResult = {
                 ...emptyResult(),
                 title: '',
                 body: '',
-                fishDelta: -offer.fishCost,
+                fishDelta: -price,
                 partsDelta: { [offer.part]: offer.count },
             };
             const paid = applyResultDeltas(s, purchase);
+            const nextPurchases = purchases.map((c, i) => (i === index ? c + 1 : c));
             const ledger = [
                 ...(s.pending.ledger ?? []),
-                `${offer.count} × ${def.partNames[offer.part]} for ${offer.fishCost} fish`,
+                `${offer.count} × ${def.partNames[offer.part]} for ${price} fish`,
             ];
             const pending: QuestPendingSpace = {
                 ...s.pending,
-                options: marketOptions(paid, space),
+                options: marketOptions(paid, space, nextPurchases),
                 ledger,
+                purchases: nextPurchases,
             };
             return { ...paid, pending };
         }
 
+        case 'hearth': {
+            const h = space.hearth;
+            if (optionId === 'rest') {
+                const heal = Math.min(h.vigor, def.maxVigor - s.vigor);
+                return settleResult(s, {
+                    ...emptyResult(),
+                    title: 'STEW AND SILENCE',
+                    body: heal > 0
+                        ? `The fire does its old work. +${heal} vigor.`
+                        : 'Nothing aches yet. The fire keeps its counsel for later.',
+                    vigorDelta: heal,
+                });
+            }
+            if (optionId === 'linger') {
+                if (s.fish < T.hearthLingerFish) return s;
+                const heal = Math.min(h.vigor + T.hearthLingerVigor, def.maxVigor - s.vigor);
+                return settleResult(s, {
+                    ...emptyResult(),
+                    title: 'A HOT MEAL AND A LONG SIT',
+                    body: `He stays for seconds, and the fire pays him back. −${T.hearthLingerFish} fish, +${heal} vigor.`,
+                    vigorDelta: heal,
+                    fishDelta: -T.hearthLingerFish,
+                });
+            }
+            return s;
+        }
+
         case 'parley': {
             const authored = space.parley.options.find(o => o.id === optionId);
-            if (!authored) return s;
+            if (!authored || s.fish < parleyFishNeeded(authored)) return s;
             const result: QuestSpaceResult = {
                 ...emptyResult(),
                 title: space.parley.npc,
@@ -763,7 +931,7 @@ export function chooseQuestSpaceOption(s: QuestBoardSession, optionId: string): 
             return settleResult(next, result);
         }
 
-        // slipway / hearth / cache / omen are result-only; no options to choose.
+        // slipway / cache / omen are result-only; no options to choose.
         default:
             return s;
     }

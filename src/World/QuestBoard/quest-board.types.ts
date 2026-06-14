@@ -9,12 +9,21 @@
  * plays the plan — a wooden piece, a carved bone die, a loop of
  * spaces around the village.
  *
- * Design pillars (decided 2026-06-12):
+ * Design pillars (decided 2026-06-12; micro-games added 2026-06-13):
  *  - "Axiomancer-lite": board spaces echo every other encounter kind
  *    (combat → DUEL, hazard → SNAG, gathering → GATHER, rest → HEARTH,
  *    village → MARKET, interaction → PARLEY, loot-cache → CACHE,
  *    cutscene → OMEN) as small self-contained interactions. The board
  *    NEVER launches a real encounter.
+ *  - Each space plays a DISTINCT decision shape, not one shared "safe
+ *    vs gamble" gate, so landing on each FEELS different while staying a
+ *    handful of taps: GATHER = press-your-luck (wade deeper or bank the
+ *    wet haul; a rogue wave busts it), DUEL = allocate grit before one
+ *    roll, SNAG = insure the crossing (bare / brace / detour), MARKET =
+ *    an escalating shop (repeat buys cost more), PARLEY = an authored
+ *    branch whose menu reacts to what you carry. HEARTH / CACHE / OMEN
+ *    stay deliberately light — the calm beats that let the tense ones
+ *    feel tense.
  *  - Fully sandboxed: the session reads nothing from `GameState` and
  *    only the completion record (board id + outcome tier) flows back.
  *  - Can't fail, only do worse: running out of VIGOR ends the day
@@ -63,16 +72,25 @@ export type QuestSpaceKind =
     | 'cache'    // loot-cache echo: a hidden find, rolled
     | 'omen';    // cutscene echo: flavor lines + a small turn of luck
 
+/**
+ * GATHER is push-your-luck (a `Can't Stop`-style ladder): each PRESS casts
+ * the bone die into a "wet haul"; a face ≤ `bustFloor` is the rogue wave —
+ * the unbanked haul is lost and `bustBite` vigor with it. Any other face
+ * adds `perPress` pieces. STOP banks the wet haul into carried parts. The
+ * spot runs dry after `maxPress` successful presses (forcing a bank), so a
+ * naive "just keep pressing" line always terminates.
+ */
 export interface QuestGatherParams {
     /** Part family this spot yields. */
     part: QuestPartKind;
-    /** Pieces granted by a careful take (no roll, no risk). */
-    safeYield: number;
-    /** Pieces granted by wading deeper, on a die roll ≥ `deepThreshold`. */
-    deepYield: number;
-    deepThreshold: number;
-    /** Vigor bitten when the deep take fails (yield still `safeYield`). */
-    deepBite: number;
+    /** Pieces added to the wet haul per non-bust press. */
+    perPress: number;
+    /** Die faces at or below this BUST the wade (lose the unbanked haul). */
+    bustFloor: number;
+    /** Vigor bitten on a bust. */
+    bustBite: number;
+    /** Successful presses before the spot runs dry and STOP is forced. */
+    maxPress: number;
 }
 
 export interface QuestDuelParams {
@@ -119,6 +137,12 @@ export interface QuestParleyOption {
     id: string;
     label: string;
     desc: string;
+    /**
+     * Gate that reacts to what the player carries — the option renders
+     * disabled until met. The interaction echo's "inventory changes the
+     * menu" beat. (Spending happens via the deltas below; this only gates.)
+     */
+    requires?: { fish?: number };
     /** Fish delta (negative = paid). */
     fish?: number;
     /** Vigor delta (negative = lost). */
@@ -296,6 +320,23 @@ export interface QuestPendingSpace {
      * each buy appends a line here and the LEAVE result summarises it.
      */
     ledger?: readonly string[];
+    /**
+     * Market only: how many times each offer (by index) has been bought
+     * this landing. Drives the escalating price — the Nth repeat of an
+     * offer costs `marketRamp` more fish than the first.
+     */
+    purchases?: readonly number[];
+    /**
+     * Gather only: pieces in the "wet haul" — pressed for but not yet
+     * banked, and forfeit on a rogue wave. STOP banks them; the card
+     * renders the stack so the player can read the tension.
+     */
+    haul?: number;
+    /**
+     * Gather only: successful presses so far (caps at `maxPress`, after
+     * which PRESS is disabled and STOP is the only move).
+     */
+    presses?: number;
 }
 
 // ---------------------------------------------------------------------------
