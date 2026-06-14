@@ -95,8 +95,13 @@
 
 ## Promoted
 
-### Phase 145 — Minigame playtesting harness (multi-agent A/B + e2e + playstyle)
-- promoted: 2026-06-14 (oversight Q1 — T write-in: "balancing all the minigames — many phases, little by little; build a programmatic harness first"). Build-plan row added as Phase 145. **Harness-first phase — no balance changes.** Scope: build infrastructure to spawn subagents for (a) A/B config-variant testing, (b) hermetic e2e outcome-path coverage, (c) playstyle-strategy divergence measurement — all three composable into one harness run. Targets: Hazard + Gathering + Quest Board. Every subsequent Phase 146+ balance phase invokes this harness as its standard verification suite. Source: T oversight 2026-06-14 refinement.
+### Phases 145–148 — Minigame playtesting harness (split into 4 phases)
+- promoted: 2026-06-14 (oversight Q1 — T write-in: "balancing all the minigames — many phases, little by little; build a harness first — A/B, e2e, playstyle subagents"). Split into 4 phases to keep context windows manageable. Build-plan rows added as Phases 145–148. No balance changes in any of these phases — infrastructure only. Phase 149+ make incremental balance changes, each verified by the full harness.
+  - **Phase 145**: Quest Board simulator (biggest gap; no sim today)
+  - **Phase 146**: Hazard A/B + playstyle layer (extends existing `hazard.sim.ts`)
+  - **Phase 147**: Gathering A/B + playstyle layer (extends existing `gathering.sim.ts`)
+  - **Phase 148**: Composable harness wrapper (blocked by 145/146/147; ties all three into one invocable suite)
+- Source: T oversight 2026-06-14 write-in + refinement.
 
 ### Phase 143 — Dependency modernization (major bumps)
 - promoted: 2026-06-13 (oversight Q2 — T pick: "File one modernization phase"). Build-plan row added as Phase 143. Scope: drain the three live AUDIT major-version findings (Category G) in one deliberate phase — TypeScript 5→6 (3.6), inquirer 9→12 (2.8), globals 16→17 (2.7); resolve breaking changes; keep the gate green. Tooling/deps only. Source: AUDIT.md Pending pass 52.
