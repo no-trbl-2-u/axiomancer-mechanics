@@ -1,8 +1,9 @@
 /**
  * Character presets — pre-built characters for testing.
  *
- * @deprecated Scheduled for removal at v0.13.0. Use the DEV menu
- * (`src/CLI/dev-tools.ts`) for testing, or `createCharacter()` directly.
+ * @deprecated These presets remain in use by the Playtest harness.
+ * For non-testing use cases, prefer the DEV menu (`src/CLI/dev-tools.ts`)
+ * or `createCharacter()` directly.
  *
  * Each preset is a declarative recipe. `buildCharacterFromPreset` lifts
  * the recipe into a real `Character` by calling `createCharacter`
@@ -25,7 +26,7 @@ export interface CharacterPresetEquipmentEntry {
     slot: EquipmentSlot;
 }
 
-/** @deprecated Scheduled for removal at v0.13.0. Use dev-tools instead. */
+/** @deprecated Still used by Playtest harness. For other uses, prefer dev-tools. */
 export interface CharacterPreset {
     id: string;
     name: string;
@@ -142,19 +143,19 @@ export const sagePreset: CharacterPreset = {
     currency: 75,
 };
 
-/** @deprecated Scheduled for removal at v0.13.0. */
+/** @deprecated Still used by Playtest harness. */
 export const characterPresets: CharacterPreset[] = [
     apprenticePreset, wandererPreset, sagePreset,
 ];
 
-/** @deprecated Scheduled for removal at v0.13.0. */
+/** @deprecated Still used by Playtest harness. */
 export function getPresetById(id: string): CharacterPreset | undefined {
     return characterPresets.find(p => p.id === id);
 }
 
 // ─── Builder ──────────────────────────────────────────────────────────────────
 
-/** @deprecated Scheduled for removal at v0.13.0. Use dev-tools instead. */
+/** @deprecated Still used by Playtest harness. For other uses, prefer dev-tools. */
 export function buildCharacterFromPreset(
     preset: CharacterPreset,
     rng: () => number = Math.random,
