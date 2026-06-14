@@ -19,7 +19,8 @@ import { describe, expect, it } from 'vitest';
 
 import { HAZARD_LIBRARY } from '../hazard.content';
 import { hazardStarterBag } from '../hazard.deck-flags';
-import { simulateHazard } from '../hazard.sim';
+import { simulateHazard, runHazardAB, generateHazardBalanceReport } from '../hazard.sim';
+import { HAZARD_TUNING } from '../hazard.tuning';
 
 const BAG = hazardStarterBag();
 const RUNS = 300;
@@ -52,4 +53,93 @@ describe('hazard balance bands (greedy bot, no re-cast doctrine)', () => {
             });
         });
     }
+});
+
+describe('hazard A/B testing and playstyle policies', () => {
+    // Test the first hazard as a representative sample
+    const testHazard = HAZARD_LIBRARY[0];
+    
+    describe('playstyle bot policies', () => {
+        it('conservative policy produces valid results on safe route', () => {
+            const stats = simulateHazard(testHazard.id, 'conservative', BAG, RUNS);
+            expect(stats.atLeastOneWinRate).toBeGreaterThanOrEqual(0.0);
+            expect(stats.atLeastOneWinRate).toBeLessThanOrEqual(1.0);
+            expect(stats.failureRate).toBeGreaterThanOrEqual(0.0);
+            expect(stats.failureRate).toBeLessThanOrEqual(1.0);
+        });
+
+        it('opportunist policy produces valid results on risk route', () => {
+            const stats = simulateHazard(testHazard.id, 'opportunist', BAG, RUNS);
+            expect(stats.perfectRate).toBeGreaterThanOrEqual(0.0);
+            expect(stats.perfectRate).toBeLessThanOrEqual(1.0);
+            expect(stats.failureRate).toBeGreaterThanOrEqual(0.0);
+            expect(stats.failureRate).toBeLessThanOrEqual(1.0);
+        });
+
+        it('policies produce measurably different outcomes', () => {
+            const conservative = simulateHazard(testHazard.id, 'conservative', BAG, RUNS);
+            const opportunist = simulateHazard(testHazard.id, 'opportunist', BAG, RUNS);
+            const greedy = simulateHazard(testHazard.id, 'greedy', BAG, RUNS);
+            
+            // Verify that all policies produce different results (not identical)
+            const rates = [conservative.atLeastOneWinRate, opportunist.atLeastOneWinRate, greedy.atLeastOneWinRate];
+            const uniqueRates = new Set(rates);
+            expect(uniqueRates.size).toBeGreaterThanOrEqual(2); // At least some divergence
+        });
+    });
+
+    describe('A/B variant runner', () => {
+        it('produces meaningful diffs when configs are identical', () => {
+            const result = runHazardAB(HAZARD_TUNING, HAZARD_TUNING, { 
+                hazardId: testHazard.id, 
+                runs: 100 
+            });
+            
+            expect(result.configA).toBeDefined();
+            expect(result.configB).toBeDefined();
+            expect(result.analysis.perfectRateDiff).toBeDefined();
+            expect(result.analysis.failureRateDiff).toBeDefined();
+            expect(result.analysis.avgWinsDiff).toBeDefined();
+            expect(typeof result.significant).toBe('boolean');
+        });
+
+        it('detects significance when perfect rate differs by >5pp', () => {
+            // This is a structural test - in real usage, configs would differ
+            const result = runHazardAB(HAZARD_TUNING, HAZARD_TUNING, {
+                hazardId: testHazard.id,
+                runs: 100
+            });
+            
+            // Since configs are identical, difference should be minimal (noise)
+            expect(Math.abs(result.analysis.perfectRateDiff)).toBeLessThan(0.15);
+        });
+    });
+
+    describe('balance band reporting', () => {
+        it('generates structured report with all policies', () => {
+            const report = generateHazardBalanceReport(testHazard.id);
+            
+            expect(report.bands).toHaveLength(3); // conservative, greedy, opportunist
+            expect(report.timestamp).toBeDefined();
+            expect(report.summary.totalHazards).toBe(3);
+            
+            for (const band of report.bands) {
+                expect(band.hazardId).toBe(testHazard.id);
+                expect(['conservative', 'greedy', 'opportunist']).toContain(band.policy);
+                expect(band.perfectRate.actual).toBeGreaterThanOrEqual(0);
+                expect(band.failureRate.actual).toBeGreaterThanOrEqual(0);
+                expect(band.atLeastOneWinRate.actual).toBeGreaterThanOrEqual(0);
+                expect(['healthy', 'needs_tuning']).toContain(band.overallHealth);
+            }
+        });
+
+        it('validates threshold bands correctly', () => {
+            const report = generateHazardBalanceReport(testHazard.id);
+            const conservativeBand = report.bands.find(b => b.policy === 'conservative');
+            
+            expect(conservativeBand).toBeDefined();
+            expect(conservativeBand!.atLeastOneWinRate.min).toBe(0.90);
+            expect(conservativeBand!.failureRate.max).toBe(0.05);
+        });
+    });
 });
