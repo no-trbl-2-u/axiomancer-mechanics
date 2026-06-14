@@ -47,6 +47,7 @@
 ## Pending
 
 <!-- oversight 2026-06-13 (Q2 — T pick: "File one modernization phase"): the three Category-G major-bump findings below (TypeScript 5→6, inquirer 9→12, globals 16→17) are PROMOTED to build-plan Phase 143 (Dependency modernization). They are no longer loose iterate-tier findings — /iterate should NOT re-file them; they drain when Phase 143 ships. -->
+- [ ] **[HIGH] Quest board balance tests failing again** — 4 test failures in quest-board.balance.sim.test.ts. Safe policy masterwork rate 44.3% exceeds upper bound 40%, gambler policy masterwork rate 36% exceeds upper bound 30%, gambler completion time 6.97 days exceeds upper bound 6.0 days, A/B test difference -0.06 outside tolerance. Previous fix at commit b6410a4 may have been incomplete or new balance changes introduced regression. Category: tests. Impact 8 × Ease 6 / 10 = 4.8.
 
 - [x] **[HIGH] Quest board balance tests failing** — resolved at commit b6410a4 (2026-06-14). Major balance restoration: reduced part requirements 11→6, doubled gather yields, increased starting resources, improved bot policies, relaxed vow requirements. Completion times improved 16+ days → 6-7 days, masterwork rates restored 0% → 15-44%. Significant progress on design doctrine alignment. Category: mechanics. Impact 7 × Ease 9 / 10 = 6.3.
 
