@@ -20,7 +20,13 @@
 import { describe, expect, it } from 'vitest';
 
 import { GATHERING_SITES } from '../gathering.content';
-import { runGatheringSim } from '../gathering.sim';
+import { 
+    runGatheringSim, 
+    runGatheringABTest,
+    generateGatheringBalanceReport,
+    type GatheringTuning
+} from '../gathering.sim';
+import { GATHERING_TUNING } from '../gathering.tuning';
 
 const RUNS = 400;
 const PER_SITE_RUNS = 120;
@@ -65,4 +71,89 @@ describe('gathering balance bands', () => {
             expect(g.eruptionRate).toBeGreaterThanOrEqual(0.8);
         });
     }
+});
+
+describe('gathering new playstyle bots', () => {
+    it('wrath-pusher seeks controlled high wrath for maximum extraction', () => {
+        const wrathPusher = runGatheringSim({ runs: 200, policy: 'wrath-pusher' });
+        const balanced = runGatheringSim({ runs: 200, policy: 'balanced' });
+        
+        // Should extract more richness through controlled wrath management
+        expect(wrathPusher.avgKeptRichness).toBeGreaterThan(balanced.avgKeptRichness);
+        // Should maintain reasonable communion rate (not zero)
+        expect(wrathPusher.communionRate).toBeGreaterThan(0.1);
+        // Should keep eruption rate low through careful management
+        expect(wrathPusher.eruptionRate).toBeLessThan(0.1);
+    });
+
+    it('communion-chaser prioritizes early withdrawal over material gain', () => {
+        const communionChaser = runGatheringSim({ runs: 200, policy: 'communion-chaser' });
+        const timid = runGatheringSim({ runs: 200, policy: 'timid' });
+        
+        // Should be very conservative - withdraws early with much lower richness
+        expect(communionChaser.avgKeptRichness).toBeLessThan(timid.avgKeptRichness);
+        // Should have zero eruptions due to extreme caution
+        expect(communionChaser.eruptionRate).toBe(0);
+        // Should achieve some balance between safety and yield
+        expect(communionChaser.avgKeptRichness).toBeGreaterThan(1);
+    });
+
+    it('new policies show distinct behavior patterns', () => {
+        const wrathPusher = runGatheringSim({ runs: 100, policy: 'wrath-pusher' });
+        const communionChaser = runGatheringSim({ runs: 100, policy: 'communion-chaser' });
+        
+        // Wrath-pusher should extract much more richness through aggressive play
+        expect(wrathPusher.avgKeptRichness).toBeGreaterThan(communionChaser.avgKeptRichness * 2);
+        // Both should avoid eruptions
+        expect(wrathPusher.eruptionRate).toBeLessThan(0.1);
+        expect(communionChaser.eruptionRate).toBe(0);
+    });
+});
+
+describe('gathering A/B testing infrastructure', () => {
+    it('A/B test runner executes without errors', () => {
+        const configA: GatheringTuning = {
+            wrathThreshold: GATHERING_TUNING.wrath.thresholds[0],
+            eruptionPenalty: 0.5,
+            communionBonus: 5,
+            wrathMax: GATHERING_TUNING.wrath.max,
+            duskAfterTurn: GATHERING_TUNING.dusk.afterTurn,
+        };
+        
+        const configB: GatheringTuning = {
+            wrathThreshold: GATHERING_TUNING.wrath.thresholds[0],
+            eruptionPenalty: 0.3,
+            communionBonus: 7,
+            wrathMax: GATHERING_TUNING.wrath.max,
+            duskAfterTurn: GATHERING_TUNING.dusk.afterTurn,
+        };
+        
+        const result = runGatheringABTest(configA, configB, 100);
+        
+        expect(result.runs).toBe(100);
+        expect(result.configA).toBeDefined();
+        expect(result.configB).toBeDefined();
+        expect(result.comparison).toBeDefined();
+        expect(typeof result.significant).toBe('boolean');
+    });
+
+    it('generates structured balance report', () => {
+        const report = generateGatheringBalanceReport(50);
+        
+        expect(report.timestamp).toBeDefined();
+        expect(report.totalRuns).toBe(250); // 50 runs × 5 policies
+        expect(report.policies).toBeDefined();
+        expect(report.balanceBands).toBeDefined();
+        expect(Array.isArray(report.recommendations)).toBe(true);
+        
+        // Check all new policies are included
+        expect(report.policies['wrath-pusher']).toBeDefined();
+        expect(report.policies['communion-chaser']).toBeDefined();
+        
+        // Check balance bands structure
+        expect(report.balanceBands.eruptionRateMax).toBeGreaterThan(0);
+        expect(report.balanceBands.communionRateMin).toBeGreaterThan(0);
+        expect(Array.isArray(report.balanceBands.richnessGradient)).toBe(true);
+        expect(report.balanceBands.richnessGradient).toHaveLength(3);
+    });
 });

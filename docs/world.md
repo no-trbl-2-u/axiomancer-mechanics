@@ -337,6 +337,43 @@ See `specs/23-map-events.md` for the spec and
 `src/World/MapEvents/e2e/map-events.engine.test.ts` for the hermetic
 walkthrough covering all eight kinds.
 
+## Gathering Balance Simulation (Phase 147)
+
+The gathering minigame includes comprehensive Monte-Carlo simulation infrastructure for balance testing and tuning analysis:
+
+### Policy Bots
+
+Five scripted bots with distinct strategies drive the gathering engine through complete sessions:
+
+- **`timid`** — Restraint baseline: gleans, pays offerings, takes only cheap plots, leaves early
+- **`balanced`** — Skilled push-your-luck: reads wrath costs, never despoils, extracts maximum yield
+- **`greedy`** — Eruption baseline: strips, takes richest plots, never pays, never leaves voluntarily  
+- **`wrath-pusher`** — Controlled aggression: pushes wrath to 5-6 range through careful management
+- **`communion-chaser`** — Ultra-conservative: prioritizes early withdrawal over material gain
+
+### Balance Testing
+
+`runGatheringSim(options)` executes Monte-Carlo runs with any policy across all gathering sites or pinned to a specific site. Returns structured metrics: eruption rate, communion rate, average richness kept, turn counts, outcome distribution.
+
+`runGatheringABTest(configA, configB, runs)` compares two tuning configurations via parallel simulation runs, measuring significance of differences in key metrics.
+
+`generateGatheringBalanceReport(runs)` produces a comprehensive balance report with policy comparisons, balance band verification, and tuning recommendations formatted as JSON for Phase 148 harness consumption.
+
+### Usage
+
+```ts
+// Test a single policy
+const results = runGatheringSim({ runs: 400, policy: 'balanced' });
+
+// Compare two configs  
+const abTest = runGatheringABTest(configA, configB, 200);
+
+// Generate comprehensive report
+const report = generateGatheringBalanceReport(400);
+```
+
+Balance bands are verified in `src/World/Gathering/e2e/gathering.balance.sim.test.ts` to ensure tuning changes don't break the incentive gradient where **blind greed < timid restraint < skilled push-your-luck**.
+
 ## See Also
 
 - [`specs/08-world-content-and-hazards.md`](../specs/08-world-content-and-hazards.md)
