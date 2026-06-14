@@ -95,7 +95,12 @@ The barrel at `src/index.ts` is the contract surface. Groups:
 | Items | `addItem`, `removeItem`, `useConsumable`, `Item` |
 | Skills | `canUseSkill`, `executeSkill`, `learnSkill`, `Skill`, `SkillCategory` |
 | Game | `createGameStore`, `GameState`, persistence adapters |
-| World | `createStartingWorld`, world reducer, `WorldState` |
+| World | `createStartingWorld`, world reducer, `WorldState`, `runMinigameHarness` |
+| Hazard | `resolveHazardMinigame`, `HazardCard`, `HazardDie`, `HazardTuning` |
+| Gathering | `resolveGatheringMinigame`, `GatheringSite`, `GatheringApproach`, `GatheringTuning` |
+| QuestBoard | `resolveQuestBoardMinigame`, `QuestBoardVerb`, `QuestBoardTuning`, `QuestBoardOutcome` |
+| Rest | `resolveRestMinigame`, `RestWatch`, `RestTuning`, `RestOutcome` |
+| LootCache | `resolveLootCacheMinigame`, `LootCacheTier`, `LootCacheTuning`, `LootCacheOutcome` |
 | Philosophy | `getAlignmentCell`, `applyAlignmentDelta`, `PhilosophicalAlignment` |
 | Faction | `applyFactionReputationDeltas`, `FactionReputation`, `factionLibrary` |
 | NPCs | `getDialogueNode`, `visibleChoices`, `NPC`, `DialogueTree` |
