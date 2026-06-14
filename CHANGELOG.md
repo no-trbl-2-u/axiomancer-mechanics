@@ -10,10 +10,12 @@ Pre-1.0.0 status: minor bumps may carry breaking public-API changes
 map exposes `.` (top-level barrel) and `./node` (Node.js adapter); no
 deep imports are part of the supported surface.
 
-## [unreleased]
+## [0.21.0] — 2026-06-14
 
-Encounter release: the story-quest board game lands, and rest / loot-cache
-graduate from silent grants to full encounters.
+Encounter release: the story-quest board game lands, rest / loot-cache
+graduate from silent grants to full encounters, and the Quest Board gains
+distinct micro-game verbs so each board space stops feeling like the same
+binary die gate.
 
 ### Added
 
@@ -28,6 +30,12 @@ graduate from silent grants to full encounters.
   `GameState`; only the completion record (board id + outcome tier) flows
   back. Can't fail — vigor collapse ends the day, never the quest; play
   quality decides the cosmetic tier (masterwork / seaworthy / driftwood).
+- **Quest Board micro-games** — the board's repeated binary space decisions
+  now split into distinct quick verbs: GATHER press-your-luck wet haul, DUEL
+  pre-roll grit allocation, SNAG resource bracing/insurance, MARKET
+  escalating repeat-buy prices, PARLEY carried-resource gates, and lighter
+  HEARTH rest/linger choices. Expanded hermetic QuestBoard e2e coverage locks
+  the new flow.
 - **`'quest'` MapEvent kind** — the ninth kind. `QuestEventPayload`
   (`boardId`) resolves to `{ kind: 'quest', boardId }`; the handler
   validates the board id and hands the launch to the host (same contract
@@ -50,6 +58,19 @@ graduate from silent grants to full encounters.
   `healed`, so hosts replacing the passive heal with the Night Watch keep
   the authored baseline. (Breaking for literal `{ kind: 'rest' }`
   fixtures — add the new field.)
+
+### Mobile migration notes
+
+- Update `axiomancer-mobile` to `axiomancer-mechanics@0.21.0`.
+- Treat Quest Board, Rest, and Loot-cache as engine-owned encounter
+  procedures. Mobile should present their state and route player choices; it
+  must not locally simulate the board-space verbs, rest watches, loot-cache
+  layers, rewards, or outcome tiers.
+- For Quest Board specifically, surface the new space verbs clearly: wet-haul
+  press/bank/bust, grit spend, bracing resources, marked-up market prices,
+  gated parley choices, and hearth linger.
+- Run mobile typecheck, verify, visual smoke, and focused encounter/playthrough
+  evidence after the dependency bump.
 
 ## [0.18.0] — 2026-06-13
 

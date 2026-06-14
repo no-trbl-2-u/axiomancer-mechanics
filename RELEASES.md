@@ -4,6 +4,14 @@ Short-form per-version summaries. For per-phase detail see
 [`CHANGELOG.md`](./CHANGELOG.md); for the release-cut ceremony see
 [`RELEASING.md`](./RELEASING.md).
 
+## 0.21.0 — 2026-06-14
+
+- Quest Board encounter ("The Boy's Almanac") ships as the story-quest board game: sandboxed board session, `quest` MapEvent kind, board id handoff, and completion outcome tier.
+- Quest Board micro-games replace repeated binary gates with distinct quick verbs: press-your-luck GATHER, grit DUEL, braced SNAG, escalating MARKET, gated PARLEY, and light HEARTH/CACHE/OMEN pacing.
+- Rest encounter ("The Night Watch") and Loot-cache encounter ("The Reliquary") graduate from passive grants into engine-owned minigames/procedures.
+- `ResolvedEvent` rest payload carries `healFraction` with `healed`; literal rest fixtures must include the new field.
+- Mobile needs: bump to `axiomancer-mechanics@0.21.0`, present engine-owned encounter state, and avoid local simulation of board/rest/loot-cache rules.
+
 ## 0.18.0 — 2026-06-13
 
 - Hazard codex library: 150 cards total (108 new, all reward-pool; starter
