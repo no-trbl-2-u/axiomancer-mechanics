@@ -95,6 +95,9 @@
 
 ## Promoted
 
+### Phase 145 — Minigame balance pass (Hazard + Gathering + Quest Board)
+- promoted: 2026-06-14 (oversight Q1 — T write-in: "balancing all the minigames"). Build-plan row added as Phase 145. Scope: audit and tune balance across Hazard (CDR-0006 v2 / Phases 131/134/135), Gathering/The Gleaning, and Quest Board (Phase 144 distinct verbs). Per-minigame: run dedicated tuning skill, measure pacing and reward rates, surface out-of-band cells, propose and apply registry/tunable changes. Cross-minigame goal: consistent engagement curve and reward feel. Doctrine: status effects remain primary; minigames must not route players away from combat engagement. Source: T oversight 2026-06-14 write-in.
+
 ### Phase 143 — Dependency modernization (major bumps)
 - promoted: 2026-06-13 (oversight Q2 — T pick: "File one modernization phase"). Build-plan row added as Phase 143. Scope: drain the three live AUDIT major-version findings (Category G) in one deliberate phase — TypeScript 5→6 (3.6), inquirer 9→12 (2.8), globals 16→17 (2.7); resolve breaking changes; keep the gate green. Tooling/deps only. Source: AUDIT.md Pending pass 52.
 
