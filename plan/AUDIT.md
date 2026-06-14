@@ -48,6 +48,8 @@
 
 <!-- oversight 2026-06-13 (Q2 — T pick: "File one modernization phase"): the three Category-G major-bump findings below (TypeScript 5→6, inquirer 9→12, globals 16→17) are PROMOTED to build-plan Phase 143 (Dependency modernization). They are no longer loose iterate-tier findings — /iterate should NOT re-file them; they drain when Phase 143 ships. -->
 
+- [ ] **[HIGH] Quest board balance tests failing** — 8 balance simulation tests failing with complete balance breakdown: 0% masterwork rates (should be 15-45%), 10-16 day completion times (should be 3-7 days), and low vow-keeping rates. Root cause: bot policies not engaging status effects, violating core design doctrine. Tests block deployments. Category: mechanics. Impact 7 × Ease 9 / 10 = 6.3.
+
 - [x] **[MED] Character presets @deprecated removal schedules are stale** — resolved at commit cfa604d (2026-06-14). Updated @deprecated JSDoc tags from outdated "v0.13.0" to reflect current reality: presets remain in use by Playtest harness. Removed stale version-based removal schedules and clarified actual usage. Category: dead-code. Impact 6 × Ease 8 / 10 = 4.8.
 
 <!-- Comprehensive audit findings (updated by /iterate after each audit):
