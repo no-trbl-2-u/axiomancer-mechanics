@@ -93,8 +93,14 @@ The barrel at `src/index.ts` is the contract surface. Groups:
 | Combat | `determineAdvantage`, `getAttackStat`, `applyDamage`, `heal`, `Stance`, `Action`, `CombatState`, `getEffectsResolutionOutcome` |
 | Effects | `applyEffect`, `applyTier1CombatEffect`, `lookupEffect`, `Effect`, `ActiveEffect` |
 | Items | `addItem`, `removeItem`, `useConsumable`, `Item` |
+| Skills | `canUseSkill`, `executeSkill`, `learnSkill`, `Skill`, `SkillCategory` |
 | Game | `createGameStore`, `GameState`, persistence adapters |
 | World | `createStartingWorld`, world reducer, `WorldState` |
+| Philosophy | `getAlignmentCell`, `applyAlignmentDelta`, `PhilosophicalAlignment` |
+| Faction | `applyFactionReputationDeltas`, `FactionReputation`, `factionLibrary` |
+| NPCs | `getDialogueNode`, `visibleChoices`, `NPC`, `DialogueTree` |
+| Playtest | `runPlaytestScenario`, `PlaytestScenario`, `PlaytestReport` |
+| Events | `EnginePayload`, `TypedGameEvent`, type guards |
 | Utils | `clamp`, `randomInt`, `deepClone`, `deriveStats` |
 
 Breaking changes to these exports require a semver major. The CLIs
