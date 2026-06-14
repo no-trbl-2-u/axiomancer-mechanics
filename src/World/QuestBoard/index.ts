@@ -102,3 +102,20 @@ export {
     // outcome
     claimQuestBoardCompletion,
 } from './quest-board.engine';
+
+// ── Balance simulator (A/B + e2e + playstyle) ─────────────────────────────
+export type {
+    QuestBoardPolicyId,
+    QuestBoardSimRunResult,
+    QuestBoardSimSummary,
+    RunQuestBoardSimOptions,
+    QuestBoardABResult,
+    QuestBoardBalanceBands,
+    QuestBoardBalanceReport,
+} from './quest-board.sim';
+export {
+    simulateQuestBoard,
+    runQuestBoardSim,
+    runQuestBoardAB,
+    generateQuestBoardBalanceReport,
+} from './quest-board.sim';
