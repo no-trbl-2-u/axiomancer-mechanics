@@ -57,6 +57,15 @@
 
 ## Pending
 
+### Candidate: Rest minigame design brainstorm
+- signal: Current rest events are passive (HP restore only). T wants a more engaging rest mechanic with player agency and resource-management depth. Initial ideas: Gordian Quest-style rest-resource allocation, player-choice branch (restore HP % vs upgrade a hazard card vs upgrade another item), or a fire-tending resource-management minigame. Design space is open — brainstorm before committing to any direction.
+- scope: Attended `/brainstorm-mechanics` session to explore the rest-event design space. Outputs: a braindump file at `braindump/rest-minigame-<date>.md` capturing design options with trade-offs, prior art (Gordian Quest, Darkest Dungeon camp, Hades boon selection, etc.), and a recommended direction. Followed by a spec phase once the direction is settled.
+- prior art noted by T: Gordian Quest resource manager for rest gains; player choice (HP restore / hazard-card upgrade / item upgrade); resource-management fire-keeping loop.
+- unblocks: Rest minigame spec + implementation (Phase N+1 after brainstorm)
+- blocked-by: Nothing — can be attended any time
+- score: 4 × 7 / 10 = 2.8
+- recommended-slot: Attended brainstorm session (requires T); promote when ready to sit down and design it
+
 <!-- Unlocked Skill Access (Phase 99) — promoted to Phase 141 via oversight 2026-06-13 (Q1: T pick — "Promote Phase 99 (skill access)"). See ## Promoted. -->
 
 <!-- Status-effect depth (doctrine-central) — filed directly as Phase 142 via oversight 2026-06-13 (Q1: T pick — "File status-effect depth phase"); net-new direction, no prior candidate row. See build plan + ## Promoted. -->
