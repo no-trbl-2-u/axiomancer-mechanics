@@ -18,6 +18,9 @@ export function createStartingWorld(): WorldState {
     };
 }
 
+export type { SeedInput } from './seed';
+export { seedInputToUint32, minigameRunSeed, branchMinigameSeed } from './seed';
+
 export {
     MAP_REGISTRY, getMapDefinition, createMapState, MapNotFoundError,
 } from './map.registry';

@@ -7,13 +7,15 @@
  * Math.random directly.
  */
 
+import { seedInputToUint32, type SeedInput } from '../seed';
+
 export interface RestRngState {
     /** mulberry32 internal state word (uint32). */
     s: number;
 }
 
-export function seedRng(seed: number): RestRngState {
-    let s = seed >>> 0;
+export function seedRng(seed: SeedInput): RestRngState {
+    let s = seedInputToUint32(seed);
     s = (s + 0x9e3779b9) >>> 0;
     return { s };
 }

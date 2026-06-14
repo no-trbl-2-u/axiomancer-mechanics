@@ -14,6 +14,7 @@
  * store actions.
  */
 
+import type { SeedInput } from '../seed';
 import type { GatheringRngState } from './gathering.rng';
 
 // ---------------------------------------------------------------------------
@@ -367,7 +368,7 @@ export interface GatheringSessionState {
     boons: GatherBoonState[];
     metrics: GatherMetrics;
     outcome: GatherOutcome | null;
-    seed: number;
+    seed: SeedInput;
     rng: GatheringRngState;
     /** Monotonic per-session counter backing uid generation. */
     uidCounter: number;

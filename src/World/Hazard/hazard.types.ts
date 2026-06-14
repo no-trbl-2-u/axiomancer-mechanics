@@ -7,6 +7,7 @@
  * via presenters and dispatch mechanics-owned transitions.
  */
 
+import type { SeedInput } from '../seed';
 import type { HazardRngState } from './hazard.rng';
 
 // ---------------------------------------------------------------------------
@@ -482,7 +483,7 @@ export interface HazardSessionState {
     outcome: HazardOutcome | null;
     /** Reward card picked in the rewards phase (null = skipped / none). */
     pickedRewardCardId: string | null;
-    seed: number;
+    seed: SeedInput;
     rng: HazardRngState;
     /** Monotonic per-session counter backing uid generation. */
     uidCounter: number;

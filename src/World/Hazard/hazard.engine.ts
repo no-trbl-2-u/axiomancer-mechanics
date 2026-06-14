@@ -28,6 +28,7 @@ import {
 } from './hazard.content';
 import { HAZARD_TUNING } from './hazard.tuning';
 import { nextFloat, nextInt, seedRng, shuffle, type HazardRngState } from './hazard.rng';
+import { branchMinigameSeed, type SeedInput } from '../seed';
 import {
     EMPTY_HAZARD_MODIFIERS,
     EMPTY_HAZARD_QUEST_METRICS,
@@ -240,8 +241,8 @@ function hazardProjectedProgressRaw(s: HazardSessionState): { force: number; esc
  * dice RNG — the play stream stays byte-for-byte identical to a quest-less
  * session, keeping the balance sim and deterministic tests stable.
  */
-function rollSubquests(seed: number): HazardSubquestState[] {
-    const rng = seedRng((seed ^ 0x5175e57) >>> 0);
+function rollSubquests(seed: SeedInput): HazardSubquestState[] {
+    const rng = seedRng(branchMinigameSeed(seed, 0x5175e57));
     const ids = HAZARD_SUBQUESTS.map((q) => q.id);
     const shuffled = shuffle(rng, ids).value;
     const n = Math.min(HAZARD_TUNING.subquests.pickCount, shuffled.length);
@@ -254,7 +255,7 @@ function rollSubquests(seed: number): HazardSubquestState[] {
  * yet cast.
  */
 export function createHazardSession(
-    seed: number,
+    seed: SeedInput,
     deckBag: readonly string[],
     hazardId: string,
 ): HazardSessionState {

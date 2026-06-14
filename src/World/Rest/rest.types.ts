@@ -14,6 +14,7 @@
  * beyond a thinner heal.
  */
 
+import type { SeedInput } from '../seed';
 import type { RestRngState } from './rest.rng';
 
 // ---------------------------------------------------------------------------
@@ -152,6 +153,6 @@ export interface RestSession {
     keepsakes: readonly string[];
     pending: RestPendingWatch | null;
     outcome: RestOutcome | null;
-    seed: number;
+    seed: SeedInput;
     rng: RestRngState;
 }

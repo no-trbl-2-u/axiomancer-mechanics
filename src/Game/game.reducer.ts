@@ -276,7 +276,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
             if ((outcome === 'victory' || outcome === 'friendship') && state.currentEncounter) {
                 const grantedLoot = action.payload?.grantedLoot
-                    ?? rollEncounterLoot(state.currentEncounter);
+                    ?? rollEncounterLoot(state.currentEncounter, () => getRng().random());
                 const grantedXp = action.payload?.grantedXp
                     ?? totalEncounterXp(state.currentEncounter);
 

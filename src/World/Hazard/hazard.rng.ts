@@ -7,14 +7,16 @@
  * Math.random. The engine NEVER calls Math.random directly.
  */
 
+import { seedInputToUint32, type SeedInput } from '../seed';
+
 export interface HazardRngState {
     /** mulberry32 internal state word (uint32). */
     s: number;
 }
 
-export function seedRng(seed: number): HazardRngState {
+export function seedRng(seed: SeedInput): HazardRngState {
     // Mix the seed so small integers (1, 2, 3…) diverge immediately.
-    let s = seed >>> 0;
+    let s = seedInputToUint32(seed);
     s = (s + 0x9e3779b9) >>> 0;
     return { s };
 }

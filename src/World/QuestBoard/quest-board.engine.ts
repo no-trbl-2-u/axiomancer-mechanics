@@ -39,6 +39,7 @@ import {
     rollDie, seedRng, shuffle, nextFloat,
     type QuestBoardRngState,
 } from './quest-board.rng';
+import type { SeedInput } from '../seed';
 import {
     EMPTY_PART_TALLY,
     QUEST_PART_KINDS,
@@ -192,7 +193,7 @@ export function questBoardTierOf(s: QuestBoardSession): QuestOutcomeTier {
 // Lifecycle
 // ---------------------------------------------------------------------------
 
-export function createQuestBoardSession(seed: number, boardId: string): QuestBoardSession {
+export function createQuestBoardSession(seed: SeedInput, boardId: string): QuestBoardSession {
     const def = getQuestBoardDef(boardId); // throws on unknown board
     let rng: QuestBoardRngState = seedRng(seed);
 

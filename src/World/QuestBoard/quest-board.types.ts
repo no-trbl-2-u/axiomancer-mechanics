@@ -35,6 +35,7 @@
  * `QuestBoardSession` via a presenter and dispatches store actions.
  */
 
+import type { SeedInput } from '../seed';
 import type { QuestBoardRngState } from './quest-board.rng';
 
 // ---------------------------------------------------------------------------
@@ -415,6 +416,6 @@ export interface QuestBoardSession {
     collapsedToday: boolean;
     metrics: QuestBoardMetrics;
     outcome: QuestBoardOutcome | null;
-    seed: number;
+    seed: SeedInput;
     rng: QuestBoardRngState;
 }

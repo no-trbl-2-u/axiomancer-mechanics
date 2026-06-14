@@ -17,6 +17,7 @@
  */
 
 import { nextFloat, seedRng, type LootCacheRngState } from './lootcache.rng';
+import type { SeedInput } from '../seed';
 import type {
     CacheItemRef,
     LootCacheCard,
@@ -70,7 +71,7 @@ export const LOOT_CACHE_KEEPSAKE = 'A dead stranger\'s luck, inherited';
  * sealed here (seeded) — the probe reveals, never re-rolls.
  */
 export function createLootCacheSession(
-    seed: number,
+    seed: SeedInput,
     items: readonly CacheItemRef[],
     currency: number,
 ): LootCacheSession {

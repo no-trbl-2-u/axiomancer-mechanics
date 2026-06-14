@@ -9,14 +9,16 @@
  * migration-ready directory.)
  */
 
+import { seedInputToUint32, type SeedInput } from '../seed';
+
 export interface GatheringRngState {
     /** mulberry32 internal state word (uint32). */
     s: number;
 }
 
-export function seedRng(seed: number): GatheringRngState {
+export function seedRng(seed: SeedInput): GatheringRngState {
     // Mix the seed so small integers (1, 2, 3…) diverge immediately.
-    let s = seed >>> 0;
+    let s = seedInputToUint32(seed);
     s = (s + 0x9e3779b9) >>> 0;
     return { s };
 }

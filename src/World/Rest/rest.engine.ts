@@ -26,6 +26,7 @@ import {
     REST_WATCH_BAG,
 } from './rest.content';
 import { rollDie, seedRng, shuffle, type RestRngState } from './rest.rng';
+import type { SeedInput } from '../seed';
 import type {
     RestOutcome,
     RestOutcomeTier,
@@ -47,7 +48,7 @@ const T = REST_TUNING;
  * `baseHealFraction` is the authored map-event baseline (default 1.0)
  * and scales the whole night's heal.
  */
-export function createRestSession(seed: number, baseHealFraction = 1.0): RestSession {
+export function createRestSession(seed: SeedInput, baseHealFraction = 1.0): RestSession {
     let rng: RestRngState = seedRng(seed);
 
     const bag = shuffle(rng, REST_WATCH_BAG);

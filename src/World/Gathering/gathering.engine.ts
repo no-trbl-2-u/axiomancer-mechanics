@@ -39,6 +39,7 @@ import {
     GATHERING_TUNING,
 } from './gathering.tuning';
 import { seedRng, shuffle, type GatheringRngState } from './gathering.rng';
+import { branchMinigameSeed, type SeedInput } from '../seed';
 import {
     EMPTY_GATHER_METRICS,
     GATHER_FAMILIES,
@@ -262,29 +263,29 @@ function applyWrathDelta(s: GatheringSessionState, delta: number): GatheringSess
  * byte-for-byte identical across catalogue growth, keeping the balance
  * sim and deterministic tests stable.
  */
-function rollOfferings(seed: number): GatherOfferingState[] {
-    const rng = seedRng((seed ^ 0x0ff35e1) >>> 0);
+function rollOfferings(seed: SeedInput): GatherOfferingState[] {
+    const rng = seedRng(branchMinigameSeed(seed, 0x0ff35e1));
     const ids = GATHERING_OFFERINGS.map((o) => o.id);
     const picked = shuffle(rng, ids).value.slice(0, GATHERING_TUNING.offerings.pickCount);
     return picked.map((id) => ({ id, paid: false }));
 }
 
-function rollTools(seed: number): GatherToolState[] {
-    const rng = seedRng((seed ^ 0x700a15) >>> 0);
+function rollTools(seed: SeedInput): GatherToolState[] {
+    const rng = seedRng(branchMinigameSeed(seed, 0x700a15));
     const ids = GATHERING_TOOLS.map((t) => t.id);
     const picked = shuffle(rng, ids).value.slice(0, GATHERING_TUNING.tools.pickCount);
     return picked.map((id) => ({ id, used: false }));
 }
 
-function rollBoons(seed: number): GatherBoonState[] {
-    const rng = seedRng((seed ^ 0xb0035) >>> 0);
+function rollBoons(seed: SeedInput): GatherBoonState[] {
+    const rng = seedRng(branchMinigameSeed(seed, 0xb0035));
     const ids = GATHERING_BOONS.map((b) => b.id);
     const picked = shuffle(rng, ids).value.slice(0, GATHERING_TUNING.boons.pickCount);
     return picked.map((id) => ({ id }));
 }
 
-function rollReprisalDeck(seed: number): GatherReprisalId[] {
-    const rng = seedRng((seed ^ 0x53e1f) >>> 0);
+function rollReprisalDeck(seed: SeedInput): GatherReprisalId[] {
+    const rng = seedRng(branchMinigameSeed(seed, 0x53e1f));
     return shuffle(rng, GATHERING_REPRISAL_ORDER).value;
 }
 
@@ -294,7 +295,7 @@ function rollReprisalDeck(seed: number): GatherReprisalId[] {
  * plots BEFORE committing to an approach (mirrors the hazard's
  * opening-hand-before-route reveal).
  */
-export function createGatheringSession(seed: number, siteId: string): GatheringSessionState {
+export function createGatheringSession(seed: SeedInput, siteId: string): GatheringSessionState {
     const site = getGatherSiteDef(siteId);
     let rng = seedRng(seed);
     const bags: string[][] = [];

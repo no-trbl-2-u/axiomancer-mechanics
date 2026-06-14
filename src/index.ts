@@ -196,6 +196,7 @@ export {
     emptyQuestLog, isQuestComplete, findActiveQuest, findQuest,
     startQuest, progressQuest, completeQuest, discoverQuest,
     reachableObjectives, killObjectives,
+    seedInputToUint32, minigameRunSeed, branchMinigameSeed,
 } from './World';
 
 // Hazard Minigame (v2 — faithful port of the mobile living rules source).
@@ -255,6 +256,7 @@ export type {
     MapDefinition, MapState, QuestObjective, QuestObjectiveType, QuestStatus, QuestLog,
     GenerateEncounterOptions,
     ApplyDialogueChoiceResult,
+    SeedInput,
     // Phase 135: Persistence types
     HazardModifierEntry, HazardNodeOutcome, BlockedRoute, RouteValidationResult,
 } from './World';

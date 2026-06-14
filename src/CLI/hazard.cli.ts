@@ -55,6 +55,7 @@ import type {
     HazardRouteKey,
     HazardSessionState,
 } from '../World/Hazard';
+import { minigameRunSeed } from '../World/seed';
 
 // ─── Flags ──────────────────────────────────────────────────────────────────
 
@@ -130,20 +131,10 @@ export function parseHazardArgv(args: string[]): HazardCliFlags {
 
 /** Derive a stable uint32 engine seed from the `--seed` flag (numeric or string). */
 function seedToNumber(seed: string | undefined, runIndex: number): number {
-    if (seed === undefined) {
-        // Deterministic-enough default for a CLI session without --seed.
-        return (0x9e3779b9 ^ (runIndex * 2654435761)) >>> 0;
-    }
-    const asNum = Number(seed);
-    if (Number.isFinite(asNum) && seed.trim() !== '') {
-        return ((asNum >>> 0) + runIndex) >>> 0;
-    }
-    let h = 2166136261 >>> 0;
-    for (let i = 0; i < seed.length; i++) {
-        h ^= seed.charCodeAt(i);
-        h = Math.imul(h, 16777619);
-    }
-    return ((h >>> 0) + runIndex) >>> 0;
+    const seedInput = seed !== undefined && seed.trim() !== '' && Number.isFinite(Number(seed))
+        ? Number(seed)
+        : (seed ?? 0x9e3779b9);
+    return minigameRunSeed(seedInput, runIndex);
 }
 
 // ─── Greedy auto policy (ported from the mobile balance sim) ──────────────────

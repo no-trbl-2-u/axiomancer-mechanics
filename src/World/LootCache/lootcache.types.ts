@@ -15,6 +15,7 @@
  * bitten vitae) at claim time.
  */
 
+import type { SeedInput } from '../seed';
 import type { LootCacheRngState } from './lootcache.rng';
 
 // ---------------------------------------------------------------------------
@@ -125,6 +126,6 @@ export interface LootCacheSession {
     bittenVitae: number;
     card: LootCacheCard | null;
     outcome: LootCacheOutcome | null;
-    seed: number;
+    seed: SeedInput;
     rng: LootCacheRngState;
 }

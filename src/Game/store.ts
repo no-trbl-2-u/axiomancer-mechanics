@@ -373,13 +373,13 @@ export function createGameStore(
                 let loot: Item[] = [];
                 if (outcome === 'victory' && pre.currentEncounter) {
                     xpGained = totalEncounterXp(pre.currentEncounter);
-                    loot = rollEncounterLoot(pre.currentEncounter);
+                    loot = rollEncounterLoot(pre.currentEncounter, () => getRng().random());
                 } else if (outcome === 'friendship' && pre.currentEncounter) {
                     // Phase 36 — friendship grants half the kill-win XP and the
                     // full loot table (consistent with the reducer treating
                     // friendship as a peaceful resolution rather than a flee).
                     xpGained = Math.floor(totalEncounterXp(pre.currentEncounter) * 0.5);
-                    loot = rollEncounterLoot(pre.currentEncounter);
+                    loot = rollEncounterLoot(pre.currentEncounter, () => getRng().random());
                     // Phase 60 — per-enemy friendshipReward supplement. Items
                     // append to the weighted-loot roll; xpBonus adds on top of
                     // the half-XP base.

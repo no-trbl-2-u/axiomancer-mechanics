@@ -60,6 +60,7 @@ import type {
     GatherToolId,
     GatheringSessionState,
 } from '../World/Gathering';
+import { minigameRunSeed } from '../World/seed';
 
 // ─── Flags ──────────────────────────────────────────────────────────────────
 
@@ -135,19 +136,10 @@ export function parseGatheringArgv(args: string[]): GatheringCliFlags {
 
 /** Derive a stable uint32 engine seed from the `--seed` flag (numeric or string). */
 function seedToNumber(seed: string | undefined, runIndex: number): number {
-    if (seed === undefined) {
-        return (0x6ee21e15 ^ (runIndex * 2654435761)) >>> 0;
-    }
-    const asNum = Number(seed);
-    if (Number.isFinite(asNum) && seed.trim() !== '') {
-        return ((asNum >>> 0) + runIndex) >>> 0;
-    }
-    let h = 2166136261 >>> 0;
-    for (let i = 0; i < seed.length; i++) {
-        h ^= seed.charCodeAt(i);
-        h = Math.imul(h, 16777619);
-    }
-    return ((h >>> 0) + runIndex) >>> 0;
+    const seedInput = seed !== undefined && seed.trim() !== '' && Number.isFinite(Number(seed))
+        ? Number(seed)
+        : (seed ?? 0x6ee21e15);
+    return minigameRunSeed(seedInput, runIndex);
 }
 
 // ─── Auto policy (the balance sim's "balanced" bot, replayed verb-by-verb) ────
