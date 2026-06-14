@@ -163,15 +163,15 @@ Decisions:
 
 ## Definition of Done
 
-- [ ] Unified type definitions for cross-minigame orchestration
-- [ ] Core harness resolver orchestrating all three simulators
-- [ ] Support for optional A/B testing per minigame
-- [ ] Structured report aggregation with pass/fail evaluation
-- [ ] Hermetic e2e test coverage for harness functionality
-- [ ] Public exports added to src/index.ts
-- [ ] All existing simulator tests pass unchanged
-- [ ] Harness runs cleanly across all three minigames
-- [ ] Reproducible results with seed parameter
+- [x] Unified type definitions for cross-minigame orchestration
+- [x] Core harness resolver orchestrating all three simulators
+- [x] Support for optional A/B testing per minigame
+- [x] Structured report aggregation with pass/fail evaluation
+- [x] Hermetic e2e test coverage for harness functionality
+- [x] Public exports added to src/index.ts
+- [x] All existing simulator tests pass unchanged
+- [x] Harness runs cleanly across all three minigames
+- [x] Reproducible results with seed parameter
 
 ## Follow-ups (out of scope)
 

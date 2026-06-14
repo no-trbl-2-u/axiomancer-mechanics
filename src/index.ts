@@ -232,6 +232,8 @@ export {
     // Phase 135: Persistence functions
     recordHazardOutcome, blockMapRoute, getHazardOutcomesForNode, isRouteBlocked,
     validateMoveToNode, findAlternativePaths, getBlockedRoutesFromNode, getReachableNodes,
+    // Phase 148: Minigame Harness
+    runMinigameHarness, summarizeHarnessReport,
 } from './World';
 export {
     resolveMapEvent,
@@ -259,6 +261,8 @@ export type {
     SeedInput,
     // Phase 135: Persistence types
     HazardModifierEntry, HazardNodeOutcome, BlockedRoute, RouteValidationResult,
+    // Phase 148: Minigame Harness types
+    MinigameHarnessConfig, MinigameHarnessReport, MinigameHarnessSummary,
 } from './World';
 
 // ─── Philosophy (Phase 42 — 3-axis alignment cube + 27-cell registry) ────────

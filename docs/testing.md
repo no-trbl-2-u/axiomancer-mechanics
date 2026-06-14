@@ -330,6 +330,40 @@ Before opening a PR, confirm:
 If you cannot satisfy this list, write a one-paragraph "Hermetic-test debt"
 note in the PR description explaining why and what would unblock it.
 
+## Minigame Harness — Cross-Minigame Balance Testing (Phase 148)
+
+The **minigame harness** provides unified balance testing across all three
+minigames (Hazard, Gathering, Quest Board) in a single invocation. It
+orchestrates A/B testing, playstyle divergence measurement, and pass/fail
+evaluation for use as a standard verification gate in balance phases.
+
+```ts
+import { runMinigameHarness } from 'axiomancer-mechanics';
+
+const report = runMinigameHarness({
+  minigames: ['hazard', 'gathering', 'quest-board'],
+  runs: 300,
+  seed: 'balance-test-seed',
+  abTestVariants: {
+    gathering: [configA, configB], // Optional A/B testing
+  },
+});
+
+// Check overall balance health
+if (!report.passFail.overall) {
+  console.log('Balance issues detected:', report.recommendations);
+}
+```
+
+**Key features:**
+- **Deterministic execution** via seed parameter for reproducible results
+- **Individual and unified reporting** with per-minigame pass/fail bands
+- **Optional A/B testing** for comparing configuration variants
+- **Aggregated recommendations** from all minigame balance analyzers
+
+The harness is tested hermetically at `src/World/e2e/minigame-harness.engine.test.ts`
+and designed for integration into automated balance verification workflows.
+
 ## The hermeticity guard
 
 `src/test-utils/e2e/hermeticity.audit.test.ts` enforces the contract above

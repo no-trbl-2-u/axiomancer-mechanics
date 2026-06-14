@@ -89,3 +89,14 @@ export * from './Hazard';
 export * from './QuestBoard';
 export * from './Rest';
 export * from './LootCache';
+
+// Gathering Minigame (Phase 142)
+export * from './Gathering';
+
+// Minigame Harness (Phase 148) — composable cross-minigame testing
+export {
+    runMinigameHarness, summarizeHarnessReport,
+} from './minigame-harness.resolver';
+export type {
+    MinigameHarnessConfig, MinigameHarnessReport, MinigameHarnessSummary,
+} from './minigame-harness.types';
