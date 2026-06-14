@@ -51,13 +51,13 @@
 - [x] **[MED] Character presets @deprecated removal schedules are stale** — resolved at commit cfa604d (2026-06-14). Updated @deprecated JSDoc tags from outdated "v0.13.0" to reflect current reality: presets remain in use by Playtest harness. Removed stale version-based removal schedules and clarified actual usage. Category: dead-code. Impact 6 × Ease 8 / 10 = 4.8.
 
 <!-- Comprehensive audit findings (updated by /iterate after each audit):
-> Last pass: 2026-06-14 at commit f8647b3
+> Last pass: 2026-06-14 at commit c3ff3b2
 
 **Category Z (External critique)** — plan/CRITIQUE.md Pending queue empty (pass 68, all findings resolved).
-**Category A (Test gaps)** — 122 hermetic *.engine.test.ts files across all modules; proper RNG stubbing via test-utils/rng.ts (zero vi.spyOn(Math, 'random') violations except test-utils); baseline tests green (1708 passing, 1 skipped); all source modules have comprehensive e2e coverage.
+**Category A (Test gaps)** — 106 hermetic *.engine.test.ts files across all modules; proper RNG stubbing via test-utils/rng.ts (only acceptable vi.spyOn(Math, 'random') in test-utils/rng.ts); baseline tests green (1715 passing, 1 skipped); all source modules have comprehensive e2e coverage.
 **Category B (Spec gaps)** — plan/AUDIT.md has zero Pending spec-gap rows; Knowledge-Gaps.md shows Q28 (multiple endings) deferred as endgame question; all spec files have answered questions (blank "Your answer:" placeholders only in template files).
 **Category C (Type safety)** — one justified @ts-ignore at agent-vitest-reporter.engine.test.ts:25 with explanatory comment; zero `as any` casts in production code; TypeScript compilation passes clean; exported functions have proper return type annotations.
-**Category D (Dead code)** — six @deprecated functions remain in src/Character/presets.ts with stale "v0.13.0" removal schedules (current package version 0.19.0); one @deprecated function in src/CLI/dev-tools.ts with recent Phase 99 context; console.log statements found in several source files for legitimate debugging/CLI output but should be reviewed for production readiness.
+**Category D (Dead code)** — no large commented-out blocks; internal files properly used; no unused exports identified in public barrel (src/index.ts).
 **Category E (Documentation)** — complete docs/ coverage for all 16+ source modules (Character, Enemy, Combat, Effects, Items, Skills, Game, World, Utils, NPCs, Philosophy, Playtest, CLI, Faction, Tuning, test-utils); README.md current; docs align with current exports.
 **Category F (ESLint)** — `npm run lint` passes clean with zero warnings or errors.
 **Category G (Dependencies)** — no minor/patch updates available (`npm outdated` empty); 3 major bumps previously PROMOTED to Phase 143 (typescript 5→6, inquirer 9→12, globals 16→17) per oversight 2026-06-13 and should NOT be re-filed.
