@@ -54,10 +54,10 @@
 - [x] **[MED] Character presets @deprecated removal schedules are stale** — resolved at commit cfa604d (2026-06-14). Updated @deprecated JSDoc tags from outdated "v0.13.0" to reflect current reality: presets remain in use by Playtest harness. Removed stale version-based removal schedules and clarified actual usage. Category: dead-code. Impact 6 × Ease 8 / 10 = 4.8.
 
 <!-- Comprehensive audit findings (updated by /iterate after each audit):
-> Last pass: 2026-06-14 at commit c3ff3b2
+> Last pass: 2026-06-14 at commit 9e6c159
 
 **Category Z (External critique)** — plan/CRITIQUE.md Pending queue empty (pass 68, all findings resolved).
-**Category A (Test gaps)** — 106 hermetic *.engine.test.ts files across all modules; proper RNG stubbing via test-utils/rng.ts (only acceptable vi.spyOn(Math, 'random') in test-utils/rng.ts); baseline tests green (1715 passing, 1 skipped); all source modules have comprehensive e2e coverage.
+**Category A (Test gaps)** — 106 hermetic *.engine.test.ts files across all modules; proper RNG stubbing via test-utils/rng.ts (only acceptable vi.spyOn(Math, 'random') in test-utils/rng.ts); baseline tests green (1740 passing, 1 skipped); all source modules have comprehensive e2e coverage.
 **Category B (Spec gaps)** — plan/AUDIT.md has zero Pending spec-gap rows; Knowledge-Gaps.md shows Q28 (multiple endings) deferred as endgame question; all spec files have answered questions (blank "Your answer:" placeholders only in template files).
 **Category C (Type safety)** — one justified @ts-ignore at agent-vitest-reporter.engine.test.ts:25 with explanatory comment; zero `as any` casts in production code; TypeScript compilation passes clean; exported functions have proper return type annotations.
 **Category D (Dead code)** — no large commented-out blocks; internal files properly used; no unused exports identified in public barrel (src/index.ts).
