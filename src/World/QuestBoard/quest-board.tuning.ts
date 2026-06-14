@@ -10,7 +10,7 @@
 
 export const QUEST_BOARD_TUNING = Object.freeze({
     /** Bone-die rolls per in-game day. Dusk falls after the last. */
-    stretchesPerDay: 3,
+    stretchesPerDay: 6,
     /** Vigor restored by supper at dusk (capped at max). */
     duskVigor: 2,
     /** Fraction of max vigor restored after a collapse (floor'd). */
@@ -20,14 +20,14 @@ export const QUEST_BOARD_TUNING = Object.freeze({
     /** Vows rolled at session start. */
     vowsDealt: 2,
     /** Tier cuts — see `questBoardTierOf`. */
-    masterworkMaxDays: 4,
+    masterworkMaxDays: 7,
     masterworkMinVows: 2,
-    seaworthyMaxDays: 7,
+    seaworthyMaxDays: 12,
     seaworthyMinVows: 1,
     /** Vow dials. */
-    swiftKeelDay: 4,
-    unbittenFloor: 3,
-    fedLarderFish: 4,
+    swiftKeelDay: 5,
+    unbittenFloor: 2,
+    fedLarderFish: 3,
     gullsBaneWins: 2,
     taleCollectorCount: 2,
 

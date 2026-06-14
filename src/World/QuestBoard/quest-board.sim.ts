@@ -88,21 +88,29 @@ function safePolicy(s: QuestBoardSession, _ctx: PolicyCtx): PolicyAction {
     return { type: 'roll' };
 }
 
-/** Simple naive policy similar to the engine test - safe choices */
+/** Improved naive policy - still safe but more efficient */
 function naivePolicy(pending: NonNullable<QuestBoardSession['pending']>): PolicyAction {
     const enabled = pending.options.filter(o => !o.disabledReason);
     if (enabled.length === 0) return { type: 'roll' }; // No valid options
     
-    // Market: always leave
+    // Market: buy one item if affordable, especially nail deals
     if (pending.kind === 'market') {
+        // Look for nail deals first (good value)
+        const nailOffer = enabled.find(o => o.id === 'buy-nail');
+        if (nailOffer) return { type: 'option', optionId: nailOffer.id };
+        
+        // Then any other affordable option
+        const buyOptions = enabled.filter(o => o.id.startsWith('buy-'));
+        if (buyOptions.length > 0) return { type: 'option', optionId: buyOptions[0].id };
+        
         const leave = enabled.find(o => o.id === 'leave');
         if (leave) return { type: 'option', optionId: leave.id };
     }
     
-    // Gather: press once then stop (like engine test)
+    // Gather: press twice for better yield, then stop
     if (pending.kind === 'gather') {
-        const pressedOnce = (pending.presses ?? 0) >= 1;
-        const wants = pressedOnce ? 'stop' : 'press';
+        const pressCount = pending.presses ?? 0;
+        const wants = pressCount >= 2 ? 'stop' : 'press';
         const preferred = enabled.find(o => o.id === wants);
         if (preferred) return { type: 'option', optionId: preferred.id };
     }
@@ -121,11 +129,11 @@ function gamblerPolicy(s: QuestBoardSession, _ctx: PolicyCtx): PolicyAction {
         const enabled = s.pending.options.filter(o => !o.disabledReason);
         if (enabled.length === 0) return { type: 'roll' };
         
-        // Market: buy something before leaving (if affordable)
+        // Market: aggressive buying (gambler loves spending)
         if (s.pending.kind === 'market') {
-            const nonLeave = enabled.filter(o => o.id !== 'leave');
-            if (nonLeave.length > 0 && s.fish >= 1) {
-                return { type: 'option', optionId: nonLeave[0].id };
+            const buyOptions = enabled.filter(o => o.id.startsWith('buy-'));
+            if (buyOptions.length > 0 && s.fish >= 2) {
+                return { type: 'option', optionId: buyOptions[0].id };
             }
             const leave = enabled.find(o => o.id === 'leave');
             if (leave) return { type: 'option', optionId: leave.id };
@@ -158,30 +166,28 @@ function economistPolicy(s: QuestBoardSession, _ctx: PolicyCtx): PolicyAction {
         
         const fishRatio = s.fish / Math.max(1, getQuestBoardDef(s.boardId).startFish);
         
-        // Market: buy if we have fish, otherwise leave
+        // Market: buy efficiently based on parts needed
         if (s.pending.kind === 'market') {
-            const nonLeave = enabled.filter(o => o.id !== 'leave');
-            if (nonLeave.length > 0 && fishRatio > 0.3) {
-                // Buy one thing then we'll leave next time
-                return { type: 'option', optionId: nonLeave[0].id };
+            const buyOptions = enabled.filter(o => o.id.startsWith('buy-'));
+            // Prioritize nail purchases (best value: 2 nails for 2 fish)
+            const nailOffer = buyOptions.find(o => o.id === 'buy-nail');
+            if (nailOffer && s.fish >= 2) return { type: 'option', optionId: nailOffer.id };
+            
+            // Then other items if we have enough fish
+            if (buyOptions.length > 0 && s.fish >= 3) {
+                return { type: 'option', optionId: buyOptions[0].id };
             }
             const leave = enabled.find(o => o.id === 'leave');
             if (leave) return { type: 'option', optionId: leave.id };
         }
         
-        // Gather: press if resources look good, otherwise be cautious like safe policy
+        // Gather: balanced approach - press 2-3 times depending on resources
         if (s.pending.kind === 'gather') {
-            if (fishRatio > 0.5) {
-                // Can afford to take risks
-                const press = enabled.find(o => o.id === 'press');
-                if (press) return { type: 'option', optionId: press.id };
-            } else {
-                // Be cautious like safe policy
-                const pressedOnce = (s.pending.presses ?? 0) >= 1;
-                const wants = pressedOnce ? 'stop' : 'press';
-                const preferred = enabled.find(o => o.id === wants);
-                if (preferred) return { type: 'option', optionId: preferred.id };
-            }
+            const pressCount = s.pending.presses ?? 0;
+            const maxPresses = fishRatio > 0.6 ? 3 : 2; // More presses if wealthy
+            const wants = pressCount >= maxPresses ? 'stop' : 'press';
+            const preferred = enabled.find(o => o.id === wants);
+            if (preferred) return { type: 'option', optionId: preferred.id };
         }
         
         // For all others: pick first enabled option

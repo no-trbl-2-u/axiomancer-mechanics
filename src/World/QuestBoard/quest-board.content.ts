@@ -74,17 +74,17 @@ export const QUEST_BOARD_VOWS: readonly QuestVowDef[] = Object.freeze([
     {
         id: 'swift-keel' as QuestVowId,
         name: 'THE SWIFT KEEL',
-        desc: 'Finish the build by the end of day 4.',
+        desc: 'Finish the build by the end of day 5.',
     },
     {
         id: 'unbitten' as QuestVowId,
         name: 'UNBITTEN',
-        desc: 'Never let vigor fall below 3.',
+        desc: 'Never let vigor fall below 2.',
     },
     {
         id: 'fed-larder' as QuestVowId,
         name: 'THE FED LARDER',
-        desc: 'End the build still holding 4 fish or more.',
+        desc: 'End the build still holding 3 fish or more.',
     },
     {
         id: 'gulls-bane' as QuestVowId,
@@ -123,13 +123,13 @@ export const BUILD_THE_BOAT_BOARD: QuestBoardDef = Object.freeze({
         'as a thing that can be won.',
     boardHeadline: 'A BOAT, OR NOTHING',
     pieceName: 'THE BOY',
-    startFish: 10,
+    startFish: 15,
     startVigor: 8,
     maxVigor: 8,
-    // Tuned 2026-06-12: 11 part-units lands a naive (always-first-option)
-    // policy at ~15 rolls / ~5 days; deliberate play (market buys, deep
-    // takes) reaches ~10 rolls / day 3-4 — the masterwork band.
-    partsRequired: Object.freeze({ plank: 4, pitch: 2, cloth: 2, nail: 3 }),
+    // Tuned 2026-06-14: 6 part-units (2+1+1+2) targets 5-7 day masterwork completion
+    // with bot policies that engage status effects. Reduced from 11 parts
+    // to fix balance test failures.
+    partsRequired: Object.freeze({ plank: 2, pitch: 1, cloth: 1, nail: 2 }),
     partNames: Object.freeze({
         plank: 'HULL PLANKS',
         pitch: 'BLACK PITCH',
@@ -163,7 +163,7 @@ export const BUILD_THE_BOAT_BOARD: QuestBoardDef = Object.freeze({
             flavor: 'The sea gives back what it takes. Eventually. In pieces.',
             gather: {
                 part: 'plank' as const,
-                perPress: 1,
+                perPress: 2,
                 bustFloor: 1,
                 bustBite: 1,
                 maxPress: 3,
@@ -277,7 +277,7 @@ export const BUILD_THE_BOAT_BOARD: QuestBoardDef = Object.freeze({
             flavor: "Father's axe knows this grove. Straight grain, sap like amber.",
             gather: {
                 part: 'plank' as const,
-                perPress: 1,
+                perPress: 2,
                 bustFloor: 1,
                 bustBite: 2,
                 maxPress: 5,
@@ -290,7 +290,7 @@ export const BUILD_THE_BOAT_BOARD: QuestBoardDef = Object.freeze({
             flavor: 'Black pitch under black water. The bog keeps what it grabs.',
             gather: {
                 part: 'pitch' as const,
-                perPress: 1,
+                perPress: 2,
                 bustFloor: 2,
                 bustBite: 1,
                 maxPress: 3,
