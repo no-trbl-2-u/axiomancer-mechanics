@@ -25,7 +25,17 @@ from the PRD are the objective function.
 libraries, exercises the hazard CLI flow (`npm run hazard -- ...`) and the
 hermetic e2e suite, interprets results against CDR-0006 design targets, and
 delivers a report — with any auto-applied numeric changes and any propose-only
-structural findings — together on one branch and PR.
+structural findings — together on one branch and PR. When the task asks for
+player-feel, mobile UX, or Kid-style playtesting, the skill must also use the
+mobile dev menu path in `axiomancer-mobile` as a live witness; CLI evidence alone
+does not answer phone-interaction questions.
+
+**Known documentation drift to check first:** Hazard implementation has moved
+from split library files to `hazard.content.ts` + engagement/deck modules. Treat
+old references to `hazard.cards.library.ts`, `hazard.hazards.library.ts`, H01/H02
+IDs, or top/bottom route labels as historical shorthand. Before editing, verify
+current exports and CLI flags from `src/World/Hazard/index.ts`,
+`src/World/Hazard/hazard.content.ts`, and `src/CLI/hazard.cli.ts`.
 
 **There is now a hazard testing CLI flow.** Use `npm run hazard -- [flags]`
 (convenience alias for `npm run game -- hazard`) as the empirical witness before
@@ -41,6 +51,55 @@ npm run hazard -- --auto --seed 5 --runs 3 --hazard H02 --route bottom --json-ev
 Use those logs to measure actual `computeFinalScore` and `hazard:summary`
 outcomes. If the CLI still cannot measure a specific axis directly, say exactly
 which axis is blocked and why; do not invent a fake harness measurement.
+
+## Mobile live-playtest witness — Kid path
+
+Use this whenever the final report must judge touch complexity, learnability,
+deck feel, reward choice feel, or whether the minigame behaves correctly on a
+phone-sized surface.
+
+Repository: `/root/Workspace/axiomancer-both/axiomancer-mobile`.
+
+1. Export/serve a dev-enabled web build so the dev menu exists:
+
+   ```bash
+   BUILD_PROFILE=preview npx expo export --platform web --output-dir .audit-dist
+   node scripts/audit-serve.mjs
+   ```
+
+2. Open `http://127.0.0.1:4173` at the mobile audit viewport when using the
+   browser/Playwright path. The dev menu lives under SELF.
+
+3. Trigger Hazard through the dev menu:
+   - preferred direct path: `SELF → DEV MENU → DEBUG · HAZARD → BRAVE IT`
+     (`data-testid="debug-hazard-button"`);
+   - encounter path: `SELF → DEV MENU → DEBUG · TRIGGER ENCOUNTER → HAZARD`
+     (`data-testid="debug-trigger-encounter-hazard"`).
+
+4. If accessibility-level clicks fail to visibly route, use the DOM/test-ID
+   activation as automation fallback and record that as UX evidence, not balance
+   evidence. Prior Kid evidence showed this exact failure mode.
+
+5. For reproducible sessions, set `globalThis.__AXM_HAZARD_SEED__` and
+   `globalThis.__AXM_HAZARD_ID__` before triggering the hazard. Mobile honors
+   those overrides in `state/hazard/store-actions.ts`.
+
+6. To test non-starter deck feel, use the dev menu control
+   `DEBUG · RANDOMIZE HAZARD DECK → SHUFFLE FATE`
+   (`data-testid="debug-hazard-deck-randomize"`). It replaces acquired hazard
+   cards with ten random grants from the starter + reward pool while leaving the
+   implicit starter bag intact. Use this for variety passes, but note that it is
+   random deck variety, not curated archetype testing.
+
+7. A Kid final report for Hazard must answer, at minimum:
+   - Does the phone interaction stack feel overloaded: card staging, die drag,
+     salvage, detail overlays, and Play commitment?
+   - Are card keywords and archetype readable from tap overlays?
+   - Are projected results clear before Apply/Play?
+   - Does reward choice read as: in-focus obvious benefit, stronger off-focus
+     temptation, or remove-card option?
+   - Is deck growth/scarring legible enough to justify a dedicated hazard deck
+     screen?
 
 ## 2. Invocation
 
