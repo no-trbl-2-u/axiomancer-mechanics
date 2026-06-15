@@ -50,6 +50,22 @@
 
 ## Audit Pass Log
 
+### 2026-06-15 (Pass 73) — Full categories Z–H
+
+**Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), ESLint fix (F), Dependency updates (G), Commit-hygiene (H).
+
+- **Z (External critique):** CRITIQUE.md Pending queue empty (0 findings)
+- **A (Test gaps):** 108 hermetic *.engine.test.ts files across all modules; proper RNG stubbing via test-utils/rng.ts (zero vi.spyOn(Math, 'random') violations except test-utils); baseline tests green (1763 passing, 1 skipped); comprehensive e2e coverage across all src/ modules
+- **B (Spec gaps):** plan/AUDIT.md has zero Pending spec-gap rows; Knowledge-Gaps.md shows Q28 (multiple endings) deferred as endgame question; all spec files have answered questions (blank "Your answer:" placeholders only in template files)
+- **C (Type safety):** one justified @ts-ignore at agent-vitest-reporter.engine.test.ts:25 with explanatory comment for .mjs import; zero `as any` casts in production code; TypeScript compilation passes clean; exported functions have proper return type annotations
+- **D (Dead code):** no large commented-out blocks; internal files properly used; no unused exports identified in public barrel (src/index.ts)
+- **E (Documentation):** complete docs/ coverage for all 16+ source modules; README.md current; docs align with current exports
+- **F (ESLint):** `npm run lint` passes clean with zero warnings or errors (Phase 13 shipped)
+- **G (Dependencies):** no outdated dependencies found via `npm outdated` (all minor/patch current)
+- **H (Commit hygiene):** clean git status, no uncommitted drift; plan files in sync with shipped state
+
+**Found 0 actionable findings.** Codebase in excellent health across all audit categories.
+
 ### 2026-06-15 (Pass 72) — Full categories Z–H
 
 **Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), Dependency updates (G), Commit-hygiene (H). ESLint fix (F) skipped (already shipped Phase 13).
