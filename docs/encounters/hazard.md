@@ -39,7 +39,7 @@ Phase 131 — Live.
    d. Press **Play** to commit and resolve the round.
    e. Round resolves as **O** (cleared) or **X** (failed); cards discard; next round draws 5 new cards.
 6. After all rounds: outcome is judged (Perfect / Complete / Failure).
-7. Rewards / consequences modal, with a pick-1-of-3 card offer on Complete/Perfect.
+7. Rewards / consequences modal. Current shipped behavior is a pick-1-of-3 card offer on Complete/Perfect; accepted next doctrine (Phase 149) changes this into a typed three-choice reward ritual: one obvious in-focus deck benefit, one stronger off-focus temptation, and one remove-card option.
 
 ---
 
@@ -125,9 +125,11 @@ Phase 131 — Live.
 
 ## Sub-quests
 
-10 optional objectives in the catalogue; N are rolled per hazard (per
-`HAZARD_TUNING.subquests.pickCount`). Completing one on a **survived crossing**
-pays the listed bonus; a **failed crossing** forfeits all sub-quest rewards.
+10 optional objectives in the catalogue; current shipped behavior rolls N per hazard (per
+`HAZARD_TUNING.subquests.pickCount`). Accepted next doctrine (Phase 149) changes this
+to **sub-quest drafting**: offer 2–3 candidate objectives and let the player choose one
+before/around route commitment. Completing the chosen sub-quest on a **survived crossing**
+pays the listed bonus; a **failed crossing** forfeits sub-quest rewards.
 
 | ID | Name | Condition | Reward |
 |---|---|---|---|
