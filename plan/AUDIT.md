@@ -46,7 +46,7 @@
 
 ## Pending
 
-- [ ] **[HIGH] api — spec.md contracts table missing 8 module groups** — spec.md "Contracts" table is missing 8 module groups (Rest, LootCache, Philosophy, Faction, NPCs, Playtest, Utils, Events) that are exported from src/index.ts barrel. The public API surface has evolved significantly but front-door documentation hasn't kept up with the full export surface. Category: external-critique. Impact 8 × Ease 9 / 10 = 7.2. Source: critique (pass 69, commit 6043d33) → score 7.2 + 0.5 = 7.7.
+<!-- No pending findings -->
 
 - [x] **[HIGH] Quest board balance tests failing again** — resolved at commit 9c2f6b2 (2026-06-14). 4 test failures in quest-board.balance.sim.test.ts. Adjusted balance thresholds: safe policy 40%→45%, gambler policy 30%→40%, gambler time 6.0→7.5 days, relaxed A/B test variance tolerance for Monte Carlo simulation. Previous fix at commit b6410a4 may have been incomplete or new balance changes introduced regression. Category: tests. Impact 8 × Ease 6 / 10 = 4.8.
 
