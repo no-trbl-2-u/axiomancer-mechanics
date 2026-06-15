@@ -88,25 +88,25 @@ The barrel at `src/index.ts` is the contract surface. Groups:
 
 | Group | Key exports |
 |---|---|
-| Character | `createCharacter`, `Character`, `BaseStats`, `DerivedStats` |
-| Enemy | `createEnemy`, `Enemy`, `EnemyLogic`, `decideEnemyAction`, `enemyStatBudget` |
-| Combat | `determineAdvantage`, `getAttackStat`, `applyDamage`, `heal`, `Stance`, `Action`, `CombatState`, `getEffectsResolutionOutcome` |
-| Effects | `applyEffect`, `applyTier1CombatEffect`, `lookupEffect`, `Effect`, `ActiveEffect` |
-| Items | `addItem`, `removeItem`, `useConsumable`, `Item` |
-| Skills | `canUseSkill`, `executeSkill`, `learnSkill`, `Skill`, `SkillCategory` |
-| Game | `createGameStore`, `GameState`, persistence adapters |
-| World | `createStartingWorld`, world reducer, `WorldState`, `runMinigameHarness` |
-| Hazard | `resolveHazardMinigame`, `HazardCard`, `HazardDie`, `HazardTuning` |
-| Gathering | `resolveGatheringMinigame`, `GatheringSite`, `GatheringApproach`, `GatheringTuning` |
-| QuestBoard | `resolveQuestBoardMinigame`, `QuestBoardVerb`, `QuestBoardTuning`, `QuestBoardOutcome` |
-| Rest | `resolveRestMinigame`, `RestWatch`, `RestTuning`, `RestOutcome` |
-| LootCache | `resolveLootCacheMinigame`, `LootCacheTier`, `LootCacheTuning`, `LootCacheOutcome` |
-| Philosophy | `getAlignmentCell`, `applyAlignmentDelta`, `PhilosophicalAlignment` |
-| Faction | `applyFactionReputationDeltas`, `FactionReputation`, `factionLibrary` |
-| NPCs | `getDialogueNode`, `visibleChoices`, `NPC`, `DialogueTree` |
-| Playtest | `runPlaytestScenario`, `PlaytestScenario`, `PlaytestReport` |
-| Events | `EnginePayload`, `TypedGameEvent`, type guards |
-| Utils | `clamp`, `randomInt`, `deepClone`, `deriveStats` |
+| Character | `createCharacter`, `allocateStatPoint`, `previewStatAllocation`, `Character`, `BaseStats`, `DerivedStats`, `CharacterPreset` |
+| Enemy | `createEnemy`, `Enemy`, `EnemyLogic`, `decideEnemyAction`, `enemyStatBudget`, `randomLogic`, `rollLoot`, `FriendshipReward`, `BefriendabilityConfig` |
+| Combat | `determineAdvantage`, `getAttackStat`, `getDefenseStat`, `applyDamage`, `heal`, `Stance`, `Action`, `CombatState`, `getEffectsResolutionOutcome`, `resolveCombatRound` |
+| Effects | `applyEffect`, `applyTier1CombatEffect`, `lookupEffect`, `Effect`, `ActiveEffect`, `EffectInteraction`, `evaluateInteractions` |
+| Items | `addItem`, `removeItem`, `useConsumable`, `Item`, `Equipment`, `dropItem`, `getActiveSetBonuses`, `ItemSet`, `previewTemplateAtRarity` |
+| Skills | `canUseSkill`, `executeSkill`, `learnSkill`, `Skill`, `SkillCategory`, `SkillSynergy`, `evaluateExtendedSynergyPredicate` |
+| Game | `createGameStore`, `GameState`, `gameReducer`, `createEventEmitter`, `nullAdapter`, `CodexEntry` |
+| World | `createStartingWorld`, `WorldState`, `moveToNode`, `resolveMapEvent`, `runMinigameHarness`, `MapDefinition` |
+| Hazard | `*` (wildcard export from `./World/Hazard`) |
+| Gathering | `*` (wildcard export from `./World/Gathering`) |
+| QuestBoard | `*` (wildcard export from `./World/QuestBoard`) |
+| Rest | `*` (wildcard export from `./World/Rest`) |
+| LootCache | `*` (wildcard export from `./World/LootCache`) |
+| Philosophy | `getAlignmentCell`, `applyAlignmentDelta`, `PhilosophicalAlignment`, `bucketAxis`, `philosophicalAlignmentLibrary` |
+| Faction | `applyFactionReputationDeltas`, `FactionReputation`, `factionLibrary`, `getFactionInfo`, `clampFactionReputation` |
+| NPCs | `getDialogueNode`, `visibleChoices`, `NPC`, `DialogueTree`, `DialogueNode` |
+| Playtest | `runPlaytestScenario`, `PlaytestScenario`, `PlaytestReport`, `earlyGameFixture`, `endgameFixture` |
+| Events | `EnginePayload`, `TypedGameEvent`, `isCombatStartedEvent`, `isWorldMovedEvent`, type guards |
+| Utils | `clamp`, `randomInt`, `deepClone`, `deriveStats`, `setRng`, `getRng`, `isCharacter`, `isEnemy` |
 
 Breaking changes to these exports require a semver major. The CLIs
 (`src/CLI/`) are **not** part of the public API and are excluded from the
