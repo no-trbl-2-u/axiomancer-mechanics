@@ -11,6 +11,56 @@ import type { SeedInput } from '../seed';
 import type { HazardRngState } from './hazard.rng';
 
 // ---------------------------------------------------------------------------
+// Phase 149 — Deck focus, scars, and engagement
+// ---------------------------------------------------------------------------
+
+/** Deck archetype classification based on card composition and distribution. */
+export type HazardDeckFocus = 
+    | 'force-heavy'
+    | 'escape-heavy' 
+    | 'gold-utility'
+    | 'hex-control'
+    | 'scarred'
+    | 'mixed';
+
+/** Deck scar summary — tracks burden/dead-weight from CRACK cards. */
+export interface HazardDeckScars {
+    crackCount: number;
+    totalCards: number;
+    scarRatio: number;
+}
+
+/** Three-choice reward offer structure (Phase 149 doctrine). */
+export interface HazardRewardOffer {
+    /** Obvious benefit to current deck focus. */
+    focusBenefit: HazardCardDef;
+    /** Stronger card outside current deck focus. */
+    offFocusTemptation: HazardCardDef;
+    /** Remove-card option data for deck editing. */
+    removeCardOption: {
+        available: boolean;
+        eligibleCardIds: string[];
+    };
+}
+
+/** Sub-quest drafting choice before route selection. */
+export interface HazardSubquestDraft {
+    /** 2-3 candidate sub-quests to choose from. */
+    candidates: HazardSubquestDef[];
+    /** Player's chosen sub-quest (null = none selected yet). */
+    chosen: HazardSubquestDef | null;
+}
+
+/** Deck identity summary for post-Hazard reporting. */
+export interface HazardDeckIdentity {
+    focus: HazardDeckFocus;
+    scars: HazardDeckScars;
+    cardCount: number;
+    dominantColors: HazardColor[];
+    utilityRatio: number;
+}
+
+// ---------------------------------------------------------------------------
 // Colours, progress, dice
 // ---------------------------------------------------------------------------
 
@@ -462,6 +512,8 @@ export interface HazardSessionState {
     modifiers: HazardModifiers;
     /** Sub-quests rolled for this hazard (objective ids). */
     subquests: HazardSubquestState[];
+    /** Sub-quest drafting state (Phase 149). */
+    subquestDraft: HazardSubquestDraft;
     /** Rolling metrics that judge the sub-quests. */
     questMetrics: HazardQuestMetrics;
     /** Primed one-shot bonus consumed by the next gold die used to power. */

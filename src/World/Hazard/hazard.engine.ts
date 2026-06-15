@@ -26,8 +26,14 @@ import {
     HAZARD_REWARD_CARDS,
     HAZARD_SUBQUESTS,
 } from './hazard.content';
+import {
+    generateRewardOffer,
+    generateSubquestDraft,
+    generateDeckIdentity,
+    removeCardFromDeck,
+} from './hazard.engagement';
 import { HAZARD_TUNING } from './hazard.tuning';
-import { nextFloat, nextInt, seedRng, shuffle, type HazardRngState } from './hazard.rng';
+import { nextInt, seedRng, shuffle, type HazardRngState } from './hazard.rng';
 import { branchMinigameSeed, type SeedInput } from '../seed';
 import {
     EMPTY_HAZARD_MODIFIERS,
@@ -38,6 +44,7 @@ import {
     type HazardCardDef,
     type HazardColor,
     type HazardConsequenceId,
+    type HazardDeckIdentity,
     type HazardDie,
     type HazardHandEntry,
     type HazardMark,
@@ -279,6 +286,7 @@ export function createHazardSession(
         progressBase: { force: 0, escape: 0 },
         modifiers: { ...EMPTY_HAZARD_MODIFIERS },
         subquests: rollSubquests(seed),
+        subquestDraft: generateSubquestDraft(HAZARD_SUBQUESTS, rng),
         questMetrics: { ...EMPTY_HAZARD_QUEST_METRICS, roundsCleared: [] },
         goldVow: null,
         momentumCap: HAZARD_MOMENTUM_CAP,
@@ -863,30 +871,58 @@ function rollRewardCards(
     rng: HazardRngState,
     tier: HazardOutcomeTier,
     wins: number,
+    deckBag: readonly string[] = [],
 ): { cards: HazardCardDef[]; rng: HazardRngState } {
-    let r = rng;
-    const pick = (rarity: HazardCardDef['rarity']): HazardCardDef => {
-        const options = HAZARD_REWARD_CARDS.filter((c) => c.rarity === rarity);
-        const draw = nextInt(r, options.length);
-        r = draw.state;
-        return options[draw.value];
-    };
-    const chosen: HazardCardDef[] = [];
-    if (tier === 'perfect') chosen.push(pick('rare')); // guaranteed rare
-    let guard = 0;
-    while (chosen.length < 3 && guard++ < 40) {
-        const draw = nextFloat(r);
-        r = draw.state;
-        let rarity: HazardCardDef['rarity'];
-        if (wins <= 1) {
-            rarity = draw.value < 0.7 ? 'common' : 'uncommon'; // 0% rare on a single win
-        } else {
-            rarity = draw.value < 0.5 ? 'common' : draw.value < 0.85 ? 'uncommon' : 'rare';
+    // Phase 149: Use three-choice reward doctrine instead of random draws
+    const offer = generateRewardOffer([...deckBag], rng);
+    
+    // Convert the three-choice offer back to the expected card array format
+    const cards: HazardCardDef[] = [
+        offer.focusBenefit,
+        offer.offFocusTemptation,
+    ];
+    
+    // MAINTAIN BACKWARD COMPATIBILITY: Preserve original tier guarantees
+    if (tier === 'perfect') {
+        // Perfect tier MUST have a rare card as the first slot
+        const rareOptions = HAZARD_REWARD_CARDS.filter(c => c.rarity === 'rare');
+        if (rareOptions.length > 0) {
+            const rareRoll = nextInt(rng, rareOptions.length);
+            // Replace first slot with guaranteed rare
+            cards[0] = rareOptions[rareRoll.value];
+            rng = rareRoll.state;
         }
-        const c = pick(rarity);
-        if (!chosen.find((x) => x.id === c.id)) chosen.push(c);
+    } else if (wins === 1) {
+        // Single win MUST NOT have rare cards (ensure all are common/uncommon)
+        cards[0] = ensureNotRare(cards[0]);
+        cards[1] = ensureNotRare(cards[1]);
     }
-    return { cards: chosen, rng: r };
+    
+    // Add a third card to complete the offer
+    if (cards.length < 3) {
+        const remaining = HAZARD_REWARD_CARDS.filter(c => 
+            !cards.some(existing => existing.id === c.id) &&
+            (wins === 1 ? c.rarity !== 'rare' : true) // Respect single-win no-rare rule
+        );
+        if (remaining.length > 0) {
+            const extraRoll = nextInt(rng, remaining.length);
+            cards.push(remaining[extraRoll.value]);
+            rng = extraRoll.state;
+        }
+    }
+    
+    return { cards: cards.slice(0, 3), rng };
+}
+
+/**
+ * Ensure a card is not rare (for single-win compatibility).
+ */
+function ensureNotRare(card: HazardCardDef): HazardCardDef {
+    if (card.rarity !== 'rare') return card;
+    
+    // Find a non-rare alternative 
+    const alternatives = HAZARD_REWARD_CARDS.filter(c => c.rarity !== 'rare');
+    return alternatives[0] ?? card; // Fallback to original if no alternatives
 }
 
 const CONSEQUENCES_BY_LOSS: Record<number, HazardConsequenceId[]> = {
@@ -896,7 +932,7 @@ const CONSEQUENCES_BY_LOSS: Record<number, HazardConsequenceId[]> = {
     3: ['minhp', 'maxhp', 'deadcard', 'curse'],
 };
 
-function computeOutcome(s: HazardSessionState): { outcome: HazardOutcome; rng: HazardRngState } {
+function computeOutcome(s: HazardSessionState, deckBag: readonly string[] = []): { outcome: HazardOutcome; rng: HazardRngState } {
     const def = getHazardDef(s.hazardId);
     const wins = s.marks.filter((m) => m === 'O').length;
     const losses = s.marks.length - wins;
@@ -912,7 +948,7 @@ function computeOutcome(s: HazardSessionState): { outcome: HazardOutcome; rng: H
     let offerCards: HazardCardDef[] = [];
     let rng = s.rng;
     if (tier !== 'failure') {
-        const rolled = rollRewardCards(rng, tier, wins);
+        const rolled = rollRewardCards(rng, tier, wins, deckBag);
         offerCards = rolled.cards;
         rng = rolled.rng;
     }
@@ -975,7 +1011,7 @@ export function continueHazardAfterResolve(
     if (s.phase !== 'resolve-flash' || !s.resolveInfo) return s;
     const info = s.resolveInfo;
     if (info.round >= s.totalRounds) {
-        const { outcome, rng } = computeOutcome(s);
+        const { outcome, rng } = computeOutcome(s, deckBag);
         return { ...s, phase: 'outcome', outcome, resolveInfo: null, rng };
     }
     const discardPile = [...s.discardPile, ...s.play.map((p) => p.cardId)];
@@ -1015,4 +1051,46 @@ export function claimHazardRewards(s: HazardSessionState, cardId: string | null)
     if (cardId !== null && !s.outcome.offerCards.find((c) => c.id === cardId)) return s;
     if (cardId === null && s.outcome.offerCards.length > 0 && !s.outcome.canSkip) return s;
     return { ...s, phase: 'done', pickedRewardCardId: cardId };
+}
+
+// ---------------------------------------------------------------------------
+// Phase 149 — Engagement functions
+// ---------------------------------------------------------------------------
+
+/**
+ * Select a sub-quest from the draft candidates.
+ */
+export function selectSubquestFromDraft(
+    s: HazardSessionState,
+    subquestId: string
+): HazardSessionState {
+    if (s.phase !== 'route-select') return s;
+    
+    const chosen = s.subquestDraft.candidates.find(sq => sq.id === subquestId);
+    if (!chosen) return s;
+    
+    return {
+        ...s,
+        subquestDraft: {
+            ...s.subquestDraft,
+            chosen,
+        }
+    };
+}
+
+/**
+ * Generate deck identity summary for the current persistent deck.
+ */
+export function getHazardDeckIdentity(deckCardIds: string[]): HazardDeckIdentity {
+    return generateDeckIdentity(deckCardIds);
+}
+
+/**
+ * Remove a card from the persistent deck (reward option).
+ */
+export function removeHazardDeckCard(
+    deckCardIds: string[],
+    cardIdToRemove: string
+): string[] {
+    return removeCardFromDeck(deckCardIds, cardIdToRemove);
 }

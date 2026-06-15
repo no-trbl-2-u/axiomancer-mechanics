@@ -41,6 +41,12 @@ export type {
     HazardOutcome,
     HazardPhase,
     HazardSessionState,
+    // Phase 149 types
+    HazardDeckFocus,
+    HazardDeckScars,
+    HazardDeckIdentity,
+    HazardRewardOffer,
+    HazardSubquestDraft,
 } from './hazard.types';
 
 export {
@@ -116,6 +122,10 @@ export {
     continueHazardAfterResolve,
     acknowledgeHazardOutcome,
     claimHazardRewards,
+    // Phase 149 functions
+    selectSubquestFromDraft,
+    getHazardDeckIdentity,
+    removeHazardDeckCard,
 } from './hazard.engine';
 
 // ── Simulation / balance evidence ──────────────────────────────────────────
@@ -141,3 +151,14 @@ export {
     formatGapReport,
     executeGapAudit,
 } from './audit/gap.report';
+
+// ── Phase 149 — Engagement mechanics ───────────────────────────────────────
+export {
+    classifyDeckFocus,
+    calculateDeckScars,
+    generateRewardOffer,
+    generateSubquestDraft,
+    chooseSubquest,
+    generateDeckIdentity,
+    removeCardFromDeck,
+} from './hazard.engagement';
