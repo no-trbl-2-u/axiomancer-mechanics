@@ -45,7 +45,7 @@
 ## Pending
 
 
-<!-- Pass 69 (2026-06-14 at commit 6043d33): 1 finding (1H/0M/0L). Post-iterate window + 38 commits since pass 68 (iterate audit). Comprehensive audit across all areas (A-F): **Public API surface** — found 1 HIGH finding: spec.md contracts table substantially outdated, missing 5+ module groups (Philosophy, Faction, NPCs, Playtest, Events, Skills) that are exported from src/index.ts; the public API surface has evolved significantly but front-door documentation hasn't kept up. **E2e coverage** — comprehensive across all modules; 108 *.engine.test.ts files with hermetic coverage via test-utils/rng.ts stubbing. **Module structure** — clean consistency; logic properly in resolver/reducer files, constants organized, proper RNG stubbing throughout. **Documentation completeness** — all 13 modules have current docs/<module>.md files. **Type safety** — clean (only 1 @ts-ignore with proper comment for .mjs import, no implicit any types). **Dead code** — no large commented-out blocks; no unused exports identified. Found codebase in excellent architectural health with one front-door documentation drift. Pool: 1 finding. -->
+<!-- Pool: empty -->
 
 
 
@@ -58,6 +58,7 @@
 
 ## Done
 
+- [x] **[HIGH] spec.md contracts table substantially outdated** — resolved at commit 6e9e198 (2026-06-15). spec.md Contracts table was substantially outdated, missing comprehensive coverage of all current src/index.ts exports including recent expansions to Character, Enemy, Combat, Effects, Items, Skills modules and incomplete documentation of Philosophy, Faction, NPCs, Playtest, Events module groups. Updated entire contracts table with current key exports, proper wildcard documentation for minigame modules, and complete alignment with actual public API surface. Source: critique-69 (commit 6043d33).
 - [x] **[HIGH] api — spec.md contracts table missing 8 module groups** — resolved at commits 3ce9167 + c09efb9 (2026-06-14). spec.md "Contracts" table was missing 8 module groups (Rest, LootCache, Philosophy, Faction, NPCs, Playtest, Utils, Events) that are exported from src/index.ts barrel. Added missing module group rows to contracts table. Front-door documentation now accurately reflects complete public API surface. Source: critique-69 (commit 6043d33).
 - [x] **[HIGH] Utils — missing primary entry point e2e test coverage** — resolved at commit c68a9c6 (2026-06-09). Added comprehensive src/Utils/e2e/utils.engine.test.ts with 18 test cases covering math utilities, string utilities, die rolling, and stat derivation functions. All tests hermetic with proper RNG stubbing via test-utils/rng.ts. Source: critique-60 (commit 1e3f6b3).
 - [x] **[HIGH] Character — missing RNG stubbing for deterministic tests** — resolved at commit 6abd897 (2026-06-09). Added mockSequentialRng() calls to all tests using buildPlayer() in src/Character/e2e/character.engine.test.ts, proper test cleanup with afterEach(), and distinct RNG values for ID generation tests. Source: critique-60 (commit 1e3f6b3).
