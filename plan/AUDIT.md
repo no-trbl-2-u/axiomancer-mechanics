@@ -50,6 +50,24 @@
 
 ## Audit Pass Log
 
+### 2026-06-15 (Pass 72) — Full categories Z–H
+
+**Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), Dependency updates (G), Commit-hygiene (H). ESLint fix (F) skipped (already shipped Phase 13).
+
+**Findings:** 0 new actionable items.
+
+**Category results:**
+- **Z (External critique):** plan/CRITIQUE.md Pending queue empty (all findings resolved)
+- **A (Test-quality):** 108+ hermetic *.engine.test.ts files across all modules, proper RNG stubbing via test-utils/rng.ts
+- **B (Spec-gap):** Zero pending spec-gap rows in AUDIT.md, Knowledge-Gaps.md shows Q28 deferred as endgame, specs answered
+- **C (Type-safety):** 1 justified @ts-ignore with explanatory comment, zero 'as any' casts, clean TypeScript compilation
+- **D (Dead code):** No commented-out blocks, internal files properly used, no unused exports in public barrel
+- **E (Documentation):** Complete docs/ coverage for all 16+ source modules, README.md comprehensive and current
+- **G (Dependencies):** npm outdated clean, all dependencies current
+- **H (Commit-hygiene):** Clean git status, plan files in sync with shipped state
+
+**Status:** Queue empty — all categories show zero actionable findings scoring ≥ 3.0.
+
 ### 2026-06-15 (Pass 71) — Full categories Z–H
 
 **Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), Dependency updates (G), Commit-hygiene (H). ESLint fix (F) skipped (already shipped Phase 13).
