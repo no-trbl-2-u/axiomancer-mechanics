@@ -334,7 +334,7 @@ canonical; the tables below mirror it.
 | `hndm-blinding` | Blinding Flurry | `uncommon_mod` | 5 → [1,1], 25 → [1,1] |
 | `hndm-mind-gen` | Calculating Hands | `common_mod` | 1 → [1,1], 10 → [1,2], 20 → [2,3] |
 
-#### `feetModPool` (8)
+#### `feetModPool` (9)
 | ID | Name | hiddenRarity | Level tiers |
 |----|------|--------------|-------------|
 | `fm-evasion` | Swift Feet | `common_mod` | 1 → [1,3], 10 → [4,7], 20 → [8,12], 30 → [13,18], 40 → [19,26], 50 → [27,36] |
@@ -345,6 +345,7 @@ canonical; the tables below mirror it.
 | `fm-haste` | Fleetfoot | `rare_mod` | 20 → [1,1], 40 → [1,1] |
 | `fm-stealth` | Shadowstep | `rare_mod` | 10 → [1,1], 30 → [1,1] |
 | `fm-initiative-tokens` | Vanguard Stride | `uncommon_mod` | 1 → [1,1], 20 → [1,2] |
+| `fm-luck` | Fortune's Tread | `uncommon_mod` | 1 → [1,2], 20 → [3,5], 40 → [6,9] |
 
 #### `accessoryModPool` (10)
 | ID | Name | hiddenRarity | Level tiers |
