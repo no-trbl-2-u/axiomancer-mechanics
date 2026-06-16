@@ -50,6 +50,25 @@
 
 ## Audit Pass Log
 
+### 2026-06-16 (Pass 77) — Full categories Z–H
+
+**Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), ESLint fix (F), Dependency updates (G), Commit-hygiene (H).
+
+**Findings:** 1 finding (Category E, score 3.6 — `docs/equipment.md` feet pool undercount left over from the Pass 76 catalogue sync; shipped this tick).
+
+**Highlights:**
+- **Z (Critique):** CRITIQUE.md Pending empty (last pass 71, all resolved).
+- **A (Tests):** 127 test files / 1810 passing (1 skipped) baseline green. Phase 151's `affix.library.ts` + `modifier.catalogue.ts` covered by `src/Items/e2e/affixes.engine.test.ts` + `modifier.catalogue.engine.test.ts`. No missing-test gaps ≥3.0.
+- **B (Spec-gaps):** AUDIT Pending 0; Knowledge-Gaps only Q28 deferred (endgame); specs/ answered.
+- **C (Type-safety):** Zero `@ts-ignore`/`as any`/`as unknown` in production `src/` (non-test). Clean.
+- **D (Dead code):** No orphaned modules; barrel exports clean.
+- **E (Docs):** **FINDING (shipped this tick)** — `docs/equipment.md` `feetModPool` section was headed `(8)` and listed 8 rows, but `src/Items/modifier.catalogue.ts` feet pool has 9 mods. The Pass 76 sync (926fb5c) missed `fm-luck` (Fortune's Tread, uncommon_mod, levelReq 1/20/40). Per-pool counts now verified against catalogue: weapon 17, head 9, body 9, hands 9, feet 9, accessory 10, armor 9, unique 6 = 78. Corrected header `(8)`→`(9)` and added the `fm-luck` row. Score: impact 4 × ease 9 / 10 = 3.6.
+- **F (ESLint):** `npm run lint` green.
+- **G (Dependencies):** `npm outdated` clean — no updates available.
+- **H (Commit hygiene):** Working tree clean at audit start.
+
+**Signal:** Single actionable finding is the residual Category-E feet-pool undercount from the Pass 76 sync; shipping it. Remaining categories at continued excellent health.
+
 ### 2026-06-16 (Pass 76) — Full categories Z–H
 
 **Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), ESLint fix (F), Dependency updates (G), Commit-hygiene (H).
