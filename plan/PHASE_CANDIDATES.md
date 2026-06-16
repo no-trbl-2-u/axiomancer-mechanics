@@ -63,13 +63,7 @@
 
 ## Pending
 
-### Candidate: Hazard simulation harness — acquired-deck (utility) bag injection
-- signal: The hazard-tuning skill's focus axis "utility deck strategies" cannot be exercised through the shipped CLI. `npm run hazard -- --auto` builds the draw bag from `hazardStarterBag()` only (`src/CLI/hazard.cli.ts` → `hazardStarterBag()`), with no flag to add reward/codex cards, so no `--seed`/`--runs`/`--json-events`/`--state-log` combination can measure how an acquired utility deck (auras/bursts/gold-vows/CHOOSE/transmute/…) performs. Separately, the shipped greedy bot (`hazard.sim.ts` `playGreedyRound`) never *plays* free-row-less utilities (bursts/auras/vows/choose score 0 in `freeValueToward`), so even `simulateHazard` with a custom bag under-measures them unless driven by a utility-aware policy. The 2026-06-16 hazard-tuning tick had to write a throwaway utility-aware sim spec to find the gold-vow/CHOOSE anti-synergy trap (see `plan/hazard-tuning-20260616-1606.md`).
-- scope: (a) add a `--deck <cardId[:n],…>` (or `--bag-file <path>`) flag to `src/CLI/hazard.cli.ts` that appends acquired cards to the starter bag for `--auto` runs; (b) add a utility-aware bot policy (or extend the greedy policy) that stages utility cards whose effect can fire this round, so the sim/CLI measures the acquired-utility axis rather than ignoring it. Keep the existing CLI contract and JSON-event/state-log surface.
-- unblocks: Empirical, CLI-citeable evidence for acquired-utility-deck balance — the doctrine-central "utility play beats flat trading" axis — without bespoke throwaway harnesses each tick.
-- blocked-by: pre-existing `ts-node` compile break at `src/CLI/game.cli.ts:185` (`describeResolvedEvent` lacks ending return under ts-node's isolated-modules view; `tsc --noEmit` passes, so verify is unaffected) — `npm run hazard` currently errors and must be repaired first for any CLI-path evidence.
-- score: 4 × 7 / 10 = 2.8
-- recommended-slot: iterate/phase once the ts-node CLI break is repaired; pairs naturally with the gold-vow/CHOOSE free-row structural fix proposed in the 2026-06-16 tuning report.
+<!-- Hazard simulation harness — acquired-deck (utility) bag injection — promoted via oversight 2026-06-16 (Q1: T pick — "Hazard utility-deck sim"). Build-plan row added as Phase 152, gated behind Phase 151 (hazard CLI launch repair, filed at the same oversight per Q2). See ## Promoted. -->
 
 ### Candidate: Rest minigame design brainstorm
 - signal: Current rest events are passive (HP restore only). T wants a more engaging rest mechanic with player agency and resource-management depth. Initial ideas: Gordian Quest-style rest-resource allocation, player-choice branch (restore HP % vs upgrade a hazard card vs upgrade another item), or a fire-tending resource-management minigame. Design space is open — brainstorm before committing to any direction.
@@ -117,6 +111,12 @@
 <!-- Game Module Documentation Coverage — promoted to Phase 132 via oversight 2026-06-09 (Q3 T pick). See ## Promoted. -->
 
 ## Promoted
+
+### Phases 151–152 — Hazard CLI repair + acquired-deck (utility) sim harness
+- promoted: 2026-06-16 (oversight Q1 — T pick: "Hazard utility-deck sim"; Q2 — T pick: "File a fix phase" for the broken hazard CLI). Build-plan rows added as Phase 151 (blocker) + Phase 152.
+  - **Phase 151** — Hazard CLI launch repair. `npm run hazard` errors before running (ts-node config `MODULE_NOT_FOUND` observed on a fresh checkout; `tsc`/`verify` unaffected). Diagnose the real ts-node/tsconfig launch-path cause first — the candidate's `describeResolvedEvent:185` attribution reads stale at this oversight. CLI launch path only; no engine/balance change.
+  - **Phase 152** — Hazard utility-deck sim (was "Hazard simulation harness — acquired-deck (utility) bag injection", score 2.8). Add a `--deck`/`--bag-file` injection flag to `src/CLI/hazard.cli.ts` + a utility-aware bot policy so the acquired-utility axis is measurable from CLI and `simulateHazard` rather than via throwaway harnesses. Blocked by Phase 151 for the CLI-path half.
+- Source: PHASE_CANDIDATES Pending (hazard-tuning 2026-06-16, `plan/hazard-tuning-20260616-1606.md`) + T oversight 2026-06-16.
 
 ### Phases 145–148 — Minigame playtesting harness (split into 4 phases)
 - promoted: 2026-06-14 (oversight Q1 — T write-in: "balancing all the minigames — many phases, little by little; build a harness first — A/B, e2e, playstyle subagents"). Split into 4 phases to keep context windows manageable. Build-plan rows added as Phases 145–148. No balance changes in any of these phases — infrastructure only. Phase 149+ make incremental balance changes, each verified by the full harness.
