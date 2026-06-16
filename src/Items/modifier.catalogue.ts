@@ -240,6 +240,121 @@ export const weaponModPool: Modifier[] = [
         addedIn: '2026-06-07',
         tags: ['weapon', 'offense', 'accuracy'],
     },
+    // ── Content expansion pass 2026-06-16 (Phase 151 — affix backing mods) ──
+    {
+        id: 'wm-venom-coat',
+        name: 'Venomous Coating',
+        hiddenRarity: 'uncommon_mod',
+        validSlots: ['weapon'],
+        levelTiers: [
+            { levelReq: 1,  range: [1, 1] },
+            { levelReq: 20, range: [1, 1] },
+            { levelReq: 40, range: [1, 1] },
+        ],
+        payload: {
+            onHitEffects: [{
+                effectId: 'debuff_poison',
+                target: 'opponent',
+                baseChance: 0.30,
+                tier: 2,
+            }],
+        },
+        addedIn: '2026-06-16',
+        tags: ['weapon', 'status', 'dot'],
+    },
+    {
+        id: 'wm-frost-brand',
+        name: 'Frostbrand',
+        hiddenRarity: 'uncommon_mod',
+        validSlots: ['weapon'],
+        levelTiers: [
+            { levelReq: 10, range: [1, 1] },
+            { levelReq: 30, range: [1, 1] },
+        ],
+        payload: {
+            onHitEffects: [{
+                effectId: 'debuff_frostbite',
+                target: 'opponent',
+                baseChance: 0.25,
+                tier: 2,
+            }],
+        },
+        addedIn: '2026-06-16',
+        tags: ['weapon', 'status', 'control'],
+    },
+    {
+        id: 'wm-storm-edge',
+        name: 'Storm Edge',
+        hiddenRarity: 'rare_mod',
+        validSlots: ['weapon'],
+        levelTiers: [
+            { levelReq: 15, range: [1, 1] },
+            { levelReq: 35, range: [1, 1] },
+        ],
+        payload: {
+            onHitEffects: [{
+                effectId: 'debuff_shock',
+                target: 'opponent',
+                baseChance: 0.25,
+                tier: 3,
+            }],
+        },
+        addedIn: '2026-06-16',
+        tags: ['weapon', 'status', 'control'],
+    },
+    {
+        id: 'wm-dazing-pommel',
+        name: 'Dazing Pommel',
+        hiddenRarity: 'uncommon_mod',
+        validSlots: ['weapon'],
+        levelTiers: [
+            { levelReq: 5,  range: [1, 1] },
+            { levelReq: 25, range: [1, 1] },
+        ],
+        payload: {
+            onHitEffects: [{
+                effectId: 'debuff_daze',
+                target: 'opponent',
+                baseChance: 0.20,
+                tier: 2,
+            }],
+        },
+        addedIn: '2026-06-16',
+        tags: ['weapon', 'status', 'control'],
+    },
+    {
+        id: 'wm-mind-gen',
+        name: 'Insightful Hilt',
+        hiddenRarity: 'common_mod',
+        validSlots: ['weapon'],
+        levelTiers: [
+            { levelReq: 1,  range: [1, 1] },
+            { levelReq: 10, range: [1, 2] },
+            { levelReq: 20, range: [2, 3] },
+        ],
+        payload: {
+            resourceInteraction: {
+                generationBonus: [{ trigger: 'hit', resourceType: 'mind', bonus: 0 }],
+            },
+        },
+        addedIn: '2026-06-16',
+        tags: ['weapon', 'resource'],
+    },
+    {
+        id: 'wm-status-amp',
+        name: 'Catalytic Edge',
+        hiddenRarity: 'rare_mod',
+        validSlots: ['weapon'],
+        levelTiers: [
+            { levelReq: 10, range: [1, 1] },
+            { levelReq: 30, range: [1, 1] },
+        ],
+        payload: {
+            passiveEffects: ['buff_status_chance_up'],
+        },
+        addedIn: '2026-06-16',
+        tags: ['weapon', 'status'],
+    },
 ];
 
 // ─── Head pool ───────────────────────────────────────────────────────────────
@@ -344,6 +459,54 @@ export const headModPool: Modifier[] = [
         },
         addedIn: '2026-06-07',
         tags: ['head', 'utility', 'accuracy'],
+    },
+    // ── Content expansion pass 2026-06-16 (Phase 151 — affix backing mods) ──
+    {
+        id: 'hm-effect-duration',
+        name: 'Lingering Sigil',
+        hiddenRarity: 'rare_mod',
+        validSlots: ['head'],
+        levelTiers: [
+            { levelReq: 5,  range: [1, 1] },
+            { levelReq: 25, range: [1, 1] },
+        ],
+        payload: {
+            passiveEffects: ['buff_buff_duration_up'],
+        },
+        addedIn: '2026-06-16',
+        tags: ['head', 'status', 'utility'],
+    },
+    {
+        id: 'hm-mind-resist',
+        name: 'Stoic Mind',
+        hiddenRarity: 'common_mod',
+        validSlots: ['head'],
+        levelTiers: [
+            { levelReq: 1,  range: [1, 1] },
+            { levelReq: 20, range: [1, 1] },
+        ],
+        payload: {
+            passiveEffects: ['buff_resistance_mind'],
+        },
+        addedIn: '2026-06-16',
+        tags: ['head', 'defense', 'mental'],
+    },
+    {
+        id: 'hm-heart-focus',
+        name: 'Empathic Crown',
+        hiddenRarity: 'uncommon_mod',
+        validSlots: ['head'],
+        levelTiers: [
+            { levelReq: 1,  range: [1, 2] },
+            { levelReq: 15, range: [3, 5] },
+            { levelReq: 30, range: [6, 9] },
+            { levelReq: 45, range: [10, 14] },
+        ],
+        payload: {
+            statModifiers: [{ stat: 'heart', value: 0 }],
+        },
+        addedIn: '2026-06-16',
+        tags: ['head', 'emotional', 'utility'],
     },
 ];
 
@@ -454,6 +617,64 @@ export const bodyModPool: Modifier[] = [
         addedIn: '2026-06-07',
         tags: ['body', 'defense', 'proc'],
     },
+    // ── Content expansion pass 2026-06-16 (Phase 151 — affix backing mods) ──
+    {
+        id: 'bm-taunt-proc',
+        name: 'Provoking Plate',
+        hiddenRarity: 'uncommon_mod',
+        validSlots: ['body'],
+        levelTiers: [
+            { levelReq: 5,  range: [1, 1] },
+            { levelReq: 25, range: [1, 1] },
+        ],
+        payload: {
+            onDefendEffects: [{
+                effectId: 'buff_taunt',
+                target: 'self',
+                baseChance: 0.30,
+                tier: 2,
+            }],
+        },
+        addedIn: '2026-06-16',
+        tags: ['body', 'defense', 'control'],
+    },
+    {
+        id: 'bm-barrier-proc',
+        name: 'Wardweave',
+        hiddenRarity: 'rare_mod',
+        validSlots: ['body'],
+        levelTiers: [
+            { levelReq: 10, range: [1, 1] },
+            { levelReq: 30, range: [1, 1] },
+        ],
+        payload: {
+            onDefendEffects: [{
+                effectId: 'buff_barrier',
+                target: 'self',
+                baseChance: 0.30,
+                tier: 2,
+            }],
+        },
+        addedIn: '2026-06-16',
+        tags: ['body', 'defense', 'proc'],
+    },
+    {
+        id: 'bm-heart-start',
+        name: 'Resolute Bearing',
+        hiddenRarity: 'uncommon_mod',
+        validSlots: ['body'],
+        levelTiers: [
+            { levelReq: 1,  range: [1, 2] },
+            { levelReq: 20, range: [2, 4] },
+        ],
+        payload: {
+            resourceInteraction: {
+                combatStartTokens: { heart: 0 },
+            },
+        },
+        addedIn: '2026-06-16',
+        tags: ['body', 'resource'],
+    },
 ];
 
 // ─── Hands pool ──────────────────────────────────────────────────────────────
@@ -562,6 +783,65 @@ export const handsModPool: Modifier[] = [
         addedIn: '2026-06-07',
         tags: ['hands', 'defense', 'proc'],
     },
+    // ── Content expansion pass 2026-06-16 (Phase 151 — affix backing mods) ──
+    {
+        id: 'hndm-disarm',
+        name: 'Disarming Grip',
+        hiddenRarity: 'rare_mod',
+        validSlots: ['hands'],
+        levelTiers: [
+            { levelReq: 10, range: [1, 1] },
+            { levelReq: 30, range: [1, 1] },
+        ],
+        payload: {
+            onHitEffects: [{
+                effectId: 'debuff_silence',
+                target: 'opponent',
+                baseChance: 0.20,
+                tier: 2,
+            }],
+        },
+        addedIn: '2026-06-16',
+        tags: ['hands', 'status', 'control'],
+    },
+    {
+        id: 'hndm-blinding',
+        name: 'Blinding Flurry',
+        hiddenRarity: 'uncommon_mod',
+        validSlots: ['hands'],
+        levelTiers: [
+            { levelReq: 5,  range: [1, 1] },
+            { levelReq: 25, range: [1, 1] },
+        ],
+        payload: {
+            onHitEffects: [{
+                effectId: 'debuff_blind',
+                target: 'opponent',
+                baseChance: 0.25,
+                tier: 2,
+            }],
+        },
+        addedIn: '2026-06-16',
+        tags: ['hands', 'status', 'control'],
+    },
+    {
+        id: 'hndm-mind-gen',
+        name: 'Calculating Hands',
+        hiddenRarity: 'common_mod',
+        validSlots: ['hands'],
+        levelTiers: [
+            { levelReq: 1,  range: [1, 1] },
+            { levelReq: 10, range: [1, 2] },
+            { levelReq: 20, range: [2, 3] },
+        ],
+        payload: {
+            resourceInteraction: {
+                generationBonus: [{ trigger: 'hit', resourceType: 'mind', bonus: 0 }],
+            },
+        },
+        addedIn: '2026-06-16',
+        tags: ['hands', 'resource'],
+    },
 ];
 
 // ─── Feet pool ───────────────────────────────────────────────────────────────
@@ -665,6 +945,55 @@ export const feetModPool: Modifier[] = [
         },
         addedIn: '2026-06-07',
         tags: ['feet', 'utility'],
+    },
+    // ── Content expansion pass 2026-06-16 (Phase 151 — affix backing mods) ──
+    {
+        id: 'fm-stealth',
+        name: 'Shadowstep',
+        hiddenRarity: 'rare_mod',
+        validSlots: ['feet'],
+        levelTiers: [
+            { levelReq: 10, range: [1, 1] },
+            { levelReq: 30, range: [1, 1] },
+        ],
+        payload: {
+            passiveEffects: ['buff_stealth'],
+        },
+        addedIn: '2026-06-16',
+        tags: ['feet', 'utility', 'evasion'],
+    },
+    {
+        id: 'fm-initiative-tokens',
+        name: 'Vanguard Stride',
+        hiddenRarity: 'uncommon_mod',
+        validSlots: ['feet'],
+        levelTiers: [
+            { levelReq: 1,  range: [1, 1] },
+            { levelReq: 20, range: [1, 2] },
+        ],
+        payload: {
+            resourceInteraction: {
+                combatStartTokens: { mind: 0 },
+            },
+        },
+        addedIn: '2026-06-16',
+        tags: ['feet', 'resource', 'initiative'],
+    },
+    {
+        id: 'fm-luck',
+        name: 'Fortune\'s Tread',
+        hiddenRarity: 'uncommon_mod',
+        validSlots: ['feet'],
+        levelTiers: [
+            { levelReq: 1,  range: [1, 2] },
+            { levelReq: 20, range: [3, 5] },
+            { levelReq: 40, range: [6, 9] },
+        ],
+        payload: {
+            statModifiers: [{ stat: 'luck', value: 0 }],
+        },
+        addedIn: '2026-06-16',
+        tags: ['feet', 'utility', 'luck'],
     },
 ];
 
@@ -784,6 +1113,69 @@ export const accessoryModPool: Modifier[] = [
         addedIn: '2026-06-07',
         tags: ['accessory', 'utility'],
     },
+    // ── Content expansion pass 2026-06-16 (Phase 151 — affix backing mods) ──
+    {
+        id: 'am-status-amp',
+        name: 'Hex Focus',
+        hiddenRarity: 'rare_mod',
+        validSlots: ['accessory'],
+        levelTiers: [
+            { levelReq: 10, range: [1, 1] },
+            { levelReq: 30, range: [1, 1] },
+        ],
+        payload: {
+            passiveEffects: ['buff_status_chance_up'],
+        },
+        addedIn: '2026-06-16',
+        tags: ['accessory', 'status'],
+    },
+    {
+        id: 'am-cleanse',
+        name: 'Purifying Charm',
+        hiddenRarity: 'uncommon_mod',
+        validSlots: ['accessory'],
+        levelTiers: [
+            { levelReq: 5,  range: [1, 1] },
+            { levelReq: 25, range: [1, 1] },
+        ],
+        payload: {
+            passiveEffects: ['buff_cleanse'],
+        },
+        addedIn: '2026-06-16',
+        tags: ['accessory', 'sustain', 'status'],
+    },
+    {
+        id: 'am-luck',
+        name: 'Lucky Trinket',
+        hiddenRarity: 'common_mod',
+        validSlots: ['accessory'],
+        levelTiers: [
+            { levelReq: 1,  range: [1, 2] },
+            { levelReq: 15, range: [3, 5] },
+            { levelReq: 30, range: [6, 9] },
+            { levelReq: 45, range: [10, 14] },
+        ],
+        payload: {
+            statModifiers: [{ stat: 'luck', value: 0 }],
+        },
+        addedIn: '2026-06-16',
+        tags: ['accessory', 'utility', 'luck'],
+    },
+    {
+        id: 'am-fortitude',
+        name: 'Bulwark Bauble',
+        hiddenRarity: 'uncommon_mod',
+        validSlots: ['accessory'],
+        levelTiers: [
+            { levelReq: 5,  range: [1, 1] },
+            { levelReq: 25, range: [1, 1] },
+        ],
+        payload: {
+            passiveEffects: ['buff_minor_fortitude'],
+        },
+        addedIn: '2026-06-16',
+        tags: ['accessory', 'defense'],
+    },
 ];
 
 // ─── Armor pool ──────────────────────────────────────────────────────────────
@@ -893,6 +1285,52 @@ export const armorModPool: Modifier[] = [
             passiveEffects: ['buff_damage_reduction'],
         },
         addedIn: '2026-06-07',
+        tags: ['armor', 'defense'],
+    },
+    // ── Content expansion pass 2026-06-16 (Phase 151 — affix backing mods) ──
+    {
+        id: 'armm-body-resist',
+        name: 'Adamant Weave',
+        hiddenRarity: 'common_mod',
+        validSlots: ['armor'],
+        levelTiers: [
+            { levelReq: 1,  range: [1, 1] },
+            { levelReq: 20, range: [1, 1] },
+        ],
+        payload: {
+            passiveEffects: ['buff_resistance_body'],
+        },
+        addedIn: '2026-06-16',
+        tags: ['armor', 'defense'],
+    },
+    {
+        id: 'armm-heart-resist',
+        name: 'Sanguine Lining',
+        hiddenRarity: 'common_mod',
+        validSlots: ['armor'],
+        levelTiers: [
+            { levelReq: 1,  range: [1, 1] },
+            { levelReq: 20, range: [1, 1] },
+        ],
+        payload: {
+            passiveEffects: ['buff_resistance_heart'],
+        },
+        addedIn: '2026-06-16',
+        tags: ['armor', 'defense', 'emotional'],
+    },
+    {
+        id: 'armm-mhp',
+        name: 'Reinforced Hide',
+        hiddenRarity: 'uncommon_mod',
+        validSlots: ['armor'],
+        levelTiers: [
+            { levelReq: 5,  range: [1, 1] },
+            { levelReq: 25, range: [1, 1] },
+        ],
+        payload: {
+            passiveEffects: ['buff_max_hp_up'],
+        },
+        addedIn: '2026-06-16',
         tags: ['armor', 'defense'],
     },
 ];

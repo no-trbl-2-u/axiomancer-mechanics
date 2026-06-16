@@ -135,11 +135,19 @@ describe('dropItem: Uncommon rarity', () => {
         expect(rolled.value).toBeLessThanOrEqual(3);
     });
 
-    it('statModifiers fold base stats + rolled mod payload', () => {
-        const drop = dropItem('iron-blade', 8, 'uncommon', seededRng(5));
-        // Base statModifiers from `iron-blade` is [+2 body]; rolled mod adds one entry.
-        expect(drop.statModifiers).toBeDefined();
-        expect(drop.statModifiers!.length).toBeGreaterThanOrEqual(2);
+    it('statModifiers fold base stats + a stat-carrying rolled mod payload', () => {
+        // The weapon pool now carries proc-only mods (no statModifier) alongside
+        // stat mods, so a random Uncommon draw may or may not add a stat entry.
+        // Drive the fold deterministically with a known stat-carrying mod to
+        // prove base + rolled stats compose (Spec 05d resolve contract).
+        const tpl = getEquipmentTemplate('iron-blade')!;
+        const merged = resolveModifiers(tpl, [{ modId: 'wm-flat-damage', value: 6 }]);
+        expect(merged.statModifiers).toBeDefined();
+        // Base statModifiers from `iron-blade` is [+2 body]; the rolled mod adds
+        // one more entry (+6 physicalAttack).
+        expect(merged.statModifiers!.length).toBeGreaterThanOrEqual(2);
+        expect(merged.statModifiers).toContainEqual({ stat: 'body', value: 2 });
+        expect(merged.statModifiers).toContainEqual({ stat: 'physicalAttack', value: 6 });
     });
 });
 

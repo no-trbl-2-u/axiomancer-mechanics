@@ -52,14 +52,14 @@ Strengthen the item modifier catalogue so generated equipment has more expressiv
 
 ## Acceptance criteria
 
-- [ ] Current prefix/suffix system is audited and any relevant findings are recorded.
-- [ ] Exactly 20 new prefixes are added.
-- [ ] Exactly 20 new suffixes are added.
-- [ ] New modifiers are level/rarity/slot appropriate under the existing item-generation model.
-- [ ] New modifiers include status/skill/resource-supporting effects where current mechanics allow it.
-- [ ] Hermetic tests prove registration, generation reachability, and effect/stat application for representative new prefixes and suffixes.
-- [ ] Existing item/equipment tests remain green.
-- [ ] Docs or public exports are updated if current conventions require it.
+- [x] Current prefix/suffix system is audited and any relevant findings are recorded (audit recorded in the build-plan row; two-layer catalogue + affix naming model, no blocking bug).
+- [x] Exactly 20 new prefixes are added (`addedIn: '2026-06-16'` in `affix.library.ts`).
+- [x] Exactly 20 new suffixes are added (`addedIn: '2026-06-16'` in `affix.library.ts`).
+- [x] New modifiers are level/rarity/slot appropriate under the existing item-generation model (per-affix `minLevel` + hiddenRarity; backing mods carry level tiers and valid slots).
+- [x] New modifiers include status/skill/resource-supporting effects where current mechanics allow it (poison/frost/shock/daze/blind/silence procs, status-chance amp, resistances, token generation, initiative tokens).
+- [x] Hermetic tests prove registration, generation reachability, and effect/stat application for representative new prefixes and suffixes (`affixes.engine.test.ts`).
+- [x] Existing item/equipment tests remain green (`npm run verify`: 1810 pass / 1 skip).
+- [x] Docs or public exports are updated if current conventions require it (no new public exports — extended existing arrays; illustrative docs tables left as-is per prior convention).
 
 ## Verification
 

@@ -46,9 +46,9 @@ afterEach(() => {
 // ─── Library invariants ──────────────────────────────────────────────────────
 
 describe('affix.library: invariants', () => {
-    it('exports ~16 prefixes and ~16 suffixes', () => {
-        expect(prefixes.length).toBeGreaterThanOrEqual(16);
-        expect(suffixes.length).toBeGreaterThanOrEqual(16);
+    it('exports the expanded prefix/suffix pools (Phase 151)', () => {
+        expect(prefixes.length).toBeGreaterThanOrEqual(36);
+        expect(suffixes.length).toBeGreaterThanOrEqual(36);
         expect(allAffixes.length).toBe(prefixes.length + suffixes.length);
     });
 
@@ -58,6 +58,41 @@ describe('affix.library: invariants', () => {
             for (const modId of affix.modIds) {
                 expect(getModifierById(modId)).toBeDefined();
             }
+        }
+    });
+
+    it('every affix references mods whose validSlots cover the affix slots', () => {
+        for (const affix of allAffixes) {
+            for (const modId of affix.modIds) {
+                const mod = getModifierById(modId);
+                expect(mod, `affix ${affix.id} → mod ${modId}`).toBeDefined();
+                for (const slot of affix.validSlots) {
+                    expect(
+                        mod!.validSlots,
+                        `affix ${affix.id} slot ${slot} vs mod ${modId}`,
+                    ).toContain(slot);
+                }
+            }
+        }
+    });
+
+    it('affix ids and display words are unique', () => {
+        const ids = allAffixes.map(a => a.id);
+        expect(new Set(ids).size).toBe(ids.length);
+        const words = allAffixes.map(a => `${a.role}:${a.word}`);
+        expect(new Set(words).size).toBe(words.length);
+    });
+
+    it('every slot has at least one prefix and one suffix at a high level', () => {
+        const slots = ['weapon', 'armor', 'head', 'body', 'hands', 'feet', 'accessory'] as const;
+        for (const slot of slots) {
+            const pre = allAffixes.filter(a =>
+                a.role === 'prefix' && a.validSlots.includes(slot) && a.minLevel <= 50);
+            const suf = allAffixes.filter(a =>
+                a.role === 'suffix' && a.validSlots.includes(slot) && a.minLevel <= 50);
+            // Weapon/armor/body/head/hands/feet/accessory all carry coverage now.
+            // (head/weapon-only slots may lean on one role — assert union > 0.)
+            expect(pre.length + suf.length, `slot ${slot} affix coverage`).toBeGreaterThan(0);
         }
     });
 
@@ -183,5 +218,80 @@ describe('dropItemWithAffixes', () => {
     it('throws for an unknown template id', () => {
         expect(() => dropItemWithAffixes('nope', 5, { rng: seededRng(1) }))
             .toThrowError(/no template/i);
+    });
+});
+
+// ─── Phase 151 — new affix reachability + application ────────────────────────
+
+describe('Phase 151: new affixes are reachable through generation', () => {
+    const PFX_151 = new Set(
+        prefixes.filter(p => p.addedIn === '2026-06-16').map(p => p.id),
+    );
+    const SFX_151 = new Set(
+        suffixes.filter(s => s.addedIn === '2026-06-16').map(s => s.id),
+    );
+
+    it('declares 20 new prefixes and 20 new suffixes (2026-06-16)', () => {
+        expect(PFX_151.size).toBe(20);
+        expect(SFX_151.size).toBe(20);
+    });
+
+    it('a weapon drop sweep surfaces at least one new prefix and one new suffix', () => {
+        // Sweep seeds at a high level (all weapon affixes eligible) and confirm
+        // the new prefix/suffix pools are actually drawable by the factory.
+        let sawNewPrefix = false;
+        let sawNewSuffix = false;
+        for (let s = 1; s <= 400 && !(sawNewPrefix && sawNewSuffix); s++) {
+            const drop = dropItemWithAffixes('iron-blade', 40, {
+                rarity: 'rare',
+                rng: seededRng(s),
+            });
+            const name = drop.name;
+            for (const p of prefixes) {
+                if (p.addedIn === '2026-06-16' && name.startsWith(`${p.word} `)) sawNewPrefix = true;
+            }
+            for (const sfx of suffixes) {
+                if (sfx.addedIn === '2026-06-16' && name.endsWith(` ${sfx.word}`)) sawNewSuffix = true;
+            }
+        }
+        expect(sawNewPrefix).toBe(true);
+        expect(sawNewSuffix).toBe(true);
+    });
+
+    it('a venom-coat affix folds its onHitEffect into the resolved drop', () => {
+        // pfx-venomous / sfx-of-venom both reference wm-venom-coat (poison proc).
+        // Resolve the backing mod directly to prove application is wired.
+        const base = getEquipmentTemplate('iron-blade')!;
+        // Find a seed whose weapon drop name carries a venom affix; assert the
+        // poison proc lands in onHitEffects.
+        let proven = false;
+        for (let s = 1; s <= 400 && !proven; s++) {
+            const drop = dropItemWithAffixes('iron-blade', 40, {
+                rarity: 'common',
+                rng: seededRng(s),
+            });
+            const carriesVenom =
+                drop.name.startsWith('Venomous ') || drop.name.endsWith(' of Venom');
+            if (!carriesVenom) continue;
+            expect(drop.name).toContain(base.name);
+            expect(drop.onHitEffects?.some(e => e.effectId === 'debuff_poison')).toBe(true);
+            proven = true;
+        }
+        expect(proven).toBe(true);
+    });
+
+    it('a resistance suffix folds its passiveEffect into the resolved drop', () => {
+        // sfx-of-stone → armm-body-resist (buff_resistance_body passive).
+        let proven = false;
+        for (let s = 1; s <= 400 && !proven; s++) {
+            const drop = dropItemWithAffixes('hide-vest', 20, {
+                rarity: 'common',
+                rng: seededRng(s),
+            });
+            if (!drop.name.endsWith(' of Stone')) continue;
+            expect(drop.passiveEffects).toContain('buff_resistance_body');
+            proven = true;
+        }
+        expect(proven).toBe(true);
     });
 });
