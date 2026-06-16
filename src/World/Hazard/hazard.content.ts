@@ -79,7 +79,7 @@ export const HAZARD_DECK: HazardCardDef[] = [
     // upgrades to MAJOR. The die powers the utility, not the number, so the
     // powered numbers match the free ones by design.
     { id: 'footing', name: 'SURE FOOTING', kind: 'purple', rarity: 'common', weight: 3, f: C.purple.free, e: C.purple.free, fp: C.purple.powered, ep: C.purple.powered, effect: 'draw', drawBase: U.drawMinorBase, drawPowered: U.drawMinorPowered, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'Read the ledge, then send your eyes ahead.', keywords: ['draw', 'surge'] },
-    { id: 'windread', name: 'READ THE WIND', kind: 'purple', rarity: 'common', weight: 2, f: C.purple.free, e: C.purple.free, fp: C.purple.powered, ep: C.purple.powered, effect: 'convert', salvage: { type: 'progress', key: 'escape', amount: 1 }, flavor: 'Let the valley turn the hostile gust to your back.', keywords: ['convert', 'surge'] },
+    { id: 'windread', name: 'READ THE WIND', kind: 'purple', rarity: 'common', weight: 3, f: C.purple.free, e: C.purple.free, fp: C.purple.powered, ep: C.purple.powered, effect: 'convert', salvage: { type: 'progress', key: 'escape', amount: 1 }, flavor: 'Let the valley turn the hostile gust to your back.', keywords: ['convert', 'surge'] },
     { id: 'pole', name: 'BALANCE POLE', kind: 'purple', rarity: 'uncommon', weight: 2, f: C.purple.strong, e: C.purple.strong, fp: C.purple.strong, ep: C.purple.strong, effect: 'recast', salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'Weight in both hands; shake the dice loose and begin again.', keywords: ['recast', 'surge'] },
 
     // GOLD ("YELLOW") — utility-FIRST: a MAJOR effect for free, and a high
