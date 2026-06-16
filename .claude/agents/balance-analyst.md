@@ -26,7 +26,7 @@ mutate state.
 
 ## North star — status effects are the main engagement
 
-Per `VISION.md`, **status effects are the MAIN fun of combat.** This is now a
+Per `VISION.md`, **status effects are the MAIN fun of combat encounters.** This is now a
 term in the health objective, not just prose: a cell below the engagement floor
 is penalised even when its resolution sits in band, and the A/B comparison
 rejects any change that materially drops engagement. So bias your candidates

@@ -68,7 +68,7 @@ export const STATUS_RESOLUTION_DOT_MAX_ROUNDS = 15;
 /**
  * Engagement floor for STRATEGIST playstyle. Status-effect actions must
  * comprise at least this percentage of rounds to maintain doctrine
- * compliance (CLAUDE.md: status effects are the MAIN fun).
+ * compliance (CLAUDE.md: status effects are the MAIN fun in combat encounters).
  * 
  * Values below this floor indicate a regression to basic-attack trading,
  * which works against the game's vision.

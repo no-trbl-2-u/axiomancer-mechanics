@@ -6,7 +6,7 @@ Status-effect play is deepened along breadth/synergy axis with strengthened effe
 
 ## Source spec
 
-Filed via oversight 2026-06-13 (Q1: T pick — "File status-effect depth phase"). **Doctrine-load-bearing** per CLAUDE.md: status effects are the MAIN fun; low engagement is a balance failure. References existing Specs 01 (effects engine), 03 (tier 2/3 procs), and the established Phase 66/94 synergy systems. Pre-resolved open questions based on Phase 126/130 evidence and current tuning ledger state.
+Filed via oversight 2026-06-13 (Q1: T pick — "File status-effect depth phase"). **Doctrine-load-bearing** per CLAUDE.md: status effects are the MAIN fun in combat encounters; low engagement is a balance failure. References existing Specs 01 (effects engine), 03 (tier 2/3 procs), and the established Phase 66/94 synergy systems. Pre-resolved open questions based on Phase 126/130 evidence and current tuning ledger state.
 
 ## Implementation units
 

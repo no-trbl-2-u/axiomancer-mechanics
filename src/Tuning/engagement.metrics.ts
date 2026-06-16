@@ -1,7 +1,7 @@
 /**
  * Status-effect engagement metric — the doctrine made measurable.
  *
- * VISION / CLAUDE.md: status effects are the MAIN fun; combat collapsing into
+ * VISION / CLAUDE.md: status effects are the MAIN fun in combat encounters; combat collapsing into
  * basic-attack trades is a balance FAILURE even when win rates look healthy.
  *
  * There are TWO things worth measuring, and conflating them is the trap the

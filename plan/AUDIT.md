@@ -212,7 +212,7 @@ Found 0 actionable findings scoring ≥3.0 threshold.
 - ease: 6
 - score: 4.2
 - resolution: Added hermetic e2e test coverage for combat phase functions (runActionRestrictionPhase, runAdvantagePhase) with proper RNG stubbing, deterministic fixtures, and integration testing. Tests validate normal action flow, stance advantages, and phase integration to ensure status effect processing works correctly.
-- notes: Combat phases are critical to the doctrine (status effects are the main fun) but only had indirect test coverage through combat.resolver.engine.test.ts. New tests provide direct coverage for the core phase functions that power status effect resolution.
+- notes: Combat phases are critical to the doctrine (status effects are the main fun in combat encounters) but only had indirect test coverage through combat.resolver.engine.test.ts. New tests provide direct coverage for the core phase functions that power status effect resolution.
 
 ### [x] [test-quality] Tuning module remaining gaps in test coverage — resolved at commit b7d5f86 (2026-06-11)
 - category: test-quality

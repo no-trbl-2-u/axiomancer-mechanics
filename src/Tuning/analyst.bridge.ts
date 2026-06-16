@@ -202,7 +202,7 @@ function buildApiPrompt(req: AnalystRequest): string {
         + `engagement ${typeof c.engagementShare === 'number' ? `${(c.engagementShare * 100).toFixed(0)}%` : 'n/a'}`);
     return [
         'You are a game-balance analyst for a turn-based RPG whose DOCTRINE is:',
-        'status effects are the main fun. Combat collapsing into basic-attack',
+        'status effects are the main fun in combat encounters. Combat collapsing into basic-attack',
         `trades is a failure even if win rates look fine. Engagement floor: ${(req.baseline.engagementFloor * 100).toFixed(0)}%.`,
         '',
         `Aggregate health: ${req.baseline.summary}.`,
