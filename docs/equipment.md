@@ -137,7 +137,8 @@ template-gated (specific templates only).
 | unique   | 3         | `UniqueItemTemplate.fixedModIds` (ordered)   |
 
 Spec 05d replaces the Spec 05c stub catalogue with a slot-keyed catalogue of
-22 procedural mods + 3 unique-only signature mods. See **[Modifiers](#modifiers-spec-05d)**
+72 procedural mods + 6 unique-only signature mods (Phase 151 expansion — was
+22 + 3 at the initial Spec 05d ship). See **[Modifiers](#modifiers-spec-05d)**
 below for the full catalogue, the substitution contract, and the
 hidden-rarity weight table.
 
@@ -267,59 +268,112 @@ and merges the `payload` into the resulting Equipment instance:
 
 Each pool ships at least 3 mods (one per hidden rarity) so an Uncommon roll
 always has at least one `uncommon_mod` candidate and a Rare roll always has
-at least one `rare_mod` candidate when level requirements allow.
+at least one `rare_mod` candidate when level requirements allow. Phase 151
+expanded the original 25-mod catalogue to 78 entries (72 procedural + 6
+unique-only) and extended the top-end value tiers to levelReq 30/40/50 on the
+flat-stat mods so endgame drops keep scaling. `modifier.catalogue.ts` is
+canonical; the tables below mirror it.
 
-#### `weaponModPool` (4)
+#### `weaponModPool` (17)
 | ID | Name | hiddenRarity | Level tiers (levelReq → range) |
 |----|------|--------------|--------------------------------|
-| `wm-flat-damage` | Keen Edge | `common_mod` | 1 → [1,3], 10 → [4,8], 20 → [9,15] |
+| `wm-flat-damage` | Keen Edge | `common_mod` | 1 → [1,3], 10 → [4,8], 20 → [9,15], 30 → [16,24], 40 → [25,35], 50 → [36,50] |
 | `wm-lifesteal` | Vampiric Strike | `uncommon_mod` | 1 → [1,2], 10 → [2,3], 20 → [3,5] |
 | `wm-body-gen` | Body Resonance | `uncommon_mod` | 1 → [1,1], 10 → [1,2], 20 → [2,3] |
 | `wm-exploit` | Exploit Weakness | `rare_mod` | 10 → [2,4], 20 → [5,8] |
+| `wm-skill-edge` | Honed Technique | `common_mod` | 1 → [1,2], 10 → [3,5], 20 → [6,10], 30 → [11,16], 40 → [17,24], 50 → [25,34] |
+| `wm-crit-rate` | Cruel Point | `uncommon_mod` | 10 → [1,1], 30 → [1,1] |
+| `wm-crit-damage` | Savage Bite | `rare_mod` | 20 → [1,1], 40 → [1,1] |
+| `wm-mind-rend` | Mind Render | `rare_mod` | 20 → [3,6], 30 → [7,11], 40 → [12,18], 50 → [19,27] |
+| `wm-heart-rend` | Heart Cleaver | `rare_mod` | 15 → [2,5], 30 → [6,10], 40 → [11,16], 50 → [17,24] |
+| `wm-bleeding-edge` | Bleeding Edge | `uncommon_mod` | 10 → [1,1], 30 → [1,1], 50 → [1,1] |
+| `wm-accuracy` | True Aim | `common_mod` | 1 → [1,1], 20 → [1,1], 40 → [1,1] |
+| `wm-venom-coat` | Venomous Coating | `uncommon_mod` | 1 → [1,1], 20 → [1,1], 40 → [1,1] |
+| `wm-frost-brand` | Frostbrand | `uncommon_mod` | 10 → [1,1], 30 → [1,1] |
+| `wm-storm-edge` | Storm Edge | `rare_mod` | 15 → [1,1], 35 → [1,1] |
+| `wm-dazing-pommel` | Dazing Pommel | `uncommon_mod` | 5 → [1,1], 25 → [1,1] |
+| `wm-mind-gen` | Insightful Hilt | `common_mod` | 1 → [1,1], 10 → [1,2], 20 → [2,3] |
+| `wm-status-amp` | Catalytic Edge | `rare_mod` | 10 → [1,1], 30 → [1,1] |
 
-#### `headModPool` (3)
+#### `headModPool` (9)
 | ID | Name | hiddenRarity | Level tiers |
 |----|------|--------------|-------------|
-| `hm-max-hp` | Resilient Mind | `common_mod` | 1 → [5,15], 10 → [16,35], 20 → [36,60] |
+| `hm-max-hp` | Resilient Mind | `common_mod` | 1 → [5,15], 10 → [16,35], 20 → [36,60], 30 → [61,90], 40 → [91,130], 50 → [131,180] |
 | `hm-mind-gen` | Clear Thought | `uncommon_mod` | 1 → [1,1], 10 → [1,2], 20 → [2,3] |
 | `hm-effect-dur` | Focused Channel | `rare_mod` | 10 → [1,1] |
+| `hm-mental-defense` | Warded Crown | `common_mod` | 1 → [2,5], 10 → [6,12], 20 → [13,22], 30 → [23,34], 40 → [35,48], 50 → [49,64] |
+| `hm-insight` | Insightful | `uncommon_mod` | 5 → [1,2], 20 → [3,5], 35 → [6,9], 50 → [10,14] |
+| `hm-foresight` | Oracle Sight | `rare_mod` | 20 → [1,1], 40 → [1,1] |
+| `hm-effect-duration` | Lingering Sigil | `rare_mod` | 5 → [1,1], 25 → [1,1] |
+| `hm-mind-resist` | Stoic Mind | `common_mod` | 1 → [1,1], 20 → [1,1] |
+| `hm-heart-focus` | Empathic Crown | `uncommon_mod` | 1 → [1,2], 15 → [3,5], 30 → [6,9], 45 → [10,14] |
 
-#### `bodyModPool` (3)
+#### `bodyModPool` (9)
 | ID | Name | hiddenRarity | Level tiers |
 |----|------|--------------|-------------|
-| `bm-armor` | Fortified | `common_mod` | 1 → [2,5], 10 → [6,12], 20 → [13,22] |
+| `bm-armor` | Fortified | `common_mod` | 1 → [2,5], 10 → [6,12], 20 → [13,22], 30 → [23,34], 40 → [35,48], 50 → [49,64] |
 | `bm-heart-gen` | Steady Heart | `uncommon_mod` | 1 → [1,1], 10 → [1,2], 20 → [2,3] |
 | `bm-reflect` | Thorned | `rare_mod` | 10 → [1,3], 20 → [4,7] |
+| `bm-vitality` | Stalwart | `common_mod` | 1 → [1,2], 10 → [3,5], 20 → [6,9], 30 → [10,14], 40 → [15,20], 50 → [21,28] |
+| `bm-damage-reduction` | Bulwark | `rare_mod` | 15 → [1,1], 35 → [1,1] |
+| `bm-thorns-proc` | Brazen Thorns | `uncommon_mod` | 10 → [1,1], 30 → [1,1], 50 → [1,1] |
+| `bm-taunt-proc` | Provoking Plate | `uncommon_mod` | 5 → [1,1], 25 → [1,1] |
+| `bm-barrier-proc` | Wardweave | `rare_mod` | 10 → [1,1], 30 → [1,1] |
+| `bm-heart-start` | Resolute Bearing | `uncommon_mod` | 1 → [1,2], 20 → [2,4] |
 
-#### `handsModPool` (3)
+#### `handsModPool` (9)
 | ID | Name | hiddenRarity | Level tiers |
 |----|------|--------------|-------------|
 | `hndm-body-gen` | Iron Grip | `common_mod` | 1 → [1,1], 10 → [1,2], 20 → [2,2] |
 | `hndm-crit` | Precise Hands | `uncommon_mod` | 1 → [1,2], 10 → [3,5], 20 → [6,9] |
 | `hndm-block` | Shield Training | `rare_mod` | 5 → [1,1] |
+| `hndm-strength` | Crushing Grasp | `common_mod` | 1 → [1,3], 10 → [4,7], 20 → [8,13], 30 → [14,20], 40 → [21,29], 50 → [30,40] |
+| `hndm-crit-rate` | Deft Fingers | `uncommon_mod` | 10 → [1,1], 30 → [1,1], 50 → [1,1] |
+| `hndm-counter` | Riposte Form | `rare_mod` | 20 → [1,1], 40 → [1,1] |
+| `hndm-disarm` | Disarming Grip | `rare_mod` | 10 → [1,1], 30 → [1,1] |
+| `hndm-blinding` | Blinding Flurry | `uncommon_mod` | 5 → [1,1], 25 → [1,1] |
+| `hndm-mind-gen` | Calculating Hands | `common_mod` | 1 → [1,1], 10 → [1,2], 20 → [2,3] |
 
-#### `feetModPool` (3)
+#### `feetModPool` (8)
 | ID | Name | hiddenRarity | Level tiers |
 |----|------|--------------|-------------|
-| `fm-evasion` | Swift Feet | `common_mod` | 1 → [1,3], 10 → [4,7], 20 → [8,12] |
+| `fm-evasion` | Swift Feet | `common_mod` | 1 → [1,3], 10 → [4,7], 20 → [8,12], 30 → [13,18], 40 → [19,26], 50 → [27,36] |
 | `fm-cs-tokens` | Ready Stride | `uncommon_mod` | 1 → [1,1], 10 → [1,2], 20 → [2,3] |
 | `fm-initiative` | First Step | `rare_mod` | 5 → [1,3], 20 → [4,7] |
+| `fm-evasion-proc` | Phantom Step | `uncommon_mod` | 10 → [1,1], 30 → [1,1], 50 → [1,1] |
+| `fm-physical-save` | Sure Footing | `common_mod` | 1 → [2,4], 15 → [5,9], 30 → [10,16], 45 → [17,25], 50 → [26,34] |
+| `fm-haste` | Fleetfoot | `rare_mod` | 20 → [1,1], 40 → [1,1] |
+| `fm-stealth` | Shadowstep | `rare_mod` | 10 → [1,1], 30 → [1,1] |
+| `fm-initiative-tokens` | Vanguard Stride | `uncommon_mod` | 1 → [1,1], 20 → [1,2] |
 
-#### `accessoryModPool` (3)
+#### `accessoryModPool` (10)
 | ID | Name | hiddenRarity | Level tiers |
 |----|------|--------------|-------------|
-| `am-cross-stat` | Balanced Focus | `common_mod` | 1 → [1,2], 10 → [2,4], 20 → [4,7] |
+| `am-cross-stat` | Balanced Focus | `common_mod` | 1 → [1,2], 10 → [2,4], 20 → [4,7], 30 → [8,11], 40 → [12,16], 50 → [17,22] |
 | `am-stance-res` | Resonant Stone | `uncommon_mod` | 1 → [1,2], 10 → [2,3], 20 → [3,4] |
 | `am-proc-boost` | Catalyst Charm | `rare_mod` | 10 → [5,10], 20 → [11,20] |
+| `am-heart-focus` | Heartstone | `common_mod` | 1 → [1,2], 15 → [3,5], 30 → [6,9], 45 → [10,14], 50 → [15,20] |
+| `am-regen` | Mending Charm | `uncommon_mod` | 10 → [1,1], 30 → [1,1], 50 → [1,1] |
+| `am-all-attunement` | Triune Sigil | `rare_mod` | 25 → [2,4], 40 → [5,8], 50 → [9,13] |
+| `am-status-amp` | Hex Focus | `rare_mod` | 10 → [1,1], 30 → [1,1] |
+| `am-cleanse` | Purifying Charm | `uncommon_mod` | 5 → [1,1], 25 → [1,1] |
+| `am-luck` | Lucky Trinket | `common_mod` | 1 → [1,2], 15 → [3,5], 30 → [6,9], 45 → [10,14] |
+| `am-fortitude` | Bulwark Bauble | `uncommon_mod` | 5 → [1,1], 25 → [1,1] |
 
-#### `armorModPool` (3)
+#### `armorModPool` (9)
 | ID | Name | hiddenRarity | Level tiers |
 |----|------|--------------|-------------|
-| `armm-defense` | Hardened | `common_mod` | 1 → [3,7], 10 → [8,16], 20 → [17,28] |
-| `armm-heart-start` | Brave Bearing | `uncommon_mod` | 1 → [1,2], 10 → [2,3], 20 → [3,5] |
-| `armm-regen` | Enduring | `rare_mod` | 5 → [1,1] |
+| `armm-defense` | Hardened | `common_mod` | 1 → [3,7], 10 → [8,16], 20 → [17,28], 30 → [29,42], 40 → [43,58], 50 → [59,78] |
+| `armm-heart-start` | Brave Bearing | `uncommon_mod` | 1 → [1,2], 10 → [2,3], 20 → [3,5], 30 → [5,7], 40 → [7,9], 50 → [9,12] |
+| `armm-regen` | Enduring | `rare_mod` | 5 → [1,1], 30 → [1,1], 50 → [1,1] |
+| `armm-vitality` | Ironhide | `common_mod` | 1 → [1,2], 10 → [3,5], 20 → [6,10], 30 → [11,16], 40 → [17,23], 50 → [24,32] |
+| `armm-aegis` | Aegis Weave | `rare_mod` | 15 → [1,1], 35 → [1,1] |
+| `armm-stoic` | Stoic Plating | `uncommon_mod` | 10 → [1,1], 30 → [1,1], 50 → [1,1] |
+| `armm-body-resist` | Adamant Weave | `common_mod` | 1 → [1,1], 20 → [1,1] |
+| `armm-heart-resist` | Sanguine Lining | `common_mod` | 1 → [1,1], 20 → [1,1] |
+| `armm-mhp` | Reinforced Hide | `uncommon_mod` | 5 → [1,1], 25 → [1,1] |
 
-### `uniqueModPool` (3 — Unique-only)
+### `uniqueModPool` (6 — Unique-only)
 
 Per Spec 05d Q4 these mods are **never** drawn by the procedural roll path.
 They only resolve when a `UniqueItemTemplate.fixedModIds` entry references
@@ -330,6 +384,9 @@ them.
 | `um-stance-echo` | Stance Echo | `rare_mod` | 5 → [1,1], 15 → [1,2] |
 | `um-paradox-edge` | Paradox Edge | `rare_mod` | 10 → [1,1] |
 | `um-resonance-prime` | Resonance Prime | `rare_mod` | 15 → [1,2], 20 → [2,3] |
+| `um-phoenix-heart` | Phoenix Heart | `rare_mod` | 25 → [1,1], 45 → [1,1] |
+| `um-gorgon-stare` | Gorgon Stare | `rare_mod` | 30 → [4,8], 50 → [9,16] |
+| `um-promethean-spark` | Promethean Spark | `rare_mod` | 20 → [1,1], 40 → [1,1] |
 
 ### Where the catalogue compromises with existing primitives
 
