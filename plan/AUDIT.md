@@ -50,6 +50,25 @@
 
 ## Audit Pass Log
 
+### 2026-06-16 (Pass 76) — Full categories Z–H
+
+**Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), ESLint fix (F), Dependency updates (G), Commit-hygiene (H).
+
+**Findings:** 1 finding (Category E, score 4.0 — stale docs/equipment.md catalogue tables after Phase 151; shipped this tick).
+
+**Highlights:**
+- **Z (Critique):** CRITIQUE.md Pending empty (last pass 71, all resolved).
+- **A (Tests):** 127 test files / 1810 passing (1 skipped) baseline green. Phase 151 shipped hermetic coverage in `src/Items/e2e/affixes.engine.test.ts` (+116 lines) and de-brittled `item.factory.engine.test.ts`. No missing-test gaps ≥3.0.
+- **B (Spec-gaps):** AUDIT Pending 0; Knowledge-Gaps only Q28 deferred (endgame); specs/ answered.
+- **C (Type-safety):** Zero `@ts-ignore`/`as any`/`as unknown` in production `src/` (non-test). Clean.
+- **D (Dead code):** No orphaned modules; barrel exports clean. Phase 151 catalogue/affix additions all reachable through `MOD_POOLS` / affix registration.
+- **E (Docs):** **FINDING** — `docs/equipment.md` "Modifiers (Spec 05d)" section is stale after Phase 151. Per-pool counts and tables document 22 procedural + 3 unique-only = 25 mods, but the catalogue is now 78 (weapon 17, head 9, body 9, hands 9, feet 8, accessory 10, armor 9, unique 6) with extended level tiers (levelReq 30/40/50). Score: impact 5 × ease 8 / 10 = 4.0. Shipping this tick.
+- **F (ESLint):** `npm run lint` green.
+- **G (Dependencies):** `npm outdated` clean — no updates available.
+- **H (Commit hygiene):** Working tree clean.
+
+**Signal:** Single actionable finding is the Category-E catalogue-doc drift from Phase 151; shipping it. Remaining categories at continued excellent health.
+
 ### 2026-06-16 (Pass 75) — Full categories Z–H
 
 **Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), ESLint fix (F), Dependency updates (G), Commit-hygiene (H).
