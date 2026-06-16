@@ -118,6 +118,13 @@
 
 ## Promoted
 
+### Phase 151 — Item modifier catalogue audit and expansion
+- promoted: 2026-06-16 by T direct steering
+- source: T requested an audit of item modifiers (prefixes and suffixes), then adding exactly 20 prefixes and 20 suffixes.
+- brief: `plan/phases/phase_151_item_modifier_catalogue_audit_and_expansion.md`
+- build-plan row: `plan/steps/01_build_plan.md`
+
+
 ### Phases 145–148 — Minigame playtesting harness (split into 4 phases)
 - promoted: 2026-06-14 (oversight Q1 — T write-in: "balancing all the minigames — many phases, little by little; build a harness first — A/B, e2e, playstyle subagents"). Split into 4 phases to keep context windows manageable. Build-plan rows added as Phases 145–148. No balance changes in any of these phases — infrastructure only. Phase 149+ make incremental balance changes, each verified by the full harness.
   - **Phase 145**: Quest Board simulator (biggest gap; no sim today)
