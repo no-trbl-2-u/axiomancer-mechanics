@@ -39,13 +39,16 @@ import {
     DEFENSE_MULTIPLIERS,
     PASSIVE_DEFENSE_MULTIPLIER,
     FRIENDSHIP_COUNTER_MAX,
+    ENEMY_SKILL_ANSWER_CHANCE,
 } from '../../Game/game-mechanics.constants';
+import { getRng } from '../../Utils/rng';
 import type { CombatAction, CombatState, Stance, Action, Advantage } from '../types';
 import {
     BasicActionOutcome, SkillEvent, SkillLookup,
     canUseSkill, executeSkill, generateBasicActionResources,
 } from '../../Skills/skill.engine';
 import { CombatResources } from '../../Skills/types';
+import type { Skill } from '../../Skills/types';
 import { Consumable } from '../../Items/types';
 import { isConsumable } from '../../Items/types';
 import { getEquipmentProcTriggers, useConsumableEffect } from '../../Items/equipment.engine';
@@ -100,6 +103,7 @@ export function runScenarioPhase(
     skillLookup: SkillLookup | undefined,
     events: RoundEvent[],
     exploitedRegions?: string[],
+    enemyCanAct: boolean = true,
 ): ScenarioPhaseResult {
     let player = playerIn;
     let enemy  = enemyIn;
@@ -155,6 +159,55 @@ export function runScenarioPhase(
                     phaseTransition: 'mercy_choice' as const,
                 };
             }
+        }
+    }
+
+    // 5a-answer (Phase 150). The player landed a HOSTILE skill this round and
+    // the enemy did NOT already pick a skill of its own. Doctrine: player
+    // skills always land and are deterministic, so the cost of offensive skill
+    // use is paid by the enemy answering power with power. When the enemy can
+    // legally act and owns at least one in-rotation skill, it responds with a
+    // skill instead of resolving an ordinary basic exchange. Selection +
+    // execution reuse the Phase 49 enemy-cast path (sentinel pool, player
+    // resources untouched). If no legal enemy skill exists the round falls
+    // through to the enemy's pre-decided basic action below.
+    //
+    // Crucially the answer is gated on `playerSkillIsHostile`: a befriend /
+    // mercy / friendship-building / pure self-buff skill is an extended hand,
+    // not power — provoking a retaliatory enemy skill on those would punish
+    // the STRATEGIST friendship route, which the combat doctrine (CLAUDE.md)
+    // treats as a balance failure. Only offensive skills (enemy-targeted, or
+    // applying an effect to the opponent, and not a friendship gesture) draw
+    // an answer.
+    if (
+        playerActionFinal === 'skill' &&
+        !skillBlocked &&
+        enemyActionFinal !== 'skill' &&
+        enemyCanAct &&
+        skillLookup &&
+        playerAction.skillId !== undefined &&
+        playerSkillIsHostile(skillLookup(playerAction.skillId)) &&
+        // Probabilistic cadence (Phase 150) — the answer is a frequent, felt
+        // threat, not a guaranteed retaliation wall. Mirrors the Phase 49
+        // lead-with-skill rhythm and runs on the seedable RNG so the response
+        // is reproducible under a fixed seed. Rolled last so non-answering
+        // branches don't perturb the stream.
+        getRng().random() < ENEMY_SKILL_ANSWER_CHANCE
+    ) {
+        const responseId = selectEnemySkillResponse(enemy, skillLookup);
+        if (responseId) {
+            const sentinel: CombatResources = {
+                heart: 999, body: 999, mind: 999, fallacy: 999, paradox: 999,
+            };
+            const skillState: CombatState = {
+                ...state, player, enemy, combatResources: sentinel,
+            };
+            const resolution = executeSkill(skillState, responseId, skillLookup, 'enemy');
+            player = resolution.state.player;
+            enemy  = resolution.state.enemy;
+            // combatResources intentionally NOT updated — Phase 49 D2 bypass.
+            events.push({ phase: 'scenario', kind: 'enemy-skill-response', skillId: responseId });
+            for (const ev of resolution.events) events.push(toRoundEvent(ev));
         }
     }
 
@@ -400,6 +453,66 @@ function resolveExploitAttack(
     });
     
     return { player, enemy: nextEnemy };
+}
+
+// ─── Phase 150 — enemy skill-response selection ──────────────────────────────
+
+/**
+ * True when a player skill is HOSTILE — i.e. an act of aggression against the
+ * enemy that justifies the enemy "answering power with power" (Phase 150).
+ *
+ * Non-hostile skills (return `false`) are the player's olive branches and
+ * self-investments; provoking a retaliatory enemy skill on these would punish
+ * the mercy / friendship route the STRATEGIST witness relies on, which the
+ * combat doctrine (CLAUDE.md) flags as a balance failure:
+ *   - `befriend_attempt` special mechanic (the Befriend skill).
+ *   - any `incrementsFriendship` skill (soothing-words / peaceful-gesture /
+ *     empathetic-understanding — the friendship-building gestures).
+ *   - purely self-directed skills (`targetType === 'self'` with no effect
+ *     applied to the opponent) — buffs / heals that don't touch the enemy.
+ *
+ * A skill is hostile when it targets the enemy OR lands an effect on the
+ * opponent, AND it is not a friendship gesture. An unknown / missing skill is
+ * treated as non-hostile (no answer) — the player-skill block above already
+ * blocks unknown skills, so this is a defensive default.
+ */
+function playerSkillIsHostile(skill: Skill | undefined): boolean {
+    if (!skill) return false;
+    const isFriendshipGesture =
+        (skill.incrementsFriendship ?? 0) > 0 ||
+        (skill.specialMechanics ?? []).some(m => m.kind === 'befriend_attempt');
+    if (isFriendshipGesture) return false;
+    const hitsOpponent =
+        skill.targetType === 'enemy' ||
+        (skill.combatEffects ?? []).some(e => e.appliedTo === 'opponent');
+    return hitsOpponent;
+}
+
+/**
+ * Picks the enemy's skill answer to a player `skill` action, or `null` when
+ * the enemy has no legal response (falls through to its basic action).
+ *
+ * Selection is deterministic — it does NOT draw from the RNG so the response
+ * stays reproducible under a fixed seed (Phase 150 doctrine: the answer is a
+ * consequence, not a disguised accuracy check). Walks the enemy's `skills`
+ * rotation in authored order and returns the first entry that also resolves
+ * to a real definition through `skillLookup`. Enemies bypass the player's
+ * resource economy (Phase 49 D2 sentinel pool), so any in-rotation skill that
+ * the library knows about is affordable by construction; the lookup guard is
+ * purely a content-integrity check against a stale / malformed rotation entry.
+ *
+ * Returns the skill id (not the Skill) so the caller routes execution through
+ * the same `executeSkill(..., 'enemy')` path the Phase 49 cast uses.
+ */
+function selectEnemySkillResponse(
+    enemy: Enemy,
+    skillLookup: SkillLookup,
+): string | null {
+    const rotation = enemy.skills ?? [];
+    for (const skill of rotation) {
+        if (skillLookup(skill.id)) return skill.id;
+    }
+    return null;
 }
 
 // ─── Internal helpers (formerly in combat.resolver.ts) ────────────────────────

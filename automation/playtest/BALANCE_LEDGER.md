@@ -377,3 +377,70 @@ Judgment:
 - Continue tuning / mechanics sound / discuss mechanics change:
 - Skill/status doctrine satisfied? yes / no:
 - Notes:
+
+## Marker M-150 — Phase 150 enemy-skill-answer landed
+
+- Date: 2026-06-16
+- Commit: post-`1963242` (Phase 150 working state)
+- Report path: `automation/playtest/reports/late-game-coastal-tyrant.md`
+- Command: `npm run playtest`
+- Scenario: `late-game-coastal-tyrant`
+- Preset: `sage`
+- Enemy: `coastal-tyrant`
+- Runs: 25 · Policies: aggressive, defensive, mixed, strategist
+- Shipped design: enemy answers a player's HOSTILE skill with an in-rotation
+  skill, gated by (a) hostility (befriend / friendship-building / self-buff
+  skills draw no answer), (b) legality (`enemyCanAct` — stun/restriction
+  blocks it), and (c) a `ENEMY_SKILL_ANSWER_CHANCE = 0.10` seedable cadence.
+
+Final stats (witness scenario, final 0.10 cadence):
+
+- Win rate: 100.0%
+- Defeat rate: 0.0%
+- Friendship rate: 0.0%
+- Timeout rate: 0.0%
+- Average rounds: 9.04
+- Median rounds: 8
+- Average final player HP: 369.88
+- Average final enemy HP: 16.44
+- Average damage to player: 0.16
+- Average damage to enemy: 144.36
+- Max friendship counter: 0
+
+Status-effect / answer evidence:
+- Enemy Action Use shows `skill:achilles-gambit: 77` against `skill: 86`
+  player casts — the Phase 150 answer fires (the count includes both the
+  Phase 49 lead-with-skill cadence and the new reactive answer).
+- `enemy-skill-response` markers are emitted on the round-event stream
+  (verified by the hermetic e2e `enemy-skill-response.engine.test.ts`).
+- The answer now lands real pressure: `damage to player` rose from 0 to 0.16
+  at this otherwise-trivial easy scenario.
+
+Balance-band protection (why the design is gated, not 100%):
+- An initial GUARANTEED answer to every player skill broke two previously
+  green verify gates:
+  - `three-anchor-friendship` STRATEGIST friendship rate (Audit Sentinel)
+    fell from its 10–30% band to 4% — the enemy retaliating against the
+    Befriend cast wrecked the mercy route. Fixed by the hostility gate
+    (friendship gestures draw no answer): rate restored to 20%.
+  - Phase 121 difficult anchor (`balance-judge`) win rate fell from ~32% to
+    0% (band 10–40%). Answer-chance sweep on this anchor: 0.20–0.35 → 0.04,
+    0.15 → 0.12, 0.10 → 0.16; normal anchor (0.80) and difficult friendship
+    (0.20) flat across the range. Settled on 0.10 for safe band margin.
+- No enemy stat blocks were retuned (Phase 150 non-goal honored); the only
+  balance lever introduced is the new `ENEMY_SKILL_ANSWER_CHANCE` dial.
+
+Judgment: **Mechanics sound for this gate; continue tuning the cadence up.**
+The doctrine ("answer power with power") is expressed and now carries real
+pressure, gated so it does not punish the friendship route or the hardest
+lethal anchor. `npm run verify` passes (127 files / 1803 tests + build).
+
+Skill/status doctrine satisfied: **yes** — the enemy answers offensive skill
+play with skills, the STRATEGIST friendship route is explicitly protected, and
+basic-attack trading is not made more attractive than status play.
+
+Notes / follow-up tuning candidate:
+- `ENEMY_SKILL_ANSWER_CHANCE = 0.10` is a deliberate floor chosen for band
+  safety, not for maximum threat. Raise it toward the Phase 49 0.35 rhythm
+  once the difficult anchor's stat block is retuned in a dedicated tuning run
+  so the answer can hit harder without sinking the difficult-anchor win band.

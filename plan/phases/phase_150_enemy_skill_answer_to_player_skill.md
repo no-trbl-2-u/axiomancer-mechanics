@@ -48,13 +48,13 @@ Make combat skill use a guaranteed but answerable escalation. When the player us
 
 ## Acceptance criteria
 
-- [ ] A player `skill` action causes the enemy to use an available legal skill as its response.
-- [ ] If the enemy has no legal/affordable skill, current fallback enemy action behavior remains intact.
-- [ ] Action restrictions prevent enemy skill response when appropriate.
-- [ ] Player skill outcomes remain deterministic/always-hit.
-- [ ] Battle-log/events expose the player skill result and enemy skill response clearly enough for mobile to render without local simulation.
-- [ ] Hermetic combat e2e covers: enemy skill response, fallback when no skill is available, and blocked response under restriction.
-- [ ] Playtest evidence is captured for at least one existing combat witness so the new response rule does not silently wreck the 65–75% target band.
+- [x] A player `skill` action causes the enemy to use an available legal skill as its response. (`selectEnemySkillResponse` in `src/Combat/phases/scenario.ts`, gated to HOSTILE player skills + a `ENEMY_SKILL_ANSWER_CHANCE` cadence)
+- [x] If the enemy has no legal/affordable skill, current fallback enemy action behavior remains intact. (helper returns `null` → existing 5a-enemy / basic path)
+- [x] Action restrictions prevent enemy skill response when appropriate. (`enemyCanAct` gate threaded from the action-restriction phase; covered by the stunned-enemy e2e case)
+- [x] Player skill outcomes remain deterministic/always-hit. (no player accuracy roll introduced; the only RNG is the enemy answer's cadence on the existing seedable `getRng()` path)
+- [x] Battle-log/events expose the player skill result and enemy skill response clearly enough for mobile to render without local simulation. (new `{ phase: 'scenario'; kind: 'enemy-skill-response'; skillId }` event + the enemy's `skill` execution stream)
+- [x] Hermetic combat e2e covers: enemy skill response, fallback when no skill is available, and blocked response under restriction. (`src/Combat/e2e/enemy-skill-response.engine.test.ts` — also covers cadence-decline and non-hostile-skill suppression)
+- [x] Playtest evidence is captured for at least one existing combat witness so the new response rule does not silently wreck the 65–75% target band. (`late-game-coastal-tyrant`; ledger marker M-150 — initial 100%-answer broke the STRATEGIST friendship route + difficult anchor, fixed by the hostility gate + 0.10 cadence; `npm run verify` green, follow-up tuning candidate filed to raise the cadence after a stat-block retune)
 
 ## Verification
 

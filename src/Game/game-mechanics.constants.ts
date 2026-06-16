@@ -102,6 +102,22 @@ export const RESOURCE_GENERATION = {
 
 export const FRIENDSHIP_COUNTER_MAX = 3;
 
+// Phase 150 — probability that an enemy answers a player's HOSTILE skill with
+// a skill of its own ("answer power with power"). Distinct from the Phase 49
+// lead-with-skill cadence (`ENEMY_SKILL_PICK_CHANCE`): this dial governs the
+// REACTIVE answer to the player's offensive skill, not the enemy's own opening.
+// Set at 0.10 — a felt but not overwhelming reactive threat. A guaranteed
+// (1.0) answer crushes both the STRATEGIST friendship route and the difficult
+// lethal anchor (`balance-judge`); an answer-chance sweep on the Phase 121
+// difficult anchor found win rate 0.04 at 0.20–0.35, 0.12 at 0.15, and 0.16 at
+// 0.10 against an authored band of 0.10–0.40, while the normal anchor (0.80)
+// and difficult-anchor friendship rate (0.20) stay flat across the range. 0.10
+// keeps the doctrine ("answer power with power") alive with safe band margin;
+// it is a deliberate floor, flagged as a tuning candidate to raise once the
+// difficult anchor's stat block is retuned. Recorded in
+// automation/playtest/BALANCE_LEDGER.md (marker M-150).
+export const ENEMY_SKILL_ANSWER_CHANCE = 0.10;
+
 // Phase 125 — Effects-driven resolution thresholds
 // Combined intensity of control/debuff effects needed to force saturation yield (friendship route)
 export const EFFECTS_RESOLUTION_DEBUFF_INTENSITY_THRESHOLD = 3;

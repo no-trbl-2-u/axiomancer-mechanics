@@ -89,6 +89,14 @@ resolveCombatRound(state, playerAction, enemyAction, lookupSkill?)
 │                              otherwise attack-vs-attack / attack-vs-defend / etc.
 │                              Player basic actions also generate stance tokens
 │                              into `combatResources` (hit +3 / miss +1 / defend +5).
+│                              Phase 150: when the player lands a HOSTILE skill
+│                              and the enemy did not already pick one, a
+│                              legal-acting enemy may answer with a skill of its
+│                              own — gated by hostility (befriend/buff skills
+│                              draw no answer), `enemyCanAct`, and a 0.10
+│                              `ENEMY_SKILL_ANSWER_CHANCE` roll
+│                              (`selectEnemySkillResponse` → `enemy-skill-response`
+│                              marker + the enemy's `skill` event stream).
 └── 6. round-end            → end-phase DoT  → tickAllEffects  → log expired effects
                               + round counter increments
 ```

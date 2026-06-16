@@ -112,7 +112,17 @@ export type ScenarioEvent =
         result: EffectApplicationResult }
     | { phase: 'scenario'; kind: 'mercy-chosen';
         choice: 'spare' | 'exploit';
-        message: string };
+        message: string }
+    /**
+     * Phase 150 — the enemy answered the player's `skill` action by using a
+     * skill of its own instead of resolving an ordinary basic exchange. The
+     * skill execution itself emits its own `skill` phase events; this marker
+     * lets a UI distinguish "enemy answered with a skill" from ordinary enemy
+     * action selection without re-simulating the round. `skillId` names the
+     * chosen enemy skill.
+     */
+    | { phase: 'scenario'; kind: 'enemy-skill-response';
+        skillId: string };
 
 /** End-phase DoT and ticked / expired effects. */
 export type RoundEndEvent =
@@ -373,6 +383,7 @@ export function resolveCombatRound(
         state.round, skillLookup,
         events,
         exploitedRegions,
+        enemyCanAct,
     );
     player = scenario.player;
     enemy  = scenario.enemy;
