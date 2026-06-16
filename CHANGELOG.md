@@ -207,7 +207,7 @@ player. Status effects are now the dominant path to resolution — DoT erosion d
 victory, saturation-yield drives friendship — and their potency is meaningfully higher
 across the board. Alongside these fixes, a content expansion ships ~20 new skills and
 a larger equipment/item library (internal content only; no new public-barrel exports
-for those surfaces). Status effects are the main fun; this release makes them feel it.
+for those surfaces). Status effects are the main fun in combat encounters; this release makes them feel it.
 
 ### Added
 

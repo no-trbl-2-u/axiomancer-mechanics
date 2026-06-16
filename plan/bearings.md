@@ -22,7 +22,7 @@ a full game loop. The React Native UI is out of scope for this repo.
 
 ## Design doctrine (load-bearing)
 
-**Status effects are the MAIN fun and the most engaging aspect of combat.**
+**Status effects are the MAIN fun and the most engaging aspect of combat encounters.**
 (Set 2026-06; see `VISION.md` → Combat vision.) Balance, tuning, and content
 work optimise first for status-effect-centric play — applying and exploiting
 effects should be the dominant winning path, not basic-attack trading. The

@@ -49,7 +49,7 @@ The module is intentionally NOT re-exported from the package's public API (`src/
 
 ### Status-First Doctrine
 
-The tuning system enforces the game's core design principle: **status effects are the main fun**. This is implemented mathematically through:
+The tuning system enforces the game's core design principle: **status effects are the main fun in combat encounters**. This is implemented mathematically through:
 
 - **Engagement scoring** — low status-effect usage is penalized even if win rates are healthy
 - **Witness metric** — compares STRATEGIST (status-first) vs AGGRESSIVE (basic-attack) playstyles; basic-attack dominance triggers regression guards

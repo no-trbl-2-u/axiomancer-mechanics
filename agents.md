@@ -105,7 +105,7 @@ reverted in 0.17.1. Do not repeat this.
 
 ### 10. The status-effect doctrine governs balance work.
 
-**Status effects are the MAIN fun and the most engaging aspect of combat**
+**Status effects are the MAIN fun and the most engaging aspect of combat encounters**
 (set 2026-06; canonical in `VISION.md` → Combat vision, echoed in
 `plan/bearings.md`). Any balance, tuning, content, or skill/effect work
 optimises first for status-effect-centric play. If a change makes basic-attack

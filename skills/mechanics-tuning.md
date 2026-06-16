@@ -8,7 +8,7 @@
 
 ## North star — status effects are the main engagement
 
-Per `VISION.md` / `CLAUDE.md`, **status effects are the primary fun of combat.**
+Per `VISION.md` / `CLAUDE.md`, **status effects are the primary fun of combat encounters.**
 This is no longer just prose the optimiser ignores: status-effect engagement is
 now a **term in the health objective** (`health.metrics.ts`), and the metric
 measures **leverage, not activity** (`engagement.metrics.ts`). Status that

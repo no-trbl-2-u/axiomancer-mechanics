@@ -6,7 +6,7 @@ load-bearing doctrine is always in context.
 
 ## Load-bearing doctrine (set 2026-06)
 
-**Status effects are the MAIN fun and the most engaging aspect of combat.**
+**Status effects are the MAIN fun and the most engaging aspect of combat encounters.**
 
 Every balance decision, tuning run, content addition, and skill/effect design is
 judged first by: *does this make applying and exploiting status effects more
