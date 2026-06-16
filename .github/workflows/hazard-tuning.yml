@@ -88,6 +88,11 @@ jobs:
         uses: anthropics/claude-code-base-action@beta
         with:
           prompt: '/hazard-tuning --focus="${{ github.event.inputs.focus }}"'
+          # Pin an active Opus model and medium effort. The action default can
+          # drift or retire; hazard tuning should not depend on it.
+          model: claude-opus-4-8
+          claude_env: |
+            CLAUDE_CODE_EFFORT_LEVEL: medium
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # The skill needs to read the hazard docs/libraries, run npm/hazard CLI
           # evidence matrices, edit numeric/content values only when warranted,

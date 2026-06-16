@@ -126,6 +126,11 @@ jobs:
         uses: anthropics/claude-code-base-action@beta
         with:
           prompt: "/march ${{ github.event.inputs.args }}"
+          # Pin an active Opus model and medium effort. The action default can
+          # drift or retire; the autonomous loop should not depend on it.
+          model: claude-opus-4-8
+          claude_env: |
+            CLAUDE_CODE_EFFORT_LEVEL: medium
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # The loop needs to: read everything, edit files, run npm / gh /
           # git, and dispatch sub-agents. Bash is the broadest hammer it
