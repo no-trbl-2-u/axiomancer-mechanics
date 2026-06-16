@@ -50,6 +50,25 @@
 
 ## Audit Pass Log
 
+### 2026-06-16 (Pass 75) — Full categories Z–H
+
+**Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), ESLint fix (F), Dependency updates (G), Commit-hygiene (H).
+
+**Findings:** 1 finding (Category G, score 2.7 — below 3.0 threshold but cheap safe patch bump; shipped this tick).
+
+**Highlights:**
+- **Z (Critique):** CRITIQUE.md Pending empty (last pass 70, all resolved).
+- **A (Tests):** 127 test files / 1803 passing (1 skipped) baseline green. Phase 150 (enemy-skill-answer) shipped with hermetic e2e `src/Combat/e2e/enemy-skill-response.engine.test.ts` (192 lines, 6 cases). No missing-test gaps ≥3.0.
+- **B (Spec-gaps):** AUDIT Pending 0; Knowledge-Gaps only Q28 deferred (endgame); specs/ answered.
+- **C (Type-safety):** Zero `@ts-ignore`/`as any` in production `src/` (non-test). Clean.
+- **D (Dead code):** No orphaned modules; barrel exports clean.
+- **E (Docs):** All 16 src modules covered in docs/; Phase 150 added docs/combat.md section.
+- **F (ESLint):** `npm run lint` green.
+- **G (Dependencies):** `@typescript-eslint/eslint-plugin` & `typescript-eslint` 8.61.0 → 8.61.1 (safe patch bumps). Score: impact 3 × ease 9 / 10 = 2.7. Shipping this tick as a cheap win.
+- **H (Commit hygiene):** Working tree clean.
+
+**Signal:** Only actionable finding is the Category-G patch bump; shipping it. Remaining categories at continued excellent health post-Phase-150.
+
 ### 2026-06-15 (Pass 74) — Full categories Z–H
 
 **Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), ESLint fix (F), Dependency updates (G), Commit-hygiene (H).
