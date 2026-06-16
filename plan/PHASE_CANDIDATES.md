@@ -63,6 +63,14 @@
 
 ## Pending
 
+### Candidate: Hazard simulation harness — acquired-deck (utility) bag injection
+- signal: The hazard-tuning skill's focus axis "utility deck strategies" cannot be exercised through the shipped CLI. `npm run hazard -- --auto` builds the draw bag from `hazardStarterBag()` only (`src/CLI/hazard.cli.ts` → `hazardStarterBag()`), with no flag to add reward/codex cards, so no `--seed`/`--runs`/`--json-events`/`--state-log` combination can measure how an acquired utility deck (auras/bursts/gold-vows/CHOOSE/transmute/…) performs. Separately, the shipped greedy bot (`hazard.sim.ts` `playGreedyRound`) never *plays* free-row-less utilities (bursts/auras/vows/choose score 0 in `freeValueToward`), so even `simulateHazard` with a custom bag under-measures them unless driven by a utility-aware policy. The 2026-06-16 hazard-tuning tick had to write a throwaway utility-aware sim spec to find the gold-vow/CHOOSE anti-synergy trap (see `plan/hazard-tuning-20260616-1606.md`).
+- scope: (a) add a `--deck <cardId[:n],…>` (or `--bag-file <path>`) flag to `src/CLI/hazard.cli.ts` that appends acquired cards to the starter bag for `--auto` runs; (b) add a utility-aware bot policy (or extend the greedy policy) that stages utility cards whose effect can fire this round, so the sim/CLI measures the acquired-utility axis rather than ignoring it. Keep the existing CLI contract and JSON-event/state-log surface.
+- unblocks: Empirical, CLI-citeable evidence for acquired-utility-deck balance — the doctrine-central "utility play beats flat trading" axis — without bespoke throwaway harnesses each tick.
+- blocked-by: pre-existing `ts-node` compile break at `src/CLI/game.cli.ts:185` (`describeResolvedEvent` lacks ending return under ts-node's isolated-modules view; `tsc --noEmit` passes, so verify is unaffected) — `npm run hazard` currently errors and must be repaired first for any CLI-path evidence.
+- score: 4 × 7 / 10 = 2.8
+- recommended-slot: iterate/phase once the ts-node CLI break is repaired; pairs naturally with the gold-vow/CHOOSE free-row structural fix proposed in the 2026-06-16 tuning report.
+
 ### Candidate: Rest minigame design brainstorm
 - signal: Current rest events are passive (HP restore only). T wants a more engaging rest mechanic with player agency and resource-management depth. Initial ideas: Gordian Quest-style rest-resource allocation, player-choice branch (restore HP % vs upgrade a hazard card vs upgrade another item), or a fire-tending resource-management minigame. Design space is open — brainstorm before committing to any direction.
 - scope: Attended `/brainstorm-mechanics` session to explore the rest-event design space. Outputs: a braindump file at `braindump/rest-minigame-<date>.md` capturing design options with trade-offs, prior art (Gordian Quest, Darkest Dungeon camp, Hades boon selection, etc.), and a recommended direction. Followed by a spec phase once the direction is settled.
