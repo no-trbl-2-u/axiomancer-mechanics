@@ -62,7 +62,7 @@
 - **B (Spec-gaps):** AUDIT Pending 0; Knowledge-Gaps only Q28 deferred (endgame); specs/ answered.
 - **C (Type-safety):** Zero `@ts-ignore`/`as any`/`as unknown` in production `src/` (non-test). Clean.
 - **D (Dead code):** No orphaned modules; barrel exports clean. Phase 151 catalogue/affix additions all reachable through `MOD_POOLS` / affix registration.
-- **E (Docs):** **FINDING** — `docs/equipment.md` "Modifiers (Spec 05d)" section is stale after Phase 151. Per-pool counts and tables document 22 procedural + 3 unique-only = 25 mods, but the catalogue is now 78 (weapon 17, head 9, body 9, hands 9, feet 8, accessory 10, armor 9, unique 6) with extended level tiers (levelReq 30/40/50). Score: impact 5 × ease 8 / 10 = 4.0. Shipping this tick.
+- **E (Docs):** **FINDING (SHIPPED at 926fb5c)** — `docs/equipment.md` "Modifiers (Spec 05d)" section was stale after Phase 151. Per-pool counts and tables documented 22 procedural + 3 unique-only = 25 mods, but the catalogue is now 78 (weapon 17, head 9, body 9, hands 9, feet 8, accessory 10, armor 9, unique 6) with extended level tiers (levelReq 30/40/50). Rebuilt all 8 pool tables + summary count to mirror `modifier.catalogue.ts`. Score: impact 5 × ease 8 / 10 = 4.0.
 - **F (ESLint):** `npm run lint` green.
 - **G (Dependencies):** `npm outdated` clean — no updates available.
 - **H (Commit hygiene):** Working tree clean.
