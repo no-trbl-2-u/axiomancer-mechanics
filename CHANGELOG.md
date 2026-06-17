@@ -10,6 +10,43 @@ Pre-1.0.0 status: minor bumps may carry breaking public-API changes
 map exposes `.` (top-level barrel) and `./node` (Node.js adapter); no
 deep imports are part of the supported surface.
 
+## [0.22.0] — 2026-06-17
+
+Affix release: regular equipment drops now carry structured prefix/suffix
+provenance and the equipment library has been trimmed into a smaller base set
+with curated affixed variants.
+
+### Added
+
+- **Structured affix provenance on Equipment** — runtime equipment now carries
+  optional `prefixId`, `suffixId`, `prefixName`, and `suffixName` fields so
+  consumers can render affixes without parsing display names.
+- **Curated affixed equipment variants** — each equipment slot keeps three base
+  templates and gains five affixed variants, backed by the existing modifier
+  catalogue rather than flavour-only names.
+- **Affix factory exports** — affix-aware item helpers are exposed through the
+  Items barrel and top-level public surface, with the public-surface snapshot
+  refreshed.
+
+### Changed
+
+- **`dropItem` rarity affix defaults** — common drops remain plain, uncommon
+  drops receive exactly one prefix or suffix, rare drops receive both prefix and
+  suffix, and unique drops remain fixed/non-procedural.
+- **`dropItemWithAffixes` unified with `dropItem`** — both paths now share the
+  same affix construction logic and preserve affix metadata while still folding
+  mechanical payload into `rolledMods` / resolved stats, passives, procs, and
+  resource interactions.
+
+### Mobile migration notes
+
+- Update `axiomancer-mobile` to `axiomancer-mechanics@0.22.0`.
+- Inventory/equipment UI should read `prefixName` / `suffixName` and the
+  structured affix IDs directly; do not parse prefixes or suffixes from
+  `item.name`.
+- Re-run inventory equip/swap delta tests after the dependency bump because
+  rare/uncommon drops can now surface affix-backed modifiers by default.
+
 ## [0.21.0] — 2026-06-14
 
 Encounter release: the story-quest board game lands, rest / loot-cache
