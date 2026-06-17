@@ -83,7 +83,8 @@ unaffected.
 
 ### Cell pins on authored enemies
 
-The 26 enemies in `ENEMY_REGISTRY` carry first-pass cell pins:
+`ENEMY_REGISTRY` holds 63 authored enemies. The 26 below carry the
+first-pass cell pins:
 
 | Enemy | Cell | Archetype |
 |---|---|---|
