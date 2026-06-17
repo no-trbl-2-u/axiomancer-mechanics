@@ -50,6 +50,21 @@
 
 ## Audit Pass Log
 
+### 2026-06-17 (Pass 81) — Z–H walk (march→iterate dispatch)
+
+**Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), ESLint fix (F), Dependency updates (G), Commit-hygiene (H).
+
+**Findings:** 1 finding (Category Z, score 2.7 — critique-73 LOW: Phase 152 affix exports missing from front-door contracts; shipped this tick at 1b578ac).
+
+**Highlights:**
+- **Z (Critique):** CRITIQUE.md Pending held 1 LOW (critique-73): Phase 152's 12 affix exports were on the locked `src/index.ts` barrel (verified at lines 127-130 values + 144-145 types) but neither `spec.md`'s Items contracts row (line 95) nor `bearings.md`'s Items group carried the annotation. Extended the spec.md row with `dropItemWithAffixes` + `composeItemName` and added a Phase 152 affix-layer note to bearings.md, restoring the per-Items-addition annotation convention (Phase 37/53/54/75/76). **Resolved at 1b578ac.**
+- **A (Tests):** 127 test files / 1821 passing (1 skipped) baseline green. No missing-test gaps ≥3.0; affix paths covered by `src/Items/e2e/affixes.engine.test.ts`.
+- **B (Spec-gaps):** Knowledge-Gaps only Q28 deferred (endgame); specs/ recommended-order DONE.
+- **C (Type-safety):** clean; no @ts-ignore / as any in non-test src.
+- **D (Dead code):** none; all affix exports reachable.
+- **E (Docs):** `docs/equipment.md` current post-Phase-152 (affix inventory + mechanics); no module without a docs counterpart.
+- **F/G/H:** ESLint green; `npm outdated` clean (no safe minor/patch bumps); working tree clean at audit start except the contract-doc edits; plan files synced.
+
 ### 2026-06-17 (Pass 80) — Z–H walk (march→iterate dispatch)
 
 **Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), ESLint fix (F), Dependency updates (G), Commit-hygiene (H).

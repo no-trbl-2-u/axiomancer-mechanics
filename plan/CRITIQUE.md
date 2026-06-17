@@ -48,13 +48,7 @@
 
 ## Pending
 
-### [LOW] api/docs — Phase 152 affix exports missing from front-door contracts
-- pass: critique-73 (commit 5d3f40a)
-- area: api
-- observation: Phase 152 added 12 affix exports (8 values: dropItemWithAffixes, prefixes, suffixes, allAffixes, getAffixById, composeItemName, affixesForSlot, AFFIX_RARITY_WEIGHTS; 4 types: DropWithAffixesOptions, AffixControl, Affix, AffixRole) to the locked src/index.ts barrel, but neither spec.md's Contracts table (Items row) nor bearings.md's CLI/API-contract Items group reflect them. The bearings convention is to inline-annotate every Items addition (cf. Phase 37/53/54/75/76 notes); Phase 152 broke that pattern. Submodule docs/equipment.md already covers the affix surface in full, so this is front-door-contract-reference drift only.
-- evidence: spec.md:95 (Items contracts row); plan/bearings.md Items group (~lines 98-113); src/index.ts:127-128,145-146 (the new exports); scripts/public-surface.expected.json (correctly updated)
-- suggested_fix: add a Phase 152 affix-exports annotation to the bearings.md Items group and extend the spec.md Items contracts row with a representative affix export (e.g. dropItemWithAffixes / composeItemName) at the next iterate tick.
-- source: critique
+<!-- No pending findings -->
 
 
 
@@ -67,6 +61,7 @@
 
 ## Done
 
+- [x] **[LOW] api/docs — Phase 152 affix exports missing from front-door contracts** — resolved at commit 1b578ac (2026-06-17). Phase 152 added 12 affix exports (8 values: `dropItemWithAffixes`, `prefixes`, `suffixes`, `allAffixes`, `getAffixById`, `composeItemName`, `affixesForSlot`, `AFFIX_RARITY_WEIGHTS`; 4 types: `DropWithAffixesOptions`, `AffixControl`, `Affix`, `AffixRole`) to the locked `src/index.ts` barrel without updating the front-door contract references. Extended the `spec.md` Items contracts row (line 95) with `dropItemWithAffixes` + `composeItemName` representatives and added a Phase 152 affix-layer annotation to the `bearings.md` Items group, restoring the inline-annotation convention used for every prior Items addition (Phase 37/53/54/75/76). Submodule `docs/equipment.md` already covered the affix surface in full; this closed the last front-door-reference gap. Source: critique-73 (commit 5d3f40a).
 - [x] **[LOW] docs — Items affix naming layer undocumented in equipment.md** — resolved at commit 134d183 (2026-06-17). Added an "Affix library inventory" subsection under the existing "Affixed variants (Phase 152)" section of `docs/equipment.md`, tabulating all 36 prefixes + 36 suffixes (word, valid slots, backing `modIds`, hidden rarity, min level) plus the barrel exports (`prefixes`, `suffixes`, `allAffixes`, `getAffixById`, `affixesForSlot`, `composeItemName`, `AFFIX_RARITY_WEIGHTS`) and the `AFFIX_RARITY_WEIGHTS` draw scale. Note: Phase 152 (shipped between the critique-72 pass and this fix) already documented the affix *mechanics* (`dropItemWithAffixes`, `AffixControl`, name composition) AND surfaced the affix exports through the top-level `src/index.ts` barrel — so this row's "sub-module gap, not top-level contract" framing is now superseded; the inventory tables close the last remaining gap. Source: critique-72 (commit 0a19981).
 - [x] **[HIGH] spec.md contracts table substantially outdated** — resolved at commit 6e9e198 (2026-06-15). spec.md Contracts table was substantially outdated, missing comprehensive coverage of all current src/index.ts exports including recent expansions to Character, Enemy, Combat, Effects, Items, Skills modules and incomplete documentation of Philosophy, Faction, NPCs, Playtest, Events module groups. Updated entire contracts table with current key exports, proper wildcard documentation for minigame modules, and complete alignment with actual public API surface. Source: critique-69 (commit 6043d33).
 - [x] **[HIGH] api — spec.md contracts table missing 8 module groups** — resolved at commits 3ce9167 + c09efb9 (2026-06-14). spec.md "Contracts" table was missing 8 module groups (Rest, LootCache, Philosophy, Faction, NPCs, Playtest, Utils, Events) that are exported from src/index.ts barrel. Added missing module group rows to contracts table. Front-door documentation now accurately reflects complete public API surface. Source: critique-69 (commit 6043d33).
