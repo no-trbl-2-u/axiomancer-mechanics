@@ -82,7 +82,7 @@ interface UniqueItemTemplate extends EquipmentTemplate {
 Templates live in [`src/Items/equipment.templates.ts`](../src/Items/equipment.templates.ts)
 (56 entries — 3 **base** templates + 5 curated **affixed variants** per slot,
 across 7 slots) and
-[`src/Items/unique.templates.ts`](../src/Items/unique.templates.ts) (2 entries).
+[`src/Items/unique.templates.ts`](../src/Items/unique.templates.ts) (7 entries).
 A template is the authored data — `dropItem` turns it into a runtime
 `Equipment` instance with rolled modifiers. The base templates span three
 progression tiers by `requiredLevel` (1 / 10 / 20); the affixed variants are
@@ -165,10 +165,19 @@ hidden-rarity weight table.
 
 ### Unique templates (Spec 05c §7 / Spec 05d §8)
 
-| ID             | Slot      | requiredLevel | fixedModIds (canonical Spec 05d catalogue IDs) |
-|----------------|-----------|---------------|--------------------------------------------------------|
-| `axioms-edge`  | weapon    | 5             | `wm-flat-damage`, `wm-body-gen`, `um-paradox-edge`     |
-| `paradox-loop` | accessory | 15            | `am-stance-res`, `am-proc-boost`, `um-resonance-prime` |
+Seven curated Uniques — the 2 originals plus 5 from the 2026-06-07 mid/late-game
+content pass. `phoenix-mantle` and `titans-girdle` carry `setMembership:
+'embers-of-rebirth'` (Spec 05e).
+
+| ID                  | Slot      | requiredLevel | fixedModIds (canonical Spec 05d catalogue IDs)            |
+|---------------------|-----------|---------------|-----------------------------------------------------------|
+| `axioms-edge`       | weapon    | 5             | `wm-flat-damage`, `wm-body-gen`, `um-paradox-edge`        |
+| `paradox-loop`      | accessory | 15            | `am-stance-res`, `am-proc-boost`, `um-resonance-prime`    |
+| `prometheus-brand`  | weapon    | 25            | `wm-flat-damage`, `wm-bleeding-edge`, `um-promethean-spark` |
+| `gorgon-fang`       | weapon    | 30            | `wm-mind-rend`, `wm-crit-damage`, `um-gorgon-stare`       |
+| `phoenix-mantle`    | armor     | 35            | `armm-regen`, `armm-aegis`, `um-phoenix-heart`            |
+| `oracle-eye`        | accessory | 40            | `am-all-attunement`, `am-regen`, `um-resonance-prime`     |
+| `titans-girdle`     | body      | 45            | `bm-vitality`, `bm-damage-reduction`, `bm-thorns-proc`    |
 
 ### Affixed variants (Phase 152)
 
@@ -663,7 +672,7 @@ Sources: [`src/Items/equipment.templates.ts`](../src/Items/equipment.templates.t
 See the [Base template list](#base-template-list-spec-05c-§6),
 [Affixed variants](#affixed-variants-phase-152), and
 [Unique templates](#unique-templates-spec-05c-§7) above for the active
-56 + 2 template set (3 base + 5 affixed variants per slot, plus 2 uniques).
+56 + 7 template set (3 base + 5 affixed variants per slot, plus 7 uniques).
 Templates carry only base identity and a `baseStatModifiers`
 floor; rarity, rolled mods, and the rest of the instance shape are decided
 by `dropItem` at drop time. Spec 05d will layer themed mod pools and proc
