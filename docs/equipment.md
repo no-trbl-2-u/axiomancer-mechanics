@@ -80,10 +80,13 @@ interface UniqueItemTemplate extends EquipmentTemplate {
 ```
 
 Templates live in [`src/Items/equipment.templates.ts`](../src/Items/equipment.templates.ts)
-(21 entries, 7 slots × 3 progression tiers by `requiredLevel`) and
+(56 entries — 3 **base** templates + 5 curated **affixed variants** per slot,
+across 7 slots) and
 [`src/Items/unique.templates.ts`](../src/Items/unique.templates.ts) (2 entries).
 A template is the authored data — `dropItem` turns it into a runtime
-`Equipment` instance with rolled modifiers.
+`Equipment` instance with rolled modifiers. The base templates span three
+progression tiers by `requiredLevel` (1 / 10 / 20); the affixed variants are
+authored prefixed/suffixed items (see **[Affixed variants](#affixed-variants-phase-152)**).
 
 ### `dropItem` factory
 
@@ -93,6 +96,7 @@ function dropItem(
     playerLevel: number,
     rarity?: ItemRarity,         // omit to draw from the weighted table
     rng?: () => number,          // defaults to Math.random
+    affix?: AffixControl,        // omit for classic affix-free drops
 ): Equipment;
 ```
 
@@ -106,9 +110,14 @@ Pipeline (per [`src/Items/item.factory.ts`](../src/Items/item.factory.ts)):
 3. Assert `playerLevel >= template.requiredLevel`.
 4. Call `rollModifiers(template, rarity, playerLevel, rng)` to produce the
    `RolledModifier[]` payload.
-5. Call `resolveModifiers(template, rolledMods)` to merge base stats and
+5. If the `affix` control is enabled (or the template is a curated affixed
+   variant), layer prefix/suffix affixes on top per the rarity defaults
+   (see below), folding each affix's `modIds` into the rolled-mod set.
+6. Call `resolveModifiers(template, rolledMods)` to merge base stats and
    rolled-mod payloads into the final `statModifiers`.
-6. Return the fully-formed `Equipment` instance.
+7. Return the fully-formed `Equipment` instance, stamped with affix
+   provenance (`prefixId` / `suffixId` / `prefixName` / `suffixName`) and a
+   composed `name` when affixes were applied.
 
 **Determinism:** every random draw inside the factory consumes from the
 caller-supplied `rng`. Two calls with the same seeded `rng` return identical
@@ -160,6 +169,37 @@ hidden-rarity weight table.
 |----------------|-----------|---------------|--------------------------------------------------------|
 | `axioms-edge`  | weapon    | 5             | `wm-flat-damage`, `wm-body-gen`, `um-paradox-edge`     |
 | `paradox-loop` | accessory | 15            | `am-stance-res`, `am-proc-boost`, `um-resonance-prime` |
+
+### Affixed variants (Phase 152)
+
+Each slot ships **5 curated affixed variants** alongside its 3 base templates.
+An affixed variant is an `EquipmentTemplate` that names a source affix from
+[`src/Items/affix.library.ts`](../src/Items/affix.library.ts) via `prefixId`
+and/or `suffixId`. At drop time the factory always applies these pinned
+affixes — folding the affix's `modIds` into the rolled-mod set and composing
+the player-visible name via `composeItemName` (e.g. the `keen-iron-blade`
+variant drops as **"Keen Iron Blade"**, `venomous-mithril-blade-of-frost` as
+**"Venomous Mithril Blade of Frost"**). The dropped instance records the
+affix provenance in `prefixId` / `suffixId` / `prefixName` / `suffixName`.
+
+#### Procedural affixes via the `AffixControl`
+
+`dropItem`'s optional `affix?: AffixControl` parameter (and the convenience
+`dropItemWithAffixes` wrapper) layer **procedural** affixes on a base template.
+When enabled, the number of affixes follows the rarity defaults:
+
+| Rarity   | Procedural affixes                                      |
+|----------|--------------------------------------------------------|
+| common   | none                                                   |
+| uncommon | exactly one — prefix **or** suffix (rng coin flip)     |
+| rare     | both — one prefix **and** one suffix                   |
+| unique   | none (a unique's identity is its three fixed mods)     |
+
+`AffixControl` also exposes `maxPrefixes` / `maxSuffixes` caps (which bypass
+the uncommon coin flip) and `pinPrefixId` / `pinSuffixId` to force a specific
+affix. Omitting the `affix` parameter entirely keeps the classic affix-free
+`dropItem` behaviour. Curated affixed variants always apply their pinned
+affixes regardless of the `affix` argument.
 
 ### `EquipmentProcTrigger`
 
@@ -526,9 +566,11 @@ Sources: [`src/Items/equipment.templates.ts`](../src/Items/equipment.templates.t
 
 ### Equipment templates (Spec 05c)
 
-See the [Base template list](#base-template-list-spec-05c-§6) and
-[Unique templates](#unique-templates-spec-05c-§7) above for the active 21+2
-template set. Templates carry only base identity and a `baseStatModifiers`
+See the [Base template list](#base-template-list-spec-05c-§6),
+[Affixed variants](#affixed-variants-phase-152), and
+[Unique templates](#unique-templates-spec-05c-§7) above for the active
+56 + 2 template set (3 base + 5 affixed variants per slot, plus 2 uniques).
+Templates carry only base identity and a `baseStatModifiers`
 floor; rarity, rolled mods, and the rest of the instance shape are decided
 by `dropItem` at drop time. Spec 05d will layer themed mod pools and proc
 triggers onto the rolled-mod catalogue.

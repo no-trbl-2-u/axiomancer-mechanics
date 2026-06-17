@@ -34,7 +34,7 @@ export {
     previewTemplateAtRarity, previewTemplateAtAllRarities,
     dropItemWithAffixes,
 } from './item.factory';
-export type { DropWithAffixesOptions } from './item.factory';
+export type { DropWithAffixesOptions, AffixControl } from './item.factory';
 export {
     prefixes, suffixes, allAffixes, getAffixById,
     composeItemName, affixesForSlot, AFFIX_RARITY_WEIGHTS,

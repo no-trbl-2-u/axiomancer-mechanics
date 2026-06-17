@@ -125,14 +125,14 @@ Verification:
 
 ## Definition of Done
 
-- `Equipment` type exposes `prefixId`, `suffixId`, `prefixName`, and `suffixName`.
-- `dropItem` can produce affixed items using rarity defaults without callers needing the side factory.
-- `dropItemWithAffixes` still works and populates structured provenance.
-- Regular base equipment library is reduced to 3 templates per slot/family.
-- 5 affixed item entries exist per slot/family.
-- All removed template IDs are cleaned from call sites/tests/docs.
-- Hermetic e2e tests prove both mechanics and persistence of affixes.
-- `npm run verify` and `npm run deploy:check` are green.
+- [x] `Equipment` type exposes `prefixId`, `suffixId`, `prefixName`, and `suffixName`.
+- [x] `dropItem` can produce affixed items using rarity defaults without callers needing the side factory.
+- [x] `dropItemWithAffixes` still works and populates structured provenance.
+- [x] Regular base equipment library is reduced to 3 templates per slot/family.
+- [x] 5 affixed item entries exist per slot/family.
+- [x] All removed template IDs are cleaned from call sites/tests/docs.
+- [x] Hermetic e2e tests prove both mechanics and persistence of affixes.
+- [x] `npm run verify` and `npm run deploy:check` are green.
 
 ## Follow-ups out of scope
 

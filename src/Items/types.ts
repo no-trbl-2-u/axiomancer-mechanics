@@ -146,6 +146,16 @@ export interface ResourceInteraction {
  *                              by a skill's per-skill `critStyle` (Spec 04+).
  * @property resourceInteraction - Optional combat-start token grants and per-
  *                                 action generation bonuses (Spec 05 Q10C).
+ * @property prefixId         - Affix provenance (Phase 152). When the instance
+ *                              was decorated with a prefix affix, this is the
+ *                              source `Affix.id`. Provenance only — the affix's
+ *                              mechanical payload already lives in `rolledMods`
+ *                              and the resolved `statModifiers` / proc fields.
+ * @property suffixId         - As `prefixId`, for a trailing suffix affix.
+ * @property prefixName       - The prefix affix's display `word` (Phase 152),
+ *                              cached so consumers can render the affix label
+ *                              without re-resolving the affix library.
+ * @property suffixName       - As `prefixName`, for the suffix affix.
  */
 export interface Equipment extends BaseItem {
     category: 'equipment';
@@ -159,6 +169,10 @@ export interface Equipment extends BaseItem {
     onDefendEffects?: EquipmentProcTrigger[];
     critStyle?: 'double' | 'pierce';
     resourceInteraction?: ResourceInteraction;
+    prefixId?: string;
+    suffixId?: string;
+    prefixName?: string;
+    suffixName?: string;
 }
 
 /**
@@ -193,6 +207,17 @@ export interface EquipmentTemplate {
      */
     addedIn?: string;
     tags?: string[];
+    /**
+     * Curated affix provenance (Phase 152). When a library entry is an
+     * authored prefixed/suffixed variant of a base item, these name the
+     * source affixes in `affix.library`. `dropItem` applies them
+     * deterministically on top of the rarity-default affix roll, folding
+     * the affix `modIds` into `rolledMods` and stamping `prefixId` /
+     * `suffixId` / `prefixName` / `suffixName` onto the dropped instance.
+     * A curated affix overrides the rarity-default affix for that role.
+     */
+    prefixId?: string;
+    suffixId?: string;
 }
 
 /**

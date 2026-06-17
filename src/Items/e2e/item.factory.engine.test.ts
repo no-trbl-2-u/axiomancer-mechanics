@@ -61,24 +61,33 @@ afterEach(() => {
 
 // ─── Templates inventory ────────────────────────────────────────────────────
 
-describe('equipment.templates: inventory (Spec 05c §6)', () => {
-    it('exports the full expanded template library (>= 43 entries)', () => {
-        // Original 21 (7 slots × lvl 1/10/20) + 2026-06-07 content pass.
-        expect(equipmentTemplates.length).toBeGreaterThanOrEqual(43);
+describe('equipment.templates: inventory (Spec 05c §6 / Phase 152)', () => {
+    it('exports 3 base + 5 affixed variants per slot × 7 slots = 56 entries', () => {
+        // Phase 152 reshape: the library is now 3 base templates (lvl 1/10/20)
+        // plus 5 curated prefixed/suffixed variants per slot.
+        expect(equipmentTemplates).toHaveLength(56);
     });
 
-    it('every slot covers the original lvl 1 / 10 / 20 tiers ascending', () => {
+    it('every slot ships 3 base templates at lvl 1 / 10 / 20 + 5 affixed variants, ascending', () => {
         const slots = ['weapon', 'armor', 'head', 'body', 'hands', 'feet', 'accessory'] as const;
         for (const slot of slots) {
             const list = getTemplatesBySlot(slot);
-            expect(list.length).toBeGreaterThanOrEqual(3);
+            expect(list).toHaveLength(8); // 3 base + 5 affixed variants
             // `getTemplatesBySlot` sorts ascending by requiredLevel.
             const levels = list.map(t => t.requiredLevel);
             const sorted = [...levels].sort((a, b) => a - b);
             expect(levels).toEqual(sorted);
-            for (const lvl of [1, 10, 20]) {
-                expect(levels).toContain(lvl);
-            }
+
+            // The three *base* (affix-free) templates cover lvl 1/10/20.
+            const baseLevels = list
+                .filter(t => !t.prefixId && !t.suffixId)
+                .map(t => t.requiredLevel)
+                .sort((a, b) => a - b);
+            expect(baseLevels).toEqual([1, 10, 20]);
+
+            // Exactly 5 curated affixed variants per slot.
+            const affixed = list.filter(t => t.prefixId || t.suffixId);
+            expect(affixed, `slot ${slot} affixed count`).toHaveLength(5);
         }
     });
 

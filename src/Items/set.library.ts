@@ -80,7 +80,7 @@ const veteransPlate: ItemSet = {
     id: 'veterans-plate',
     name: "Veteran's Plate",
     description: 'Heavy field plate worn by soldiers who expect to come home.',
-    memberTemplateIds: ['runed-cuirass', 'full-helm', 'plate-gauntlets', 'iron-greaves'],
+    memberTemplateIds: ['plate-mail', 'full-helm', 'plate-gauntlets', 'iron-greaves'],
     bonuses: {
         2: {
             statModifiers: [
@@ -102,7 +102,7 @@ const sagesRegalia: ItemSet = {
     id: 'sages-regalia',
     name: "Sage's Regalia",
     description: 'The studious vestments of one who reasons faster than they bleed.',
-    memberTemplateIds: ['sage-circlet', 'warded-robe', 'jade-amulet'],
+    memberTemplateIds: ['full-helm', 'scaled-coat', 'gold-ring'],
     bonuses: {
         2: {
             statModifiers: [
@@ -138,7 +138,7 @@ const skirmishersKit: ItemSet = {
     id: 'skirmishers-kit',
     name: "Skirmisher's Kit",
     description: 'Light gear for those who win by never standing still.',
-    memberTemplateIds: ['swiftstride-boots', 'leather-coat', 'chain-gauntlets'],
+    memberTemplateIds: ['iron-greaves', 'leather-coat', 'chain-gauntlets'],
     bonuses: {
         2: {
             statModifiers: [

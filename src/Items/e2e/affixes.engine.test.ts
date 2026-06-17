@@ -17,6 +17,7 @@
 import { afterEach, describe, it, expect, vi } from 'vitest';
 
 import {
+    dropItem,
     dropItemWithAffixes,
     getEquipmentTemplate,
     getModifierById,
@@ -26,6 +27,7 @@ import {
     allAffixes,
     prefixes,
     suffixes,
+    equipmentTemplates,
 } from '../index';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -293,5 +295,133 @@ describe('Phase 151: new affixes are reachable through generation', () => {
             proven = true;
         }
         expect(proven).toBe(true);
+    });
+});
+
+// ─── Phase 152 — unified factory: rarity-default affixes + provenance ─────────
+
+describe('Phase 152: dropItem rarity-default affixes', () => {
+    it('common drops carry no procedural affix even with affixes enabled', () => {
+        const drop = dropItem('iron-blade', 25, 'common', seededRng(7), { enabled: true });
+        expect(drop.prefixId).toBeUndefined();
+        expect(drop.suffixId).toBeUndefined();
+        expect(drop.name).toBe(getEquipmentTemplate('iron-blade')!.name);
+    });
+
+    it('uncommon drops carry exactly one affix (prefix XOR suffix)', () => {
+        // Sweep seeds; every uncommon drop must carry exactly one of the two
+        // affix roles, and across the sweep both roles must appear.
+        let sawPrefixOnly = false;
+        let sawSuffixOnly = false;
+        for (let s = 1; s <= 60; s++) {
+            const drop = dropItem('iron-blade', 25, 'uncommon', seededRng(s), { enabled: true });
+            const hasPrefix = Boolean(drop.prefixId);
+            const hasSuffix = Boolean(drop.suffixId);
+            expect(hasPrefix && hasSuffix, `seed ${s} should not carry both`).toBe(false);
+            if (hasPrefix) sawPrefixOnly = true;
+            if (hasSuffix) sawSuffixOnly = true;
+        }
+        expect(sawPrefixOnly).toBe(true);
+        expect(sawSuffixOnly).toBe(true);
+    });
+
+    it('rare drops carry both a prefix and a suffix', () => {
+        const drop = dropItem('iron-blade', 25, 'rare', seededRng(11), { enabled: true });
+        expect(drop.prefixId).toBeDefined();
+        expect(drop.suffixId).toBeDefined();
+        expect(drop.prefixName).toBeDefined();
+        expect(drop.suffixName).toBeDefined();
+        // Composed name surrounds the base name with both affix words.
+        const base = getEquipmentTemplate('iron-blade')!.name;
+        expect(drop.name).toContain(base);
+        expect(drop.name.startsWith(`${drop.prefixName} `)).toBe(true);
+        expect(drop.name.endsWith(` ${drop.suffixName}`)).toBe(true);
+    });
+
+    it('without the affix param dropItem stays affix-free (back-compat)', () => {
+        const drop = dropItem('iron-blade', 25, 'rare', seededRng(11));
+        expect(drop.prefixId).toBeUndefined();
+        expect(drop.suffixId).toBeUndefined();
+        expect(drop.name).toBe(getEquipmentTemplate('iron-blade')!.name);
+    });
+
+    it('provenance fields resolve to real affixes whose mods are in rolledMods', () => {
+        const drop = dropItem('iron-blade', 40, 'rare', seededRng(3), { enabled: true });
+        const prefix = getAffixById(drop.prefixId!);
+        const suffix = getAffixById(drop.suffixId!);
+        expect(prefix).toBeDefined();
+        expect(suffix).toBeDefined();
+        const rolledIds = new Set(drop.rolledMods!.map(m => m.modId));
+        for (const modId of [...prefix!.modIds, ...suffix!.modIds]) {
+            expect(rolledIds.has(modId), `mod ${modId} present in rolledMods`).toBe(true);
+        }
+    });
+
+    it('unique templates never receive procedural affixes', () => {
+        const drop = dropItem('axioms-edge', 10, undefined, seededRng(5), { enabled: true });
+        expect(drop.rarity).toBe('unique');
+        expect(drop.prefixId).toBeUndefined();
+        expect(drop.suffixId).toBeUndefined();
+        expect(drop.name).toBe("Axiom's Edge");
+    });
+});
+
+// ─── Phase 152 — curated affixed library variants ────────────────────────────
+
+describe('Phase 152: curated affixed library variants', () => {
+    const affixedVariants = equipmentTemplates.filter(t => t.prefixId || t.suffixId);
+
+    it('ships exactly 5 affixed variants per slot (35 total)', () => {
+        expect(affixedVariants).toHaveLength(35);
+        const slots = ['weapon', 'armor', 'head', 'body', 'hands', 'feet', 'accessory'] as const;
+        for (const slot of slots) {
+            expect(affixedVariants.filter(t => t.slot === slot)).toHaveLength(5);
+        }
+    });
+
+    it('every curated affix id resolves and matches the variant slot + role', () => {
+        for (const tpl of affixedVariants) {
+            if (tpl.prefixId) {
+                const affix = getAffixById(tpl.prefixId);
+                expect(affix, `prefix ${tpl.prefixId} on ${tpl.id}`).toBeDefined();
+                expect(affix!.role).toBe('prefix');
+                expect(affix!.validSlots).toContain(tpl.slot);
+            }
+            if (tpl.suffixId) {
+                const affix = getAffixById(tpl.suffixId);
+                expect(affix, `suffix ${tpl.suffixId} on ${tpl.id}`).toBeDefined();
+                expect(affix!.role).toBe('suffix');
+                expect(affix!.validSlots).toContain(tpl.slot);
+            }
+        }
+    });
+
+    it('a curated prefixed variant drops with the composed name + provenance, regardless of affix param', () => {
+        // `keen-iron-blade` pins pfx-keen; the drop must stamp the prefix even
+        // though no `affix` control is passed (curated pins always apply).
+        const drop = dropItem('keen-iron-blade', 5, 'common', seededRng(2));
+        expect(drop.prefixId).toBe('pfx-keen');
+        expect(drop.prefixName).toBe('Keen');
+        expect(drop.name).toBe('Keen Iron Blade');
+        // The pinned affix's mod (wm-flat-damage) is folded into the rolled mods.
+        const tpl = getEquipmentTemplate('keen-iron-blade')!;
+        const affix = getAffixById(tpl.prefixId!)!;
+        const rolledIds = new Set(drop.rolledMods!.map(m => m.modId));
+        for (const modId of affix.modIds) {
+            expect(rolledIds.has(modId)).toBe(true);
+        }
+    });
+
+    it('a curated prefix+suffix variant composes both around the base name', () => {
+        const drop = dropItem('venomous-mithril-blade-of-frost', 20, 'common', seededRng(4));
+        expect(drop.prefixId).toBe('pfx-venomous');
+        expect(drop.suffixId).toBe('sfx-of-frost');
+        expect(drop.name).toBe('Venomous Mithril Blade of Frost');
+    });
+
+    it('curated drops are deterministic for a seeded rng', () => {
+        const a = dropItem('savage-mithril-blade-of-ruin', 20, 'common', seededRng(9));
+        const b = dropItem('savage-mithril-blade-of-ruin', 20, 'common', seededRng(9));
+        expect(a).toEqual(b);
     });
 });
