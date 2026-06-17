@@ -50,6 +50,23 @@
 
 ## Audit Pass Log
 
+### 2026-06-17 (Pass 78) — Full categories Z–H
+
+**Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), ESLint fix (F), Dependency updates (G), Commit-hygiene (H).
+
+**Findings:** 1 finding (Category E, score 3.6 — `docs/enemy.md` stale ENEMY_REGISTRY roster count; shipped this tick).
+
+**Highlights:**
+- **Z (Critique):** CRITIQUE.md Pending empty (last pass 71, all resolved).
+- **A (Tests):** 127 test files / 1810 passing (1 skipped) baseline green. Comprehensive `*.engine.test.ts` coverage across all 15 modules. No missing-test gaps ≥3.0.
+- **B (Spec-gaps):** AUDIT Pending 0; Knowledge-Gaps only Q28 deferred (endgame); specs/ answered.
+- **C (Type-safety):** Zero `@ts-ignore`/`as any`/`as unknown` in production `src/` (non-test). Clean.
+- **D (Dead code):** No orphaned modules; barrel exports clean.
+- **E (Docs):** **FINDING (shipped this tick)** — `docs/enemy.md:86` said "The 26 enemies in `ENEMY_REGISTRY`", but `src/Enemy/enemy.library.ts` `ENEMY_REGISTRY` (lines 2427–2499) now holds 63 entries. The "26" was a stale count conflating the first-pass cell-pin table (which lists exactly 26 enemies) with the full registry, which has grown across Phases 114/121/127 and the 2026-06-07 early/mid/late-game batches. Reworded the sentence to distinguish the 63-entry registry from the 26-enemy cell-pin subset shown in the table. Score: impact 4 × ease 9 / 10 = 3.6.
+- **F (ESLint):** `npm run lint` green.
+- **G (Dependencies):** `npm outdated` clean — no updates available.
+- **H (Commit hygiene):** Working tree clean at audit start.
+
 ### 2026-06-16 (Pass 77) — Full categories Z–H
 
 **Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), ESLint fix (F), Dependency updates (G), Commit-hygiene (H).
