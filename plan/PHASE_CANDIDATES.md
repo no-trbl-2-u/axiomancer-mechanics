@@ -119,6 +119,12 @@
 
 ## Promoted
 
+### Phase 152 — Affix item library wiring and curated prefixed/suffixed gear
+- promoted: 2026-06-17 by T direct steering; priority override above all else.
+- source: T accepted the affix-audit verdict and specified the implementation law: add `prefixId`/`suffixId` plus `prefixName`/`suffixName`, make `dropItemWithAffixes` populate them, add affix defaults to `dropItem` by rarity, trim the item library, and add curated prefixed/suffixed items.
+- brief: `plan/phases/phase_152_affix_item_library_wiring.md`
+- build-plan row: `plan/steps/01_build_plan.md`
+
 ### Phase 151 — Item modifier catalogue audit and expansion
 - promoted: 2026-06-16 by T direct steering
 - source: T requested an audit of item modifiers (prefixes and suffixes), then adding exactly 20 prefixes and 20 suffixes.
