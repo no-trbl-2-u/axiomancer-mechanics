@@ -201,6 +201,100 @@ affix. Omitting the `affix` parameter entirely keeps the classic affix-free
 `dropItem` behaviour. Curated affixed variants always apply their pinned
 affixes regardless of the `affix` argument.
 
+#### Affix library inventory
+
+The naming layer is data in [`src/Items/affix.library.ts`](../src/Items/affix.library.ts),
+exported through the package barrel as `prefixes`, `suffixes`, `allAffixes`,
+`getAffixById`, `affixesForSlot`, `composeItemName`, and `AFFIX_RARITY_WEIGHTS`.
+Each `Affix` couples a display `word` to one or more existing catalogue
+`modIds` (see [Modifiers](#modifiers-spec-05d)); it never introduces new
+stats. `affixesForSlot(slot, level, role)` returns the declaration-ordered
+candidates whose `validSlots` include the slot and whose `minLevel <= level`.
+Affix draws reuse the hidden-mod rarity scale (`AFFIX_RARITY_WEIGHTS`:
+`common_mod` 10 / `uncommon_mod` 3 / `rare_mod` 1).
+
+**Prefixes (36)** — lead the item name (`"<word> <base>"`):
+
+| Affix id | Word | Slots | Mod ids | Rarity | Min lvl |
+|----------|------|-------|---------|--------|---------|
+| `pfx-keen` | Keen | weapon | `wm-flat-damage` | common | 1 |
+| `pfx-honed` | Honed | weapon | `wm-skill-edge` | common | 1 |
+| `pfx-vicious` | Vicious | weapon | `wm-flat-damage`, `wm-crit-rate` | uncommon | 10 |
+| `pfx-savage` | Savage | weapon | `wm-crit-damage` | rare | 20 |
+| `pfx-vampiric` | Vampiric | weapon | `wm-lifesteal` | uncommon | 1 |
+| `pfx-crushing` | Crushing | hands | `hndm-strength` | common | 1 |
+| `pfx-fortified` | Fortified | body | `bm-armor` | common | 1 |
+| `pfx-hardened` | Hardened | armor | `armm-defense` | common | 1 |
+| `pfx-stalwart` | Stalwart | body | `bm-vitality` | common | 1 |
+| `pfx-swift` | Swift | feet | `fm-evasion` | common | 1 |
+| `pfx-phantom` | Phantom | feet | `fm-evasion-proc` | uncommon | 10 |
+| `pfx-warded` | Warded | head | `hm-mental-defense` | common | 1 |
+| `pfx-sage` | Sage | head | `hm-insight` | uncommon | 5 |
+| `pfx-balanced` | Balanced | accessory | `am-cross-stat` | common | 1 |
+| `pfx-resonant` | Resonant | accessory | `am-stance-res` | uncommon | 1 |
+| `pfx-blazing` | Blazing | weapon | `wm-bleeding-edge` | uncommon | 10 |
+| `pfx-venomous` | Venomous | weapon | `wm-venom-coat` | uncommon | 1 |
+| `pfx-frostbitten` | Frostbitten | weapon | `wm-frost-brand` | uncommon | 10 |
+| `pfx-storming` | Storming | weapon | `wm-storm-edge` | rare | 15 |
+| `pfx-stunning` | Stunning | weapon | `wm-dazing-pommel` | uncommon | 5 |
+| `pfx-baleful` | Baleful | weapon | `wm-status-amp` | rare | 10 |
+| `pfx-channeling` | Channeling | weapon | `wm-mind-gen` | common | 1 |
+| `pfx-calculating` | Calculating | hands | `hndm-mind-gen` | common | 1 |
+| `pfx-resolved` | Resolved | body | `bm-heart-start` | uncommon | 1 |
+| `pfx-vanguard` | Vanguard | feet | `fm-initiative-tokens` | uncommon | 1 |
+| `pfx-shadowed` | Shadowed | feet | `fm-stealth` | rare | 10 |
+| `pfx-lucky` | Lucky | feet | `fm-luck` | uncommon | 1 |
+| `pfx-provoking` | Provoking | body | `bm-taunt-proc` | uncommon | 5 |
+| `pfx-warding` | Warding | body | `bm-barrier-proc` | rare | 10 |
+| `pfx-adamant` | Adamant | armor | `armm-body-resist` | common | 1 |
+| `pfx-sanguine` | Sanguine | armor | `armm-heart-resist` | common | 1 |
+| `pfx-reinforced` | Reinforced | armor | `armm-mhp` | uncommon | 5 |
+| `pfx-stoic` | Stoic | head | `hm-mind-resist` | common | 1 |
+| `pfx-disarming` | Disarming | hands | `hndm-disarm` | rare | 10 |
+| `pfx-dazzling` | Dazzling | hands | `hndm-blinding` | uncommon | 5 |
+| `pfx-empathic` | Empathic | head | `hm-heart-focus` | uncommon | 1 |
+
+**Suffixes (36)** — trail the item name (`"<base> <word>"`):
+
+| Affix id | Word | Slots | Mod ids | Rarity | Min lvl |
+|----------|------|-------|---------|--------|---------|
+| `sfx-of-the-bear` | of the Bear | armor | `armm-vitality` | common | 1 |
+| `sfx-of-the-ox` | of the Ox | body | `bm-vitality` | common | 1 |
+| `sfx-of-clarity` | of Clarity | head | `hm-mind-gen` | uncommon | 1 |
+| `sfx-of-insight` | of Insight | head | `hm-insight` | uncommon | 5 |
+| `sfx-of-warding` | of Warding | armor | `armm-stoic` | uncommon | 10 |
+| `sfx-of-the-fortress` | of the Fortress | body | `bm-damage-reduction` | rare | 15 |
+| `sfx-of-thorns` | of Thorns | body | `bm-reflect` | rare | 10 |
+| `sfx-of-the-fox` | of the Fox | feet | `fm-physical-save` | common | 1 |
+| `sfx-of-the-wind` | of the Wind | feet | `fm-haste` | rare | 20 |
+| `sfx-of-precision` | of Precision | hands | `hndm-crit-rate` | uncommon | 10 |
+| `sfx-of-the-duelist` | of the Duelist | hands | `hndm-counter` | rare | 20 |
+| `sfx-of-the-leech` | of the Leech | weapon | `wm-lifesteal` | uncommon | 1 |
+| `sfx-of-ruin` | of Ruin | weapon | `wm-exploit` | rare | 10 |
+| `sfx-of-mending` | of Mending | accessory | `am-regen` | uncommon | 10 |
+| `sfx-of-the-heart` | of the Heart | accessory | `am-heart-focus` | common | 1 |
+| `sfx-of-the-triune` | of the Triune | accessory | `am-all-attunement` | rare | 25 |
+| `sfx-of-venom` | of Venom | weapon | `wm-venom-coat` | uncommon | 1 |
+| `sfx-of-frost` | of Frost | weapon | `wm-frost-brand` | uncommon | 10 |
+| `sfx-of-the-tempest` | of the Tempest | weapon | `wm-storm-edge` | rare | 15 |
+| `sfx-of-malice` | of Malice | weapon | `wm-status-amp` | rare | 10 |
+| `sfx-of-the-serpent` | of the Serpent | weapon | `wm-mind-rend` | rare | 20 |
+| `sfx-of-focus` | of Focus | weapon | `wm-mind-gen` | common | 1 |
+| `sfx-of-momentum` | of Momentum | feet | `fm-initiative-tokens` | uncommon | 1 |
+| `sfx-of-resolve` | of Resolve | body | `bm-heart-start` | uncommon | 1 |
+| `sfx-of-the-bulwark` | of the Bulwark | body | `bm-barrier-proc` | rare | 10 |
+| `sfx-of-provocation` | of Provocation | body | `bm-taunt-proc` | uncommon | 5 |
+| `sfx-of-stone` | of Stone | armor | `armm-body-resist` | common | 1 |
+| `sfx-of-the-stalwart` | of the Stalwart | armor | `armm-mhp` | uncommon | 5 |
+| `sfx-of-the-sentinel` | of the Sentinel | head | `hm-mind-resist` | common | 1 |
+| `sfx-of-purity` | of Purity | accessory | `am-cleanse` | uncommon | 5 |
+| `sfx-of-fortune` | of Fortune | accessory | `am-luck` | common | 1 |
+| `sfx-of-the-hex` | of the Hex | accessory | `am-status-amp` | rare | 10 |
+| `sfx-of-resilience` | of Resilience | accessory | `am-fortitude` | uncommon | 5 |
+| `sfx-of-shadows` | of Shadows | feet | `fm-stealth` | rare | 10 |
+| `sfx-of-the-gambler` | of the Gambler | feet | `fm-luck` | uncommon | 1 |
+| `sfx-of-silence` | of Silence | hands | `hndm-disarm` | rare | 10 |
+
 ### `EquipmentProcTrigger`
 
 ```ts
