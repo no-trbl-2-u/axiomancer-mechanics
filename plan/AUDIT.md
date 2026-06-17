@@ -50,6 +50,21 @@
 
 ## Audit Pass Log
 
+### 2026-06-17 (Pass 82) — Z–H walk (march→iterate dispatch)
+
+**Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), ESLint fix (F), Dependency updates (G), Commit-hygiene (H).
+
+**Findings:** 1 finding (Category H/E, score 2.7 — `specs/README.md` recommended-order row 16 still marked **NEXT** despite Phase 99 having shipped; shipped this tick).
+
+**Highlights:**
+- **Z (Critique):** CRITIQUE.md Pending empty (critique-73's lone LOW — Phase 152 affix front-door contracts — already drained at 1b578ac the prior tick).
+- **A (Tests):** 127 test files / 1821 passing (1 skipped) baseline green via `npm run verify`. No missing-test gaps ≥3.0.
+- **B (Spec-gaps):** Knowledge-Gaps only Q28 deferred (endgame). specs/ recommended-order now fully DONE after this fix.
+- **C (Type-safety):** clean; only the expected `.mjs` `@ts-ignore` at `src/test-utils/e2e/agent-vitest-reporter.engine.test.ts:25`.
+- **D (Dead code):** none.
+- **E/H (Docs/Hygiene — shipped):** `specs/README.md` recommended-order row 16 was marked `16 **NEXT**` pointing at `plan/phases/phase_99_unlocked_skill_access.md`, but Phase 99 shipped at `5759932` and re-shipped as Phase 141 at `aad63c5` (build plan line 55 `[x]`). Expand pass 70 had flagged this exact marker as iterate-tier docs drift. Flipped to `16 **DONE**` with the shipping-commit annotation, matching the convention of rows 1–15. **Resolved this tick.**
+- **F/G:** ESLint green; `npm outdated` clean (no safe minor/patch bumps).
+
 ### 2026-06-17 (Pass 81) — Z–H walk (march→iterate dispatch)
 
 **Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), ESLint fix (F), Dependency updates (G), Commit-hygiene (H).
