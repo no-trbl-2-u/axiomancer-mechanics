@@ -196,6 +196,7 @@ function describeResolvedEvent(event: ResolvedEvent): string {
         case 'cutscene':    return event.lines.join(' ');
         case 'hazard':      return `Hazard! (-${event.damage} HP${event.effects.length > 0 ? `, ${event.effects.length} effect${event.effects.length === 1 ? '' : 's'}` : ''})`;
         case 'loot-cache':  return `Loot cache: ${event.items.length} item${event.items.length === 1 ? '' : 's'}, ${event.currency} currency.`;
+        case 'quest':       return `Quest board: ${event.boardId}.`;
         case 'none':        return 'Nothing of note happens.';
     }
 }
