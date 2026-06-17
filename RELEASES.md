@@ -4,6 +4,15 @@ Short-form per-version summaries. For per-phase detail see
 [`CHANGELOG.md`](./CHANGELOG.md); for the release-cut ceremony see
 [`RELEASING.md`](./RELEASING.md).
 
+## 0.22.0 — 2026-06-17
+
+- Phase 152 affix wiring ships: `Equipment` now exposes structured `prefixId`, `suffixId`, `prefixName`, and `suffixName` for mobile and other consumers.
+- `dropItem` now applies rarity-based affix defaults: uncommon = one prefix or suffix, rare = prefix + suffix, unique = fixed/non-procedural.
+- `dropItemWithAffixes` shares the same construction path and preserves affix provenance while folding modifier payload into resolved stats/passives/procs/resources.
+- Equipment templates are trimmed to three base entries per slot/family plus five curated affixed variants per slot/family.
+- Public surface snapshot refreshed for the affix factory exports and expanded Equipment shape.
+- Mobile needs: bump to `axiomancer-mechanics@0.22.0`, use structured affix fields, and do not parse prefix/suffix truth from `item.name`.
+
 ## 0.21.0 — 2026-06-14
 
 - Quest Board encounter ("The Boy's Almanac") ships as the story-quest board game: sandboxed board session, `quest` MapEvent kind, board id handoff, and completion outcome tier.

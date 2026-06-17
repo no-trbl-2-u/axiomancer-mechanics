@@ -10,6 +10,14 @@ Pre-1.0.0 status: minor bumps may carry breaking public-API changes
 map exposes `.` (top-level barrel) and `./node` (Node.js adapter); no
 deep imports are part of the supported surface.
 
+## [0.22.1] — unreleased
+
+### Added
+
+### Changed
+
+### Fixed
+
 ## [0.22.0] — 2026-06-17
 
 Affix release: regular equipment drops now carry structured prefix/suffix
