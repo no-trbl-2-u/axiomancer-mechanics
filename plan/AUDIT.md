@@ -50,6 +50,23 @@
 
 ## Audit Pass Log
 
+### 2026-06-17 (Pass 85) — Z–H walk (march→iterate dispatch)
+
+**Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), ESLint fix (F), Dependency updates (G), Commit-hygiene (H).
+
+**Findings:** 0 findings ≥3.0. Queue stays empty; nothing to ship this tick.
+
+**Highlights:**
+- **Z (Critique):** CRITIQUE.md Pending empty (both critique-73 LOWs drained at 1b578ac + 134d183; no new critique pass since — 8 commits since pass 73 at 5d3f40a, below the 12-commit cadence; ~8.7h < 24h).
+- **A (Tests):** 127 test files / 1821 passing (1 skipped) baseline green via `npm test`. Every top-level module carries hermetic `*.engine.test.ts` coverage; sole `vi.spyOn(Math)` hit is the sanctioned `src/test-utils/rng.ts`. No gap ≥3.0.
+- **B (Spec-gaps):** Knowledge-Gaps only Q28 genuinely deferred (endgame, no engine work planned); specs/ recommended-order DONE.
+- **C (Type-safety):** clean — zero `as any` / `@ts-ignore` / `as unknown` / `@ts-expect-error` in non-test src.
+- **D (Dead code):** none; working tree clean at audit start; public surface fixture in sync.
+- **E (Docs):** every `src/` module has a `docs/` counterpart; enemy registry count re-verified accurate (ENEMY_REGISTRY 63 entries = docs/enemy.md "63 authored enemies") with no intervening content change.
+- **F/G/H:** ESLint green; `npm outdated` clean (no safe minor/patch bumps); working tree clean.
+
+**Disposition:** iterate failure-mode 3 (zero findings ≥3.0 + bold posture) would dispatch to `/expand`, but the expand cadence gate already failed this tick (8 commits < 20 since expand pass 70 at `2453719`, ~8.7h < 48h; identical signal cluster already yielded 0 candidates today at pass 70). Re-filing would be redundant — same disposition as passes 84/83/82/69. Returning cleanly; next tick re-dispatches once cadence elapses.
+
 ### 2026-06-17 (Pass 84) — Z–H walk (march→iterate dispatch)
 
 **Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), ESLint fix (F), Dependency updates (G), Commit-hygiene (H).
