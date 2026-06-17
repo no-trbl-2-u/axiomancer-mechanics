@@ -46,9 +46,24 @@
 
 ## Pending
 
-<!-- No pending findings -->
+- [ ] **[Z-LOW] Affix library inventory undocumented in docs/equipment.md** (critique-72) — `src/Items/affix.library.ts` ships 72 affixes (36 prefixes + 36 suffixes) that ARE surfaced through the top-level `src/index.ts` barrel (`prefixes`, `suffixes`, `allAffixes`, `getAffixById`, `composeItemName`, `affixesForSlot`, `AFFIX_RARITY_WEIGHTS`, `Affix`, `AffixRole`). Phase 152 documented the affix *mechanics* (`dropItemWithAffixes`, `AffixControl`, curated affixed variants, name composition) in the "Affixed variants" section but never listed the *catalogue inventory* — the affix words, their backing `modIds`, `validSlots`, `hiddenRarity`, and `minLevel`. (Note: the critique-72 record assumed affixes did not reach the top-level barrel; they do — `src/index.ts:129-130,144-145` — so this is a public-surface inventory gap, not merely a sub-module gap, but remains a docs-only non-breaking fix.) Impact 4 × Ease 8 / 10 = 3.2.
 
 ## Audit Pass Log
+
+### 2026-06-17 (Pass 79) — Z–H walk (march→iterate dispatch)
+
+**Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), ESLint fix (F), Dependency updates (G), Commit-hygiene (H).
+
+**Findings:** 1 finding (Category Z/E, score 3.2 — affix library inventory undocumented in docs/equipment.md; the standing critique-72 LOW, shipping this tick).
+
+**Highlights:**
+- **Z (Critique):** CRITIQUE.md pass 72 left 1 LOW Pending (affix naming layer undocumented). Re-scoped here: Phase 152 (pulled at af326a8) added the affix *mechanics* section to docs/equipment.md but not the *inventory* of 72 affix words + their mod bindings; affixes are barrel-exported via src/index.ts. Shipping the inventory tables this tick.
+- **A (Tests):** 127 test files / 1821 passing (1 skipped) baseline green. `src/Items/e2e/affixes.engine.test.ts` (+Phase 152 e2e) covers the affixed-variant + procedural-affix paths hermetically. No missing-test gaps ≥3.0.
+- **B (Spec-gaps):** AUDIT Pending only this docs row; Knowledge-Gaps only Q28 deferred (endgame); specs/ answered.
+- **C (Type-safety):** clean; no @ts-ignore / as any in non-test src.
+- **D (Dead code):** none; affix + catalogue exports all reachable.
+- **E (Docs):** the affix inventory gap (this finding). docs/equipment.md otherwise current post-Phase-152.
+- **F/G/H:** ESLint green; deps stable (no risky minor/patch bumps surfaced); plan files in sync.
 
 ### 2026-06-17 (Pass 78) — Full categories Z–H
 
