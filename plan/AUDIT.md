@@ -50,6 +50,21 @@
 
 ## Audit Pass Log
 
+### 2026-06-17 (Pass 80) — Z–H walk (march→iterate dispatch)
+
+**Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), ESLint fix (F), Dependency updates (G), Commit-hygiene (H).
+
+**Findings:** 1 finding (Category E, score 3.6 — `docs/equipment.md` stale unique-template count; shipped this tick).
+
+**Highlights:**
+- **Z (Critique):** CRITIQUE.md Pending empty (pass 72's lone LOW — affix inventory undocumented — already drained this tick at 134d183/ab044ad). Verified the freshly-shipped affix inventory tables: 36 prefixes + 36 suffixes in docs match `affix.library.ts` exactly.
+- **A (Tests):** 127 test files / 1821 passing (1 skipped) baseline green. No missing-test gaps ≥3.0.
+- **B (Spec-gaps):** AUDIT Pending only this docs row; Knowledge-Gaps only Q28 deferred (endgame); specs/ answered.
+- **C (Type-safety):** clean; no @ts-ignore / as any in non-test src.
+- **D (Dead code):** none.
+- **E (Docs):** **FINDING (shipped this tick)** — `docs/equipment.md` claims `unique.templates.ts` holds "2 entries" in three places (line 85 source pointer, the Unique-templates table at lines 168–171 listing only `axioms-edge` + `paradox-loop`, and the line-666 template-set summary "plus 2 uniques"), but `src/Items/unique.templates.ts` `uniqueTemplates` now holds **7** entries (the 2 originals + the 5 from the 2026-06-07 content pass: `gorgon-fang`, `phoenix-mantle`, `prometheus-brand`, `oracle-eye`, `titans-girdle` — the file's own header comment reads "Seven curated Uniques"). The "2" was never refreshed after that batch. NB: line 511 `uniqueModPool (6)` is the unique-only *modifier pool* count (separate concern, verified correct). Reworded the source pointer + summary and completed the Unique-templates table with all 7 rows. Score: impact 4 × ease 9 / 10 = 3.6.
+- **F/G/H:** ESLint green; `npm outdated` clean (no safe minor/patch bumps); working tree clean at audit start; plan files in sync.
+
 ### 2026-06-17 (Pass 79) — Z–H walk (march→iterate dispatch)
 
 **Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), ESLint fix (F), Dependency updates (G), Commit-hygiene (H).
