@@ -47,15 +47,7 @@
 
 ## Pending
 
-### [LOW] docs — Items affix naming layer undocumented in equipment.md
-- pass: critique-72 (commit 0a19981)
-- area: docs
-- observation: The prefix/suffix affix naming layer (`prefixes`, `suffixes`, `allAffixes`, `getAffixById`, `composeItemName`, `affixesForSlot`, `AFFIX_RARITY_WEIGHTS`, `dropItemWithAffixes`, `DropWithAffixesOptions`, `Affix`, `AffixRole`) is exported from `src/Items/index.ts` and was substantially expanded by Phase 151 (+20 prefixes, +20 suffixes via `src/Items/affix.library.ts`), but `docs/equipment.md` has zero coverage of it — no mention of `dropItemWithAffixes`, the prefix/suffix name-composition rule, or the affix→modifier coupling. The modifier catalogue and procedural-pool counts ARE documented and synced; only the affix layer that sits on top of them is absent. (Note: these affix exports are surfaced at the `Items/index.ts` sub-barrel but NOT re-exported through the top-level `src/index.ts` public contract — so this is a sub-module docs gap, not a locked-contract drift.)
-- evidence: `src/Items/index.ts:35-42` (affix exports); `src/Items/affix.library.ts:33` (`prefixes` array, Phase 151 expansion at commit 0cff192); `docs/equipment.md` (Modifiers / Procedural pools sections cover catalogue but never mention affixes)
-- suggested_fix: add an "Affixes (naming layer)" subsection to `docs/equipment.md` after the Procedural pools section documenting `dropItemWithAffixes`, the prefix/suffix `composeItemName` rule, and the affix→modIds coupling; optionally note whether the affix surface is intended to reach the top-level barrel.
-- source: critique
-
-<!-- Pool: 1 LOW (affix docs gap) -->
+<!-- Pool: empty -->
 
 
 
@@ -68,6 +60,7 @@
 
 ## Done
 
+- [x] **[LOW] docs — Items affix naming layer undocumented in equipment.md** — resolved at commit 134d183 (2026-06-17). Added an "Affix library inventory" subsection under the existing "Affixed variants (Phase 152)" section of `docs/equipment.md`, tabulating all 36 prefixes + 36 suffixes (word, valid slots, backing `modIds`, hidden rarity, min level) plus the barrel exports (`prefixes`, `suffixes`, `allAffixes`, `getAffixById`, `affixesForSlot`, `composeItemName`, `AFFIX_RARITY_WEIGHTS`) and the `AFFIX_RARITY_WEIGHTS` draw scale. Note: Phase 152 (shipped between the critique-72 pass and this fix) already documented the affix *mechanics* (`dropItemWithAffixes`, `AffixControl`, name composition) AND surfaced the affix exports through the top-level `src/index.ts` barrel — so this row's "sub-module gap, not top-level contract" framing is now superseded; the inventory tables close the last remaining gap. Source: critique-72 (commit 0a19981).
 - [x] **[HIGH] spec.md contracts table substantially outdated** — resolved at commit 6e9e198 (2026-06-15). spec.md Contracts table was substantially outdated, missing comprehensive coverage of all current src/index.ts exports including recent expansions to Character, Enemy, Combat, Effects, Items, Skills modules and incomplete documentation of Philosophy, Faction, NPCs, Playtest, Events module groups. Updated entire contracts table with current key exports, proper wildcard documentation for minigame modules, and complete alignment with actual public API surface. Source: critique-69 (commit 6043d33).
 - [x] **[HIGH] api — spec.md contracts table missing 8 module groups** — resolved at commits 3ce9167 + c09efb9 (2026-06-14). spec.md "Contracts" table was missing 8 module groups (Rest, LootCache, Philosophy, Faction, NPCs, Playtest, Utils, Events) that are exported from src/index.ts barrel. Added missing module group rows to contracts table. Front-door documentation now accurately reflects complete public API surface. Source: critique-69 (commit 6043d33).
 - [x] **[HIGH] Utils — missing primary entry point e2e test coverage** — resolved at commit c68a9c6 (2026-06-09). Added comprehensive src/Utils/e2e/utils.engine.test.ts with 18 test cases covering math utilities, string utilities, die rolling, and stat derivation functions. All tests hermetic with proper RNG stubbing via test-utils/rng.ts. Source: critique-60 (commit 1e3f6b3).

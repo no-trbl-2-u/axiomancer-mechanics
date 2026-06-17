@@ -46,7 +46,7 @@
 
 ## Pending
 
-- [ ] **[Z-LOW] Affix library inventory undocumented in docs/equipment.md** (critique-72) — `src/Items/affix.library.ts` ships 72 affixes (36 prefixes + 36 suffixes) that ARE surfaced through the top-level `src/index.ts` barrel (`prefixes`, `suffixes`, `allAffixes`, `getAffixById`, `composeItemName`, `affixesForSlot`, `AFFIX_RARITY_WEIGHTS`, `Affix`, `AffixRole`). Phase 152 documented the affix *mechanics* (`dropItemWithAffixes`, `AffixControl`, curated affixed variants, name composition) in the "Affixed variants" section but never listed the *catalogue inventory* — the affix words, their backing `modIds`, `validSlots`, `hiddenRarity`, and `minLevel`. (Note: the critique-72 record assumed affixes did not reach the top-level barrel; they do — `src/index.ts:129-130,144-145` — so this is a public-surface inventory gap, not merely a sub-module gap, but remains a docs-only non-breaking fix.) Impact 4 × Ease 8 / 10 = 3.2.
+<!-- No pending findings -->
 
 ## Audit Pass Log
 
