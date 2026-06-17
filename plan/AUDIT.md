@@ -50,6 +50,23 @@
 
 ## Audit Pass Log
 
+### 2026-06-17 (Pass 83) — Z–H walk (march→iterate dispatch)
+
+**Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), ESLint fix (F), Dependency updates (G), Commit-hygiene (H).
+
+**Findings:** 0 findings ≥3.0. Queue stays empty; nothing to ship this tick.
+
+**Highlights:**
+- **Z (Critique):** CRITIQUE.md Pending empty (critique-73 drained at 1b578ac/4a369a2; specs/README row-16 marker flipped at 038fdbf the prior two ticks).
+- **A (Tests):** 127 test files / 1821 passing (1 skipped) baseline green via `npm run verify`. Every top-level module (CLI, Character, Combat, Effects, Enemy, Faction, Game, Items, NPCs, Philosophy, Playtest, Skills, Tuning, Utils, World) carries hermetic `*.engine.test.ts` coverage; no gap ≥3.0.
+- **B (Spec-gaps):** Knowledge-Gaps only Q28 deferred (endgame); specs/ recommended-order fully DONE.
+- **C (Type-safety):** clean — all `as unknown` / `@ts-ignore` occurrences are in `*.test.ts` files (legitimate mocks: Tuning bridge fetch stubs, Combat combatant fixtures, the expected `.mjs` import at `agent-vitest-reporter.engine.test.ts:25`); zero in non-test src.
+- **D (Dead code):** none; public surface fixture in sync (`npm run deploy:check` green — values 297 / types 200, no drift).
+- **E (Docs):** all `src/` modules have a `docs/` counterpart; recurring count signals verified accurate against the built library — affixes **72/72 exact ID match** (36 prefix + 36 suffix), modifier catalogue **78** (72 procedural + 6 unique; weapon 17 / head 9 / body 9 / hands 9 / feet 9 / accessory 10 / armor 9), enemy registry **63**. No drift.
+- **F/G/H:** ESLint green; `npm outdated` clean (no safe minor/patch bumps); working tree clean at audit start.
+
+**Disposition:** iterate failure-mode 3 (zero findings ≥3.0 + bold posture) would dispatch to `/expand`, but the expand cadence gate already failed this tick (17 commits < 20; last expand pass 70 ran today at `2453719` with identical signals → 0 candidates). Re-filing would be redundant. Returning cleanly; next tick re-dispatches once cadence elapses.
+
 ### 2026-06-17 (Pass 82) — Z–H walk (march→iterate dispatch)
 
 **Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), ESLint fix (F), Dependency updates (G), Commit-hygiene (H).
