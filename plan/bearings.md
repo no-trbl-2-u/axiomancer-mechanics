@@ -110,7 +110,14 @@ Items:      addItem, removeItem, useConsumable, stackItem, Item (and variants)
             mod-visibility),
             (+ previewTemplateAtAllRarities — Phase 76 batch wrapper
             returning Record<ItemRarity, Equipment | undefined> for
-            UI tooltip / item-detail rarity-strip views)
+            UI tooltip / item-detail rarity-strip views),
+            (+ dropItemWithAffixes + prefixes / suffixes / allAffixes /
+            getAffixById / composeItemName / affixesForSlot +
+            AFFIX_RARITY_WEIGHTS, with DropWithAffixesOptions /
+            AffixControl / Affix / AffixRole types — Phase 152 affix
+            naming layer over the modifier catalogue; rolls a prefix/
+            suffix word pair onto dropped gear and composes the display
+            name)
 Game:       createGameStore, GameState, nullAdapter, persistence adapters
             (+ GameState.lastSeenAlignmentCells? — Phase 63 alignment-observer
             cache, additive optional, no GAME_STATE_VERSION bump),

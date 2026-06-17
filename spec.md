@@ -92,7 +92,7 @@ The barrel at `src/index.ts` is the contract surface. Groups:
 | Enemy | `createEnemy`, `Enemy`, `EnemyLogic`, `decideEnemyAction`, `enemyStatBudget`, `randomLogic`, `rollLoot`, `FriendshipReward`, `BefriendabilityConfig` |
 | Combat | `determineAdvantage`, `getAttackStat`, `getDefenseStat`, `applyDamage`, `heal`, `Stance`, `Action`, `CombatState`, `getEffectsResolutionOutcome`, `resolveCombatRound` |
 | Effects | `applyEffect`, `applyTier1CombatEffect`, `lookupEffect`, `Effect`, `ActiveEffect`, `EffectInteraction`, `evaluateInteractions` |
-| Items | `addItem`, `removeItem`, `useConsumable`, `Item`, `Equipment`, `dropItem`, `getActiveSetBonuses`, `ItemSet`, `previewTemplateAtRarity` |
+| Items | `addItem`, `removeItem`, `useConsumable`, `Item`, `Equipment`, `dropItem`, `dropItemWithAffixes`, `composeItemName`, `getActiveSetBonuses`, `ItemSet`, `previewTemplateAtRarity` |
 | Skills | `canUseSkill`, `executeSkill`, `learnSkill`, `Skill`, `SkillCategory`, `SkillSynergy`, `evaluateExtendedSynergyPredicate` |
 | Game | `createGameStore`, `GameState`, `gameReducer`, `createEventEmitter`, `nullAdapter`, `CodexEntry` |
 | World | `createStartingWorld`, `WorldState`, `moveToNode`, `resolveMapEvent`, `runMinigameHarness`, `MapDefinition` |
