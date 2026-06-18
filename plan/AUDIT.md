@@ -56,7 +56,7 @@
 
 **Findings:** 1 finding ≥3.0 — shipped this tick (see below). Queue otherwise empty.
 
-**Top finding (shipped):** **E (public-surface drift)** — `SkillPhaseEvent` + `ResourceEvent` missing from `src/index.ts` barrel. The `RoundEvent` discriminated union (exported from the root barrel) has nine member types; `Combat/index.ts:75-80` re-exports all nine, and `README.md:86` documents all nine as the public resolver event stream — but the root barrel `src/index.ts:89-94` re-exports only seven, silently dropping `SkillPhaseEvent` (the `phase: 'skill'` variant) and `ResourceEvent` (the `phase: 'resources'` variant). A consumer narrowing `RoundEvent` on `event.phase` cannot name those two variants by type. Impact 5 × Ease 9 / 10 = **4.5**.
+**Top finding (shipped):** **E (public-surface drift)** — `SkillPhaseEvent` + `ResourceEvent` missing from `src/index.ts` barrel. The `RoundEvent` discriminated union (exported from the root barrel) has nine member types; `Combat/index.ts:75-80` re-exports all nine, and `README.md:86` documents all nine as the public resolver event stream — but the root barrel `src/index.ts:89-94` re-exports only seven, silently dropping `SkillPhaseEvent` (the `phase: 'skill'` variant) and `ResourceEvent` (the `phase: 'resources'` variant). A consumer narrowing `RoundEvent` on `event.phase` cannot name those two variants by type. Impact 5 × Ease 9 / 10 = **4.5**. **[x] Shipped at `0a0c175`.**
 
 **Highlights (independently re-verified this pass):**
 - **Z (Critique):** CRITIQUE.md Pending empty; last critique pass 74 at `5182884` (today), 0 findings.
