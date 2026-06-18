@@ -46,13 +46,32 @@
 
 ## Pending
 
-<!-- No pending findings -->
+- [ ] **[E — docs drift] `bearings.md` Combat contract still lists removed `getResistStat`** — `plan/bearings.md:74` lists `getResistStat (deprecated)` in the Combat front-door API-contract list, but the symbol was **removed** at Phase 106 (v0.13.0). The Pass-92 fix (`45b611e`) corrected the `README.md` + `docs/api.md` references but did not touch the bearings contract list, which is the third front-door reader. Stale reference to a non-existent export. Score 5 × 9 / 10 = **4.5**.
 
 ## Done
 
 - [x] **[E — docs drift] Front-door docs referenced removed `getResistStat`** — resolved at `45b611e` (2026-06-18). `getResistStat` was removed at Phase 106 (v0.13.0) but `README.md:84` still listed it as a `_(deprecated)_` Combat stat accessor and `docs/api.md:56` called it "deprecated (use `getSaveStat`)". Dropped the README accessor entry and corrected api.md to "removed at v0.13.0 (use `getSaveStat`)". No source change (symbol already gone); verify green. Score 5 × 9 / 10 = 4.5.
 
 ## Audit Pass Log
+
+### 2026-06-18 (Pass 93) — Z–H walk (march→iterate dispatch)
+
+**Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), ESLint fix (F), Dependency updates (G), Commit-hygiene (H).
+
+**Findings:** 1 finding ≥3.0 — shipping this tick (see Pending → above). Queue otherwise empty.
+
+**Top finding (shipping):** **E (docs drift)** — `plan/bearings.md:74` still lists `getResistStat (deprecated)` in the Combat front-door API-contract list, but the symbol was **removed** at Phase 106 (v0.13.0). The Pass-92 fix (`45b611e`) corrected the `README.md` + `docs/api.md` references but missed bearings — the third front-door reader. Impact 5 × Ease 9 / 10 = **4.5**.
+
+**Highlights (independently re-verified this pass):**
+- **Z (Critique):** CRITIQUE.md Pending empty; last critique pass 74 at `5182884` (today), 0 findings.
+- **A (Tests):** `npm test` green — 127 test files / 1821 passing (1 intentional skip). Sole `vi.spyOn(Math)` hit is the sanctioned `src/test-utils/rng.ts`; all 9 `as any`/`@ts-ignore` hits are test/e2e files.
+- **B (Spec-gaps):** Knowledge-Gaps only Q28 deferred (endgame); `> Your answer:` blanks are template/instruction files only.
+- **C (Type-safety):** clean — zero `as any`/`as unknown`/`@ts-ignore` over non-test src.
+- **D (Dead code):** no `TODO`/`FIXME`/`HACK` markers in non-test src.
+- **E (Docs):** the `getResistStat` bearings-contract stale-reference above is the live finding — Pass 92 drained the README + api.md references but the bearings front-door contract list was a third lingering reference not swept then.
+- **F (Lint):** build green. **G (Deps):** `npm outdated` clean. **H (hygiene):** `git status` clean at audit start; HEAD~1→HEAD public-surface diff shows no drift.
+
+**Disposition:** shipping the E finding (bearings stale-doc drain). Queue empty after; next tick re-dispatches per march.
 
 ### 2026-06-18 (Pass 92) — Z–H walk (march→iterate dispatch)
 
