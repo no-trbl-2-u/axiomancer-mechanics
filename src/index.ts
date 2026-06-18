@@ -89,8 +89,8 @@ export { resolveCombatRound } from './Combat';
 export type {
     RoundResolution, RoundEvent, CombatActor,
     RoundStartEvent, ActionRestrictionEvent, AdvantageEvent,
-    StanceEffectEvent, ScenarioEvent, RoundEndEvent,
-    ItemPhaseEvent,
+    StanceEffectEvent, ScenarioEvent, SkillPhaseEvent, ResourceEvent,
+    ItemPhaseEvent, RoundEndEvent,
 } from './Combat';
 
 // ─── Effects ──────────────────────────────────────────────────────────────────
