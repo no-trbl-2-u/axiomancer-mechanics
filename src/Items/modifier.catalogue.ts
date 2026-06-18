@@ -355,6 +355,290 @@ export const weaponModPool: Modifier[] = [
         addedIn: '2026-06-16',
         tags: ['weapon', 'status'],
     },
+    // ── Content expansion pass 2026-06-18 (status-family expansion) ──
+    // New status families wired to the existing debuff library so the affix
+    // layer can grow its prefix/suffix pools around them. Each is a presence
+    // proc (tier 2/3) mirroring the 2026-06-16 status mods.
+    {
+        id: 'wm-slowing',
+        name: 'Hobbling Edge',
+        hiddenRarity: 'common_mod',
+        validSlots: ['weapon'],
+        levelTiers: [
+            { levelReq: 1,  range: [1, 1] },
+            { levelReq: 20, range: [1, 1] },
+        ],
+        payload: {
+            onHitEffects: [{
+                effectId: 'debuff_slow',
+                target: 'opponent',
+                baseChance: 0.30,
+                tier: 2,
+            }],
+        },
+        addedIn: '2026-06-18',
+        tags: ['weapon', 'status', 'control'],
+    },
+    {
+        id: 'wm-marking',
+        name: 'Hunter\'s Notch',
+        hiddenRarity: 'common_mod',
+        validSlots: ['weapon'],
+        levelTiers: [
+            { levelReq: 1,  range: [1, 1] },
+            { levelReq: 20, range: [1, 1] },
+        ],
+        payload: {
+            onHitEffects: [{
+                effectId: 'debuff_mark',
+                target: 'opponent',
+                baseChance: 0.35,
+                tier: 2,
+            }],
+        },
+        addedIn: '2026-06-18',
+        tags: ['weapon', 'status', 'utility'],
+    },
+    {
+        id: 'wm-immolate',
+        name: 'Immolating Brand',
+        hiddenRarity: 'uncommon_mod',
+        validSlots: ['weapon'],
+        levelTiers: [
+            { levelReq: 5,  range: [1, 1] },
+            { levelReq: 25, range: [1, 1] },
+        ],
+        payload: {
+            onHitEffects: [{
+                effectId: 'debuff_burn',
+                target: 'opponent',
+                baseChance: 0.30,
+                tier: 2,
+            }],
+        },
+        addedIn: '2026-06-18',
+        tags: ['weapon', 'status', 'dot'],
+    },
+    {
+        id: 'wm-rending',
+        name: 'Rending Edge',
+        hiddenRarity: 'uncommon_mod',
+        validSlots: ['weapon'],
+        levelTiers: [
+            { levelReq: 10, range: [1, 1] },
+            { levelReq: 30, range: [1, 1] },
+        ],
+        payload: {
+            onHitEffects: [{
+                effectId: 'debuff_wound',
+                target: 'opponent',
+                baseChance: 0.30,
+                tier: 2,
+            }],
+        },
+        addedIn: '2026-06-18',
+        tags: ['weapon', 'status', 'dot'],
+    },
+    {
+        id: 'wm-plague-edge',
+        name: 'Plague Edge',
+        hiddenRarity: 'uncommon_mod',
+        validSlots: ['weapon'],
+        levelTiers: [
+            { levelReq: 10, range: [1, 1] },
+            { levelReq: 30, range: [1, 1] },
+        ],
+        payload: {
+            onHitEffects: [{
+                effectId: 'debuff_disease',
+                target: 'opponent',
+                baseChance: 0.25,
+                tier: 2,
+            }],
+        },
+        addedIn: '2026-06-18',
+        tags: ['weapon', 'status', 'dot'],
+    },
+    {
+        id: 'wm-withering',
+        name: 'Withering Edge',
+        hiddenRarity: 'uncommon_mod',
+        validSlots: ['weapon'],
+        levelTiers: [
+            { levelReq: 15, range: [1, 1] },
+            { levelReq: 35, range: [1, 1] },
+        ],
+        payload: {
+            onHitEffects: [{
+                effectId: 'debuff_hp_decay',
+                target: 'opponent',
+                baseChance: 0.25,
+                tier: 2,
+            }],
+        },
+        addedIn: '2026-06-18',
+        tags: ['weapon', 'status', 'dot'],
+    },
+    {
+        id: 'wm-heartbreak',
+        name: 'Heartbreak Edge',
+        hiddenRarity: 'uncommon_mod',
+        validSlots: ['weapon'],
+        levelTiers: [
+            { levelReq: 10, range: [1, 1] },
+            { levelReq: 30, range: [1, 1] },
+        ],
+        payload: {
+            onHitEffects: [{
+                effectId: 'debuff_vulnerability_heart',
+                target: 'opponent',
+                baseChance: 0.25,
+                tier: 2,
+            }],
+        },
+        addedIn: '2026-06-18',
+        tags: ['weapon', 'status', 'emotional'],
+    },
+    {
+        id: 'wm-toxic-edge',
+        name: 'Toxic Edge',
+        hiddenRarity: 'rare_mod',
+        validSlots: ['weapon'],
+        levelTiers: [
+            { levelReq: 20, range: [1, 1] },
+            { levelReq: 40, range: [1, 1] },
+        ],
+        payload: {
+            onHitEffects: [{
+                effectId: 'debuff_strong_poison',
+                target: 'opponent',
+                baseChance: 0.25,
+                tier: 3,
+            }],
+        },
+        addedIn: '2026-06-18',
+        tags: ['weapon', 'status', 'dot'],
+    },
+    {
+        id: 'wm-concussive',
+        name: 'Concussive Edge',
+        hiddenRarity: 'rare_mod',
+        validSlots: ['weapon'],
+        levelTiers: [
+            { levelReq: 15, range: [1, 1] },
+            { levelReq: 35, range: [1, 1] },
+        ],
+        payload: {
+            onHitEffects: [{
+                effectId: 'debuff_stun',
+                target: 'opponent',
+                baseChance: 0.15,
+                tier: 3,
+            }],
+        },
+        addedIn: '2026-06-18',
+        tags: ['weapon', 'status', 'control'],
+    },
+    {
+        id: 'wm-petrifying',
+        name: 'Petrifying Edge',
+        hiddenRarity: 'rare_mod',
+        validSlots: ['weapon'],
+        levelTiers: [
+            { levelReq: 25, range: [1, 1] },
+            { levelReq: 45, range: [1, 1] },
+        ],
+        payload: {
+            onHitEffects: [{
+                effectId: 'debuff_petrify',
+                target: 'opponent',
+                baseChance: 0.12,
+                tier: 3,
+            }],
+        },
+        addedIn: '2026-06-18',
+        tags: ['weapon', 'status', 'control'],
+    },
+    {
+        id: 'wm-terrorize',
+        name: 'Terrorizing Edge',
+        hiddenRarity: 'rare_mod',
+        validSlots: ['weapon'],
+        levelTiers: [
+            { levelReq: 15, range: [1, 1] },
+            { levelReq: 35, range: [1, 1] },
+        ],
+        payload: {
+            onHitEffects: [{
+                effectId: 'debuff_fear',
+                target: 'opponent',
+                baseChance: 0.20,
+                tier: 3,
+            }],
+        },
+        addedIn: '2026-06-18',
+        tags: ['weapon', 'status', 'mental', 'control'],
+    },
+    {
+        id: 'wm-cursed-edge',
+        name: 'Cursed Edge',
+        hiddenRarity: 'rare_mod',
+        validSlots: ['weapon'],
+        levelTiers: [
+            { levelReq: 20, range: [1, 1] },
+            { levelReq: 40, range: [1, 1] },
+        ],
+        payload: {
+            onHitEffects: [{
+                effectId: 'debuff_curse',
+                target: 'opponent',
+                baseChance: 0.25,
+                tier: 3,
+            }],
+        },
+        addedIn: '2026-06-18',
+        tags: ['weapon', 'status'],
+    },
+    {
+        id: 'wm-soporific',
+        name: 'Soporific Edge',
+        hiddenRarity: 'rare_mod',
+        validSlots: ['weapon'],
+        levelTiers: [
+            { levelReq: 15, range: [1, 1] },
+            { levelReq: 35, range: [1, 1] },
+        ],
+        payload: {
+            onHitEffects: [{
+                effectId: 'debuff_sleep',
+                target: 'opponent',
+                baseChance: 0.18,
+                tier: 3,
+            }],
+        },
+        addedIn: '2026-06-18',
+        tags: ['weapon', 'status', 'control'],
+    },
+    {
+        id: 'wm-hexing',
+        name: 'Hexing Edge',
+        hiddenRarity: 'rare_mod',
+        validSlots: ['weapon'],
+        levelTiers: [
+            { levelReq: 20, range: [1, 1] },
+            { levelReq: 40, range: [1, 1] },
+        ],
+        payload: {
+            onHitEffects: [{
+                effectId: 'debuff_hex',
+                target: 'opponent',
+                baseChance: 0.25,
+                tier: 3,
+            }],
+        },
+        addedIn: '2026-06-18',
+        tags: ['weapon', 'status'],
+    },
 ];
 
 // ─── Head pool ───────────────────────────────────────────────────────────────
@@ -507,6 +791,37 @@ export const headModPool: Modifier[] = [
         },
         addedIn: '2026-06-16',
         tags: ['head', 'emotional', 'utility'],
+    },
+    // ── Content expansion pass 2026-06-18 (status-family expansion) ──
+    {
+        id: 'hm-oracle',
+        name: 'Oracle\'s Eye',
+        hiddenRarity: 'rare_mod',
+        validSlots: ['head'],
+        levelTiers: [
+            { levelReq: 20, range: [1, 1] },
+            { levelReq: 40, range: [1, 1] },
+        ],
+        payload: {
+            passiveEffects: ['buff_oracle_foresight'],
+        },
+        addedIn: '2026-06-18',
+        tags: ['head', 'utility', 'mental'],
+    },
+    {
+        id: 'hm-open-mind',
+        name: 'Open Mind',
+        hiddenRarity: 'uncommon_mod',
+        validSlots: ['head'],
+        levelTiers: [
+            { levelReq: 5,  range: [1, 1] },
+            { levelReq: 25, range: [1, 1] },
+        ],
+        payload: {
+            passiveEffects: ['buff_open_minded'],
+        },
+        addedIn: '2026-06-18',
+        tags: ['head', 'utility', 'mental'],
     },
 ];
 
@@ -675,6 +990,22 @@ export const bodyModPool: Modifier[] = [
         addedIn: '2026-06-16',
         tags: ['body', 'resource'],
     },
+    // ── Content expansion pass 2026-06-18 (status-family expansion) ──
+    {
+        id: 'bm-defend-up',
+        name: 'Bracing Plate',
+        hiddenRarity: 'common_mod',
+        validSlots: ['body'],
+        levelTiers: [
+            { levelReq: 1,  range: [1, 1] },
+            { levelReq: 20, range: [1, 1] },
+        ],
+        payload: {
+            passiveEffects: ['buff_defend_up'],
+        },
+        addedIn: '2026-06-18',
+        tags: ['body', 'defense'],
+    },
 ];
 
 // ─── Hands pool ──────────────────────────────────────────────────────────────
@@ -841,6 +1172,107 @@ export const handsModPool: Modifier[] = [
         },
         addedIn: '2026-06-16',
         tags: ['hands', 'resource'],
+    },
+    // ── Content expansion pass 2026-06-18 (status-family expansion) ──
+    {
+        id: 'hndm-sap',
+        name: 'Sapping Grip',
+        hiddenRarity: 'common_mod',
+        validSlots: ['hands'],
+        levelTiers: [
+            { levelReq: 1,  range: [1, 1] },
+            { levelReq: 20, range: [1, 1] },
+        ],
+        payload: {
+            onHitEffects: [{
+                effectId: 'debuff_fatigue',
+                target: 'opponent',
+                baseChance: 0.30,
+                tier: 2,
+            }],
+        },
+        addedIn: '2026-06-18',
+        tags: ['hands', 'status', 'control'],
+    },
+    {
+        id: 'hndm-hobbling',
+        name: 'Ensnaring Grip',
+        hiddenRarity: 'uncommon_mod',
+        validSlots: ['hands'],
+        levelTiers: [
+            { levelReq: 10, range: [1, 1] },
+            { levelReq: 30, range: [1, 1] },
+        ],
+        payload: {
+            onHitEffects: [{
+                effectId: 'debuff_root',
+                target: 'opponent',
+                baseChance: 0.20,
+                tier: 2,
+            }],
+        },
+        addedIn: '2026-06-18',
+        tags: ['hands', 'status', 'control'],
+    },
+    {
+        id: 'hndm-toppling',
+        name: 'Toppling Strike',
+        hiddenRarity: 'uncommon_mod',
+        validSlots: ['hands'],
+        levelTiers: [
+            { levelReq: 10, range: [1, 1] },
+            { levelReq: 30, range: [1, 1] },
+        ],
+        payload: {
+            onHitEffects: [{
+                effectId: 'debuff_knockdown',
+                target: 'opponent',
+                baseChance: 0.20,
+                tier: 2,
+            }],
+        },
+        addedIn: '2026-06-18',
+        tags: ['hands', 'status', 'control'],
+    },
+    {
+        id: 'hndm-enfeeble',
+        name: 'Enfeebling Grip',
+        hiddenRarity: 'uncommon_mod',
+        validSlots: ['hands'],
+        levelTiers: [
+            { levelReq: 15, range: [1, 1] },
+            { levelReq: 35, range: [1, 1] },
+        ],
+        payload: {
+            onHitEffects: [{
+                effectId: 'debuff_exhaustion',
+                target: 'opponent',
+                baseChance: 0.25,
+                tier: 2,
+            }],
+        },
+        addedIn: '2026-06-18',
+        tags: ['hands', 'status', 'control'],
+    },
+    {
+        id: 'hndm-enthrall',
+        name: 'Enthralling Touch',
+        hiddenRarity: 'rare_mod',
+        validSlots: ['hands'],
+        levelTiers: [
+            { levelReq: 20, range: [1, 1] },
+            { levelReq: 40, range: [1, 1] },
+        ],
+        payload: {
+            onHitEffects: [{
+                effectId: 'debuff_charm',
+                target: 'opponent',
+                baseChance: 0.15,
+                tier: 3,
+            }],
+        },
+        addedIn: '2026-06-18',
+        tags: ['hands', 'status', 'emotional', 'control'],
     },
 ];
 
@@ -1176,6 +1608,37 @@ export const accessoryModPool: Modifier[] = [
         addedIn: '2026-06-16',
         tags: ['accessory', 'defense'],
     },
+    // ── Content expansion pass 2026-06-18 (status-family expansion) ──
+    {
+        id: 'am-advantage-mind',
+        name: 'Attuned Sigil',
+        hiddenRarity: 'rare_mod',
+        validSlots: ['accessory'],
+        levelTiers: [
+            { levelReq: 20, range: [1, 1] },
+            { levelReq: 40, range: [1, 1] },
+        ],
+        payload: {
+            passiveEffects: ['buff_advantage_mind'],
+        },
+        addedIn: '2026-06-18',
+        tags: ['accessory', 'utility', 'mental'],
+    },
+    {
+        id: 'am-all-stats',
+        name: 'Paragon Charm',
+        hiddenRarity: 'rare_mod',
+        validSlots: ['accessory'],
+        levelTiers: [
+            { levelReq: 25, range: [1, 1] },
+            { levelReq: 45, range: [1, 1] },
+        ],
+        payload: {
+            passiveEffects: ['buff_all_stats_up'],
+        },
+        addedIn: '2026-06-18',
+        tags: ['accessory', 'utility'],
+    },
 ];
 
 // ─── Armor pool ──────────────────────────────────────────────────────────────
@@ -1331,6 +1794,37 @@ export const armorModPool: Modifier[] = [
             passiveEffects: ['buff_max_hp_up'],
         },
         addedIn: '2026-06-16',
+        tags: ['armor', 'defense'],
+    },
+    // ── Content expansion pass 2026-06-18 (status-family expansion) ──
+    {
+        id: 'armm-mind-resist',
+        name: 'Lucid Lining',
+        hiddenRarity: 'common_mod',
+        validSlots: ['armor'],
+        levelTiers: [
+            { levelReq: 1,  range: [1, 1] },
+            { levelReq: 20, range: [1, 1] },
+        ],
+        payload: {
+            passiveEffects: ['buff_resistance_mind'],
+        },
+        addedIn: '2026-06-18',
+        tags: ['armor', 'defense', 'mental'],
+    },
+    {
+        id: 'armm-stoic-bulwark',
+        name: 'Immovable Plating',
+        hiddenRarity: 'rare_mod',
+        validSlots: ['armor'],
+        levelTiers: [
+            { levelReq: 15, range: [1, 1] },
+            { levelReq: 35, range: [1, 1] },
+        ],
+        payload: {
+            passiveEffects: ['buff_stoic_bulwark'],
+        },
+        addedIn: '2026-06-18',
         tags: ['armor', 'defense'],
     },
 ];

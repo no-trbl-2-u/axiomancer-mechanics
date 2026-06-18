@@ -298,6 +298,76 @@ describe('Phase 151: new affixes are reachable through generation', () => {
     });
 });
 
+// ─── Phase 153 — status-family expansion (2026-06-18) ────────────────────────
+
+describe('Phase 153: status-family affix expansion', () => {
+    const PFX_153 = prefixes.filter(p => p.addedIn === '2026-06-18');
+    const SFX_153 = suffixes.filter(s => s.addedIn === '2026-06-18');
+
+    it('declares 30 new prefixes and 30 new suffixes (2026-06-18)', () => {
+        expect(PFX_153.length).toBe(30);
+        expect(SFX_153.length).toBe(30);
+    });
+
+    it('every new affix references only existing catalogue modifiers', () => {
+        for (const affix of [...PFX_153, ...SFX_153]) {
+            expect(affix.modIds.length).toBeGreaterThan(0);
+            for (const modId of affix.modIds) {
+                const mod = getModifierById(modId);
+                expect(mod, `affix ${affix.id} → mod ${modId}`).toBeDefined();
+                for (const slot of affix.validSlots) {
+                    expect(mod!.validSlots).toContain(slot);
+                }
+            }
+        }
+    });
+
+    it('grows the status-effect family coverage (new debuff families wired)', () => {
+        // Each entry: an affix word and the debuff it must surface on a hit.
+        const statusFamilies: Array<[string, string]> = [
+            ['Immolating', 'debuff_burn'],
+            ['Toxic', 'debuff_strong_poison'],
+            ['Rending', 'debuff_wound'],
+            ['Terrifying', 'debuff_fear'],
+            ['Cursed', 'debuff_curse'],
+            ['Hexing', 'debuff_hex'],
+            ['Slumbering', 'debuff_sleep'],
+            ['Concussive', 'debuff_stun'],
+            ['Petrifying', 'debuff_petrify'],
+            ['Plague', 'debuff_disease'],
+            ['Withering', 'debuff_hp_decay'],
+            ['Slowing', 'debuff_slow'],
+        ];
+        for (const [word, effectId] of statusFamilies) {
+            const affix = prefixes.find(p => p.word === word);
+            expect(affix, `prefix ${word}`).toBeDefined();
+            const folded = affix!.modIds.flatMap(id =>
+                getModifierById(id)!.payload.onHitEffects ?? []);
+            expect(
+                folded.some(e => e.effectId === effectId),
+                `${word} should apply ${effectId}`,
+            ).toBe(true);
+        }
+    });
+
+    it('a fear weapon affix folds its onHitEffect into a resolved drop', () => {
+        // pfx-terrifying / sfx-of-dread both ride wm-terrorize (fear proc).
+        let proven = false;
+        for (let s = 1; s <= 600 && !proven; s++) {
+            const drop = dropItemWithAffixes('iron-blade', 40, {
+                rarity: 'rare',
+                rng: seededRng(s),
+            });
+            const carriesFear =
+                drop.name.startsWith('Terrifying ') || drop.name.endsWith(' of Dread');
+            if (!carriesFear) continue;
+            expect(drop.onHitEffects?.some(e => e.effectId === 'debuff_fear')).toBe(true);
+            proven = true;
+        }
+        expect(proven).toBe(true);
+    });
+});
+
 // ─── Phase 152 — unified factory: rarity-default affixes + provenance ─────────
 
 describe('Phase 152: dropItem rarity-default affixes', () => {
