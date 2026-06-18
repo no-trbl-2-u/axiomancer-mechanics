@@ -50,6 +50,25 @@
 
 ## Audit Pass Log
 
+### 2026-06-18 (Pass 91) — Z–H walk (march→iterate dispatch)
+
+**Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), ESLint fix (F), Dependency updates (G), Commit-hygiene (H).
+
+**Findings:** 1 finding ≥3.0 — shipped this tick (see below). Queue otherwise empty.
+
+**Top finding (shipped):** **E (public-surface drift)** — `SkillPhaseEvent` + `ResourceEvent` missing from `src/index.ts` barrel. The `RoundEvent` discriminated union (exported from the root barrel) has nine member types; `Combat/index.ts:75-80` re-exports all nine, and `README.md:86` documents all nine as the public resolver event stream — but the root barrel `src/index.ts:89-94` re-exports only seven, silently dropping `SkillPhaseEvent` (the `phase: 'skill'` variant) and `ResourceEvent` (the `phase: 'resources'` variant). A consumer narrowing `RoundEvent` on `event.phase` cannot name those two variants by type. Impact 5 × Ease 9 / 10 = **4.5**.
+
+**Highlights (independently re-verified this pass):**
+- **Z (Critique):** CRITIQUE.md Pending empty; last critique pass 74 at `5182884` (today), 0 findings.
+- **A (Tests):** `npm test` green — 127 test files / 1821 passing (1 intentional skip). Sole `vi.spyOn(Math)` hit is the sanctioned `src/test-utils/rng.ts`.
+- **B (Spec-gaps):** Knowledge-Gaps only Q28 deferred (endgame); specs/README recommended-order has no stale NEXT markers.
+- **C (Type-safety):** clean — `as any` over non-test src = 0; sole `@ts-ignore` is the justified `.mjs`-runtime-import in `agent-vitest-reporter.engine.test.ts`.
+- **D (Dead code) / H (hygiene):** `git status` clean at audit start.
+- **E (Docs):** module-level doc coverage complete; the barrel-vs-union gap above was the live finding — prior passes only checked module-level doc existence, not member-type completeness of exported unions.
+- **F (Lint):** `npm run lint` green. **G (Deps):** `npm outdated` clean.
+
+**Disposition:** shipped the E finding (barrel export fix). Queue empty after; next tick re-dispatches per march.
+
 ### 2026-06-18 (Pass 90) — Z–H walk (march→iterate dispatch)
 
 **Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), ESLint fix (F), Dependency updates (G), Commit-hygiene (H).
