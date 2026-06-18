@@ -50,6 +50,23 @@
 
 ## Audit Pass Log
 
+### 2026-06-18 (Pass 86) — Z–H walk (march→iterate dispatch)
+
+**Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), ESLint fix (F), Dependency updates (G), Commit-hygiene (H).
+
+**Findings:** 0 findings ≥3.0. Queue stays empty; nothing to ship this tick.
+
+**Highlights:**
+- **Z (Critique):** CRITIQUE.md Pending empty (both critique-73 LOWs drained at 1b578ac + 134d183; no new critique pass since — 10 commits since pass 73 at 5d3f40a, below the 12-commit cadence; ~9.7h < 24h).
+- **A (Tests):** 127 test files / 1821 passing (1 skipped) baseline green via `npm test`. Every top-level module carries hermetic `*.engine.test.ts` coverage; sole `vi.spyOn(Math)` hit is the sanctioned `src/test-utils/rng.ts`. The lone `it.skip` (`src/Enemy/e2e/new-enemies.engine.test.ts:56`, budget-total invariant) is the established intentional skip. No gap ≥3.0.
+- **B (Spec-gaps):** the 4 `> Your answer:` blanks are spec *templates* (`00-*-template.md` + `00-how-to-use-specs.md`), not open questions; Knowledge-Gaps only Q28 genuinely deferred (endgame, no engine work planned); specs/README recommended-order has no stale NEXT markers (Phase 99 row 16 flipped NEXT→DONE at 038fdbf).
+- **C (Type-safety):** clean — zero `as any` / `@ts-ignore` in non-test src; `npm run type-check` green.
+- **D (Dead code):** none; working tree clean at audit start; no commented-out code blocks.
+- **E (Docs):** every `src/` module has a `docs/` counterpart; no stale NEXT marker in specs/README; README/spec contracts synced last window.
+- **F/G/H:** ESLint green (zero warnings/errors); `npm outdated` clean (no safe minor/patch bumps); working tree clean.
+
+**Disposition:** iterate failure-mode 3 (zero findings ≥3.0 + bold posture) would dispatch to `/expand`, but the expand cadence gate already failed this tick (1 commit < 20 since expand pass 71 at `2b03be9`, ~2.5h < 48h; identical signal cluster already yielded 0 candidates at pass 71). Re-filing would be redundant — same disposition as passes 85/84/83/82/69. Returning cleanly; next tick re-dispatches once cadence elapses.
+
 ### 2026-06-17 (Pass 85) — Z–H walk (march→iterate dispatch)
 
 **Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), ESLint fix (F), Dependency updates (G), Commit-hygiene (H).
