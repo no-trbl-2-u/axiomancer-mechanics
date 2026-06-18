@@ -71,7 +71,7 @@ Enemy:      createEnemy, Enemy, EnemyLogic, decideEnemyAction, randomLogic,
             CodexEntry (+ Enemy.journalEntry? — Phase 73 closes GH#65
             ask 3; auto-unlocks on friendship outcome)
 Combat:     determineAdvantage, getAttackStat, getDefenseStat, getSaveStat,
-            getResistStat (deprecated), applyDamage, heal, tickAllEffects,
+            applyDamage, heal, tickAllEffects,
             applyRegen, getActiveRollModifier, getThornsReflect,
             resolveEffectApplication, isValidCombatAction, Stance, Action, CombatState, Combatant
             (+ Phase 80 always-land: Tier 2 debuff + Tier 3 always land;
