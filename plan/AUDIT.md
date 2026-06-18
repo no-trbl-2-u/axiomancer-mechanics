@@ -57,6 +57,23 @@
 
 ## Audit Pass Log
 
+### 2026-06-18 (Pass 96) — Z–H walk (march→iterate dispatch)
+
+**Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), ESLint fix (F), Dependency updates (G), Commit-hygiene (H).
+
+**Findings:** 0 findings ≥3.0 — queue empty. No source (`src/**`) delta since critique pass 75 at `607f4e9`; the 7 commits since are pure loop bookkeeping (expand passes 72/73 with 0 candidates, the Pass-94 README affix-row drain + plan-resolved, Pass-95 audit). No new finding surfaced.
+
+**Highlights (independently re-verified this pass):**
+- **Z (Critique):** CRITIQUE.md Pending empty; last critique pass 75 at `607f4e9` (today), 0 findings. Only 7 commits since (<12 gate) and ~6h since last pass (<24h) — critique not re-due this tick.
+- **A (Tests):** `npm test` green — 127 test files / 1821 passing (1 intentional skip). Zero `vi.spyOn(Math,'random')` outside the sanctioned `src/test-utils/rng.ts`; full e2e coverage across every src module.
+- **B (Spec-gaps):** Knowledge-Gaps only Q28 deferred (endgame); `> Your answer:` blanks are template/instruction files only.
+- **C (Type-safety):** clean — zero `as any`/`@ts-ignore`/`@ts-expect-error` over non-test src.
+- **D (Dead code):** barrel exports all reachable; no orphan internals surfaced.
+- **E (Docs):** doc-count claims re-verified accurate against a fresh `npm run build` dist — ENEMY_REGISTRY = 63 = docs/enemy.md:86; equipmentTemplates = 56 + uniqueTemplates = 7 = docs/equipment.md; modifier catalogue = 78 (72 procedural + 6 unique) = docs; prefixes = 36 / suffixes = 36 / allAffixes = 72 = docs affix tables. README Public API table (`README.md:88`) carries the full Phase 152 affix layer (Pass-94 drain at `f178dee` holds). No stale removed-symbol references in any front-door reader.
+- **F (Lint):** build green. **G (Deps):** unchanged from Pass 95. **H (hygiene):** `git status` clean at audit start; public-surface snapshot byte-identical to `scripts/public-surface.expected.json` (297 values / 202 types) after build.
+
+**Disposition:** zero findings ≥3.0. Bold posture would normally dispatch to `/expand` (iterate failure mode 3), but the expand gate is commit-distance-gated this tick (5 commits since expand pass 73 at `f44fde5`, need ≥20; ~3h since that pass, need >48h) — and pass 73 already ran the identical 0-candidate signal walk ~3h ago against the same empty queues + zero source delta, so re-running would only duplicate bookkeeping. Recording the audit and returning cleanly; next tick re-dispatches per march.
+
 ### 2026-06-18 (Pass 95) — Z–H walk (march→iterate dispatch)
 
 **Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), ESLint fix (F), Dependency updates (G), Commit-hygiene (H).
