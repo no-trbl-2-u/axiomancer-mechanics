@@ -146,8 +146,9 @@ template-gated (specific templates only).
 | unique   | 3         | `UniqueItemTemplate.fixedModIds` (ordered)   |
 
 Spec 05d replaces the Spec 05c stub catalogue with a slot-keyed catalogue of
-72 procedural mods + 6 unique-only signature mods (Phase 151 expansion — was
-22 + 3 at the initial Spec 05d ship). See **[Modifiers](#modifiers-spec-05d)**
+98 procedural mods + 6 unique-only signature mods (Phase 153 status-family
+expansion — was 72 + 6 after Phase 151, and 22 + 3 at the initial Spec 05d
+ship). See **[Modifiers](#modifiers-spec-05d)**
 below for the full catalogue, the substitution contract, and the
 hidden-rarity weight table.
 
@@ -222,7 +223,7 @@ candidates whose `validSlots` include the slot and whose `minLevel <= level`.
 Affix draws reuse the hidden-mod rarity scale (`AFFIX_RARITY_WEIGHTS`:
 `common_mod` 10 / `uncommon_mod` 3 / `rare_mod` 1).
 
-**Prefixes (36)** — lead the item name (`"<word> <base>"`):
+**Prefixes (66)** — lead the item name (`"<word> <base>"`):
 
 | Affix id | Word | Slots | Mod ids | Rarity | Min lvl |
 |----------|------|-------|---------|--------|---------|
@@ -262,8 +263,38 @@ Affix draws reuse the hidden-mod rarity scale (`AFFIX_RARITY_WEIGHTS`:
 | `pfx-disarming` | Disarming | hands | `hndm-disarm` | rare | 10 |
 | `pfx-dazzling` | Dazzling | hands | `hndm-blinding` | uncommon | 5 |
 | `pfx-empathic` | Empathic | head | `hm-heart-focus` | uncommon | 1 |
+| `pfx-slowing` | Slowing | weapon | `wm-slowing` | common | 1 |
+| `pfx-hunters` | Hunter's | weapon | `wm-marking` | common | 1 |
+| `pfx-immolating` | Immolating | weapon | `wm-immolate` | uncommon | 5 |
+| `pfx-rending` | Rending | weapon | `wm-rending` | uncommon | 10 |
+| `pfx-plague` | Plague | weapon | `wm-plague-edge` | uncommon | 10 |
+| `pfx-withering` | Withering | weapon | `wm-withering` | uncommon | 15 |
+| `pfx-heartrending` | Heartrending | weapon | `wm-heartbreak` | uncommon | 10 |
+| `pfx-toxic` | Toxic | weapon | `wm-toxic-edge` | rare | 20 |
+| `pfx-concussive` | Concussive | weapon | `wm-concussive` | rare | 15 |
+| `pfx-petrifying` | Petrifying | weapon | `wm-petrifying` | rare | 25 |
+| `pfx-terrifying` | Terrifying | weapon | `wm-terrorize` | rare | 15 |
+| `pfx-cursed` | Cursed | weapon | `wm-cursed-edge` | rare | 20 |
+| `pfx-slumbering` | Slumbering | weapon | `wm-soporific` | rare | 15 |
+| `pfx-hexing` | Hexing | weapon | `wm-hexing` | rare | 20 |
+| `pfx-sapping` | Sapping | hands | `hndm-sap` | common | 1 |
+| `pfx-ensnaring` | Ensnaring | hands | `hndm-hobbling` | uncommon | 10 |
+| `pfx-toppling` | Toppling | hands | `hndm-toppling` | uncommon | 10 |
+| `pfx-enfeebling` | Enfeebling | hands | `hndm-enfeeble` | uncommon | 15 |
+| `pfx-enthralling` | Enthralling | hands | `hndm-enthrall` | rare | 20 |
+| `pfx-cruel` | Cruel | weapon | `wm-flat-damage`, `wm-rending` | uncommon | 10 |
+| `pfx-malefic` | Malefic | weapon | `wm-status-amp`, `wm-cursed-edge` | rare | 20 |
+| `pfx-pestilent` | Pestilent | weapon | `wm-plague-edge`, `wm-venom-coat` | rare | 15 |
+| `pfx-oracular` | Oracular | head | `hm-oracle` | rare | 20 |
+| `pfx-openminded` | Open | head | `hm-open-mind` | uncommon | 5 |
+| `pfx-bracing` | Bracing | body | `bm-defend-up` | common | 1 |
+| `pfx-clearheaded` | Clearheaded | armor | `armm-mind-resist` | common | 1 |
+| `pfx-unbreakable` | Unbreakable | armor | `armm-stoic-bulwark` | rare | 15 |
+| `pfx-attuned` | Attuned | accessory | `am-advantage-mind` | rare | 20 |
+| `pfx-paragon` | Paragon | accessory | `am-all-stats` | rare | 25 |
+| `pfx-fleeting` | Fleeting | feet | `fm-evasion-proc` | uncommon | 10 |
 
-**Suffixes (36)** — trail the item name (`"<base> <word>"`):
+**Suffixes (66)** — trail the item name (`"<base> <word>"`):
 
 | Affix id | Word | Slots | Mod ids | Rarity | Min lvl |
 |----------|------|-------|---------|--------|---------|
@@ -303,6 +334,36 @@ Affix draws reuse the hidden-mod rarity scale (`AFFIX_RARITY_WEIGHTS`:
 | `sfx-of-shadows` | of Shadows | feet | `fm-stealth` | rare | 10 |
 | `sfx-of-the-gambler` | of the Gambler | feet | `fm-luck` | uncommon | 1 |
 | `sfx-of-silence` | of Silence | hands | `hndm-disarm` | rare | 10 |
+| `sfx-of-torpor` | of Torpor | weapon | `wm-slowing` | common | 1 |
+| `sfx-of-the-hunt` | of the Hunt | weapon | `wm-marking` | common | 1 |
+| `sfx-of-cinders` | of Cinders | weapon | `wm-immolate` | uncommon | 5 |
+| `sfx-of-rending` | of Rending | weapon | `wm-rending` | uncommon | 10 |
+| `sfx-of-pestilence` | of Pestilence | weapon | `wm-plague-edge` | uncommon | 10 |
+| `sfx-of-decay` | of Decay | weapon | `wm-withering` | uncommon | 15 |
+| `sfx-of-heartache` | of Heartache | weapon | `wm-heartbreak` | uncommon | 10 |
+| `sfx-of-blight` | of Blight | weapon | `wm-toxic-edge` | rare | 20 |
+| `sfx-of-concussion` | of Concussion | weapon | `wm-concussive` | rare | 15 |
+| `sfx-of-petrifaction` | of Petrifaction | weapon | `wm-petrifying` | rare | 25 |
+| `sfx-of-dread` | of Dread | weapon | `wm-terrorize` | rare | 15 |
+| `sfx-of-the-curse` | of the Curse | weapon | `wm-cursed-edge` | rare | 20 |
+| `sfx-of-slumber` | of Slumber | weapon | `wm-soporific` | rare | 15 |
+| `sfx-of-hexes` | of Hexes | weapon | `wm-hexing` | rare | 20 |
+| `sfx-of-sapping` | of Sapping | hands | `hndm-sap` | common | 1 |
+| `sfx-of-snares` | of Snares | hands | `hndm-hobbling` | uncommon | 10 |
+| `sfx-of-the-avalanche` | of the Avalanche | hands | `hndm-toppling` | uncommon | 10 |
+| `sfx-of-weariness` | of Weariness | hands | `hndm-enfeeble` | uncommon | 15 |
+| `sfx-of-enthrallment` | of Enthrallment | hands | `hndm-enthrall` | rare | 20 |
+| `sfx-of-cruelty` | of Cruelty | weapon | `wm-flat-damage`, `wm-rending` | uncommon | 10 |
+| `sfx-of-affliction` | of Affliction | weapon | `wm-status-amp`, `wm-plague-edge` | rare | 15 |
+| `sfx-of-the-plaguebearer` | of the Plaguebearer | weapon | `wm-plague-edge`, `wm-venom-coat` | rare | 15 |
+| `sfx-of-prophecy` | of Prophecy | head | `hm-oracle` | rare | 20 |
+| `sfx-of-the-open-mind` | of the Open Mind | head | `hm-open-mind` | uncommon | 5 |
+| `sfx-of-the-bastion` | of the Bastion | body | `bm-defend-up` | common | 1 |
+| `sfx-of-lucidity` | of Lucidity | armor | `armm-mind-resist` | common | 1 |
+| `sfx-of-the-immovable` | of the Immovable | armor | `armm-stoic-bulwark` | rare | 15 |
+| `sfx-of-attunement` | of Attunement | accessory | `am-advantage-mind` | rare | 20 |
+| `sfx-of-the-paragon` | of the Paragon | accessory | `am-all-stats` | rare | 25 |
+| `sfx-of-quickening` | of Quickening | feet | `fm-evasion-proc` | uncommon | 10 |
 
 ### `EquipmentProcTrigger`
 
@@ -417,7 +478,7 @@ unique-only) and extended the top-end value tiers to levelReq 30/40/50 on the
 flat-stat mods so endgame drops keep scaling. `modifier.catalogue.ts` is
 canonical; the tables below mirror it.
 
-#### `weaponModPool` (17)
+#### `weaponModPool` (31)
 | ID | Name | hiddenRarity | Level tiers (levelReq → range) |
 |----|------|--------------|--------------------------------|
 | `wm-flat-damage` | Keen Edge | `common_mod` | 1 → [1,3], 10 → [4,8], 20 → [9,15], 30 → [16,24], 40 → [25,35], 50 → [36,50] |
@@ -437,8 +498,22 @@ canonical; the tables below mirror it.
 | `wm-dazing-pommel` | Dazing Pommel | `uncommon_mod` | 5 → [1,1], 25 → [1,1] |
 | `wm-mind-gen` | Insightful Hilt | `common_mod` | 1 → [1,1], 10 → [1,2], 20 → [2,3] |
 | `wm-status-amp` | Catalytic Edge | `rare_mod` | 10 → [1,1], 30 → [1,1] |
+| `wm-slowing` | Hobbling Edge | `common_mod` | 1 → [1,1], 20 → [1,1] |
+| `wm-marking` | Hunter's Notch | `common_mod` | 1 → [1,1], 20 → [1,1] |
+| `wm-immolate` | Immolating Brand | `uncommon_mod` | 5 → [1,1], 25 → [1,1] |
+| `wm-rending` | Rending Edge | `uncommon_mod` | 10 → [1,1], 30 → [1,1] |
+| `wm-plague-edge` | Plague Edge | `uncommon_mod` | 10 → [1,1], 30 → [1,1] |
+| `wm-withering` | Withering Edge | `uncommon_mod` | 15 → [1,1], 35 → [1,1] |
+| `wm-heartbreak` | Heartbreak Edge | `uncommon_mod` | 10 → [1,1], 30 → [1,1] |
+| `wm-toxic-edge` | Toxic Edge | `rare_mod` | 20 → [1,1], 40 → [1,1] |
+| `wm-concussive` | Concussive Edge | `rare_mod` | 15 → [1,1], 35 → [1,1] |
+| `wm-petrifying` | Petrifying Edge | `rare_mod` | 25 → [1,1], 45 → [1,1] |
+| `wm-terrorize` | Terrorizing Edge | `rare_mod` | 15 → [1,1], 35 → [1,1] |
+| `wm-cursed-edge` | Cursed Edge | `rare_mod` | 20 → [1,1], 40 → [1,1] |
+| `wm-soporific` | Soporific Edge | `rare_mod` | 15 → [1,1], 35 → [1,1] |
+| `wm-hexing` | Hexing Edge | `rare_mod` | 20 → [1,1], 40 → [1,1] |
 
-#### `headModPool` (9)
+#### `headModPool` (11)
 | ID | Name | hiddenRarity | Level tiers |
 |----|------|--------------|-------------|
 | `hm-max-hp` | Resilient Mind | `common_mod` | 1 → [5,15], 10 → [16,35], 20 → [36,60], 30 → [61,90], 40 → [91,130], 50 → [131,180] |
@@ -450,8 +525,10 @@ canonical; the tables below mirror it.
 | `hm-effect-duration` | Lingering Sigil | `rare_mod` | 5 → [1,1], 25 → [1,1] |
 | `hm-mind-resist` | Stoic Mind | `common_mod` | 1 → [1,1], 20 → [1,1] |
 | `hm-heart-focus` | Empathic Crown | `uncommon_mod` | 1 → [1,2], 15 → [3,5], 30 → [6,9], 45 → [10,14] |
+| `hm-oracle` | Oracle's Eye | `rare_mod` | 20 → [1,1], 40 → [1,1] |
+| `hm-open-mind` | Open Mind | `uncommon_mod` | 5 → [1,1], 25 → [1,1] |
 
-#### `bodyModPool` (9)
+#### `bodyModPool` (10)
 | ID | Name | hiddenRarity | Level tiers |
 |----|------|--------------|-------------|
 | `bm-armor` | Fortified | `common_mod` | 1 → [2,5], 10 → [6,12], 20 → [13,22], 30 → [23,34], 40 → [35,48], 50 → [49,64] |
@@ -463,8 +540,9 @@ canonical; the tables below mirror it.
 | `bm-taunt-proc` | Provoking Plate | `uncommon_mod` | 5 → [1,1], 25 → [1,1] |
 | `bm-barrier-proc` | Wardweave | `rare_mod` | 10 → [1,1], 30 → [1,1] |
 | `bm-heart-start` | Resolute Bearing | `uncommon_mod` | 1 → [1,2], 20 → [2,4] |
+| `bm-defend-up` | Bracing Plate | `common_mod` | 1 → [1,1], 20 → [1,1] |
 
-#### `handsModPool` (9)
+#### `handsModPool` (14)
 | ID | Name | hiddenRarity | Level tiers |
 |----|------|--------------|-------------|
 | `hndm-body-gen` | Iron Grip | `common_mod` | 1 → [1,1], 10 → [1,2], 20 → [2,2] |
@@ -476,6 +554,11 @@ canonical; the tables below mirror it.
 | `hndm-disarm` | Disarming Grip | `rare_mod` | 10 → [1,1], 30 → [1,1] |
 | `hndm-blinding` | Blinding Flurry | `uncommon_mod` | 5 → [1,1], 25 → [1,1] |
 | `hndm-mind-gen` | Calculating Hands | `common_mod` | 1 → [1,1], 10 → [1,2], 20 → [2,3] |
+| `hndm-sap` | Sapping Grip | `common_mod` | 1 → [1,1], 20 → [1,1] |
+| `hndm-hobbling` | Ensnaring Grip | `uncommon_mod` | 10 → [1,1], 30 → [1,1] |
+| `hndm-toppling` | Toppling Strike | `uncommon_mod` | 10 → [1,1], 30 → [1,1] |
+| `hndm-enfeeble` | Enfeebling Grip | `uncommon_mod` | 15 → [1,1], 35 → [1,1] |
+| `hndm-enthrall` | Enthralling Touch | `rare_mod` | 20 → [1,1], 40 → [1,1] |
 
 #### `feetModPool` (9)
 | ID | Name | hiddenRarity | Level tiers |
@@ -490,7 +573,7 @@ canonical; the tables below mirror it.
 | `fm-initiative-tokens` | Vanguard Stride | `uncommon_mod` | 1 → [1,1], 20 → [1,2] |
 | `fm-luck` | Fortune's Tread | `uncommon_mod` | 1 → [1,2], 20 → [3,5], 40 → [6,9] |
 
-#### `accessoryModPool` (10)
+#### `accessoryModPool` (12)
 | ID | Name | hiddenRarity | Level tiers |
 |----|------|--------------|-------------|
 | `am-cross-stat` | Balanced Focus | `common_mod` | 1 → [1,2], 10 → [2,4], 20 → [4,7], 30 → [8,11], 40 → [12,16], 50 → [17,22] |
@@ -503,8 +586,10 @@ canonical; the tables below mirror it.
 | `am-cleanse` | Purifying Charm | `uncommon_mod` | 5 → [1,1], 25 → [1,1] |
 | `am-luck` | Lucky Trinket | `common_mod` | 1 → [1,2], 15 → [3,5], 30 → [6,9], 45 → [10,14] |
 | `am-fortitude` | Bulwark Bauble | `uncommon_mod` | 5 → [1,1], 25 → [1,1] |
+| `am-advantage-mind` | Attuned Sigil | `rare_mod` | 20 → [1,1], 40 → [1,1] |
+| `am-all-stats` | Paragon Charm | `rare_mod` | 25 → [1,1], 45 → [1,1] |
 
-#### `armorModPool` (9)
+#### `armorModPool` (11)
 | ID | Name | hiddenRarity | Level tiers |
 |----|------|--------------|-------------|
 | `armm-defense` | Hardened | `common_mod` | 1 → [3,7], 10 → [8,16], 20 → [17,28], 30 → [29,42], 40 → [43,58], 50 → [59,78] |
@@ -516,6 +601,8 @@ canonical; the tables below mirror it.
 | `armm-body-resist` | Adamant Weave | `common_mod` | 1 → [1,1], 20 → [1,1] |
 | `armm-heart-resist` | Sanguine Lining | `common_mod` | 1 → [1,1], 20 → [1,1] |
 | `armm-mhp` | Reinforced Hide | `uncommon_mod` | 5 → [1,1], 25 → [1,1] |
+| `armm-mind-resist` | Lucid Lining | `common_mod` | 1 → [1,1], 20 → [1,1] |
+| `armm-stoic-bulwark` | Immovable Plating | `rare_mod` | 15 → [1,1], 35 → [1,1] |
 
 ### `uniqueModPool` (6 — Unique-only)
 

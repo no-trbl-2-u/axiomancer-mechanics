@@ -14,6 +14,16 @@ deep imports are part of the supported surface.
 
 ### Added
 
+- **Status-family affix expansion (Phase 153)** — 30 new prefixes and 30 new
+  suffixes (66 of each total), backed by 26 new catalogue modifiers. The pass
+  widens the status-effect families the affix layer can apply on a hit: burn,
+  wound, disease, hp-decay, strong-poison, stun, petrify, fear, curse, hex,
+  sleep, slow, mark, heart-vulnerability (weapon), plus root, knockdown,
+  exhaustion, fatigue, and charm (hands). A handful of buff-backed defensive /
+  utility affixes (foresight, open-mind, defend-up, mind-resist, stoic-bulwark,
+  mind-advantage, all-stats) round out non-weapon slot coverage. All new mods
+  reference existing effect-library debuffs/buffs; no new engine primitives.
+
 ### Changed
 
 ### Fixed
