@@ -46,7 +46,11 @@
 
 ## Pending
 
-- [ ] **[E — docs drift] Front-door docs reference removed `getResistStat` as a current/deprecated export** — `getResistStat` was **removed** from source at Phase 106 (v0.13.0 deprecation removals; `phase_106_v0.13.0_deprecation_removals.md` Unit 2 deleted it from `src/index.ts` and `src/Combat/stats.ts`). It is no longer in the barrel (`src/index.ts:54-56` exports only `getBaseStat`/`getAttackStat`/`getDefenseStat`/`getSaveStat`) and has zero non-test src references. But two front-door docs still present it as a live public export: `README.md:84` lists `getResistStat` _(deprecated)_ in the Combat row's stat-accessor list, and `docs/api.md:56` states "`getResistStat` deprecated (use `getSaveStat`)" — both now factually wrong (a consumer reading the README would attempt to import a non-existent symbol). Fix: drop the `getResistStat` mention from the README accessor list; correct api.md to say the symbol was *removed* at v0.13.0 (use `getSaveStat`). Impact 5 × Ease 9 / 10 = **4.5**.
+<!-- No pending findings -->
+
+## Done
+
+- [x] **[E — docs drift] Front-door docs referenced removed `getResistStat`** — resolved at `45b611e` (2026-06-18). `getResistStat` was removed at Phase 106 (v0.13.0) but `README.md:84` still listed it as a `_(deprecated)_` Combat stat accessor and `docs/api.md:56` called it "deprecated (use `getSaveStat`)". Dropped the README accessor entry and corrected api.md to "removed at v0.13.0 (use `getSaveStat`)". No source change (symbol already gone); verify green. Score 5 × 9 / 10 = 4.5.
 
 ## Audit Pass Log
 
