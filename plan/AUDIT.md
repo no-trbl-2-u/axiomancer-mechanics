@@ -46,7 +46,7 @@
 
 ## Pending
 
-<!-- No pending findings -->
+- [ ] **[E — docs drift] README Public API table missing Phase 152 affix-layer exports** — `src/index.ts` Items block exports 8 affix-layer values (`dropItemWithAffixes`, `prefixes`, `suffixes`, `allAffixes`, `getAffixById`, `composeItemName`, `affixesForSlot`, `AFFIX_RARITY_WEIGHTS`) + 4 types (`DropWithAffixesOptions`, `AffixControl`, `Affix`, `AffixRole`) since Phase 152, but `README.md:88` Items row has **zero** affix mentions. critique-73 (resolved at `1b578ac`) swept the `spec.md` + `bearings.md` front-door references but explicitly scoped to those two readers — README is the un-swept third front-door reader. Same finding-class as Passes 91–93 (`SkillPhaseEvent`/`ResourceEvent`, `getResistStat`). Impact 5 × Ease 9 / 10 = **4.5**.
 
 ## Done
 
@@ -54,6 +54,25 @@
 - [x] **[E — docs drift] Front-door docs referenced removed `getResistStat`** — resolved at `45b611e` (2026-06-18). `getResistStat` was removed at Phase 106 (v0.13.0) but `README.md:84` still listed it as a `_(deprecated)_` Combat stat accessor and `docs/api.md:56` called it "deprecated (use `getSaveStat`)". Dropped the README accessor entry and corrected api.md to "removed at v0.13.0 (use `getSaveStat`)". No source change (symbol already gone); verify green. Score 5 × 9 / 10 = 4.5.
 
 ## Audit Pass Log
+
+### 2026-06-18 (Pass 94) — Z–H walk (march→iterate dispatch)
+
+**Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), ESLint fix (F), Dependency updates (G), Commit-hygiene (H).
+
+**Findings:** 1 finding ≥3.0 — shipping this tick (see Pending → above). Queue otherwise empty.
+
+**Top finding (shipping):** **E (docs drift)** — `README.md:88` Items row has **zero** affix mentions, yet `src/index.ts` exports 8 affix-layer values + 4 affix types since Phase 152. critique-73 (`1b578ac`) swept the `spec.md` + `bearings.md` front-door references but scoped to those two readers; README is the un-swept third front-door reader. Impact 5 × Ease 9 / 10 = **4.5**.
+
+**Highlights (independently re-verified this pass):**
+- **Z (Critique):** CRITIQUE.md Pending empty; last critique pass 75 at `004573b` (today), 0 findings.
+- **A (Tests):** `npm test` green — 127 test files / 1821 passing (1 intentional skip). All `as unknown`/`@ts-ignore` hits are test/e2e files only.
+- **B (Spec-gaps):** Knowledge-Gaps only Q28 deferred (endgame); `> Your answer:` blanks = template/instruction files only (0 hits across `specs/`).
+- **C (Type-safety):** clean — zero `as any`/`as unknown`/`@ts-ignore` over non-test src.
+- **D (Dead code):** no `TODO`/`FIXME`/`HACK`/`XXX` markers in non-test src.
+- **E (Docs):** the README affix-row gap above is the live finding — Passes 91–93 swept `getResistStat`/`SkillPhaseEvent`/`ResourceEvent`; the Phase 152 affix exports were never folded into the README Items row.
+- **F (Lint):** build green (deploy:check publishable). **G (Deps):** no major-bump candidates surfaced. **H (hygiene):** `git status` clean at audit start; deploy:check public-surface guard shows no fixture drift.
+
+**Disposition:** shipping the E finding (README affix-row fold-in). Queue empty after; next tick re-dispatches per march.
 
 ### 2026-06-18 (Pass 93) — Z–H walk (march→iterate dispatch)
 
