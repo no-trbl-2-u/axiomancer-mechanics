@@ -57,6 +57,23 @@
 
 ## Audit Pass Log
 
+### 2026-06-18 (Pass 97) — Z–H walk (march→iterate dispatch)
+
+**Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), ESLint fix (F), Dependency updates (G), Commit-hygiene (H).
+
+**Findings:** 0 findings ≥3.0 — queue empty. The one source-bearing window since the last finding was Phase 153 (`27bf148`, status-family affix expansion: +30 prefixes / +30 suffixes / +26 catalogue mods); this pass independently re-verified its doc/spec/surface consistency and found zero drift. No new finding surfaced.
+
+**Highlights (independently re-verified this pass):**
+- **Z (Critique):** CRITIQUE.md Pending empty; last critique pass 75 at `607f4e9` (today), 0 findings. Only 9 commits since (<12 gate) and same-day (<24h) — critique not re-due this tick.
+- **A (Tests):** `npm test` green — 127 test files / 1825 passing (1 intentional skip). Zero `vi.spyOn(Math,'random')` outside the sanctioned `src/test-utils/rng.ts`; full e2e coverage across every src module.
+- **B (Spec-gaps):** Knowledge-Gaps only Q28 deferred (endgame); `> Your answer:` blanks are template/instruction files only.
+- **C (Type-safety):** clean — zero `as any`/`as unknown`/`@ts-ignore`/`@ts-expect-error` over non-test src.
+- **D (Dead code):** zero `TODO`/`FIXME`/`HACK`/`XXX` markers in non-test src; barrel exports all reachable.
+- **E (Docs):** **Phase 153 fully reconciled** — affix.library code carries 66 `role: 'prefix'` + 66 `role: 'suffix'` entries, matching docs/equipment.md "**Prefixes (66)**" / "**Suffixes (66)**" headers *and* the 66+66 table rows exactly; modifier.catalogue carries 104 `id:` entries (98 procedural + 6 unique) = docs/equipment.md:149 "98 procedural mods + 6 unique-only signature mods"; CHANGELOG 0.22.1 `### Added` documents the Phase 153 expansion. Other doc-counts re-verified against fresh `npm run build` dist: ENEMY_REGISTRY = 63 = docs/enemy.md:86; equipmentTemplates 56 entries = docs/equipment.md:83. No stale removed-symbol references in any front-door reader.
+- **F (Lint):** build green. **G (Deps):** `npm outdated` clean (no minor/patch bumps). **H (hygiene):** `git status` clean at audit start; public-surface snapshot byte-identical to `scripts/public-surface.expected.json` (297 values / 202 types) after build.
+
+**Disposition:** zero findings ≥3.0. Bold posture would normally dispatch to `/expand` (iterate failure mode 3), but the expand gate is commit-distance-gated this tick (7 commits since expand pass 73 at `f44fde5`, need ≥20; same-day, need >48h) — and pass 73 already ran the identical 0-candidate signal walk earlier today against the same empty queues, so re-running would only duplicate bookkeeping. Recording the audit and returning cleanly; next tick re-dispatches per march.
+
 ### 2026-06-18 (Pass 96) — Z–H walk (march→iterate dispatch)
 
 **Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), ESLint fix (F), Dependency updates (G), Commit-hygiene (H).
