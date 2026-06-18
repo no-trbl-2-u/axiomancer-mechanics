@@ -46,10 +46,11 @@
 
 ## Pending
 
-- [ ] **[E — docs drift] `bearings.md` Combat contract still lists removed `getResistStat`** — `plan/bearings.md:74` lists `getResistStat (deprecated)` in the Combat front-door API-contract list, but the symbol was **removed** at Phase 106 (v0.13.0). The Pass-92 fix (`45b611e`) corrected the `README.md` + `docs/api.md` references but did not touch the bearings contract list, which is the third front-door reader. Stale reference to a non-existent export. Score 5 × 9 / 10 = **4.5**.
+<!-- No pending findings -->
 
 ## Done
 
+- [x] **[E — docs drift] `bearings.md` Combat contract still listed removed `getResistStat`** — resolved at `996e61f` (2026-06-18). `plan/bearings.md:74` listed `getResistStat (deprecated)` in the Combat front-door API-contract list, but the symbol was removed at Phase 106 (v0.13.0). The Pass-92 fix (`45b611e`) corrected the `README.md` + `docs/api.md` references but left the bearings contract list — the third front-door reader — stale. Dropped the entry; the Phase 80 "target-resist roll removed" annotation below it stays accurate. No source change (symbol already gone); verify green. Score 5 × 9 / 10 = 4.5.
 - [x] **[E — docs drift] Front-door docs referenced removed `getResistStat`** — resolved at `45b611e` (2026-06-18). `getResistStat` was removed at Phase 106 (v0.13.0) but `README.md:84` still listed it as a `_(deprecated)_` Combat stat accessor and `docs/api.md:56` called it "deprecated (use `getSaveStat`)". Dropped the README accessor entry and corrected api.md to "removed at v0.13.0 (use `getSaveStat`)". No source change (symbol already gone); verify green. Score 5 × 9 / 10 = 4.5.
 
 ## Audit Pass Log
