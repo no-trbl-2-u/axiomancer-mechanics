@@ -46,9 +46,28 @@
 
 ## Pending
 
-<!-- No pending findings -->
+- [ ] **[E — docs drift] Front-door docs reference removed `getResistStat` as a current/deprecated export** — `getResistStat` was **removed** from source at Phase 106 (v0.13.0 deprecation removals; `phase_106_v0.13.0_deprecation_removals.md` Unit 2 deleted it from `src/index.ts` and `src/Combat/stats.ts`). It is no longer in the barrel (`src/index.ts:54-56` exports only `getBaseStat`/`getAttackStat`/`getDefenseStat`/`getSaveStat`) and has zero non-test src references. But two front-door docs still present it as a live public export: `README.md:84` lists `getResistStat` _(deprecated)_ in the Combat row's stat-accessor list, and `docs/api.md:56` states "`getResistStat` deprecated (use `getSaveStat`)" — both now factually wrong (a consumer reading the README would attempt to import a non-existent symbol). Fix: drop the `getResistStat` mention from the README accessor list; correct api.md to say the symbol was *removed* at v0.13.0 (use `getSaveStat`). Impact 5 × Ease 9 / 10 = **4.5**.
 
 ## Audit Pass Log
+
+### 2026-06-18 (Pass 92) — Z–H walk (march→iterate dispatch)
+
+**Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), ESLint fix (F), Dependency updates (G), Commit-hygiene (H).
+
+**Findings:** 1 finding ≥3.0 — shipping this tick (see Pending → below). Queue otherwise empty.
+
+**Top finding (shipping):** **E (docs drift)** — `README.md:84` + `docs/api.md:56` reference `getResistStat` as a current/deprecated public export, but it was **removed** at Phase 106 (v0.13.0). Stale front-door API reference to a non-existent symbol. Impact 5 × Ease 9 / 10 = **4.5**.
+
+**Highlights (independently re-verified this pass):**
+- **Z (Critique):** CRITIQUE.md Pending empty; last critique pass 74 at `5182884` (today), 0 findings.
+- **A (Tests):** `npm test` green — 127 test files / 1821 passing (1 intentional skip). Sole `vi.spyOn(Math)` hit is the sanctioned `src/test-utils/rng.ts`.
+- **B (Spec-gaps):** Knowledge-Gaps only Q28 deferred (endgame); `> Your answer:` blanks are template/instruction files only, not live open questions.
+- **C (Type-safety):** clean — `as any`/`as unknown`/`@ts-ignore` over non-test src = 0.
+- **D (Dead code):** no `TODO`/`FIXME`/`HACK` markers in non-test src; barrel surface guarded by `public-barrel.engine.test.ts` (10 tests green).
+- **E (Docs):** module-level doc coverage complete; the `getResistStat` stale-reference above is the live finding — prior passes checked doc *existence* and the event-union surface, not removed-symbol references lingering in front-door tables.
+- **F (Lint):** build green. **G (Deps):** `npm outdated` clean. **H (hygiene):** `git status` clean at audit start.
+
+**Disposition:** shipping the E finding (stale-doc drain). Queue empty after; next tick re-dispatches per march.
 
 ### 2026-06-18 (Pass 91) — Z–H walk (march→iterate dispatch)
 
