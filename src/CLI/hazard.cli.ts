@@ -384,11 +384,12 @@ async function playEncounter(flags: HazardCliFlags, bag: readonly string[], runI
     let wins = state.marks.filter((m) => m === 'O').length;
     let tier = 'incomplete';
     if (state.phase === 'outcome' && state.outcome) {
-        tier = state.outcome.tier;
-        wins = state.outcome.wins;
+        const outcome = state.outcome;
+        tier = outcome.tier;
+        wins = outcome.wins;
         state = acknowledgeHazardOutcome(state);
-        const offer = state.outcome.offerCards;
-        const pick = state.outcome.canSkip ? null : (offer[0]?.id ?? null);
+        const offer = outcome.offerCards;
+        const pick = outcome.canSkip ? null : (offer[0]?.id ?? null);
         state = claimHazardRewards(state, pick);
         logState('claimHazardRewards', null, state, { tier, wins, picked: state.pickedRewardCardId });
     }
