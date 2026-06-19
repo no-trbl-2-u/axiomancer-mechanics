@@ -57,6 +57,23 @@
 
 ## Audit Pass Log
 
+### 2026-06-19 (Pass 98) — Z–H walk (march→iterate dispatch)
+
+**Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), ESLint fix (F), Dependency updates (G), Commit-hygiene (H).
+
+**Findings:** 0 findings ≥3.0 — queue empty. No `src/**` delta since Pass 97; the only source-bearing window remains Phase 153 (`27bf148`), and HEAD (`edd981b`) is the Pass-97 audit-log bookkeeping commit. Re-walked all categories independently and found zero drift.
+
+**Highlights (independently re-verified this pass):**
+- **Z (Critique):** CRITIQUE.md Pending empty; last critique pass 75 at `607f4e9`, 0 findings. Only 10 commits since (<12 gate) and ~9h since last pass (<24h) — critique not re-due this tick.
+- **A (Tests):** `npm test` green — 127 test files / 1825 passing (1 intentional skip). Zero `vi.spyOn(Math,'random')` outside the sanctioned `src/test-utils/rng.ts`; full e2e coverage across every src module.
+- **B (Spec-gaps):** Knowledge-Gaps only Q28 deferred (endgame); `> Your answer:` blanks are template/instruction files only.
+- **C (Type-safety):** clean — zero `as any`/`as unknown`/`@ts-ignore`/`@ts-expect-error` over non-test src.
+- **D (Dead code):** zero `TODO`/`FIXME`/`HACK`/`XXX` markers in non-test src; barrel exports all reachable.
+- **E (Docs):** counts re-verified against code — affix.library carries 66 `role: 'prefix'` + 66 `role: 'suffix'` = docs/equipment.md headers; modifier.catalogue carries 104 mod-id definitions (98 procedural + 6 unique) = docs/equipment.md:149; ENEMY_REGISTRY = 63 = docs/enemy.md:86. No stale removed-symbol references in any front-door reader.
+- **F (Lint):** build green. **G (Deps):** `npm outdated` clean (no minor/patch bumps). **H (hygiene):** `git status` clean at audit start; public-surface snapshot byte-identical to `scripts/public-surface.expected.json` (297 values / 202 types) after build.
+
+**Disposition:** zero findings ≥3.0. Bold posture would normally dispatch to `/expand` (iterate failure mode 3), but the expand gate is commit-distance-gated this tick (8 commits since expand pass 73 at `f44fde5`, need ≥20; same-day, need >48h) — and pass 73 already ran the identical 0-candidate signal walk against the same empty queues. Recording the audit and returning cleanly; next tick re-dispatches per march.
+
 ### 2026-06-18 (Pass 97) — Z–H walk (march→iterate dispatch)
 
 **Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), ESLint fix (F), Dependency updates (G), Commit-hygiene (H).
