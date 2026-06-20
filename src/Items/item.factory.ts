@@ -682,6 +682,109 @@ export function dropItemWithAffixes(
     }, rng);
 }
 
+// ─── Rarity-drop contract (Phase 154 — absorbed from mobile `affix-roll.ts`) ──
+
+/**
+ * Named affixes per rarity — the design contract for a rarity drop.
+ *
+ * The visible affix count (prefix / suffix *words* like "Keen" / "of Clarity")
+ * is the rarity signal, distinct from `rolledMods.length` (a single affix can
+ * carry several modifier ids):
+ *
+ *   - common   → 0 affixes  → "Iron Blade"
+ *   - uncommon → 1 affix    → "Keen Iron Blade" OR "Iron Blade of Clarity"
+ *   - rare     → 2 affixes  → "Keen Iron Blade of Clarity" (prefix + suffix)
+ *   - unique   → 3 *fixed* modifiers + fixed name; no prefix/suffix
+ *
+ * Uniques carry three fixed modifiers rather than rolled prefix/suffix affixes,
+ * so their entry counts modifiers, not affixes — {@link countNamedAffixes}
+ * returns 0 for a unique and callers verifying uniques check `rolledMods.length`
+ * instead.
+ *
+ * Mirrors the module-private `AFFIX_DEFAULTS_BY_RARITY` as a public, numeric
+ * contract consumers (loot tables, dev tools, presenters) can read directly.
+ */
+export const AFFIXES_PER_RARITY: Record<ItemRarity, number> = {
+    common: 0,
+    uncommon: 1,
+    rare: 2,
+    unique: 3,
+};
+
+/**
+ * Count the *named* affixes (prefix + suffix) on an equipment instance — the
+ * visible affix count that drives the rarity contract. Distinct from
+ * `rolledMods.length`, since one affix can carry several modifier ids.
+ */
+export function countNamedAffixes(item: Equipment): number {
+    const hasPrefix = Boolean(item.prefixId ?? item.prefixName);
+    const hasSuffix = Boolean(item.suffixId ?? item.suffixName);
+    return (hasPrefix ? 1 : 0) + (hasSuffix ? 1 : 0);
+}
+
+/**
+ * A base template carries a *baked* affix when it pins a prefix or suffix the
+ * factory force-applies (curated library variant). Such templates can't hit an
+ * exact rolled-affix count, so procedural rarity drops skip them.
+ */
+export function hasBakedAffix(template: { prefixId?: string; suffixId?: string }): boolean {
+    return Boolean(template.prefixId ?? template.suffixId);
+}
+
+/**
+ * Roll one equipment drop carrying exactly the rarity's named-affix count, with
+ * the display rarity stamped on the instance. `rng` defaults to `Math.random`;
+ * pass a seeded rng for deterministic drops (the loot-cache reward table does).
+ *
+ * The design wants *named affixes only* (the affix count is the visible affix
+ * count, with no separate hidden base mods), so for uncommon / rare this rolls
+ * through {@link dropItemWithAffixes} with the base rarity pinned to `common`
+ * (zero hidden mods) and the prefix/suffix caps set to the affix count wanted,
+ * then stamps the display rarity. For uncommon the single affix is randomly a
+ * prefix or a suffix. Uniques keep the plain `dropItem(..., 'unique')` path
+ * (fixed name + three fixed modifiers).
+ *
+ * Throws only if the underlying factory throws (e.g. the template is below
+ * `requiredLevel`); callers roll within a bounded retry and skip throws.
+ */
+export function dropItemAtRarity(
+    templateId: string,
+    playerLevel: number,
+    rarity: ItemRarity,
+    rng: () => number = Math.random,
+): Equipment {
+    if (rarity === 'unique') {
+        return dropItem(templateId, playerLevel, 'unique', rng);
+    }
+
+    if (rarity === 'common') {
+        const item = dropItem(templateId, playerLevel, 'common', rng);
+        return { ...item, rarity: 'common' };
+    }
+
+    // uncommon → 1 affix (random prefix or suffix); rare → prefix + suffix.
+    let maxPrefixes: number;
+    let maxSuffixes: number;
+    if (rarity === 'rare') {
+        maxPrefixes = 1;
+        maxSuffixes = 1;
+    } else if (rng() < 0.5) {
+        maxPrefixes = 1;
+        maxSuffixes = 0;
+    } else {
+        maxPrefixes = 0;
+        maxSuffixes = 1;
+    }
+
+    const item = dropItemWithAffixes(templateId, playerLevel, {
+        rarity: 'common',
+        maxPrefixes,
+        maxSuffixes,
+        rng,
+    });
+    return { ...item, rarity };
+}
+
 // Re-export the unique-pool shape so tests / loot tables can introspect it
 // without reaching into `modifier.catalogue.ts` directly.
 export { uniqueModPool };
