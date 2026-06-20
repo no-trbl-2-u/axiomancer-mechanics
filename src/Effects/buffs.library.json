@@ -1239,6 +1239,35 @@
       "tier": 2,
       "addedIn": "2026-06-07",
       "tags": ["status-effect", "regeneration", "since-april"]
+    },
+    {
+      "id": "buff_focus",
+      "name": "Husserl's Bracket",
+      "description": "You suspend the world and attend to one thing only. Bracketed away, distraction has no purchase; what remains is pure, deliberate intention — and intention, sustained, sharpens every act it rests upon and steadies the body mending beneath it.",
+      "type": "buff",
+      "category": "stat",
+      "duration": 3,
+      "stacking": "intensity",
+      "resistedBy": "heart",
+      "resistDR": 12,
+      "payload": {
+        "statModifiers": [
+          {
+            "stat": "mind",
+            "value": 1,
+            "isMultiplier": false
+          },
+          {
+            "stat": "mentalSkill",
+            "value": 2,
+            "isMultiplier": false
+          }
+        ],
+        "rollModifier": 1
+      },
+      "tier": 2,
+      "addedIn": "2026-06-20",
+      "tags": ["status-effect", "stat", "combo-enabler", "since-april"]
     }
   ]
 }

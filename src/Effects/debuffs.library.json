@@ -1514,6 +1514,62 @@
       "tier": 1,
       "addedIn": "2026-06-07",
       "tags": ["status-effect", "stat", "since-april"]
+    },
+    {
+      "id": "debuff_acid",
+      "name": "Aqua Regia",
+      "description": "A solvent that argues no metal is noble. It dissolves the premise of armor itself — eating through defense as readily as flesh, round after round, and where it meets open flame it becomes something that devours.",
+      "type": "debuff",
+      "category": "damage",
+      "duration": 3,
+      "stacking": "intensity",
+      "resistedBy": "body",
+      "resistDR": 13,
+      "payload": {
+        "damageOverTime": {
+          "damagePerRound": 3,
+          "damageType": "body"
+        },
+        "statModifiers": [
+          {
+            "stat": "physicalDefense",
+            "value": -2,
+            "isMultiplier": false
+          }
+        ]
+      },
+      "tier": 2,
+      "addedIn": "2026-06-20",
+      "tags": ["status-effect", "damage", "dot", "combo-enabler", "since-april"]
+    },
+    {
+      "id": "debuff_exposure",
+      "name": "Gödel's Exposure",
+      "description": "Every defense is a formal system, and every formal system harbors a true weakness it cannot close from within. Yours has been named aloud — and through that gap, the next blow walks unopposed.",
+      "type": "debuff",
+      "category": "defense",
+      "duration": 3,
+      "stacking": "intensity",
+      "resistedBy": "mind",
+      "resistDR": 13,
+      "payload": {
+        "defenseModifier": -3,
+        "statModifiers": [
+          {
+            "stat": "physicalDefense",
+            "value": -2,
+            "isMultiplier": false
+          },
+          {
+            "stat": "mentalDefense",
+            "value": -2,
+            "isMultiplier": false
+          }
+        ]
+      },
+      "tier": 2,
+      "addedIn": "2026-06-20",
+      "tags": ["status-effect", "defense", "combo-enabler", "since-april"]
     }
   ]
 }

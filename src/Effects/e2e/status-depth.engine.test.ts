@@ -12,7 +12,8 @@ import { mockFixedRng, restoreOriginalRng } from '../../test-utils/rng';
 // Import the modules we're testing
 import { evaluateInteractions, checkInteractionTrigger } from '../interactions';
 import { evaluateExtendedSynergyPredicate } from '../../Skills/synergy-predicates';
-import { EFFECT_INTERACTIONS } from '../amplification.registry';
+import { EFFECT_INTERACTIONS, validateInteractions } from '../amplification.registry';
+import { effectsLibrary } from '../effects.library';
 import type { ActiveEffect } from '../types';
 import type { ExtendedSynergyPredicate } from '../../Skills/synergy-predicates';
 
@@ -515,6 +516,31 @@ describe('Status Effect Depth Engine', () => {
             expect(match!.primary.sourceId).toBe('player');
             expect(match!.primary.resistedBy).toBe('mind');
             expect(match!.primary.resistDR).toBe(13);
+        });
+    });
+
+    // Phase 156 — guard against dead combos. Before Phase 156 the registry
+    // referenced effect ids (debuff_acid, debuff_vulnerability, buff_focus, …)
+    // that did not exist in the library, so most combos could never fire even
+    // once wired into combat. This guard fails the build if any combo ever
+    // references a missing effect again.
+    describe('Registry integrity (Phase 156)', () => {
+        it('every interaction references only effects that exist in the live library', () => {
+            const liveIds = new Set(effectsLibrary.registry.keys());
+            const errors = validateInteractions(liveIds);
+            expect(errors).toEqual([]);
+        });
+
+        it('exposes at least one live amplify_damage combo for DoT play', () => {
+            const damageCombos = EFFECT_INTERACTIONS.filter(i => i.result.type === 'amplify_damage');
+            expect(damageCombos.length).toBeGreaterThanOrEqual(1);
+        });
+
+        it('preserves status breadth — control/duration/advantage combos remain', () => {
+            const types = new Set(EFFECT_INTERACTIONS.map(i => i.result.type));
+            expect(types.has('amplify_duration')).toBe(true);
+            expect(types.has('grant_advantage')).toBe(true);
+            expect(types.has('amplify_intensity')).toBe(true);
         });
     });
 });
