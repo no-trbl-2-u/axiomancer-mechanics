@@ -69,6 +69,9 @@ export {
     registerMapEventPool,
     setDefaultMapEventPool,
     setNodeEventPoolOverride,
+    getNodeEventPool,
+    getNodeEventKinds,
+    getNodePrimaryEventKind,
 } from './MapEvents/resolve-map-event';
 export type {
     MapEventKind, MapEventPayload, MapEventPool, MapEventPoolEntry,

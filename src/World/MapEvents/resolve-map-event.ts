@@ -25,7 +25,7 @@ import { reachableObjectives, progressQuest } from '../quest.engine';
 import { applyAlignmentDelta } from '../../Philosophy';
 import type { QuestLog, NodeId } from '../types';
 import type {
-    MapEventPool, MapEventPoolEntry, ResolveMapEventResult, ResolvedEvent,
+    MapEventPool, MapEventPoolEntry, MapEventKind, ResolveMapEventResult, ResolvedEvent,
 } from './types';
 
 /**
@@ -95,6 +95,62 @@ function lookupPool(
     const overrideId = nodePoolOverrides.get(poolKey(continent, mapName, nodeId));
     const poolId = overrideId ?? defaultPoolByMap.get(poolKey(continent, mapName));
     return poolId ? poolRegistry.get(poolId) : undefined;
+}
+
+/**
+ * Read-only: the event pool registered for a node (override → map default),
+ * without rolling RNG or mutating state. Lets UI clients inspect what a node
+ * *can* resolve to (e.g. to choose a map icon) instead of re-deriving node
+ * semantics from a parallel client-side table.
+ */
+export function getNodeEventPool(
+    continent: string,
+    mapName: string,
+    nodeId: string,
+): MapEventPool | undefined {
+    return lookupPool(continent, mapName, nodeId);
+}
+
+/**
+ * Read-only: the distinct event kinds a node can resolve to, in pool order.
+ * Empty when no pool is registered for the node.
+ */
+export function getNodeEventKinds(
+    continent: string,
+    mapName: string,
+    nodeId: string,
+): MapEventKind[] {
+    const pool = lookupPool(continent, mapName, nodeId);
+    if (!pool) return [];
+    const seen = new Set<MapEventKind>();
+    const kinds: MapEventKind[] = [];
+    for (const entry of pool.entries) {
+        if (!seen.has(entry.kind)) {
+            seen.add(entry.kind);
+            kinds.push(entry.kind);
+        }
+    }
+    return kinds;
+}
+
+/**
+ * Read-only: the node's primary (highest-weight) event kind — the single
+ * representative kind a client should use for a node icon/tag. `undefined`
+ * when no pool is registered or the pool is empty. Ties resolve to the
+ * earlier-declared entry (stable with authoring order).
+ */
+export function getNodePrimaryEventKind(
+    continent: string,
+    mapName: string,
+    nodeId: string,
+): MapEventKind | undefined {
+    const pool = lookupPool(continent, mapName, nodeId);
+    if (!pool || pool.entries.length === 0) return undefined;
+    let best = pool.entries[0];
+    for (const entry of pool.entries) {
+        if (entry.weight > best.weight) best = entry;
+    }
+    return best.kind;
 }
 
 function rollPool(

@@ -148,8 +148,140 @@ export const characterPresets: CharacterPreset[] = [
     apprenticePreset, wandererPreset, sagePreset,
 ];
 
+// ─── Level-ladder presets (evidence / tooling) ──────────────────────────────────
+//
+// A finer, level-explicit ladder (L1 / L15 / L30 / L50) used by consumer
+// dev tooling for reproducible combat / encounter evidence runs. Kept in a
+// SEPARATE array so the canonical archetype picker (`characterPresets`)
+// stays apprentice / wanderer / sage; `getPresetById` searches both.
+// Previously authored client-side (`axiomancer-mobile`); moved here so the
+// engine owns the preset data (curated level / stat / skill / gear
+// selection) — `buildCharacterFromPreset` validates every id at build time.
+
+export const ladderL1Preset: CharacterPreset = {
+    id: 'kid-l1',
+    name: 'Ladder · L1',
+    summary: 'Tier-1 evidence baseline.',
+    level: 1,
+    baseStats: { heart: 5, body: 5, mind: 5 },
+    equipment: [],
+    knownSkills: [...TIER_1_SKILLS],
+    equippedSkills: TIER_1_SKILLS.slice(0, 4),
+    consumables: [{ id: 'minor-healing-potion', quantity: 3 }],
+    currency: 0,
+};
+
+export const ladderL15Preset: CharacterPreset = {
+    id: 'kid-l15',
+    name: 'Ladder · L15',
+    summary: 'Mid-tier evidence kit.',
+    level: 15,
+    baseStats: { heart: 12, body: 14, mind: 12 },
+    equipment: [
+        { templateId: 'steel-blade', slot: 'weapon' },
+        { templateId: 'chain-mail', slot: 'armor' },
+        { templateId: 'chain-coif', slot: 'head' },
+        { templateId: 'leather-coat', slot: 'body' },
+        { templateId: 'chain-gauntlets', slot: 'hands' },
+        { templateId: 'leather-boots', slot: 'feet' },
+        { templateId: 'silver-ring', slot: 'accessory' },
+    ],
+    knownSkills: [...TIER_1_SKILLS, ...TIER_2_SKILLS, ...TIER_2_SYNERGY_SKILLS],
+    equippedSkills: [
+        'ad-hominem-strike',
+        'ship-of-theseus',
+        'resonance-bleed',
+        'resonance-burst',
+    ],
+    consumables: [
+        { id: 'healing-potion', quantity: 5 },
+        { id: 'antidote', quantity: 2 },
+    ],
+    currency: 50,
+};
+
+export const ladderL30Preset: CharacterPreset = {
+    id: 'kid-l30',
+    name: 'Ladder · L30',
+    summary: 'Late-tier evidence kit.',
+    level: 30,
+    baseStats: { heart: 24, body: 28, mind: 26 },
+    equipment: [
+        { templateId: 'mithril-blade', slot: 'weapon' },
+        { templateId: 'plate-mail', slot: 'armor' },
+        { templateId: 'full-helm', slot: 'head' },
+        { templateId: 'scaled-coat', slot: 'body' },
+        { templateId: 'plate-gauntlets', slot: 'hands' },
+        { templateId: 'iron-greaves', slot: 'feet' },
+        { templateId: 'gold-ring', slot: 'accessory' },
+    ],
+    knownSkills: [
+        ...TIER_1_SKILLS,
+        ...TIER_2_SKILLS,
+        ...TIER_3_SKILLS,
+        ...TIER_2_SYNERGY_SKILLS,
+    ],
+    equippedSkills: [
+        'sorites-cascade',
+        'bootstrap-paradox',
+        'resonance-detonation',
+        'bat-swarm-thoughtform',
+    ],
+    consumables: [
+        { id: 'greater-healing-potion', quantity: 6 },
+        { id: 'clarity-serum', quantity: 3 },
+        { id: 'focus-vial', quantity: 3 },
+    ],
+    currency: 250,
+};
+
+export const ladderL50Preset: CharacterPreset = {
+    id: 'kid-l50',
+    name: 'Ladder · L50',
+    summary: 'Endgame evidence kit.',
+    level: 50,
+    baseStats: { heart: 40, body: 44, mind: 42 },
+    // Top-tier curated affixed L20 variants — the highest requiredLevel
+    // rows the library ships — so the build still arrives geared and
+    // affix-backed.
+    equipment: [
+        { templateId: 'savage-mithril-blade-of-ruin', slot: 'weapon' },
+        { templateId: 'adamant-plate-mail-of-warding', slot: 'armor' },
+        { templateId: 'full-helm-of-insight', slot: 'head' },
+        { templateId: 'scaled-coat-of-thorns', slot: 'body' },
+        { templateId: 'plate-gauntlets-of-the-duelist', slot: 'hands' },
+        { templateId: 'phantom-iron-greaves-of-shadows', slot: 'feet' },
+        { templateId: 'silver-ring-of-resilience', slot: 'accessory' },
+    ],
+    knownSkills: [
+        ...TIER_1_SKILLS,
+        ...TIER_2_SKILLS,
+        ...TIER_3_SKILLS,
+        ...TIER_2_SYNERGY_SKILLS,
+    ],
+    equippedSkills: [
+        'sorites-cascade',
+        'straw-giant',
+        'bootstrap-paradox',
+        'resonance-detonation',
+    ],
+    consumables: [
+        { id: 'supreme-healing-potion', quantity: 8 },
+        { id: 'regeneration-tonic', quantity: 3 },
+        { id: 'phoenix-tear', quantity: 2 },
+        { id: 'greater-resonance-crystal', quantity: 3 },
+    ],
+    currency: 1000,
+};
+
+/** Level-explicit evidence ladder. Not part of `characterPresets`. */
+export const levelLadderPresets: CharacterPreset[] = [
+    ladderL1Preset, ladderL15Preset, ladderL30Preset, ladderL50Preset,
+];
+
 export function getPresetById(id: string): CharacterPreset | undefined {
-    return characterPresets.find(p => p.id === id);
+    return characterPresets.find(p => p.id === id)
+        ?? levelLadderPresets.find(p => p.id === id);
 }
 
 // ─── Builder ──────────────────────────────────────────────────────────────────
