@@ -280,7 +280,115 @@
       "significant": false,
       "confidence": "low",
       "focus": "Really focus on early game mechanics and keeping \"elite\" and \"boss\" flights win ratio above 65% but below 75%. Call out any strategies found that heavily deviate from the player focusing on status effects, skills, and resource management"
+    },
+    {
+      "timestamp": "2026-06-20T13-46-55-117Z",
+      "paramId": "effect.tier1_heart_defend.healthPerRound",
+      "oldValue": 2,
+      "newValue": 3,
+      "direction": "up",
+      "deltaHealth": -0.000010005971769810884,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "early game mechanics; keep elite and boss win ratios between 65-75%; flag any strategy that deviates from status-effects/skills/resource-management"
+    },
+    {
+      "timestamp": "2026-06-20T13-46-55-117Z",
+      "paramId": "effect.debuff_confusion.duration",
+      "oldValue": 4,
+      "newValue": 6,
+      "direction": "up",
+      "deltaHealth": -0.0008296913223685282,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "early game mechanics; keep elite and boss win ratios between 65-75%; flag any strategy that deviates from status-effects/skills/resource-management"
+    },
+    {
+      "timestamp": "2026-06-20T13-46-55-117Z",
+      "paramId": "effect.debuff_fear.duration",
+      "oldValue": 3,
+      "newValue": 4,
+      "direction": "up",
+      "deltaHealth": -0.0001502352844817284,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "early game mechanics; keep elite and boss win ratios between 65-75%; flag any strategy that deviates from status-effects/skills/resource-management"
+    },
+    {
+      "timestamp": "2026-06-20T13-48-24-416Z",
+      "paramId": "effect.tier1_heart_defend.healthPerRound",
+      "oldValue": 2,
+      "newValue": 3,
+      "direction": "up",
+      "deltaHealth": -0.000017408706354221648,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "early game mechanics; keep elite and boss win ratios between 65-75%; flag any strategy that deviates from status-effects/skills/resource-management"
+    },
+    {
+      "timestamp": "2026-06-20T13-48-24-416Z",
+      "paramId": "effect.debuff_confusion.duration",
+      "oldValue": 4,
+      "newValue": 6,
+      "direction": "up",
+      "deltaHealth": -0.0008296913223685282,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "early game mechanics; keep elite and boss win ratios between 65-75%; flag any strategy that deviates from status-effects/skills/resource-management"
+    },
+    {
+      "timestamp": "2026-06-20T13-48-24-416Z",
+      "paramId": "effect.debuff_fear.duration",
+      "oldValue": 3,
+      "newValue": 4,
+      "direction": "up",
+      "deltaHealth": -0.0001502352844817284,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "early game mechanics; keep elite and boss win ratios between 65-75%; flag any strategy that deviates from status-effects/skills/resource-management"
+    },
+    {
+      "timestamp": "2026-06-20T13-48-24-416Z",
+      "paramId": "effect.debuff_bleed.damagePerRound",
+      "oldValue": 3,
+      "newValue": 4,
+      "direction": "up",
+      "deltaHealth": 0.00039583001442031196,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "early game mechanics; keep elite and boss win ratios between 65-75%; flag any strategy that deviates from status-effects/skills/resource-management"
+    },
+    {
+      "timestamp": "2026-06-20T13-48-24-416Z",
+      "paramId": "effect.maxDuration",
+      "oldValue": 10,
+      "newValue": 13,
+      "direction": "up",
+      "deltaHealth": -0.000005704372946224723,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "early game mechanics; keep elite and boss win ratios between 65-75%; flag any strategy that deviates from status-effects/skills/resource-management"
+    },
+    {
+      "timestamp": "2026-06-20T13-48-24-416Z",
+      "paramId": "effect.resolutionDebuffIntensityThreshold",
+      "oldValue": 3,
+      "newValue": 4,
+      "direction": "up",
+      "deltaHealth": -0.004672182391352586,
+      "kept": false,
+      "significant": false,
+      "confidence": "low",
+      "focus": "early game mechanics; keep elite and boss win ratios between 65-75%; flag any strategy that deviates from status-effects/skills/resource-management"
     }
   ],
-  "updatedAt": "2026-06-08T23:29:35.266Z"
+  "updatedAt": "2026-06-20T13:49:05.541Z"
 }
