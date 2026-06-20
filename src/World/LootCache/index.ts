@@ -46,3 +46,20 @@ export {
     continueLootCacheCard,
     claimLootCacheOutcome,
 } from './lootcache.engine';
+
+// ── Balance simulator (push-your-luck bots + bands) ────────────────────────
+export type {
+    LootCachePolicyId,
+    LootCacheSimRunResult,
+    LootCacheSimSummary,
+    RunLootCacheSimOptions,
+    LootCacheBalanceReport,
+} from './lootcache.sim';
+export {
+    simulateLootCache,
+    runLootCacheSim,
+    generateLootCacheBalanceReport,
+    DEFAULT_CACHE_ITEMS,
+    DEFAULT_CACHE_CURRENCY,
+    LOOT_CACHE_BITE_PENALTY,
+} from './lootcache.sim';

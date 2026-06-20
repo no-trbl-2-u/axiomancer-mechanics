@@ -382,6 +382,38 @@ const report = generateGatheringBalanceReport(400);
 
 Balance bands are verified in `src/World/Gathering/e2e/gathering.balance.sim.test.ts` to ensure tuning changes don't break the incentive gradient where **blind greed < timid restraint < skilled push-your-luck**.
 
+## Rest & Loot-Cache Balance Simulation (Phase 160)
+
+The remaining Phase 137 minigames each gained a deterministic policy-bot sim
+(`rest.sim.ts`, `lootcache.sim.ts`), mirroring the gathering/hazard pattern.
+Together with `quest-board.sim.ts` this gives every minigame a real sim for the
+`rest-tuning` / `loot-cache-tuning` skills to drive.
+
+### Rest ("The Night Watch") — `rest.sim.ts`
+
+Rest is the gentle minigame: a night can be MEAGRE but never lethal, so the
+bands encode a heal-RICHNESS gradient, not a risk-of-ruin axis. Three posture
+bots: **`watcher`** (leanest heal, safest, finds the most keepsakes) <
+**`deep-sleeper`** (rich baseHeal, pays for stirs unwatched) <
+**`fire-tender`** (banks warmth into heal *and* the cleanse line — the skilled
+take). `runRestSim(options)` and `generateRestBalanceReport(runs)` return
+heal-fraction / tier-rate / cleanse-rate / keepsake metrics. Bands verified in
+`src/World/Rest/e2e/rest.balance.sim.test.ts`.
+
+### Loot-Cache ("The Reliquary") — `lootcache.sim.ts`
+
+Push-your-luck on hidden information: deeper layers are richer AND likelier
+trapped, and one probe buys perfect information. Three bots: **`greedy`**
+(always delve — richest raw take but most bitten, stung two caches in three),
+**`prudent`** (lid then seal — the unbitten floor), **`prober`** (saves its
+probe for the deadliest deepest layer). The sim surfaced a real balance note:
+with a single probe and the richest layer also the deadliest, the prober matches
+greedy on RAW currency but wins decisively on **risk-adjusted value** (same loot,
+roughly half the bites). The report exposes both a `currencyGradient` and a
+`riskAdjusted` gradient (`avgCurrency − LOOT_CACHE_BITE_PENALTY × avgBitten`) so
+the tuning skill can judge the probe's worth. Bands verified in
+`src/World/LootCache/e2e/lootcache.balance.sim.test.ts`.
+
 ## See Also
 
 - [`specs/08-world-content-and-hazards.md`](../specs/08-world-content-and-hazards.md)

@@ -54,3 +54,17 @@ export {
     continueRestWatch,
     claimRestOutcome,
 } from './rest.engine';
+
+// ── Balance simulator (policy bots + bands) ────────────────────────────────
+export type {
+    RestPolicyId,
+    RestSimRunResult,
+    RestSimSummary,
+    RunRestSimOptions,
+    RestBalanceReport,
+} from './rest.sim';
+export {
+    simulateRest,
+    runRestSim,
+    generateRestBalanceReport,
+} from './rest.sim';

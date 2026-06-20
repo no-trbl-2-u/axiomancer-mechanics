@@ -24,23 +24,19 @@ rescinded 2026-06-12 (`src/Character/presets.ts` header).
 closes), or the original intent (dev-tools replace them) gets a real
 migration phase for the three consumers.
 
-## 3. The Phase 137 minigames have no sims or CLIs
-
-**What:** Hazard and Gathering each have a policy sim
-(`hazard.sim.ts` / `gathering.sim.ts`), codified balance bands, and a CLI
-subcommand. QuestBoard, Rest, and LootCache (Phase 137) have hermetic e2e
-suites only. Their tuning skills (`quest-board-tuning`, `rest-tuning`,
-`loot-cache-tuning`) currently prescribe scratch `npx tsx` policy probes
-and each names the missing sim as a standing propose-only suggestion.
-
-**Pending work:** `quest-board.sim.ts`, `rest.sim.ts`, `lootcache.sim.ts`
-with policy bands in e2e, plus CLI subcommands if manual play is wanted
-(`npm run quest-board` etc., mirroring `npm run gathering`).
-
-> **Promoted to Phase 160** via oversight 2026-06-20 (Q1: T pick). Folds in
-> the standing Hazard sim harness candidate (utility-deck CLI injection;
-> the `ts-node` game.cli.ts:185 break was separately resolved on main).
-> Close this entry when Phase 160 ships.
+> **§3 (Phase 137 minigame sims) — RESOLVED in Phase 160 (2026-06-20).**
+> All five Phase 137 minigames now have policy sims with codified balance
+> bands: `quest-board.sim.ts` (pre-existing), and `rest.sim.ts` +
+> `lootcache.sim.ts` shipped this phase with `rest.balance.sim.test.ts` /
+> `lootcache.balance.sim.test.ts`. The `rest-tuning` / `loot-cache-tuning`
+> skills now have real sims to drive instead of scratch `npx tsx` probes.
+> The LootCache sim surfaced a real balance note: with a single probe and
+> the richest layer also the deadliest, blind greed matches the prober on
+> RAW currency — the prober only wins on RISK-ADJUSTED value (same loot,
+> half the bites). Captured in the report's `riskAdjusted` gradient as a
+> tuning hook. CLI subcommands (`npm run rest` / `loot-cache`) and the
+> hazard `--deck`/`--bag-file` injection remain deferred (see §4); they
+> were the conditional "if manual play is wanted" half of the row.
 
 ## 4. The CLI does not play the Phase 137 minigames
 
