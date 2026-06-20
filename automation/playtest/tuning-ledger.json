@@ -465,7 +465,73 @@
       "kept": false,
       "significant": false,
       "confidence": "low"
+    },
+    {
+      "timestamp": "2026-06-20T15-47-49-466Z",
+      "paramId": "combat.healthPerStat",
+      "oldValue": 5,
+      "newValue": 6,
+      "direction": "up",
+      "deltaHealth": -0.003266134646325608,
+      "kept": false,
+      "significant": false,
+      "confidence": "low"
+    },
+    {
+      "timestamp": "2026-06-20T15-47-49-466Z",
+      "paramId": "combat.skillStatMultiplier",
+      "oldValue": 0.5,
+      "newValue": 0.6,
+      "direction": "up",
+      "deltaHealth": -0.0009913670244922068,
+      "kept": false,
+      "significant": false,
+      "confidence": "low"
+    },
+    {
+      "timestamp": "2026-06-20T15-47-49-466Z",
+      "paramId": "effect.maxDuration",
+      "oldValue": 10,
+      "newValue": 12,
+      "direction": "up",
+      "deltaHealth": 0,
+      "kept": false,
+      "significant": false,
+      "confidence": "low"
+    },
+    {
+      "timestamp": "2026-06-20T15-47-49-466Z",
+      "paramId": "combat.friendshipCounterMax",
+      "oldValue": 3,
+      "newValue": 2,
+      "direction": "down",
+      "deltaHealth": 0,
+      "kept": false,
+      "significant": false,
+      "confidence": "low"
+    },
+    {
+      "timestamp": "2026-06-20T15-47-49-466Z",
+      "paramId": "effect.debuff_burn.damagePerRound",
+      "oldValue": 4,
+      "newValue": 5,
+      "direction": "up",
+      "deltaHealth": 0,
+      "kept": false,
+      "significant": false,
+      "confidence": "low"
+    },
+    {
+      "timestamp": "2026-06-20T15-47-49-466Z",
+      "paramId": "combat.resourceGen.attackHit",
+      "oldValue": 3,
+      "newValue": 4,
+      "direction": "up",
+      "deltaHealth": 0.003425680427535327,
+      "kept": false,
+      "significant": false,
+      "confidence": "low"
     }
   ],
-  "updatedAt": "2026-06-20T15:06:16.421Z"
+  "updatedAt": "2026-06-20T15:48:22.945Z"
 }
