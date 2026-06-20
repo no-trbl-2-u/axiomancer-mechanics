@@ -843,17 +843,25 @@ bonuses).
 
 ### Set library
 
-The initial library (`src/Items/set.library.ts`) ships 3 sets:
+The library (`src/Items/set.library.ts`) ships 7 sets. **Phase 158 —
+status-centering:** per the load-bearing doctrine (status effects are the
+MAIN fun; flat-stat-stacking gear is a balance failure), every set's
+defining payoff now anchors on a status-effect passive. Aggressive sets
+grant `buff_status_chance_up` (your statuses land more often);
+defensive sets grant `buff_resistance_body/_mind/_heart` (resist enemy
+statuses). The pre-existing flat-stat + resource-token bonuses are
+preserved as a secondary floor — the status passive is layered on, not
+swapped in. (Embers of Rebirth is already status-rich and unchanged.)
 
-- **Wanderer's Road** (2-piece): `sandals` + `leather-cap`. 2-piece
-  bonus: `combatStartTokens: { heart: 2 }`.
-- **Iron Discipline** (3-piece): `leather-cap` + `cloth-wrap` +
-  `cloth-gloves`. 2-piece bonus: `statModifiers: [{ stat:
-  'physicalDefense', value: 3 }]`. 3-piece bonus: `generationBonus: [{
-  trigger: 'any', resourceType: 'body', bonus: 1 }]`.
-- **Scholar's Circle** (2-piece): `copper-ring` + `leather-cap`.
-  2-piece bonus: `combatStartTokens: { mind: 2 }` + `passiveEffects:
-  ['buff_critical_rate_up']`.
+| Set | Pieces | Members | Status identity (passive) | Floor bonuses |
+| --- | --- | --- | --- | --- |
+| **Wanderer's Road** | 2 | `sandals` + `leather-cap` | DEFENSE — `buff_resistance_heart` (2pc) | `combatStartTokens: { heart: 2 }` |
+| **Iron Discipline** | 3 | `leather-cap` + `cloth-wrap` + `cloth-gloves` | OFFENSE — `buff_status_chance_up` (3pc) | 2pc `+3 physicalDefense`; 3pc `+1 body/any` gen |
+| **Scholar's Circle** | 2 | `copper-ring` + `leather-cap` | OFFENSE — `buff_status_chance_up` (2pc) | `combatStartTokens: { mind: 2 }` + `buff_critical_rate_up` |
+| **Veteran's Plate** | 4 | `plate-mail` + `full-helm` + `plate-gauntlets` + `iron-greaves` | DEFENSE — `buff_resistance_body` (4pc) | 2pc `+4 physicalDefense`; 3pc `+2 body` tokens; 4pc `buff_damage_reduction` |
+| **Sage's Regalia** | 3 | `full-helm` + `scaled-coat` + `gold-ring` | DEFENSE — `buff_resistance_mind` (3pc) | 2pc `+3 mind/+3 mentalDefense`; 3pc `+3 mind` tokens + `buff_buff_duration_up` |
+| **Embers of Rebirth** | 2 | `phoenix-mantle` + `titans-girdle` | (already status-rich) | `buff_regeneration` + `buff_phoenix_vigor` + `+3 heart` |
+| **Skirmisher's Kit** | 3 | `iron-greaves` + `leather-coat` + `chain-gauntlets` | OFFENSE — `buff_status_chance_up` (3pc) | 2pc `+2 luck/+3 physicalSave`; 3pc `buff_evasion_up` |
 
 Sets intentionally overlap on `leather-cap`. A player wearing
 `sandals` + `leather-cap` + `copper-ring` activates BOTH the
