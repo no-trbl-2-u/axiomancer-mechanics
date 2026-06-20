@@ -49,8 +49,10 @@ import {
     affixesForSlot,
     composeItemName,
     getAffixById,
+    isOffensiveStatusAffix,
     AFFIX_RARITY_WEIGHTS,
 } from './affix.library';
+import { STATUS_AFFIX_DRAW_BIAS } from '../Game/game-mechanics.constants';
 
 // ─── Rarity weight table (Spec 05c §9) ───────────────────────────────────────
 
@@ -331,10 +333,23 @@ export interface AffixControl {
     pinSuffixId?: string;
 }
 
-/** Weighted draw of a single affix from `candidates`, consuming one rng value. */
+/**
+ * Weighted draw of a single affix from `candidates`, consuming one rng value.
+ *
+ * Phase 157 — the base draw weight is the affix's hidden-rarity weight, then
+ * OFFENSIVE status-applying affixes (see `isOffensiveStatusAffix`) are boosted
+ * by `STATUS_AFFIX_DRAW_BIAS` so an affix roll meaningfully feeds status-effect
+ * play rather than flat-stat trading (the load-bearing doctrine). Flat-stat
+ * affixes remain drawable — the bias re-centers the distribution, it does not
+ * remove variety.
+ */
 function drawAffix(candidates: Affix[], rng: () => number): Affix | undefined {
     if (candidates.length === 0) return undefined;
-    const entries = candidates.map(a => [a, AFFIX_RARITY_WEIGHTS[a.hiddenRarity]] as const);
+    const entries = candidates.map(a => {
+        const base = AFFIX_RARITY_WEIGHTS[a.hiddenRarity];
+        const weight = isOffensiveStatusAffix(a) ? base * STATUS_AFFIX_DRAW_BIAS : base;
+        return [a, weight] as const;
+    });
     return drawWeighted(entries, rng);
 }
 

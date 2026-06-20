@@ -51,6 +51,7 @@ export {
 export {
     prefixes, suffixes, allAffixes, getAffixById,
     composeItemName, affixesForSlot, AFFIX_RARITY_WEIGHTS,
+    isOffensiveStatusAffix,
 } from './affix.library';
 export type { Affix, AffixRole } from './modifier.types';
 export { consumableLibrary, getConsumableById } from './consumable.library';

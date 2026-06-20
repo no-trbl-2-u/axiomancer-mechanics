@@ -39,6 +39,14 @@ that landed after v0.22.0.
 
 ### Changed
 
+- **Status-centered affix draws (Phase 157).** Affix rolls now bias toward
+  offensive status-applying affixes (`STATUS_AFFIX_DRAW_BIAS`, default 3),
+  so weapon/hands drops surface poison/burn/bleed/stun/etc. prefixes the
+  majority of the time instead of being mathematically swamped by common
+  flat-stat affixes. Discriminator `isOffensiveStatusAffix` (status-tagged,
+  status-applying slot, non-defensive) gates the bias so cleanse/resist
+  affixes are not boosted. Exposed as the `loot.statusAffixDrawBias`
+  tunable; flat-stat variety is preserved, not removed.
 - **Character presets un-deprecated.** The "scheduled for removal at
   v0.13.0" notices were stale — presets are load-bearing (mobile DEV
   preset picker, Playtest runner, Tuning difficulty bands) and are a

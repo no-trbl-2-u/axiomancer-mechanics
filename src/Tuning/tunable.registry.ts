@@ -152,6 +152,22 @@ export const TUNABLE_REGISTRY: TunableParam[] = [
         effect: { engagement: 'raises' },
     },
     {
+        id: 'loot.statusAffixDrawBias',
+        kind: 'multiplier',
+        category: 'loot',
+        file: CONSTANTS_FILE,
+        locator: { exportName: 'STATUS_AFFIX_DRAW_BIAS' },
+        min: 1, max: 6, step: 0.5,
+        magnitudeCapPct: 0.5,
+        tags: ['loot', 'affix', 'status-effect', 'engagement'],
+        rationale: 'Draw-weight multiplier for offensive status-applying affixes '
+            + '(weapon/hands, status-tagged, non-defensive). At 1 the affix pool is '
+            + 'flat-stat dominated (a doctrine failure); raising it makes status '
+            + 'weapons/gauntlets the expected affix roll so loot feeds status-effect '
+            + 'play. Engagement-positive; touches drop naming/mods only, not combat math.',
+        effect: { engagement: 'raises' },
+    },
+    {
         id: 'progression.statPointsPerLevel',
         kind: 'constant',
         category: 'fundamental',

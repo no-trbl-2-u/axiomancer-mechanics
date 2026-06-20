@@ -24,11 +24,13 @@ import {
     composeItemName,
     affixesForSlot,
     getAffixById,
+    isOffensiveStatusAffix,
     allAffixes,
     prefixes,
     suffixes,
     equipmentTemplates,
 } from '../index';
+import { STATUS_AFFIX_DRAW_BIAS } from '../../Game/game-mechanics.constants';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -493,5 +495,89 @@ describe('Phase 152: curated affixed library variants', () => {
         const a = dropItem('savage-mithril-blade-of-ruin', 20, 'common', seededRng(9));
         const b = dropItem('savage-mithril-blade-of-ruin', 20, 'common', seededRng(9));
         expect(a).toEqual(b);
+    });
+});
+
+// ─── Phase 157 — status-centered affix draw bias ─────────────────────────────
+
+describe('Phase 157: status-affix draw bias', () => {
+    it('uses a bias multiplier strictly greater than 1 (status play is favoured)', () => {
+        expect(STATUS_AFFIX_DRAW_BIAS).toBeGreaterThan(1);
+    });
+
+    it('classifies offensive weapon/hands status affixes as status-applying', () => {
+        // Venomous (weapon, status/dot), Slowing (weapon, status/control),
+        // Sapping (hands, status/control) are the doctrine payoff affixes.
+        for (const id of ['pfx-venomous', 'pfx-slowing', 'pfx-sapping', 'sfx-of-venom']) {
+            const affix = getAffixById(id)!;
+            expect(isOffensiveStatusAffix(affix), id).toBe(true);
+        }
+    });
+
+    it('excludes flat-stat affixes and defensive/cleanse "status" affixes', () => {
+        // Flat-stat affixes carry no status tag at all.
+        for (const id of ['pfx-keen', 'pfx-crushing', 'pfx-fortified']) {
+            expect(isOffensiveStatusAffix(getAffixById(id)!), id).toBe(false);
+        }
+        // sfx-of-purity (am-cleanse) is tagged status + sustain → NOT biased.
+        const purity = getAffixById('sfx-of-purity')!;
+        expect(purity.tags).toContain('status');
+        expect(isOffensiveStatusAffix(purity)).toBe(false);
+        // am-status-amp accessory hex is status-tagged but not on a status-
+        // applying slot (accessory), so it is not an offensive-application affix.
+        const hex = getAffixById('sfx-of-the-hex')!;
+        expect(hex.tags).toContain('status');
+        expect(isOffensiveStatusAffix(hex)).toBe(false);
+    });
+
+    it('every classified affix sits on a status-applying slot (weapon/hands)', () => {
+        for (const affix of allAffixes.filter(isOffensiveStatusAffix)) {
+            expect(
+                affix.validSlots.some(s => s === 'weapon' || s === 'hands'),
+                affix.id,
+            ).toBe(true);
+            expect(affix.tags ?? []).toContain('status');
+        }
+    });
+
+    it('weapon rare drops surface offensive status prefixes the MAJORITY of the time', () => {
+        // With the bias live, an affixed weapon drop should carry an offensive
+        // status prefix far more often than not — proving loot now feeds status
+        // play rather than flat-stat trading. Measure the prefix word against the
+        // offensive-status set across a large seed sweep.
+        const statusPrefixWords = new Set(
+            prefixes.filter(isOffensiveStatusAffix).map(p => p.word),
+        );
+        let statusHits = 0;
+        const N = 600;
+        for (let s = 1; s <= N; s++) {
+            const drop = dropItemWithAffixes('iron-blade', 40, {
+                rarity: 'rare',
+                rng: seededRng(s * 13 + 1),
+                maxSuffixes: 0, // isolate the prefix roll
+            });
+            const lead = drop.name.replace(/ Iron Blade$/, '');
+            if (statusPrefixWords.has(lead)) statusHits++;
+        }
+        // Doctrine bar: status prefixes are the dominant outcome (> half).
+        expect(statusHits / N).toBeGreaterThan(0.5);
+    });
+
+    it('does NOT eliminate flat-stat variety (some non-status prefixes still roll)', () => {
+        const statusPrefixWords = new Set(
+            prefixes.filter(isOffensiveStatusAffix).map(p => p.word),
+        );
+        let nonStatusHits = 0;
+        for (let s = 1; s <= 600; s++) {
+            const drop = dropItemWithAffixes('iron-blade', 40, {
+                rarity: 'rare',
+                rng: seededRng(s * 13 + 1),
+                maxSuffixes: 0,
+            });
+            const lead = drop.name.replace(/ Iron Blade$/, '');
+            if (lead !== 'Iron Blade' && !statusPrefixWords.has(lead)) nonStatusHits++;
+        }
+        // Variety guard: flat-stat / non-status prefixes remain reachable.
+        expect(nonStatusHits).toBeGreaterThan(0);
     });
 });

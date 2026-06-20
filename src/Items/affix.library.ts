@@ -1570,3 +1570,33 @@ export const AFFIX_RARITY_WEIGHTS: Record<HiddenModRarity, number> = {
     uncommon_mod: 3,
     rare_mod: 1,
 };
+
+/**
+ * Slots that *apply* status to an opponent on a hit/attack — the offensive
+ * status-application slots. Affixes on other slots that carry a `status` tag are
+ * defensive/utility in nature (resist, cleanse, taunt) and are NOT the
+ * doctrine's "apply and exploit status" payoff.
+ */
+const STATUS_APPLYING_SLOTS: ReadonlySet<EquipmentSlot> = new Set<EquipmentSlot>([
+    'weapon',
+    'hands',
+]);
+
+/** Tags that mark an affix as defensive/sustain intent even if `status`-tagged. */
+const DEFENSIVE_AFFIX_TAGS: ReadonlySet<string> = new Set(['defense', 'sustain']);
+
+/**
+ * Phase 157 — is this affix an *offensive status-applying* affix?
+ *
+ * True only when the affix is `status`-tagged, can roll on a status-applying
+ * slot (weapon/hands), and is not flagged defensive/sustain. This is the
+ * discriminator the drop factory biases toward so affix rolls feed status-effect
+ * play rather than flat-stat trading — without over-rewarding defensive `status`
+ * affixes (cleanse, resist, taunt) that merely mention status.
+ */
+export function isOffensiveStatusAffix(affix: Affix): boolean {
+    const tags = affix.tags ?? [];
+    if (!tags.includes('status')) return false;
+    if (tags.some(t => DEFENSIVE_AFFIX_TAGS.has(t))) return false;
+    return affix.validSlots.some(s => STATUS_APPLYING_SLOTS.has(s));
+}
