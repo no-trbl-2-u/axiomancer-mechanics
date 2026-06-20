@@ -152,12 +152,12 @@ Decisions:
 
 ## Definition of Done
 
-- [ ] `analyzeDotErosion` credits guaranteed pending DoT against effective HP
-- [ ] `analyzeDebuffSaturation` recognises actively-restricting control as decisive
-- [ ] Hermetic e2e: previously-timeout DoT stack now resolves; boundary case still does not
-- [ ] `docs/combat.md` updated
-- [ ] `npm run verify` + `npm run deploy:check` green
-- [ ] No `src/index.ts` / public-API change
+- [x] `analyzeDotErosion` credits guaranteed pending DoT against effective HP
+- [x] `analyzeDebuffSaturation` recognises actively-restricting control as decisive
+- [x] Hermetic e2e: previously-timeout DoT stack now resolves; boundary case still does not
+- [x] `docs/combat.md` updated
+- [x] `npm run verify` + `npm run deploy:check` green
+- [x] No `src/index.ts` / public-API change
 
 ## Follow-ups out of scope
 
