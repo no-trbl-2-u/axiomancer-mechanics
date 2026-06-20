@@ -33,8 +33,21 @@ export {
     dropItem, rollModifiers, resolveModifiers, rarityWeightTable,
     previewTemplateAtRarity, previewTemplateAtAllRarities,
     dropItemWithAffixes,
+    dropItemAtRarity, AFFIXES_PER_RARITY, countNamedAffixes, hasBakedAffix,
 } from './item.factory';
 export type { DropWithAffixesOptions, AffixControl } from './item.factory';
+export {
+    equipmentFromTemplate,
+    rollCacheLoot, CACHE_LOOT_TUNING,
+    generateRarityDrop,
+} from './loot.generation';
+export type {
+    CacheLootTier, RollCacheLootOptions,
+    GenerateRarityDropOptions, GenerateRarityDropResult,
+} from './loot.generation';
+export {
+    firstEquippedPerSlot, isEquippedFirstOfSlot, findEquippedInSlot,
+} from './equipped';
 export {
     prefixes, suffixes, allAffixes, getAffixById,
     composeItemName, affixesForSlot, AFFIX_RARITY_WEIGHTS,
