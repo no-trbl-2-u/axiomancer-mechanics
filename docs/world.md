@@ -127,12 +127,25 @@ values ('quest' joined the original eight in Phase 137):
 | `quest`        | `{ kind: 'quest', boardId }` — hands the host a Quest Board id (`World/QuestBoard`); the host starts the board-game minigame. |
 | `none`         | Consumed node (one-shot) or no pool registered.                            |
 
-Note (Phase 137): the engine handlers above remain the CLI's behaviour.
-The mobile host intercepts `rest` / `gathering` / `loot-cache` / `hazard`
-/ `quest` results and launches the dedicated minigames instead
+Note (Phase 137): the engine handlers above remain the CLI map loop's
+behaviour. The mobile host intercepts `rest` / `gathering` / `loot-cache` /
+`hazard` / `quest` results and launches the dedicated minigames instead
 (`World/Rest` "The Night Watch", `World/Gathering` "The Gleaning",
 `World/LootCache` "The Reliquary", `World/Hazard`, `World/QuestBoard`
 "The Boy's Almanac").
+
+Standalone CLI play loops (Phase 160b): the pure minigame engines are also
+driveable directly from the Node host as game-CLI subcommands —
+`npm run gathering`, `npm run hazard`, `npm run rest` (The Night Watch), and
+`npm run loot-cache` (The Reliquary). Each shares the `src/CLI/io.ts` layer
+(`--script` JSON / `--stdin` / `--json-events` / `--state-log`) and an
+`--auto` policy that reuses the matching `*.sim.ts` bot, so a person, a
+replay file, or an agent all drive them through one surface. The hazard
+harness additionally injects a custom draw bag: `--deck <id,id,…>` appends
+acquired cards to the starter bag, while `--bag-file <path>` (a JSON array
+of card ids) replaces the whole bag for deterministic A/B runs; both
+validate ids against `HAZARD_DECK`. The QuestBoard CLI loop is the one
+remaining gap (Phase 160c).
 
 Hazard events now have accepted v0 minigame doctrine in
 [`docs/hazard-minigame.md`](./hazard-minigame.md): top/bottom route choice,

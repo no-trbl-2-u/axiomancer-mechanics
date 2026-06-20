@@ -48,6 +48,7 @@ import {
     getHazardCardDef,
     getHazardDef,
     hazardStarterBag,
+    HAZARD_DECK,
     HAZARD_LIBRARY,
 } from '../World/Hazard';
 import type {
@@ -65,6 +66,10 @@ export interface HazardCliFlags {
     auto: boolean;
     seed?: string;
     runs: number;
+    /** Card ids appended to the starter bag (the "acquired" deck). */
+    deck?: string[];
+    /** Path to a JSON array of card ids that REPLACES the whole draw bag. */
+    bagFile?: string;
     // Shared io flags (parity with game.cli.ts).
     scriptPath?: string;
     stdin: boolean;
@@ -75,7 +80,36 @@ export interface HazardCliFlags {
 const USAGE =
     'Usage: npm run game -- hazard ' +
     '[--hazard <id>] [--route top|bottom] [--auto] [--seed <n>] [--runs <n>] ' +
+    '[--deck <id,id,...>] [--bag-file <path>] ' +
     '[--script <path>] [--stdin] [--json-events] [--state-log <path>]';
+
+/** Every card id the authored deck knows — the validation allow-list. */
+const KNOWN_CARD_IDS: ReadonlySet<string> = new Set(HAZARD_DECK.map((c) => c.id));
+
+/** Throws on any id not in `HAZARD_DECK`, naming the offender and source. */
+function validateCardIds(ids: readonly string[], source: string): void {
+    for (const id of ids) {
+        if (!KNOWN_CARD_IDS.has(id)) {
+            throw new Error(
+                `Unknown hazard card id '${id}' in ${source}. ` +
+                `Known ids: ${HAZARD_DECK.map((c) => c.id).join(', ')}.`,
+            );
+        }
+    }
+}
+
+/**
+ * Builds the hazard draw bag for a run:
+ *   - `--bag-file` ids, when present, REPLACE the whole bag (a pinned bag for
+ *     deterministic harness A/B);
+ *   - otherwise the starter bag, with `--deck` ids appended as the "acquired"
+ *     deck (mirrors `appendAcquiredCard` / `hazardDeckBag`).
+ * Ids are assumed pre-validated against `HAZARD_DECK`.
+ */
+export function composeHazardBag(deck?: readonly string[], bagFileIds?: readonly string[]): string[] {
+    if (bagFileIds && bagFileIds.length > 0) return [...bagFileIds];
+    return [...hazardStarterBag(), ...(deck ?? [])];
+}
 
 /** Pull `--flag value` or `--flag=value`; returns [value, nextIndex]. */
 function takeValue(args: string[], i: number, flag: string): [string, number] {
@@ -103,6 +137,18 @@ export function parseHazardArgv(args: string[]): HazardCliFlags {
             case '--seed':         [flags.seed, i] = takeValue(args, i, '--seed'); break;
             case '--script':       [flags.scriptPath, i] = takeValue(args, i, '--script'); break;
             case '--state-log':    [flags.stateLogPath, i] = takeValue(args, i, '--state-log'); break;
+            case '--bag-file':     [flags.bagFile, i] = takeValue(args, i, '--bag-file'); break;
+            case '--deck': {
+                let value: string;
+                [value, i] = takeValue(args, i, '--deck');
+                const ids = value.split(',').map((s) => s.trim()).filter(Boolean);
+                if (ids.length === 0) {
+                    throw new Error(`--deck needs at least one card id.\n${USAGE}`);
+                }
+                validateCardIds(ids, '--deck');
+                flags.deck = ids;
+                break;
+            }
             case '--route': {
                 let value: string;
                 [value, i] = takeValue(args, i, '--route');
@@ -419,11 +465,22 @@ export async function runHazardCli(argv: string[]): Promise<void> {
     }
     if (flags.stateLogPath) setStateLogPath(flags.stateLogPath);
 
-    const bag = hazardStarterBag();
+    let bagFileIds: string[] | undefined;
+    if (flags.bagFile) {
+        const fs = await import('fs');
+        const parsed = JSON.parse(fs.readFileSync(flags.bagFile, 'utf-8'));
+        if (!Array.isArray(parsed) || parsed.some((x) => typeof x !== 'string')) {
+            throw new Error('--bag-file JSON must be a top-level array of card-id strings.');
+        }
+        validateCardIds(parsed, `--bag-file ${flags.bagFile}`);
+        bagFileIds = parsed;
+    }
+    const bag = composeHazardBag(flags.deck, bagFileIds);
 
     log('Axiomancer — hazard mini-game (v2).');
     log(`Mode: ${flags.auto ? 'auto' : 'manual'}  ·  runs: ${flags.runs}` +
-        (flags.seed !== undefined ? `  ·  seed: ${flags.seed}` : ''));
+        (flags.seed !== undefined ? `  ·  seed: ${flags.seed}` : '') +
+        (flags.bagFile ? `  ·  bag-file (${bag.length} cards)` : flags.deck ? `  ·  +deck [${flags.deck.join(', ')}]` : ''));
 
     const results: EncounterResult[] = [];
     for (let run = 1; run <= flags.runs; run++) {

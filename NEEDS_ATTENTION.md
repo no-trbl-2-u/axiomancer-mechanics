@@ -38,23 +38,25 @@ migration phase for the three consumers.
 > hazard `--deck`/`--bag-file` injection remain deferred (see §4); they
 > were the conditional "if manual play is wanted" half of the row.
 
-## 4. The CLI does not play the Phase 137 minigames
+## 4. The CLI does not play ALL the Phase 137 minigames (QuestBoard remains)
 
 **What:** `resolveMapEvent` consumers diverge by host. Mobile intercepts
 rest / gathering / loot-cache / hazard / quest results and launches the
-minigames; the CLI (`src/CLI/game.cli.ts`) still consumes the passive
-handler results (flat heal, silent grant, flat hazard damage) and has no
-play loop for the quest board, the night watch, or the reliquary.
-Documented as host divergence in `docs/world.md` §Node Event Dispatcher,
-but the CLI experience is now meaningfully poorer than mobile's.
+minigames. The CLI now has standalone play loops for **gathering** (`npm
+run gathering`), **hazard** (`npm run hazard`), **rest** (`npm run rest`,
+The Night Watch — Phase 160b) and **loot-cache** (`npm run loot-cache`,
+The Reliquary — Phase 160b). The hazard harness also takes injected decks
+(`--deck` / `--bag-file`). The one remaining gap is the **quest board**
+("The Boy's Almanac") — the largest engine — which still has no CLI loop.
 
-**Pending decision:** port the minigame loops to the CLI (the engines are
-pure — it's all rendering), or declare the CLI a combat/balance harness
-that intentionally skips encounter minigames.
+**Pending decision:** ship the QuestBoard CLI loop (the engine is pure —
+it's all rendering) to fully close this entry, or declare the CLI a
+combat/balance harness that intentionally skips the board game.
 
-> **Promoted to Phase 160** via oversight 2026-06-20 (Q1: T pick), bundled
-> with §3 (the CLI play loops ride on the same sims work). Close when Phase
-> 160 ships.
+> **Phase 160b (2026-06-20)** shipped the Rest + LootCache play loops and
+> the hazard deck injection (`--deck`/`--bag-file` + utility-aware-bot
+> coverage). The QuestBoard loop is carved to **Phase 160c**. Close §4 when
+> 160c ships.
 
 ## 5. Engine-side map-event content is fully shadowed by mobile
 

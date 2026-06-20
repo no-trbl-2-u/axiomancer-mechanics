@@ -23,6 +23,8 @@
     "game": "ts-node src/CLI/game.cli.ts",
     "hazard": "ts-node src/CLI/game.cli.ts hazard",
     "gathering": "ts-node src/CLI/game.cli.ts gathering",
+    "rest": "ts-node src/CLI/game.cli.ts rest",
+    "loot-cache": "ts-node src/CLI/game.cli.ts loot-cache",
     "playtest": "ts-node src/Playtest/cli.ts",
     "tune": "ts-node src/Tuning/cli.ts",
     "agent-e2e": "node automation/agent-e2e.mjs",

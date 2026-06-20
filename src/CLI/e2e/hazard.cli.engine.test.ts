@@ -16,7 +16,8 @@ import os from 'os';
 import path from 'path';
 import { randomUUID } from 'crypto';
 
-import { parseHazardArgv, runHazardCli } from '../hazard.cli';
+import { parseHazardArgv, runHazardCli, composeHazardBag } from '../hazard.cli';
+import { hazardStarterBag, getHazardCardDef } from '../../World/Hazard';
 
 const tmpFiles: string[] = [];
 function tmpPath(suffix: string, ext = 'jsonl'): string {
@@ -66,6 +67,41 @@ describe('Hazard CLI — flag parsing', () => {
     it('rejects unknown flags', () => {
         expect(() => parseHazardArgv(['--nope'])).toThrow(/Unknown hazard CLI flag/);
     });
+
+    it('parses --deck into a validated id list', () => {
+        const flags = parseHazardArgv(['--deck', 'footing,windread']);
+        expect(flags.deck).toEqual(['footing', 'windread']);
+    });
+
+    it('rejects an unknown --deck card id', () => {
+        expect(() => parseHazardArgv(['--deck', 'footing,not-a-card'])).toThrow(/Unknown hazard card id 'not-a-card'/);
+    });
+
+    it('rejects an empty --deck', () => {
+        expect(() => parseHazardArgv(['--deck', ' , '])).toThrow(/--deck needs at least one card id/);
+    });
+
+    it('parses --bag-file as a path', () => {
+        expect(parseHazardArgv(['--bag-file', 'bag.json']).bagFile).toBe('bag.json');
+    });
+});
+
+describe('Hazard CLI — deck injection (composeHazardBag)', () => {
+    it('--deck appends acquired ids to the starter bag', () => {
+        const starter = hazardStarterBag();
+        const bag = composeHazardBag(['footing', 'windread']);
+        expect(bag).toEqual([...starter, 'footing', 'windread']);
+    });
+
+    it('--bag-file ids REPLACE the whole bag', () => {
+        const bag = composeHazardBag(['footing'], ['windread', 'windread', 'pole']);
+        // bagFile wins; the starter + deck are dropped entirely.
+        expect(bag).toEqual(['windread', 'windread', 'pole']);
+    });
+
+    it('no flags → exactly the starter bag', () => {
+        expect(composeHazardBag()).toEqual(hazardStarterBag());
+    });
 });
 
 describe('Hazard CLI — deterministic auto playthrough', () => {
@@ -106,6 +142,48 @@ describe('Hazard CLI — deterministic auto playthrough', () => {
         ]);
         const sessions = readLog(logPath).filter(r => r.action === 'createHazardSession');
         expect(sessions).toHaveLength(3);
+    });
+});
+
+describe('Hazard CLI — utility-aware bot exploits an injected deck', () => {
+    it('stages a draw/convert utility from an all-utility --bag-file', async () => {
+        // A pinned bag of pure utility cards: the opening hand is all draw /
+        // convert effects, so the auto bot — which fires utilities first —
+        // MUST stage at least one of them.
+        const bagPath = tmpPath('bag', 'json');
+        fs.writeFileSync(bagPath, JSON.stringify([
+            'footing', 'windread', 'pole', 'oath', 'footing', 'windread', 'pole', 'blessing',
+        ]));
+
+        const logPath = tmpPath('util');
+        await runHazardCli([
+            '--auto', '--seed', '7', '--runs', '1',
+            '--hazard', 'cracked-cliff', '--route', 'top',
+            '--bag-file', bagPath,
+            '--json-events', '--state-log', logPath,
+        ]);
+
+        const logs = readLog(logPath);
+        // The whole bag is the pinned utility set: the opening hand is utility.
+        const created = logs.find(r => r.action === 'createHazardSession');
+        expect(created).toBeDefined();
+        const openingHand: Array<{ uid: string; cardId: string }> = created!.after.hand;
+        expect(openingHand.length).toBeGreaterThan(0);
+        for (const h of openingHand) {
+            expect(['draw', 'convert', 'recast']).toContain(getHazardCardDef(h.cardId).effect);
+        }
+
+        // The utility-aware bot fires draw/convert/recast utilities first, so
+        // the staged play carried into resolution must include at least one
+        // utility card — proof the injected deck was exploited (not just drawn).
+        // `resolveHazardRound`'s `after` snapshot holds the resolved play area.
+        const resolves = logs.filter(r => r.action === 'resolveHazardRound');
+        expect(resolves.length).toBeGreaterThan(0);
+        const playedUtility = resolves.some(r =>
+            (r.after.play as Array<{ cardId: string }>)
+                .some(e => getHazardCardDef(e.cardId).effect !== undefined),
+        );
+        expect(playedUtility).toBe(true);
     });
 });
 

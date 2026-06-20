@@ -67,10 +67,10 @@ plus extended `hazard.cli.engine.test.ts` pass.
 
 ## DoD
 
-- [ ] `rest.cli.ts` + `npm run rest` script + e2e
-- [ ] `lootcache.cli.ts` + `npm run loot-cache` script + e2e
-- [ ] hazard `--deck` / `--bag-file` injection + utility-aware-bot e2e
-- [ ] `game.cli.ts` dispatches `rest` / `loot-cache` subcommands
-- [ ] `docs/world.md` Node Event Dispatcher note: CLI now plays Rest + Reliquary
-- [ ] NEEDS_ATTENTION §4 narrowed (QuestBoard loop carved to 160c)
-- [ ] `npm run verify` + `npm run deploy:check` clean
+- [x] `rest.cli.ts` + `npm run rest` script + e2e
+- [x] `lootcache.cli.ts` + `npm run loot-cache` script + e2e
+- [x] hazard `--deck` / `--bag-file` injection + utility-aware-bot e2e
+- [x] `game.cli.ts` dispatches `rest` / `loot-cache` subcommands
+- [x] `docs/world.md` Node Event Dispatcher note: CLI now plays Rest + Reliquary
+- [x] NEEDS_ATTENTION §4 narrowed (QuestBoard loop carved to 160c)
+- [x] `npm run verify` + `npm run deploy:check` clean
