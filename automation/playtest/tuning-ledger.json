@@ -531,7 +531,139 @@
       "kept": false,
       "significant": false,
       "confidence": "low"
+    },
+    {
+      "timestamp": "2026-06-20T15-52-40-716Z",
+      "paramId": "effect.maxIntensity",
+      "oldValue": 10,
+      "newValue": 12,
+      "direction": "up",
+      "deltaHealth": 0.00002803555613484221,
+      "kept": false,
+      "significant": false,
+      "confidence": "low"
+    },
+    {
+      "timestamp": "2026-06-20T15-52-40-716Z",
+      "paramId": "effect.buff_regeneration.duration",
+      "oldValue": 6,
+      "newValue": 7,
+      "direction": "up",
+      "deltaHealth": 0,
+      "kept": false,
+      "significant": false,
+      "confidence": "low"
+    },
+    {
+      "timestamp": "2026-06-20T15-52-40-716Z",
+      "paramId": "effect.debuff_poison.damagePerRound",
+      "oldValue": 4,
+      "newValue": 5,
+      "direction": "up",
+      "deltaHealth": 0,
+      "kept": false,
+      "significant": false,
+      "confidence": "low"
+    },
+    {
+      "timestamp": "2026-06-20T15-52-40-716Z",
+      "paramId": "effect.debuff_strong_poison.damagePerRound",
+      "oldValue": 5,
+      "newValue": 6,
+      "direction": "up",
+      "deltaHealth": 0,
+      "kept": false,
+      "significant": false,
+      "confidence": "low"
+    },
+    {
+      "timestamp": "2026-06-20T15-52-40-716Z",
+      "paramId": "effect.tier1_body_attack.duration",
+      "oldValue": 3,
+      "newValue": 4,
+      "direction": "up",
+      "deltaHealth": -0.000360060350529115,
+      "kept": false,
+      "significant": false,
+      "confidence": "low"
+    },
+    {
+      "timestamp": "2026-06-20T15-52-40-716Z",
+      "paramId": "combat.resourceGen.defend",
+      "oldValue": 5,
+      "newValue": 6,
+      "direction": "up",
+      "deltaHealth": -0.00010909879555333346,
+      "kept": false,
+      "significant": false,
+      "confidence": "low"
+    },
+    {
+      "timestamp": "2026-06-20T15-55-25-258Z",
+      "paramId": "effect.debuff_confusion.duration",
+      "oldValue": 4,
+      "newValue": 5,
+      "direction": "up",
+      "deltaHealth": -0.0009333333333333277,
+      "kept": false,
+      "significant": false,
+      "confidence": "low"
+    },
+    {
+      "timestamp": "2026-06-20T15-55-25-258Z",
+      "paramId": "effect.debuff_fear.duration",
+      "oldValue": 3,
+      "newValue": 4,
+      "direction": "up",
+      "deltaHealth": -0.0002503921408028992,
+      "kept": false,
+      "significant": false,
+      "confidence": "low"
+    },
+    {
+      "timestamp": "2026-06-20T15-55-25-258Z",
+      "paramId": "enemy.statPerLevel",
+      "oldValue": 3,
+      "newValue": 2.5,
+      "direction": "down",
+      "deltaHealth": 0.013661149982580764,
+      "kept": false,
+      "significant": false,
+      "confidence": "low"
+    },
+    {
+      "timestamp": "2026-06-20T15-55-25-258Z",
+      "paramId": "enemy.gearTierPerLevel",
+      "oldValue": 0.02,
+      "newValue": 0.015,
+      "direction": "down",
+      "deltaHealth": 0.0022512216241723504,
+      "kept": false,
+      "significant": false,
+      "confidence": "low"
+    },
+    {
+      "timestamp": "2026-06-20T15-57-28-187Z",
+      "paramId": "enemy.statPerLevel",
+      "oldValue": 3,
+      "newValue": 2.5,
+      "direction": "down",
+      "deltaHealth": 0.011999268251566463,
+      "kept": false,
+      "significant": false,
+      "confidence": "low"
+    },
+    {
+      "timestamp": "2026-06-20T15-57-28-187Z",
+      "paramId": "enemy.gearTierPerLevel",
+      "oldValue": 0.02,
+      "newValue": 0.015,
+      "direction": "down",
+      "deltaHealth": 0.0016351539693510303,
+      "kept": false,
+      "significant": false,
+      "confidence": "low"
     }
   ],
-  "updatedAt": "2026-06-20T15:48:22.945Z"
+  "updatedAt": "2026-06-20T15:57:42.536Z"
 }
