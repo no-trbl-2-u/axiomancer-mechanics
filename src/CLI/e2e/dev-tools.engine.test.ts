@@ -7,7 +7,7 @@ import { nullAdapter } from '../../Game/persistence/null.adapter';
 import { skillLibrary } from '../../Skills/skill.library';
 import { consumableLibrary } from '../../Items/consumable.library';
 import {
-    devSetLevel, devSetStats, devLearnSkills, devEquipSkills,
+    devSetLevel, devSetStats, devLearnSkills,
     devGrantAllEquipment, devGrantAllConsumables, devGrantCurrency,
     devSetMoralMeter, devSetAlignment, devSpawnEnemy, devMaxOut,
 } from '../dev-tools';
@@ -93,30 +93,6 @@ describe('devLearnSkills', () => {
         devLearnSkills(store, ['mob-appeal']);
         const count = store.getState().player.knownSkills.filter(id => id === 'mob-appeal').length;
         expect(count).toBe(1);
-    });
-});
-
-describe('devEquipSkills', () => {
-    it('equips skills from known set', () => {
-        const store = freshStore();
-        devLearnSkills(store, ['mob-appeal', 'sorites-cascade', 'ad-hominem-strike']);
-        const r = devEquipSkills(store, ['mob-appeal', 'sorites-cascade']);
-        expect(r.ok).toBe(true);
-        expect(store.getState().player.equippedSkills).toEqual(['mob-appeal', 'sorites-cascade']);
-    });
-
-    it('rejects unknown skills', () => {
-        const store = freshStore();
-        const r = devEquipSkills(store, ['nonexistent-skill']);
-        expect(r.ok).toBe(false);
-    });
-
-    it('caps at 4 skills', () => {
-        const store = freshStore();
-        devLearnSkills(store, 'all');
-        const ids = skillLibrary.slice(0, 6).map(s => s.id);
-        devEquipSkills(store, ids);
-        expect(store.getState().player.equippedSkills.length).toBe(4);
     });
 });
 
@@ -216,7 +192,6 @@ describe('devMaxOut', () => {
         expect(player.level).toBe(20);
         expect(player.baseStats.heart).toBe(20);
         expect(player.knownSkills.length).toBe(skillLibrary.length);
-        expect(player.equippedSkills.length).toBe(4);
         expect(player.inventory.length).toBeGreaterThan(0);
         expect(player.currency).toBeGreaterThanOrEqual(999);
     });

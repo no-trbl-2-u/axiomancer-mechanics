@@ -62,7 +62,6 @@ describe('level-ladder presets', () => {
         expect(character.health).toBe(character.maxHealth);
         expect(character.derivedStats).toBeDefined();
         expect(character.knownSkills.length).toBeGreaterThan(0);
-        expect(character.equippedSkills.length).toBeGreaterThan(0);
     });
 
     it('escalates: L50 is geared (7 slots) and tougher than L1', () => {

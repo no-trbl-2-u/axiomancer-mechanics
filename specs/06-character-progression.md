@@ -2,7 +2,8 @@
 
 > Historical implementation spec. Skill progression now treats learned/unlocked
 > skills (`knownSkills`) as the canonical access model; the legacy
-> `equippedSkills` gate is scheduled for removal in Phase 99.
+> `equippedSkills` gate was deprecated in Phase 99 and the field removed
+> entirely in Phase 159 (see ADR-0002).
 
 ## Goal
 

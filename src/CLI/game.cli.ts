@@ -26,7 +26,7 @@ import { createCharacter } from '../Character';
 import { ENEMY_REGISTRY, EnemyLibrary, type EnemySlug } from '../Enemy/enemy.library';
 import type { EquipmentSlot } from '../Items';
 import {
-    devSetLevel, devSetStats, devLearnSkills, devEquipSkills,
+    devSetLevel, devSetStats, devLearnSkills,
     devGrantAllEquipment, devGrantAllConsumables, devEquipItem,
     devGrantCurrency, devSetMoralMeter, devSetAlignment,
     devSpawnEnemy, devMaxOut, getEnemySlugs, getSkillIds,

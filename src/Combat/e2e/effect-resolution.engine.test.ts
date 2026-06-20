@@ -42,7 +42,6 @@ function setupEffectResolutionTest(enemy: Enemy, playerEffects: string[] = [], e
         level: 10,
         baseStats: { heart: 10, body: 10, mind: 10 },
         knownSkills: ['befriend', 'mind-mark', 'weaken', 'poison'],
-        equippedSkills: ['befriend', 'mind-mark', 'weaken', 'poison'],
     });
     
     store.setState({ player: character });

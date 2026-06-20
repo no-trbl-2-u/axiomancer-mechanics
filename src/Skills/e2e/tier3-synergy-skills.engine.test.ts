@@ -37,7 +37,6 @@ const fixturePlayer = () => createCharacter({
     level: 10,
     baseStats: { heart: 8, body: 8, mind: 8 },
     knownSkills: [...tier3SynergySkillIds],
-    equippedSkills: [...tier3SynergySkillIds],
 });
 
 const fixtureEnemy = () => createEnemy({

@@ -62,7 +62,6 @@ function fixturePlayer() {
         level: 1,
         baseStats: { heart: 4, body: 6, mind: 4 },
         knownSkills: [debuffSkill.id, buffSkill.id],
-        equippedSkills: [debuffSkill.id, buffSkill.id],
     });
 }
 

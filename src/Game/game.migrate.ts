@@ -40,9 +40,15 @@ interface GameStateV6 extends Omit<GameState, 'codex'> {
     version: 6;
 }
 
-/** GameState shape before v8 (before Phase 99 equippedSkills removal). */
-interface GameStateV7 extends GameState {
+/**
+ * GameState shape before v8 (Phase 99 unlocked-skill access). v7 saves carry a
+ * legacy `player.equippedSkills` rotation that v8 folds into `knownSkills`. The
+ * field was fully removed from the live `Character` type in Phase 159, so it is
+ * typed locally here as legacy-only and is never written back.
+ */
+interface GameStateV7 extends Omit<GameState, 'player'> {
     version: 7;
+    player: GameState['player'] & { equippedSkills?: string[] };
 }
 
 /** GameState shape before v9 (before Phase 109 regionConsequences was added). */
@@ -123,25 +129,27 @@ function migrateV6toV7(v6: GameStateV6): GameStateV7 {
 }
 
 /**
- * Migrate from v7 to v8 (Phase 99 — unlocked skill access): merge legacy
- * `equippedSkills` into `knownSkills` so old saves don't lose access to skills.
- * The equipped skills are merged into known skills to preserve game progress.
- * Post-migration, combat uses knownSkills filtered by canUseSkill affordability.
+ * Migrate from v7 to v8 (Phase 99 — unlocked skill access): merge the legacy
+ * `equippedSkills` rotation into `knownSkills` so old saves don't lose access to
+ * skills. Post-migration, combat uses `knownSkills` filtered by `canUseSkill`
+ * affordability (ADR-0002). Phase 159 removed `equippedSkills` from the live
+ * `Character` type entirely, so the legacy field is read off the v7 payload and
+ * dropped — it is never written back onto the migrated player.
  */
 function migrateV7toV8(v7: GameStateV7): GameStateV8 {
     const mergedKnown = new Set(v7.player.knownSkills);
-    // Merge equippedSkills into knownSkills
-    for (const skillId of v7.player.equippedSkills) {
+    for (const skillId of v7.player.equippedSkills ?? []) {
         mergedKnown.add(skillId);
     }
-    
+
+    const { equippedSkills: _legacyEquippedSkills, ...player } = v7.player;
+
     return {
         ...v7,
         version: 8,
         player: {
-            ...v7.player,
+            ...player,
             knownSkills: [...mergedKnown],
-            // Keep equippedSkills for backward compatibility but it's no longer used
         },
     };
 }

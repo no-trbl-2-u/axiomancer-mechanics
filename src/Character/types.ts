@@ -74,7 +74,9 @@ export interface NonCombatStats {
  *                                    already "post-equipment".
  * @property effects                - Active status effects on the character.
  * @property knownSkills            - IDs of skills the character has learned/unlocked.
- * @property equippedSkills         - DEPRECATED: Legacy active-rotation gate removed in Phase 99. Field kept for backward compatibility during migration.
+ *                                    The combat catalogue is the learned set
+ *                                    filtered by affordability (ADR-0002 / Phase
+ *                                    99); there is no equipped-skill loadout gate.
  * @property availableStatPoints    - Unspent stat points awaiting allocation
  *                                    (Spec 06 Q3 + Q8). Granted on level-up,
  *                                    spent via `allocateStatPoint`. Defaults
@@ -101,7 +103,6 @@ export interface Character {
     equipment: Partial<Record<EquipmentSlot, Equipment>>;
     effects: ActiveEffect[];
     knownSkills: string[];
-    equippedSkills: string[];
     availableStatPoints: number;
     /**
      * Per-cell Spec 03 proc unlock caps. Defaults to tier 1 in every cell —

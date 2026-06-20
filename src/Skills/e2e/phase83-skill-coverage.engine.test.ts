@@ -13,12 +13,11 @@ afterEach(() => vi.restoreAllMocks());
 
 const zero: CombatResources = { heart: 0, body: 0, mind: 0, fallacy: 0, paradox: 0 };
 
-const fixturePlayer = (overrides: Partial<{ knownSkills: string[]; equippedSkills: string[] }> = {}) =>
+const fixturePlayer = (overrides: Partial<{ knownSkills: string[] }> = {}) =>
     createCharacter({
         name: 'P83', level: 1,
         baseStats: { heart: 4, body: 6, mind: 4 },
         knownSkills: overrides.knownSkills ?? [],
-        equippedSkills: overrides.equippedSkills ?? [],
     });
 
 const fixtureEnemy = () => createEnemy({
@@ -28,7 +27,7 @@ const fixtureEnemy = () => createEnemy({
 });
 
 const fixtureState = (skillId: string, resources: Partial<CombatResources> = {}): CombatState => {
-    const player = fixturePlayer({ knownSkills: [skillId], equippedSkills: [skillId] });
+    const player = fixturePlayer({ knownSkills: [skillId] });
     const state = initializeCombat(player, fixtureEnemy());
     return { ...state, combatResources: { ...zero, ...resources } };
 };
@@ -49,7 +48,7 @@ describe('false-dilemma — Tier 1 mind + debuff_confusion always lands', () => 
 describe('appeal-to-pity — Tier 1 self-heal heart x 2', () => {
     it('restores heart x scalingMultiplier x 0.5 = heart x 2 HP on the caster', () => {
         mockSequentialRng(0.99);
-        const player = fixturePlayer({ knownSkills: ['appeal-to-pity'], equippedSkills: ['appeal-to-pity'] });
+        const player = fixturePlayer({ knownSkills: ['appeal-to-pity'] });
         const enemy = fixtureEnemy();
         const state: CombatState = {
             ...initializeCombat({ ...player, health: player.maxHealth - 10 } as typeof player, enemy),
@@ -79,7 +78,7 @@ describe('liars-echo — Tier 1 mind + tier1_mind_mark intensity 2 duration 2', 
 describe('ship-of-theseus — convert_enemy_buff_to_self primitive', () => {
     it('transfers one enemy buff onto the caster', () => {
         mockSequentialRng(0.99);
-        const player = fixturePlayer({ knownSkills: ['ship-of-theseus'], equippedSkills: ['ship-of-theseus'] });
+        const player = fixturePlayer({ knownSkills: ['ship-of-theseus'] });
         const enemy = fixtureEnemy();
         const state: CombatState = {
             ...initializeCombat(player, enemy),
@@ -123,7 +122,7 @@ describe('ship-of-theseus — convert_enemy_buff_to_self primitive', () => {
 describe('mob-appeal — Tier 2 body + secondary_heal_self', () => {
     it('damages enemy and heals caster by heart x multiplier x 0.5 = heart x 0.5', () => {
         mockSequentialRng(0.99);
-        const player = fixturePlayer({ knownSkills: ['mob-appeal'], equippedSkills: ['mob-appeal'] });
+        const player = fixturePlayer({ knownSkills: ['mob-appeal'] });
         const enemy = fixtureEnemy();
         const state: CombatState = {
             ...initializeCombat({ ...player, health: player.maxHealth - 10 } as typeof player, enemy),
@@ -178,7 +177,7 @@ describe('eternal-regress — Tier 2 heart + two-effect compound (debuff_confusi
 describe('bootstrap-paradox — Tier 3 self-heal heart x 2', () => {
     it('restores heart x scalingMultiplier x 0.5 = heart x 2 HP on the caster', () => {
         mockSequentialRng(0.99);
-        const player = fixturePlayer({ knownSkills: ['bootstrap-paradox'], equippedSkills: ['bootstrap-paradox'] });
+        const player = fixturePlayer({ knownSkills: ['bootstrap-paradox'] });
         const enemy = fixtureEnemy();
         const state: CombatState = {
             ...initializeCombat({ ...player, health: player.maxHealth - 10 } as typeof player, enemy),

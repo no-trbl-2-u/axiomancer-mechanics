@@ -1,8 +1,10 @@
 /**
- * Phase 99 — unlocked skill access e2e tests.
- * 
- * Verifies that combat uses knownSkills filtered by canUseSkill affordability
- * instead of the legacy equippedSkills gate.
+ * Phase 99 / ADR-0002 — unlocked skill access e2e tests.
+ *
+ * Verifies that combat uses knownSkills filtered by canUseSkill affordability;
+ * there is no equipped-skill loadout gate (the legacy `equippedSkills` field was
+ * removed entirely in Phase 159). Save-side migration of legacy `equippedSkills`
+ * into `knownSkills` is covered by `src/Game/e2e/phase99-migration.engine.test.ts`.
  */
 
 import { describe, test, expect, beforeEach } from 'vitest';
@@ -21,23 +23,20 @@ describe('Phase 99 unlocked skill access', () => {
             knownSkills: [
                 'ad-hominem-strike',      // body: 3 - should be affordable after basic actions
                 'false-dilemma',          // mind: 3
-                'appeal-to-pity',         // heart: 3  
+                'appeal-to-pity',         // heart: 3
                 'mob-appeal',             // body: 2, heart: 2 - requires resonance
             ],
-            // Legacy equippedSkills intentionally different from knownSkills
-            equippedSkills: ['ad-hominem-strike', 'false-dilemma'],
             effects: [],
         });
     });
 
-    test('known-but-not-legacy-equipped skill can be validated as affordable', () => {
+    test('any known skill can be validated as affordable when resources permit', () => {
         const skillId = 'appeal-to-pity';
         const skill = getSkillById(skillId);
         expect(skill).toBeDefined();
 
-        // Verify skill is known but was not in legacy equippedSkills
+        // The whole known set is the combat catalogue — no equipped subset.
         expect(player.knownSkills).toContain(skillId);
-        expect(player.equippedSkills).not.toContain(skillId);
 
         // Grant enough heart resources to cast the skill
         const resourcesWithHeart = {
@@ -67,33 +66,21 @@ describe('Phase 99 unlocked skill access', () => {
             const skill = getSkillById(id);
             return skill !== undefined;
         });
-        
+
         // Should match exactly the known skills for the player
         expect(availableSkills).toEqual(player.knownSkills);
-        
+
         // Test skill that player doesn't know
         const unknownSkillId = 'straw-giant'; // Tier 3 skill
         expect(player.knownSkills).not.toContain(unknownSkillId);
     });
 
-    test('migration from equippedSkills to knownSkills preserves access', () => {
-        // This test verifies the conceptual migration:
-        // Skills that were in equippedSkills should be preserved in knownSkills
-        
-        const allAccessibleSkills = new Set([
-            ...player.knownSkills,
-            ...player.equippedSkills,
-        ]);
-
-        // After migration, these would all be in knownSkills
-        for (const skillId of allAccessibleSkills) {
+    test('the combat catalogue is exactly the known set', () => {
+        // Post-Phase-159 there is no equipped rotation: every known skill that
+        // resolves in the library is part of the catalogue.
+        for (const skillId of player.knownSkills) {
             const skill = getSkillById(skillId);
             expect(skill).toBeDefined();
-        }
-        
-        // Verify equipped skills are a subset of or equal to the combined set
-        for (const skillId of player.equippedSkills) {
-            expect(allAccessibleSkills.has(skillId)).toBe(true);
         }
     });
 });

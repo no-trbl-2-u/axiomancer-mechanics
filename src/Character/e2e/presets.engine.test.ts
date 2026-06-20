@@ -42,7 +42,6 @@ describe('buildCharacterFromPreset', () => {
         expect(player.baseStats).toEqual({ heart: 5, body: 5, mind: 5 });
         expect(player.equipment).toEqual({});
         expect(player.knownSkills).toHaveLength(7); // Phase 108 — includes Befriend starting skill
-        expect(player.equippedSkills).toHaveLength(4);
         expect(player.inventory).toHaveLength(1);
         expect(player.inventory[0]?.id).toBe('minor-healing-potion');
         expect((player.inventory[0] as Consumable | undefined)?.quantity).toBe(3);
@@ -55,7 +54,6 @@ describe('buildCharacterFromPreset', () => {
         expect(player.level).toBe(8);
         expect(player.baseStats).toEqual({ heart: 5, body: 4, mind: 4 });
         expect(player.knownSkills).toHaveLength(15); // Phase 108 — includes Befriend starting skill + Phase 120 — includes 5 synergy skills
-        expect(player.equippedSkills).toHaveLength(4);
         expect(player.equipment.weapon?.id).toBe('iron-blade');
         expect(player.equipment.armor?.id).toBe('hide-vest');
         expect(player.equipment.head?.id).toBe('leather-cap');
@@ -68,7 +66,7 @@ describe('buildCharacterFromPreset', () => {
         expect(player.level).toBe(15);
         expect(player.baseStats).toEqual({ heart: 20, body: 30, mind: 25 });
         expect(player.knownSkills).toHaveLength(18); // Phase 121 — includes all tiers + synergy skills
-        expect(player.equippedSkills).toContain('bootstrap-paradox');
+        expect(player.knownSkills).toContain('bootstrap-paradox');
         expect(player.equipment.weapon?.id).toBe('steel-blade');
         expect(player.equipment.armor?.id).toBe('chain-mail');
         expect(player.equipment.head?.id).toBe('chain-coif');

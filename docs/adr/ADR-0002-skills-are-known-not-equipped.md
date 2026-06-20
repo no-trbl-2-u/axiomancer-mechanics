@@ -15,10 +15,11 @@ T corrected the old model after manual playthrough evidence showed learned skill
 ## Consequences
 
 - `knownSkills` is the learned catalogue.
-- `equippedSkills` is legacy implementation debt and must not be treated as player-facing doctrine.
+- `equippedSkills` was legacy implementation debt; it was removed entirely from the `Character` type, presets, the Tuning loadout builder, and the CLI dev-tools in Phase 159. It is no longer a field on any live shape.
 - Combat policies and UI consumers filter known skills by affordability through engine resource checks.
-- Legacy saves may merge old equipped-skill values into known skills during normalization/migration.
+- Legacy v7 saves merge old equipped-skill values into `knownSkills` during the v7→v8 save migration; the legacy field is read off the raw payload and dropped — never written back onto the migrated player.
 
 ## Links
 
 - Phase 99 — Unlocked skill access, no equipped-skill gate
+- Phase 159 — `equippedSkills` field removed (gate-to-field cleanup)
