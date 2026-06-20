@@ -10,10 +10,25 @@ Pre-1.0.0 status: minor bumps may carry breaking public-API changes
 map exposes `.` (top-level barrel) and `./node` (Node.js adapter); no
 deep imports are part of the supported surface.
 
-## [0.22.1] — unreleased
+## [0.23.0] — unreleased
 
-Cleanup release: dead code from the encounter migrations removed, the
-tuning skill family reorganised.
+Equipment-ownership release (Phase 154): the engine becomes the single
+source of truth for equipment logic, absorbing generation, equipped-state,
+and equip-delta from the mobile app so mobile is left with presentation
+only. Also folds in the dead-code cleanup and tuning-skill reorganisation
+that landed after v0.22.0.
+
+### Added
+
+- **Procedural loot generation** (`Items/loot.generation`):
+  `generateRarityDrop`, `dropItemAtRarity`, and `equipmentFromTemplate`,
+  drawing rarity-correct affixes from the full 132-entry affix library
+  (66 prefixes + 66 suffixes). Rarity → affix-count contract: common 0,
+  uncommon 1, rare 2, unique 3 fixed modifiers.
+- **Equipped-state helpers** (`Items/equipped`): `firstEquippedPerSlot`
+  (+ `findEquippedInSlot` / `isEquippedFirstOfSlot`).
+- **Equip-delta** (`Character/equip-delta`): `computeEquipDelta` and the
+  `EquipDelta` family of types — moved out of the mobile presenters.
 
 ### Removed
 
@@ -44,6 +59,45 @@ tuning skill family reorganised.
   `gathering-tuning`.
 - **`NEEDS_ATTENTION.md`** — repo-level audit ledger of known debt and
   half-finished migrations.
+
+## [0.22.0] — 2026-06-17
+
+Item-modifier and combat-response release.
+
+### Added
+
+- **Phase 152 — unified affix factory + curated affixed-gear library.** A
+  single affix factory backs both procedural rolls and authored gear.
+- **Phase 151 — item modifier catalogue audit and expansion.** Broadened
+  the modifier catalogue (status-family prefixes/suffixes) and trued the
+  docs to it.
+- **Phase 150 — reactive enemies.** An enemy answers a player's hostile
+  skill with a skill of its own.
+- **Manual npm publish workflow** (`.github/workflows/publish.yml`).
+
+### Changed
+
+- Status-effects doctrine scoped explicitly to combat encounters.
+- Documentation corrections: enemy registry roster count (26 → 63),
+  equipment unique-template count (2 → 7), feet-modifier catalogue, and
+  the Phase 151 modifier tables.
+
+## [0.21.0] — 2026-06-14
+
+Skills, status-effect depth, and dependency-modernization release.
+
+### Added
+
+- **Phase 142 — status-effect depth via interaction breadth.**
+- **Phase 141 — unlocked skill access.**
+- **Quest-board distinct micro-games.**
+
+### Changed
+
+- **Phase 143 — dependency modernization** (major dependency bumps;
+  `@types/node` to ^25).
+- Character-preset `@deprecated` notices trued up (stale version
+  references corrected).
 
 ## [0.20.0] — 2026-06-12
 
