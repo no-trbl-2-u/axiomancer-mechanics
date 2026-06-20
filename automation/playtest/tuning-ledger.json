@@ -663,7 +663,73 @@
       "kept": false,
       "significant": false,
       "confidence": "low"
+    },
+    {
+      "timestamp": "2026-06-20T19-59-29-817Z",
+      "paramId": "enemy.statPerLevel",
+      "oldValue": 3,
+      "newValue": 3.5,
+      "direction": "up",
+      "deltaHealth": -0.004383266351941903,
+      "kept": false,
+      "significant": false,
+      "confidence": "low"
+    },
+    {
+      "timestamp": "2026-06-20T19-59-29-817Z",
+      "paramId": "enemy.gearTierPerLevel",
+      "oldValue": 0.02,
+      "newValue": 0.025,
+      "direction": "up",
+      "deltaHealth": -0.001078431019640294,
+      "kept": false,
+      "significant": false,
+      "confidence": "low"
+    },
+    {
+      "timestamp": "2026-06-20T19-59-29-817Z",
+      "paramId": "effect.debuff_poison.damagePerRound",
+      "oldValue": 4,
+      "newValue": 5,
+      "direction": "up",
+      "deltaHealth": 0,
+      "kept": false,
+      "significant": false,
+      "confidence": "low"
+    },
+    {
+      "timestamp": "2026-06-20T19-59-29-817Z",
+      "paramId": "effect.debuff_strong_poison.damagePerRound",
+      "oldValue": 5,
+      "newValue": 6,
+      "direction": "up",
+      "deltaHealth": 0,
+      "kept": false,
+      "significant": false,
+      "confidence": "low"
+    },
+    {
+      "timestamp": "2026-06-20T19-59-29-817Z",
+      "paramId": "effect.debuff_confusion.rollModifier",
+      "oldValue": -5,
+      "newValue": -6,
+      "direction": "down",
+      "deltaHealth": -0.00008540322295540193,
+      "kept": false,
+      "significant": false,
+      "confidence": "low"
+    },
+    {
+      "timestamp": "2026-06-20T19-59-29-817Z",
+      "paramId": "effect.tier1_heart_defend.healthPerRound",
+      "oldValue": 2,
+      "newValue": 3,
+      "direction": "up",
+      "deltaHealth": -0.0016786632098639148,
+      "kept": false,
+      "significant": false,
+      "confidence": "low"
     }
   ],
-  "updatedAt": "2026-06-20T15:57:42.536Z"
+  "updatedAt": "2026-06-20T20:00:01.357Z"
 }
