@@ -388,7 +388,84 @@
       "significant": false,
       "confidence": "low",
       "focus": "early game mechanics; keep elite and boss win ratios between 65-75%; flag any strategy that deviates from status-effects/skills/resource-management"
+    },
+    {
+      "timestamp": "2026-06-20T15-04-14-028Z",
+      "paramId": "effect.resolutionDotMaxRoundsToKill",
+      "oldValue": 10,
+      "newValue": 15,
+      "direction": "up",
+      "deltaHealth": 0,
+      "kept": false,
+      "significant": false,
+      "confidence": "low"
+    },
+    {
+      "timestamp": "2026-06-20T15-04-14-028Z",
+      "paramId": "effect.resolutionDotDamageThreshold",
+      "oldValue": 2,
+      "newValue": 3,
+      "direction": "up",
+      "deltaHealth": 0,
+      "kept": false,
+      "significant": false,
+      "confidence": "low"
+    },
+    {
+      "timestamp": "2026-06-20T15-04-14-028Z",
+      "paramId": "progression.statPointsPerLevel",
+      "oldValue": 3,
+      "newValue": 4,
+      "direction": "up",
+      "deltaHealth": 0,
+      "kept": false,
+      "significant": false,
+      "confidence": "low"
+    },
+    {
+      "timestamp": "2026-06-20T15-05-26-428Z",
+      "paramId": "effect.debuff_confusion.rollModifier",
+      "oldValue": -5,
+      "newValue": -6,
+      "direction": "down",
+      "deltaHealth": 0.0005005791057186293,
+      "kept": false,
+      "significant": false,
+      "confidence": "low"
+    },
+    {
+      "timestamp": "2026-06-20T15-05-26-428Z",
+      "paramId": "effect.debuff_fear.rollModifier",
+      "oldValue": -4,
+      "newValue": -5,
+      "direction": "down",
+      "deltaHealth": 0.00010361677802687985,
+      "kept": false,
+      "significant": false,
+      "confidence": "low"
+    },
+    {
+      "timestamp": "2026-06-20T15-05-26-428Z",
+      "paramId": "effect.baseProcIntensity",
+      "oldValue": 2,
+      "newValue": 3,
+      "direction": "up",
+      "deltaHealth": 0.01638195315360365,
+      "kept": false,
+      "significant": true,
+      "confidence": "medium"
+    },
+    {
+      "timestamp": "2026-06-20T15-05-26-428Z",
+      "paramId": "effect.debuff_poison.duration",
+      "oldValue": 4,
+      "newValue": 5,
+      "direction": "up",
+      "deltaHealth": 0,
+      "kept": false,
+      "significant": false,
+      "confidence": "low"
     }
   ],
-  "updatedAt": "2026-06-20T13:49:05.541Z"
+  "updatedAt": "2026-06-20T15:06:16.421Z"
 }
