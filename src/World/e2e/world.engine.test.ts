@@ -13,7 +13,7 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import {
     createStartingWorld, moveToNode, completeCurrentNode, IllegalMoveError,
-    resolveMapEvent, applyDialogueChoice, getMapDefinition,
+    resolveMapEvent, applyDialogueChoice, getMapDefinition, createMapState,
     emptyQuestLog, startQuest, progressQuest, isQuestComplete, completeQuest,
 } from '../index';
 import { processWorldEffectTick, getActiveHazards, applyEffect, lookupEffect } from '../../Effects';
@@ -25,6 +25,19 @@ import { mockSequentialRng } from '../../test-utils/rng';
 afterEach(() => vi.restoreAllMocks());
 
 const startingState = (): GameState => createNewGameState();
+
+// fishing-village is now a combat-only new-player gauntlet, so the varied
+// MapEvent kinds (interaction / village / loot-cache) are exercised against
+// northern-forest, which retains the authored content. Sets currentNode
+// directly — resolveMapEvent works off currentNode regardless of traversal.
+const nfStateAt = (nodeId: string): GameState => {
+    const base = startingState();
+    const def = getMapDefinition('coastal-continent', 'northern-forest');
+    return {
+        ...base,
+        world: { ...base.world, currentMap: { ...createMapState(def), currentNode: nodeId } },
+    };
+};
 
 // ── moveToNode ──────────────────────────────────────────────────────────────
 
@@ -156,23 +169,17 @@ describe('per-objective quest engine', () => {
 describe('resolveMapEvent dispatch', () => {
     it('returns kind=interaction with dialogue tree for the NPC node', () => {
         mockSequentialRng(0.5);
-        let state = startingState();
-        state = { ...state, world: moveToNode(state.world, 'fv-2') };
-        const result = resolveMapEvent(state);
+        const result = resolveMapEvent(nfStateAt('nf-3'));
         expect(result.event.kind).toBe('interaction');
         if (result.event.kind === 'interaction') {
-            expect(result.event.npcName).toBe('Old Marrow');
+            expect(result.event.npcName).toBe('Shrine Keeper');
             expect(result.event.dialogue).toBeDefined();
         }
     });
 
     it('returns kind=village for the shop node (folded into village)', () => {
         mockSequentialRng(0.5);
-        let state = startingState();
-        state = { ...state, world: moveToNode(state.world, 'fv-2') };
-        state = { ...state, world: completeCurrentNode(state.world) };
-        state = { ...state, world: moveToNode(state.world, 'fv-3') };
-        const result = resolveMapEvent(state);
+        const result = resolveMapEvent(nfStateAt('nf-8'));
         expect(result.event.kind).toBe('village');
         if (result.event.kind === 'village') {
             expect(result.event.merchants.length).toBeGreaterThan(0);
@@ -197,12 +204,7 @@ describe('resolveMapEvent dispatch', () => {
 
     it('grants currency on loot-cache nodes (treasure folded into loot-cache)', () => {
         mockSequentialRng(0.5);
-        let state = startingState();
-        // Walk fv-1 → fv-5.
-        for (const target of ['fv-2', 'fv-3', 'fv-4', 'fv-5'] as const) {
-            state = { ...state, world: moveToNode(state.world, target) };
-            if (target !== 'fv-5') state = { ...state, world: completeCurrentNode(state.world) };
-        }
+        const state = nfStateAt('nf-16');
         const before = state.player.currency;
         const result = resolveMapEvent(state);
         expect(result.event.kind).toBe('loot-cache');
@@ -231,19 +233,24 @@ describe('resolveMapEvent dispatch', () => {
 // ── Dialogue (Q9) ──────────────────────────────────────────────────────────
 
 describe('applyDialogueChoice', () => {
+    // Old Marrow's NPC + dialogue tree still lives in the fishing-village map
+    // DEFINITION (only the event-pool wiring at fv-2 changed to the new-player
+    // gauntlet), so the dialogue mechanics are exercised against that tree
+    // fetched from the map def.
+    const oldMarrowTree = () =>
+        getMapDefinition('coastal-continent', 'fishing-village').npcs!.find(
+            n => n.name === 'Old Marrow',
+        )!.dialogueTree!;
+
     it('starts a quest when a choice carries startQuest', () => {
         mockSequentialRng(0.5);
-        let state = startingState();
-        state = { ...state, world: moveToNode(state.world, 'fv-2') };
-        const result = resolveMapEvent(state);
-        expect(result.event.kind).toBe('interaction');
-        if (result.event.kind !== 'interaction' || !result.event.dialogue) return;
-        const tree = result.event.dialogue;
+        const state = startingState();
+        const tree = oldMarrowTree();
         const root = tree.nodes[tree.rootId];
         // Pick "What needs doing?" → leads to 'offer'
         const offerChoice = root.choices!.find(c => c.text.startsWith('What needs'));
         expect(offerChoice).toBeDefined();
-        const step1 = applyDialogueChoice(result.state, tree, offerChoice!);
+        const step1 = applyDialogueChoice(state, tree, offerChoice!);
         expect(step1.nextNode?.id).toBe('offer');
         // Pick "Consider it done" → starts the quest
         const accept = step1.nextNode!.choices!.find(c => c.effect?.startQuest);
@@ -254,17 +261,12 @@ describe('applyDialogueChoice', () => {
 
     it('grants currency when a choice carries grantCurrency', () => {
         mockSequentialRng(0.5);
-        let state = startingState();
-        state = { ...state, world: moveToNode(state.world, 'fv-2') };
-        const result = resolveMapEvent(state);
-        if (result.event.kind !== 'interaction' || !result.event.dialogue) {
-            throw new Error('expected interaction');
-        }
-        const tree = result.event.dialogue;
+        const state = startingState();
+        const tree = oldMarrowTree();
         const thanksNode = tree.nodes.thanks;
         const choice = thanksNode.choices![0];
-        const before = result.state.player.currency;
-        const step = applyDialogueChoice(result.state, tree, choice);
+        const before = state.player.currency;
+        const step = applyDialogueChoice(state, tree, choice);
         expect(step.gameState.player.currency).toBe(before + 25);
     });
 });

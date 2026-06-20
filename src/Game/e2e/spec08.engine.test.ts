@@ -34,64 +34,38 @@ function bootstrap(): ReturnType<typeof createGameStore> {
 }
 
 describe('Spec 08 e2e — fishing-village exploration loop', () => {
-    it('travels start → encounter → treasure → boss; quest completes; rewards granted', () => {
+    it('accepts the quest, traverses the encounter gauntlet to the boss; quest completes; rewards granted', () => {
         // Fix RNG so encounter rolls and loot rolls are deterministic.
         mockSequentialRng(0.5);
 
         const store = bootstrap();
-        let state = store.getState();
 
-        // 1. Talk to Old Marrow on fv-2 and accept the quest.
-        const moved2 = moveToNode(state.world, 'fv-2');
-        store.setState({ world: moved2 });
-        let result = resolveMapEvent(store.getState());
-        store.setState(result.state);
-        expect(result.event.kind).toBe('interaction');
-        if (result.event.kind === 'interaction' && result.event.dialogue) {
-            const tree = result.event.dialogue;
-            const root = tree.nodes[tree.rootId];
-            const offer = root.choices!.find(c => c.nextNodeId === 'offer')!;
-            const step1 = applyDialogueChoice(store.getState(), tree, offer);
-            store.setState(step1.gameState);
-            const accept = step1.nextNode!.choices!.find(c => c.effect?.startQuest)!;
-            const step2 = applyDialogueChoice(store.getState(), tree, accept);
-            store.setState(step2.gameState);
-            expect(step2.effects.startedQuest).toBe('starting-quest');
+        // 1. Accept Old Marrow's quest. The starting map is now a combat
+        // gauntlet, so fv-2 no longer fires the interaction — but Old Marrow's
+        // NPC + tree still live in the map DEFINITION; the quest is accepted
+        // through that tree.
+        const def = getMapDefinition('coastal-continent', 'fishing-village');
+        const tree = def.npcs!.find(n => n.name === 'Old Marrow')!.dialogueTree!;
+        const root = tree.nodes[tree.rootId];
+        const offer = root.choices!.find(c => c.nextNodeId === 'offer')!;
+        const step1 = applyDialogueChoice(store.getState(), tree, offer);
+        store.setState(step1.gameState);
+        const accept = step1.nextNode!.choices!.find(c => c.effect?.startQuest)!;
+        const step2 = applyDialogueChoice(store.getState(), tree, accept);
+        store.setState(step2.gameState);
+        expect(step2.effects.startedQuest).toBe('starting-quest');
+
+        // 2. Traverse the spine to the boss. Every intermediate node is a
+        // low-level encounter now; completing each advances the unlock graph.
+        for (const node of ['fv-2', 'fv-3', 'fv-4', 'fv-5'] as const) {
+            store.setState({ world: moveToNode(store.getState().world, node) });
+            const r = resolveMapEvent(store.getState());
+            store.setState(r.state);
+            expect(r.event.kind).toBe('encounter');
+            store.setState({ world: completeCurrentNode(store.getState().world) });
         }
-        store.setState({ world: completeCurrentNode(store.getState().world) });
 
-        // 2. Pass the shop (fv-3) — folded into the village kind post-Phase 24.
-        store.setState({ world: moveToNode(store.getState().world, 'fv-3') });
-        const shopRes = resolveMapEvent(store.getState());
-        store.setState(shopRes.state);
-        expect(shopRes.event.kind).toBe('village');
-        store.setState({ world: completeCurrentNode(store.getState().world) });
-
-        // 3. Encounter node fv-4 → fight + win.
-        store.setState({ world: moveToNode(store.getState().world, 'fv-4') });
-        const encRes = resolveMapEvent(store.getState());
-        store.setState(encRes.state);
-        expect(encRes.event.kind).toBe('encounter');
-        if (encRes.event.kind === 'encounter') {
-            store.getState().startCombat(encRes.event.encounter);
-            // Force victory by zeroing enemy HP.
-            const combat = store.getState().combat!;
-            store.setState({ combat: { ...combat, enemy: { ...combat.enemy, health: 0 } } });
-            const report = store.getState().endCombat();
-            expect(report.outcome).toBe('victory');
-        }
-        store.setState({ world: completeCurrentNode(store.getState().world) });
-
-        // 4. Loot-cache node fv-5 → currency reward (treasure folded into loot-cache).
-        store.setState({ world: moveToNode(store.getState().world, 'fv-5') });
-        const treasureBefore = store.getState().player.currency;
-        const treasureRes = resolveMapEvent(store.getState());
-        store.setState(treasureRes.state);
-        expect(treasureRes.event.kind).toBe('loot-cache');
-        expect(store.getState().player.currency).toBe(treasureBefore + 10);
-        store.setState({ world: completeCurrentNode(store.getState().world) });
-
-        // 5. Boss encounter fv-6 → fight, win, quest auto-completes.
+        // 3. Boss encounter fv-6 → fight, win, quest auto-completes.
         store.setState({ world: moveToNode(store.getState().world, 'fv-6') });
         const bossRes = resolveMapEvent(store.getState());
         store.setState(bossRes.state);
@@ -109,8 +83,9 @@ describe('Spec 08 e2e — fishing-village exploration loop', () => {
 
         // Quest auto-completed via killObjectives in endCombat.
         expect(store.getState().quests.completed).toContain('starting-quest');
-        // Reward (25 currency) was granted automatically.
-        expect(store.getState().player.currency).toBeGreaterThanOrEqual(35);
+        // The 25-currency quest reward was granted automatically (the old
+        // +10 treasure node is now an encounter in the gauntlet).
+        expect(store.getState().player.currency).toBeGreaterThanOrEqual(25);
     });
 
     it('hazard tick fires when the player moves between nodes', () => {

@@ -28,7 +28,12 @@ import type { Consumable } from '../types';
 // Pool registration lives in `content.ts`; import for side effect.
 import '../../World/MapEvents/content';
 
-function freshWorldAt(mapName: 'fishing-village' | 'northern-forest'): GameState {
+// The starting map (fishing-village) is now a combat gauntlet with no shop;
+// the surviving authored village/shop is northern-forest's Glen Market (nf-8).
+function freshWorldAt(
+    mapName: 'fishing-village' | 'northern-forest' = 'northern-forest',
+    nodeId = 'nf-8',
+): GameState {
     const base: GameState = { ...createNewGameState(), world: createStartingWorld() };
     const def = getMapDefinition('coastal-continent', mapName);
     const map: MapState = createMapState(def);
@@ -41,7 +46,7 @@ function freshWorldAt(mapName: 'fishing-village' | 'northern-forest'): GameState
     });
     return {
         ...base,
-        world: { ...base.world, currentMap: { ...map, currentNode: 'fv-3' } },
+        world: { ...base.world, currentMap: { ...map, currentNode: nodeId } },
         player,
     };
 }
@@ -53,7 +58,7 @@ afterEach(() => {
 describe('Phase 37 — shop economy through resolveMapEvent', () => {
     it('village resolution surfaces the authored shop on the event', () => {
         mockSequentialRng(0.5);
-        const state = freshWorldAt('fishing-village');
+        const state = freshWorldAt('northern-forest', 'nf-8');
         const result = resolveMapEvent(state);
 
         expect(result.event.kind).toBe('village');
@@ -63,39 +68,39 @@ describe('Phase 37 — shop economy through resolveMapEvent', () => {
         const wares = result.event.shop!.wares;
         expect(wares.length).toBeGreaterThan(0);
         const ids = wares.map(w => w.itemId);
-        expect(ids).toContain('healing-potion');
+        expect(ids).toContain('minor-healing-potion');
     });
 
     it('buy / sell round-trip through a shop ware leaves the character net even', () => {
         mockSequentialRng(0.5);
-        const state = freshWorldAt('fishing-village');
+        const state = freshWorldAt('northern-forest', 'nf-8');
         const result = resolveMapEvent(state);
         if (result.event.kind !== 'village' || !result.event.shop) {
-            throw new Error('fv-3 village must carry a shop');
+            throw new Error('nf-8 village must carry a shop');
         }
 
-        const ware = result.event.shop.wares.find(w => w.itemId === 'healing-potion');
+        const ware = result.event.shop.wares.find(w => w.itemId === 'minor-healing-potion');
         expect(ware).toBeDefined();
         const item = getConsumableById(ware!.itemId)!;
 
         const startingCurrency = result.state.player.currency;
         const afterBuy = buyItem(result.state.player, item, ware!.price);
         expect(afterBuy.currency).toBe(startingCurrency - ware!.price);
-        expect(afterBuy.inventory.some(i => i.id === 'healing-potion')).toBe(true);
+        expect(afterBuy.inventory.some(i => i.id === 'minor-healing-potion')).toBe(true);
 
         // Sell the same item back at the same price; net should be zero.
-        const afterSell = sellItem(afterBuy, 'healing-potion', ware!.price);
+        const afterSell = sellItem(afterBuy, 'minor-healing-potion', ware!.price);
         expect(afterSell.currency).toBe(startingCurrency);
-        expect(afterSell.inventory.some(i => i.id === 'healing-potion')).toBe(false);
+        expect(afterSell.inventory.some(i => i.id === 'minor-healing-potion')).toBe(false);
     });
 
     it('buying with insufficient currency leaves the resolved character untouched', () => {
         mockSequentialRng(0.5);
-        const state = freshWorldAt('fishing-village');
+        const state = freshWorldAt('northern-forest', 'nf-8');
         const broke: GameState = { ...state, player: { ...state.player, currency: 0 } };
         const result = resolveMapEvent(broke);
         if (result.event.kind !== 'village' || !result.event.shop) {
-            throw new Error('fv-3 village must carry a shop');
+            throw new Error('nf-8 village must carry a shop');
         }
         const ware = result.event.shop.wares[0];
         const item = getConsumableById(ware.itemId)!;
@@ -105,21 +110,21 @@ describe('Phase 37 — shop economy through resolveMapEvent', () => {
 
     it('purchased items are deep-cloned — mutating one does not bleed into the catalogue', () => {
         mockSequentialRng(0.5);
-        const state = freshWorldAt('fishing-village');
+        const state = freshWorldAt('northern-forest', 'nf-8');
         const result = resolveMapEvent(state);
         if (result.event.kind !== 'village' || !result.event.shop) {
-            throw new Error('fv-3 village must carry a shop');
+            throw new Error('nf-8 village must carry a shop');
         }
-        const ware = result.event.shop.wares.find(w => w.itemId === 'healing-potion')!;
+        const ware = result.event.shop.wares.find(w => w.itemId === 'minor-healing-potion')!;
         const item = getConsumableById(ware.itemId)!;
         const original = item.quantity;
 
         const bought = buyItem(result.state.player, item, ware.price);
-        const inInventory = bought.inventory.find(i => i.id === 'healing-potion') as Consumable;
+        const inInventory = bought.inventory.find(i => i.id === 'minor-healing-potion') as Consumable;
         inInventory.quantity = 99;
 
         // The catalogue entry was not mutated.
-        const catalogueAgain = getConsumableById('healing-potion')!;
+        const catalogueAgain = getConsumableById('minor-healing-potion')!;
         expect(catalogueAgain.quantity).toBe(original);
     });
 });

@@ -16,6 +16,7 @@ import {
     setNodeEventPoolOverride,
 } from './resolve-map-event';
 import type { MapEventPool } from './types';
+import type { EnemySlug } from '../../Enemy/enemy.library';
 
 // ─── fishing-village pools ────────────────────────────────────────────────────
 
@@ -899,4 +900,85 @@ for (const { nodeId, pool } of FISHING_VILLAGE_POOLS) {
 for (const { nodeId, pool } of NORTHERN_FOREST_POOLS) {
     registerMapEventPool(pool);
     setNodeEventPoolOverride('coastal-continent', 'northern-forest', nodeId, pool.id);
+}
+
+// ─── New-player fishing-village override (2026-06) ────────────────────────────
+//
+// Directive: the first continent's STARTING map is a combat-focused new-player
+// gauntlet — exactly ONE quest node (the story hook) and ONE boss node (the
+// region climax); every other node is a balanced low-level encounter. This
+// block re-registers all fishing-village nodes, superseding the legacy authored
+// pools above (Old Marrow, the stalls, gathering, rest, hazards remain defined
+// in source for easy restoration but are no longer wired on this map).
+//
+// Foes are kept to the gentlest L1–L2 simple/normal roster: the gauntlet has no
+// rest/shop node, so a new player cannot heal or restock mid-map — difficulty is
+// held down by the foe tier rather than by recovery nodes. Boss stays at fv-6
+// (the node wired for region progression); the quest sits at fv-15.
+
+const FV_NEW_PLAYER_FOES: ReadonlyArray<{ slug: EnemySlug; description: string }> = [
+    { slug: 'tidepool-crab',  description: 'A tidepool crab pincers up from the dock pilings.' },
+    { slug: 'sea-mist-wisp',  description: 'A sea-mist wisp coils out of the fog.' },
+    { slug: 'salt-gnaw-rat',  description: 'A salt-gnaw rat bares its teeth among the crates.' },
+    { slug: 'driftwood-husk', description: 'A driftwood husk shudders upright on the strand.' },
+    { slug: 'wet-hound',      description: 'A wet-hound bristles between the shacks.' },
+    { slug: 'mournful-gull',  description: 'A mournful gull wheels down, shrieking.' },
+];
+
+function fvEncounterPool(
+    nodeId: string,
+    foe: { slug: EnemySlug; description: string },
+): MapEventPool {
+    return {
+        id: `${nodeId}.encounter`,
+        entries: [{
+            kind: 'encounter', weight: 1,
+            payload: {
+                kind: 'encounter',
+                enemySlug: foe.slug,
+                isBoss: false,
+                description: foe.description,
+            },
+        }],
+    };
+}
+
+const fvBuildTheBoatQuest: MapEventPool = {
+    id: 'fv-15.quest',
+    entries: [{
+        kind: 'quest', weight: 1,
+        payload: {
+            kind: 'quest',
+            boardId: 'build-the-boat',
+            description: 'The half-built hull waits on the strand; the village is counting on it.',
+        },
+    }],
+};
+
+/** The single quest node and single boss node on the new-player map. */
+const FV_QUEST_NODE = 'fv-15';
+const FV_BOSS_NODE = 'fv-6';
+
+const FISHING_VILLAGE_NEW_PLAYER_POOLS: ReadonlyArray<{ nodeId: string; pool: MapEventPool }> =
+    (() => {
+        const out: Array<{ nodeId: string; pool: MapEventPool }> = [];
+        let foeIdx = 0;
+        for (let i = 1; i <= 25; i++) {
+            const nodeId = `fv-${i}`;
+            if (nodeId === FV_BOSS_NODE) {
+                out.push({ nodeId, pool: fvBoss });
+            } else if (nodeId === FV_QUEST_NODE) {
+                out.push({ nodeId, pool: fvBuildTheBoatQuest });
+            } else {
+                const foe = FV_NEW_PLAYER_FOES[foeIdx % FV_NEW_PLAYER_FOES.length]!;
+                foeIdx++;
+                out.push({ nodeId, pool: fvEncounterPool(nodeId, foe) });
+            }
+        }
+        return out;
+    })();
+
+for (const { nodeId, pool } of FISHING_VILLAGE_NEW_PLAYER_POOLS) {
+    registerMapEventPool(pool);
+    setNodeEventPoolOverride('coastal-continent', 'fishing-village', nodeId, pool.id);
 }
