@@ -36,6 +36,15 @@ that landed after v0.22.0.
   legacy combat-action constants with zero consumers in the engine, CLI,
   tests, or mobile. (Minor breaking: anything importing them moves to the
   `Action` type.)
+- **`Character.equippedSkills` (Phase 159).** The legacy equipped-skill
+  loadout field — deprecated in Phase 99 — is gone from `Character`,
+  `CreateCharacterOptions`, `CharacterPreset`, the Tuning loadout builder,
+  and the CLI dev-tools (`devEquipSkills` deleted). Skills are known, not
+  equipped (ADR-0002); `knownSkills` filtered by affordability is the combat
+  catalogue. Legacy v7 saves still fold their old rotation into `knownSkills`
+  via the v7→v8 save migration, which now reads the legacy field off the raw
+  payload and drops it rather than writing it back. (Minor breaking for any
+  consumer reading `player.equippedSkills`.)
 
 ### Changed
 

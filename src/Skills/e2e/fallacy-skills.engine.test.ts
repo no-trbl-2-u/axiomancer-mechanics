@@ -67,7 +67,6 @@ describe('Phase 44 — fallacies-as-spells (skills)', () => {
             level: 10,
             baseStats: { heart: 6, body: 12, mind: 6 },
             knownSkills: [skill.id],
-            equippedSkills: [skill.id],
         });
         const enemy = createEnemy({
             id: 'sandbag',
@@ -146,7 +145,6 @@ function testNirvana() {
         level: 10,
         baseStats: { heart: 6, body: 6, mind: 12 },
         knownSkills: [skill.id],
-        equippedSkills: [skill.id],
     });
     const enemy = createEnemy({
         id: 'sandbag',

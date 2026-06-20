@@ -88,7 +88,7 @@ function makeState(enemy: Enemy, overrides: Partial<CombatState> = {}): CombatSt
                 emotionalSave: 0, emotionalTest: 0,
             },
             inventory: [], currency: 0, equipment: {}, effects: [],
-            knownSkills: [], equippedSkills: [],
+            knownSkills: [],
             availableStatPoints: 0,
         },
         enemy,

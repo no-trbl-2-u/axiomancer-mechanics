@@ -19,7 +19,6 @@ function player() {
         ...buildCharacterFromPreset(apprenticePreset),
         name: 'Tester',
         knownSkills: ['befriend'],
-        equippedSkills: ['befriend'],
     };
 }
 

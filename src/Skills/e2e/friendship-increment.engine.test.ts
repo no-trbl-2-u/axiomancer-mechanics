@@ -21,7 +21,6 @@ describe('Friendship increment skills', () => {
         level: 1,
         baseStats: { body: 6, mind: 4, heart: 4 },
         knownSkills: ['soothing-words', 'peaceful-gesture', 'empathetic-understanding', 'ad-hominem-strike'],
-        equippedSkills: ['soothing-words', 'peaceful-gesture', 'empathetic-understanding', 'ad-hominem-strike'],
     });
     const enemy = createEnemy({
         id: 'test-enemy',

@@ -66,8 +66,8 @@ function bestTemplateForSlot(slot: EquipmentSlot, level: number): string | undef
 /** Every skill the character is high enough level to know, biased by playstyle. */
 function eligibleSkills(level: number, playstyle: PlaytestPolicy): string[] {
     const eligible = skillLibrary.filter(s => (s.learningRequirement?.level ?? 1) <= level);
-    // Light playstyle bias: sort preferred skills first so the legacy ≤4
-    // equipped rotation leans into the playstyle. The full set stays known.
+    // Light playstyle bias: sort preferred skills first so the policy's skill
+    // selection leans into the playstyle. The full eligible set stays known.
     const score = (id: string): number => {
         const s = getSkillById(id);
         if (!s) return 0;
@@ -104,7 +104,6 @@ export function buildLoadoutCharacter(cell: MatrixCell, rng: () => number = Math
     }
 
     const known = eligibleSkills(cell.level, cell.playstyle);
-    const equipped = known.slice(0, 4);
 
     return createCharacter({
         name: `Tuning L${cell.level} ${cell.playstyle}`,
@@ -112,6 +111,5 @@ export function buildLoadoutCharacter(cell: MatrixCell, rng: () => number = Math
         baseStats,
         equipment,
         knownSkills: known,
-        equippedSkills: equipped,
     });
 }

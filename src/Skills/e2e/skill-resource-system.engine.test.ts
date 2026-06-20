@@ -297,7 +297,7 @@ describe('Fixture immutability invariant', () => {
 
         // The canonical fixture is unchanged.
         expect(SkillTestPlayer.health).toBe(SkillTestPlayer.maxHealth);
-        expect(SkillTestPlayer.equippedSkills).toEqual([
+        expect(SkillTestPlayer.knownSkills).toEqual([
             'ad-hominem-strike',
             'achilles-gambit',
             'sorites-cascade',

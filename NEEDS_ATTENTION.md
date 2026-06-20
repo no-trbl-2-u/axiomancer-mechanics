@@ -6,25 +6,11 @@
 > Audited 2026-06-12 (post-0.20.0, post dead-code cleanup). Remove
 > entries when resolved; date new ones.
 
-## 1. Phase 99 skill-loadout migration is half-finished
-
-**What:** Phase 99 shipped unlocked-skill access (`knownSkills` is the
-combat catalogue), but the legacy `equippedSkills` field was deprecated,
-not removed. Still alive: the field on `Character`
-(`src/Character/types.ts`), the preset field, `devEquipSkills`
-(`src/CLI/dev-tools.ts` — `@deprecated` yet wired to the live CLI menu
-entry "Unlock skills (legacy)"), and the Tuning loadout builder
-(`src/Tuning/loadout.builder.ts:115`).
-
-**Pending decision:** finish the removal (touch Character type, presets,
-CLI menu, Tuning builder, save migration v8 path) or formally bless the
-field as a permanent compatibility surface. Until then every audit
-re-discovers it.
-
-> **Promoted to Phase 159** via oversight 2026-06-20 (Q1: T pick). T
-> clarified 2026-06-20 that `equippedSkills` is no longer relevant; the
-> access surface is learned skills only. Phase 159 should remove the legacy
-> field/surface rather than bless it. Close this entry when Phase 159 ships.
+> **§1 (Phase 99 skill-loadout migration) — RESOLVED in Phase 159 (2026-06-20).**
+> `equippedSkills` was removed entirely from `Character`,
+> `CreateCharacterOptions`, `CharacterPreset`, the Tuning loadout builder, and
+> the CLI dev-tools (`devEquipSkills` deleted). The v7→v8 save migration still
+> folds legacy rotations into `knownSkills` but drops the field. See ADR-0002.
 
 ## 2. Character presets: deprecation rescinded, migration never scoped
 

@@ -34,10 +34,4 @@ export const SkillTestPlayer: Character = createCharacter({
         'sorites-cascade',
         'straw-giant',
     ],
-    equippedSkills: [
-        'ad-hominem-strike',
-        'achilles-gambit',
-        'sorites-cascade',
-        'straw-giant',
-    ],
 });

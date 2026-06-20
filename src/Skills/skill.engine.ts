@@ -386,11 +386,11 @@ export interface SkillLookup {
  * and the player is the target; `skill.targetType` is interpreted relative
  * to the caster (`'self'` → caster's effects; `'enemy'` → opposing side).
  * Enemy-cast skills are validated against `Enemy.skills?` rather than
- * `Character.equippedSkills`. Resource handling stays uniform — the caller
+ * `Character.knownSkills`. Resource handling stays uniform — the caller
  * is responsible for passing a sentinel `combatResources` for the enemy
  * path (per D2 in plan/phases/phase_49_enemy_skill_caster.md).
  *
- * @throws if the skill is not equipped (player path) or not in the enemy's
+ * @throws if the skill is not known (player path) or not in the enemy's
  *   rotation (enemy path), not found in the lookup, or the caster cannot
  *   afford it.
  */

@@ -37,10 +37,9 @@ export interface CharacterPreset {
     baseStats: BaseStats;
     /** Equipment to drop and equip. Each slot is filled at 'common' rarity. */
     equipment: CharacterPresetEquipmentEntry[];
-    /** Skill IDs the character knows. */
+    /** Skill IDs the character knows. The full known set is the combat
+     *  catalogue (ADR-0002); there is no equipped-skill rotation. */
     knownSkills: string[];
-    /** Legacy active rotation (must be subset of knownSkills, ≤4); scheduled for removal in Phase 99. */
-    equippedSkills: string[];
     /** Consumable IDs (and quantities) to seed the inventory. */
     consumables: { id: string; quantity: number }[];
     currency: number;
@@ -86,7 +85,6 @@ export const apprenticePreset: CharacterPreset = {
     baseStats: { heart: 5, body: 5, mind: 5 },
     equipment: [],
     knownSkills: [...TIER_1_SKILLS],
-    equippedSkills: TIER_1_SKILLS.slice(0, 4),
     consumables: [
         { id: 'minor-healing-potion', quantity: 3 },
     ],
@@ -105,12 +103,6 @@ export const wandererPreset: CharacterPreset = {
         { templateId: 'leather-cap', slot: 'head' },
     ],
     knownSkills: [...TIER_1_SKILLS, ...TIER_2_SKILLS, ...TIER_2_SYNERGY_SKILLS],
-    equippedSkills: [
-        'ad-hominem-strike',
-        'ship-of-theseus',
-        'resonance-bleed',
-        'resonance-burst',
-    ],
     consumables: [
         { id: 'healing-potion', quantity: 5 },
         { id: 'antidote', quantity: 2 },
@@ -130,12 +122,6 @@ export const sagePreset: CharacterPreset = {
         { templateId: 'chain-coif', slot: 'head' },
     ],
     knownSkills: [...TIER_1_SKILLS, ...TIER_2_SKILLS, ...TIER_3_SKILLS, ...TIER_2_SYNERGY_SKILLS],
-    equippedSkills: [
-        'sorites-cascade',
-        'bootstrap-paradox',
-        'resonance-detonation',
-        'bat-swarm-thoughtform',
-    ],
     consumables: [
         { id: 'healing-potion', quantity: 6 },
         { id: 'clarity-serum', quantity: 2 },
@@ -166,7 +152,6 @@ export const ladderL1Preset: CharacterPreset = {
     baseStats: { heart: 5, body: 5, mind: 5 },
     equipment: [],
     knownSkills: [...TIER_1_SKILLS],
-    equippedSkills: TIER_1_SKILLS.slice(0, 4),
     consumables: [{ id: 'minor-healing-potion', quantity: 3 }],
     currency: 0,
 };
@@ -187,12 +172,6 @@ export const ladderL15Preset: CharacterPreset = {
         { templateId: 'silver-ring', slot: 'accessory' },
     ],
     knownSkills: [...TIER_1_SKILLS, ...TIER_2_SKILLS, ...TIER_2_SYNERGY_SKILLS],
-    equippedSkills: [
-        'ad-hominem-strike',
-        'ship-of-theseus',
-        'resonance-bleed',
-        'resonance-burst',
-    ],
     consumables: [
         { id: 'healing-potion', quantity: 5 },
         { id: 'antidote', quantity: 2 },
@@ -220,12 +199,6 @@ export const ladderL30Preset: CharacterPreset = {
         ...TIER_2_SKILLS,
         ...TIER_3_SKILLS,
         ...TIER_2_SYNERGY_SKILLS,
-    ],
-    equippedSkills: [
-        'sorites-cascade',
-        'bootstrap-paradox',
-        'resonance-detonation',
-        'bat-swarm-thoughtform',
     ],
     consumables: [
         { id: 'greater-healing-potion', quantity: 6 },
@@ -258,12 +231,6 @@ export const ladderL50Preset: CharacterPreset = {
         ...TIER_2_SKILLS,
         ...TIER_3_SKILLS,
         ...TIER_2_SYNERGY_SKILLS,
-    ],
-    equippedSkills: [
-        'sorites-cascade',
-        'straw-giant',
-        'bootstrap-paradox',
-        'resonance-detonation',
     ],
     consumables: [
         { id: 'supreme-healing-potion', quantity: 8 },
@@ -311,6 +278,5 @@ export function buildCharacterFromPreset(
         inventory,
         equipment,
         knownSkills: preset.knownSkills,
-        equippedSkills: preset.equippedSkills,
     });
 }

@@ -68,7 +68,6 @@ function createMaxOutCharacter() {
             feet: equipment.find(item => item.slot === 'feet'),
         },
         knownSkills: skillLibrary.map(skill => skill.id),
-        equippedSkills: skillLibrary.slice(0, 4).map(skill => skill.id),
     });
 }
 
@@ -112,12 +111,6 @@ function createLevel6WandererCharacter() {
         inventory,
         equipment,
         knownSkills: [...tier1Skills, ...tier2Skills],
-        equippedSkills: [
-            'ad-hominem-strike',
-            'ship-of-theseus', 
-            'undistributed-middle',
-            'befriend',
-        ],
     });
 }
 

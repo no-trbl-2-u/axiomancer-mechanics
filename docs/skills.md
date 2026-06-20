@@ -202,9 +202,10 @@ interface Character {
 filter this catalogue by `canUseSkill(combatResources, skill)` and present only
 affordable skills at the moment of choice.
 
-Implementation status: Phase 99 complete. Legacy `equippedSkills` field is kept
-for backward compatibility but is no longer used in combat logic. All skill
-access uses `knownSkills` filtered by `canUseSkill(combatResources, skill)`.
+Implementation status: Phase 99 + Phase 159 complete. The legacy
+`equippedSkills` field was removed entirely (ADR-0002). All skill access uses
+`knownSkills` filtered by `canUseSkill(combatResources, skill)`. Legacy v7 saves
+fold their old rotation into `knownSkills` via the v7→v8 save migration.
 
 ---
 
@@ -265,8 +266,9 @@ skill events use the same `phase` and `actor` shape as basic action events.
 The combat CLI should present a Skills sub-prompt after the player selects
 `action: skill`, listing learned/unlocked skills that are currently affordable
 under `canUseSkill(combatResources, skill)`. The chosen `skillId` is threaded
-into `resolveCombatRound` as `playerAction.skillId`. Current `main` still uses
-the legacy `equippedSkills` list here; Phase 99 removes that gate.
+into `resolveCombatRound` as `playerAction.skillId`. Selection is over the
+`knownSkills` catalogue (ADR-0002 / Phase 99); the legacy `equippedSkills` gate
+was removed in Phase 159.
 
 ---
 

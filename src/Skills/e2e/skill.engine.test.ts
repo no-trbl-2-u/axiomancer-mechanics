@@ -70,7 +70,6 @@ const fixturePlayer = () => createCharacter({
     name: 'P', level: 1,
     baseStats: { heart: 4, body: 6, mind: 4 },
     knownSkills: [damagingSkill.id, buffSkill.id, debuffSkill.id],
-    equippedSkills: [damagingSkill.id, buffSkill.id, debuffSkill.id],
 });
 
 const fixtureEnemy = () => createEnemy({

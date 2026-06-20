@@ -38,7 +38,6 @@ function freshCharacter(overrides: Partial<Character> = {}): Character {
         equipment: {},
         effects: [],
         knownSkills: [],
-        equippedSkills: [],
         availableStatPoints: 0,
         ...overrides,
     };

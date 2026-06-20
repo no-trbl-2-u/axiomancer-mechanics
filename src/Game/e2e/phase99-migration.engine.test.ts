@@ -1,8 +1,11 @@
 /**
  * Phase 99 — unlocked skill access migration test.
- * 
- * Verifies that legacy saves with equippedSkills get properly migrated
- * to merge those skills into knownSkills without losing progress.
+ *
+ * Verifies that legacy saves with `equippedSkills` get properly migrated
+ * to merge those skills into `knownSkills` without losing progress. The
+ * legacy field was removed from the live `Character` type in Phase 159, so
+ * v7 fixtures attach it onto the player payload explicitly; post-migration
+ * the field no longer exists on the player.
  */
 
 import { describe, test, expect } from 'vitest';
@@ -14,19 +17,26 @@ import { nullAdapter } from '../persistence/null.adapter';
 import { createCharacter } from '../../Character';
 import { createStartingWorld } from '../../World';
 
+/** Build a legacy v7 player payload carrying the removed `equippedSkills` field. */
+function legacyV7Player(
+    opts: Parameters<typeof createCharacter>[0],
+    equippedSkills: string[],
+): Record<string, unknown> {
+    return { ...createCharacter(opts), equippedSkills };
+}
+
 describe('Phase 99 migration', () => {
     test('merges equippedSkills into knownSkills for v7 saves', () => {
         // Create a v7 save with separate equippedSkills and knownSkills
         const v7Save = {
             version: 7,
             runId: 'test-run-1234567',
-            player: createCharacter({
+            player: legacyV7Player({
                 name: 'TestPlayer',
                 level: 5,
                 baseStats: { heart: 8, body: 6, mind: 7 },
                 knownSkills: ['ad-hominem-strike', 'false-dilemma'],
-                equippedSkills: ['ad-hominem-strike', 'appeal-to-pity'],
-            }),
+            }, ['ad-hominem-strike', 'appeal-to-pity']),
             world: createStartingWorld(),
             combat: null,
             quests: { activeQuests: [], completedQuests: [], flags: [] },
@@ -35,7 +45,7 @@ describe('Phase 99 migration', () => {
             rngState: 1234567890,
             philosophicalAlignment: {
                 epistemology: 0,
-                outlook: 0, 
+                outlook: 0,
                 scope: 0,
             },
             codex: { unlockedEntries: [] },
@@ -50,22 +60,21 @@ describe('Phase 99 migration', () => {
             expect.arrayContaining(['ad-hominem-strike', 'false-dilemma', 'appeal-to-pity'])
         );
         expect(migrated.player.knownSkills).toHaveLength(3);
-        
-        // Verify equippedSkills is preserved for backward compatibility
-        expect(migrated.player.equippedSkills).toEqual(['ad-hominem-strike', 'appeal-to-pity']);
+
+        // The legacy field is dropped — never written back onto the player.
+        expect('equippedSkills' in migrated.player).toBe(false);
     });
 
     test('handles v7 saves where equippedSkills is subset of knownSkills', () => {
         const v7Save = {
             version: 7,
             runId: 'test-run-abcdefgh',
-            player: createCharacter({
+            player: legacyV7Player({
                 name: 'TestPlayer',
                 level: 3,
                 baseStats: { heart: 5, body: 5, mind: 5 },
                 knownSkills: ['ad-hominem-strike', 'false-dilemma', 'appeal-to-pity'],
-                equippedSkills: ['ad-hominem-strike', 'false-dilemma'],
-            }),
+            }, ['ad-hominem-strike', 'false-dilemma']),
             world: createStartingWorld(),
             combat: null,
             quests: { activeQuests: [], completedQuests: [], flags: [] },
@@ -91,13 +100,12 @@ describe('Phase 99 migration', () => {
         const v7Save = {
             version: 7,
             runId: 'test-run-12345678',
-            player: createCharacter({
-                name: 'TestPlayer', 
+            player: legacyV7Player({
+                name: 'TestPlayer',
                 level: 1,
                 baseStats: { heart: 5, body: 5, mind: 5 },
                 knownSkills: ['ad-hominem-strike'],
-                equippedSkills: [],
-            }),
+            }, []),
             world: createStartingWorld(),
             combat: null,
             quests: { activeQuests: [], completedQuests: [], flags: [] },
@@ -114,22 +122,21 @@ describe('Phase 99 migration', () => {
 
         const migrated = migrate(v7Save, 7, 8);
 
-        // Known skills should remain unchanged
+        // Known skills should remain unchanged; legacy field is dropped.
         expect(migrated.player.knownSkills).toEqual(['ad-hominem-strike']);
-        expect(migrated.player.equippedSkills).toEqual([]);
+        expect('equippedSkills' in migrated.player).toBe(false);
     });
 
     test('migrated saves can be loaded by game store', () => {
         const v7Save = {
             version: 7,
             runId: 'test-run-store123',
-            player: createCharacter({
+            player: legacyV7Player({
                 name: 'TestPlayer',
                 level: 2,
                 baseStats: { heart: 6, body: 4, mind: 5 },
                 knownSkills: ['false-dilemma'],
-                equippedSkills: ['ad-hominem-strike'],
-            }),
+            }, ['ad-hominem-strike']),
             world: createStartingWorld(),
             combat: null,
             quests: { activeQuests: [], completedQuests: [], flags: [] },
@@ -145,7 +152,7 @@ describe('Phase 99 migration', () => {
         };
 
         const migrated = migrate(v7Save, 7, GAME_STATE_VERSION);
-        
+
         // Should be able to create store with migrated state
         const events = createEventEmitter();
         const store = createGameStore(nullAdapter, migrated, events);
