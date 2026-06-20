@@ -30,6 +30,7 @@ export {
     STAT_POINTS_PER_LEVEL,
     DEFENSE_MULTIPLIERS, PASSIVE_DEFENSE_MULTIPLIER,
     MAX_EFFECT_INTENSITY, MAX_EFFECT_DURATION, FRIENDSHIP_COUNTER_MAX,
+    RESOURCE_CARRY,
 } from './game-mechanics.constants';
 
 export type { PersistenceAdapter } from './persistence/types';

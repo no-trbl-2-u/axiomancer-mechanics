@@ -169,6 +169,7 @@ export type {
 } from './Skills';
 export {
     generateBasicActionResources, generatePhilosophicalResource,
+    carryPhilosophicalResources,
     canUseSkill, spendResources, calculateSkillDamage, executeSkill,
     meetsLearningRequirement, getAvailableSkills, learnSkill,
     skillLibrary, getSkillById,
@@ -188,6 +189,7 @@ export {
     STAT_POINTS_PER_LEVEL,
     DEFENSE_MULTIPLIERS, PASSIVE_DEFENSE_MULTIPLIER,
     MAX_EFFECT_INTENSITY, MAX_EFFECT_DURATION, FRIENDSHIP_COUNTER_MAX,
+    RESOURCE_CARRY,
     generateRunId, STARTING_REGION,
 } from './Game';
 export type {

@@ -32,7 +32,7 @@ import {
     unequipItem as unequipItemReducer,
 } from '../Character/equipment.reducer';
 import { createCharacter, allocateStatPoint } from '../Character';
-import { learnSkill } from '../Skills';
+import { learnSkill, carryPhilosophicalResources } from '../Skills';
 import { createStartingWorld, emptyQuestLog } from '../World';
 import { moveToNode as moveWorld } from '../World/world.reducer';
 import { resolveMapEvent } from '../World';
@@ -196,6 +196,12 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
             
             return {
                 ...state,
+                // `initializeCombat` reads `state.player.carriedResources` to
+                // seed the new combat; clear it from the canonical player so the
+                // carry is consumed exactly once.
+                player: state.player.carriedResources
+                    ? { ...state.player, carriedResources: undefined }
+                    : state.player,
                 combat: initializeCombat(state.player, scaledEnemy),
                 currentEncounter: encounter,
             };
@@ -272,6 +278,18 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
             let nextPlayer: Character = (outcome === 'victory' || outcome === 'friendship')
                 ? combat.player
                 : { ...combat.player, inventory: state.player.inventory };
+
+            // On a won combat, carry a capped fraction of unspent philosophical
+            // resources (fallacy / paradox) into the next combat's seed; on a
+            // loss / flee, nothing carries. Always set the field explicitly so a
+            // stale carry cloned into the combat snapshot can't linger.
+            if (outcome === 'victory' || outcome === 'friendship') {
+                const carried = carryPhilosophicalResources(combat.combatResources);
+                nextPlayer = {
+                    ...nextPlayer,
+                    carriedResources: Object.keys(carried).length > 0 ? carried : undefined,
+                };
+            }
             let nextQuests: QuestLog = state.quests;
 
             if ((outcome === 'victory' || outcome === 'friendship') && state.currentEncounter) {

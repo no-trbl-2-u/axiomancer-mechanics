@@ -30,6 +30,7 @@ export {
 
 export {
     generateBasicActionResources, generatePhilosophicalResource,
+    carryPhilosophicalResources,
     canUseSkill, spendResources, calculateSkillDamage, executeSkill,
     philosophicalCategoryFor,
     meetsLearningRequirement, getAvailableSkills, learnSkill,

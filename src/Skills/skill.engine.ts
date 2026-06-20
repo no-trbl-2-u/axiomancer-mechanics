@@ -27,6 +27,7 @@ import { isBefriendAttemptEligible } from '../Combat/index';
 import { Combatant, CombatState, Stance } from '../Combat/types';
 import {
     RESOURCE_GENERATION,
+    RESOURCE_CARRY,
     SKILL_STAT_MULTIPLIER,
 } from '../Game/game-mechanics.constants';
 import { Equipment, EquipmentSlot } from '../Items/types';
@@ -87,6 +88,29 @@ export function generatePhilosophicalResource(
 ): CombatResources {
     const key: keyof CombatResources = category === 'fallacy' ? 'fallacy' : 'paradox';
     return { ...resources, [key]: resources[key] + 1 };
+}
+
+/**
+ * Computes the philosophical resources (fallacy / paradox only) that carry
+ * from a won combat into the next combat's seed: `floor(FRACTION × unspent)`
+ * per resource, capped at `CAP`. Stance tokens never carry — only the
+ * skill-fuel resources — so the carry rewards casting skills (and the status
+ * effects they apply), not turtling or basic-attack token-banking.
+ *
+ * Returns a sparse `Partial<CombatResources>` carrying only the keys with a
+ * positive amount, suitable for `Character.carriedResources`. Pure.
+ */
+export function carryPhilosophicalResources(
+    resources: CombatResources,
+    fraction: number = RESOURCE_CARRY.FRACTION,
+    cap: number = RESOURCE_CARRY.CAP,
+): Partial<CombatResources> {
+    const carried: Partial<CombatResources> = {};
+    for (const key of ['fallacy', 'paradox'] as const) {
+        const amount = Math.min(Math.floor((resources[key] ?? 0) * fraction), cap);
+        if (amount > 0) carried[key] = amount;
+    }
+    return carried;
 }
 
 // ─── Cost Checking & Spending ────────────────────────────────────────────────
