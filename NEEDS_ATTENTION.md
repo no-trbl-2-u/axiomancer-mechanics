@@ -21,6 +21,10 @@ CLI menu, Tuning builder, save migration v8 path) or formally bless the
 field as a permanent compatibility surface. Until then every audit
 re-discovers it.
 
+> **Promoted to Phase 158** via oversight 2026-06-20 (Q1: T pick). The
+> decision (finish removal vs. bless) is made there. Close this entry when
+> Phase 158 ships.
+
 ## 2. Character presets: deprecation rescinded, migration never scoped
 
 **What:** the "scheduled for removal at v0.13.0" notices sat stale for
@@ -46,6 +50,10 @@ and each names the missing sim as a standing propose-only suggestion.
 with policy bands in e2e, plus CLI subcommands if manual play is wanted
 (`npm run quest-board` etc., mirroring `npm run gathering`).
 
+> **Promoted to Phase 159** via oversight 2026-06-20 (Q1: T pick). Folds in
+> the standing Hazard sim harness candidate (utility-deck CLI injection +
+> the `ts-node` game.cli.ts:185 repair). Close this entry when Phase 159 ships.
+
 ## 4. The CLI does not play the Phase 137 minigames
 
 **What:** `resolveMapEvent` consumers diverge by host. Mobile intercepts
@@ -59,6 +67,10 @@ but the CLI experience is now meaningfully poorer than mobile's.
 **Pending decision:** port the minigame loops to the CLI (the engines are
 pure — it's all rendering), or declare the CLI a combat/balance harness
 that intentionally skips encounter minigames.
+
+> **Promoted to Phase 159** via oversight 2026-06-20 (Q1: T pick), bundled
+> with §3 (the CLI play loops ride on the same sims work). Close when Phase
+> 159 ships.
 
 ## 5. Engine-side map-event content is fully shadowed by mobile
 
@@ -75,6 +87,9 @@ reaches players via the CLI.
 content (engine authors, mobile consumes — or mobile authors, engine
 content.ts shrinks to CLI demo data). Cross-filed in mobile's
 NEEDS_ATTENTION.md §3 since the fix has a foot in each repo.
+
+> **Promoted to Phase 160** via oversight 2026-06-20 (Q1: T pick). Cross-repo;
+> the source-of-truth decision is made there. Close when Phase 160 ships.
 
 ## 6. Quest board story integration is cosmetic by design — for now
 
