@@ -47,6 +47,16 @@ that landed after v0.22.0.
   status-applying slot, non-defensive) gates the bias so cleanse/resist
   affixes are not boosted. Exposed as the `loot.statusAffixDrawBias`
   tunable; flat-stat variety is preserved, not removed.
+- **Status-centered equipment sets (Phase 158).** Every named set in
+  `Items/set.library` now anchors its defining payoff on a status-effect
+  passive instead of flat stats: aggressive sets (Iron Discipline,
+  Scholar's Circle, Skirmisher's Kit) grant `buff_status_chance_up`
+  (your statuses land more often); defensive sets (Wanderer's Road,
+  Veteran's Plate, Sage's Regalia) grant `buff_resistance_body/_mind/_heart`
+  (resist enemy statuses). Existing flat-stat + resource-token bonuses are
+  preserved as a secondary floor — the status passive is layered on, not
+  swapped in. Pure data retuning over the Phase 54 combat-scoped
+  `passiveEffects` path; no engine, type, or public-API changes.
 - **Character presets un-deprecated.** The "scheduled for removal at
   v0.13.0" notices were stale — presets are load-bearing (mobile DEV
   preset picker, Playtest runner, Tuning difficulty bands) and are a

@@ -16,6 +16,16 @@
  * bonuses from multiple sets at once — covered by the Phase 54 hermetic
  * tests in `src/Items/e2e/sets.engine.test.ts`.
  *
+ * Phase 158 — status-centering. Every set's defining payoff now anchors on
+ * a status-effect passive (the load-bearing doctrine: status effects are
+ * the MAIN fun; flat-stat-stacking gear is a balance failure). Aggressive
+ * sets grant `buff_status_chance_up` (your statuses land more often);
+ * defensive sets grant `buff_resistance_body/_mind/_heart` (resist enemy
+ * statuses). Existing flat-stat + resource-token bonuses are preserved as
+ * a secondary floor — the status passive is layered on, not swapped in.
+ * These passives ride the same combat-scoped `passiveEffects` path Phase 54
+ * already wired (applied at `initializeCombat`, purged at combat end).
+ *
  * Adding a set: append a new `ItemSet` literal here, then update
  * `docs/equipment.md` "Set Items" section + a hermetic test if the
  * bonus shape is new. Adding more sets is iterate-tier content
@@ -27,13 +37,15 @@ import type { ItemSet } from './set.types';
 const wandererRoad: ItemSet = {
     id: 'wanderers-road',
     name: "Wanderer's Road",
-    description: "A traveller's lightness of foot and clarity of eye.",
+    description: "A traveller's lightness of foot and clarity of eye — and a steady heart that shrugs off what would shake another.",
     memberTemplateIds: ['sandals', 'leather-cap'],
     bonuses: {
         2: {
             resourceInteraction: {
                 combatStartTokens: { heart: 2 },
             },
+            // Status-DEFENSE: a clear head resists heart-targeting afflictions.
+            passiveEffects: ['buff_resistance_heart'],
         },
     },
 };
@@ -55,6 +67,8 @@ const ironDiscipline: ItemSet = {
                     { trigger: 'any', resourceType: 'body', bonus: 1 },
                 ],
             },
+            // Status-OFFENSE: drilled discipline makes every applied effect bite.
+            passiveEffects: ['buff_status_chance_up'],
         },
     },
 };
@@ -69,7 +83,9 @@ const scholarsCircle: ItemSet = {
             resourceInteraction: {
                 combatStartTokens: { mind: 2 },
             },
-            passiveEffects: ['buff_critical_rate_up'],
+            // Status-OFFENSE: precise mind-strikes land their effects more often
+            // (keeps the Phase 54 crit-rate signature alongside the new bias).
+            passiveEffects: ['buff_critical_rate_up', 'buff_status_chance_up'],
         },
     },
 };
@@ -93,7 +109,9 @@ const veteransPlate: ItemSet = {
             },
         },
         4: {
-            passiveEffects: ['buff_damage_reduction'],
+            // Status-DEFENSE: the unbroken line shrugs off body-targeting
+            // afflictions on top of its damage reduction.
+            passiveEffects: ['buff_damage_reduction', 'buff_resistance_body'],
         },
     },
 };
@@ -114,7 +132,9 @@ const sagesRegalia: ItemSet = {
             resourceInteraction: {
                 combatStartTokens: { mind: 3 },
             },
-            passiveEffects: ['buff_buff_duration_up'],
+            // Status-DEFENSE: a warded mind throws off mind-targeting effects
+            // (alongside the longer-lasting buffs the sage already enjoys).
+            passiveEffects: ['buff_buff_duration_up', 'buff_resistance_mind'],
         },
     },
 };
@@ -147,7 +167,9 @@ const skirmishersKit: ItemSet = {
             ],
         },
         3: {
-            passiveEffects: ['buff_evasion_up'],
+            // Status-OFFENSE: the hit-and-run skirmisher afflicts as they slip
+            // past, landing effects more often on top of their evasion.
+            passiveEffects: ['buff_evasion_up', 'buff_status_chance_up'],
         },
     },
 };

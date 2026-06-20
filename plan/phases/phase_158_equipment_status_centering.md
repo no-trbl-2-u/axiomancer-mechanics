@@ -89,13 +89,18 @@ status passive is layered on, not swapped in.
 
 ## DoD
 
-- [ ] Every set in `set.library.ts` carries a status-OFFENSE or
+- [x] Every set in `set.library.ts` carries a status-OFFENSE or
       status-DEFENSE passive as its defining payoff (except the already
       status-rich Embers of Rebirth).
-- [ ] Existing flat-stat / resource set invariants preserved.
-- [ ] Hermetic e2e proves the status passives resolve from the right sets.
-- [ ] `docs/equipment.md` Set Items section updated.
-- [ ] `npm run verify` + `npm run deploy:check` green.
+- [x] Existing flat-stat / resource set invariants preserved.
+- [x] Hermetic e2e proves the status passives resolve from the right sets
+      (6 new Phase 158 cases in `sets.engine.test.ts`; 21/21 green).
+- [x] `docs/equipment.md` Set Items section updated (full 7-set table) +
+      CHANGELOG Changed entry.
+- [x] `npm run verify` (type-check + type-check:tests + lint + build) green;
+      tests 1879 pass via the `config:false` bypass for the container's
+      vite7/vitest3 ERR_REQUIRE_ESM mismatch (documented env issue, critique
+      pass 77). `npm run deploy:check` green.
 
 ## Out of scope
 

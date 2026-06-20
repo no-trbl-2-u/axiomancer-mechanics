@@ -278,6 +278,96 @@ describe('Phase 54 — set passiveEffects are combat-scoped (Spec Q4)', () => {
     });
 });
 
+describe('Phase 158 — every set anchors on a status-effect passive', () => {
+    const STATUS_OFFENSE = 'buff_status_chance_up';
+    const STATUS_DEFENSE = ['buff_resistance_body', 'buff_resistance_mind', 'buff_resistance_heart'];
+
+    /** Equip the full member roster of a set by id, matched to plausible slots. */
+    function equipAll(memberIds: string[]): Partial<Record<EquipmentSlot, Equipment>> {
+        const SLOT_BY_TEMPLATE: Record<string, EquipmentSlot> = {
+            sandals: 'feet', 'leather-cap': 'head', 'cloth-wrap': 'body',
+            'cloth-gloves': 'hands', 'copper-ring': 'accessory',
+            'plate-mail': 'armor', 'full-helm': 'head', 'plate-gauntlets': 'hands',
+            'iron-greaves': 'feet', 'scaled-coat': 'body', 'gold-ring': 'accessory',
+            'phoenix-mantle': 'body', 'titans-girdle': 'accessory',
+            'leather-coat': 'body', 'chain-gauntlets': 'hands',
+        };
+        const equipment: Partial<Record<EquipmentSlot, Equipment>> = {};
+        for (const id of memberIds) {
+            const slot = SLOT_BY_TEMPLATE[id];
+            if (slot) equipment[slot] = makeEquipment(id, slot);
+        }
+        return equipment;
+    }
+
+    it('every set (except the already status-rich Embers of Rebirth) grants a status-offense or status-resistance passive', () => {
+        for (const set of itemSetLibrary) {
+            if (set.id === 'embers-of-rebirth') continue;
+            const passives = getActiveSetPassiveEffectIds(equipAll(set.memberTemplateIds));
+            const hasStatusPassive =
+                passives.includes(STATUS_OFFENSE) ||
+                passives.some(p => STATUS_DEFENSE.includes(p));
+            expect(hasStatusPassive, `set ${set.id} has no status passive`).toBe(true);
+        }
+    });
+
+    it('aggressive sets grant the status-offense passive (buff_status_chance_up)', () => {
+        for (const id of ['iron-discipline', 'scholars-circle', 'skirmishers-kit']) {
+            const set = getItemSetById(id)!;
+            const passives = getActiveSetPassiveEffectIds(equipAll(set.memberTemplateIds));
+            expect(passives, id).toContain(STATUS_OFFENSE);
+        }
+    });
+
+    it('defensive sets grant a status-resistance passive', () => {
+        const expected: Record<string, string> = {
+            'wanderers-road': 'buff_resistance_heart',
+            'veterans-plate': 'buff_resistance_body',
+            'sages-regalia':  'buff_resistance_mind',
+        };
+        for (const [id, resist] of Object.entries(expected)) {
+            const set = getItemSetById(id)!;
+            const passives = getActiveSetPassiveEffectIds(equipAll(set.memberTemplateIds));
+            expect(passives, id).toContain(resist);
+        }
+    });
+
+    it('preserves the Phase 54 flat-stat / resource invariants while layering status on top', () => {
+        // Iron Discipline 2-piece flat-stat floor is unchanged.
+        const ironBonuses = getActiveSetBonuses(equipAll(
+            getItemSetById('iron-discipline')!.memberTemplateIds,
+        ));
+        const ironStat = ironBonuses.find(b => b.statModifiers);
+        expect(ironStat?.statModifiers).toEqual([{ stat: 'physicalDefense', value: 3 }]);
+
+        // Scholar's Circle keeps its crit-rate signature alongside the new bias.
+        const scholarPassives = getActiveSetPassiveEffectIds(equipAll(
+            getItemSetById('scholars-circle')!.memberTemplateIds,
+        ));
+        expect(scholarPassives).toContain('buff_critical_rate_up');
+        expect(scholarPassives).toContain(STATUS_OFFENSE);
+
+        // Wanderer's Road keeps its +2 heart start-token floor.
+        const wandererTokens = aggregateSetStartTokens(equipAll(
+            getItemSetById('wanderers-road')!.memberTemplateIds,
+        ));
+        expect(wandererTokens.heart).toBe(2);
+    });
+
+    it('the status passive resolves at combat start with the -1 combat-lifetime sentinel', () => {
+        const player = {
+            ...buildPlayer(),
+            equipment: equipAll(getItemSetById('iron-discipline')!.memberTemplateIds),
+        };
+        const state = initializeCombat(player, Disatree_01);
+        const statusEffect = state.player.effects?.find(
+            e => e.effectId === STATUS_OFFENSE && e.sourceId === 'set-bonus',
+        );
+        expect(statusEffect).toBeDefined();
+        expect(statusEffect?.remainingDuration).toBe(-1);
+    });
+});
+
 describe('Phase 54 — getEquippedItemSets surfaces partial counts for UI', () => {
     it('returns partial counts (1/3 of Iron Discipline) when only one member is equipped', () => {
         const equipment = { head: leatherCap };
