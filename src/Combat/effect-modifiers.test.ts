@@ -45,13 +45,28 @@ describe('getActiveEffectModifiers', () => {
     });
 
     it('aggregates DoT damage by tick phase (Q4)', () => {
-        // poison ticks at start (default), bleed ticks at end (data-driven).
+        // poison ticks at start (default), tartarus_rot ticks at end (data-driven).
+        // Neither forms an amplify_damage combo with the other, so this isolates
+        // the phase-split aggregation from Phase 156 live combo amplification
+        // (combo amplification is covered in status-combo-amplification.engine.test.ts).
         const mods = getActiveEffectModifiers([
-            ae('debuff_poison', 2),  // 4 × 2 = 8 at start (strengthened in Phase 126)
-            ae('debuff_bleed',  3),  // 3 × 3 = 9 at end (strengthened in Phase 126)
+            ae('debuff_poison',        2),  // 4 × 2 = 8 at start
+            ae('debuff_tartarus_rot',  2),  // 4 × 2 = 8 at end
         ]);
         expect(mods.dotStart).toBe(8);
-        expect(mods.dotEnd).toBe(9);
+        expect(mods.dotEnd).toBe(8);
+    });
+
+    it('amplifies DoT live when an amplify_damage combo is present (Phase 156)', () => {
+        // poison (int 2) + bleed (int 1): combined intensity 3 ≥ 3 → Hemorrhage
+        // fires, ×1.5 on poison's start DoT: floor(4 × 2 × 1.5) = 12. Bleed
+        // (end phase, no combo target) stays at 3 × 1 = 3.
+        const mods = getActiveEffectModifiers([
+            ae('debuff_poison', 2),
+            ae('debuff_bleed',  1),
+        ]);
+        expect(mods.dotStart).toBe(12);
+        expect(mods.dotEnd).toBe(3);
     });
 
     it('separates regen from drain (Q6)', () => {

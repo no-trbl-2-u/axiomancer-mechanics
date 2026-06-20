@@ -47,15 +47,15 @@ export const EFFECT_INTERACTIONS: EffectInteraction[] = [
         }
     },
     
-    // Stun + Vulnerability = Exposed (advantage on attacks)
+    // Stun + Exposure = Exposed (advantage on attacks)
     {
-        id: 'stun_vulnerability_exposed',
+        id: 'stun_exposure_exposed',
         name: 'Exposed',
-        description: 'Stunned and vulnerable targets are completely exposed to attack',
+        description: 'Stunned and exposed targets are completely open to attack',
         priority: 80,
         trigger: {
             primaryEffectId: 'debuff_stun',
-            secondaryEffectIds: ['debuff_vulnerability'],
+            secondaryEffectIds: ['debuff_exposure'],
             minimumCombinedIntensity: 2
         },
         result: {
@@ -104,22 +104,22 @@ export const EFFECT_INTERACTIONS: EffectInteraction[] = [
         }
     },
     
-    // Drain + Weakness = Atrophy (reduced resistance)
+    // Disease + Exhaustion = Atrophy (reduced resistance)
     {
-        id: 'drain_weakness_atrophy',
+        id: 'disease_exhaustion_atrophy',
         name: 'Atrophy',
-        description: 'Drain and weakness effects compound to reduce all resistances',
+        description: 'Disease and exhaustion compound to reduce all resistances',
         priority: 70,
         trigger: {
-            primaryEffectId: 'debuff_drain',
-            secondaryEffectIds: ['debuff_weakness'],
+            primaryEffectId: 'debuff_disease',
+            secondaryEffectIds: ['debuff_exhaustion'],
             minimumCombinedIntensity: 4
         },
         result: {
             type: 'reduce_resistance',
-            targetEffectId: 'debuff_weakness',
+            targetEffectId: 'debuff_exhaustion',
             amplificationValue: 3, // -3 to all resist rolls
-            message: 'Drain and weakness cause systemic atrophy!'
+            message: 'Disease and exhaustion cause systemic atrophy!'
         }
     },
     
@@ -130,9 +130,9 @@ export const EFFECT_INTERACTIONS: EffectInteraction[] = [
         description: 'Mental marking and silence create complete cognitive shutdown',
         priority: 85,
         trigger: {
-            primaryEffectId: 'debuff_mind_mark',
+            primaryEffectId: 'tier1_mind_mark',
             secondaryEffectIds: ['debuff_silence'],
-            minimumPrimaryDuration: 2
+            minimumPrimaryDuration: 1
         },
         result: {
             type: 'amplify_duration',
@@ -142,14 +142,14 @@ export const EFFECT_INTERACTIONS: EffectInteraction[] = [
         }
     },
     
-    // Shield + Reflect = Fortress (intensity amplification)
+    // Barrier + Reflect = Fortress (intensity amplification)
     {
-        id: 'shield_reflect_fortress',
+        id: 'barrier_reflect_fortress',
         name: 'Fortress',
-        description: 'Defensive shields and damage reflection create an impenetrable fortress',
+        description: 'Defensive barriers and damage reflection create an impenetrable fortress',
         priority: 80,
         trigger: {
-            primaryEffectId: 'buff_shield',
+            primaryEffectId: 'buff_barrier',
             secondaryEffectIds: ['tier1_body_defend'], // Briar Stance (reflectDamage)
             minimumCombinedIntensity: 3
         },
@@ -157,7 +157,7 @@ export const EFFECT_INTERACTIONS: EffectInteraction[] = [
             type: 'amplify_intensity',
             targetEffectId: 'tier1_body_defend',
             amplificationValue: 1.8, // 80% more reflect damage
-            message: 'Shield and thorns create an impenetrable fortress!'
+            message: 'Barrier and thorns create an impenetrable fortress!'
         }
     },
     
@@ -179,23 +179,42 @@ export const EFFECT_INTERACTIONS: EffectInteraction[] = [
             message: 'Fire and acid create corrosive flames!'
         }
     },
-    
-    // Inspire + Rally = Leadership (duration extension)
+
+    // Acid + Poison = Dissolution (damage amplification)
     {
-        id: 'inspire_rally_leadership',
+        id: 'acid_poison_dissolution',
+        name: 'Dissolution',
+        description: 'Acid and poison eat through the body together, accelerating decay',
+        priority: 90,
+        trigger: {
+            primaryEffectId: 'debuff_acid',
+            secondaryEffectIds: ['debuff_poison'],
+            minimumCombinedIntensity: 2
+        },
+        result: {
+            type: 'amplify_damage',
+            targetEffectId: 'debuff_acid',
+            amplificationValue: 1.5, // 50% more damage
+            message: 'Acid and poison dissolve flesh in tandem!'
+        }
+    },
+    
+    // Ascendant + Extended Will = Leadership (duration extension)
+    {
+        id: 'ascendant_will_leadership',
         name: 'Leadership',
-        description: 'Inspiration and rally effects combine for sustained leadership',
+        description: 'Ascendant resolve and extended will combine for sustained leadership',
         priority: 75,
         trigger: {
-            primaryEffectId: 'buff_inspire',
-            secondaryEffectIds: ['buff_rally'],
+            primaryEffectId: 'buff_all_stats_up',
+            secondaryEffectIds: ['buff_buff_duration_up'],
             minimumPrimaryDuration: 2
         },
         result: {
             type: 'amplify_duration',
-            targetEffectId: 'buff_inspire',
-            amplificationValue: 1.5, // 50% longer inspiration
-            message: 'Inspiration and rallying create powerful leadership!'
+            targetEffectId: 'buff_all_stats_up',
+            amplificationValue: 1.5, // 50% longer leadership
+            message: 'Ascendant resolve and extended will create powerful leadership!'
         }
     }
 ];

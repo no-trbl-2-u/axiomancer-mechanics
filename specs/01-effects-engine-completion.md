@@ -186,3 +186,44 @@ Knowledge-Gaps Q8 + Q9 rows flipped from "Queued for Phase 48" to
 "Resolved at Spec 01 (pre-loop). Verified at Phase 48 (`c892801`)."
 `docs/effects.md` "Runtime aggregation (pre-loop, verified at Phase 48)"
 subsection documents the aggregation pipeline.
+
+### Phase 156 — the interaction engine goes live
+
+The Phase 142 status-effect interaction engine (`src/Effects/interactions.ts`
++ `src/Effects/amplification.registry.ts`) shipped exported and unit-tested
+but was **dead-on-arrival**: the live combat resolver never called
+`evaluateInteractions`, and `EFFECT_INTERACTIONS` referenced effect ids that
+did not exist in the library (`debuff_acid`, `debuff_vulnerability`,
+`buff_focus`, `buff_shield`, `buff_inspire`, …), so no combo could fire even
+if wired in.
+
+Phase 156 makes it real and correct:
+
+- **Registry repaired** — every combo trigger/target now resolves against the
+  live library. Dead ids were repointed onto real effects
+  (`debuff_mind_mark` → `tier1_mind_mark`, `buff_shield` → `buff_barrier`,
+  `debuff_drain`/`debuff_weakness` → `debuff_disease`/`debuff_exhaustion`,
+  `buff_inspire`/`buff_rally` → `buff_all_stats_up`/`buff_buff_duration_up`).
+- **Three new combo-enabling effects** added to the libraries: `debuff_acid`
+  (armor-melt DoT, "Aqua Regia"), `debuff_exposure` (defense breach, "Gödel's
+  Exposure"), `buff_focus` (concentration, "Husserl's Bracket"). Each is wired
+  into at least one combo.
+- **Live DoT amplification** — `getActiveEffectModifiers`
+  (`src/Combat/effect-modifiers.ts`) now evaluates `amplify_damage` combos in
+  the same pass and scales the matching effect's `dotStart`/`dotEnd`. Only the
+  transient aggregated total is touched — never persisted
+  `ActiveEffect.intensity` — so there is no double-application with
+  `applyInteractionResult`. The multiplier is clamped to
+  `INTERACTION_AMPLIFICATION.MAX_DAMAGE_MULTIPLIER` (2.0), largest-combo-wins
+  per effect. Because every DoT consumer reads these fields, the boost flows
+  into round events and the DoT-erosion resolution route for free.
+- **Breadth preserved** — only `amplify_damage` combos auto-apply live; the
+  `amplify_duration` / `amplify_intensity` / `grant_advantage` /
+  `reduce_resistance` combos remain reachable via the exported
+  `evaluateInteractions` API so control/buff status play is not eclipsed by a
+  DoT-only buff.
+- **Anti-regression guard** — `src/Effects/e2e/status-depth.engine.test.ts`
+  asserts `validateInteractions(liveIds)` returns `[]`, failing the build if a
+  future combo ever references a missing effect again. Live amplification is
+  proven through the resolver at
+  `src/Combat/e2e/status-combo-amplification.engine.test.ts`.

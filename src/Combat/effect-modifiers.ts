@@ -10,10 +10,37 @@
 
 import { ActiveEffect, DotTickPhase, EffectStatTarget } from '../Effects/types';
 import { lookupEffect } from '../Effects/effects.library';
+import { evaluateInteractions } from '../Effects/interactions';
+import { EFFECT_INTERACTIONS } from '../Effects/amplification.registry';
+import { INTERACTION_AMPLIFICATION } from './resolution.constants';
 import { Stance, Combatant } from './types';
 import { BaseStats, DerivedStats, NonCombatStats } from '../Character/types';
 import { deriveStats, deriveNonCombatStats } from '../Utils';
 import { isCharacter } from '../Utils/typeGuards';
+
+/**
+ * Phase 156 — live DoT combo amplification.
+ *
+ * Evaluates the active effects against the interaction registry and returns a
+ * per-effect-id DoT multiplier for every triggered `amplify_damage` combo. When
+ * several combos target the same effect, the single largest multiplier wins (no
+ * stacking blowups). Each multiplier is clamped to
+ * `INTERACTION_AMPLIFICATION.MAX_DAMAGE_MULTIPLIER`. Multipliers below
+ * `MIN_MEANINGFUL_AMPLIFICATION` are dropped so trivial bonuses don't perturb
+ * the integer DoT math. Pure — reads effects, mutates nothing persisted.
+ */
+function getDotAmplificationByEffect(effects: ActiveEffect[]): Map<string, number> {
+    const amp = new Map<string, number>();
+    const results = evaluateInteractions(EFFECT_INTERACTIONS, effects);
+    for (const result of results) {
+        if (result.type !== 'amplify_damage') continue;
+        if (result.amplificationValue < INTERACTION_AMPLIFICATION.MIN_MEANINGFUL_AMPLIFICATION) continue;
+        const clamped = Math.min(result.amplificationValue, INTERACTION_AMPLIFICATION.MAX_DAMAGE_MULTIPLIER);
+        const current = amp.get(result.targetEffectId) ?? 1;
+        if (clamped > current) amp.set(result.targetEffectId, clamped);
+    }
+    return amp;
+}
 
 /**
  * Aggregated, intensity-scaled modifiers from every active effect on a combatant.
@@ -67,6 +94,7 @@ const addToMap = (map: Map<EffectStatTarget, number>, key: EffectStatTarget, val
  */
 export function getActiveEffectModifiers(effects: ActiveEffect[]): AggregatedEffectModifiers {
     const agg = emptyAgg();
+    const dotAmp = getDotAmplificationByEffect(effects);
 
     for (const ae of effects) {
         const def = lookupEffect(ae.effectId);
@@ -108,7 +136,11 @@ export function getActiveEffectModifiers(effects: ActiveEffect[]): AggregatedEff
 
         const dot = payload.damageOverTime;
         if (dot) {
-            const total = dot.damagePerRound * intensity;
+            // Phase 156: apply live combo amplification to this effect's DoT.
+            // Multiplier defaults to 1 (no combo) and floors to an integer to
+            // match the rest of the unresisted DoT math.
+            const multiplier = dotAmp.get(ae.effectId) ?? 1;
+            const total = Math.floor(dot.damagePerRound * intensity * multiplier);
             const phase: DotTickPhase = dot.tickPhase ?? 'start';
             if (phase === 'start') agg.dotStart += total;
             else                   agg.dotEnd   += total;
