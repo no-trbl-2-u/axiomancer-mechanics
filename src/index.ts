@@ -14,6 +14,7 @@ export {
     allocateStatPoint,
     previewStatAllocation,
     equipItem, unequipItem, getEquipmentModifiers,
+    computeEquipDelta,
     characterPresets, getPresetById, buildCharacterFromPreset,
 } from './Character';
 export type {
@@ -21,6 +22,9 @@ export type {
     PreviewAllocation, PreviewResult,
     CreateCharacterOptions, AggregatedEquipmentModifiers,
     CharacterPreset, CharacterPresetEquipmentEntry,
+    EquipDelta, EquipDeltaMode, EquipDeltaSide,
+    StatDeltaEntry, ModifierDeltaEntry, EffectDeltaEntry,
+    ResourceDeltaEntry, KeywordDeltaEntry,
 } from './Character';
 
 // ─── Enemy ────────────────────────────────────────────────────────────────────
@@ -126,6 +130,9 @@ export {
     uniqueTemplates, getUniqueTemplate,
     dropItem, dropItemWithAffixes, rollModifiers, resolveModifiers, rarityWeightTable,
     previewTemplateAtRarity, previewTemplateAtAllRarities,
+    dropItemAtRarity, AFFIXES_PER_RARITY, countNamedAffixes, hasBakedAffix,
+    equipmentFromTemplate, rollCacheLoot, CACHE_LOOT_TUNING, generateRarityDrop,
+    firstEquippedPerSlot, isEquippedFirstOfSlot, findEquippedInSlot,
     prefixes, suffixes, allAffixes, getAffixById,
     composeItemName, affixesForSlot, AFFIX_RARITY_WEIGHTS,
     consumableLibrary, getConsumableById,
@@ -142,6 +149,8 @@ export type {
     ItemRarity, RolledModifier, EquipmentTemplate, UniqueItemTemplate,
     ConsumableUseResult,
     DropWithAffixesOptions, AffixControl,
+    CacheLootTier, RollCacheLootOptions,
+    GenerateRarityDropOptions, GenerateRarityDropResult,
     Affix, AffixRole,
     ShopWare, ShopInventory,
     SetBonus, ItemSet,

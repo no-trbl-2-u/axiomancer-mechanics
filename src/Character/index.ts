@@ -168,6 +168,12 @@ export function previewStatAllocation(
 export type { Character, BaseStats, DerivedStats, NonCombatStats, PreviewAllocation, PreviewResult } from './types';
 export { equipItem, unequipItem, getEquipmentModifiers } from './equipment.reducer';
 export type { AggregatedEquipmentModifiers } from './equipment.reducer';
+export { computeEquipDelta } from './equip-delta';
+export type {
+    EquipDelta, EquipDeltaMode, EquipDeltaSide,
+    StatDeltaEntry, ModifierDeltaEntry, EffectDeltaEntry,
+    ResourceDeltaEntry, KeywordDeltaEntry,
+} from './equip-delta';
 export {
     characterPresets, apprenticePreset, wandererPreset, sagePreset,
     getPresetById, buildCharacterFromPreset,
