@@ -21,9 +21,10 @@ CLI menu, Tuning builder, save migration v8 path) or formally bless the
 field as a permanent compatibility surface. Until then every audit
 re-discovers it.
 
-> **Promoted to Phase 159** via oversight 2026-06-20 (Q1: T pick). The
-> decision (finish removal vs. bless) is made there. Close this entry when
-> Phase 159 ships.
+> **Promoted to Phase 159** via oversight 2026-06-20 (Q1: T pick). T
+> clarified 2026-06-20 that `equippedSkills` is no longer relevant; the
+> access surface is learned skills only. Phase 159 should remove the legacy
+> field/surface rather than bless it. Close this entry when Phase 159 ships.
 
 ## 2. Character presets: deprecation rescinded, migration never scoped
 
