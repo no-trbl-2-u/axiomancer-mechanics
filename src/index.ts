@@ -16,6 +16,7 @@ export {
     equipItem, unequipItem, getEquipmentModifiers,
     computeEquipDelta,
     characterPresets, getPresetById, buildCharacterFromPreset,
+    levelLadderPresets, ladderL1Preset, ladderL15Preset, ladderL30Preset, ladderL50Preset,
 } from './Character';
 export type {
     Character, BaseStats, DerivedStats, NonCombatStats,
@@ -249,6 +250,9 @@ export {
     registerMapEventPool,
     setDefaultMapEventPool,
     setNodeEventPoolOverride,
+    getNodeEventPool,
+    getNodeEventKinds,
+    getNodePrimaryEventKind,
 } from './World';
 export type {
     MapEventKind, MapEventPayload, MapEventPool, MapEventPoolEntry,

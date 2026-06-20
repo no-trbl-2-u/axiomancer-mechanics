@@ -391,6 +391,126 @@ describe('Phase 125 — Effects-driven combat resolution', () => {
     });
 });
 
+describe('Phase 155 — pending DoT credit + control-saturation decisiveness', () => {
+    // debuff_poison: 4 dmg/round, base duration 4 (debuffs.library.json).
+    // EFFECTS_RESOLUTION_DOT_MAX_ROUNDS_TO_KILL default = 10.
+
+    it('resolves to victory when guaranteed pending DoT is lethal but per-round rate alone times out', () => {
+        const enemy = createEnemy({
+            id: 'test-pending-dot-enemy',
+            name: 'Pending DoT Enemy',
+            description: 'HP above the per-round horizon but inside the locked-in pending total',
+            level: 5,
+            baseStats: { heart: 3, body: 3, mind: 3 },
+            mapName: 'fishing-village',
+            logic: 'balanced',
+        });
+
+        const store = setupEffectResolutionTest(enemy);
+        const combat = store.getState().combat!;
+
+        // 50 HP. Per-round only: ceil(50 / 4) = 13 rounds > 10 horizon → pre-155
+        // logic returns shouldResolve:false. With 8 rounds of remaining poison
+        // the pending locked-in damage is 4 × 1 × 8 = 32; effective HP = 18;
+        // roundsToKill = ceil(18 / 4) = 5 ≤ 10 → Phase 155 resolves to victory.
+        const pendingDotCombat = {
+            ...combat,
+            enemy: {
+                ...combat.enemy,
+                health: 50,
+                effects: [
+                    {
+                        effectId: 'debuff_poison',
+                        intensity: 1,
+                        remainingDuration: 8,
+                        appliedAt: 1,
+                        tier: 2 as const,
+                    },
+                ],
+            },
+        };
+
+        store.getState().updateCombat(pendingDotCombat);
+
+        const analysis = analyzeEffectsForResolution(store.getState().combat!);
+        expect(analysis.shouldResolve).toBe(true);
+        expect(analysis.outcomeType).toBe('victory');
+        expect(analysis.reason).toContain('pending locked-in');
+    });
+
+    it('does NOT resolve when pending DoT is bounded and the per-round horizon is still exceeded', () => {
+        const enemy = createEnemy({
+            id: 'test-bounded-dot-enemy',
+            name: 'Bounded DoT Enemy',
+            description: 'Short remaining duration keeps pending credit small',
+            level: 5,
+            baseStats: { heart: 3, body: 3, mind: 3 },
+            mapName: 'fishing-village',
+            logic: 'balanced',
+        });
+
+        const store = setupEffectResolutionTest(enemy);
+        const combat = store.getState().combat!;
+
+        // Same 50 HP, but only 2 rounds of poison remain: pending = 4 × 1 × 2 = 8;
+        // effective HP = 42; roundsToKill = ceil(42 / 4) = 11 > 10 → still times
+        // out. Proves the credit is bounded — weak/short DoT can't force a win.
+        const boundedDotCombat = {
+            ...combat,
+            enemy: {
+                ...combat.enemy,
+                health: 50,
+                effects: [
+                    {
+                        effectId: 'debuff_poison',
+                        intensity: 1,
+                        remainingDuration: 2,
+                        appliedAt: 1,
+                        tier: 2 as const,
+                    },
+                ],
+            },
+        };
+
+        store.getState().updateCombat(boundedDotCombat);
+
+        const analysis = analyzeEffectsForResolution(store.getState().combat!);
+        expect(analysis.shouldResolve).toBe(false);
+        expect(analysis.outcomeType).toBe(null);
+    });
+
+    it('routes to friendship when an actively-restricting control lock persists for several rounds', () => {
+        const store = setupEffectResolutionTest(CoastalTyrant);
+        const combat = store.getState().combat!;
+
+        // debuff_sleep is a control effect with payload.actionRestriction.skipTurn.
+        // Raw intensity 1 alone is below EFFECTS_RESOLUTION_DEBUFF_INTENSITY_THRESHOLD (3)
+        // — pre-155 this single lock never saturates. Phase 155 credits remaining
+        // restriction rounds (min(3, 3) = 3): 1 + 3 = 4 ≥ 3 → friendship yield.
+        const lockedCombat = {
+            ...combat,
+            enemy: {
+                ...combat.enemy,
+                effects: [
+                    {
+                        effectId: 'debuff_sleep',
+                        intensity: 1,
+                        remainingDuration: 3,
+                        appliedAt: 1,
+                        tier: 2 as const,
+                    },
+                ],
+            },
+        };
+
+        store.getState().updateCombat(lockedCombat);
+
+        const analysis = analyzeEffectsForResolution(store.getState().combat!);
+        expect(analysis.shouldResolve).toBe(true);
+        expect(analysis.outcomeType).toBe('friendship');
+    });
+});
+
 describe('Phase 125 — Tunable threshold validation', () => {
     it('exposes constants for tuning registry', () => {
         expect(EFFECTS_RESOLUTION_DEBUFF_INTENSITY_THRESHOLD).toBeGreaterThan(0);

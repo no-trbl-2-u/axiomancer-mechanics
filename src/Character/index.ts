@@ -176,6 +176,7 @@ export type {
 } from './equip-delta';
 export {
     characterPresets, apprenticePreset, wandererPreset, sagePreset,
+    levelLadderPresets, ladderL1Preset, ladderL15Preset, ladderL30Preset, ladderL50Preset,
     getPresetById, buildCharacterFromPreset,
 } from './presets';
 export type { CharacterPreset, CharacterPresetEquipmentEntry } from './presets';
