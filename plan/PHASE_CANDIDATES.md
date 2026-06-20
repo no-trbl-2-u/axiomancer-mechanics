@@ -67,7 +67,7 @@
 
 ## Pending
 
-<!-- Hazard simulation harness (acquired-deck utility bag injection) — PROMOTED (subsumed) into Phase 159 (Phase 137 minigame sims + CLIs) via oversight 2026-06-20 (Q1: T selected NEEDS_ATTENTION §3/§4). Its scope (the `--deck`/`--bag-file` CLI injection, the utility-aware bot policy, and the prerequisite `ts-node` game.cli.ts:185 repair) folds into Phase 159's sims+CLIs cluster. See ## Promoted + build plan. -->
+<!-- Hazard simulation harness (acquired-deck utility bag injection) — PROMOTED (subsumed) into Phase 160 (Phase 137 minigame sims + CLIs) via oversight 2026-06-20 (Q1: T selected NEEDS_ATTENTION §3/§4). Its scope (the `--deck`/`--bag-file` CLI injection, the utility-aware bot policy) folds into Phase 160's sims+CLIs cluster. Note: the prior `ts-node` game.cli.ts:185 blocker was RESOLVED 2026-06-20 (per `plan/hazard-tuning-20260620-1352.md`, merged on main at #178) — `npm run hazard --auto` runs clean at v0.23.0, so the promoted work is unblocked. See ## Promoted + build plan. -->
 
 <!-- Rest minigame design brainstorm — PROMOTED as an ATTENDED session via oversight 2026-06-20 (Q2: T pick — "rest mini game brainstorm"). Deliberately NOT added as an autonomous build-plan `[ ]` row because it needs T in the room (attended `/brainstorm-mechanics`). Tracked in ## Promoted; the next attended session should run it, producing `braindump/rest-minigame-<date>.md` and a follow-on spec phase. See ## Promoted. -->
 
@@ -109,7 +109,7 @@
 
 ## Promoted
 
-### Phase 159 — Phase 137 minigame sims + CLIs (subsumes "Hazard simulation harness")
+### Phase 160 — Phase 137 minigame sims + CLIs (subsumes "Hazard simulation harness")
 - promoted: 2026-06-20 via oversight (Q1: T selected NEEDS_ATTENTION §3 + §4 to refuel the empty autonomous queue).
 - source: NEEDS_ATTENTION.md §3 (QuestBoard/Rest/LootCache have no sims) + §4 (CLI doesn't play the Phase 137 minigames) + the standing "Hazard simulation harness" candidate (utility-deck CLI injection + utility-aware bot + the `ts-node` game.cli.ts:185 repair blocker), all folded into one sims+CLIs cluster.
 - build-plan row: `plan/steps/01_build_plan.md` (Phase 159, `[ ]` pending).

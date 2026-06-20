@@ -21,9 +21,9 @@ CLI menu, Tuning builder, save migration v8 path) or formally bless the
 field as a permanent compatibility surface. Until then every audit
 re-discovers it.
 
-> **Promoted to Phase 158** via oversight 2026-06-20 (Q1: T pick). The
+> **Promoted to Phase 159** via oversight 2026-06-20 (Q1: T pick). The
 > decision (finish removal vs. bless) is made there. Close this entry when
-> Phase 158 ships.
+> Phase 159 ships.
 
 ## 2. Character presets: deprecation rescinded, migration never scoped
 
@@ -50,9 +50,10 @@ and each names the missing sim as a standing propose-only suggestion.
 with policy bands in e2e, plus CLI subcommands if manual play is wanted
 (`npm run quest-board` etc., mirroring `npm run gathering`).
 
-> **Promoted to Phase 159** via oversight 2026-06-20 (Q1: T pick). Folds in
-> the standing Hazard sim harness candidate (utility-deck CLI injection +
-> the `ts-node` game.cli.ts:185 repair). Close this entry when Phase 159 ships.
+> **Promoted to Phase 160** via oversight 2026-06-20 (Q1: T pick). Folds in
+> the standing Hazard sim harness candidate (utility-deck CLI injection;
+> the `ts-node` game.cli.ts:185 break was separately resolved on main).
+> Close this entry when Phase 160 ships.
 
 ## 4. The CLI does not play the Phase 137 minigames
 
@@ -68,9 +69,9 @@ but the CLI experience is now meaningfully poorer than mobile's.
 pure — it's all rendering), or declare the CLI a combat/balance harness
 that intentionally skips encounter minigames.
 
-> **Promoted to Phase 159** via oversight 2026-06-20 (Q1: T pick), bundled
+> **Promoted to Phase 160** via oversight 2026-06-20 (Q1: T pick), bundled
 > with §3 (the CLI play loops ride on the same sims work). Close when Phase
-> 159 ships.
+> 160 ships.
 
 ## 5. Engine-side map-event content is fully shadowed by mobile
 
