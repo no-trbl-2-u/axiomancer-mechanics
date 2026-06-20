@@ -67,22 +67,9 @@
 
 ## Pending
 
-### Candidate: Hazard simulation harness — acquired-deck (utility) bag injection
-- signal: The hazard-tuning skill's focus axis "utility deck strategies" cannot be exercised through the shipped CLI. `npm run hazard -- --auto` builds the draw bag from `hazardStarterBag()` only (`src/CLI/hazard.cli.ts` → `hazardStarterBag()`), with no flag to add reward/codex cards, so no `--seed`/`--runs`/`--json-events`/`--state-log` combination can measure how an acquired utility deck (auras/bursts/gold-vows/CHOOSE/transmute/…) performs. Separately, the shipped greedy bot (`hazard.sim.ts` `playGreedyRound`) never *plays* free-row-less utilities (bursts/auras/vows/choose score 0 in `freeValueToward`), so even `simulateHazard` with a custom bag under-measures them unless driven by a utility-aware policy. The 2026-06-16 hazard-tuning tick had to write a throwaway utility-aware sim spec to find the gold-vow/CHOOSE anti-synergy trap (see `plan/hazard-tuning-20260616-1606.md`).
-- scope: (a) add a `--deck <cardId[:n],…>` (or `--bag-file <path>`) flag to `src/CLI/hazard.cli.ts` that appends acquired cards to the starter bag for `--auto` runs; (b) add a utility-aware bot policy (or extend the greedy policy) that stages utility cards whose effect can fire this round, so the sim/CLI measures the acquired-utility axis rather than ignoring it. Keep the existing CLI contract and JSON-event/state-log surface.
-- unblocks: Empirical, CLI-citeable evidence for acquired-utility-deck balance — the doctrine-central "utility play beats flat trading" axis — without bespoke throwaway harnesses each tick.
-- blocked-by: RESOLVED 2026-06-20 — the `ts-node` compile break at `src/CLI/game.cli.ts:185` is gone; `npm run hazard --auto --json-events` runs clean at v0.22.0 (verified across all 6 hazards × both routes in `plan/hazard-tuning-20260620-1352.md`). No remaining blocker: parts (a) `--deck`/`--bag-file` injection and (b) the utility-aware bot policy are now unblocked work.
-- score: 4 × 7 / 10 = 2.8
-- recommended-slot: iterate/phase once the ts-node CLI break is repaired; pairs naturally with the gold-vow/CHOOSE free-row structural fix proposed in the 2026-06-16 tuning report.
+<!-- Hazard simulation harness (acquired-deck utility bag injection) — PROMOTED (subsumed) into Phase 160 (Phase 137 minigame sims + CLIs) via oversight 2026-06-20 (Q1: T selected NEEDS_ATTENTION §3/§4). Its scope (the `--deck`/`--bag-file` CLI injection, the utility-aware bot policy) folds into Phase 160's sims+CLIs cluster. Note: the prior `ts-node` game.cli.ts:185 blocker was RESOLVED 2026-06-20 (per `plan/hazard-tuning-20260620-1352.md`, merged on main at #178) — `npm run hazard --auto` runs clean at v0.23.0, so the promoted work is unblocked. See ## Promoted + build plan. -->
 
-### Candidate: Rest minigame design brainstorm
-- signal: Current rest events are passive (HP restore only). T wants a more engaging rest mechanic with player agency and resource-management depth. Initial ideas: Gordian Quest-style rest-resource allocation, player-choice branch (restore HP % vs upgrade a hazard card vs upgrade another item), or a fire-tending resource-management minigame. Design space is open — brainstorm before committing to any direction.
-- scope: Attended `/brainstorm-mechanics` session to explore the rest-event design space. Outputs: a braindump file at `braindump/rest-minigame-<date>.md` capturing design options with trade-offs, prior art (Gordian Quest, Darkest Dungeon camp, Hades boon selection, etc.), and a recommended direction. Followed by a spec phase once the direction is settled.
-- prior art noted by T: Gordian Quest resource manager for rest gains; player choice (HP restore / hazard-card upgrade / item upgrade); resource-management fire-keeping loop.
-- unblocks: Rest minigame spec + implementation (Phase N+1 after brainstorm)
-- blocked-by: Nothing — can be attended any time
-- score: 4 × 7 / 10 = 2.8
-- recommended-slot: Attended brainstorm session (requires T); promote when ready to sit down and design it
+<!-- Rest minigame design brainstorm — PROMOTED as an ATTENDED session via oversight 2026-06-20 (Q2: T pick — "rest mini game brainstorm"). Deliberately NOT added as an autonomous build-plan `[ ]` row because it needs T in the room (attended `/brainstorm-mechanics`). Tracked in ## Promoted; the next attended session should run it, producing `braindump/rest-minigame-<date>.md` and a follow-on spec phase. See ## Promoted. -->
 
 <!-- Unlocked Skill Access (Phase 99) — promoted to Phase 141 via oversight 2026-06-13 (Q1: T pick — "Promote Phase 99 (skill access)"). See ## Promoted. -->
 
@@ -121,6 +108,18 @@
 <!-- Game Module Documentation Coverage — promoted to Phase 132 via oversight 2026-06-09 (Q3 T pick). See ## Promoted. -->
 
 ## Promoted
+
+### Phase 160 — Phase 137 minigame sims + CLIs (subsumes "Hazard simulation harness")
+- promoted: 2026-06-20 via oversight (Q1: T selected NEEDS_ATTENTION §3 + §4 to refuel the empty autonomous queue).
+- source: NEEDS_ATTENTION.md §3 (QuestBoard/Rest/LootCache have no sims) + §4 (CLI doesn't play the Phase 137 minigames) + the standing "Hazard simulation harness" candidate (utility-deck CLI injection + utility-aware bot + the `ts-node` game.cli.ts:185 repair blocker), all folded into one sims+CLIs cluster.
+- build-plan row: `plan/steps/01_build_plan.md` (Phase 159, `[ ]` pending).
+- note: refine via `/plan-a-phase` before ship; may split into sub-units (build sims first, CLI play loops second) if the phase runs large.
+
+### Rest minigame design brainstorm (ATTENDED — not an autonomous phase)
+- promoted: 2026-06-20 via oversight (Q2: T pick — "rest mini game brainstorm").
+- source: standing "Rest minigame design brainstorm" candidate. T wants a more engaging rest mechanic (player agency + resource-management depth; prior art: Gordian Quest camp, Darkest Dungeon, Hades boons).
+- routing: **attended** — requires T in an interactive `/brainstorm-mechanics` session; deliberately NOT a build-plan `[ ]` row so `/march` won't auto-dispatch it. Output: `braindump/rest-minigame-<date>.md` + a recommended direction, then a follow-on spec phase.
+- next action: run the brainstorm in the next attended session (T-initiated).
 
 ### Phase 152 — Affix item library wiring and curated prefixed/suffixed gear
 - promoted: 2026-06-17 by T direct steering; priority override above all else.
