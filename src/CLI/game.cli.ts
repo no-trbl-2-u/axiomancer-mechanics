@@ -844,6 +844,14 @@ async function main(): Promise<void> {
         return;
     }
 
+    // Subcommand: `npm run game -- quest-board [flags]` hands off to the
+    // standalone Boy's Almanac driver, which owns its own flag set.
+    if (rawArgs[0] === 'quest-board') {
+        const { runQuestBoardCli } = await import('./quest-board.cli');
+        await runQuestBoardCli(rawArgs.slice(1));
+        return;
+    }
+
     const flags = parseArgv(rawArgs);
     if (flags.jsonEvents) setOutputMode('json');
     if (flags.scriptPath) {

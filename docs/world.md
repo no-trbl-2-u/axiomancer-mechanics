@@ -134,18 +134,20 @@ behaviour. The mobile host intercepts `rest` / `gathering` / `loot-cache` /
 `World/LootCache` "The Reliquary", `World/Hazard`, `World/QuestBoard`
 "The Boy's Almanac").
 
-Standalone CLI play loops (Phase 160b): the pure minigame engines are also
-driveable directly from the Node host as game-CLI subcommands —
-`npm run gathering`, `npm run hazard`, `npm run rest` (The Night Watch), and
-`npm run loot-cache` (The Reliquary). Each shares the `src/CLI/io.ts` layer
+Standalone CLI play loops (Phase 160b / 160c): the pure minigame engines are
+also driveable directly from the Node host as game-CLI subcommands —
+`npm run gathering`, `npm run hazard`, `npm run rest` (The Night Watch),
+`npm run loot-cache` (The Reliquary), and `npm run quest-board` (The Boy's
+Almanac — `--policy safe|gambler|economist`, `--board <id>`, charms / vows /
+bone rolls / nine space kinds / dusk). Each shares the `src/CLI/io.ts` layer
 (`--script` JSON / `--stdin` / `--json-events` / `--state-log`) and an
 `--auto` policy that reuses the matching `*.sim.ts` bot, so a person, a
 replay file, or an agent all drive them through one surface. The hazard
 harness additionally injects a custom draw bag: `--deck <id,id,…>` appends
 acquired cards to the starter bag, while `--bag-file <path>` (a JSON array
 of card ids) replaces the whole bag for deterministic A/B runs; both
-validate ids against `HAZARD_DECK`. The QuestBoard CLI loop is the one
-remaining gap (Phase 160c).
+validate ids against `HAZARD_DECK`. With the QuestBoard loop landed
+(Phase 160c), every Phase 137 minigame engine now has a Node play loop.
 
 Hazard events now have accepted v0 minigame doctrine in
 [`docs/hazard-minigame.md`](./hazard-minigame.md): top/bottom route choice,

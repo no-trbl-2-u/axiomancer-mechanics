@@ -38,25 +38,29 @@ migration phase for the three consumers.
 > hazard `--deck`/`--bag-file` injection remain deferred (see §4); they
 > were the conditional "if manual play is wanted" half of the row.
 
-## 4. The CLI does not play ALL the Phase 137 minigames (QuestBoard remains)
+## 4. The CLI does not play ALL the Phase 137 minigames — RESOLVED (Phase 160c, 2026-06-21)
 
 **What:** `resolveMapEvent` consumers diverge by host. Mobile intercepts
 rest / gathering / loot-cache / hazard / quest results and launches the
 minigames. The CLI now has standalone play loops for **gathering** (`npm
 run gathering`), **hazard** (`npm run hazard`), **rest** (`npm run rest`,
-The Night Watch — Phase 160b) and **loot-cache** (`npm run loot-cache`,
-The Reliquary — Phase 160b). The hazard harness also takes injected decks
-(`--deck` / `--bag-file`). The one remaining gap is the **quest board**
-("The Boy's Almanac") — the largest engine — which still has no CLI loop.
-
-**Pending decision:** ship the QuestBoard CLI loop (the engine is pure —
-it's all rendering) to fully close this entry, or declare the CLI a
-combat/balance harness that intentionally skips the board game.
+The Night Watch — Phase 160b), **loot-cache** (`npm run loot-cache`,
+The Reliquary — Phase 160b), and **quest-board** (`npm run quest-board`,
+The Boy's Almanac — Phase 160c). The hazard harness also takes injected
+decks (`--deck` / `--bag-file`). Every Phase 137 minigame engine now has a
+Node play loop.
 
 > **Phase 160b (2026-06-20)** shipped the Rest + LootCache play loops and
 > the hazard deck injection (`--deck`/`--bag-file` + utility-aware-bot
-> coverage). The QuestBoard loop is carved to **Phase 160c**. Close §4 when
-> 160c ships.
+> coverage); the QuestBoard loop was carved to Phase 160c.
+> **Phase 160c (2026-06-21)** shipped `src/CLI/quest-board.cli.ts`
+> (`npm run quest-board`, The Boy's Almanac — `--policy
+> safe|gambler|economist`, `--board <id>`, charms/vows/bone-rolls/nine
+> space kinds/dusk, `--auto` reusing the `quest-board.sim.ts` policy
+> shapes), wired as a `game.cli.ts` subcommand and covered by
+> `src/CLI/e2e/quest-board.cli.engine.test.ts` (flag parsing, deterministic
+> `--auto` replay, illegal-action logging; added to the hermeticity IO
+> allowlist). §4 closed.
 
 ## 5. Engine-side map-event content is fully shadowed by mobile
 
