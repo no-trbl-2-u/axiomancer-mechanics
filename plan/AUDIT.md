@@ -57,6 +57,23 @@
 
 ## Audit Pass Log
 
+### 2026-06-21 (Pass 100) — Z–H walk (march→iterate dispatch)
+
+**Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), ESLint fix (F), Dependency updates (G), Commit-hygiene (H).
+
+**Findings:** 0 findings ≥3.0 — queue empty. Only 1 commit since critique pass 80 (`c8feded`→`172bb5f`, the pass-80 critique bookkeeping commit itself); zero `src/**` delta. Re-walked all categories independently and confirmed zero drift.
+
+**Highlights (independently re-verified this pass):**
+- **Z (Critique):** CRITIQUE.md `## Pending` empty (critique pass 80 at `c8feded` drained the full pass-76→79 pool clean — 0 findings).
+- **A (Tests):** every src module carries an `e2e/` dir; zero `vi.spyOn(Math,'random')` outside `src/test-utils/rng.ts`. (`npm test` not run — known environmental ERR_REQUIRE_ESM vite7/vitest3 mismatch in fresh container per critique passes 76–80; `tsc --noEmit` + `npm run build` + `npm run lint` are the reliable gates, all exit 0.)
+- **B (Spec-gaps):** Knowledge-Gaps all resolved save Q28 (deferred — endgame multiple-endings, content-authoring); every `> Your answer:` row in `specs/` is filled in by T (answers follow the label), not blank.
+- **C (Type-safety):** clean — zero `as any`/`as unknown`/`@ts-ignore` in non-test `src/` (all matches are `/e2e/`+`.test.ts` mocks).
+- **D (Dead code):** zero `TODO`/`FIXME`/`HACK` markers in `src/`; public surface byte-identical to `scripts/public-surface.expected.json` (no orphan-export drift).
+- **E (Docs):** front-door readers current; `docs/cli.md` documents all four play-loop CLIs; surface fixture in lockstep.
+- **F (Lint):** `npm run lint` exits 0. **G (Deps):** only `@types/node` 25→26 outstanding — a **major** bump (deliberate-phase territory, skip per category G); no safe minor/patch available. **H (hygiene):** working tree clean at audit start; `npm run deploy:check` exits 0 ("Package is publishable").
+
+**Disposition:** no drainable finding. Bold posture would dispatch to `/expand` per iterate failure-mode 3, BUT the expand signal gate is not met — AUDIT Pending empty, CRITIQUE Pending empty, Knowledge-Gaps exhausted (only Q28 deferred), braindump all-implemented. No actionable signal source. Return cleanly; next loop tick re-dispatches (critique becomes eligible at ≥12 commits or >24h from `c8feded`).
+
 ### 2026-06-21 (Pass 99) — Z–H walk (march→iterate dispatch)
 
 **Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), ESLint fix (F), Dependency updates (G), Commit-hygiene (H).
