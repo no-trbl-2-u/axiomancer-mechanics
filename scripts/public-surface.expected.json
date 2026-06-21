@@ -190,6 +190,7 @@
     "getReachableNodes",
     "getRng",
     "getSaveStat",
+    "getShadowedNodeOverrideKeys",
     "getSkillById",
     "getSkillDamageType",
     "getStudyMarkIntensity",

@@ -62,24 +62,24 @@ Node play loop.
 > `--auto` replay, illegal-action logging; added to the hermeticity IO
 > allowlist). §4 closed.
 
-## 5. Engine-side map-event content is fully shadowed by mobile
-
-**What:** `src/World/MapEvents/content.ts` (~900 lines) registers rich
-per-node pools for fishing-village and northern-forest on module load.
-The mobile host then registers its OWN per-node overrides for **every**
-node in both layouts (`state/exploration-maps/event-pools.ts`), so in the
-mobile app none of the engine's authored pools — including every authored
-`village` and `cutscene` event — can ever fire. Two content registries
-describe the same two maps and silently diverge; the engine one only
-reaches players via the CLI.
-
-**Pending decision:** pick a single source of truth for map-event
-content (engine authors, mobile consumes — or mobile authors, engine
-content.ts shrinks to CLI demo data). Cross-filed in mobile's
-NEEDS_ATTENTION.md §3 since the fix has a foot in each repo.
-
-> **Promoted to Phase 160** via oversight 2026-06-20 (Q1: T pick). Cross-repo;
-> the source-of-truth decision is made there. Close when Phase 160 ships.
+> **§5 (Engine-side map-event content shadowing) — engine half RESOLVED in
+> Phase 161 (2026-06-21).** `content.ts` is now the engine's single authored
+> source of truth, registering through one idempotent
+> `registerMapEventContent()`. The intra-file divergence is gone: the legacy
+> fishing-village pool block (Phase 23/24/65/115 — shops/shrines/ferry slips)
+> was registered then silently clobbered by the 2026-06 new-player override
+> block (overrides are last-write-wins), so it could never fire even via the
+> CLI; Phase 161 removed it. The new-player layout is the canonical
+> fishing-village map; northern-forest is unshadowed and carries the
+> village/cutscene/interaction/loot-cache kinds, preserving the all-8-kind
+> invariant. A no-shadow guard (`getShadowedNodeOverrideKeys()` +
+> `content-parity.engine.test.ts`) fails the build if any node is authored
+> twice again. **The cross-repo half remains open:** the mobile host still
+> registers its own per-node overrides for every node
+> (`state/exploration-maps/event-pools.ts`), shadowing the engine pools in the
+> mobile app. That decision (mobile consumes the engine source, or keeps its
+> own and the engine ships CLI-demo content only) lives in mobile's
+> NEEDS_ATTENTION.md §3 and is out of scope for this repo.
 
 ## 6. Quest board story integration is cosmetic by design — for now
 

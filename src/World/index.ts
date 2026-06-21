@@ -72,6 +72,7 @@ export {
     getNodeEventPool,
     getNodeEventKinds,
     getNodePrimaryEventKind,
+    getShadowedNodeOverrideKeys,
 } from './MapEvents/resolve-map-event';
 export type {
     MapEventKind, MapEventPayload, MapEventPool, MapEventPoolEntry,

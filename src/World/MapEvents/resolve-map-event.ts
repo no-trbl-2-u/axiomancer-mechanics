@@ -54,6 +54,11 @@ function advanceReachObjectives(quests: QuestLog, nodeId: NodeId): QuestLog {
 const poolRegistry = new Map<string, MapEventPool>();
 const defaultPoolByMap = new Map<string, string>();
 const nodePoolOverrides = new Map<string, string>();
+// Phase 161 — count how many times each node-override key has been set so the
+// content-parity guard can detect a node that was authored then silently
+// clobbered (last-write-wins shadowing). The live override `Map` collapses
+// duplicates; this preserves the registration history.
+const nodePoolOverrideWrites = new Map<string, number>();
 
 function poolKey(continent: string, mapName: string, nodeId?: string): string {
     return nodeId ? `${continent}:${mapName}:${nodeId}` : `${continent}:${mapName}`;
@@ -77,7 +82,25 @@ export function setNodeEventPoolOverride(
     nodeId: string,
     poolId: string,
 ): void {
-    nodePoolOverrides.set(poolKey(continent, mapName, nodeId), poolId);
+    const key = poolKey(continent, mapName, nodeId);
+    nodePoolOverrides.set(key, poolId);
+    nodePoolOverrideWrites.set(key, (nodePoolOverrideWrites.get(key) ?? 0) + 1);
+}
+
+/**
+ * Read-only (Phase 161 content-parity guard): the `continent:map:node` keys
+ * whose node-override was registered more than once on module load — i.e. an
+ * authored pool that was silently clobbered by a later registration
+ * (last-write-wins shadowing). An empty array means there is exactly one source
+ * of truth per node and no two content blocks are silently diverging. Returned
+ * sorted for deterministic assertions.
+ */
+export function getShadowedNodeOverrideKeys(): string[] {
+    const shadowed: string[] = [];
+    for (const [key, writes] of nodePoolOverrideWrites) {
+        if (writes > 1) shadowed.push(key);
+    }
+    return shadowed.sort();
 }
 
 /** Test-only: clear every pool registration. Used by hermetic tests. */
@@ -85,6 +108,7 @@ export function _clearMapEventPoolRegistry(): void {
     poolRegistry.clear();
     defaultPoolByMap.clear();
     nodePoolOverrides.clear();
+    nodePoolOverrideWrites.clear();
 }
 
 function lookupPool(

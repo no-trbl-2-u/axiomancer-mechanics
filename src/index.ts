@@ -255,6 +255,7 @@ export {
     getNodeEventPool,
     getNodeEventKinds,
     getNodePrimaryEventKind,
+    getShadowedNodeOverrideKeys,
 } from './World';
 export type {
     MapEventKind, MapEventPayload, MapEventPool, MapEventPoolEntry,

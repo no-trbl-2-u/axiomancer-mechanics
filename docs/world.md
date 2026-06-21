@@ -355,6 +355,27 @@ only node-event dispatcher.
   authoring map. Phase 25 removed the legacy `processNode` surface,
   the `MapEvent` / `MapEventType` types, and the `nodeEvents` /
   `availableEvents` fields on `MapDefinition`.
+- **Source of truth (Phase 161).** `content.ts` is the engine's single
+  authored source for map-event content; it registers through one
+  idempotent `registerMapEventContent()` (self-invoked on import).
+  Node overrides are **last-write-wins**, so two blocks authoring the
+  same `continent:map:node` silently diverge. `fishing-village` had
+  exactly that: a rich legacy block (Phase 23/24/65/115 — shops,
+  shrines, ferry slips) that the 2026-06 "new-player" override block
+  clobbered at module load, so the legacy `village`/`cutscene`/
+  `interaction` pools could never fire even via the CLI. Phase 161
+  removed the dead legacy fishing-village block — the **new-player
+  layout is the canonical fishing-village map** (combat-focused:
+  encounters + rest/gather/hazard + the fv-15 quest hook + the pinned
+  fv-6 boss). `northern-forest` is unshadowed and stays live; it carries
+  the `village`/`cutscene`/`interaction`/`loot-cache` kinds
+  fishing-village no longer authors, so the all-8-`MapEventKind`
+  invariant still holds. A no-shadow guard
+  (`getShadowedNodeOverrideKeys()` +
+  `src/World/MapEvents/e2e/content-parity.engine.test.ts`) fails the
+  build if any node is ever authored twice again. The separate mobile
+  host registering its own per-node overrides is a cross-repo concern
+  tracked in mobile's NEEDS_ATTENTION — out of scope for the engine.
 
 See `specs/23-map-events.md` for the spec and
 `src/World/MapEvents/e2e/map-events.engine.test.ts` for the hermetic
