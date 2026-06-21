@@ -99,16 +99,24 @@ board completion should also advance a quest-log quest.
 ## 7. Legacy `DialogueMap` retained for back-compat
 
 **What:** `src/NPCs/types.ts` keeps the flat string-keyed `DialogueMap`
-alongside `DialogueTree`, documented as legacy. Fine while old NPC
-content exists; worth a sweep to count remaining `dialogue:` (flat)
-authoring vs `dialogueTree:` before anyone builds new tooling on the old
-shape.
+alongside `DialogueTree`, documented as legacy.
 
-## 8. Untracked `.cursor/skills/oversight/SKILL.md`
+**Sweep done (2026-06-21):** zero NPCs still author the flat shape — all
+14 `dialogueTree:` authoring sites use `DialogueTree`; the only flat
+`dialogue:` matches in the tree are `'dialogue:applied'` event-type
+strings, not content. `DialogueMap` survives solely as an unused type
+exported from the `src/index.ts` / `src/NPCs/index.ts` barrels.
 
-**What:** an untracked Cursor skill file sits in the working tree (not
-authored by the agent loops; predates 2026-06-12). It is not gitignored,
-so it shows up in every `git status`.
+**Pending work:** removal is now behaviour-safe but is a public-API
+change (drop the barrel exports + refresh the public-surface guard
+fixture + minor version bump), so it's a scoped follow-up rather than a
+drive-by. No new tooling should build on the flat shape in the meantime.
 
-**Pending decision (user's):** commit it or add `.cursor/` to
-`.gitignore`.
+## 8. `.cursor/skills/oversight/SKILL.md` — RESOLVED (2026-06-21)
+
+**Resolution:** the file is now tracked (`git ls-files .cursor/` lists it
+alongside `.cursor/rules/` and the other Cursor skills), so it no longer
+shows in `git status`. The "commit it or gitignore it" decision resolved
+toward *commit* — and `.cursor/` must NOT be gitignored, since it holds
+tracked, intentional content. The only untracked path now is the tuning
+loop's `.claude/worktrees/` (a transient git worktree, harmless).
