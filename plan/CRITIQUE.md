@@ -54,16 +54,7 @@
 
 ## Pending
 
-### [LOW] plan — CURRENT-STATE.md references removed actions.constants COMBAT_ACTION
-- pass: critique-76 (commit 6fc2a08)
-- area: docs
-- observation: `plan/CURRENT-STATE.md:50` still lists `actions.constants.ts` as carrying `COMBAT_ACTION` ("no game-level ..."), stale after the 6fc2a08 removal.
-- evidence: plan/CURRENT-STATE.md:50
-- suggested_fix: update or drop the bullet to reflect that `actions.constants.ts` was removed and combat actions are modelled via the `Action` type
-- source: critique
-
-
-
+<!-- No pending findings -->
 
 
 
@@ -73,6 +64,7 @@
 
 ## Done
 
+- [x] **[LOW] plan — CURRENT-STATE.md references removed actions.constants COMBAT_ACTION** — resolved at iterate (2026-06-21). `plan/CURRENT-STATE.md:50` bullet 4 still listed `actions.constants.ts` as carrying `COMBAT_ACTION`, stale since the 6fc2a08 removal (confirmed live: `src/Game/actions.constants.ts` absent, `rg COMBAT_ACTION src/` → 0 hits). This is the plan-file twin of the spec-09 reference drained at `9a8688f`; rewrote the bullet to state combat actions are modelled via the `Action` type and that the `actions.constants.ts` / `COMBAT_ACTION` module was removed at `6fc2a08`, per the suggested_fix. Pure plan-file maintenance; no source change. Score 2 × 10 / 10 = 2.0. Source: critique-76 (commit 6fc2a08).
 - [x] **[LOW] structure — computeEquipDelta tested outside the e2e/*.engine.test.ts convention** — resolved at commit b2488a3 (iterate, 2026-06-21). Phase 154's `computeEquipDelta` engine module was tested only at `src/Character/equip-delta.test.ts` (a module-root `*.test.ts`) rather than the `src/Character/e2e/*.engine.test.ts` hermetic convention every sibling Character surface follows (character/presets/level-ladder-presets/preview-stat-allocation). Relocated the file to `src/Character/e2e/equip-delta.engine.test.ts` (git rename, 93% similarity) and rewrote the relative imports for the e2e/ depth (`../index`, `../equip-delta`, `../../Items/types`); coverage unchanged (5 cases — deltas-only contract, equip/unequip/swap modes, structured affix keywords). type-check + build green (test runner blocked by the documented env ERR_REQUIRE_ESM vite/vitest mismatch — not a finding). Source: critique-77 (commit 9098d3c). Impact 4 × Ease 7 / 10 = 2.8.
 - [x] **[LOW] docs — resource-carry exports (carryPhilosophicalResources/RESOURCE_CARRY) absent from front-door docs** — resolved at commit c1474d7 (iterate, 2026-06-21). The resource-carry feature's two explicitly-listed top-level exports — `carryPhilosophicalResources` (Skills) + `RESOURCE_CARRY` (Game const) — had hermetic coverage + fixture presence but zero front-door doc coverage. Added: a `carryPhilosophicalResources` row to the docs/skills.md Engine API table + a "Cross-combat resource carry" prose section (FRACTION=0.5/CAP=3 defaults, stance-tokens-never-carry, STRATEGIST doctrine alignment); spec.md Skills contracts row gained `carryPhilosophicalResources` and the Game row gained `RESOURCE_CARRY`; bearings.md Skills + Game locked-contract groups annotated per the per-feature convention. Docs-only (docs/skills.md + spec.md + plan/bearings.md); type-check + lint + build green (test runner blocked by the documented env ERR_REQUIRE_ESM vite/vitest mismatch — not a finding). Source: critique-78 (commit 9cc1437). Impact 4 × Ease 7 / 10 = 2.8.
 - [x] **[MED] docs — Phase 154 + node-event/ladder exports absent from all front-door docs** — resolved at commit 9369e4c (iterate, 2026-06-21). Phase 154 (#176) + commit 26aedaa added ~14 top-level `src/index.ts` exports (computeEquipDelta + EquipDelta/EquipDeltaMode/EquipDeltaSide; equipmentFromTemplate/generateRarityDrop + GenerateRarityDropResult; firstEquippedPerSlot/isEquippedFirstOfSlot/findEquippedInSlot; getNodeEventPool/getNodeEventKinds/getNodePrimaryEventKind; levelLadderPresets + the four ladder presets) with zero front-door doc coverage. Added: spec.md Contracts rows (Character/Items/World) carry the marquee representatives; bearings.md gained per-feature Phase 154 annotations on the Character/Items/World groups; docs/character.md API table gained `levelLadderPresets` + `computeEquipDelta` rows; docs/equipment.md gained a `loot.generation` + `equipped`-helper table under the dropItem factory; docs/world.md gained a node-event-kind read-API bullet under MapEvents. Docs-only (spec.md + plan/bearings.md + 3 docs pages); type-check + lint + build green (test runner blocked by the documented env ERR_REQUIRE_ESM vite/vitest mismatch — not a finding). Source: critique-77 (commit 9098d3c).
