@@ -64,10 +64,14 @@ export function createNewGameState(): GameState {
     return {
         version: GAME_STATE_VERSION,
         runId: generateRunId(() => getRng().random()),
+        // A fresh player starts at the apprentice baseline ({5,5,5} → 75 HP),
+        // not the {1,1,1}/15 HP placeholder — a 15 HP start is one-shot
+        // territory for the early encounters. Starter skills are seeded by the
+        // client on first combat (`ensureStarterSkills`).
         player: createCharacter({
             name: 'Player',
             level: 1,
-            baseStats: { heart: 1, body: 1, mind: 1 },
+            baseStats: { heart: 5, body: 5, mind: 5 },
         }),
         world: createStartingWorld(),
         combat: null,

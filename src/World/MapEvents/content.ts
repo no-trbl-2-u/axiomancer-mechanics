@@ -902,19 +902,22 @@ for (const { nodeId, pool } of NORTHERN_FOREST_POOLS) {
     setNodeEventPoolOverride('coastal-continent', 'northern-forest', nodeId, pool.id);
 }
 
-// ─── New-player fishing-village override (2026-06) ────────────────────────────
+// ─── New-player fishing-village override (2026-06, rebalanced) ────────────────
 //
-// Directive: the first continent's STARTING map is a combat-focused new-player
-// gauntlet — exactly ONE quest node (the story hook) and ONE boss node (the
-// region climax); every other node is a balanced low-level encounter. This
-// block re-registers all fishing-village nodes, superseding the legacy authored
-// pools above (Old Marrow, the stalls, gathering, rest, hazards remain defined
-// in source for easy restoration but are no longer wired on this map).
-//
-// Foes are kept to the gentlest L1–L2 simple/normal roster: the gauntlet has no
-// rest/shop node, so a new player cannot heal or restock mid-map — difficulty is
-// held down by the foe tier rather than by recovery nodes. Boss stays at fv-6
-// (the node wired for region progression); the quest sits at fv-15.
+// The first continent's STARTING map is combat-FOCUSED but no longer a pure
+// gauntlet — a flat wall of identical encounters with no recovery was both
+// monotonous and unwinnable in playtests. The map now mixes:
+//   - 14 low-level ENCOUNTER nodes (the spine of the experience),
+//   - 3 REST nodes (recover HP — "The Night Watch"), placed so one sits on
+//     the spine just before the boss,
+//   - 3 GATHERING nodes (low-risk materials — "The Gleaning"),
+//   - 3 HAZARD nodes (light risk — the hazard minigame),
+//   - 1 QUEST node (fv-15, the story hook), and
+//   - 1 BOSS node (fv-6, the region climax).
+// This block supersedes the legacy authored pools above (kept in source for
+// reference). Foes stay on the gentlest L1–L2 roster; the boss is pinned to a
+// low absolute level so a fresh player can actually win the climax (the shared
+// coastal-tyrant is endgame-tier elsewhere, so we override the level here).
 
 const FV_NEW_PLAYER_FOES: ReadonlyArray<{ slug: EnemySlug; description: string }> = [
     { slug: 'tidepool-crab',  description: 'A tidepool crab pincers up from the dock pilings.' },
@@ -925,21 +928,46 @@ const FV_NEW_PLAYER_FOES: ReadonlyArray<{ slug: EnemySlug; description: string }
     { slug: 'mournful-gull',  description: 'A mournful gull wheels down, shrieking.' },
 ];
 
-function fvEncounterPool(
-    nodeId: string,
-    foe: { slug: EnemySlug; description: string },
-): MapEventPool {
+function fvEncounterPool(nodeId: string, foe: { slug: EnemySlug; description: string }): MapEventPool {
     return {
         id: `${nodeId}.encounter`,
         entries: [{
             kind: 'encounter', weight: 1,
+            payload: { kind: 'encounter', enemySlug: foe.slug, isBoss: false, description: foe.description },
+        }],
+    };
+}
+
+function fvRestPool(nodeId: string, description: string): MapEventPool {
+    return {
+        id: `${nodeId}.rest`,
+        entries: [{ kind: 'rest', weight: 1, payload: { kind: 'rest', healFraction: 1.0, description } }],
+    };
+}
+
+const FV_GATHER_MATERIALS: ReadonlyArray<{ id: string; name: string; description: string }> = [
+    { id: 'driftwood',  name: 'Driftwood',       description: 'Salt-bleached and brittle, but burns clean.' },
+    { id: 'tide-shell', name: 'Tide Shell',      description: 'Spiral and chalk-pale; the inside still smells of salt.' },
+    { id: 'salt-fish',  name: 'Salt-Fish Strip', description: 'Cured hard; chewy, salty, will keep for the road.' },
+];
+function fvGatheringPool(nodeId: string, mat: { id: string; name: string; description: string }, description: string): MapEventPool {
+    return {
+        id: `${nodeId}.gathering`,
+        entries: [{
+            kind: 'gathering', weight: 1,
             payload: {
-                kind: 'encounter',
-                enemySlug: foe.slug,
-                isBoss: false,
-                description: foe.description,
+                kind: 'gathering',
+                items: [{ id: mat.id, name: mat.name, description: mat.description, category: 'material', quantity: 1 }],
+                description,
             },
         }],
+    };
+}
+
+function fvHazardPool(nodeId: string, description: string): MapEventPool {
+    return {
+        id: `${nodeId}.hazard`,
+        entries: [{ kind: 'hazard', weight: 1, payload: { kind: 'hazard', damage: 2, description } }],
     };
 }
 
@@ -955,9 +983,36 @@ const fvBuildTheBoatQuest: MapEventPool = {
     }],
 };
 
-/** The single quest node and single boss node on the new-player map. */
-const FV_QUEST_NODE = 'fv-15';
-const FV_BOSS_NODE = 'fv-6';
+// The region boss — coastal-tyrant, but pinned to a low absolute level so a
+// fresh player can win the climax (the shared enemy is endgame-tier elsewhere).
+const FV_BOSS_LEVEL = 3;
+const fvGauntletBoss: MapEventPool = {
+    id: 'fv-6.encounter-boss',
+    entries: [{
+        kind: 'encounter', weight: 1,
+        payload: {
+            kind: 'encounter',
+            enemySlug: 'coastal-tyrant',
+            isBoss: true,
+            level: FV_BOSS_LEVEL,
+            description: 'The Coastal Tyrant rises from the breakwater.',
+        },
+    }],
+};
+
+// Per-node kind assignment. Rest sits at fv-3 (spine, before the fv-6 boss) so
+// the player can heal before the climax; gather/hazard salt the rest of the map.
+const FV_REST_NODES: Record<string, string> = {
+    'fv-3':  'A fisher’s lean-to, the embers still warm. You stop to bind your wounds.',
+    'fv-9':  'A roofless cottage out of the wind. Enough shelter to catch your breath.',
+    'fv-20': 'A dry hollow under an upturned hull. You rest a while.',
+};
+const FV_GATHER_NODES: Record<string, number> = { 'fv-5': 0, 'fv-8': 1, 'fv-13': 2 };
+const FV_HAZARD_NODES: Record<string, string> = {
+    'fv-10': 'You stumble through a thicket of jagged barnacles.',
+    'fv-18': 'The boards give way over a reeking bilge; you scramble clear.',
+    'fv-23': 'A gull-slick ledge crumbles underfoot above the rocks.',
+};
 
 const FISHING_VILLAGE_NEW_PLAYER_POOLS: ReadonlyArray<{ nodeId: string; pool: MapEventPool }> =
     (() => {
@@ -965,10 +1020,16 @@ const FISHING_VILLAGE_NEW_PLAYER_POOLS: ReadonlyArray<{ nodeId: string; pool: Ma
         let foeIdx = 0;
         for (let i = 1; i <= 25; i++) {
             const nodeId = `fv-${i}`;
-            if (nodeId === FV_BOSS_NODE) {
-                out.push({ nodeId, pool: fvBoss });
-            } else if (nodeId === FV_QUEST_NODE) {
+            if (nodeId === 'fv-6') {
+                out.push({ nodeId, pool: fvGauntletBoss });
+            } else if (nodeId === 'fv-15') {
                 out.push({ nodeId, pool: fvBuildTheBoatQuest });
+            } else if (FV_REST_NODES[nodeId]) {
+                out.push({ nodeId, pool: fvRestPool(nodeId, FV_REST_NODES[nodeId]!) });
+            } else if (nodeId in FV_GATHER_NODES) {
+                out.push({ nodeId, pool: fvGatheringPool(nodeId, FV_GATHER_MATERIALS[FV_GATHER_NODES[nodeId]!]!, 'You crouch to gather what the tide left behind.') });
+            } else if (FV_HAZARD_NODES[nodeId]) {
+                out.push({ nodeId, pool: fvHazardPool(nodeId, FV_HAZARD_NODES[nodeId]!) });
             } else {
                 const foe = FV_NEW_PLAYER_FOES[foeIdx % FV_NEW_PLAYER_FOES.length]!;
                 foeIdx++;

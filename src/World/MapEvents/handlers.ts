@@ -51,7 +51,10 @@ export function resolveEncounter(
         if (!source) {
             throw new Error(`MapEvents: unknown enemySlug '${payload.enemySlug}'.`);
         }
-        const scaled = scaleEnemyToLevel(source, Math.max(source.level, state.player.level));
+        // An authored `level` pins the difficulty absolutely; otherwise the
+        // enemy scales up to the player (never below its own level).
+        const targetLevel = payload.level ?? Math.max(source.level, state.player.level);
+        const scaled = scaleEnemyToLevel(source, targetLevel);
         const encounter = { enemies: [scaled], origin: `${def.name}:${node.id}` };
         return { state, event: { kind: 'encounter', encounter, isBoss } };
     }

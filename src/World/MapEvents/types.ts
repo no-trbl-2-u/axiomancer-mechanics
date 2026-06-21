@@ -36,6 +36,13 @@ export interface EncounterPayload {
     enemySlug?: EnemySlug;
     /** Boss flag — affects scaling and downstream UI framing. */
     isBoss?: boolean;
+    /**
+     * Absolute level to scale the enemy to, overriding the default
+     * `max(enemy.level, player.level)` scaling. Lets an authored encounter
+     * pin a fixed difficulty — e.g. a starting-region boss that must stay
+     * beatable by a fresh player even though the shared enemy is endgame-tier.
+     */
+    level?: number;
     description?: string;
 }
 

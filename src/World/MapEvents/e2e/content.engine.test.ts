@@ -40,12 +40,12 @@ afterEach(() => {
     vi.restoreAllMocks();
 });
 
-describe('fishing-village content — new-player gauntlet', () => {
-    // The starting map is a combat-focused new-player gauntlet: exactly ONE
-    // quest node (fv-15) and ONE boss node (fv-6, an `encounter` with
-    // isBoss), every other node a low-level encounter. See the new-player
-    // override block in `content.ts`.
-    it('every node is an encounter except the single quest node (fv-15)', () => {
+describe('fishing-village content — new-player map', () => {
+    // The starting map is combat-focused but varied: mostly encounters, with a
+    // few rest / gathering / hazard nodes for recovery + texture, exactly ONE
+    // quest node (fv-15), and ONE boss node (fv-6, an `encounter` with isBoss).
+    // See the new-player override block in `content.ts`.
+    it('is mostly encounters with a few rest/gathering/hazard nodes and one quest', () => {
         mockSequentialRng(0.5);
         let state = freshWorldAt('fishing-village');
 
@@ -56,10 +56,14 @@ describe('fishing-village content — new-player gauntlet', () => {
             state = r.state;
         }
 
-        // 24 encounter-kind nodes (23 regular + the fv-6 boss) + 1 quest.
-        expect(counts.encounter).toBe(24);
+        // 15 encounter-kind nodes (14 regular + the fv-6 boss).
+        expect(counts.encounter).toBe(15);
+        expect(counts.rest).toBe(3);
+        expect(counts.gathering).toBe(3);
+        expect(counts.hazard).toBe(3);
         expect(counts.quest).toBe(1);
-        expect(Object.keys(counts).sort()).toEqual(['encounter', 'quest']);
+        // Encounters still dominate; every node resolved to a real kind.
+        expect(Object.values(counts).reduce((a, b) => a + b, 0)).toBe(25);
     });
 
     it('fv-15 is the single quest node (build-the-boat)', () => {
@@ -75,7 +79,7 @@ describe('fishing-village content — new-player gauntlet', () => {
         }
     });
 
-    it('boss flag is set on fv-6 (the single boss node)', () => {
+    it('boss flag is set on fv-6, pinned to the authored override level (not the enemy L6)', () => {
         mockSequentialRng(0.5);
         const state = freshWorldAt('fishing-village');
         const r = visit(state, 'fv-6');
@@ -86,6 +90,11 @@ describe('fishing-village content — new-player gauntlet', () => {
         });
         if (result.event.kind === 'encounter') {
             expect(result.event.isBoss).toBe(true);
+            // coastal-tyrant is endgame-tier (L6); the encounter `level`
+            // override scales it down so a fresh player can win the climax.
+            const boss = result.event.encounter.enemies[0];
+            expect(boss.level).toBe(3);
+            expect(boss.name).toBe('The Coastal Tyrant');
         }
     });
 });

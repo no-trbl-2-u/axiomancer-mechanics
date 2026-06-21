@@ -55,13 +55,14 @@ describe('Spec 08 e2e — fishing-village exploration loop', () => {
         store.setState(step2.gameState);
         expect(step2.effects.startedQuest).toBe('starting-quest');
 
-        // 2. Traverse the spine to the boss. Every intermediate node is a
-        // low-level encounter now; completing each advances the unlock graph.
+        // 2. Traverse the spine to the boss. The intermediate nodes are a mix
+        // of encounters and recovery/texture nodes (rest at fv-3, gathering at
+        // fv-5); resolving + completing each advances the unlock graph.
         for (const node of ['fv-2', 'fv-3', 'fv-4', 'fv-5'] as const) {
             store.setState({ world: moveToNode(store.getState().world, node) });
             const r = resolveMapEvent(store.getState());
             store.setState(r.state);
-            expect(r.event.kind).toBe('encounter');
+            expect(r.event.kind).not.toBe('none');
             store.setState({ world: completeCurrentNode(store.getState().world) });
         }
 
