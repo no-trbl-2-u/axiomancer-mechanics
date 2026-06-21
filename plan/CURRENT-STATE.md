@@ -47,8 +47,9 @@ All specs 01–08 shipped:
    `GAME_STATE_VERSION` only. No `gameReducer` dispatch yet.
 3. **`store.ts` world gap** — no `moveToNode` / `processNode` actions on
    GameStore yet; consumers must compose reducers directly.
-4. **`actions.constants.ts`** has `COMBAT_ACTION` only; no game-level
-   action types.
+4. **Combat actions** are modelled via the `Action` type (no
+   `actions.constants.ts` / `COMBAT_ACTION` — removed at `6fc2a08`); no
+   game-level action-constant module.
 
 ## What's missing for v1
 
