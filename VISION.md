@@ -17,9 +17,12 @@ the most engaging aspect of combat encounters. Every balance decision, tuning ru
 addition, and skill/effect design is judged first by "does this make applying
 and exploiting status effects more central and more satisfying?" If a change
 makes basic-attack trading more attractive than status-effect play, it works
-against the vision. The combat-tuning loop and the balance-analyst must treat
-low status-effect engagement as a balance failure even when win/loss rates look
-healthy.
+against the vision. Both balance loops must treat low status-effect engagement
+as a balance failure even when win/loss rates look healthy: the
+`legacy-combat-tuning` loop + the `balance-analyst` for the turn-based combat,
+and the `combat-tuning` loop for the Spec 25 Hazard-Pattern Combat — where
+status-as-win-path is structural (DoT Erosion + Control Saturation are the only
+practical win conditions; there is no basic-attack verb to compete with).
 
 The intended mastery path is:
 

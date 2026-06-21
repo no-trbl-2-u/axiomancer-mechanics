@@ -1,6 +1,14 @@
 /**
  * Combat round resolver — pure, deterministic round resolution.
  *
+ * LEGACY-COMBAT. This is the turn-based attack/defend driver. Spec 25
+ * (2026-06-21) introduced the Hazard-Pattern Combat (`combat.engine.ts`
+ * `resolveCombatPhase`) as the primary combat system — a card-and-dice driver
+ * where status effects are the only win condition. `resolveCombatRound` is
+ * retained because it still backs live exploration encounters until that wiring
+ * migrates; balance it with `/legacy-combat-tuning` (the new combat uses
+ * `/combat-tuning`). Do not delete without migrating the encounter flow.
+ *
  * `resolveCombatRound` is the single entry point any client (CLI, future React
  * Native UI, the automated tester) calls to advance combat by one round. It
  * returns the next `CombatState` plus a typed `combatEvents` stream the UI

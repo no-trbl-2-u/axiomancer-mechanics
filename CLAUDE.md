@@ -13,11 +13,20 @@ judged first by: *does this make applying and exploiting status effects more
 central and more satisfying?* If a change makes basic-attack trading more
 attractive than status-effect play, it works against the vision. Treat low
 status-effect engagement as a balance failure even when win/loss rates look
-healthy. The STRATEGIST playstyle is the witness for this path.
+healthy.
+
+**Spec 25 — Hazard-Pattern Combat (the primary combat system, 2026-06-21)** makes
+this STRUCTURAL: `resolveCombatPhase` is a card-and-dice driver where every verb
+is a skill card and two Pressure Tracks (DoT Erosion + Control Saturation) are the
+only practical win conditions — basic-attack trading no longer exists. Tuned by
+**`/combat-tuning`** (`skills/combat-tuning.md`, witness:
+`simulateHazardPatternCombat`). The legacy turn-based `resolveCombatRound` still
+backs live encounters and is tuned by **`/legacy-combat-tuning`** — there the
+STRATEGIST playstyle is the witness.
 
 Canonical: `VISION.md` → Combat vision. Echoed in `plan/bearings.md`, `agents.md`
-(standing rule 10), `AGENTS.md`, and the `combat-tuning` skill +
-`balance-analyst` agent.
+(standing rule 10), `AGENTS.md`, the `combat-tuning` + `legacy-combat-tuning`
+skills, and the `balance-analyst` agent (legacy loop).
 
 ## Pointers
 
