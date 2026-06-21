@@ -27,13 +27,59 @@
  */
 
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const DIST_INDEX_DTS = 'dist/index.d.ts'
 const FIXTURE_PATH = 'scripts/public-surface.expected.json'
 
 const EXPORT_LINE_RE = /^export\s+(type\s+)?\{\s*([^}]+)\s*\}\s+from\s+'[^']+'\s*;?\s*$/
+const EXPORT_STAR_RE = /^export\s+(type\s+)?\*\s+from\s+'([^']+)'\s*;?\s*$/
+
+/**
+ * Recursively walk a `.d.ts` barrel, folding named exports into `values`
+ * / `types`. `export { ... } from` lines are read directly; `export *
+ * from './sub'` lines are resolved to `<sub>/index.d.ts` (or `<sub>.d.ts`)
+ * and walked so re-exported submodule surfaces are not blind spots.
+ *
+ * @param {string} dtsPath absolute path to a `.d.ts` file
+ * @param {Set<string>} values runtime export accumulator
+ * @param {Set<string>} types type export accumulator
+ * @param {Set<string>} visited resolved paths already walked (cycle guard)
+ */
+function collectExports(dtsPath, values, types, visited) {
+  if (visited.has(dtsPath)) return
+  visited.add(dtsPath)
+  if (!existsSync(dtsPath)) return
+
+  const text = readFileSync(dtsPath, 'utf8')
+  const baseDir = dirname(dtsPath)
+
+  for (const rawLine of text.split('\n')) {
+    const line = rawLine.trim()
+
+    const named = line.match(EXPORT_LINE_RE)
+    if (named) {
+      const isTypeExport = Boolean(named[1])
+      const target = isTypeExport ? types : values
+      for (const name of named[2].split(',').map(n => n.trim()).filter(Boolean)) {
+        target.add(name)
+      }
+      continue
+    }
+
+    const star = line.match(EXPORT_STAR_RE)
+    if (star) {
+      const spec = star[2]
+      const resolvedBase = resolve(baseDir, spec)
+      const candidates = resolvedBase.endsWith('.d.ts')
+        ? [resolvedBase]
+        : [`${resolvedBase}.d.ts`, resolve(resolvedBase, 'index.d.ts')]
+      const next = candidates.find(existsSync)
+      if (next) collectExports(next, values, types, visited)
+    }
+  }
+}
 
 export function snapshotPublicSurface(distIndexPath = DIST_INDEX_DTS) {
   if (!existsSync(distIndexPath)) {
@@ -42,21 +88,9 @@ export function snapshotPublicSurface(distIndexPath = DIST_INDEX_DTS) {
     )
   }
 
-  const text = readFileSync(distIndexPath, 'utf8')
   const values = new Set()
   const types = new Set()
-
-  for (const line of text.split('\n')) {
-    const match = line.trim().match(EXPORT_LINE_RE)
-    if (!match) continue
-    const isTypeExport = Boolean(match[1])
-    const names = match[2]
-      .split(',')
-      .map(name => name.trim())
-      .filter(Boolean)
-    const target = isTypeExport ? types : values
-    for (const name of names) target.add(name)
-  }
+  collectExports(resolve(distIndexPath), values, types, new Set())
 
   return {
     values: [...values].sort(),
