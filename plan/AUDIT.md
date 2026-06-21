@@ -46,7 +46,7 @@
 
 ## Pending
 
-<!-- No pending findings -->
+- [ ] **[A — test-coverage gap] 14 Spec 25 public exports have no direct e2e coverage** — the Spec 25 ship (`a2112ba`) added one hermetic flow suite (`src/Combat/e2e/hazard-pattern-combat.engine.test.ts`, the §11 acceptance criteria) that exercises the engine end-to-end via `initializeCombatEncounter`/`playCombatCard`/`resolveCombatPhase`/`resolveThreatPhase`/`processBetweenPhases`, but 14 of the ~34 newly-exported value functions are never referenced by name in any test: the two **win-condition predicates** `dotErosionReached` / `controlSaturationReached` (the Pressure-Track thresholds that ARE the win condition per the load-bearing doctrine), the Befriend mercy entry `selectEncounterMercyChoice`, the dice helpers `rollCombatDice` / `combatDieCanPower` / `refreshOneDie` (the self-reinforcing status-loop primitive), `momentumCarry`, deck builder `buildCombatDeck`, threat helpers `generateDefaultThreatSequence`, card adapters `classifyVerbClass` / `toCombatCard` / `projectDeck`, and the UI previews `cardDieCostPreview` / `availableDice`. These are pure/deterministic and trivially unit-testable; their contracts (especially the win-condition predicates) are currently pinned only indirectly through the high-level flow. Add a focused hermetic sibling suite. Score 6 × 8 / 10 = 4.8.
 
 ## Done
 
@@ -60,6 +60,23 @@
 - [x] **[E — docs drift] Front-door docs referenced removed `getResistStat`** — resolved at `45b611e` (2026-06-18). `getResistStat` was removed at Phase 106 (v0.13.0) but `README.md:84` still listed it as a `_(deprecated)_` Combat stat accessor and `docs/api.md:56` called it "deprecated (use `getSaveStat`)". Dropped the README accessor entry and corrected api.md to "removed at v0.13.0 (use `getSaveStat`)". No source change (symbol already gone); verify green. Score 5 × 9 / 10 = 4.5.
 
 ## Audit Pass Log
+
+### 2026-06-21 (Pass 102) — Z–H walk (march→iterate dispatch)
+
+**Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), ESLint fix (F), Dependency updates (G), Commit-hygiene (H).
+
+**Findings:** 1 drainable finding (A — test-coverage gap, score 4.8). This pass drilled into the Spec 25 engine's **per-export** coverage (pass 101 audited category A at the suite level — "16 hermetic cases shipped" — and called it clean; it did not enumerate which of the ~34 new value exports are referenced by name). Cross-checking every Spec 25 barrel value against `src/Combat/e2e/hazard-pattern-combat.engine.test.ts` surfaced **14 exports never referenced in any test**, including the two win-condition predicates (`dotErosionReached`/`controlSaturationReached`) and the mercy entry (`selectEncounterMercyChoice`).
+
+**Highlights (independently re-verified this pass):**
+- **Z (Critique):** CRITIQUE.md `## Pending` empty (critique pass 80 at `c8feded`, 0 findings). Critique gate not re-due (7 commits since `c8feded` < 12; same-day < 24h).
+- **A (Tests):** **THE FINDING** — 14 of ~34 Spec 25 value exports have zero direct test reference. Every src module still retains an `e2e/` dir; zero `vi.spyOn(Math,'random')` outside `src/test-utils/rng.ts`. (`npm test` not run — known environmental ERR_REQUIRE_ESM vite/vitest mismatch; type-check + lint + build + deploy:check all exit 0.)
+- **B (Spec-gaps):** Knowledge-Gaps only Q28 deferred; `specs/` `> Your answer:` rows filled by T.
+- **C (Type-safety):** clean — zero `as any`/`as unknown`/`@ts-ignore` in non-test src.
+- **D (Dead code):** the Spec 25 engine ships alongside `resolveCombatRound` (additive); all barrel exports reachable; surface fixture byte-identical post-build.
+- **E (Docs):** clean — the two Spec 25 front-door findings (engine docs `cc0aa0a`, fixture `2588071`) drained in passes 100/101.
+- **F (Lint):** `npm run lint` exits 0. **G (Deps):** only `@types/node` major bump outstanding (deliberate-phase territory, skip). **H (hygiene):** working tree clean at audit start; `npm run deploy:check` exits 0.
+
+**Disposition:** drain the A test-coverage finding (add a focused hermetic sibling suite pinning the 14 untested Spec 25 exports). Expand gate not re-eligible (26 commits since expand pass 74 ≥20, BUT no actionable signal: AUDIT now carries a drainable iterate-tier finding, CRITIQUE empty, Knowledge-Gaps exhausted, braindump all-implemented). Next loop tick re-dispatches.
 
 ### 2026-06-21 (Pass 101) — Z–H walk (march→iterate dispatch)
 
