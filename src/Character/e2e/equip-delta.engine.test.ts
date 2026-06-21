@@ -1,5 +1,5 @@
 /**
- * Equip-change delta — unit tests (Phase 154).
+ * Equip-change delta — hermetic E2E tests (Phase 154).
  *
  * Pins the three delta modes (equip / unequip / swap), the deltas-only
  * contract, structured affix-keyword surfacing, and the engine-simulated stat
@@ -8,9 +8,9 @@
 
 import { describe, it, expect } from 'vitest';
 
-import { createCharacter } from './index';
-import { computeEquipDelta } from './equip-delta';
-import type { Equipment } from '../Items/types';
+import { createCharacter } from '../index';
+import { computeEquipDelta } from '../equip-delta';
+import type { Equipment } from '../../Items/types';
 
 const buildPlayer = () =>
     createCharacter({ name: 'TestPlayer', level: 5, baseStats: { heart: 4, body: 3, mind: 2 } });
