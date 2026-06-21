@@ -93,8 +93,8 @@ The barrel at `src/index.ts` is the contract surface. Groups:
 | Combat | `determineAdvantage`, `getAttackStat`, `getDefenseStat`, `applyDamage`, `heal`, `Stance`, `Action`, `CombatState`, `getEffectsResolutionOutcome`, `resolveCombatRound` |
 | Effects | `applyEffect`, `applyTier1CombatEffect`, `lookupEffect`, `Effect`, `ActiveEffect`, `EffectInteraction`, `evaluateInteractions` |
 | Items | `addItem`, `removeItem`, `useConsumable`, `Item`, `Equipment`, `dropItem`, `dropItemWithAffixes`, `composeItemName`, `getActiveSetBonuses`, `ItemSet`, `previewTemplateAtRarity`, `equipmentFromTemplate`, `generateRarityDrop`, `firstEquippedPerSlot` |
-| Skills | `canUseSkill`, `executeSkill`, `learnSkill`, `Skill`, `SkillCategory`, `SkillSynergy`, `evaluateExtendedSynergyPredicate` |
-| Game | `createGameStore`, `GameState`, `gameReducer`, `createEventEmitter`, `nullAdapter`, `CodexEntry` |
+| Skills | `canUseSkill`, `executeSkill`, `learnSkill`, `carryPhilosophicalResources`, `Skill`, `SkillCategory`, `SkillSynergy`, `evaluateExtendedSynergyPredicate` |
+| Game | `createGameStore`, `GameState`, `gameReducer`, `createEventEmitter`, `nullAdapter`, `CodexEntry`, `RESOURCE_CARRY` |
 | World | `createStartingWorld`, `WorldState`, `moveToNode`, `resolveMapEvent`, `getNodeEventPool`, `getNodeEventKinds`, `getNodePrimaryEventKind`, `runMinigameHarness`, `MapDefinition` |
 | Hazard | `*` (wildcard export from `./World/Hazard`) |
 | Gathering | `*` (wildcard export from `./World/Gathering`) |

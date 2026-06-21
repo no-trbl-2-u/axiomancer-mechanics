@@ -102,6 +102,11 @@ Skills:     executeSkill, canUseSkill, learnSkill, getAvailableSkills,
             skillLibrary, getSkillById, Skill, SkillEvent
             (+ SkillSynergy, SynergyPredicate types + Skill.synergy?
             field driving 5 authored Tier 2 synergy skills — Phase 66)
+            (+ carryPhilosophicalResources — cross-combat carry of unspent
+            fallacy/paradox into the next combat's seed (floor(FRACTION ×
+            unspent), capped); stance tokens never carry, so it rewards
+            skill-casting/status-effect play over basic-attack token-banking
+            (STRATEGIST path); defaults live in the Game RESOURCE_CARRY const)
 Items:      addItem, removeItem, useConsumable, stackItem, Item (and variants)
             (+ buyItem / sellItem / defaultSellPrice + ShopWare /
             ShopInventory types — Phase 37 shop economy),
@@ -142,7 +147,9 @@ Game:       createGameStore, GameState, nullAdapter, persistence adapters
             store.unlockCodexEntry + UNLOCK_CODEX_ENTRY action +
             CombatEndReport.friendshipReward.codexEntryUnlocked? —
             Phase 73 closes GH#65 ask 3; GAME_STATE_VERSION bumped
-            6 → 7 with migrateV6toV7)
+            6 → 7 with migrateV6toV7),
+            (+ RESOURCE_CARRY const (FRACTION/CAP) — defaults for the Skills
+            carryPhilosophicalResources cross-combat carry)
 World:      createStartingWorld, world reducer, WorldState, MapState, MapDefinition
             (+ getNodeEventPool / getNodeEventKinds / getNodePrimaryEventKind —
             node-event-kind read API over the registered MapEventPools; lets a

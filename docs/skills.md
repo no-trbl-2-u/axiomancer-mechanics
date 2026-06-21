@@ -181,9 +181,26 @@ Defined in `src/Skills/skill.engine.ts`.
 | `spendResources` | `(resources, cost) → CombatResources` | Deducts cost; throws if insufficient (guard with `canUseSkill` first) |
 | `calculateSkillDamage` | `(character, skill, advantage) → number` | Applies the damage formula above |
 | `executeSkill` | `(state, skillId) → RoundResolution` | Full execution: validate → spend → resolve damage/effects → generate philosophical resource → emit events |
+| `carryPhilosophicalResources` | `(resources, fraction?, cap?) → Partial<CombatResources>` | Cross-combat carry: returns the unspent fallacy / paradox to seed the next combat. `floor(fraction × unspent)` per resource, clamped to `cap`. Stance tokens never carry. Sparse result (positive keys only); pure |
 
 `executeSkill` emits `RoundEvent`s in the same stream as basic combat actions,
 so the CLI renderer requires no special cases.
+
+### Cross-combat resource carry
+
+A fraction of the **unspent** philosophical resources (fallacy / paradox — the
+skill fuel) carries from a won combat into the next combat's seed:
+`carryPhilosophicalResources` returns `floor(fraction × unspent)` per resource,
+hard-capped so carry cannot snowball. The defaults live in the
+`RESOURCE_CARRY` constant (`src/Game/game-mechanics.constants.ts`,
+re-exported from the package root): `FRACTION = 0.5`, `CAP = 3`.
+
+Stance tokens (heart / body / mind) are **never** carried — only the
+skill-fuel resources — so the carry rewards casting skills (and the status
+effects they apply), not turtling or basic-attack token-banking. This is the
+STRATEGIST cross-encounter path the combat vision optimises for (`VISION.md`).
+The sparse `Partial<CombatResources>` result is suitable for
+`Character.carriedResources`, which seeds the next `initializeCombat`.
 
 ### Character skill access
 
