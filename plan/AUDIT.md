@@ -63,6 +63,22 @@
 
 ## Audit Pass Log
 
+### 2026-06-21 (Pass 103) — Z–H walk (march→iterate dispatch)
+
+**Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), ESLint fix (F), Dependency updates (G), Commit-hygiene (H).
+
+**Findings:** 0 findings ≥3.0 — queue empty. Re-walked all categories independently after the Spec 25 ship cluster + the pass-102 helper-test drain (`1addaab`) + critique pass 81 (`b5a487c`, 0 findings). HEAD = `b5a487c`; only the critique-81 bookkeeping commit lands since pass 102, zero `src/**` delta. All reliable gates exit 0: `type-check`, `type-check:tests`, `lint`, `build`, `deploy:check` ("publishable").
+
+- **Z (Critique):** CRITIQUE.md `## Pending` empty (critique pass 81 at `b5a487c`, 0 findings — 0H/0M/0L; "Spec 25 combat landing clean"). Critique gate not re-due (1 commit since `b5a487c` < 12; same-day < 24h).
+- **A (Tests):** every src module retains an `e2e/` dir; the Spec 25 engine now carries BOTH the §11 acceptance flow suite (`hazard-pattern-combat.engine.test.ts`) AND the pass-102 per-export helper suite (`hazard-pattern-combat-helpers.engine.test.ts`) pinning all 14 previously-untested value exports. Zero `vi.spyOn(Math,'random')` outside `src/test-utils/rng.ts`. (`npm test` not run — known environmental ERR_REQUIRE_ESM vite/vitest mismatch; the five exit-0 gates above are the reliable witnesses.)
+- **B (Spec-gaps):** Knowledge-Gaps all resolved save Q28 (deferred — endgame multiple-endings, content-authoring); every `specs/` `> Your answer:` blank is `00-*` template scaffolding (not actionable).
+- **C (Type-safety):** clean — zero `as any`/`as unknown`/`@ts-ignore`/`@ts-expect-error` in non-test `src/`.
+- **D (Dead code):** zero `TODO`/`FIXME`/`HACK` markers in `src/`; the Spec 25 engine ships additively alongside `resolveCombatRound`; all barrel exports reachable; public surface byte-identical to fixture (deploy:check "publishable"). The critique-78 guard-integrity item (snapshot script blind to `export * from` barrels, filed as PHASE_CANDIDATES pass-74 candidate) is **already implemented** — `scripts/snapshot-public-surface.mjs` carries `EXPORT_STAR_RE` + recursive `collectExports` (lines 37, 71-80).
+- **E (Docs):** front-door readers current — the two Spec 25 doc findings (engine docs `cc0aa0a`, fixture `2588071`) drained passes 100/101.
+- **F (Lint):** `npm run lint` exits 0. **G (Deps):** only `@types/node` 25→26 outstanding — a **major** bump (deliberate-phase territory, skip per category G). **H (hygiene):** working tree clean at audit start.
+
+**Disposition:** no drainable finding. Bold posture would dispatch to `/expand` per iterate failure-mode 3, BUT the expand signal gate is not met — AUDIT Pending empty, CRITIQUE Pending empty, Knowledge-Gaps exhausted (only Q28 deferred), all 4 braindump entries implemented (the newest, `2026-06-21-hazard-pattern-combat.md`, shipped as Spec 25 `a2112ba`; its open questions are the Specs 26-30 depth follow-ups filed at `1226517`). No actionable signal source. Return cleanly; next loop tick re-dispatches (critique becomes eligible at ≥12 commits or >24h from `b5a487c`).
+
 ### 2026-06-21 (Pass 102) — Z–H walk (march→iterate dispatch)
 
 **Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), ESLint fix (F), Dependency updates (G), Commit-hygiene (H).
