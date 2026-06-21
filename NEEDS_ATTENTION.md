@@ -74,12 +74,13 @@ Node play loop.
 > village/cutscene/interaction/loot-cache kinds, preserving the all-8-kind
 > invariant. A no-shadow guard (`getShadowedNodeOverrideKeys()` +
 > `content-parity.engine.test.ts`) fails the build if any node is authored
-> twice again. **The cross-repo half remains open:** the mobile host still
-> registers its own per-node overrides for every node
-> (`state/exploration-maps/event-pools.ts`), shadowing the engine pools in the
-> mobile app. That decision (mobile consumes the engine source, or keeps its
-> own and the engine ships CLI-demo content only) lives in mobile's
-> NEEDS_ATTENTION.md §3 and is out of scope for this repo.
+> twice again. **The cross-repo half is also RESOLVED (2026-06-21):** mobile
+> deleted its blanket override file (`state/exploration-maps/event-pools.ts`)
+> and now consumes the engine source — the presenter reads node kinds via
+> `getNodePrimaryEventKind`/`getNodeEventPool` and the graph via
+> `getMapDefinition`, so the engine's authored `village`/`cutscene` events
+> reach the mobile app (northern-forest surfaces 2 village + 4 cutscene
+> nodes). See mobile's NEEDS_ATTENTION.md §3 (closed). §5 fully resolved.
 
 ## 6. Quest board story integration is cosmetic by design — for now
 
