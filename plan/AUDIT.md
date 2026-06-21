@@ -57,6 +57,23 @@
 
 ## Audit Pass Log
 
+### 2026-06-21 (Pass 99) — Z–H walk (march→iterate dispatch)
+
+**Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), ESLint fix (F), Dependency updates (G), Commit-hygiene (H).
+
+**Findings:** 1 drainable finding (LOW, score 2.0) — the lone live structured CRITIQUE.md Pending row. No new findings ≥3.0 surfaced.
+
+**Highlights (independently re-verified this pass):**
+- **Z (Critique):** CRITIQUE.md `## Pending` carries ONE structured row — critique-76 LOW (`plan/CURRENT-STATE.md:50` still lists `actions.constants.ts` as carrying `COMBAT_ACTION`, stale since the 6fc2a08 removal). Confirmed live: `src/Game/actions.constants.ts` is gone and `rg COMBAT_ACTION src/` returns 0 hits. The pass-79 prose-noted CLI-docs MED is **already resolved** — `docs/cli.md` Components documents `gathering`/`rest`/`lootcache`/`quest-board` CLIs (lines 85/111/137/162) with full flag tables; not refileable. Draining the LOW this tick.
+- **A (Tests):** e2e coverage intact across every src module; zero `vi.spyOn(Math,'random')` outside `src/test-utils/rng.ts`. (`npm test` not run — known environmental ERR_REQUIRE_ESM vite/vitest mismatch in fresh container per critique passes 76–79; type-check + build are the reliable gates.)
+- **B (Spec-gaps):** Knowledge-Gaps only Q28 deferred (endgame); `> Your answer:` blanks are template scaffolding.
+- **C (Type-safety):** clean — no new `as any`/`@ts-ignore` in non-test src.
+- **D (Dead code):** Phase 161 was itself the dead-code removal; barrel exports reachable.
+- **E (Docs):** front-door readers current; the CLI-docs MED from pass-79 prose is resolved.
+- **F (Lint)/G (Deps)/H (hygiene):** no signal; working tree clean at audit start.
+
+**Disposition:** drain the critique-76 LOW (`CURRENT-STATE.md` stale-symbol reference). Expand gate not re-eligible this tick (11 commits since expand pass 74 at `6d04c26`, need ≥20; same-day, need >48h).
+
 ### 2026-06-19 (Pass 98) — Z–H walk (march→iterate dispatch)
 
 **Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), ESLint fix (F), Dependency updates (G), Commit-hygiene (H).
