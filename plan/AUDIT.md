@@ -63,6 +63,22 @@
 
 ## Audit Pass Log
 
+### 2026-06-21 (Pass 104) — Z–H walk (march→iterate dispatch)
+
+**Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), ESLint fix (F), Dependency updates (G), Commit-hygiene (H).
+
+**Findings:** 0 findings ≥3.0 — queue empty. HEAD = `1ab691c`; since pass 103 (`a7088b3`) only the expand pass-75 bookkeeping commit (`1ab691c`, Specs 26-30 candidate filing) lands — zero `src/**` delta. Re-walked every category independently against the live tree; all reliable gates exit 0: `type-check`, `lint`, `build`, `deploy:check` ("Package is publishable"), and the public surface is **byte-identical** to `scripts/public-surface.expected.json` (live snapshot diff empty).
+
+- **Z (Critique):** CRITIQUE.md `## Pending` empty (critique pass 81 at `40d4acd`, 0 findings — "Spec 25 combat landing clean"). Critique gate not re-due (3 commits since `40d4acd` < 12; same-day < 24h).
+- **A (Tests):** every src module retains an `e2e/` dir; the Spec 25 engine carries the acceptance suite (`hazard-pattern-combat.engine.test.ts`), the per-export helper suite (`hazard-pattern-combat-helpers.engine.test.ts`), and the balance sim guard (`hazard-pattern-combat.balance.sim.test.ts`). Zero `vi.spyOn(Math,'random')` outside `src/test-utils/rng.ts`. (`npm test` not run — known environmental ERR_REQUIRE_ESM vite/vitest mismatch; the four exit-0 gates + the byte-identical surface are the reliable witnesses.)
+- **B (Spec-gaps):** Knowledge-Gaps all resolved save Q28 (deferred — endgame, content-authoring); every `specs/` `> Your answer:` blank is `00-*` template scaffolding. Specs 26-30 (catalyst scaling / card salvage / curated deck synergy / reactive enemies / lethality readout) are forward-looking proposals filed by expand pass 75, **correctly unimplemented** — they carry recommended defaults and await `/oversight` promotion, not iterate drains.
+- **C (Type-safety):** clean — zero `as any`/`as unknown`/`@ts-ignore`/`@ts-expect-error` in non-test `src/` (the 9 matches are all `e2e/*.test.ts`); the 8 Spec 25 combat src files (`combat.engine`/`dice`/`deck`/`cards`/`pressure`/`threat`/`encounter.types`/`encounter.sim`) are individually clean.
+- **D (Dead code):** the Spec 25 engine ships additively alongside `resolveCombatRound`; all barrel exports reachable; public surface byte-identical to fixture.
+- **E (Docs):** front-door readers current — `docs/combat.md` §Hazard-Pattern Combat (lines 480-519) carries the full design + API table; spec.md Contracts Combat row + bearings.md lines 92-98 carry the Spec 25 clause.
+- **F (Lint):** `npm run lint` exits 0. **G (Deps):** only `@types/node` major bump outstanding (deliberate-phase territory, skip per category G). **H (hygiene):** working tree clean at audit start.
+
+**Disposition:** no drainable finding. Bold posture would dispatch to `/expand` per iterate failure-mode 3, BUT the expand signal gate is not met — AUDIT Pending empty, CRITIQUE Pending empty, Knowledge-Gaps exhausted (only Q28 deferred), all braindump entries implemented; the only fresh signal cluster (the hazard-pattern-combat open questions → Specs 26-30) was **already filed by expand pass 75 three commits ago** and awaits `/oversight`. Re-running expand would re-walk an identical signal set with zero new commits → 0 new candidates. Return cleanly; next loop tick re-dispatches (critique becomes eligible at ≥12 commits or >24h from `40d4acd`).
+
 ### 2026-06-21 (Pass 103) — Z–H walk (march→iterate dispatch)
 
 **Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), ESLint fix (F), Dependency updates (G), Commit-hygiene (H).
