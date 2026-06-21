@@ -477,6 +477,47 @@ round-resolution entry point used by every UI client.
 | `extendRandomBuffDuration(target, amount)` | Extends one random buff |
 | `applyRegen(target)` | Sums and applies all regen effects |
 
+## Hazard-Pattern Combat (Spec 25)
+
+A second, additive combat driver that ships **alongside** `resolveCombatRound`
+(the effects + skill engines are unchanged). It is a card-and-dice system
+structurally mirrored on the Hazard minigame: every verb is a skill card, and
+status effects fill two **Pressure Tracks** that are the only practical win
+conditions — **DoT Erosion** (cumulative damage-over-time) and **Control
+Saturation** (cumulative control/debuff). Basic-attack trading is gone as a
+concept; the doctrine path (status effects = the main fun) is now the structural
+path. Full design: [`specs/25-hazard-pattern-combat.md`](../specs/25-hazard-pattern-combat.md).
+
+The engine lives in `src/Combat/`:
+
+- `combat.engine.ts` — phase loop (`resolveCombatPhase` / `playCombatCard` /
+  `resolveThreatPhase` / `processBetweenPhases`), RPS die-cost scaling, the
+  self-reinforcing die-refresh loop, and `buildCombatSummary`.
+- `combat.dice.ts` — the four colored mana dice and their state machine.
+- `combat.deck.ts` — Fisher-Yates shuffle + draw-up-to-`COMBAT_HAND_SIZE`.
+- `combat.cards.ts` — the skill→card adapter and verb classification.
+- `combat.pressure.ts` — the two Pressure Tracks, momentum carry, and the
+  `dotErosionReached` / `controlSaturationReached` thresholds.
+- `combat.threat.ts` — authored + generated enemy threat sequences.
+- `combat.encounter.sim.ts` — `simulateHazardPatternCombat`, a Monte-Carlo
+  greedy bot used for balance evidence.
+
+### Hazard-Pattern Combat API
+
+| Function / Type | Description |
+|-----------------|-------------|
+| `initializeCombatEncounter(...)` | Builds the `CombatEncounterState` for a fight (deck, dice, pressure tracks, threat sequence). |
+| `rollEncounterDice(state)` | Rolls the colored mana dice at phase start. |
+| `playCombatCard(state, cardId, dice)` | Plays one skill card, spending dice; lands its effects and credits pressure. |
+| `resolveCombatPhase(state, cardsPlayed)` | Resolves a full player phase (card-play driven; replaces the per-round attack/defend resolution). |
+| `resolveThreatPhase(state)` | Resolves the enemy threat phase (Clear / Overwhelmed ledger). |
+| `processBetweenPhases(state)` | Between-phase upkeep — persistent buffs, die refresh, momentum carry. |
+| `selectEncounterMercyChoice(...)` | Opens the Befriend mercy choice (Phase 112 logic intact). |
+| `getCard` / `handCards` / `cardDieCostPreview` / `availableDice` | Read-only previews for a UI to render the hand and affordances. |
+| `buildCombatSummary(state)` | End-of-fight `CombatSummary` with per-effect attribution rows. |
+| `simulateHazardPatternCombat(...)` | Monte-Carlo greedy bot returning `CombatSimStats` for balance runs. |
+| `CombatEncounterState`, `CombatCard`, `CombatPressureTracks`, `CombatThreatPhase`, `CombatOutcome`, `CombatSummary` | The core encounter type family. |
+
 ## Pending
 
 The Spec 02 / 03 / 04 / 05 work this section used to track has

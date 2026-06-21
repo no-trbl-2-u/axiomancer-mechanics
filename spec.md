@@ -90,7 +90,7 @@ The barrel at `src/index.ts` is the contract surface. Groups:
 |---|---|
 | Character | `createCharacter`, `allocateStatPoint`, `previewStatAllocation`, `computeEquipDelta`, `levelLadderPresets`, `Character`, `BaseStats`, `DerivedStats`, `CharacterPreset`, `EquipDelta` |
 | Enemy | `createEnemy`, `Enemy`, `EnemyLogic`, `decideEnemyAction`, `enemyStatBudget`, `randomLogic`, `rollLoot`, `FriendshipReward`, `BefriendabilityConfig` |
-| Combat | `determineAdvantage`, `getAttackStat`, `getDefenseStat`, `applyDamage`, `heal`, `Stance`, `Action`, `CombatState`, `getEffectsResolutionOutcome`, `resolveCombatRound` |
+| Combat | `determineAdvantage`, `getAttackStat`, `getDefenseStat`, `applyDamage`, `heal`, `Stance`, `Action`, `CombatState`, `getEffectsResolutionOutcome`, `resolveCombatRound`; Spec 25 Hazard-Pattern Combat engine — `initializeCombatEncounter`, `playCombatCard`, `resolveCombatPhase`, `processBetweenPhases`, `simulateHazardPatternCombat`, `CombatEncounterState`, `CombatCard`, `CombatPressureTracks` |
 | Effects | `applyEffect`, `applyTier1CombatEffect`, `lookupEffect`, `Effect`, `ActiveEffect`, `EffectInteraction`, `evaluateInteractions` |
 | Items | `addItem`, `removeItem`, `useConsumable`, `Item`, `Equipment`, `dropItem`, `dropItemWithAffixes`, `composeItemName`, `getActiveSetBonuses`, `ItemSet`, `previewTemplateAtRarity`, `equipmentFromTemplate`, `generateRarityDrop`, `firstEquippedPerSlot` |
 | Skills | `canUseSkill`, `executeSkill`, `learnSkill`, `carryPhilosophicalResources`, `Skill`, `SkillCategory`, `SkillSynergy`, `evaluateExtendedSynergyPredicate` |

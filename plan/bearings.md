@@ -87,6 +87,13 @@ Combat:     determineAdvantage, getAttackStat, getDefenseStat, getSaveStat,
             `effect-rebounded` removed — Phase 84)
             (+ Phase 82 CLI consumer: codexTab + resetTab in game.cli.ts;
             Phase 85 combat-tuning audit confirmed Q1/Q2/Q4/Q6/Q26 canonical)
+            (+ Spec 25 Hazard-Pattern Combat engine — card-and-dice driver that
+            ships ALONGSIDE resolveCombatRound: initializeCombatEncounter,
+            playCombatCard, resolveCombatPhase, processBetweenPhases,
+            simulateHazardPatternCombat + the CombatEncounterState / CombatCard /
+            CombatPressureTracks type family. Status effects fill two Pressure
+            Tracks — DoT Erosion + Control Saturation — the only practical win
+            conditions; basic-attack trading removed. Doctrine-central.)
 Combat reducer: initializeCombat, setPhase, setPlayerStance, setPlayerAction,
                 appendLog, incrementFriendship, endCombat
 Effects:    applyEffect, applyTier1CombatEffect, clearTier1EffectsForStance,
