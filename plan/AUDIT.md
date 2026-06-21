@@ -50,6 +50,8 @@
 
 ## Done
 
+- [x] **[E — docs drift] Spec 25 Hazard-Pattern Combat engine absent from every front-door reader** — resolved at `cc0aa0a` (2026-06-21). The Spec 25 ship (`a2112ba`) added ~34 value + 24 type exports to the locked root barrel (the card-and-dice combat engine: `initializeCombatEncounter`/`playCombatCard`/`resolveCombatPhase`/`processBetweenPhases`/`simulateHazardPatternCombat` + the `CombatEncounterState`/`CombatCard`/`CombatPressureTracks` type family) but touched NO front-door reader — only `specs/25-*.md`. README Public API table, `docs/api.md`/`docs/combat.md`, `spec.md` Contracts, and `plan/bearings.md` Combat group all had zero mention of the engine (grep = 0 across all five). Same front-door-doc-drift shape as the Phase 152 affix-layer (README, `f178dee`) and Phase 154 equip-delta (critique-77 MED) findings. Added: a new README "Hazard-Pattern Combat (Spec 25)" Public API row, a `## Hazard-Pattern Combat (Spec 25)` section + API table in `docs/combat.md`, the marquee engine entries on the `spec.md` Contracts Combat row, and a Spec 25 annotation block on the `bearings.md` Combat group (following the established `(+ Phase NN …)` convention). All documented symbols verified as real `src/index.ts` exports. No source change; type-check + lint + build + deploy:check green. Score 5 × 9 / 10 = 4.5.
+
 - [x] **[A/E — guard integrity] `public-surface.expected.json` stale; `deploy:check` broken after Spec 25** — resolved at `2588071` (2026-06-21). The Spec 25 Hazard-Pattern Combat ship (`a2112ba`) added 34 value + 24 type exports to the locked root barrel (`src/index.ts` + `src/Combat/index.ts`, the card-and-dice combat engine: `initializeCombatEncounter`/`playCombatCard`/`resolveCombatPhase`/`simulateHazardPatternCombat` + the `CombatEncounterState`/`CombatCard`/`CombatPressureTracks` type family) but did NOT refresh `scripts/public-surface.expected.json`, so `node scripts/snapshot-public-surface.mjs` reported 58 added rows and `npm run deploy:check` exited 1 — the publish/deploy gate was broken (latent because `npm run verify` does NOT run deploy:check). Same shape as critique pass-76's `COMBAT_ACTION` HIGH. Regenerated the fixture from the freshly-built `dist/` (`--write`): 58 additive rows, 0 removals; deploy:check now "publishable". No source change. Score 9 × 9 / 10 = 8.1.
 
 - [x] **[E — docs drift] README Public API table missing Phase 152 affix-layer exports** — resolved at `f178dee` (2026-06-18). `src/index.ts` Items block exports 8 affix-layer values (`dropItemWithAffixes`, `prefixes`, `suffixes`, `allAffixes`, `getAffixById`, `composeItemName`, `affixesForSlot`, `AFFIX_RARITY_WEIGHTS`) + 4 types (`DropWithAffixesOptions`, `AffixControl`, `Affix`, `AffixRole`) since Phase 152, but `README.md:88` Items row had **zero** affix mentions. critique-73 (`1b578ac`) swept the `spec.md` + `bearings.md` references but scoped to those two readers; README was the un-swept third front-door reader. Extended the Items row with the affix-naming-layer sentence (drop+roll helper, name composition, affix libraries + lookups, rarity-weight scale, types). No source change; verify green. Score 5 × 9 / 10 = 4.5.
@@ -58,6 +60,23 @@
 - [x] **[E — docs drift] Front-door docs referenced removed `getResistStat`** — resolved at `45b611e` (2026-06-18). `getResistStat` was removed at Phase 106 (v0.13.0) but `README.md:84` still listed it as a `_(deprecated)_` Combat stat accessor and `docs/api.md:56` called it "deprecated (use `getSaveStat`)". Dropped the README accessor entry and corrected api.md to "removed at v0.13.0 (use `getSaveStat`)". No source change (symbol already gone); verify green. Score 5 × 9 / 10 = 4.5.
 
 ## Audit Pass Log
+
+### 2026-06-21 (Pass 101) — Z–H walk (march→iterate dispatch)
+
+**Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), ESLint fix (F), Dependency updates (G), Commit-hygiene (H).
+
+**Findings:** 1 drainable finding (E — docs drift, score 4.5). Pass 100 ran at `172bb5f`, BEFORE the Spec 25 ship cluster (`a2112ba` engine + `2588071` fixture refresh + `883636d` plan) fully landed; this pass re-walked the post-Spec-25 surface independently and surfaced a front-door-doc gap pass 100 could not have seen.
+
+**Highlights (independently re-verified this pass):**
+- **Z (Critique):** CRITIQUE.md `## Pending` empty (critique pass 80 at `c8feded`, 0 findings). Critique gate not re-due (5 commits since `c8feded` < 12; same-day < 24h).
+- **A (Tests):** every src module retains an `e2e/` dir; Spec 25 shipped 16 hermetic `src/Combat/e2e/*.engine.test.ts` cases per its §11. Zero `vi.spyOn(Math,'random')` outside `src/test-utils/rng.ts`. (`npm test` not run — known environmental ERR_REQUIRE_ESM vite/vitest mismatch; type-check + lint + build + deploy:check are the reliable gates, all exit 0.)
+- **B (Spec-gaps):** Knowledge-Gaps only Q28 deferred (endgame); `specs/` `> Your answer:` rows filled by T.
+- **C (Type-safety):** clean — zero `as any`/`as unknown`/`@ts-ignore` in non-test src (the Spec 25 engine is fully typed).
+- **D (Dead code):** the Spec 25 engine ships alongside `resolveCombatRound` (additive, Spec 25 §12 Q4 rec (b)); all barrel exports reachable; surface fixture byte-identical post-build.
+- **E (Docs):** **THE FINDING** — Spec 25's ~58 root-barrel exports (the Hazard-Pattern Combat engine) reached `scripts/public-surface.expected.json` (`2588071`) but NO front-door reader: README Public API table, `docs/combat.md`, `spec.md` Contracts, and `plan/bearings.md` Combat group all grepped 0 for `initializeCombatEncounter`/`resolveCombatPhase`/`simulateHazardPatternCombat`/`Hazard-Pattern Combat`. Drained this tick (see Done).
+- **F (Lint):** `npm run lint` exits 0. **G (Deps):** only `@types/node` major bump outstanding (deliberate-phase territory, skip). **H (hygiene):** working tree clean at audit start; `npm run deploy:check` exits 0 ("publishable").
+
+**Disposition:** drain the E docs-drift finding (front-door readers now carry the Spec 25 engine). Expand gate not re-eligible this tick (24 commits since expand pass 74 at `6d04c26` ≥20, BUT no actionable signal source: AUDIT Pending now empty, CRITIQUE Pending empty, Knowledge-Gaps exhausted, braindump all-implemented). Next loop tick re-dispatches.
 
 ### 2026-06-21 (Pass 100) — Z–H walk (march→iterate dispatch)
 
