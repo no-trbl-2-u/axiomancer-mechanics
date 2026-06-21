@@ -28,8 +28,10 @@ return to map → level up → quest progress → save / load → all driven by
   or `processNode` actions on `GameStore` yet.
 - `Game/game.reducer.ts` is intentionally minimal — only `createNewGameState`
   and `GAME_STATE_VERSION`.
-- `actions.constants.ts` exports `COMBAT_ACTION` constants (attack, defend,
-  skill, item, flee, back).
+- Combat actions are modelled via the `Action` union type
+  (`src/Combat/types.ts`: attack, defend, skill, item, flee, spare,
+  exploit) — the old `actions.constants.ts` / `COMBAT_ACTION` constants
+  were removed (see CHANGELOG `[0.22.1] ### Removed`).
 - No `gameReducer`, no top-level dispatch.
 - `combat.cli.ts` has its own bespoke main loop calling
   `store.getState().updateCombat(...)` after each round.
