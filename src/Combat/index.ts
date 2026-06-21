@@ -220,3 +220,42 @@ export {
     INTERACTION_AMPLIFICATION,
     INTERACTION_PRIORITY
 } from './resolution.constants';
+
+// ─── Spec 25 — Hazard-Pattern Combat ──────────────────────────────────────────
+// The card-and-dice combat driver. Ships alongside `resolveCombatRound`; the
+// effects + skill engines are unchanged (Spec 25 §12 Q4 recommendation (b)).
+export type {
+    CombatEncounterState, CombatEncounterPhase, CombatTransition,
+    CombatManaDie, CombatDieColor, CombatDieState,
+    CombatCard, CombatHandEntry, CardPlay, CombatVerbClass, PressureTrackKey,
+    CombatPressureTracks, CombatThreatPhase, CombatThreatAction, CombatThreatEffect,
+    CombatThreatMark, CombatPhaseResult, CombatOutcome, CombatEvent,
+    CombatSummary, CombatAttributionRow, LandedEffect,
+} from './combat.encounter.types';
+export {
+    initializeCombatEncounter, rollEncounterDice, playCombatCard,
+    resolveCombatPhase, resolveThreatPhase, processBetweenPhases,
+    selectMercyChoice as selectEncounterMercyChoice, resolveCardDieCost, stanceBeats, getCard,
+    handCards, cardDieCostPreview, availableDice, buildCombatSummary,
+    TOP_ACTION_PRESSURE, BEFRIEND_THRESHOLD_REDUCTION,
+} from './combat.engine';
+export {
+    COMBAT_DICE_COUNT, COMBAT_DIE_FACES, rollCombatDice, rollCombatDieColor,
+    combatDieCanPower, availableDiceFor, availableDieCount, refreshOneDie,
+    stanceToDieColor,
+} from './combat.dice';
+export { COMBAT_HAND_SIZE, buildCombatDeck, drawCombatCards, shuffleCombatDeck } from './combat.deck';
+export {
+    toCombatCard, projectDeck, classifyVerbClass, effectPressure,
+    cardStanceColor, bottomPressurePreview, isSyntheticCard, SYNTHETIC_CARD_IDS,
+} from './combat.cards';
+export {
+    momentumCarry, MOMENTUM_CAP, pressureForLanded,
+    dotErosionReached, controlSaturationReached,
+} from './combat.pressure';
+export {
+    getThreatSequence, generateDefaultThreatSequence, deriveGlobalThresholds,
+    AUTHORED_THREAT_ENEMY_IDS,
+} from './combat.threat';
+export { simulateHazardPatternCombat } from './combat.encounter.sim';
+export type { CombatSimStats, CombatSimPolicyId } from './combat.encounter.sim';

@@ -98,6 +98,33 @@ export type {
     ItemPhaseEvent, RoundEndEvent,
 } from './Combat';
 
+// ─── Spec 25 — Hazard-Pattern Combat ──────────────────────────────────────────
+// Card-and-dice combat: status effects fill two Pressure Tracks that are the
+// only practical win conditions. Ships alongside the legacy resolver.
+export {
+    initializeCombatEncounter, rollEncounterDice, playCombatCard,
+    resolveCombatPhase, resolveThreatPhase, processBetweenPhases,
+    selectEncounterMercyChoice, resolveCardDieCost, getCard,
+    handCards, cardDieCostPreview, availableDice, buildCombatSummary,
+    COMBAT_DICE_COUNT, COMBAT_HAND_SIZE, COMBAT_DIE_FACES,
+    rollCombatDice, combatDieCanPower, refreshOneDie,
+    toCombatCard, projectDeck, classifyVerbClass, buildCombatDeck,
+    getThreatSequence, generateDefaultThreatSequence, deriveGlobalThresholds,
+    AUTHORED_THREAT_ENEMY_IDS, momentumCarry,
+    dotErosionReached, controlSaturationReached,
+    simulateHazardPatternCombat,
+    TOP_ACTION_PRESSURE, BEFRIEND_THRESHOLD_REDUCTION, SYNTHETIC_CARD_IDS,
+} from './Combat';
+export type {
+    CombatEncounterState, CombatEncounterPhase, CombatTransition,
+    CombatManaDie, CombatDieColor, CombatDieState,
+    CombatCard, CombatHandEntry, CardPlay, CombatVerbClass, PressureTrackKey,
+    CombatPressureTracks, CombatThreatPhase, CombatThreatAction, CombatThreatEffect,
+    CombatThreatMark, CombatPhaseResult, CombatOutcome, CombatEvent,
+    CombatSummary, CombatAttributionRow, LandedEffect,
+    CombatSimStats, CombatSimPolicyId,
+} from './Combat';
+
 // ─── Effects ──────────────────────────────────────────────────────────────────
 export {
     applyEffect, applyTier1CombatEffect,
