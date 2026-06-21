@@ -129,6 +129,8 @@ via `getEffectiveStats(target).baseStats[stance]` in `Combat/effect-modifiers.ts
 | `createCharacter(options)` | Factory — creates a fully derived Character from name, level, and base stats |
 | `getEffectiveStats(target).baseStats[resistedBy]` | Base stat value for the resisting stance (lives in `Combat/effect-modifiers.ts`) |
 | `characterPresets` / `getPresetById` / `buildCharacterFromPreset` | Curated progression-tier roster (apprentice / wanderer / sage). The builder lifts a declarative `CharacterPreset` into a `Character` via the canonical `createCharacter` + `dropItem` paths. Presets express skill progression as unlocked `knownSkills`; the legacy `equippedSkills` preset field was removed in Phase 159. `npm run game` prompts the player to pick one at boot. |
+| `levelLadderPresets` / `ladderL1Preset` / `ladderL15Preset` / `ladderL30Preset` / `ladderL50Preset` | Level-explicit evidence ladder (L1 / L15 / L30 / L50), kept **separate** from `characterPresets`. Used for tuning/evidence runs that need a clean per-level baseline. `getPresetById` resolves ladder ids (`kid-l1` … `kid-l50`) as well as the curated roster. |
+| `computeEquipDelta(candidate, worn, player?)` | Equip-change delta model (Phase 154). Simulates equipping/unequipping `candidate` against the worn sibling in the same slot through the `equipItem` / `unequipItem` reducers and diffs the resulting `Character` stats, returning an `EquipDelta` (`mode`: `equip` / `unequip` / `swap`; `stats`; `gained` / `lost` sides; `isEmpty`). Lets a client show **only what changes** without rendering the full sheet. Pure — no string formatting beyond engine effect/affix labels. |
 
 ## Character presets
 

@@ -123,6 +123,20 @@ Pipeline (per [`src/Items/item.factory.ts`](../src/Items/item.factory.ts)):
 caller-supplied `rng`. Two calls with the same seeded `rng` return identical
 Equipment.
 
+#### `loot.generation` + `equipped` helpers (Phase 154)
+
+Two thin read-side helpers were absorbed from the mobile app
+([`src/Items/loot.generation.ts`](../src/Items/loot.generation.ts) +
+[`src/Items/equipped.ts`](../src/Items/equipped.ts)):
+
+| Export | Description |
+|--------|-------------|
+| `equipmentFromTemplate(template)` | Materialise a bare `Equipment` instance from an `EquipmentTemplate` with no rarity roll — base stats only, no rolled mods. The deterministic floor under `dropItem`. |
+| `generateRarityDrop(rarity, opts)` | Roll an affixed drop **at a target rarity** (rather than from the weighted table), returning a `GenerateRarityDropResult`. `opts` carries `playerLevel`, an optional seeded `rng`, and `maxAttempts` (default 16) for the affix-count retry loop. |
+| `firstEquippedPerSlot(inventory)` | Map each occupied `Equipment['slot']` to the first worn item in that slot — the canonical "what's currently equipped" read. |
+| `isEquippedFirstOfSlot(inventory, target)` | True when `target` is the slot's first-worn item. |
+| `findEquippedInSlot(inventory, target)` | The worn sibling occupying `target`'s slot, or `null`. Pairs with `computeEquipDelta` (see [character.md](character.md#api)) to compute equip-change deltas. |
+
 #### Rarity weight table (Spec 05c §9)
 
 | Rarity   | Weight | Notes                                                  |

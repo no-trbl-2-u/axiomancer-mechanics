@@ -377,6 +377,17 @@ only node-event dispatcher.
   host registering its own per-node overrides is a cross-repo concern
   tracked in mobile's NEEDS_ATTENTION — out of scope for the engine.
 
+- **Node-event-kind read API.** Three pure helpers expose which
+  `MapEventKind`s a given node can fire **without** resolving (or
+  consuming) an event — useful for client previews and tuning evidence:
+  - `getNodeEventPool(continent, mapName, nodeId)` — the resolved
+    `MapEventPool` for that node (node override first, else the region
+    default), or `undefined` if none is registered.
+  - `getNodeEventKinds(continent, mapName, nodeId)` — the distinct
+    `MapEventKind[]` the node's pool can roll.
+  - `getNodePrimaryEventKind(continent, mapName, nodeId)` — the
+    highest-weight kind, or `undefined` for an empty/unregistered pool.
+
 See `specs/23-map-events.md` for the spec and
 `src/World/MapEvents/e2e/map-events.engine.test.ts` for the hermetic
 walkthrough covering all eight kinds.

@@ -88,14 +88,14 @@ The barrel at `src/index.ts` is the contract surface. Groups:
 
 | Group | Key exports |
 |---|---|
-| Character | `createCharacter`, `allocateStatPoint`, `previewStatAllocation`, `Character`, `BaseStats`, `DerivedStats`, `CharacterPreset` |
+| Character | `createCharacter`, `allocateStatPoint`, `previewStatAllocation`, `computeEquipDelta`, `levelLadderPresets`, `Character`, `BaseStats`, `DerivedStats`, `CharacterPreset`, `EquipDelta` |
 | Enemy | `createEnemy`, `Enemy`, `EnemyLogic`, `decideEnemyAction`, `enemyStatBudget`, `randomLogic`, `rollLoot`, `FriendshipReward`, `BefriendabilityConfig` |
 | Combat | `determineAdvantage`, `getAttackStat`, `getDefenseStat`, `applyDamage`, `heal`, `Stance`, `Action`, `CombatState`, `getEffectsResolutionOutcome`, `resolveCombatRound` |
 | Effects | `applyEffect`, `applyTier1CombatEffect`, `lookupEffect`, `Effect`, `ActiveEffect`, `EffectInteraction`, `evaluateInteractions` |
-| Items | `addItem`, `removeItem`, `useConsumable`, `Item`, `Equipment`, `dropItem`, `dropItemWithAffixes`, `composeItemName`, `getActiveSetBonuses`, `ItemSet`, `previewTemplateAtRarity` |
+| Items | `addItem`, `removeItem`, `useConsumable`, `Item`, `Equipment`, `dropItem`, `dropItemWithAffixes`, `composeItemName`, `getActiveSetBonuses`, `ItemSet`, `previewTemplateAtRarity`, `equipmentFromTemplate`, `generateRarityDrop`, `firstEquippedPerSlot` |
 | Skills | `canUseSkill`, `executeSkill`, `learnSkill`, `Skill`, `SkillCategory`, `SkillSynergy`, `evaluateExtendedSynergyPredicate` |
 | Game | `createGameStore`, `GameState`, `gameReducer`, `createEventEmitter`, `nullAdapter`, `CodexEntry` |
-| World | `createStartingWorld`, `WorldState`, `moveToNode`, `resolveMapEvent`, `runMinigameHarness`, `MapDefinition` |
+| World | `createStartingWorld`, `WorldState`, `moveToNode`, `resolveMapEvent`, `getNodeEventPool`, `getNodeEventKinds`, `getNodePrimaryEventKind`, `runMinigameHarness`, `MapDefinition` |
 | Hazard | `*` (wildcard export from `./World/Hazard`) |
 | Gathering | `*` (wildcard export from `./World/Gathering`) |
 | QuestBoard | `*` (wildcard export from `./World/QuestBoard`) |

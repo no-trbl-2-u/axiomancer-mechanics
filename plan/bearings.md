@@ -61,6 +61,13 @@ The barrel at `src/index.ts` is the public contract. These groups are
 
 ```
 Character:  createCharacter, Character, BaseStats, DerivedStats, NonCombatStats
+            (+ computeEquipDelta + EquipDelta / EquipDeltaMode / EquipDeltaSide
+            types — Phase 154 equip-change delta model absorbed from the mobile
+            app; simulates an equip/unequip through the reducers and diffs the
+            resulting stats so a client shows only what changes),
+            (+ levelLadderPresets + ladderL1Preset / ladderL15Preset /
+            ladderL30Preset / ladderL50Preset — level-explicit evidence ladder
+            (L1/L15/L30/L50), separate from characterPresets)
 Enemy:      createEnemy, Enemy, EnemyLogic, decideEnemyAction, randomLogic,
             FriendshipReward (+ Enemy.friendshipReward? — Phase 60;
             + flagSet? extension — Phase 62;
@@ -117,7 +124,13 @@ Items:      addItem, removeItem, useConsumable, stackItem, Item (and variants)
             AffixControl / Affix / AffixRole types — Phase 152 affix
             naming layer over the modifier catalogue; rolls a prefix/
             suffix word pair onto dropped gear and composes the display
-            name)
+            name),
+            (+ equipmentFromTemplate + generateRarityDrop +
+            GenerateRarityDropOptions / GenerateRarityDropResult types
+            (loot.generation), and firstEquippedPerSlot /
+            isEquippedFirstOfSlot / findEquippedInSlot (equipped
+            helpers) — Phase 154 loot-generation + equipped-slot read
+            APIs)
 Game:       createGameStore, GameState, nullAdapter, persistence adapters
             (+ GameState.lastSeenAlignmentCells? — Phase 63 alignment-observer
             cache, additive optional, no GAME_STATE_VERSION bump),
@@ -131,6 +144,10 @@ Game:       createGameStore, GameState, nullAdapter, persistence adapters
             Phase 73 closes GH#65 ask 3; GAME_STATE_VERSION bumped
             6 → 7 with migrateV6toV7)
 World:      createStartingWorld, world reducer, WorldState, MapState, MapDefinition
+            (+ getNodeEventPool / getNodeEventKinds / getNodePrimaryEventKind —
+            node-event-kind read API over the registered MapEventPools; lets a
+            client preview which MapEventKinds a given continent/map/node fires
+            without resolving an event)
 Utils:      clamp, randomInt, deepClone, deriveStats, calculateMaxHealth,
             createDieRoll, isCharacter, isEnemy
 Philosophy: bucketAxis, getAlignmentCell, applyAlignmentDelta, defaultAlignment,
