@@ -518,6 +518,62 @@ The engine lives in `src/Combat/`:
 | `simulateHazardPatternCombat(...)` | Monte-Carlo greedy bot returning `CombatSimStats` for balance runs. |
 | `CombatEncounterState`, `CombatCard`, `CombatPressureTracks`, `CombatThreatPhase`, `CombatOutcome`, `CombatSummary` | The core encounter type family. |
 
+### Spec 26 / 26b — stance draft, the read, Conviction, Signature Skills, deckbuilding
+
+A depth layer built **on top of** the Spec 25 Hazard engine (it does not replace
+it). It turns each turn into a small read-and-commit decision and adds two
+progression levers, keeping status effects the win path.
+
+> "Spec 26b" (stance draft / Conviction / Signature Skills / deckbuilder) is
+> in-flight scaffolding carried in via PR #184; it has no spec file of its own
+> yet, and is distinct from
+> [`specs/26-catalyst-multiplicative-scaling.md`](../specs/26-catalyst-multiplicative-scaling.md).
+
+- **Stance draft + the read.** Each turn rolls a small pool of dice
+  (`TURN_DICE_COUNT`); the player **drafts** one as their stance — the unpicked
+  die is not wasted (it grants Conviction and can carry forward). The enemy's
+  phase stance is hidden behind a thematic hint; the drafted die's color is the
+  player's **read** of it. A winning read (`resolveRead` → `advantage`)
+  multiplies the pressure of cards played that turn (`READ_PRESSURE_MULT`), and a
+  card whose stance matches the drafted die color earns a flat
+  `COLOR_MATCH_PRESSURE_BONUS`. Reading the hidden stance is therefore the
+  primary lever for amplifying status pressure — the doctrine path.
+- **Conviction (◆).** A second resource that accrues from the unpicked draft die
+  (`CONVICTION_PER_UNPICKED_DIE`) and from winning the read
+  (`CONVICTION_READ_WIN_BONUS`). It funds Signature Skills.
+- **Signature Skills.** A small, **always-available** kit (`SIGNATURE_SKILLS`,
+  `SIGNATURE_KITS`, biased per `playerArchetype`) independent of the shuffled
+  deck — the reliable plan through a bad draw. Played via `playSignatureSkill`,
+  gated on Conviction.
+- **Deckbuilding.** After a won combat, `rollCombatCardRewards` offers a
+  1-of-N card draft (archetype-biased) that `addRewardCard` appends to the
+  player's persistent collection. New *skills* (a new card type) are unlocked
+  rarely via ethical-dilemma events through the `unlockSkillViaDilemma` hook;
+  a new player starts with `STARTING_SKILL_ID` only.
+
+| Function / Type | Description |
+|-----------------|-------------|
+| `startTurn` / `endTurn` | Open a turn (roll the draft pool) / close it (resolve carry + upkeep). |
+| `draftStanceDie(state, dieId)` / `getDraftedDie` / `chooseDraft` | Commit one die as the stance; read the committed die. |
+| `resolveRead(dieColor, enemyStance)` → `CombatReadResult` | The drafted die vs the hidden enemy stance: `advantage` / `neutral` / `disadvantage` / `none`. |
+| `isPhaseStanceRevealed` / `revealedCurrentStance` | Whether (and what) the enemy's hidden stance is now known. |
+| `cardReadPreview` / `projectCardPressure` | UI previews — a card's read result + color match, and its projected pressure. |
+| `discardCombatCard` | Discard a card from hand (tempo/sculpting). |
+| `playSignatureSkill(state, id, ...)` / `getSignatureSkill` | Spend Conviction on an always-available Signature Skill. |
+| `SIGNATURE_SKILLS` / `SIGNATURE_SKILL_LIST` / `SIGNATURE_KITS` / `signaturesForArchetype` / `playerArchetype` | The signature kit catalogue + per-archetype selection. |
+| `rollCombatCardRewards` / `addRewardCard` / `COMBAT_REWARD_POOL` | Post-combat deckbuilder draft + persist. |
+| `unlockSkillViaDilemma` / `STARTING_SKILL_ID` | Forward hook for ethical-dilemma skill unlocks; the new-player starting card. |
+| `READ_PRESSURE_MULT`, `CONVICTION_PER_UNPICKED_DIE`, `CONVICTION_READ_WIN_BONUS`, `COLOR_MATCH_PRESSURE_BONUS`, `TURN_DICE_COUNT` | Tuning constants for the read / Conviction / draft economy. |
+| `rollTurnDice` / `dieHasStance` / `deriveIntentType` | Draft-pool roll + stance helpers. |
+| `CombatIntentType`, `CombatReadResult`, `SignatureSkill`, `SignatureSkillId`, `SignatureSkillKind`, `PlayerArchetype` | The depth-layer type family. |
+
+The whole roster is now authored for this system: `combat.threat-sequences.ts`
+ships a deterministic, fully-telegraphed threat pattern for all 62 library
+enemies (each phase declares a hidden stance + relative DoT/control weakness so
+both win paths stay live), and `combat.threat.ts` scales clear thresholds by
+level + difficulty rather than raw HP so status pressure (which is HP-independent)
+out-races the roster.
+
 ## Pending
 
 The Spec 02 / 03 / 04 / 05 work this section used to track has

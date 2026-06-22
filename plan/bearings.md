@@ -96,6 +96,23 @@ Combat:     determineAdvantage, getAttackStat, getDefenseStat, getSaveStat,
             CombatPressureTracks type family. Status effects fill two Pressure
             Tracks — DoT Erosion + Control Saturation — the only practical win
             conditions; basic-attack trading removed. Doctrine-central.)
+            (+ Spec 26/26b depth layer on the Hazard engine — per-turn 2-die
+            stance DRAFT + hidden-stance READ (startTurn, draftStanceDie, endTurn,
+            resolveRead, chooseDraft, discardCombatCard, getDraftedDie,
+            isPhaseStanceRevealed, revealedCurrentStance, cardReadPreview,
+            projectCardPressure; tuning READ_PRESSURE_MULT,
+            CONVICTION_PER_UNPICKED_DIE, CONVICTION_READ_WIN_BONUS,
+            COLOR_MATCH_PRESSURE_BONUS, TURN_DICE_COUNT, rollTurnDice, dieHasStance,
+            deriveIntentType); always-available CONVICTION-funded Signature Skills
+            (playSignatureSkill, getSignatureSkill, SIGNATURE_SKILLS,
+            SIGNATURE_SKILL_LIST, SIGNATURE_KITS, signaturesForArchetype,
+            playerArchetype); deckbuilder card rewards (COMBAT_REWARD_POOL,
+            STARTING_SKILL_ID, rollCombatCardRewards, addRewardCard,
+            unlockSkillViaDilemma) + types CombatIntentType / CombatReadResult /
+            SignatureSkill / SignatureSkillId / SignatureSkillKind / PlayerArchetype.
+            Reading the hidden stance multiplies status pressure — the read IS the
+            status-as-win-path lever. Note "Spec 26b" is in-flight scaffolding with
+            no spec file yet (distinct from specs/26-catalyst-multiplicative-scaling.md).)
 Combat reducer: initializeCombat, setPhase, setPlayerStance, setPlayerAction,
                 appendLog, incrementFriendship, endCombat
 Effects:    applyEffect, applyTier1CombatEffect, clearTier1EffectsForStance,
