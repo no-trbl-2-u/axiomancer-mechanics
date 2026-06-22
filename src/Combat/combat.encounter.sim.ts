@@ -18,12 +18,19 @@ import type { Character } from '../Character/types';
 import type { Enemy } from '../Enemy/types';
 import {
     initializeCombatEncounter, rollEncounterDice, playCombatCard,
-    resolveThreatPhase, startTurn, draftStanceDie, endTurn, chooseDraft,
+    resolveThreatPhase, startTurn, draftStanceDie, endTurn, chooseDraft, revealedCurrentStance,
     playSignatureSkill, getDraftedDie, handCards, selectMercyChoice, getSignatureSkill,
 } from './combat.engine';
 import type { CombatEncounterState, CombatOutcome } from './combat.encounter.types';
 
-export type CombatSimPolicyId = 'greedy';
+/**
+ * `greedy` — a competent omniscient witness: drafts using the enemy's hidden
+ * stance for the sharpest balance signal. `blind` — a realistic-player witness:
+ * drafts using ONLY player-visible info (the stance is unknown until revealed via
+ * the read or a Scout), so it can't pre-seek advantage. Tune player-facing
+ * difficulty against `blind`; tune ceilings against `greedy`.
+ */
+export type CombatSimPolicyId = 'greedy' | 'blind';
 
 export interface CombatSimStats {
     runs: number;
@@ -84,7 +91,7 @@ function bestSignature(s: CombatEncounterState): string | null {
 }
 
 /** Plays a single threat phase to a stop (enemy dead, mercy opened, or hand/dice out). */
-function greedyPlayPhase(state: CombatEncounterState): { state: CombatEncounterState; plays: number; statusPlays: number } {
+function greedyPlayPhase(state: CombatEncounterState, blind: boolean): { state: CombatEncounterState; plays: number; statusPlays: number } {
     let working = state;
     let plays = 0;
     let statusPlays = 0;
@@ -113,7 +120,11 @@ function greedyPlayPhase(state: CombatEncounterState): { state: CombatEncounterS
                 if (working.phase !== 'phase-play') break;
             }
             const want = bestCard(working, fizzledUids);
-            const pick = chooseDraft(working.dice, want?.card.stance ?? 'wild', currentPhase(working).enemyStance);
+            // Blind play drafts off only what the player can see: the stance is
+            // `null` until revealed (via the read or a Scout), so chooseDraft can't
+            // pre-seek advantage — it color-matches like a real player on turn one.
+            const enemyStance = blind ? revealedCurrentStance(working) : currentPhase(working).enemyStance;
+            const pick = chooseDraft(working.dice, want?.card.stance ?? 'wild', enemyStance);
             if (!pick) break;
             working = draftStanceDie(working, pick).state;
             drafted = getDraftedDie(working);
@@ -161,7 +172,9 @@ export function runOneEncounter(
     player: Character,
     enemy: Enemy,
     seed: number,
+    policy: CombatSimPolicyId = 'greedy',
 ): { outcome: CombatOutcome; rounds: number; plays: number; statusPlays: number; convictionSpent: number } {
+    const blind = policy === 'blind';
     let state = initializeCombatEncounter(player, enemy, undefined, seed);
     state = rollEncounterDice(state).state;
 
@@ -176,7 +189,7 @@ export function runOneEncounter(
             break;
         }
         if (state.phase === 'phase-play') {
-            const r = greedyPlayPhase(state);
+            const r = greedyPlayPhase(state, blind);
             state = r.state;
             plays += r.plays;
             statusPlays += r.statusPlays;
@@ -208,13 +221,13 @@ export function simulateHazardPatternCombat(
     enemy: Enemy,
     count = 300,
     startSeed = 1,
-    _policy: CombatSimPolicyId = 'greedy',
+    policy: CombatSimPolicyId = 'greedy',
 ): CombatSimStats {
     let victories = 0, mercies = 0, defeats = 0, retreats = 0;
     let totalRounds = 0, totalPlays = 0, totalStatusPlays = 0, totalConviction = 0;
 
     for (let i = 0; i < count; i++) {
-        const r = runOneEncounter(player, enemy, startSeed + i);
+        const r = runOneEncounter(player, enemy, startSeed + i, policy);
         if (r.outcome === 'victory') victories++;
         else if (r.outcome === 'mercy') mercies++;
         else if (r.outcome === 'retreat') retreats++;

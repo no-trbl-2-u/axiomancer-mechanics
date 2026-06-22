@@ -846,12 +846,16 @@ function dotTickBreakdown(effects: readonly ActiveEffect[]): DotTick[] {
 export function chooseDraft(
     dice: readonly CombatManaDie[],
     cardStance: CombatDieColor,
-    enemyStance: Stance,
+    enemyStance: Stance | null,
 ): string | null {
     if (dice.length === 0) return null;
     const usable = dice.filter(d => d.state === 'available' && d.color !== 'x');
     if (usable.length === 0) return dice[0]?.id ?? null; // forced X — bank the token
-    const advantage = usable.find(d => dieHasStance(d.color) && stanceBeats(d.color as Stance, enemyStance));
+    // `enemyStance === null` ⇒ the player can't see the stance yet (blind play):
+    // skip the advantage seek and draft for a color-match instead.
+    const advantage = enemyStance !== null
+        ? usable.find(d => dieHasStance(d.color) && stanceBeats(d.color as Stance, enemyStance))
+        : undefined;
     if (advantage) return advantage.id;
     const match = usable.find(d => d.color === 'wild' || d.color === cardStance);
     if (match) return match.id;

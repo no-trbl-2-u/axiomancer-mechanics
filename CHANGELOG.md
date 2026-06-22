@@ -10,6 +10,28 @@ Pre-1.0.0 status: minor bumps may carry breaking public-API changes
 map exposes `.` (top-level barrel) and `./node` (Node.js adapter); no
 deep imports are part of the supported surface.
 
+## [0.31.0] — 2026-06-22
+
+Boss difficulty + the blind playtest witness.
+
+### Added
+
+- **`blind` sim policy** (`CombatSimPolicyId = 'greedy' | 'blind'`) — the witness
+  bot drafts using ONLY player-visible info (the enemy stance is unknown until
+  revealed via the read or a Scout) instead of peeking the hidden stance: a
+  realistic-player proxy alongside the omniscient `greedy` bot. `chooseDraft` now
+  accepts `enemyStance: Stance | null` (null ⇒ no advantage seek).
+- **`npm run combat-sim`** CLI — quick win-rate playthroughs across the difficulty
+  tiers (`--blind`, `--enemy=`, `--loadout=`, `--runs=`, `--seed=`).
+
+### Changed
+
+- **Boss threat +50%** (`DIFFICULTY_MULT` boss 1.25→1.5, unique 1.2→1.45) — bosses
+  now hit meaningfully harder. (A precise ~80% win rate isn't reachable via this
+  one lever: the boss fights are near-deterministic races, so the sim is bimodal
+  ~100%/~10%; per-boss tuning or fight variance is the path to a smooth 80%.)
+- Combat doctrine docs (`VISION.md`, `CLAUDE.md`) updated to the HP-only model.
+
 ## [0.30.0] — 2026-06-22
 
 HP-only combat (Hazard-Pattern): the enemy's SOLE bar is now HP. Removed the two

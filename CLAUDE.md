@@ -15,14 +15,17 @@ attractive than status-effect play, it works against the vision. Treat low
 status-effect engagement as a balance failure even when win/loss rates look
 healthy.
 
-**Spec 25 — Hazard-Pattern Combat (the primary combat system, 2026-06-21)** makes
-this STRUCTURAL: `resolveCombatPhase` is a card-and-dice driver where every verb
-is a skill card and two Pressure Tracks (DoT Erosion + Control Saturation) are the
-only practical win conditions — basic-attack trading no longer exists. Tuned by
+**Hazard-Pattern Combat (the primary combat system)** keeps status central: the
+enemy's SOLE bar is HP, and status is the EFFICIENT way to drop it to 0 — DoT
+erodes HP far faster than the deliberately weak basic strike, and control hinders
+the enemy (it loses its telegraphed turn). **Updated 2026-06-22:** the old
+two-Pressure-Track win model (DoT Erosion + Control Saturation as the only win
+conditions) was REMOVED; HP is the sole win condition now (`isDefeated(enemy)`),
+basic-attack trading is the weak baseline rather than absent. Tuned by
 **`/combat-tuning`** (`skills/combat-tuning.md`, witness:
-`simulateHazardPatternCombat`). The legacy turn-based `resolveCombatRound` still
-backs live encounters and is tuned by **`/legacy-combat-tuning`** — there the
-STRATEGIST playstyle is the witness.
+`simulateHazardPatternCombat`). The new combat is LIVE in mobile map encounters;
+the legacy turn-based `resolveCombatRound` now backs only the dev-only legacy
+combat tab and is tuned by **`/legacy-combat-tuning`** (STRATEGIST witness).
 
 Canonical: `VISION.md` → Combat vision. Echoed in `plan/bearings.md`, `agents.md`
 (standing rule 10), `AGENTS.md`, the `combat-tuning` + `legacy-combat-tuning`

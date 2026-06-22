@@ -20,9 +20,18 @@ makes basic-attack trading more attractive than status-effect play, it works
 against the vision. Both balance loops must treat low status-effect engagement
 as a balance failure even when win/loss rates look healthy: the
 `legacy-combat-tuning` loop + the `balance-analyst` for the turn-based combat,
-and the `combat-tuning` loop for the Spec 25 Hazard-Pattern Combat — where
-status-as-win-path is structural (DoT Erosion + Control Saturation are the only
-practical win conditions; there is no basic-attack verb to compete with).
+and the `combat-tuning` loop for the Hazard-Pattern Combat.
+
+**Hazard-Pattern Combat win model (updated 2026-06-22):** the enemy has ONE bar —
+HP — and dropping it to 0 is the only win condition. Status is the EFFICIENT path
+there: damage-over-time erodes the enemy's HP far faster than the deliberately
+weak immediate "basic" strike, and control status genuinely HINDERS the enemy (a
+stun/skip robs it of its telegraphed turn) instead of filling a separate meter.
+Befriend at low HP opens the spare/exploit mercy choice. This REPLACES the earlier
+two-Pressure-Track model (DoT Erosion + Control Saturation as the only win
+conditions), which has been removed — but status effects remain the main fun and
+the intended efficient win path; a player who leans on basic strikes should
+struggle, especially against bosses.
 
 The intended mastery path is:
 
