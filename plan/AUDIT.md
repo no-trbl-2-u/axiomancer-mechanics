@@ -46,7 +46,7 @@
 
 ## Pending
 
-<!-- No pending findings -->
+- [ ] **[E — docs drift] Spec 26/26b combat surface absent from every front-door reader** (score 5 × 7 / 10 = **3.5**) — PR #184 (`6378e92`) landed the in-flight Spec 26/26b combat redesign (stance draft, hidden-stance read, Conviction economy, Signature Skills, deckbuilder card rewards, player archetypes) adding ~40 value/type exports to the locked root barrel via `src/Combat/index.ts`: the turn lifecycle (`startTurn`/`draftStanceDie`/`endTurn`/`resolveRead`/`chooseDraft`/`discardCombatCard`/`getDraftedDie`/`isPhaseStanceRevealed`/`revealedCurrentStance`/`cardReadPreview`/`projectCardPressure`), the Conviction + read tuning constants (`READ_PRESSURE_MULT`/`CONVICTION_PER_UNPICKED_DIE`/`CONVICTION_READ_WIN_BONUS`/`COLOR_MATCH_PRESSURE_BONUS`/`TURN_DICE_COUNT`/`rollTurnDice`/`dieHasStance`/`deriveIntentType`), Signature Skills (`playSignatureSkill`/`getSignatureSkill`/`SIGNATURE_SKILLS`/`SIGNATURE_SKILL_LIST`/`SIGNATURE_KITS`/`signaturesForArchetype`/`playerArchetype`), and the deckbuilder rewards (`COMBAT_REWARD_POOL`/`STARTING_SKILL_ID`/`rollCombatCardRewards`/`addRewardCard`/`unlockSkillViaDilemma`) + types (`CombatIntentType`/`CombatReadResult`/`SignatureSkill`/`SignatureSkillId`/`SignatureSkillKind`/`PlayerArchetype`). They reached the public-surface fixture (deploy:check "publishable") and carry e2e coverage (30 refs in `hazard-pattern-combat.engine.test.ts`), but touched NO front-door reader: `docs/combat.md` §Hazard-Pattern Combat still documents only the Spec 25 surface, `spec.md` Contracts Combat row (line 93) lists only the Spec 25 marquee, and `plan/bearings.md` Combat group has zero Spec 26/26b mention (grep = 0 across all three). Same front-door-doc-lag shape as the Spec 25 landing (`cc0aa0a`) and Phase 152/154 findings. Doc-only fix; no source change.
 
 ## Done
 
@@ -62,6 +62,22 @@
 - [x] **[E — docs drift] Front-door docs referenced removed `getResistStat`** — resolved at `45b611e` (2026-06-18). `getResistStat` was removed at Phase 106 (v0.13.0) but `README.md:84` still listed it as a `_(deprecated)_` Combat stat accessor and `docs/api.md:56` called it "deprecated (use `getSaveStat`)". Dropped the README accessor entry and corrected api.md to "removed at v0.13.0 (use `getSaveStat`)". No source change (symbol already gone); verify green. Score 5 × 9 / 10 = 4.5.
 
 ## Audit Pass Log
+
+### 2026-06-22 (Pass 108) — Z–H walk (march→iterate dispatch)
+
+**Categories audited:** External critique (Z), Test-quality gaps (A), Spec-gap items (B), Type-safety (C), Dead code (D), Documentation gaps (E), ESLint fix (F), Dependency updates (G), Commit-hygiene (H).
+
+**Findings:** 1 finding ≥3.0 — **[E — docs drift] Spec 26/26b combat surface absent from every front-door reader** (score 3.5; see Pending). HEAD = `6378e92` (PR #184 — hazard-combat enemy authoring + Spec 26/26b scaffolding carried in); first non-bookkeeping `src/**` delta since the Spec 25 cluster. All four reliable gates exit 0: `type-check`, `lint`, `build`, `deploy:check` ("Package is publishable"); public surface byte-identical to the refreshed `scripts/public-surface.expected.json` (#184 refreshed the fixture for the +37 new rows).
+
+- **Z (Critique):** CRITIQUE.md `## Pending` empty (critique pass 81 at `40d4acd`). Critique gate not re-due (8 commits since `40d4acd` < 12; ~9.6h since 2026-06-21 20:17 UTC < 24h).
+- **A (Tests):** the Spec 26/26b surface carries e2e coverage — `hazard-pattern-combat.engine.test.ts` references the turn lifecycle + Signature + reward exports 30×; the new `combat.threat-sequences.ts` is exercised via the engine + balance-sim suites. Zero `vi.spyOn(Math,'random')` outside `src/test-utils/rng.ts`. (`npm test` red on the known environmental ERR_REQUIRE_ESM vite/vitest mismatch; the four exit-0 gates + byte-identical surface are the reliable witnesses.)
+- **B (Spec-gaps):** Knowledge-Gaps all resolved save Q28 (deferred); Specs 26-30 remain forward-looking proposals awaiting `/oversight`. Note: PR #184 references "Spec 26b" (stance draft / Conviction / Signature / deckbuilder) which has NO spec file — it is in-flight scaffolding carried in, distinct from `specs/26-catalyst-multiplicative-scaling.md`. Not an iterate spec-gap (the code is shipped + tested; the gap is docs).
+- **C (Type-safety):** clean — zero `as any`/`as unknown`/`@ts-ignore`/`@ts-expect-error` in the new non-test combat src (`combat.signature.ts` / `combat.rewards.ts` / `combat.threat-sequences.ts` / engine additions).
+- **D (Dead code):** the new surface ships additively; all barrel exports reachable (public surface byte-identical to fixture). `unlockSkillViaDilemma` is a documented forward-hook for unimplemented dilemma events — intentional, has a contract test, not dead.
+- **E (Docs):** **THE finding** — front-door readers (`docs/combat.md`, `spec.md` Contracts, `plan/bearings.md`) carry zero Spec 26/26b mention despite ~40 new root-barrel exports. Drained this pass.
+- **F (Lint):** `npm run lint` exits 0. **G (Deps):** only `@types/node` major outstanding (deliberate-phase territory, skip). **H (hygiene):** working tree clean at audit start.
+
+**Disposition:** drain the E finding (doc-only, score 3.5) per the standard iterate flow.
 
 ### 2026-06-22 (Pass 107) — Z–H walk (march→iterate dispatch)
 
