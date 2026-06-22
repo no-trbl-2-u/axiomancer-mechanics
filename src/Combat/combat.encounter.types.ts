@@ -100,6 +100,9 @@ export interface CombatCard {
     bottomActionText: string;
     /** Projected pressure if the bottom action lands (preview; §7.1, §7.3). */
     bottomPressurePreview: number;
+    /** The id of the primary enemy effect this card applies (for the projection
+     *  preview's diminishing-returns lookup). Null for damage/buff/synthetic. */
+    primaryEffectId: string | null;
 }
 
 /** A physical card instance in hand / play (uid-tracked, like Hazard). */
@@ -117,6 +120,57 @@ export interface CardPlay {
     useBottom: boolean;
     /** Die spent to power the bottom action (ignored for top actions). */
     dieId?: string;
+}
+
+// ---------------------------------------------------------------------------
+// Stance read + Conviction + Signature Skills (Spec 26b §1, §2, §4)
+// ---------------------------------------------------------------------------
+
+/** Outcome of the hidden-stance RPS read when a die is drafted. `none` = the
+ *  drafted die was Wild/X (no stance contest). */
+export type CombatReadResult = 'advantage' | 'neutral' | 'disadvantage' | 'none';
+
+/** What a signature skill does (drives the engine dispatch + the UI icon). */
+export type SignatureSkillKind =
+    | 'scout'          // reveal current + next enemy stance
+    | 'pressure'       // add pressure to a chosen track
+    | 'sustain'        // draw cards + small heal
+    | 'control'        // control pressure + apply a debuff to the enemy
+    | 'dot'            // guaranteed DoT application at boosted intensity
+    | 'mercy'          // control surge + lowers the Control Saturation threshold (heart)
+    | 'strike'         // big DoT + refreshes the drafted die for a chain (body)
+    | 'draw';          // draw cards + refund Conviction (mind economy)
+
+export type SignatureSkillId =
+    | 'sig-read-opponent'
+    | 'sig-press-the-point'
+    | 'sig-second-wind'
+    | 'sig-overwhelming-argument'
+    | 'sig-conviction-strike'
+    // Per-archetype exclusives (Spec 26b tuning §B)
+    | 'sig-disarming-plea'    // heart
+    | 'sig-rallying-blow'     // body
+    | 'sig-clever-gambit';    // mind
+
+/** Player archetype, derived from the dominant base stat. Drives the signature
+ *  kit + (mobile) the portrait. */
+export type PlayerArchetype = 'heart' | 'body' | 'mind';
+
+/** A signature skill — an always-available ability funded by Conviction (◆),
+ *  independent of the shuffled deck (Spec 26b §4). */
+export interface SignatureSkill {
+    id: SignatureSkillId;
+    name: string;
+    description: string;
+    /** Conviction (◆) cost. */
+    cost: number;
+    kind: SignatureSkillKind;
+    /** Which track a `pressure`/`control` skill feeds (default of the kind). */
+    track?: PressureTrackKey;
+    /** Effect id a `control`/`dot` skill applies to the enemy. */
+    effectId?: string;
+    /** Magnitude knob (pressure points / intensity / heal / draw count). */
+    magnitude: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -145,13 +199,36 @@ export interface CombatThreatAction {
     effects: CombatThreatEffect[];
 }
 
+/**
+ * Spec 26 §2 — the enemy's telegraphed intent type, derived from the threat
+ * action's effects. The STANCE (the RPS axis) stays hidden; the INTENT (what the
+ * enemy will do if not cleared) is shown.
+ */
+export type CombatIntentType =
+    | 'damage'     // only direct HP damage
+    | 'debuff'     // only a debuff applied to the player
+    | 'buff'       // only enemy self-heal / self-buff
+    | 'block'      // a defensive / damage-reduction effect on the enemy
+    | 'pass'       // no effects (damage 0, no effectId)
+    | 'combo';     // multiple types at once
+
 export interface CombatThreatPhase {
     index: number;                            // 1-indexed for display
-    enemyStance: Stance;                      // dominant stance — drives RPS advantage
+    enemyStance: Stance;                      // dominant stance — HIDDEN until revealed (Spec 26b §2)
     threatAction: CombatThreatAction;         // fires at phase-end if not controlled
     dotPressureRequired: number;              // DoT contribution to clear this phase
     controlPressureRequired: number;          // Control contribution to clear this phase
     isFinalPhase: boolean;                    // final phase uses harder thresholds
+
+    // ── Spec 26 — intent telegraph ──────────────────────────────────────────
+    /** Auto-derived from `threatAction.effects` (deriveIntentType); override for
+     *  boss clarity. Drives the mobile intent icon + label. */
+    intentType?: CombatIntentType;
+    /** Optional short flavor label, e.g. "Charges up". Presenter defaults per type. */
+    intentLabel?: string;
+    /** Spec 26b §2 — thematic tell that *implies* (never states) this phase's
+     *  hidden stance. Falls back to the enemy-level `stanceHint`. */
+    stanceHint?: string;
 }
 
 export type CombatThreatMark = 'clear' | 'overwhelmed' | 'pending';
@@ -230,8 +307,14 @@ export type CombatEncounterPhase =
 
 export type CombatEvent =
     | { kind: 'dice-rolled'; dice: CombatManaDie[] }
+    | { kind: 'turn-dice-rolled'; turn: number; dice: CombatManaDie[] }
+    | { kind: 'die-drafted'; dieId: string; color: CombatDieColor; read: CombatReadResult }
+    | { kind: 'conviction-gained'; amount: number; total: number; reason: 'unpicked-die' | 'read-win' | 'effect' }
+    | { kind: 'stance-revealed'; phaseIndex: number; stance: Stance }
+    | { kind: 'read-result'; stance: CombatDieColor; enemyStance: Stance; result: CombatReadResult }
+    | { kind: 'signature-cast'; skillId: SignatureSkillId; name: string; cost: number }
     | { kind: 'card-played'; cardId: string; useBottom: boolean; dieId: string | null;
-        advantage: 'advantage' | 'neutral' | 'disadvantage' }
+        advantage: 'advantage' | 'neutral' | 'disadvantage'; colorMatch?: boolean }
     | { kind: 'effect-landed'; cardId: string; effectId: string; target: 'self' | 'enemy';
         track: PressureTrackKey; pressure: number; intensity: number; effect: Effect }
     | { kind: 'effect-fizzled'; cardId: string; effectId: string; message: string }
@@ -255,7 +338,29 @@ export interface CombatEncounterState {
     phase: CombatEncounterPhase;
     enemy: Enemy;                          // unchanged — HP, effects, stats (deep-cloned)
     player: Character;                     // unchanged — HP, effects, stats (deep-cloned)
-    dice: CombatManaDie[];                 // 4 dice; rolled at combat start
+    /** Spec 26b §1 — the CURRENT TURN's rolled dice (2 of them). Rolled fresh
+     *  each turn; one is drafted as the stance, the other → Conviction. */
+    dice: CombatManaDie[];
+    /** The drafted stance die id for this turn (null before draft / between turns). */
+    draftedDieId: string | null;
+    /** Turn counter within the encounter (drives die ids + display). */
+    turn: number;
+    /** Conviction (◆) bank — funds Signature Skills (Spec 26b §4). */
+    conviction: number;
+    /** Phase indices whose hidden enemy stance the player has revealed (§2). */
+    revealedStances: number[];
+    /** Read result of the most recent draft (transient — for the UI flash). */
+    lastRead: CombatReadResult;
+    /** Times each enemy effect id has been applied by a card this combat. Drives
+     *  diminishing returns on spamming the SAME effect (Spec 26b tuning §2). */
+    effectApplyCounts: Record<string, number>;
+    /** A carried unspent drafted die color, kept into the next turn so a good die
+     *  isn't wasted (Spec 26b tuning §3). Null when nothing carried. */
+    carriedDie: CombatDieColor | null;
+    /** The player's archetype (dominant base stat). */
+    archetype: PlayerArchetype;
+    /** The player's resolved Signature Skill kit for this combat (per-archetype). */
+    signatures: SignatureSkillId[];
     deck: string[];                        // full combat deck (card ids) — reshuffle source
     drawPile: string[];                    // remaining draw order
     discard: string[];                     // used / discarded card ids

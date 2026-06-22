@@ -331,4 +331,17 @@ export interface Enemy {
      */
     addedIn?: string;
     tags?: string[];
+    /**
+     * Spec 26 §3.1 — asset id for the enemy's combat portrait. Mobile resolves
+     * it via the portrait registry; absent → fallback silhouette. Kebab-case
+     * (e.g. `coastal-tyrant`).
+     */
+    portraitAsset?: string;
+    /**
+     * Spec 26b §2 — an enemy-level thematic tell that IMPLIES (never states) the
+     * enemy's stance tendency. Per-phase `CombatThreatPhase.stanceHint` overrides
+     * it; if neither is set a generic per-stance hint is used. Surfaced in the
+     * combat reveal so reading the foe's character pays off in the hidden read.
+     */
+    stanceHint?: string;
 }

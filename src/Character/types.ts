@@ -118,6 +118,14 @@ export interface Character {
      * no save migration is required.
      */
     carriedResources?: Partial<CombatResources>;
+    /**
+     * Spec 26b deckbuilder — extra combat cards earned as play rewards (skill
+     * ids, duplicates allowed), MERGED into the combat deck on top of the cards
+     * derived from `knownSkills`. Distinct from `knownSkills`: a reward grows the
+     * deck (more copies / variety), while learning a skill (e.g. via an ethical
+     * dilemma) unlocks a new card type. Optional + sparse — absent means none.
+     */
+    combatRewardCards?: string[];
 }
 
 /**

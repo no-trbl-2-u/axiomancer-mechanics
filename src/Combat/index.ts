@@ -231,6 +231,9 @@ export type {
     CombatPressureTracks, CombatThreatPhase, CombatThreatAction, CombatThreatEffect,
     CombatThreatMark, CombatPhaseResult, CombatOutcome, CombatEvent,
     CombatSummary, CombatAttributionRow, LandedEffect,
+    // Spec 26 / 26b additions
+    CombatIntentType, CombatReadResult,
+    SignatureSkill, SignatureSkillId, SignatureSkillKind,
 } from './combat.encounter.types';
 export {
     initializeCombatEncounter, rollEncounterDice, playCombatCard,
@@ -238,9 +241,16 @@ export {
     selectMercyChoice as selectEncounterMercyChoice, resolveCardDieCost, stanceBeats, getCard,
     handCards, cardDieCostPreview, availableDice, buildCombatSummary,
     TOP_ACTION_PRESSURE, BEFRIEND_THRESHOLD_REDUCTION,
+    // Spec 26b — turn lifecycle + read + Conviction + Signature Skills
+    startTurn, draftStanceDie, endTurn, resolveRead, chooseDraft, discardCombatCard,
+    playSignatureSkill, getDraftedDie, isPhaseStanceRevealed, revealedCurrentStance,
+    cardReadPreview, projectCardPressure, getSignatureSkill, SIGNATURE_SKILLS, SIGNATURE_SKILL_LIST,
+    READ_PRESSURE_MULT, CONVICTION_PER_UNPICKED_DIE, CONVICTION_READ_WIN_BONUS,
+    COLOR_MATCH_PRESSURE_BONUS,
 } from './combat.engine';
 export {
-    COMBAT_DICE_COUNT, COMBAT_DIE_FACES, rollCombatDice, rollCombatDieColor,
+    COMBAT_DICE_COUNT, TURN_DICE_COUNT, COMBAT_DIE_FACES, rollCombatDice, rollTurnDice,
+    rollCombatDieColor, dieHasStance,
     combatDieCanPower, availableDiceFor, availableDieCount, refreshOneDie,
     stanceToDieColor,
 } from './combat.dice';
@@ -255,7 +265,14 @@ export {
 } from './combat.pressure';
 export {
     getThreatSequence, generateDefaultThreatSequence, deriveGlobalThresholds,
-    AUTHORED_THREAT_ENEMY_IDS,
+    deriveIntentType, AUTHORED_THREAT_ENEMY_IDS,
 } from './combat.threat';
 export { simulateHazardPatternCombat } from './combat.encounter.sim';
 export type { CombatSimStats, CombatSimPolicyId } from './combat.encounter.sim';
+// Spec 26b tuning §B/§C/§D — archetype signatures, deckbuilder rewards, unlock hook
+export { SIGNATURE_KITS, signaturesForArchetype, playerArchetype } from './combat.signature';
+export {
+    COMBAT_REWARD_POOL, STARTING_SKILL_ID, rollCombatCardRewards, addRewardCard,
+    unlockSkillViaDilemma,
+} from './combat.rewards';
+export type { PlayerArchetype } from './combat.encounter.types';

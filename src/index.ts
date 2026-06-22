@@ -114,6 +114,17 @@ export {
     dotErosionReached, controlSaturationReached,
     simulateHazardPatternCombat,
     TOP_ACTION_PRESSURE, BEFRIEND_THRESHOLD_REDUCTION, SYNTHETIC_CARD_IDS,
+    // Spec 26 / 26b — stance draft, hidden read, Conviction, Signature Skills
+    TURN_DICE_COUNT, rollTurnDice, dieHasStance,
+    startTurn, draftStanceDie, endTurn, resolveRead, chooseDraft, discardCombatCard,
+    playSignatureSkill, getDraftedDie, isPhaseStanceRevealed, revealedCurrentStance,
+    cardReadPreview, projectCardPressure, getSignatureSkill, SIGNATURE_SKILLS, SIGNATURE_SKILL_LIST,
+    READ_PRESSURE_MULT, CONVICTION_PER_UNPICKED_DIE, CONVICTION_READ_WIN_BONUS,
+    COLOR_MATCH_PRESSURE_BONUS, deriveIntentType,
+    // Spec 26b tuning §B/§C/§D
+    SIGNATURE_KITS, signaturesForArchetype, playerArchetype,
+    COMBAT_REWARD_POOL, STARTING_SKILL_ID, rollCombatCardRewards, addRewardCard,
+    unlockSkillViaDilemma,
 } from './Combat';
 export type {
     CombatEncounterState, CombatEncounterPhase, CombatTransition,
@@ -123,6 +134,8 @@ export type {
     CombatThreatMark, CombatPhaseResult, CombatOutcome, CombatEvent,
     CombatSummary, CombatAttributionRow, LandedEffect,
     CombatSimStats, CombatSimPolicyId,
+    CombatIntentType, CombatReadResult,
+    SignatureSkill, SignatureSkillId, SignatureSkillKind, PlayerArchetype,
 } from './Combat';
 
 // ─── Effects ──────────────────────────────────────────────────────────────────

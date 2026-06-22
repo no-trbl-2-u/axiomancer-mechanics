@@ -52,6 +52,10 @@ export interface CreateEnemyOptions {
     /** Content-provenance metadata for the tuning `--focus` filter. */
     addedIn?: string;
     tags?: string[];
+    /** Spec 26 §3.1 — asset id for the enemy's combat portrait (kebab-case). */
+    portraitAsset?: string;
+    /** Spec 26b §2 — enemy-level thematic stance tell surfaced in the combat reveal. */
+    stanceHint?: string;
 }
 
 /**
@@ -147,6 +151,7 @@ export function createEnemy(options: CreateEnemyOptions): Enemy {
         friendshipReward, befriendabilityConfig,
         finalBlowLines, pactLines, causeLines,
         journalEntry, addedIn, tags,
+        portraitAsset, stanceHint,
     } = options;
 
     const maxHealth = calculateMaxHealth(level, baseStats);
@@ -174,6 +179,8 @@ export function createEnemy(options: CreateEnemyOptions): Enemy {
         journalEntry,
         addedIn,
         tags,
+        portraitAsset,
+        stanceHint,
     };
 }
 
