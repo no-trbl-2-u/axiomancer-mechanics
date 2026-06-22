@@ -76,10 +76,13 @@ describe('Spec 25 — both win paths are live and distinct', () => {
     });
 
     it('the DoT path and the Control path produce different outcome mixes', () => {
-        const status = simulateHazardPatternCombat(loadout(STATUS), MournfulGull, RUNS, SEED);
-        const control = simulateHazardPatternCombat(loadout(CONTROL_ONLY), MournfulGull, RUNS, SEED);
-        // The status (DoT-capable) deck lands more DoT-erosion victories than the
-        // control-only deck — the two tracks are genuinely separate levers.
+        // On a DoT-weak enemy, a DoT-capable deck wins via DoT erosion while a
+        // control-only deck wins via the mercy path — the tracks are separate
+        // levers, and the enemy's weakness decides which is faster (Spec 26b
+        // tuning §2: Control is now a genuine alternative, so this contrast must
+        // be measured on a DoT-weak foe, not a control-weak one).
+        const status = simulateHazardPatternCombat(loadout(STATUS), HollowEyedBeggar, RUNS, SEED);
+        const control = simulateHazardPatternCombat(loadout(CONTROL_ONLY), HollowEyedBeggar, RUNS, SEED);
         expect(status.victories).toBeGreaterThan(control.victories);
     });
 });
