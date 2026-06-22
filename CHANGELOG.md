@@ -10,6 +10,27 @@ Pre-1.0.0 status: minor bumps may carry breaking public-API changes
 map exposes `.` (top-level barrel) and `./node` (Node.js adapter); no
 deep imports are part of the supported surface.
 
+## [0.32.0] — 2026-06-22
+
+Combat content + cleanup: defense cards, a Gold rare tier, Press Fate, de-token-gated cards, the "pressure" purge, and a starting-map rebalance + narration encounters.
+
+### Added
+
+- **Defense cards (GUARD).** Brace for Impact / Suspend Judgment / Stoic Reserve grant GUARD — a one-shot shield that absorbs the next enemy threat hit (then resets). Brace is in the starting set (`STARTING_SKILL_IDS`); the rest drop from rewards.
+- **Gold (rare) cards.** A new top rarity — Pyrrhic Victory / The Final Word / The Unmoved Mover: unpowered = utility, powered = a major status + damage. Rare-weighted in the reward roll. `CombatCard.rarity:'gold'`, `GOLD_CARD_IDS`/`isGoldCard`.
+- **`narration` map-event kind** — a walkable monologue/dialogue node (no minigame) that reuses the dialogue tree and auto-consumes one-shot. `NarrationPayload`.
+
+### Changed
+
+- **Press Fate.** The `sig-press-the-point` Signature is now "Press Fate": a die REROLL (re-rolls the turn's dice for a fresh draft) for its Conviction cost.
+- **Cards are no longer token-gated** — a combat card plays on its drafted die alone; the Fallacy/Paradox pre-bank gate is gone (Skills keep their costs; combat grants them).
+- **Wild die read** — a Wild (gold) die adopts the powered card's stance for the hidden-stance read; on a Gold card the read is always advantage.
+- **Starting-map rebalance** (fishing-village) — was ~15 encounters; now a balanced mix (8 encounter / 4 rest / 4 gather / 3 hazard / 3 loot-cache / 1 narration / 1 interaction), keeping exactly 1 quest + 1 boss.
+
+### Removed
+
+- **"Pressure" terminology** (the tracks were removed in the HP model): `combat.pressure.ts`→`combat.attribution.ts`; `READ_PRESSURE_MULT`→`READ_DAMAGE_MULT`, `COLOR_MATCH_PRESSURE_BONUS`→`COLOR_MATCH_DAMAGE_BONUS`, `effectPressure`→`effectImpact`, `projectCardPressure`→`projectCardImpact`, `CombatCard.track`→`.effectKind`, `bottomPressurePreview`→`bottomDamagePreview`; dead `pressure-updated`/`momentum-carried` events removed.
+
 ## [0.31.0] — 2026-06-22
 
 Boss difficulty + the blind playtest witness.
