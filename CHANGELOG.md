@@ -10,6 +10,41 @@ Pre-1.0.0 status: minor bumps may carry breaking public-API changes
 map exposes `.` (top-level barrel) and `./node` (Node.js adapter); no
 deep imports are part of the supported surface.
 
+## [0.30.0] — 2026-06-22
+
+HP-only combat (Hazard-Pattern): the enemy's SOLE bar is now HP. Removed the two
+abstract Pressure Tracks (DoT Erosion + Control Saturation), their per-phase
+thresholds, and the Control-Saturation mercy. Combat is won by dropping the
+enemy's HP to 0 — DoT erodes it (the engaging, efficient damage); the immediate
+strike is the weak basic baseline. Control status now genuinely HINDERS the enemy
+(it skips its telegraphed turn via `canAct`); the Befriend path still opens the
+spare/exploit choice on a low-HP foe. The dice / hidden-read / Conviction /
+Signature tactical layer is unchanged.
+
+### Removed (public surface)
+
+- Type `CombatPressureTracks`; functions `dotErosionReached`,
+  `controlSaturationReached`, `momentumCarry`, `MOMENTUM_CAP`,
+  `pressureForLanded`, `deriveGlobalThresholds`; constants `TOP_ACTION_PRESSURE`,
+  `BEFRIEND_THRESHOLD_REDUCTION`.
+- `CombatThreatPhase` no longer carries `dotPressureRequired` /
+  `controlPressureRequired`; `CombatSummary` drops `controlPeak` /
+  `controlThreshold`; `CombatAttributionRow.pressureContributed` → `damageDealt`.
+
+### Changed
+
+- The stance-read multiplier + color-match bonus now scale a card's immediate
+  STRIKE HP damage; the enemy executes its threat action every phase (gated by
+  control). Signatures deal real HP / apply DoT / hinder via control.
+
+## [0.29.0] — 2026-06-22
+
+Combat engagement tuning ("variety snowballs, repetition decays"): escalating
+diversity synergy, the variety-gated combo loop, steeper same-effect diminishing
+returns, a pressure-intensity cap, and a reduced DoT double-count — rewarding
+varied status combos over single-card spam. (Superseded by the 0.30.0 HP-only
+combat rework above.)
+
 ## [0.23.0] — unreleased
 
 Equipment-ownership release (Phase 154): the engine becomes the single

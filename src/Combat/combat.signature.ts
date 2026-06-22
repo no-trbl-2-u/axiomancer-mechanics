@@ -18,7 +18,7 @@
 import { lookupEffect, applyEffect } from '../Effects';
 import type { Character } from '../Character/types';
 import type { Enemy } from '../Enemy/types';
-import { heal } from './health';
+import { applyDamage, heal } from './health';
 import { drawCombatCards } from './combat.deck';
 import { recordAttribution } from './combat.pressure';
 import { effectPressure } from './combat.cards';
@@ -35,7 +35,7 @@ export const SIGNATURE_SKILLS: Record<SignatureSkillId, SignatureSkill> = {
     },
     'sig-press-the-point': {
         id: 'sig-press-the-point', name: 'Press the Point', kind: 'pressure', cost: 4, magnitude: 6,
-        description: 'Add 6 pressure to whichever track is closest to clearing this phase.',
+        description: 'Strike the enemy for 6 guaranteed HP damage.',
     },
     'sig-second-wind': {
         id: 'sig-second-wind', name: 'Second Wind', kind: 'sustain', cost: 4, magnitude: 2,
@@ -44,7 +44,7 @@ export const SIGNATURE_SKILLS: Record<SignatureSkillId, SignatureSkill> = {
     'sig-overwhelming-argument': {
         id: 'sig-overwhelming-argument', name: 'Overwhelming Argument', kind: 'control', cost: 8,
         magnitude: 5, track: 'control', effectId: 'debuff_confusion',
-        description: 'Apply Confusion to the enemy and surge the Control track. The mercy path, forced.',
+        description: 'Hit the enemy with deep Confusion — it loses its turn while the control holds.',
     },
     'sig-conviction-strike': {
         id: 'sig-conviction-strike', name: 'Conviction Strike', kind: 'dot', cost: 7,
@@ -55,7 +55,7 @@ export const SIGNATURE_SKILLS: Record<SignatureSkillId, SignatureSkill> = {
     'sig-disarming-plea': {
         id: 'sig-disarming-plea', name: 'Disarming Plea', kind: 'mercy', cost: 6,
         magnitude: 6, track: 'control', effectId: 'debuff_charm',
-        description: 'HEART — charm the foe, surge Control, and lower their will to resist (mercy comes sooner).',
+        description: 'HEART — charm the foe (it falters) and strike, softening it toward mercy.',
     },
     'sig-rallying-blow': {
         id: 'sig-rallying-blow', name: 'Rallying Blow', kind: 'strike', cost: 6,
@@ -68,9 +68,6 @@ export const SIGNATURE_SKILLS: Record<SignatureSkillId, SignatureSkill> = {
         description: 'MIND — draw 2 and refresh your stance die: turn information into tempo.',
     },
 };
-
-/** Conviction-threshold reduction Disarming Plea applies (mercy accelerant). */
-const DISARMING_PLEA_THRESHOLD_DROP = 5;
 
 /** Per-archetype Signature kit (Spec 26b tuning §B). Everyone gets the scout;
  *  the rest is flavored to the archetype's stat identity. */
@@ -102,25 +99,13 @@ export function getSignatureSkill(id: string): SignatureSkill | undefined {
 /** Heal granted by Second Wind = a fraction of the player's max HP. */
 const SECOND_WIND_HEAL_FRAC = 0.12;
 
-/** Which track is closest to clearing the current phase (for Press the Point). */
-function closestTrack(state: CombatEncounterState): 'dot' | 'control' {
-    const phase = state.threatPhases[Math.min(state.currentPhaseIndex, state.threatPhases.length - 1)];
-    const dotGap = Math.max(0, (phase?.dotPressureRequired ?? 0) - state.phaseProgress.dot);
-    const controlGap = Math.max(0, (phase?.controlPressureRequired ?? 0) - state.phaseProgress.control);
-    return dotGap <= controlGap ? 'dot' : 'control';
-}
-
-function addPressure(state: CombatEncounterState, track: 'dot' | 'control', amount: number): CombatEncounterState {
-    return {
-        ...state,
-        pressureTracks: { ...state.pressureTracks, [track]: state.pressureTracks[track] + amount },
-        phaseProgress: { ...state.phaseProgress, [track]: state.phaseProgress[track] + amount },
-    };
-}
+/** Direct HP a strike-class signature deals on top of its DoT (× magnitude). */
+const STRIKE_DAMAGE_MULT = 3;
 
 /**
- * Applies a signature skill's effect to the encounter. Pure: returns the new
- * state + events; the engine handles Conviction spend + outcome checks.
+ * Applies a signature skill's effect to the encounter (HP model). Pure: returns
+ * the new state + events; the engine handles Conviction spend + outcome checks.
+ * Signatures DO real things to the enemy's HP / status — no abstract tracks.
  */
 export function applySignatureSkill(
     state: CombatEncounterState,
@@ -146,9 +131,11 @@ export function applySignatureSkill(
             break;
         }
         case 'pressure': {
-            const track = skill.track === 'control' || skill.track === 'dot' ? skill.track : closestTrack(state);
-            next = addPressure(state, track, skill.magnitude);
-            events.push({ kind: 'pressure-updated', dot: next.pressureTracks.dot, control: next.pressureTracks.control });
+            // HP model: a guaranteed chunk of direct enemy HP damage.
+            const enemy = applyDamage(state.enemy, skill.magnitude) as Enemy;
+            const attribution = recordAttribution(state.attribution, skill.id, skill.name, null, skill.magnitude);
+            next = { ...state, enemy, attribution };
+            events.push({ kind: 'damage-dealt', cardId: skill.id, target: 'enemy', amount: skill.magnitude });
             break;
         }
         case 'sustain': {
@@ -165,12 +152,11 @@ export function applySignatureSkill(
         case 'mercy':
         case 'strike': {
             // Apply the named effect to the enemy at boosted intensity (guaranteed
-            // — no caster roll, so it never fizzles), then surge the track.
-            const track: 'dot' | 'control' = (skill.kind === 'dot' || skill.kind === 'strike') ? 'dot' : 'control';
+            // — no caster roll, so it never fizzles). DoT will tick HP; control
+            // hinders the enemy's turn (canAct). 'strike'/'mercy' also hit HP now.
             let enemy = state.enemy;
             let attribution = state.attribution;
             const def = skill.effectId ? lookupEffect(skill.effectId) : undefined;
-            let landedPressure = skill.magnitude;
             if (def) {
                 const res = applyEffect(enemy.effects, def, state.round, {
                     intensityDelta: skill.magnitude, sourceId: state.player.id,
@@ -179,19 +165,21 @@ export function applySignatureSkill(
                 const active = enemy.effects.find(a => a.effectId === def.id);
                 if (active) {
                     const landed: LandedEffect = { effectId: def.id, effect: def, active, target: 'enemy' };
-                    landedPressure = Math.max(skill.magnitude, effectPressure(def, active.intensity, active.remainingDuration).amount);
-                    attribution = recordAttribution(attribution, skill.id, skill.name, landed, landedPressure);
-                    events.push({ kind: 'effect-landed', cardId: skill.id, effectId: def.id, target: 'enemy', track, pressure: landedPressure, intensity: active.intensity, effect: def });
+                    const cls = effectPressure(def, active.intensity, active.remainingDuration).track;
+                    attribution = recordAttribution(attribution, skill.id, skill.name, landed, 0);
+                    events.push({ kind: 'effect-landed', cardId: skill.id, effectId: def.id, target: 'enemy', track: cls, pressure: 0, intensity: active.intensity, effect: def });
                 }
             }
-            next = addPressure({ ...state, enemy, attribution }, track, landedPressure);
-            // HEART mercy accelerant — lower the Control Saturation threshold.
-            if (skill.kind === 'mercy') {
-                next = { ...next, pressureTracks: { ...next.pressureTracks, controlThreshold: Math.max(1, next.pressureTracks.controlThreshold - DISARMING_PLEA_THRESHOLD_DROP) } };
+            // strike = a heavy bleeding blow; mercy = a disarming hit. Both chip HP.
+            if (skill.kind === 'strike' || skill.kind === 'mercy') {
+                const dmg = skill.kind === 'strike' ? skill.magnitude * STRIKE_DAMAGE_MULT : skill.magnitude;
+                enemy = applyDamage(enemy, dmg) as Enemy;
+                attribution = recordAttribution(attribution, skill.id, skill.name, null, dmg);
+                events.push({ kind: 'damage-dealt', cardId: skill.id, target: 'enemy', amount: dmg });
             }
+            next = { ...state, enemy, attribution };
             // BODY strike — refresh the drafted die so the player keeps swinging.
             if (skill.kind === 'strike') next = refreshDraftedDie(next);
-            events.push({ kind: 'pressure-updated', dot: next.pressureTracks.dot, control: next.pressureTracks.control });
             break;
         }
         case 'draw': {

@@ -32,13 +32,12 @@ import {
     draftStanceDie, getDraftedDie, isPhaseStanceRevealed,
     playSignatureSkill, discardCombatCard, projectCardPressure, startTurn, endTurn,
 } from '../combat.engine';
-import { diminishFactor, marginalPressure, diversitySynergy } from '../combat.pressure';
 import { SIGNATURE_KITS, playerArchetype } from '../combat.signature';
 import { rollCombatCardRewards, addRewardCard, unlockSkillViaDilemma, COMBAT_REWARD_POOL } from '../combat.rewards';
 import { buildCombatDeck, COMBAT_HAND_SIZE } from '../combat.deck';
 import { getSkillById } from '../../Skills/skill.library';
 import { simulateHazardPatternCombat } from '../combat.encounter.sim';
-import { getThreatSequence, deriveGlobalThresholds, deriveIntentType } from '../combat.threat';
+import { getThreatSequence, deriveIntentType } from '../combat.threat';
 import type { CombatDieColor, CombatEncounterState } from '../combat.encounter.types';
 
 afterEach(() => {
@@ -199,19 +198,22 @@ describe('Spec 26b §1 — initialization + draft', () => {
         expect(state.lastRead).toBe('disadvantage');
     });
 
-    it('derives global thresholds as the sum of per-phase requirements (§5.3)', () => {
+    it('getThreatSequence gives every enemy a telegraphed attack each phase (HP model)', () => {
         const enemy = makeEnemy(50);
         const seq = getThreatSequence(enemy);
-        const { dotThreshold, controlThreshold } = deriveGlobalThresholds(seq);
-        expect(dotThreshold).toBe(seq.reduce((s, p) => s + p.dotPressureRequired, 0));
-        expect(controlThreshold).toBe(seq.reduce((s, p) => s + p.controlPressureRequired, 0));
+        expect(seq.length).toBeGreaterThan(0);
+        for (const p of seq) {
+            // Each phase is a real enemy turn: a threat action with effects.
+            expect(p.threatAction.effects.length).toBeGreaterThan(0);
+            expect(p.threatAction.effects.some(e => (e.damage ?? 0) > 0)).toBe(true);
+        }
     });
 });
 
-// ── Direct-damage contributes 0 pressure (§6 Rule 2) ─────────────────────────
+// ── Direct damage is the weak baseline (HP model) ────────────────────────────
 
-describe('Spec 25 §6 Rule 2 — direct damage contributes 0 pressure', () => {
-    it('a pure-damage bottom leaves both tracks at 0 but damages HP and spends the die', () => {
+describe('HP model — a direct-damage card chips HP and spends the die', () => {
+    it('a pure-damage bottom damages enemy HP (no status) and spends the die (no chain)', () => {
         mockSequentialRng(0.05);
         let state = initializeCombatEncounter(makePlayer([DAMAGE_BODY]), makeEnemy(80, 'mind'), [DAMAGE_BODY], 7);
         state = rollEncounterDice(state).state;
@@ -219,8 +221,6 @@ describe('Spec 25 §6 Rule 2 — direct damage contributes 0 pressure', () => {
         const hpBefore = state.enemy.health;
         const r = draftAndPlay(state, DAMAGE_BODY);
         expect(r.played).toBe(true);
-        expect(r.state.pressureTracks.dot).toBe(0);
-        expect(r.state.pressureTracks.control).toBe(0);
         expect(r.state.enemy.health).toBeLessThan(hpBefore);
         expect(r.state.directDamageDealt).toBeGreaterThan(0);
         // No status landed → the drafted die is spent (no chain).
@@ -231,14 +231,15 @@ describe('Spec 25 §6 Rule 2 — direct damage contributes 0 pressure', () => {
 // ── Status combo loop (§1) ───────────────────────────────────────────────────
 
 describe('Spec 26b §1 — status-combo loop', () => {
-    it('a landed DoT accrues dot pressure and refreshes the drafted die for a chain', () => {
+    it('a landed DoT lands on the enemy and refreshes the drafted die for a chain', () => {
         mockSequentialRng(0.05); // low rolls → enemy fails to resist → effect lands
         let state = initializeCombatEncounter(makePlayer([DOT_BODY]), makeEnemy(60, 'mind'), [DOT_BODY], 3);
         state = rollEncounterDice(state).state;
         state = setDice(state, ['body', 'heart']); // body vs mind → advantage
         const r = draftAndPlay(state, DOT_BODY);
         expect(r.played).toBe(true);
-        expect(r.state.pressureTracks.dot).toBeGreaterThan(0);
+        // The DoT effect landed on the enemy (it will tick HP each phase).
+        expect(r.state.enemy.effects.some(e => e.effectId === 'debuff_bleed')).toBe(true);
         const landed = r.events!.some(e => e.kind === 'effect-landed' && e.target === 'enemy');
         expect(landed).toBe(true);
         // The drafted die refreshed (still available) so the player can chain.
@@ -247,15 +248,16 @@ describe('Spec 26b §1 — status-combo loop', () => {
         expect(getDraftedDie(r.state)?.state).toBe('available');
     });
 
-    it('a color-matched advantaged DoT out-pressures a disadvantaged off-color one', () => {
+    it('a color-matched advantaged strike deals more HP damage than a disadvantaged off-color one', () => {
         mockSequentialRng(0.05);
         const base = () => {
-            let s = initializeCombatEncounter(makePlayer([DOT_BODY]), makeEnemy(120, 'mind'), [DOT_BODY], 21);
+            const s = initializeCombatEncounter(makePlayer([DOT_BODY]), makeEnemy(120, 'mind'), [DOT_BODY], 21);
             return rollEncounterDice(s).state;
         };
         const adv = draftAndPlay(setDice(base(), ['body', 'heart']), DOT_BODY); // match + advantage
         const dis = draftAndPlay(setDice(base(), ['mind', 'wild']), DOT_BODY); // off-color + disadvantage
-        expect(adv.state.pressureTracks.dot).toBeGreaterThan(dis.state.pressureTracks.dot);
+        // The read + color-match scale the immediate STRIKE damage.
+        expect(adv.state.directDamageDealt).toBeGreaterThan(dis.state.directDamageDealt);
     });
 });
 
@@ -301,15 +303,14 @@ describe('Spec 26b §4 — Signature Skills (Conviction-funded)', () => {
         expect(r.events.some(e => e.kind === 'signature-cast')).toBe(true);
     });
 
-    it('Conviction Strike applies a guaranteed DoT and surges the dot track', () => {
+    it('Conviction Strike applies a guaranteed DoT to the enemy', () => {
         mockSequentialRng(0.5);
         let state = initializeCombatEncounter(makePlayer([DOT_BODY]), makeEnemy(90, 'mind'), [DOT_BODY], 4);
         state = rollEncounterDice(state).state;
         state = { ...state, conviction: 9 };
-        const dotBefore = state.pressureTracks.dot;
         const r = playSignatureSkill(state, 'sig-conviction-strike');
         expect(r.state.conviction).toBe(2); // cost 7
-        expect(r.state.pressureTracks.dot).toBeGreaterThan(dotBefore);
+        // The poison DoT lands on the enemy (it will tick HP each phase).
         expect(r.state.enemy.effects.some(e => e.effectId === 'debuff_poison')).toBe(true);
     });
 
@@ -337,31 +338,7 @@ describe('Spec 26b §4 — Signature Skills (Conviction-funded)', () => {
 
 // ── Tuning pass 2: anti-spam, control, read-loop (Spec 26b §2/§3) ────────────
 
-describe('Spec 26b tuning — diminishing returns + projection + carry', () => {
-    it('diminishFactor falls off then floors; marginalPressure honours it', () => {
-        // Steepened diminishing returns (DIMINISH_STEP 0.3, floor 0.4, Spec 26b
-        // §3) so leaning on ONE status card decays fast — by the 3rd cast it's at
-        // the floor — while a still-survivable floor keeps a thin starter deck
-        // (one status card) able to chip. Variety is rewarded by the escalating
-        // diversity synergy, not by punishing spam into a loss.
-        expect(diminishFactor(0)).toBe(1);
-        expect(diminishFactor(1)).toBeCloseTo(0.7);
-        expect(diminishFactor(3)).toBe(0.4); // floored
-        // 10 base, neutral read, no bonuses: 1st full, 2nd reduced.
-        expect(marginalPressure(10, 0, 1, 0, 0)).toBe(10);
-        expect(marginalPressure(10, 1, 1, 0, 0)).toBe(7);
-    });
-
-    it('diversitySynergy escalates with distinct statuses; single-status spam earns none', () => {
-        // The combo snowball (Spec 26b §3): one status → +0 (spam gets nothing),
-        // each additional DISTINCT status active adds SYNERGY_BONUS (3).
-        expect(diversitySynergy(0)).toBe(0);
-        expect(diversitySynergy(1)).toBe(0);
-        expect(diversitySynergy(2)).toBe(3);
-        expect(diversitySynergy(3)).toBe(6);
-        expect(diversitySynergy(4)).toBe(9);
-    });
-
+describe('Spec 26b tuning — variety-gated combo + projection + carry', () => {
     it('the combo loop refreshes the die for a NEW status but spends it on a repeat (variety-gated)', () => {
         mockSequentialRng(0.05); // low rolls → effects land
         // Repetition: two copies of one DoT. First land refreshes the die; the
@@ -388,20 +365,24 @@ describe('Spec 26b tuning — diminishing returns + projection + carry', () => {
         expect(ctrl.events.some(e => e.kind === 'die-refreshed')).toBe(true);
     });
 
-    it('projectCardPressure previews less for a repeatedly-applied effect', () => {
+    it('projectCardPressure previews the strike HP damage (scaled by the read)', () => {
         mockSequentialRng(0.5);
-        let state = initializeCombatEncounter(makePlayer([DOT_BODY]), makeEnemy(120, 'mind'), [DOT_BODY], 1);
-        state = rollEncounterDice(state).state;
-        state = setDice(state, ['body', 'heart']);
-        state = draftStanceDie(state, state.dice[0].id).state;
         const card = getCard(DOT_BODY)!;
-        const fresh = projectCardPressure(state, card);
-        expect(fresh.track).toBe('dot');
-        expect(fresh.amount).toBeGreaterThan(0);
-        // Simulate the same effect already applied 3× → preview should drop.
-        const spammed = { ...state, effectApplyCounts: { [card.primaryEffectId!]: 3 } };
-        const after = projectCardPressure(spammed, card);
-        expect(after.amount).toBeLessThan(fresh.amount);
+        // Advantage draft (body vs mind) previews more strike damage than a
+        // disadvantage draft (mind vs body) — the read scales the strike.
+        const adv = (() => {
+            let s = initializeCombatEncounter(makePlayer([DOT_BODY]), makeEnemy(120, 'mind'), [DOT_BODY], 1);
+            s = rollEncounterDice(s).state; s = setDice(s, ['body', 'heart']);
+            return projectCardPressure(draftStanceDie(s, s.dice[0].id).state, card);
+        })();
+        const dis = (() => {
+            let s = initializeCombatEncounter(makePlayer([DOT_BODY]), makeEnemy(120, 'body'), [DOT_BODY], 1);
+            s = rollEncounterDice(s).state; s = setDice(s, ['mind', 'wild']);
+            return projectCardPressure(draftStanceDie(s, s.dice[0].id).state, card);
+        })();
+        expect(adv.track).toBe('dot');
+        expect(adv.amount).toBeGreaterThan(0);
+        expect(adv.amount).toBeGreaterThan(dis.amount);
     });
 
     it('an unspent drafted die carries into the next turn', () => {
@@ -453,15 +434,16 @@ describe('Spec 26b §B/§C/§D — archetype kit, rewards, unlock, difficulty fl
         expect(r.state.enemy.effects.some(e => e.effectId === 'debuff_bleed')).toBe(true);
     });
 
-    it('Disarming Plea (heart mercy) lowers the Control Saturation threshold', () => {
+    it('Disarming Plea (heart mercy) charms the enemy and strikes its HP', () => {
         mockSequentialRng(0.5);
         let state = initializeCombatEncounter(makePlayer([CONTROL_HEART]), makeEnemy(120, 'body'), [CONTROL_HEART], 1);
         state = rollEncounterDice(state).state;
         state = { ...state, conviction: 8 };
-        const before = state.pressureTracks.controlThreshold;
+        const hpBefore = state.enemy.health;
         const r = playSignatureSkill(state, 'sig-disarming-plea');
-        expect(r.state.pressureTracks.controlThreshold).toBeLessThan(before);
-        expect(r.state.pressureTracks.control).toBeGreaterThan(0);
+        // Charm (control) lands on the enemy and it takes HP damage.
+        expect(r.state.enemy.effects.some(e => e.effectId === 'debuff_charm')).toBe(true);
+        expect(r.state.enemy.health).toBeLessThan(hpBefore);
     });
 
     it('rollCombatCardRewards offers valid distinct skill cards, biased to archetype', () => {
@@ -489,11 +471,12 @@ describe('Spec 26b §B/§C/§D — archetype kit, rewards, unlock, difficulty fl
         expect(unlockSkillViaDilemma(unlocked, newId)).toBe(unlocked); // already known → same ref
     });
 
-    it('difficulty floor keeps tiny enemies from being one-shot', () => {
+    it('even a tiny enemy gets a real threat sequence (its attack has bite)', () => {
         const seq = getThreatSequence(makeEnemy(20)); // very low HP
+        expect(seq.length).toBeGreaterThan(0);
         for (const p of seq) {
-            expect(p.dotPressureRequired).toBeGreaterThanOrEqual(11);
-            expect(p.controlPressureRequired).toBeGreaterThanOrEqual(11);
+            // The enemy's threat action deals a meaningful chunk of damage.
+            expect(p.threatAction.effects.some(e => (e.damage ?? 0) >= 3)).toBe(true);
         }
     });
 });
@@ -522,7 +505,7 @@ describe('Spec 25 §11 — victory via DoT Erosion, skill cards only', () => {
 
         const summary = buildCombatSummary(state);
         expect(summary.outcome).toBe('victory');
-        expect(summary.headline).toMatch(/DoT Erosion/);
+        expect(summary.headline).toMatch(/Victory/);
         expect(summary.rows.length).toBeGreaterThan(0);
         expect(summary.bestCard.length).toBeGreaterThan(0);
         expect(summary.totalDotDamage).toBeGreaterThan(0);
@@ -542,19 +525,15 @@ describe('Spec 25 §9 — resolveCombatPhase batch entry point', () => {
 
 // ── Monte-Carlo sim (§11 acceptance) ─────────────────────────────────────────
 
-describe('Spec 26b §6 — Monte-Carlo sim (HARD band)', () => {
-    it('runs 300 seeded combats and reports per-phase Clear rates', () => {
+describe('Hazard combat — Monte-Carlo sim', () => {
+    it('runs 300 seeded combats and reports a coherent outcome distribution', () => {
         const player = makePlayer([DOT_BODY, CONTROL_HEART, DAMAGE_BODY, BEFRIEND]);
         const enemy = makeEnemy(40);
         const stats = simulateHazardPatternCombat(player, enemy, 300, 1);
         expect(stats.runs).toBe(300);
         expect(stats.victories + stats.mercies + stats.defeats + stats.retreats).toBe(300);
-        expect(stats.clearRateByPhase.length).toBeGreaterThan(0);
-        for (const rate of stats.clearRateByPhase) {
-            expect(rate).toBeGreaterThanOrEqual(0);
-            expect(rate).toBeLessThanOrEqual(1);
-        }
         expect(stats.winRate).toBeGreaterThan(0);
+        expect(stats.winRate).toBeLessThanOrEqual(1);
         expect(stats.statusEngagement).toBeGreaterThan(0);
     });
 });

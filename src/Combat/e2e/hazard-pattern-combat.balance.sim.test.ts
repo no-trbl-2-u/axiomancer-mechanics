@@ -1,27 +1,26 @@
 /**
- * Balance-sim witness — Spec 25 Hazard-Pattern Combat.
+ * Balance-sim witness — Hazard-Pattern Combat (HP model).
  *
- * The regression guard the `/combat-tuning` skill measures against. It pins the
- * load-bearing balance invariants of the new combat, deterministically (the sim
- * re-seeds the engine RNG per run, so a fixed start seed is reproducible):
+ * The regression guard the `/combat-tuning` skill measures against. The enemy's
+ * ONLY bar is HP; the load-bearing invariants are now:
  *
- *   1. Authored enemies are WINNABLE with a competent status loadout.
- *   2. Status play is the EFFICIENT path — a status loadout resolves in far
- *      fewer phases than a direct-damage-only loadout (the doctrine witness:
- *      status effects are the main way to win, not basic damage).
- *   3. BOTH win paths are live and distinct — a control-only loadout wins via
- *      the Control Saturation mercy path, not via DoT.
+ *   1. Authored enemies are WINNABLE with a competent status loadout (DoT erodes
+ *      the enemy's HP to 0).
+ *   2. STATUS is the efficient path, basic damage is the weak baseline — a DoT
+ *      loadout beats a pure direct-damage loadout, decisively so on a boss where
+ *      strikes alone can't close (the doctrine: status > basic attacks).
+ *   3. The Befriend MERCY path is live — a control+befriend loadout spares a
+ *      low-HP foe (a 'mercy' outcome), distinct from a DoT kill ('victory').
  *   4. Status play actually happens (engagement > 0).
  *
- * If a tuning change collapses any of these, this test fails and the change is
- * reverted. The exact rates are free to drift; the INVARIANTS are not.
+ * Exact rates may drift; the INVARIANTS are not.
  */
 
 import { describe, it, expect } from 'vitest';
 
 import { Player } from '../../Character/characters.mock';
 import type { Character } from '../../Character/types';
-import { MournfulGull, HollowEyedBeggar } from '../../Enemy/enemy.library';
+import { MournfulGull, HollowEyedBeggar, CoastalTyrant } from '../../Enemy/enemy.library';
 import { deepClone } from '../../Utils';
 import { simulateHazardPatternCombat } from '../combat.encounter.sim';
 
@@ -37,14 +36,14 @@ function loadout(skills: string[]): Character {
     return p;
 }
 
-const STATUS = ['slippery-slope', 'eternal-regress', 'achilles-gambit', 'befriend']; // DoT + control + damage + befriend
-const DAMAGE_ONLY = ['achilles-gambit'];                                              // pure HP damage, no status
-const CONTROL_ONLY = ['eternal-regress', 'befriend'];                                 // control + mercy only
+const DOT = ['slippery-slope'];                          // DoT — erodes enemy HP to 0
+const DAMAGE_ONLY = ['achilles-gambit'];                 // pure strike, no status (the weak baseline)
+const MERCY = ['eternal-regress', 'befriend'];           // control + befriend → the spare path
 
-describe('Spec 25 balance — authored enemies are winnable with status play', () => {
+describe('HP combat — authored enemies are winnable with status play', () => {
     for (const [name, enemy] of [['MournfulGull', MournfulGull], ['HollowEyedBeggar', HollowEyedBeggar]] as const) {
-        it(`${name}: a status loadout wins the large majority of seeded combats`, () => {
-            const s = simulateHazardPatternCombat(loadout(STATUS), enemy, RUNS, SEED);
+        it(`${name}: a DoT loadout wins the large majority of seeded combats`, () => {
+            const s = simulateHazardPatternCombat(loadout(DOT), enemy, RUNS, SEED);
             expect(s.runs).toBe(RUNS);
             expect(s.winRate).toBeGreaterThanOrEqual(0.8);
             // Status play actually occurs (effects land on the enemy).
@@ -53,36 +52,29 @@ describe('Spec 25 balance — authored enemies are winnable with status play', (
     }
 });
 
-describe('Spec 25 doctrine — status is the EFFICIENT win path (faster than raw damage)', () => {
-    it('a status loadout resolves in far fewer phases than a damage-only loadout', () => {
-        const status = simulateHazardPatternCombat(loadout(STATUS), MournfulGull, RUNS, SEED);
-        const damage = simulateHazardPatternCombat(loadout(DAMAGE_ONLY), MournfulGull, RUNS, SEED);
-        // Both may eventually win, but status must be decisively quicker — the
-        // assembled-solution path beats the attrition grind.
-        expect(status.avgRounds).toBeLessThan(damage.avgRounds);
-        // A comfortable margin guards against the §4.4 oversimplification drift
-        // (if damage-only ever becomes as fast as status, thresholds are wrong).
-        expect(status.avgRounds * 1.5).toBeLessThan(damage.avgRounds);
+describe('HP combat doctrine — status beats basic attacks', () => {
+    it('a DoT loadout out-performs a pure direct-damage loadout on a boss', () => {
+        // On a boss, weak strikes alone can't close before its HP/threat grind you
+        // down, while a DoT loadout erodes it. Status is the efficient win path.
+        const dot = simulateHazardPatternCombat(loadout(DOT), CoastalTyrant, RUNS, SEED);
+        const damage = simulateHazardPatternCombat(loadout(DAMAGE_ONLY), CoastalTyrant, RUNS, SEED);
+        expect(dot.winRate).toBeGreaterThan(damage.winRate);
     });
 });
 
-describe('Spec 25 — both win paths are live and distinct', () => {
-    it('a control-only loadout wins via the Control Saturation mercy path, not DoT', () => {
-        const c = simulateHazardPatternCombat(loadout(CONTROL_ONLY), MournfulGull, RUNS, SEED);
-        expect(c.winRate).toBeGreaterThan(0);
-        // Control wins resolve as MERCY (saturation), not VICTORY (DoT erosion).
-        expect(c.mercies).toBeGreaterThan(0);
-        expect(c.mercies).toBeGreaterThanOrEqual(c.victories);
+describe('HP combat — the befriend mercy path is live', () => {
+    it('a control+befriend loadout spares a low-HP foe (mercy, not a DoT kill)', () => {
+        const m = simulateHazardPatternCombat(loadout(MERCY), MournfulGull, RUNS, SEED);
+        expect(m.winRate).toBeGreaterThan(0);
+        // Wins resolve as MERCY (the spare), not VICTORY (an HP kill).
+        expect(m.mercies).toBeGreaterThan(0);
+        expect(m.mercies).toBeGreaterThanOrEqual(m.victories);
     });
 
-    it('the DoT path and the Control path produce different outcome mixes', () => {
-        // On a DoT-weak enemy, a DoT-capable deck wins via DoT erosion while a
-        // control-only deck wins via the mercy path — the tracks are separate
-        // levers, and the enemy's weakness decides which is faster (Spec 26b
-        // tuning §2: Control is now a genuine alternative, so this contrast must
-        // be measured on a DoT-weak foe, not a control-weak one).
-        const status = simulateHazardPatternCombat(loadout(STATUS), HollowEyedBeggar, RUNS, SEED);
-        const control = simulateHazardPatternCombat(loadout(CONTROL_ONLY), HollowEyedBeggar, RUNS, SEED);
-        expect(status.victories).toBeGreaterThan(control.victories);
+    it('a DoT loadout kills (victory) where the befriend loadout spares (mercy)', () => {
+        const dot = simulateHazardPatternCombat(loadout(DOT), MournfulGull, RUNS, SEED);
+        const mercy = simulateHazardPatternCombat(loadout(MERCY), MournfulGull, RUNS, SEED);
+        expect(dot.victories).toBeGreaterThan(mercy.victories);
+        expect(mercy.mercies).toBeGreaterThan(dot.mercies);
     });
 });

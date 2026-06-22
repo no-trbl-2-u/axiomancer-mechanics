@@ -42,29 +42,27 @@ import {
 import {
     toCombatCard, cardStanceColor, effectPressure,
 } from './combat.cards';
-import {
-    pressureForLanded, momentumCarry, dotErosionReached, controlSaturationReached,
-    recordAttribution, marginalPressure, diversitySynergy,
-} from './combat.pressure';
-import { getThreatSequence, deriveGlobalThresholds } from './combat.threat';
+import { recordAttribution } from './combat.pressure';
+import { canAct } from './effect-modifiers';
+import { getThreatSequence } from './combat.threat';
 import { getSignatureSkill, applySignatureSkill, playerArchetype, SIGNATURE_KITS } from './combat.signature';
 import type {
     CombatCard, CombatDieColor, CombatEncounterState, CombatEvent, CardPlay,
     CombatManaDie, CombatPhaseResult, CombatTransition, LandedEffect, CombatReadResult,
+    CombatThreatEffect,
 } from './combat.encounter.types';
 
-// ── Tunable constants ────────────────────────────────────────────────────────
+// ── Tunable constants (HP model) ─────────────────────────────────────────────
 
-/** Flat pressure a free (top) action contributes to its track (§4.3, §6 Rule 4). */
-export const TOP_ACTION_PRESSURE = 1;
-/** Control-threshold reduction granted by the Befriend card (§6 Q6). */
-export const BEFRIEND_THRESHOLD_REDUCTION = 3;
+/** HP a free (top) action chips off the enemy — a die-free, weak contribution. */
+export const TOP_ACTION_CHIP = 2;
 /** Safety cap on total phases processed — prevents a degenerate stalemate loop. */
 const MAX_PHASES = 60;
 
-// ── Spec 26b — read & color-match tuning ─────────────────────────────────────
+// ── Read & color-match tuning (now scale the strike's HP damage) ─────────────
 
-/** Pressure multipliers by stance-read result (drafted die vs hidden enemy stance). */
+/** Strike-damage multipliers by stance-read result (drafted die vs hidden enemy
+ *  stance). Winning the read hits harder; losing it glances. */
 export const READ_PRESSURE_MULT: Record<CombatReadResult, number> = {
     advantage: 1.5, neutral: 1.0, disadvantage: 0.5, none: 1.0,
 };
@@ -72,26 +70,23 @@ export const READ_PRESSURE_MULT: Record<CombatReadResult, number> = {
 export const CONVICTION_PER_UNPICKED_DIE = 1;
 /** Bonus Conviction for winning the stance read (§1 — reading fuels power). */
 export const CONVICTION_READ_WIN_BONUS = 1;
-/** Flat pressure bonus when the drafted die color matches the card's stance (§3). */
-export const COLOR_MATCH_PRESSURE_BONUS = 2;
-/** HARD (§6): an Overwhelmed phase's threat damage is scaled up so failed
- *  clears genuinely threaten the player over a fight. */
-export const THREAT_DAMAGE_SCALE = 1.05;
-/** HARD (§6): Conviction is capped so a long grind can't bank a Signature spam. */
+/** Flat bonus HP damage when the drafted die color matches the card's stance (§3). */
+export const COLOR_MATCH_PRESSURE_BONUS = 3;
+/** An enemy threat action's damage is scaled by this so a fight stays threatening
+ *  over its full length (the enemy attacks every phase in the HP model). HARD:
+ *  bosses/elites can drop a careless player. */
+export const THREAT_DAMAGE_SCALE = 1.6;
+/** Conviction is capped so a long grind can't bank a Signature spam. */
 export const CONVICTION_CAP = 12;
-/** Spec 26b tuning §3 — fraction of realized enemy DoT erosion that feeds the DoT
- *  track between phases. <1 because a DoT card's LAND pressure already credits its
- *  projected erosion; feeding the full per-round tick on TOP of that double-counted
- *  DoT and let a single spammed DoT card fill the global track in ~1 round. The
- *  scaled tick keeps erosion a real, felt contribution without making mono-DoT the
- *  dominant line (varied status play is the efficient path — the doctrine). */
-export const DOT_EROSION_TRACK_WEIGHT = 0.4;
-/** Spec 26b tuning §3 — fraction of a POWER action's IMMEDIATE strike (basePower)
- *  HP damage that actually lands on the enemy. <1 because a card's job here is to
- *  apply PRESSURE (status), not to trade HP blows — the doctrine is that
- *  basic-attack trading is no longer a win path. Curbs a high-basePower card from
- *  simply bursting the enemy's HP to 0; DoT erosion (over-time) is untouched. */
-export const DIRECT_DAMAGE_WEIGHT = 0.35;
+/**
+ * Fraction of a POWER action's IMMEDIATE strike (basePower) HP damage that lands.
+ * <1 because the engaging, efficient damage is STATUS (DoT erosion ticking the
+ * enemy down) — a raw strike is the weak "basic" baseline the doctrine de-emphasises
+ * (and the owner explicitly OK'd weaker basic cards). DoT erosion is untouched, so
+ * status loadouts out-damage a strike-only line. The strike is then scaled by the
+ * read (advantage/disadvantage) and a color-match bonus, so the read still matters.
+ */
+export const DIRECT_DAMAGE_WEIGHT = 0.25;
 
 const EMPTY_RESOURCES: CombatResources = { heart: 0, body: 0, mind: 0, fallacy: 0, paradox: 0 };
 const defaultRng = (): number => getRng().random();
@@ -189,21 +184,6 @@ function intensityMap(effects: readonly ActiveEffect[]): Record<string, number> 
     return m;
 }
 
-/** Count of DISTINCT offensive statuses (DoT- or Control-track effect ids) live
- *  on the enemy — drives the escalating diversity synergy (Spec 26b tuning §3).
- *  More distinct statuses on the board → a bigger bonus on every land, so a
- *  varied kit snowballs while single-status spam stays at 1 (no synergy). */
-function countEnemyOffensiveStatuses(effects: readonly ActiveEffect[]): number {
-    const ids = new Set<string>();
-    for (const ae of effects) {
-        const def = lookupEffectDef(ae.effectId);
-        if (!def) continue;
-        const t = effectPressure(def, ae.intensity, ae.remainingDuration).track;
-        if (t === 'dot' || t === 'control') ids.add(ae.effectId);
-    }
-    return ids.size;
-}
-
 const currentPhaseStance = (enc: CombatEncounterState): Stance => {
     const phase = enc.threatPhases[Math.min(enc.currentPhaseIndex, enc.threatPhases.length - 1)];
     return phase?.enemyStance ?? 'heart';
@@ -230,7 +210,6 @@ export function initializeCombatEncounter(
     const deck = playerDeck && playerDeck.length > 0 ? playerDeck.slice() : buildCombatDeck(clonedPlayer);
 
     const threatPhases = getThreatSequence(clonedEnemy);
-    const { dotThreshold, controlThreshold } = deriveGlobalThresholds(threatPhases);
 
     // Draw the opening hand (5) from a shuffled deck.
     const shuffled = shuffleCombatDeck(deck);
@@ -259,14 +238,10 @@ export function initializeCombatEncounter(
         threatPhases,
         threatMarks: threatPhases.map(() => 'pending'),
         currentPhaseIndex: 0,
-        pressureTracks: { dot: 0, control: 0, dotThreshold, controlThreshold },
-        phaseProgress: { dot: 0, control: 0 },
-        momentumCarry: { dot: 0, control: 0 },
         phaseResults: [],
         combatResources: { ...EMPTY_RESOURCES, ...seededResources(clonedPlayer) },
         round: 1,
         attribution: {},
-        effectApplyCounts: {},
         chainEffectIds: [],
         carriedDie: null,
         directDamageDealt: 0,
@@ -481,10 +456,10 @@ function playRetreat(state: CombatEncounterState, uid: string, useBottom: boolea
 }
 
 /**
- * Free top action (§4.3): a weak, die-free contribution. Buff cards apply the
- * buff to self at intensity 1; every offensive card contributes a flat +1 to
- * its track (no persistent DoT spigot — real status pressure needs a die,
- * which is the whole design tension); pure-damage cards chip a sliver of HP.
+ * Free top action: a weak, die-free contribution. Buff cards apply the buff to
+ * self at intensity 1 (or a small heal); every offensive card chips a sliver of
+ * enemy HP — the real status damage needs a powered (die) play, which is the
+ * design tension.
  */
 function playTopAction(
     state: CombatEncounterState,
@@ -495,8 +470,6 @@ function playTopAction(
     const events: CombatEvent[] = [];
     let player = state.player;
     let enemy = state.enemy;
-    let tracks = state.pressureTracks;
-    let phaseProgress = state.phaseProgress;
     let directDamage = state.directDamageDealt;
     const skill = card.skillId ? lookupSkill(card.skillId) : undefined;
 
@@ -523,21 +496,19 @@ function playTopAction(
             player = heal(player, amount);
             events.push({ kind: 'damage-dealt', cardId: card.id, target: 'self', amount: -amount });
         }
-    } else if (card.verbClass === 'direct-damage' && skill) {
-        const amount = Math.max(1, Math.floor(calculateSkillDamage(player, skill) * 0.15));
+    } else if (skill) {
+        // Offensive free action — chip a sliver of enemy HP (die-free, weak). A
+        // pure-damage card scales off its damage; a status card chips a flat bit.
+        const amount = card.verbClass === 'direct-damage'
+            ? Math.max(1, Math.floor(calculateSkillDamage(player, skill) * 0.15))
+            : TOP_ACTION_CHIP;
         enemy = applyDamage(enemy, amount);
         directDamage += amount;
         events.push({ kind: 'damage-dealt', cardId: card.id, target: 'enemy', amount });
-    } else if (card.track === 'dot' || card.track === 'control') {
-        // Flat +1 pressure to the card's natural track (Rule 4: never zero).
-        const add = TOP_ACTION_PRESSURE;
-        tracks = { ...tracks, [card.track]: tracks[card.track] + add };
-        phaseProgress = { ...phaseProgress, [card.track]: phaseProgress[card.track] + add };
-        events.push({ kind: 'pressure-updated', dot: tracks.dot, control: tracks.control });
     }
 
     let next: CombatEncounterState = {
-        ...state, player, enemy, pressureTracks: tracks, phaseProgress, directDamageDealt: directDamage,
+        ...state, player, enemy, directDamageDealt: directDamage,
     };
     next = discardEntry(next, uid);
     next = withLog(next, events);
@@ -592,63 +563,44 @@ function playBottomAction(
     const shim: CombatState = { ...skillShim(state), combatResources: granted };
     const res = executeSkill(shim, skill.id, lookupSkill, 'player');
 
-    let player = res.state.player as Character;
-    let enemy = res.state.enemy as Enemy;
-    // Spec 26b tuning §3 — scale the IMMEDIATE strike damage down (the over-time
-    // DoT erosion the skill also applies is untouched). A POWER action wins by
-    // PRESSURE, not by bursting HP, so a high-basePower card can't simply drop the
-    // enemy to 0 before the pressure tracks resolve (the doctrine: basic-attack
-    // trading is not a win path).
-    const immediateDmg = Math.max(0, state.enemy.health - enemy.health);
-    if (immediateDmg > 0) {
-        const kept = Math.round(immediateDmg * DIRECT_DAMAGE_WEIGHT);
-        enemy = { ...enemy, health: state.enemy.health - kept };
-    }
+    const player = res.state.player as Character;
+    // The skill's IMMEDIATE strike (basePower HP damage) — the WEAK basic baseline,
+    // scaled by DIRECT_DAMAGE_WEIGHT, the read (advantage/disadvantage), and a
+    // color-match bonus. The engaging damage is STATUS: the DoT this skill also
+    // applies (below) ticks the enemy down each phase, untouched by this scaling.
+    const rawStrike = Math.max(0, state.enemy.health - (res.state.enemy as Enemy).health);
+    const scaledStrike = rawStrike > 0
+        ? Math.max(1, Math.round(rawStrike * DIRECT_DAMAGE_WEIGHT * mult) + (colorMatch ? COLOR_MATCH_PRESSURE_BONUS : 0))
+        : 0;
+    let enemy = { ...(res.state.enemy as Enemy), health: Math.max(0, state.enemy.health - scaledStrike) };
     const combatResources = res.state.combatResources;
-    let tracks = state.pressureTracks;
-    let phaseProgress = state.phaseProgress;
     let attribution = state.attribution;
-    let applyCounts = state.effectApplyCounts;
-    let directDamage = state.directDamageDealt;
+    let directDamage = state.directDamageDealt + scaledStrike;
     let landedOnEnemy = false;
-    let landedOffensive = false;
     let mercyOpened = res.activateMercyChoice === true;
-    // Escalating diversity synergy is judged against the post-skill board (all of
-    // this card's effects have landed by the time we fold events): each distinct
-    // offensive status on the enemy past the first adds to every land.
-    const distinctOffensive = countEnemyOffensiveStatuses(enemy.effects);
-    // Offensive effect ids this card landed — gates the combo loop on VARIETY (a
-    // status new to this chain refreshes the die; a repeat spends it, Spec 26b §3).
+    if (scaledStrike > 0) {
+        attribution = recordAttribution(attribution, card.id, card.name, null, scaledStrike);
+        events.push({ kind: 'damage-dealt', cardId: card.id, target: 'enemy', amount: scaledStrike });
+    }
+    // Offensive status ids this card landed on the enemy — gates the combo loop on
+    // VARIETY (a status new to this chain refreshes the die; a repeat spends it).
     const landedOffensiveIds: string[] = [];
 
-    const addPressure = (track: 'dot' | 'control', base: number, landed: LandedEffect, def: Effect, intensity: number) => {
-        const prior = applyCounts[def.id] ?? 0;
-        const synergy = diversitySynergy(distinctOffensive);
-        // Diminishing returns on spamming the SAME effect + read mult + synergy.
-        const amount = marginalPressure(base, prior, mult, 0, synergy);
-        tracks = { ...tracks, [track]: tracks[track] + amount };
-        phaseProgress = { ...phaseProgress, [track]: phaseProgress[track] + amount };
-        attribution = recordAttribution(attribution, card.id, card.name, landed, amount);
-        applyCounts = { ...applyCounts, [def.id]: prior + 1 };
-        landedOffensiveIds.push(def.id);
-        events.push({ kind: 'effect-landed', cardId: card.id, effectId: def.id, target: 'enemy', track, pressure: amount, intensity, effect: def });
-        landedOffensive = true;
-    };
-
-    // 5. Fold skill events into combat events + pressure (read-scaled).
+    // 5. Fold the skill's effect-applications: DoT + control LAND on the enemy.
+    //    DoT will tick real HP each phase (the status damage engine); control gates
+    //    the enemy's turn via `canAct`. Attribute projected DoT for the summary.
     for (const ev of res.events) {
-        if (ev.kind === 'damage' && ev.target === 'enemy') {
-            directDamage += ev.amount;
-            events.push({ kind: 'damage-dealt', cardId: card.id, target: 'enemy', amount: ev.amount });
-        } else if (ev.kind === 'effect-applied') {
+        if (ev.kind === 'effect-applied') {
             const def = ev.effect;
             const target: 'self' | 'enemy' = ev.appliedTo;
             const sideEffects = target === 'enemy' ? enemy.effects : player.effects;
             const active = sideEffects.find(a => a.effectId === def.id);
             if (active && target === 'enemy') {
                 const landed: LandedEffect = { effectId: def.id, effect: def, active, target };
-                const { track, amount } = pressureForLanded(landed);
-                if (track !== 'none' && amount > 0) addPressure(track, amount, landed, def, active.intensity);
+                const cls = effectPressure(def, active.intensity, active.remainingDuration).track;
+                attribution = recordAttribution(attribution, card.id, card.name, landed, 0);
+                events.push({ kind: 'effect-landed', cardId: card.id, effectId: def.id, target: 'enemy', track: cls, pressure: 0, intensity: active.intensity, effect: def });
+                if (cls === 'dot' || cls === 'control') landedOffensiveIds.push(def.id);
                 // Meaningful land = intensity increased over the snapshot (or new).
                 if ((before[def.id] ?? 0) < active.intensity) landedOnEnemy = true;
             } else if (active) {
@@ -661,27 +613,10 @@ function playBottomAction(
         }
     }
 
-    // 6. Color-match bonus — a flat track bump when the drafted die matches the
-    //    card's color (deckbuilding synergy, §3). Only on an offensive land.
-    if (colorMatch && landedOffensive && card.track !== 'none') {
-        const t = card.track;
-        tracks = { ...tracks, [t]: tracks[t] + COLOR_MATCH_PRESSURE_BONUS };
-        phaseProgress = { ...phaseProgress, [t]: phaseProgress[t] + COLOR_MATCH_PRESSURE_BONUS };
-    }
-
-    // 7. Befriend card lowers the Control Saturation threshold (§6 Q6).
-    if (card.verbClass === 'befriend') {
-        tracks = { ...tracks, controlThreshold: Math.max(1, tracks.controlThreshold - BEFRIEND_THRESHOLD_REDUCTION) };
-        tracks = { ...tracks, control: tracks.control + TOP_ACTION_PRESSURE };
-        phaseProgress = { ...phaseProgress, control: phaseProgress.control + TOP_ACTION_PRESSURE };
-    }
-
-    // 8. Status-combo loop (§1, Spec 26b tuning §3): the drafted die REFRESHES so
-    //    the player can chain another powered card this turn ONLY when this card
-    //    landed a status NEW to the current chain — a long "big turn" comes from
-    //    playing DIFFERENT cards. Re-applying a status already landed this chain
-    //    (mono-spam) still lands its diminished hit but SPENDS the die, ending the
-    //    turn. A play that lands nothing on the enemy also spends the die.
+    // 6. Status-combo loop: the drafted die REFRESHES (chain another card) ONLY
+    //    when this card landed a status NEW to the current chain — a long "big
+    //    turn" comes from playing DIFFERENT statuses. Re-applying one (or landing
+    //    nothing) spends the die and ends the turn.
     const chainBefore = state.chainEffectIds ?? [];
     const newChainIds = landedOffensiveIds.filter(id => !chainBefore.includes(id));
     const landedNewDistinct = newChainIds.length > 0;
@@ -693,11 +628,8 @@ function playBottomAction(
         events.push({ kind: 'die-spent', dieId: drafted.id, color: drafted.color });
     }
 
-    events.push({ kind: 'pressure-updated', dot: tracks.dot, control: tracks.control });
-
     let next: CombatEncounterState = {
-        ...state, player, enemy, dice, combatResources,
-        pressureTracks: tracks, phaseProgress, attribution, effectApplyCounts: applyCounts,
+        ...state, player, enemy, dice, combatResources, attribution,
         chainEffectIds: [...chainBefore, ...newChainIds],
         directDamageDealt: directDamage,
     };
@@ -723,13 +655,9 @@ function resourcesCover(resources: CombatResources, skill: Skill): boolean {
 /** Checks for a global threshold crossing mid-phase (immediate outcome, §7.1). */
 function checkImmediateOutcome(state: CombatEncounterState, events: CombatEvent[]): CombatTransition {
     if (state.finalOutcome) return { state, events };
+    // HP model: the enemy's only bar is HP. A successful Befriend opens the
+    // spare/exploit mercy choice (handled via `mercyChoiceActive`), not here.
     if (isDefeated(state.enemy)) return endCombat(state, 'victory', events);
-    if (dotErosionReached(state.pressureTracks)) return endCombat(state, 'victory', events);
-    if (controlSaturationReached(state.pressureTracks)) {
-        const ended: CombatEncounterState = { ...state, phase: 'mercy-choice', finalOutcome: 'mercy', mercyChoiceActive: true };
-        const ev: CombatEvent = { kind: 'mercy-opened', message: `${state.enemy.name} is overwhelmed — spare or exploit?` };
-        return { state: withLog(ended, [ev]), events: [...events, ev] };
-    }
     return { state, events };
 }
 
@@ -742,9 +670,10 @@ function endCombat(state: CombatEncounterState, outcome: CombatEncounterState['f
 // ── Phase resolution + between-phases (§4.4, §4.5, §9) ───────────────────────
 
 /**
- * Ends the current threat phase: compares the phase's pressure contribution to
- * its thresholds, marks Clear / Overwhelmed, fires the threat action on an
- * Overwhelmed phase, then runs between-phases processing (unless combat ended).
+ * Resolves the current threat phase (HP model): the enemy executes its
+ * telegraphed threat action on the player UNLESS a control status hinders it
+ * (`canAct` → skipTurn). This is how control "hinders the enemy" — it loses its
+ * attack this phase. Then between-phases processing runs (DoT ticks, draw, advance).
  */
 export function resolveThreatPhase(state: CombatEncounterState, rng: () => number = defaultRng): CombatTransition {
     if (state.phase === 'complete' || state.finalOutcome) return { state, events: [] };
@@ -753,15 +682,16 @@ export function resolveThreatPhase(state: CombatEncounterState, rng: () => numbe
     const phase = state.threatPhases[idx];
     const events: CombatEvent[] = [];
 
-    const cleared = state.phaseProgress.dot >= phase.dotPressureRequired
-        || state.phaseProgress.control >= phase.controlPressureRequired;
+    // Control on the enemy can rob it of this phase's turn (skipTurn → hindered).
+    const act = canAct(state.enemy.effects as ActiveEffect[], phase.enemyStance);
+    const hindered = !act.canAct;
 
     let player = state.player;
     let enemy = state.enemy;
-    const penaltiesApplied = [];
+    const penaltiesApplied: CombatThreatEffect[] = [];
 
-    if (!cleared) {
-        // Overwhelmed — the threat action fires on the player (HARD-scaled, §6).
+    if (!hindered) {
+        // The enemy attacks: its telegraphed threat action fires on the player.
         for (const eff of phase.threatAction.effects) {
             if (eff.damage && eff.damage > 0) {
                 player = applyDamage(player, Math.round(eff.damage * THREAT_DAMAGE_SCALE));
@@ -786,22 +716,16 @@ export function resolveThreatPhase(state: CombatEncounterState, rng: () => numbe
         events.push({ kind: 'threat-fired', phaseIndex: phase.index, description: phase.threatAction.description, effects: phase.threatAction.effects });
     }
 
-    const mark: 'clear' | 'overwhelmed' = cleared ? 'clear' : 'overwhelmed';
+    // Mark: enemy hindered (control worked) → 'clear'; enemy acted → 'overwhelmed'.
+    const mark: 'clear' | 'overwhelmed' = hindered ? 'clear' : 'overwhelmed';
     events.push({ kind: 'phase-resolved', phaseIndex: phase.index, mark });
 
     const result: CombatPhaseResult = {
         phaseIndex: phase.index,
         mark,
-        dotContributed: state.phaseProgress.dot,
-        controlContributed: state.phaseProgress.control,
-        enemyActionFired: cleared ? '' : phase.threatAction.description,
+        enemyActionFired: hindered ? '' : phase.threatAction.description,
         penaltiesApplied,
     };
-
-    // Momentum carry from the surplus on the better track (§4.5).
-    const dotSurplus = state.phaseProgress.dot - phase.dotPressureRequired;
-    const controlSurplus = state.phaseProgress.control - phase.controlPressureRequired;
-    const carry = { dot: momentumCarry(dotSurplus), control: momentumCarry(controlSurplus) };
 
     const threatMarks = state.threatMarks.slice();
     if (idx < threatMarks.length) threatMarks[idx] = mark;
@@ -813,11 +737,10 @@ export function resolveThreatPhase(state: CombatEncounterState, rng: () => numbe
         phase: 'phase-resolve',
         threatMarks,
         phaseResults: [...state.phaseResults, result],
-        momentumCarry: carry,
     };
     next = withLog(next, events);
 
-    // Outcome checks after the threat action.
+    // Outcome checks after the threat action (HP).
     const outcome = pendingOutcome(next);
     if (outcome) return endCombat(next, outcome, events);
 
@@ -825,19 +748,17 @@ export function resolveThreatPhase(state: CombatEncounterState, rng: () => numbe
     return processBetweenPhases(next, rng, events);
 }
 
-/** Returns a terminal outcome if one is pending, else null. */
+/** Returns a terminal outcome if one is pending, else null (HP model). */
 function pendingOutcome(state: CombatEncounterState): CombatEncounterState['finalOutcome'] {
     if (isDefeated(state.player)) return 'defeat';
     if (isDefeated(state.enemy)) return 'victory';
-    if (dotErosionReached(state.pressureTracks)) return 'victory';
-    if (controlSaturationReached(state.pressureTracks)) return 'mercy';
     return null;
 }
 
 /**
- * Between-phases processing (§4.5): DoT ticks (start+end phase) on both sides,
- * effect durations tick, momentum carries into the next phase, and a fresh hand
- * of 5 is drawn. Advances the phase pointer (looping the final phase).
+ * Between-phases processing (§4.5): DoT ticks erode HP (start+end phase) on both
+ * sides, effect durations tick, and a fresh hand of 5 is drawn. Advances the
+ * phase pointer (looping the final phase so the enemy keeps attacking).
  */
 export function processBetweenPhases(
     state: CombatEncounterState,
@@ -850,45 +771,24 @@ export function processBetweenPhases(
     const enemyDotTicks = dotTickBreakdown(state.enemy.effects);
     const playerDotTicks = dotTickBreakdown(state.player.effects);
 
-    // 2. Process a full round of effects on the enemy (DoT erodes enemy HP).
+    // 2. Process a full round of effects on the enemy — DoT ERODES real enemy HP
+    //    (the status damage engine; no track, the HP loss is the win progress).
     const enemyStart = processRoundStartEffects(state.enemy);
     const enemyEnd = processRoundEndEffects(enemyStart.target);
     const enemy = enemyEnd.target as Enemy;
-    const enemyDotTotal = enemyStart.dotDamage + enemyEnd.dotDamage;
 
     // 3. Process a full round of effects on the player (DoT / regen / drain).
     const playerStart = processRoundStartEffects(state.player);
     const playerEnd = processRoundEndEffects(playerStart.target);
     const player = playerEnd.target as Character;
-    const playerDotTotal = playerStart.dotDamage + playerEnd.dotDamage;
 
     for (const t of enemyDotTicks) events.push({ kind: 'dot-tick', effectId: t.effectId, label: t.label, amount: t.amount, target: 'enemy' });
     for (const t of playerDotTicks) events.push({ kind: 'dot-tick', effectId: t.effectId, label: t.label, amount: t.amount, target: 'self' });
 
-    // 4. Enemy DoT erosion feeds the dot track as REALIZED progress — scaled by
-    //    DOT_EROSION_TRACK_WEIGHT (Spec 26b tuning §3). The card's LAND pressure
-    //    already credits the projected erosion; feeding the full per-round tick on
-    //    top double-counted DoT and let one spammed DoT card win in ~1 round.
-    const erosionToTrack = Math.round(enemyDotTotal * DOT_EROSION_TRACK_WEIGHT);
-    let tracks = state.pressureTracks;
-    if (erosionToTrack > 0) {
-        tracks = { ...tracks, dot: tracks.dot + erosionToTrack };
-    }
-
-    // 5. Momentum carry seeds the next phase's contribution; add the (scaled)
-    //    enemy DoT erosion to it.
-    const phaseProgress = {
-        dot: state.momentumCarry.dot + erosionToTrack,
-        control: state.momentumCarry.control,
-    };
-    if (state.momentumCarry.dot > 0 || state.momentumCarry.control > 0) {
-        events.push({ kind: 'momentum-carried', dot: state.momentumCarry.dot, control: state.momentumCarry.control });
-    }
-
-    // 6. Advance the phase pointer — loop the final phase so combat resolves.
+    // 4. Advance the phase pointer — loop the final phase so the enemy keeps acting.
     const nextIndex = Math.min(state.currentPhaseIndex + 1, state.threatPhases.length - 1);
 
-    // 7. Draw a fresh hand of 5 (discard the old hand — Hazard's "draw fresh").
+    // 5. Draw a fresh hand of 5 (discard the old hand — Hazard's "draw fresh").
     const discardedHand = state.hand.map(h => h.cardId);
     const draw = drawCombatCards(state.drawPile, [...state.discard, ...discardedHand], state.deck, COMBAT_HAND_SIZE, rng);
     let uid = state.round * 100;
@@ -899,8 +799,6 @@ export function processBetweenPhases(
         ...state,
         player,
         enemy,
-        pressureTracks: tracks,
-        phaseProgress,
         currentPhaseIndex: nextIndex,
         drawPile: draw.drawPile,
         discard: draw.discard,
@@ -915,9 +813,7 @@ export function processBetweenPhases(
     };
     next = withLog(next, events);
 
-    void playerDotTotal; // player DoT already applied to HP; tracked for parity.
-
-    // 8. Outcome checks after ticks.
+    // 6. Outcome checks after ticks (HP).
     const outcome = pendingOutcome(next);
     if (outcome) return endCombat(next, outcome, [...priorEvents, ...events]);
 
@@ -1135,29 +1031,25 @@ export function cardReadPreview(state: CombatEncounterState, card: CombatCard): 
 }
 
 /**
- * Spec 26b UI §1 — projects the track + pressure a card would add if POWERed
- * RIGHT NOW with the currently drafted die: read multiplier, color-match bonus,
- * diminishing returns (the card's primary effect's prior count), and the
- * diversity synergy. Single-source with the live engine via `marginalPressure`.
- * If no die is drafted, previews at the neutral read.
+ * UI preview (HP model): projects the IMMEDIATE strike HP damage a card would
+ * deal if POWERed RIGHT NOW with the currently drafted die — read multiplier +
+ * color-match bonus + the strike weight. (Status DoT damage is over-time, shown
+ * separately.) `track` is the card's classification, for flavor. Neutral read
+ * when no die is drafted.
  */
 export function projectCardPressure(
     state: CombatEncounterState,
     card: CombatCard,
 ): { track: 'dot' | 'control' | 'none'; amount: number } {
-    if (card.track === 'none') return { track: 'none', amount: 0 };
     const d = draftedDie(state);
     const read: CombatReadResult = d ? state.lastRead : 'neutral';
     const mult = READ_PRESSURE_MULT[read];
     const colorMatch = !!d && (d.color === 'wild' || d.color === card.stance);
-    const prior = card.primaryEffectId ? (state.effectApplyCounts[card.primaryEffectId] ?? 0) : 0;
-    // Escalating diversity synergy preview: distinct offensive statuses already
-    // live, +1 if THIS card would add a new distinct status (Spec 26b §3).
-    const baseDistinct = countEnemyOffensiveStatuses(state.enemy.effects);
-    const addsDistinct = card.primaryEffectId !== null
-        && !state.enemy.effects.some(ae => ae.effectId === card.primaryEffectId);
-    const synergy = diversitySynergy(baseDistinct + (addsDistinct ? 1 : 0));
-    const amount = marginalPressure(card.bottomPressurePreview, prior, mult, colorMatch ? COLOR_MATCH_PRESSURE_BONUS : 0, synergy);
+    const skill = card.skillId ? lookupSkill(card.skillId) : undefined;
+    const base = skill ? calculateSkillDamage(state.player, skill) : 0;
+    const amount = base > 0
+        ? Math.max(1, Math.round(base * DIRECT_DAMAGE_WEIGHT * mult) + (colorMatch ? COLOR_MATCH_PRESSURE_BONUS : 0))
+        : 0;
     return { track: card.track, amount };
 }
 
