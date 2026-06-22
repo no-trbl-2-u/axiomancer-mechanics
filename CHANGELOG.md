@@ -10,13 +10,43 @@ Pre-1.0.0 status: minor bumps may carry breaking public-API changes
 map exposes `.` (top-level barrel) and `./node` (Node.js adapter); no
 deep imports are part of the supported surface.
 
+## [0.30.0] — 2026-06-22
+
+HP-only combat (Hazard-Pattern): the enemy's SOLE bar is now HP. Removed the two
+abstract Pressure Tracks (DoT Erosion + Control Saturation), their per-phase
+thresholds, and the Control-Saturation mercy. Combat is won by dropping the
+enemy's HP to 0 — DoT erodes it (the engaging, efficient damage); the immediate
+strike is the weak basic baseline. Control status now genuinely HINDERS the enemy
+(it skips its telegraphed turn via `canAct`); the Befriend path still opens the
+spare/exploit choice on a low-HP foe. The dice / hidden-read / Conviction /
+Signature tactical layer is unchanged.
+
+### Removed (public surface)
+
+- Type `CombatPressureTracks`; functions `dotErosionReached`,
+  `controlSaturationReached`, `momentumCarry`, `MOMENTUM_CAP`,
+  `pressureForLanded`, `deriveGlobalThresholds`; constants `TOP_ACTION_PRESSURE`,
+  `BEFRIEND_THRESHOLD_REDUCTION`.
+- `CombatThreatPhase` no longer carries `dotPressureRequired` /
+  `controlPressureRequired`; `CombatSummary` drops `controlPeak` /
+  `controlThreshold`; `CombatAttributionRow.pressureContributed` → `damageDealt`.
+
+### Changed
+
+- The stance-read multiplier + color-match bonus now scale a card's immediate
+  STRIKE HP damage; the enemy executes its threat action every phase (gated by
+  control). Signatures deal real HP / apply DoT / hinder via control.
+
 ## [0.29.0] — 2026-06-22
 
 Combat-redesign release. Consolidates everything that shipped after the
 0.23.0 equipment-ownership work through the 0.24.x additive-surface patches
 up to the Spec 25 / 26 / 26b combat overhaul. Intermediate `chore(release)`
 bumps (0.24.1, 0.24.2, 0.25.0) were published from `package.json` without
-their own CHANGELOG headings; their content is folded in here.
+their own CHANGELOG headings; their content is folded in here. (The combat
+engagement tuning — escalating diversity synergy, variety-gated combo loop,
+diminishing returns, intensity cap — shipped here and is superseded by the
+0.30.0 HP-only rework above.)
 
 ### Added
 

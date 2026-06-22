@@ -37,13 +37,8 @@ import {
 } from '../combat.dice';
 import { buildCombatDeck, COMBAT_HAND_SIZE } from '../combat.deck';
 import { classifyVerbClass, toCombatCard, projectDeck } from '../combat.cards';
-import {
-    momentumCarry, dotErosionReached, controlSaturationReached, MOMENTUM_CAP,
-} from '../combat.pressure';
-import {
-    generateDefaultThreatSequence, deriveGlobalThresholds,
-} from '../combat.threat';
-import type { CombatManaDie, CombatPressureTracks, CombatEvent } from '../combat.encounter.types';
+import { generateDefaultThreatSequence } from '../combat.threat';
+import type { CombatManaDie, CombatEvent } from '../combat.encounter.types';
 
 const DOT_BODY = 'slippery-slope';       // body, tier 2, DoT
 const CONTROL_HEART = 'eternal-regress'; // heart, tier 2, control
@@ -78,50 +73,8 @@ function die(id: string, color: CombatManaDie['color'], state: CombatManaDie['st
     return { id, color, state, temporary: false };
 }
 
-function tracks(partial: Partial<CombatPressureTracks>): CombatPressureTracks {
-    return { dot: 0, control: 0, dotThreshold: 10, controlThreshold: 10, ...partial };
-}
-
 /** A fixed-value RNG for the dice bag (deterministic, no Math.random spy). */
 const fixed = (v: number) => (): number => v;
-
-// ── Win-condition predicates (§5) — the doctrine-critical surface ────────────
-
-describe('Spec 25 §5 — Pressure-Track win-condition predicates', () => {
-    it('dotErosionReached fires exactly at the threshold (>=)', () => {
-        expect(dotErosionReached(tracks({ dot: 9, dotThreshold: 10 }))).toBe(false);
-        expect(dotErosionReached(tracks({ dot: 10, dotThreshold: 10 }))).toBe(true);
-        expect(dotErosionReached(tracks({ dot: 11, dotThreshold: 10 }))).toBe(true);
-    });
-
-    it('controlSaturationReached fires exactly at the threshold (>=)', () => {
-        expect(controlSaturationReached(tracks({ control: 7, controlThreshold: 8 }))).toBe(false);
-        expect(controlSaturationReached(tracks({ control: 8, controlThreshold: 8 }))).toBe(true);
-        expect(controlSaturationReached(tracks({ control: 99, controlThreshold: 8 }))).toBe(true);
-    });
-
-    it('the two tracks are independent — control filling does not trip DoT', () => {
-        const t = tracks({ dot: 0, dotThreshold: 10, control: 50, controlThreshold: 8 });
-        expect(controlSaturationReached(t)).toBe(true);
-        expect(dotErosionReached(t)).toBe(false);
-    });
-});
-
-// ── Momentum carry (§4.5) — pure ─────────────────────────────────────────────
-
-describe('Spec 25 §4.5 — momentum carry', () => {
-    it('carries ⌊surplus/2⌋', () => {
-        expect(momentumCarry(0)).toBe(0);
-        expect(momentumCarry(1)).toBe(0);
-        expect(momentumCarry(2)).toBe(1);
-        expect(momentumCarry(5)).toBe(2);
-    });
-
-    it('never goes negative and is capped at MOMENTUM_CAP', () => {
-        expect(momentumCarry(-4)).toBe(0);
-        expect(momentumCarry(100)).toBe(MOMENTUM_CAP);
-    });
-});
 
 // ── Dice primitives (§4.2 / §4.7) — the self-reinforcing status loop ─────────
 
@@ -246,21 +199,15 @@ describe('Spec 25 §6 — card adapters', () => {
 // ── Threat helpers (§10) ─────────────────────────────────────────────────────
 
 describe('Spec 25 §10 — threat sequence helpers', () => {
-    it('generateDefaultThreatSequence escalates per-phase requirements', () => {
+    it('generateDefaultThreatSequence builds a multi-phase sequence of enemy attacks', () => {
         const seq = generateDefaultThreatSequence(makeEnemy(100, 'body'));
         expect(seq.length).toBeGreaterThanOrEqual(2);
-        for (let i = 1; i < seq.length; i++) {
+        for (let i = 0; i < seq.length; i++) {
             expect(seq[i].index).toBe(i + 1);
-            expect(seq[i].dotPressureRequired).toBeGreaterThanOrEqual(seq[i - 1].dotPressureRequired);
+            // Each phase is a real enemy turn: a telegraphed threat action.
+            expect(seq[i].threatAction.effects.length).toBeGreaterThan(0);
         }
         expect(seq[seq.length - 1].isFinalPhase).toBe(true);
-    });
-
-    it('deriveGlobalThresholds sums the per-phase requirements', () => {
-        const seq = generateDefaultThreatSequence(makeEnemy(100));
-        const { dotThreshold, controlThreshold } = deriveGlobalThresholds(seq);
-        expect(dotThreshold).toBe(seq.reduce((s, p) => s + p.dotPressureRequired, 0));
-        expect(controlThreshold).toBe(seq.reduce((s, p) => s + p.controlPressureRequired, 0));
     });
 });
 

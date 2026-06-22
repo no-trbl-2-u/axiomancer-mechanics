@@ -215,10 +215,8 @@ export type CombatIntentType =
 export interface CombatThreatPhase {
     index: number;                            // 1-indexed for display
     enemyStance: Stance;                      // dominant stance — HIDDEN until revealed (Spec 26b §2)
-    threatAction: CombatThreatAction;         // fires at phase-end if not controlled
-    dotPressureRequired: number;              // DoT contribution to clear this phase
-    controlPressureRequired: number;          // Control contribution to clear this phase
-    isFinalPhase: boolean;                    // final phase uses harder thresholds
+    threatAction: CombatThreatAction;         // the enemy's telegraphed attack each phase (HP model)
+    isFinalPhase: boolean;                    // last telegraph in the sequence (then it loops)
 
     // ── Spec 26 — intent telegraph ──────────────────────────────────────────
     /** Auto-derived from `threatAction.effects` (deriveIntentType); override for
@@ -235,27 +233,16 @@ export type CombatThreatMark = 'clear' | 'overwhelmed' | 'pending';
 
 export interface CombatPhaseResult {
     phaseIndex: number;
-    mark: 'clear' | 'overwhelmed';
-    dotContributed: number;
-    controlContributed: number;
-    enemyActionFired: string;                 // '' when cleared
+    mark: 'clear' | 'overwhelmed';            // clear = enemy hindered (control); overwhelmed = it acted
+    enemyActionFired: string;                 // '' when the enemy was hindered (control skip)
     penaltiesApplied: CombatThreatEffect[];
 }
 
 // ---------------------------------------------------------------------------
-// Pressure tracks (Spec 25 §4.1, §5)
+// HP model (the enemy's only bar). Win = enemy HP → 0; lose = player HP → 0.
+// Status effects DO real things: DoT erodes enemy HP each phase; control gates
+// the enemy's turn via `canAct`. There are no abstract pressure tracks/bars.
 // ---------------------------------------------------------------------------
-
-export interface CombatPressureTracks {
-    /** Cumulative DoT pressure toward DoT Erosion victory. */
-    dot: number;
-    /** Cumulative control pressure toward Control Saturation mercy. */
-    control: number;
-    /** Victory via DoT Erosion when `dot >= dotThreshold`. */
-    dotThreshold: number;
-    /** Mercy resolution via Saturation when `control >= controlThreshold`. */
-    controlThreshold: number;
-}
 
 /** Per-skill attribution row for the post-combat summary (§7.7). */
 export interface CombatAttributionRow {
@@ -263,22 +250,20 @@ export interface CombatAttributionRow {
     name: string;
     /** Total DoT damage projected/dealt by this card's effects. */
     dotDamage: number;
-    /** Total pressure this card contributed to its track. */
-    pressureContributed: number;
+    /** Total HP damage this card dealt the enemy (strike + DoT, attributed). */
+    damageDealt: number;
     /** Phases across which the card's effects were active. */
     phases: number;
 }
 
 export interface CombatSummary {
     outcome: CombatOutcome;
-    /** e.g. 'Victory via DoT Erosion'. */
+    /** e.g. 'Victory — the enemy falls'. */
     headline: string;
     rows: CombatAttributionRow[];
     totalDotDamage: number;
     directDamage: number;
-    controlPeak: number;
-    controlThreshold: number;
-    /** Skill card that contributed most to the winning track ('' if none). */
+    /** Skill card that dealt the most enemy HP damage ('' if none). */
     bestCard: string;
 }
 
@@ -287,10 +272,10 @@ export interface CombatSummary {
 // ---------------------------------------------------------------------------
 
 export type CombatOutcome =
-    | 'victory'    // DoT Erosion threshold reached
-    | 'mercy'      // Control Saturation threshold reached (friendship path)
+    | 'victory'    // enemy HP → 0 (DoT erosion + strikes)
+    | 'mercy'      // spared a low-HP foe via Befriend (the friendship path)
     | 'defeat'     // player HP → 0
-    | 'retreat';   // player used Retreat card
+    | 'retreat';   // player used the Retreat card
 
 export type CombatEncounterPhase =
     | 'reveal'         // enemy + opening hand visible before dice are rolled
@@ -351,14 +336,11 @@ export interface CombatEncounterState {
     revealedStances: number[];
     /** Read result of the most recent draft (transient — for the UI flash). */
     lastRead: CombatReadResult;
-    /** Times each enemy effect id has been applied by a card this combat. Drives
-     *  diminishing returns on spamming the SAME effect (Spec 26b tuning §2). */
-    effectApplyCounts: Record<string, number>;
-    /** Spec 26b tuning §3 — distinct OFFENSIVE effect ids landed during the
-     *  current drafted-die chain (this turn). The status-combo loop refreshes the
-     *  die only when a card lands a status NEW to this chain, so a long "big turn"
-     *  comes from playing DIFFERENT cards; re-applying the same status ends the
-     *  turn. Reset on each draft. Optional for back-compat with state literals. */
+    /** Distinct OFFENSIVE effect ids landed during the current drafted-die chain
+     *  (this turn). The status-combo loop refreshes the die only when a card lands
+     *  a status NEW to this chain, so a long "big turn" comes from playing
+     *  DIFFERENT cards; re-applying the same status ends the turn. Reset on each
+     *  draft. Optional for back-compat with state literals. */
     chainEffectIds?: string[];
     /** A carried unspent drafted die color, kept into the next turn so a good die
      *  isn't wasted (Spec 26b tuning §3). Null when nothing carried. */
@@ -373,15 +355,8 @@ export interface CombatEncounterState {
     hand: CombatHandEntry[];               // current hand (up to 5)
     persistentZone: string[];              // ENCHANT-equivalent persistent buff cards
     threatPhases: CombatThreatPhase[];     // enemy's authored / generated threat sequence
-    threatMarks: CombatThreatMark[];       // O / X ledger per phase
+    threatMarks: CombatThreatMark[];       // O / X ledger per phase (hindered / acted)
     currentPhaseIndex: number;             // 0-indexed into threatPhases
-    pressureTracks: CombatPressureTracks;  // cumulative DoT + Control toward victory/mercy
-    /** Pressure accrued DURING the current phase (for the per-phase Clear
-     *  check), seeded each phase by the momentum carry. Distinct from the
-     *  cumulative `pressureTracks`. */
-    phaseProgress: { dot: number; control: number };
-    /** Momentum surplus carried into the next phase (⌊surplus/2⌋ capped at 3). */
-    momentumCarry: { dot: number; control: number };
     phaseResults: CombatPhaseResult[];     // completed phase records
     combatResources: CombatResources;      // Fallacy/Paradox bank (+ stance scratch)
     round: number;                         // total rounds elapsed

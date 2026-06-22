@@ -2,15 +2,15 @@
  * Spec 25 — Hazard-Pattern Combat: enemy threat sequences (§4.4, §10).
  *
  * Each enemy fights as an authored *threat sequence* — 2-5 phases, revealed in
- * full at combat start (Hazard's full-information doctrine). A phase is Cleared
- * when the player's pressure meets its threshold; otherwise it is Overwhelmed
- * and the threat action fires on the player.
+ * full at combat start (Hazard's full-information doctrine). HP MODEL: the enemy
+ * executes its phase threat action EVERY phase (hitting the player), unless a
+ * control status hinders it (`canAct`). There are no clear thresholds — the
+ * player wins by dropping the enemy's HP to 0.
  *
- * Authoring is HP-independent: an authored phase specifies the enemy's stance,
- * a threat action, and *factors* (× enemy HP) that say whether the enemy is
- * weak to DoT or to control. `getThreatSequence` resolves the numeric
- * thresholds from the live enemy HP, so the autonomous balance-tuning loop can
- * still move enemy stats without invalidating the sequences.
+ * An authored phase specifies the enemy's hidden stance (the RPS read), a threat
+ * action (damage + optional debuff/heal), and a thematic stance tell. Threat
+ * damage scales with level + difficulty, so the autonomous balance-tuning loop
+ * can move enemy stats without re-authoring the sequences.
  */
 
 import type { Enemy } from '../Enemy/types';
@@ -29,15 +29,11 @@ import { AUTHORED_THREAT_SEQUENCES } from './combat.threat-sequences';
  */
 export interface AuthoredThreatPhase {
     enemyStance: Stance;
-    /**
-     * RELATIVE DoT-clear multiplier for this phase (1.0 = neutral). Below 1 = the
-     * enemy is WEAK to erosion on this phase (cheaper to clear via DoT); above 1 =
-     * resistant. The absolute height comes from level + difficulty, not HP — see
-     * `phaseThreshold`. A weak track should sit ~0.7; a resistant one ~1.25.
-     */
-    dotFactor: number;
-    /** RELATIVE Control-clear multiplier for this phase (1.0 neutral; <1 weak / mercy-prone; >1 resistant). */
-    controlFactor: number;
+    /** VESTIGIAL (HP model): the old DoT/Control relative clear factors. Kept
+     *  OPTIONAL so the ~60 authored literals still compile; unused now that HP is
+     *  the sole win condition (no pressure tracks / thresholds). */
+    dotFactor?: number;
+    controlFactor?: number;
     /** Threat-action damage as a multiple of the level/difficulty budget (default 1.0). */
     damageWeight?: number;
     /** Optional player-debuff applied when this phase is Overwhelmed (telegraphed punish). */
@@ -54,85 +50,19 @@ export interface AuthoredThreatPhase {
 }
 
 /**
- * Threshold model (hazard-combat enemy pass, 2026-06-21).
- *
- * Per-phase clear thresholds scale with enemy LEVEL and DIFFICULTY, *not* raw HP.
- * Rationale (measured by the balance sim): status pressure output is essentially
- * HP-independent — a poison ticks the same 4/round against a L1 crab or a L50
- * capstone — so the previous `factor × maxHP` model made thresholds explode
- * (~33 at L1 → ~890 at L50) while a committed status play still only moves a
- * track ~10-20. Every enemy above ~L12 became unwinnable on either track. Level +
- * difficulty scaling keeps each tier inside its authored 3-8 play window
- * (boss ~10) at every level, and the relative per-phase factors above set which
- * track each enemy is weak to (both win paths stay live across the roster).
- */
-const PHASE_BASE = 20;           // baseline pressure to clear a phase at level 0
-const PHASE_PER_LEVEL = 0.1;     // NEARLY FLAT. Two hard caps make per-phase
-                                 // thresholds level-independent: (1) the learnable
-                                 // skill pool caps status output at ~10-12
-                                 // pressure/play at EVERY level; (2) a phase is
-                                 // fought with ONE hand (`COMBAT_HAND_SIZE` cards) —
-                                 // ~5-6 plays — so a threshold much above ~50 is
-                                 // unclearable by anyone. An enemy's DIFFICULTY
-                                 // therefore lives in its tier + authored pattern +
-                                 // threat damage, not its level.
-
-/** Default RELATIVE factors for unauthored enemies (neutral both tracks). */
-const DEFAULT_DOT_FACTOR = 1.0;
-const DEFAULT_CONTROL_FACTOR = 1.05;
-
-/** Per-phase escalation by index — supports up to 5-phase bosses. Kept MILD:
- *  a one-hand phase can't absorb a steep wall, so later-phase danger should come
- *  from deadlier threat actions (authored), not a runaway clear threshold. */
-const ESCALATION = [1.0, 1.1, 1.2, 1.3, 1.4];
-
-/**
- * Per-DIFFICULTY height multiplier (the win-rate-band lever). Gives a boss real
- * bite a same-level normal lacks; `simple` foes resolve fast. Tuned vs the sim to
- * land normal 80-95% / elite 50-70% / boss 30-55% win rates.
+ * Per-DIFFICULTY threat-damage multiplier (the win-rate-band lever, HP model).
+ * Gives a boss real bite a same-level normal lacks; `simple` foes hit softly.
+ * In the HP model the enemy attacks each phase, so its DIFFICULTY lives in its
+ * tier + authored pattern + threat damage — there are no clear thresholds.
  */
 const DIFFICULTY_MULT: Record<string, number> = {
     simple: 0.7, normal: 0.92, elite: 1.08, boss: 1.25, unique: 1.2,
 };
 
-/** Per-phase clear FLOOR — even a trivial foe stays a 3-4 play exchange. */
-const MIN_PHASE = 12;
-
-/**
- * Per-phase HP share that caps the CONTROL (mercy) threshold. A win via Control
- * Saturation is a MERCY — it must be reachable BEFORE the enemy's HP is chipped to
- * zero (which resolves as a kill, not a spare). Control plays also deal incidental
- * HP damage, so on a LOW-HP foe a level-based control threshold can exceed the HP
- * and the enemy dies first — mercy never fires (the Spec 25 "both win paths live"
- * invariant breaks). Capping the control base at a fraction of HP guarantees mercy
- * out-races the kill on small foes; on big foes the level-based base binds instead
- * (the cap is non-binding), so high HP never makes mercy unreachable. The DoT path
- * is NOT capped — DoT erosion and an HP kill both resolve as victory, no conflict.
- */
-const MERCY_HP_K = 0.42;
-
-/** Resolves an enemy's per-difficulty height multiplier (neutral fallback). */
+/** Resolves an enemy's per-difficulty threat-damage multiplier (neutral fallback). */
 function difficultyMult(enemy: Enemy): number {
     const d = (enemy as Enemy & { difficulty?: string }).difficulty;
     return (d !== undefined && DIFFICULTY_MULT[d] !== undefined) ? DIFFICULTY_MULT[d] : 1.0;
-}
-
-/** Per-track threshold bases: DoT is purely level-based; Control is capped at a
- *  fraction of HP so the mercy path out-races the kill (see `MERCY_HP_K`). */
-function thresholdBases(enemy: Enemy): { dotBase: number; controlBase: number } {
-    const level = Math.max(1, enemy.level);
-    const levelBase = PHASE_BASE + PHASE_PER_LEVEL * level;
-    return { dotBase: levelBase, controlBase: Math.min(levelBase, Math.max(1, enemy.maxHealth) * MERCY_HP_K) };
-}
-
-/**
- * The per-phase clear threshold for one track: the track `base` sets the absolute
- * height; `escalation` lifts later phases; the relative `factor` says how
- * weak/resistant the enemy is on this track for this phase.
- */
-function phaseThreshold(base: number, dMult: number, phaseIndex: number, factor: number): number {
-    const esc = ESCALATION[Math.min(phaseIndex, ESCALATION.length - 1)];
-    return Math.max(MIN_PHASE, Math.round(base * esc * dMult * factor));
 }
 
 // ── Spec 26 §2 — intent derivation (the telegraph; stance stays hidden) ──────
@@ -241,15 +171,12 @@ function enemyStanceHint(enemy: Enemy): string | undefined {
 function resolveAuthored(enemy: Enemy, authored: AuthoredThreatPhase[]): CombatThreatPhase[] {
     const level = Math.max(1, enemy.level);
     const dMult = difficultyMult(enemy);
-    const { dotBase, controlBase } = thresholdBases(enemy);
     return authored.map((p, i) => {
         const damage = threatDamageBudget(level, dMult, i, p.damageWeight ?? 1);
         return withIntent({
             index: i + 1,
             enemyStance: p.enemyStance,
             threatAction: buildThreatAction(p.actionText, damage, p.threatEffectId, p.threatIntensity, p.enemyHeal),
-            dotPressureRequired: phaseThreshold(dotBase, dMult, i, p.dotFactor),
-            controlPressureRequired: phaseThreshold(controlBase, dMult, i, p.controlFactor),
             isFinalPhase: p.isFinalPhase ?? i === authored.length - 1,
             stanceHint: p.stanceHint ?? enemyStanceHint(enemy) ?? DEFAULT_STANCE_HINTS[p.enemyStance],
         });
@@ -258,8 +185,6 @@ function resolveAuthored(enemy: Enemy, authored: AuthoredThreatPhase[]): CombatT
 
 /** Generates a default 3-phase escalating sequence for an unauthored enemy (§10). */
 export function generateDefaultThreatSequence(enemy: Enemy): CombatThreatPhase[] {
-    const dMult = difficultyMult(enemy);
-    const { dotBase, controlBase } = thresholdBases(enemy);
     const base = dominantStance(enemy);
     const PHASES = 3;
     return Array.from({ length: PHASES }, (_unused, i) => {
@@ -268,8 +193,6 @@ export function generateDefaultThreatSequence(enemy: Enemy): CombatThreatPhase[]
             index: i + 1,
             enemyStance,
             threatAction: defaultThreatAction(enemy, i),
-            dotPressureRequired: phaseThreshold(dotBase, dMult, i, DEFAULT_DOT_FACTOR),
-            controlPressureRequired: phaseThreshold(controlBase, dMult, i, DEFAULT_CONTROL_FACTOR),
             isFinalPhase: i === PHASES - 1,
             stanceHint: enemyStanceHint(enemy) ?? DEFAULT_STANCE_HINTS[enemyStance],
         });
@@ -291,14 +214,4 @@ export function getThreatSequence(enemy: Enemy): CombatThreatPhase[] {
     const authored = AUTHORED_THREAT_SEQUENCES[enemy.id];
     if (authored) return resolveAuthored(enemy, authored);
     return generateDefaultThreatSequence(enemy);
-}
-
-/** Global win thresholds = sum of per-phase requirements across the sequence (§5.3). */
-export function deriveGlobalThresholds(sequence: readonly CombatThreatPhase[]): {
-    dotThreshold: number; controlThreshold: number;
-} {
-    return {
-        dotThreshold: sequence.reduce((s, p) => s + p.dotPressureRequired, 0),
-        controlThreshold: sequence.reduce((s, p) => s + p.controlPressureRequired, 0),
-    };
 }

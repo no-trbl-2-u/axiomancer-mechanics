@@ -228,7 +228,7 @@ export type {
     CombatEncounterState, CombatEncounterPhase, CombatTransition,
     CombatManaDie, CombatDieColor, CombatDieState,
     CombatCard, CombatHandEntry, CardPlay, CombatVerbClass, PressureTrackKey,
-    CombatPressureTracks, CombatThreatPhase, CombatThreatAction, CombatThreatEffect,
+    CombatThreatPhase, CombatThreatAction, CombatThreatEffect,
     CombatThreatMark, CombatPhaseResult, CombatOutcome, CombatEvent,
     CombatSummary, CombatAttributionRow, LandedEffect,
     // Spec 26 / 26b additions
@@ -240,7 +240,6 @@ export {
     resolveCombatPhase, resolveThreatPhase, processBetweenPhases,
     selectMercyChoice as selectEncounterMercyChoice, resolveCardDieCost, stanceBeats, getCard,
     handCards, cardDieCostPreview, availableDice, buildCombatSummary,
-    TOP_ACTION_PRESSURE, BEFRIEND_THRESHOLD_REDUCTION,
     // Spec 26b — turn lifecycle + read + Conviction + Signature Skills
     startTurn, draftStanceDie, endTurn, resolveRead, chooseDraft, discardCombatCard,
     playSignatureSkill, getDraftedDie, isPhaseStanceRevealed, revealedCurrentStance,
@@ -260,11 +259,7 @@ export {
     cardStanceColor, bottomPressurePreview, isSyntheticCard, SYNTHETIC_CARD_IDS,
 } from './combat.cards';
 export {
-    momentumCarry, MOMENTUM_CAP, pressureForLanded,
-    dotErosionReached, controlSaturationReached,
-} from './combat.pressure';
-export {
-    getThreatSequence, generateDefaultThreatSequence, deriveGlobalThresholds,
+    getThreatSequence, generateDefaultThreatSequence,
     deriveIntentType, AUTHORED_THREAT_ENEMY_IDS,
 } from './combat.threat';
 export { simulateHazardPatternCombat } from './combat.encounter.sim';
