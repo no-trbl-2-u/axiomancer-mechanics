@@ -10,7 +10,42 @@ Pre-1.0.0 status: minor bumps may carry breaking public-API changes
 map exposes `.` (top-level barrel) and `./node` (Node.js adapter); no
 deep imports are part of the supported surface.
 
-## [0.23.0] — unreleased
+## [0.29.0] — 2026-06-22
+
+Combat-redesign release. Consolidates everything that shipped after the
+0.23.0 equipment-ownership work through the 0.24.x additive-surface patches
+up to the Spec 25 / 26 / 26b combat overhaul. Intermediate `chore(release)`
+bumps (0.24.1, 0.24.2, 0.25.0) were published from `package.json` without
+their own CHANGELOG headings; their content is folded in here.
+
+### Added
+
+- **Hazard-Pattern Combat (Spec 25).** `resolveCombatPhase` is a
+  card-and-dice driver where every verb is a skill card and two Pressure
+  Tracks (DoT Erosion + Control Saturation) are the only practical win
+  condition — basic-attack trading is structurally gone. New barrel surface:
+  `initializeCombatEncounter`, `playCombatCard`, `resolveCombatPhase`,
+  `processBetweenPhases`, `simulateHazardPatternCombat`, the Pressure-Track
+  predicates `dotErosionReached` / `controlSaturationReached`, dice/deck/card
+  helpers, and the `CombatEncounterState` / `CombatCard` /
+  `CombatPressureTracks` types. Directly serves the status-effects-are-the-
+  main-fun doctrine.
+- **Spec 26 / 26b combat redesign.** Stance-draft turn lifecycle
+  (`startTurn` / `draftStanceDie` / `resolveRead` / `endTurn`), the Conviction
+  economy and hidden-stance read mechanics, Signature Skills
+  (`SIGNATURE_SKILLS`, `signaturesForArchetype`, `playSignatureSkill`),
+  deckbuilder card rewards (`COMBAT_REWARD_POOL`, `rollCombatCardRewards`,
+  `unlockSkillViaDilemma`), and player archetypes — plus the variety/anti-spam
+  balance tuning (Spec 26b §3) that rewards status variety and curbs
+  single-card spam.
+- **Additive engine surface (0.24.x).** Node event-kind read API,
+  level-ladder presets, philosophical-resource carry, and the rebalanced
+  fishing-village new-player gauntlet. Patch bumps so consumers picked up the
+  new exports without a dependency change — all additive/non-breaking.
+- **Rest + LootCache balance sims (Phase 160).** `simulateRest`,
+  `simulateLootCache`, and their balance-report helpers.
+
+## [0.23.0] — 2026-06-20
 
 Equipment-ownership release (Phase 154): the engine becomes the single
 source of truth for equipment logic, absorbing generation, equipped-state,
