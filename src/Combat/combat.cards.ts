@@ -2,17 +2,17 @@
  * Spec 25 — Hazard-Pattern Combat: skill-card adapter (§4.3, §6).
  *
  * Projects a learned `Skill` into a `CombatCard` view: stance color, verb
- * class, pressure track, and top/bottom action text. The projection is pure —
+ * class, effect-kind, and top/bottom action text. The projection is pure —
  * it reads the skill + effect libraries and never mutates. The engine executes
  * a card's bottom action through the *unchanged* `executeSkill`; this module
  * only classifies and previews.
  *
- * Classification (§6 Rules 1-3) decides which Pressure Track a card feeds:
- *   - applies a DoT debuff to the enemy   → `direct-dot`     → dot track
- *   - applies a control debuff            → `direct-control` → control track
- *   - applies a stat-reduction debuff     → `stat-debuff`    → control track (smaller)
- *   - buffs the player                    → `buff-self`      → 0 pressure (utility)
- *   - raw HP damage, no status effect     → `direct-damage`  → 0 pressure
+ * Classification (§6 Rules 1-3) decides a card's effect-kind:
+ *   - applies a DoT debuff to the enemy   → `direct-dot`     → dot (erodes HP)
+ *   - applies a control debuff            → `direct-control` → control (hinders)
+ *   - applies a stat-reduction debuff     → `stat-debuff`    → control (soft)
+ *   - buffs the player                    → `buff-self`      → none (utility)
+ *   - raw HP damage, no status effect     → `direct-damage`  → none
  *   - Befriend / Retreat                  → special handling
  */
 
@@ -20,7 +20,7 @@ import { MAX_EFFECT_INTENSITY } from '../Game/game-mechanics.constants';
 import type { Effect } from '../Effects/types';
 import type { Skill, SkillCombatEffects } from '../Skills/types';
 import type {
-    CombatCard, CombatDieColor, CombatVerbClass, PressureTrackKey,
+    CombatCard, CombatDieColor, CombatVerbClass, CardEffectKind,
 } from './combat.encounter.types';
 
 export type EffectLookup = (effectId: string) => Effect | undefined;
@@ -36,12 +36,12 @@ const SYNTHETIC_CARDS: Record<string, CombatCard> = {
         name: 'Retreat',
         stance: 'wild',
         verbClass: 'retreat',
-        track: 'none',
+        effectKind: 'none',
         tier: 1,
         category: null,
         topActionText: 'Brace — refresh 1 spent die.',
         bottomActionText: 'Flee combat. Costs all remaining available dice (§12 Q2).',
-        bottomPressurePreview: 0,
+        bottomDamagePreview: 0,
         primaryEffectId: null,
     },
 };
@@ -49,6 +49,18 @@ const SYNTHETIC_CARDS: Record<string, CombatCard> = {
 /** True when the id names a synthetic (non-skill) card. */
 export function isSyntheticCard(cardId: string): boolean {
     return cardId in SYNTHETIC_CARDS;
+}
+
+/** Gold (rare) card ids — the strongest tier: unpowered = utility, powered =
+ *  a MAJOR status + damage. A WILD die on a gold card always reads advantage
+ *  (handled in the engine); the mobile renders a rare frame off `card.rarity`. */
+export const GOLD_CARD_IDS: ReadonlySet<string> = new Set([
+    'pyrrhic-victory', 'the-final-word', 'unmoved-mover',
+]);
+
+/** True when the id names a gold (rare) card. */
+export function isGoldCard(cardId: string): boolean {
+    return GOLD_CARD_IDS.has(cardId);
 }
 
 /** Enemy-targeted effect payloads on a skill (`appliedTo: 'opponent'`). */
@@ -78,7 +90,7 @@ function isStatDebuff(effect: Effect): boolean {
 }
 
 /**
- * Pressure a single enemy-targeted effect contributes when it lands, given the
+ * Impact a single enemy-targeted effect contributes when it lands, given the
  * intensity/duration the skill applies it at. Mirrors the Phase 125 resolution
  * math so the tracks are a faithful *leading indicator* of DoT-Erosion /
  * Control-Saturation (§5).
@@ -93,24 +105,24 @@ export const CONTROL_HARD_MULT = 6;   // hard control (stun/fear/silence/forced-
 export const CONTROL_SOFT_MULT = 4;   // stat-debuffs + soft control
 export const DOT_PERROUND_WEIGHT = 1; // DoT keeps its raw perRound×intensity
 /**
- * Spec 26b tuning §3 — intensity credited toward PRESSURE is capped here. Effects
- * stack intensity up to MAX_EFFECT_INTENSITY (10), and pressure was raw
- * `perRound × intensity`, so re-applying ONE DoT card ramped its base pressure
+ * Spec 26b tuning §3 — intensity credited toward IMPACT is capped here. Effects
+ * stack intensity up to MAX_EFFECT_INTENSITY (10), and impact was raw
+ * `perRound × intensity`, so re-applying ONE DoT card ramped its base impact
  * (3×2 → 3×10 = 30) faster than diminishing returns could claw back — a single
- * spammed card outran every anti-spam lever. Capping the pressure-credited
+ * spammed card outran every anti-spam lever. Capping the impact-credited
  * intensity means stacking the SAME effect past the cap adds no more track
- * pressure, so the per-application diminishing actually bites and a VARIED kit
+ * impact, so the per-application diminishing actually bites and a VARIED kit
  * (distinct effects, each fresh) decisively out-paces mono-spam. The effect's
  * real intensity (and its HP erosion) is untouched — only its track credit caps.
  */
-export const PRESSURE_INTENSITY_CAP = 3;
+export const IMPACT_INTENSITY_CAP = 3;
 
-export function effectPressure(
+export function effectImpact(
     effect: Effect,
     intensity: number,
     duration: number,
-): { track: PressureTrackKey; amount: number } {
-    const i = Math.min(Math.max(1, intensity), PRESSURE_INTENSITY_CAP);
+): { track: CardEffectKind; amount: number } {
+    const i = Math.min(Math.max(1, intensity), IMPACT_INTENSITY_CAP);
     if (isDot(effect)) {
         const perRound = effect.payload.damageOverTime!.damagePerRound;
         return { track: 'dot', amount: DOT_PERROUND_WEIGHT * perRound * i };
@@ -134,17 +146,17 @@ export function cardStanceColor(skill: Skill): CombatDieColor {
 }
 
 /**
- * Classifies a skill into a verb class + the pressure track its bottom action
+ * Classifies a skill into a verb class + the effect kind its bottom action
  * advances. Priority: DoT > control > stat-debuff > buff > direct-damage.
  */
 export function classifyVerbClass(
     skill: Skill,
     lookupEffect: EffectLookup,
-): { verbClass: CombatVerbClass; track: PressureTrackKey } {
+): { verbClass: CombatVerbClass; track: CardEffectKind } {
     if ((skill.specialMechanics ?? []).some(m => m.kind === 'befriend_attempt')) {
         return { verbClass: 'befriend', track: 'control' };
     }
-    // A defense card grants the player GUARD (a shield) — no enemy pressure.
+    // A defense card grants the player GUARD (a shield) — no enemy impact.
     if ((skill.specialMechanics ?? []).some(m => m.kind === 'guard')) {
         return { verbClass: 'defend', track: 'none' };
     }
@@ -164,25 +176,25 @@ export function classifyVerbClass(
     return { verbClass: 'direct-damage', track: 'none' };
 }
 
-/** Total projected bottom-action pressure for a skill card (preview; §7.3). */
-export function bottomPressurePreview(skill: Skill, lookupEffect: EffectLookup): number {
+/** Total projected bottom-action impact for a skill card (preview; §7.3). */
+export function bottomDamagePreview(skill: Skill, lookupEffect: EffectLookup): number {
     let total = 0;
     for (const ce of enemyEffects(skill)) {
         const def = lookupEffect(ce.effectId);
         if (!def) continue;
         const intensity = Math.min(ce.intensity ?? 1, MAX_EFFECT_INTENSITY);
         const duration = ce.duration ?? def.duration;
-        total += effectPressure(def, intensity, duration).amount;
+        total += effectImpact(def, intensity, duration).amount;
     }
     return total;
 }
 
-/** The primary enemy effect id a card applies (first that contributes pressure),
+/** The primary enemy effect id a card applies (first that contributes impact),
  *  for the UI projection's diminishing-returns lookup. */
 export function primaryEnemyEffectId(skill: Skill, lookupEffect: EffectLookup): string | null {
     for (const ce of enemyEffects(skill)) {
         const def = lookupEffect(ce.effectId);
-        if (def && effectPressure(def, ce.intensity ?? 1, ce.duration ?? def.duration).track !== 'none') {
+        if (def && effectImpact(def, ce.intensity ?? 1, ce.duration ?? def.duration).track !== 'none') {
             return def.id;
         }
     }
@@ -201,25 +213,32 @@ export function toCombatCard(cardId: string, lookupSkill: SkillLookup, lookupEff
     if (!skill) return null;
 
     const { verbClass, track } = classifyVerbClass(skill, lookupEffect);
-    const preview = bottomPressurePreview(skill, lookupEffect);
+    const preview = bottomDamagePreview(skill, lookupEffect);
 
     const guardN = ((skill.specialMechanics ?? []).find(m => m.kind === 'guard') as { amount: number } | undefined)?.amount ?? 0;
 
-    const topActionText = verbClass === 'defend'
-        ? 'Brace — gain a little Guard (absorbs the next threat), no die.'
-        : verbClass === 'direct-damage'
-            ? 'Chip the enemy for a sliver of HP (0 pressure).'
-            : verbClass === 'buff-self'
-                ? 'Apply a weak version of the buff to yourself.'
-                : `Apply a weak version — +1 ${track} pressure, no die.`;
+    const isGold = isGoldCard(skill.id);
+    const effectNoun = track === 'dot' ? 'damage-over-time' : track === 'control' ? 'control' : 'effect';
 
-    const bottomActionText = verbClass === 'defend'
-        ? `Gain ${guardN} Guard — absorbs the enemy's next threat. Costs 1 die.`
-        : verbClass === 'direct-damage'
-            ? `Full strike (HP damage only — 0 pressure).`
-            : verbClass === 'buff-self'
-                ? 'Full buff to yourself. Costs 1 die.'
-                : `Full effect — +${preview} ${track} pressure. Costs 1 ${cardStanceColor(skill)} die${skill.tier === 3 ? ' + 1 banked token' : ''}.`;
+    const topActionText = isGold
+        ? 'GOLD — a free utility chip + a sliver of its effect, no die.'
+        : verbClass === 'defend'
+            ? 'Brace — gain a little Guard (absorbs the next threat), no die.'
+            : verbClass === 'direct-damage'
+                ? 'Chip the enemy for a sliver of HP, no die.'
+                : verbClass === 'buff-self'
+                    ? 'Apply a weak version of the buff to yourself.'
+                    : `Apply a weak version of the ${effectNoun}, no die.`;
+
+    const bottomActionText = isGold
+        ? `GOLD — land a MAJOR ${effectNoun} + ~${preview} damage. Costs 1 die (a Wild die always lands advantage).`
+        : verbClass === 'defend'
+            ? `Gain ${guardN} Guard — absorbs the enemy's next threat. Costs 1 die.`
+            : verbClass === 'direct-damage'
+                ? `Full strike — HP damage only. Costs 1 die.`
+                : verbClass === 'buff-self'
+                    ? 'Full buff to yourself. Costs 1 die.'
+                    : `Full ${effectNoun} — impact ~${preview}. Costs 1 ${cardStanceColor(skill)} die.`;
 
     return {
         id: skill.id,
@@ -227,12 +246,13 @@ export function toCombatCard(cardId: string, lookupSkill: SkillLookup, lookupEff
         name: skill.name,
         stance: cardStanceColor(skill),
         verbClass,
-        track,
+        effectKind: track,
         tier: skill.tier,
+        rarity: isGold ? 'gold' : undefined,
         category: skill.category,
-        topActionText: `${topActionText} (${tierLabel(skill.tier)})`,
+        topActionText: `${topActionText} (${isGold ? 'GOLD' : tierLabel(skill.tier)})`,
         bottomActionText,
-        bottomPressurePreview: preview,
+        bottomDamagePreview: preview,
         primaryEffectId: primaryEnemyEffectId(skill, lookupEffect),
     };
 }

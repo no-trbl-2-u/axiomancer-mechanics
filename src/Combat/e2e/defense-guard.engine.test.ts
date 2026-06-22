@@ -92,7 +92,7 @@ describe('Spec 26b — defense cards classify as `defend`', () => {
         const card = toCombatCard(BRACE, getSkillById, lookupEffect);
         expect(card).not.toBeNull();
         expect(card!.verbClass).toBe('defend');
-        expect(card!.bottomPressurePreview).toBe(0);
+        expect(card!.bottomDamagePreview).toBe(0);
         expect(card!.bottomActionText).toMatch(/Guard/i);
     });
 

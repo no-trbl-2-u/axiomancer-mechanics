@@ -16,6 +16,7 @@
 
 import type { Character } from '../Character/types';
 import { getSkillById } from '../Skills/skill.library';
+import { isGoldCard } from './combat.cards';
 import { playerArchetype } from './combat.signature';
 import type { PlayerArchetype } from './combat.encounter.types';
 
@@ -35,10 +36,21 @@ export const COMBAT_REWARD_POOL: readonly string[] = Object.freeze([
     // heart
     'eternal-regress', 'appeal-to-pity', 'ship-of-theseus', 'bootstrap-paradox',
     'stoic-reserve',        // defense (GUARD)
+    // gold (rare) — the strongest tier; weighted RARE in the roll below
+    'pyrrhic-victory', 'the-final-word', 'unmoved-mover',
 ]);
 
-/** The single skill a brand-new player starts with (Spec 26b §D). The rest are
- *  unlocked through ethical-dilemma events via `unlockSkillViaDilemma`. */
+/** The skills a brand-new player starts with: an opening offensive card PLUS a
+ *  basic defense card, so every player can GUARD from turn one. The rest unlock
+ *  through ethical-dilemma events via `unlockSkillViaDilemma`. The mobile
+ *  bootstrap seeds a new character's `knownSkills` from this list. */
+export const STARTING_SKILL_IDS: readonly string[] = Object.freeze([
+    'slippery-slope',       // opening offense
+    'brace-for-impact',     // basic defense (GUARD) — guard from turn one
+]);
+
+/** The single OFFENSIVE skill a brand-new player starts with. Kept for
+ *  back-compat; prefer `STARTING_SKILL_IDS` (which also grants a defense card). */
 export const STARTING_SKILL_ID = 'slippery-slope';
 
 /** A valid reward-pool entry must resolve to a real skill. */
@@ -66,8 +78,12 @@ export function rollCombatCardRewards(
     const offers: string[] = [];
     const remaining = pool.slice();
     while (offers.length < count && remaining.length > 0) {
-        // Weighted pick: archetype-aligned entries get double weight.
-        const weights = remaining.map(id => (ASPECT_OF(id) === archetype ? 2 : 1));
+        // Weighted pick: archetype-aligned entries get double weight; gold
+        // (rare) cards are heavily down-weighted so they're an occasional prize.
+        const weights = remaining.map(id => {
+            const arch = ASPECT_OF(id) === archetype ? 2 : 1;
+            return isGoldCard(id) ? arch * 0.25 : arch;
+        });
         const total = weights.reduce((a, b) => a + b, 0);
         let roll = rng() * total;
         let idx = 0;

@@ -227,7 +227,7 @@ export {
 export type {
     CombatEncounterState, CombatEncounterPhase, CombatTransition,
     CombatManaDie, CombatDieColor, CombatDieState,
-    CombatCard, CombatHandEntry, CardPlay, CombatVerbClass, PressureTrackKey,
+    CombatCard, CombatHandEntry, CardPlay, CombatVerbClass, CardEffectKind,
     CombatThreatPhase, CombatThreatAction, CombatThreatEffect,
     CombatThreatMark, CombatPhaseResult, CombatOutcome, CombatEvent,
     CombatSummary, CombatAttributionRow, LandedEffect,
@@ -243,9 +243,9 @@ export {
     // Spec 26b — turn lifecycle + read + Conviction + Signature Skills
     startTurn, draftStanceDie, endTurn, resolveRead, chooseDraft, discardCombatCard,
     playSignatureSkill, getDraftedDie, isPhaseStanceRevealed, revealedCurrentStance,
-    cardReadPreview, projectCardPressure, getSignatureSkill, SIGNATURE_SKILLS, SIGNATURE_SKILL_LIST,
-    READ_PRESSURE_MULT, CONVICTION_PER_UNPICKED_DIE, CONVICTION_READ_WIN_BONUS,
-    COLOR_MATCH_PRESSURE_BONUS,
+    cardReadPreview, projectCardImpact, getSignatureSkill, SIGNATURE_SKILLS, SIGNATURE_SKILL_LIST,
+    READ_DAMAGE_MULT, CONVICTION_PER_UNPICKED_DIE, CONVICTION_READ_WIN_BONUS,
+    COLOR_MATCH_DAMAGE_BONUS,
 } from './combat.engine';
 export {
     COMBAT_DICE_COUNT, TURN_DICE_COUNT, COMBAT_DIE_FACES, rollCombatDice, rollTurnDice,
@@ -255,8 +255,9 @@ export {
 } from './combat.dice';
 export { COMBAT_HAND_SIZE, buildCombatDeck, drawCombatCards, shuffleCombatDeck } from './combat.deck';
 export {
-    toCombatCard, projectDeck, classifyVerbClass, effectPressure,
-    cardStanceColor, bottomPressurePreview, isSyntheticCard, SYNTHETIC_CARD_IDS,
+    toCombatCard, projectDeck, classifyVerbClass, effectImpact,
+    cardStanceColor, bottomDamagePreview, isSyntheticCard, SYNTHETIC_CARD_IDS,
+    GOLD_CARD_IDS, isGoldCard,
 } from './combat.cards';
 export {
     getThreatSequence, generateDefaultThreatSequence,
@@ -267,7 +268,7 @@ export type { CombatSimStats, CombatSimPolicyId } from './combat.encounter.sim';
 // Spec 26b tuning §B/§C/§D — archetype signatures, deckbuilder rewards, unlock hook
 export { SIGNATURE_KITS, signaturesForArchetype, playerArchetype } from './combat.signature';
 export {
-    COMBAT_REWARD_POOL, STARTING_SKILL_ID, rollCombatCardRewards, addRewardCard,
+    COMBAT_REWARD_POOL, STARTING_SKILL_ID, STARTING_SKILL_IDS, rollCombatCardRewards, addRewardCard,
     unlockSkillViaDilemma,
 } from './combat.rewards';
 export type { PlayerArchetype } from './combat.encounter.types';

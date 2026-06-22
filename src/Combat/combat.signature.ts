@@ -11,7 +11,7 @@
  * passed `rng`, no conviction accounting, no outcome checks). The engine wraps it
  * in `playSignatureSkill` to gate on Conviction and check for an immediate
  * outcome. This split keeps the module free of any `combat.engine` import (no
- * cycle): it depends only on the effects engine, health, deck, and pressure
+ * cycle): it depends only on the effects engine, health, deck, and impact
  * helpers — none of which import the engine.
  */
 
@@ -20,8 +20,9 @@ import type { Character } from '../Character/types';
 import type { Enemy } from '../Enemy/types';
 import { applyDamage, heal } from './health';
 import { drawCombatCards } from './combat.deck';
-import { recordAttribution } from './combat.pressure';
-import { effectPressure } from './combat.cards';
+import { rollTurnDice, TURN_DICE_COUNT } from './combat.dice';
+import { recordAttribution } from './combat.attribution';
+import { effectImpact } from './combat.cards';
 import type {
     CombatEncounterState, CombatEvent, CombatTransition, SignatureSkill,
     SignatureSkillId, LandedEffect, PlayerArchetype,
@@ -34,8 +35,8 @@ export const SIGNATURE_SKILLS: Record<SignatureSkillId, SignatureSkill> = {
         description: 'Reveal the current and next phase stance — buy certainty on your read. Cheap; cast it early.',
     },
     'sig-press-the-point': {
-        id: 'sig-press-the-point', name: 'Press the Point', kind: 'pressure', cost: 4, magnitude: 6,
-        description: 'Strike the enemy for 6 guaranteed HP damage.',
+        id: 'sig-press-the-point', name: 'Press Fate', kind: 'reroll', cost: 4, magnitude: 0,
+        description: 'Bend fate — re-roll this turn\'s dice for a fresh draft.',
     },
     'sig-second-wind': {
         id: 'sig-second-wind', name: 'Second Wind', kind: 'sustain', cost: 4, magnitude: 2,
@@ -43,23 +44,23 @@ export const SIGNATURE_SKILLS: Record<SignatureSkillId, SignatureSkill> = {
     },
     'sig-overwhelming-argument': {
         id: 'sig-overwhelming-argument', name: 'Overwhelming Argument', kind: 'control', cost: 8,
-        magnitude: 5, track: 'control', effectId: 'debuff_confusion',
+        magnitude: 5, effectKind: 'control', effectId: 'debuff_confusion',
         description: 'Hit the enemy with deep Confusion — it loses its turn while the control holds.',
     },
     'sig-conviction-strike': {
         id: 'sig-conviction-strike', name: 'Conviction Strike', kind: 'dot', cost: 7,
-        magnitude: 3, track: 'dot', effectId: 'debuff_poison',
+        magnitude: 3, effectKind: 'dot', effectId: 'debuff_poison',
         description: 'A guaranteed venom at boosted intensity — DoT that cannot fizzle.',
     },
     // ── Per-archetype exclusives ─────────────────────────────────────────────
     'sig-disarming-plea': {
         id: 'sig-disarming-plea', name: 'Disarming Plea', kind: 'mercy', cost: 6,
-        magnitude: 6, track: 'control', effectId: 'debuff_charm',
+        magnitude: 6, effectKind: 'control', effectId: 'debuff_charm',
         description: 'HEART — charm the foe (it falters) and strike, softening it toward mercy.',
     },
     'sig-rallying-blow': {
         id: 'sig-rallying-blow', name: 'Rallying Blow', kind: 'strike', cost: 6,
-        magnitude: 4, track: 'dot', effectId: 'debuff_bleed',
+        magnitude: 4, effectKind: 'dot', effectId: 'debuff_bleed',
         description: 'BODY — a heavy bleeding strike that refreshes your stance die so you keep swinging.',
     },
     'sig-clever-gambit': {
@@ -130,12 +131,13 @@ export function applySignatureSkill(
             next = { ...state, revealedStances: [...revealed].sort((a, b) => a - b) };
             break;
         }
-        case 'pressure': {
-            // HP model: a guaranteed chunk of direct enemy HP damage.
-            const enemy = applyDamage(state.enemy, skill.magnitude) as Enemy;
-            const attribution = recordAttribution(state.attribution, skill.id, skill.name, null, skill.magnitude);
-            next = { ...state, enemy, attribution };
-            events.push({ kind: 'damage-dealt', cardId: skill.id, target: 'enemy', amount: skill.magnitude });
+        case 'reroll': {
+            // Press Fate — bend fate: re-roll THIS turn's dice for a fresh draft
+            // (both dice), clearing the current draft. The engine wrapper spends
+            // the Conviction; this is a pure re-roll.
+            const dice = rollTurnDice(state.turn, TURN_DICE_COUNT, rng);
+            next = { ...state, dice, draftedDieId: null, lastRead: 'none' };
+            events.push({ kind: 'turn-dice-rolled', turn: state.turn, dice });
             break;
         }
         case 'sustain': {
@@ -165,9 +167,9 @@ export function applySignatureSkill(
                 const active = enemy.effects.find(a => a.effectId === def.id);
                 if (active) {
                     const landed: LandedEffect = { effectId: def.id, effect: def, active, target: 'enemy' };
-                    const cls = effectPressure(def, active.intensity, active.remainingDuration).track;
+                    const cls = effectImpact(def, active.intensity, active.remainingDuration).track;
                     attribution = recordAttribution(attribution, skill.id, skill.name, landed, 0);
-                    events.push({ kind: 'effect-landed', cardId: skill.id, effectId: def.id, target: 'enemy', track: cls, pressure: 0, intensity: active.intensity, effect: def });
+                    events.push({ kind: 'effect-landed', cardId: skill.id, effectId: def.id, target: 'enemy', effectKind: cls, intensity: active.intensity, effect: def });
                 }
             }
             // strike = a heavy bleeding blow; mercy = a disarming hit. Both chip HP.

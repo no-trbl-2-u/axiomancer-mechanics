@@ -30,7 +30,7 @@ import {
     resolveCombatPhase, processBetweenPhases,
     resolveCardDieCost, resolveRead, getCard, buildCombatSummary,
     draftStanceDie, getDraftedDie, isPhaseStanceRevealed,
-    playSignatureSkill, discardCombatCard, projectCardPressure, startTurn, endTurn,
+    playSignatureSkill, discardCombatCard, projectCardImpact, startTurn, endTurn,
 } from '../combat.engine';
 import { SIGNATURE_KITS, playerArchetype } from '../combat.signature';
 import { rollCombatCardRewards, addRewardCard, unlockSkillViaDilemma, COMBAT_REWARD_POOL } from '../combat.rewards';
@@ -141,20 +141,20 @@ describe('Spec 25 §6 — card classification', () => {
     it('a DoT skill is a direct-dot card on the dot track', () => {
         const card = getCard(DOT_BODY)!;
         expect(card.verbClass).toBe('direct-dot');
-        expect(card.track).toBe('dot');
+        expect(card.effectKind).toBe('dot');
         expect(card.stance).toBe('body');
-        expect(card.bottomPressurePreview).toBeGreaterThan(0);
+        expect(card.bottomDamagePreview).toBeGreaterThan(0);
     });
     it('a control skill is a direct-control card on the control track', () => {
         const card = getCard(CONTROL_HEART)!;
-        expect(card.track).toBe('control');
+        expect(card.effectKind).toBe('control');
         expect(['direct-control', 'stat-debuff']).toContain(card.verbClass);
     });
     it('a pure-damage skill is direct-damage with 0 pressure preview', () => {
         const card = getCard(DAMAGE_BODY)!;
         expect(card.verbClass).toBe('direct-damage');
-        expect(card.track).toBe('none');
-        expect(card.bottomPressurePreview).toBe(0);
+        expect(card.effectKind).toBe('none');
+        expect(card.bottomDamagePreview).toBe(0);
     });
 });
 
@@ -365,7 +365,7 @@ describe('Spec 26b tuning — variety-gated combo + projection + carry', () => {
         expect(ctrl.events.some(e => e.kind === 'die-refreshed')).toBe(true);
     });
 
-    it('projectCardPressure previews the strike HP damage (scaled by the read)', () => {
+    it('projectCardImpact previews the strike HP damage (scaled by the read)', () => {
         mockSequentialRng(0.5);
         const card = getCard(DOT_BODY)!;
         // Advantage draft (body vs mind) previews more strike damage than a
@@ -373,12 +373,12 @@ describe('Spec 26b tuning — variety-gated combo + projection + carry', () => {
         const adv = (() => {
             let s = initializeCombatEncounter(makePlayer([DOT_BODY]), makeEnemy(120, 'mind'), [DOT_BODY], 1);
             s = rollEncounterDice(s).state; s = setDice(s, ['body', 'heart']);
-            return projectCardPressure(draftStanceDie(s, s.dice[0].id).state, card);
+            return projectCardImpact(draftStanceDie(s, s.dice[0].id).state, card);
         })();
         const dis = (() => {
             let s = initializeCombatEncounter(makePlayer([DOT_BODY]), makeEnemy(120, 'body'), [DOT_BODY], 1);
             s = rollEncounterDice(s).state; s = setDice(s, ['mind', 'wild']);
-            return projectCardPressure(draftStanceDie(s, s.dice[0].id).state, card);
+            return projectCardImpact(draftStanceDie(s, s.dice[0].id).state, card);
         })();
         expect(adv.track).toBe('dot');
         expect(adv.amount).toBeGreaterThan(0);

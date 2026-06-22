@@ -72,10 +72,10 @@ function bestCard(s: CombatEncounterState, notUids?: Set<string>) {
             const bf = b.card.primaryEffectId && !activeIds.has(b.card.primaryEffectId) ? 0 : 1;
             if (af !== bf) return af - bf;
             // Status (DoT/control) beats a pure strike (status is the efficient damage).
-            const at = a.card.track !== 'none' ? 0 : 1;
-            const bt = b.card.track !== 'none' ? 0 : 1;
+            const at = a.card.effectKind !== 'none' ? 0 : 1;
+            const bt = b.card.effectKind !== 'none' ? 0 : 1;
             if (at !== bt) return at - bt;
-            return b.card.bottomPressurePreview - a.card.bottomPressurePreview;
+            return b.card.bottomDamagePreview - a.card.bottomDamagePreview;
         });
     return cards[0] ?? null;
 }
@@ -85,7 +85,7 @@ function bestSignature(s: CombatEncounterState): string | null {
     for (const id of s.signatures) {
         const sig = getSignatureSkill(id);
         if (!sig || s.conviction < sig.cost) continue;
-        if (['dot', 'strike', 'pressure', 'control', 'mercy'].includes(sig.kind)) return id;
+        if (['dot', 'strike', 'control', 'mercy'].includes(sig.kind)) return id;
     }
     return null;
 }

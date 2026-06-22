@@ -1226,6 +1226,79 @@ const stoicReserve: Skill = {
     tags: ['defense', 'guard', 'mid-game'],
 };
 
+// ─── Gold (rare) cards — the strongest tier (Spec 26b §Gold) ─────────────────
+// The rarest combat cards. Powered (with a die) they land a MAJOR status (high
+// intensity + long duration) plus solid damage; unpowered (free top) they still
+// give a useful chip. A WILD die on a gold card always reads ADVANTAGE (the
+// combat engine special-cases `card.rarity === 'gold'`). Tagged `gold` so the
+// adapter (`combat.cards.ts` GOLD_CARD_IDS) marks the card view + the mobile can
+// render the rare frame. Granted as a RARE reward drop.
+const pyrrhicVictory: Skill = {
+    id: 'pyrrhic-victory',
+    name: 'Pyrrhic Victory',
+    category: 'paradox',
+    philosophicalAspect: 'body',
+    description:
+        'Another such victory and you are undone — yet you take it anyway, and ' +
+        'make them pay the same ruinous price. The wound you open in them will ' +
+        'go on bleeding long after the field is yours.',
+    tier: 3,
+    resourceCost: { body: 2, paradox: 1 },
+    targetType: 'enemy',
+    basePower: 16,
+    scalingStat: 'body',
+    combatEffects: [
+        { effectId: 'debuff_bleed', appliedTo: 'opponent', intensity: 3, duration: 5 },
+    ],
+    learningRequirement: { level: 12 },
+    addedIn: '2026-06-22',
+    tags: ['gold', 'rare'],
+};
+
+const theFinalWord: Skill = {
+    id: 'the-final-word',
+    name: 'The Final Word',
+    category: 'paradox',
+    philosophicalAspect: 'mind',
+    description:
+        'You speak the sentence that ends the argument — and seeps into the one ' +
+        'who heard it. Doubt is a slow poison; once the premise is conceded, the ' +
+        'conclusion finishes them on its own schedule.',
+    tier: 3,
+    resourceCost: { mind: 2, paradox: 1 },
+    targetType: 'enemy',
+    basePower: 14,
+    scalingStat: 'mind',
+    combatEffects: [
+        { effectId: 'debuff_poison', appliedTo: 'opponent', intensity: 3, duration: 5 },
+    ],
+    learningRequirement: { level: 12 },
+    addedIn: '2026-06-22',
+    tags: ['gold', 'rare'],
+};
+
+const unmovedMover: Skill = {
+    id: 'unmoved-mover',
+    name: 'The Unmoved Mover',
+    category: 'paradox',
+    philosophicalAspect: 'heart',
+    description:
+        'The first cause that is itself uncaused — you move them without being ' +
+        'moved. They lose the thread of their own intent, turning in confusion ' +
+        'around a center that will not turn.',
+    tier: 3,
+    resourceCost: { heart: 2, paradox: 1 },
+    targetType: 'enemy',
+    basePower: 12,
+    scalingStat: 'heart',
+    combatEffects: [
+        { effectId: 'debuff_confusion', appliedTo: 'opponent', intensity: 3, duration: 3 },
+    ],
+    learningRequirement: { level: 12 },
+    addedIn: '2026-06-22',
+    tags: ['gold', 'rare'],
+};
+
 // ─── Library Export ──────────────────────────────────────────────────────────
 
 /**
@@ -1299,6 +1372,10 @@ export const skillLibrary: Skill[] = [
     eternalRecurrence,
     grandfatherParadox,
     apophaticAegis,
+    // Gold (rare) cards — the strongest tier
+    pyrrhicVictory,     // gold (BODY) — major Bleed + damage
+    theFinalWord,       // gold (MIND) — major Poison + damage
+    unmovedMover,       // gold (HEART) — major Confusion + damage
 ];
 
 const skillRegistry: ReadonlyMap<string, Skill> = new Map(

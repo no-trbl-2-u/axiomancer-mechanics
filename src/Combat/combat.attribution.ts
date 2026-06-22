@@ -1,7 +1,7 @@
 /**
  * Hazard-Pattern Combat — post-combat attribution + summary (HP model).
  *
- * The enemy's ONLY bar is HP. There are no pressure tracks: DoT effects erode
+ * The enemy's ONLY bar is HP. There are no effect kinds: DoT effects erode
  * enemy HP each phase, strikes chip it, and control gates the enemy's turn. This
  * module just keeps a per-card HP-damage ledger for the post-combat "which card
  * did the work" summary. Pure math only — no RNG, no I/O.

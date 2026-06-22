@@ -2,9 +2,10 @@
  * Spec 25 — Hazard-Pattern Combat: engine types.
  *
  * The new card-and-dice combat driver, structurally identical to the Hazard
- * minigame (`src/World/Hazard/`). Status effects fill two Pressure Tracks that
- * are the only practical win conditions; basic-attack trading is removed —
- * every verb is a skill card.
+ * minigame (`src/World/Hazard/`). HP MODEL: the enemy's SOLE bar is HP and the
+ * player drops it to 0. Status effects are the EFFICIENT path (DoT erodes HP;
+ * control hinders the enemy's turn); a raw strike is the weak baseline — every
+ * verb is a skill card.
  *
  * This subsystem ships ALONGSIDE the legacy `resolveCombatRound` driver (Spec
  * 25 §12 Q4 recommendation (b)): the effects engine, skill engine, and the old
@@ -12,10 +13,9 @@
  * The new engine *drives* the same `executeSkill` / `applyEffect` machinery
  * differently — it does not replace it.
  *
- * Doctrine (CLAUDE.md): status effects are the MAIN fun. The Pressure Tracks
- * make the Phase 125 DoT-Erosion / Control-Saturation win conditions visible
- * and foreseeable so the player always *assembles a solution* rather than
- * *trades stats*.
+ * Doctrine (CLAUDE.md): status effects are the MAIN fun. DoT erosion + control
+ * make a fight something the player *assembles a solution* for rather than
+ * *trades stats* in.
  */
 
 import type { Character } from '../Character/types';
@@ -59,20 +59,20 @@ export interface CombatManaDie {
 
 /**
  * Verb-class taxonomy (adapted from the Hazard card classes, §6). Drives the
- * pressure track a card contributes to and its hand icon.
+ * effect-kind a card applies and its hand icon.
  */
 export type CombatVerbClass =
-    | 'direct-dot'        // applies DoT debuffs (Poison, Bleed, Burn…) → dot track
-    | 'direct-control'    // applies control debuffs (Stun, Fear, Charm…) → control track
-    | 'stat-debuff'       // applies stat-reduction debuffs → control track (smaller)
-    | 'buff-self'         // buffs the player (regen, resistance, accuracy) → 0 pressure
-    | 'direct-damage'     // raw HP damage, no status effect → 0 pressure
+    | 'direct-dot'        // applies DoT debuffs (Poison, Bleed, Burn…) → erodes HP
+    | 'direct-control'    // applies control debuffs (Stun, Fear, Charm…) → hinders the enemy
+    | 'stat-debuff'       // applies stat-reduction debuffs → soft control
+    | 'buff-self'         // buffs the player (regen, resistance, accuracy) → utility
+    | 'direct-damage'     // raw HP damage, no status effect
     | 'befriend'          // Befriend skill card → opens the mercy choice (§6 Q6)
     | 'defend'            // Guard/defense card → shields against the enemy's next threat
     | 'retreat';          // Retreat skill card → leaves combat (§3, §12 Q2)
 
-/** The two pressure tracks a card may feed. `none` = utility / damage only. */
-export type PressureTrackKey = 'dot' | 'control' | 'none';
+/** The effect-kind a card's bottom action applies. `none` = utility / damage only. */
+export type CardEffectKind = 'dot' | 'control' | 'none';
 
 /**
  * A combat card — an adapter VIEW over a learned `Skill` (or a synthetic card
@@ -90,17 +90,22 @@ export interface CombatCard {
      *  `philosophicalAspect`. Synthetic cards may be `wild`. */
     stance: CombatDieColor;
     verbClass: CombatVerbClass;
-    /** Which pressure track the bottom action advances. */
-    track: PressureTrackKey;
+    /** Which effect-kind the bottom action applies (dot / control / none). */
+    effectKind: CardEffectKind;
     tier: 1 | 2 | 3;
+    /** Rare 'gold' marker — the strongest cards: unpowered = a useful utility,
+     *  powered = a MAJOR status + damage. A wild die on a gold card always reads
+     *  advantage. Undefined for normal cards. */
+    rarity?: 'gold';
     /** Fallacy (⚖) or Paradox (∞) flavour — preserved token generation. */
     category: 'fallacy' | 'paradox' | null;
     /** Human-readable description of the FREE top action. */
     topActionText: string;
     /** Human-readable description of the powered BOTTOM action. */
     bottomActionText: string;
-    /** Projected pressure if the bottom action lands (preview; §7.1, §7.3). */
-    bottomPressurePreview: number;
+    /** Projected impact if the bottom action lands (a damage-weighted preview;
+     *  §7.1, §7.3). */
+    bottomDamagePreview: number;
     /** The id of the primary enemy effect this card applies (for the projection
      *  preview's diminishing-returns lookup). Null for damage/buff/synthetic. */
     primaryEffectId: string | null;
@@ -134,11 +139,11 @@ export type CombatReadResult = 'advantage' | 'neutral' | 'disadvantage' | 'none'
 /** What a signature skill does (drives the engine dispatch + the UI icon). */
 export type SignatureSkillKind =
     | 'scout'          // reveal current + next enemy stance
-    | 'pressure'       // add pressure to a chosen track
+    | 'reroll'         // re-roll this turn's dice for a fresh draft (Press Fate)
     | 'sustain'        // draw cards + small heal
-    | 'control'        // control pressure + apply a debuff to the enemy
+    | 'control'        // apply a control debuff to the enemy (hinders its turn)
     | 'dot'            // guaranteed DoT application at boosted intensity
-    | 'mercy'          // control surge + lowers the Control Saturation threshold (heart)
+    | 'mercy'          // disarming hit that softens a low-HP foe toward mercy (heart)
     | 'strike'         // big DoT + refreshes the drafted die for a chain (body)
     | 'draw';          // draw cards + refund Conviction (mind economy)
 
@@ -166,11 +171,11 @@ export interface SignatureSkill {
     /** Conviction (◆) cost. */
     cost: number;
     kind: SignatureSkillKind;
-    /** Which track a `pressure`/`control` skill feeds (default of the kind). */
-    track?: PressureTrackKey;
+    /** Which effect-kind a `control`/`dot` skill applies (default of the kind). */
+    effectKind?: CardEffectKind;
     /** Effect id a `control`/`dot` skill applies to the enemy. */
     effectId?: string;
-    /** Magnitude knob (pressure points / intensity / heal / draw count). */
+    /** Magnitude knob (intensity / heal / draw count). */
     magnitude: number;
 }
 
@@ -242,7 +247,7 @@ export interface CombatPhaseResult {
 // ---------------------------------------------------------------------------
 // HP model (the enemy's only bar). Win = enemy HP → 0; lose = player HP → 0.
 // Status effects DO real things: DoT erodes enemy HP each phase; control gates
-// the enemy's turn via `canAct`. There are no abstract pressure tracks/bars.
+// the enemy's turn via `canAct`. There are no abstract effect kinds/bars.
 // ---------------------------------------------------------------------------
 
 /** Per-skill attribution row for the post-combat summary (§7.7). */
@@ -282,7 +287,7 @@ export type CombatEncounterPhase =
     | 'reveal'         // enemy + opening hand visible before dice are rolled
     | 'dice-roll'      // player rolls stance dice
     | 'phase-play'     // player plays skill cards
-    | 'phase-resolve'  // pressure tracks compared, enemy action fires, Clear/Overwhelmed
+    | 'phase-resolve'  // effect kinds compared, enemy action fires, Clear/Overwhelmed
     | 'between-phases' // DoT ticks, durations tick, draw 5
     | 'mercy-choice'   // Control Saturation opened the Phase 112 spare/exploit modal
     | 'complete';      // combat over, outcome determined
@@ -302,17 +307,15 @@ export type CombatEvent =
     | { kind: 'card-played'; cardId: string; useBottom: boolean; dieId: string | null;
         advantage: 'advantage' | 'neutral' | 'disadvantage'; colorMatch?: boolean }
     | { kind: 'effect-landed'; cardId: string; effectId: string; target: 'self' | 'enemy';
-        track: PressureTrackKey; pressure: number; intensity: number; effect: Effect }
+        effectKind: CardEffectKind; intensity: number; effect: Effect }
     | { kind: 'effect-fizzled'; cardId: string; effectId: string; message: string }
     | { kind: 'damage-dealt'; cardId: string; target: 'self' | 'enemy'; amount: number }
     | { kind: 'die-refreshed'; dieId: string; color: CombatDieColor }
     | { kind: 'die-spent'; dieId: string; color: CombatDieColor }
-    | { kind: 'pressure-updated'; dot: number; control: number }
     | { kind: 'dot-tick'; effectId: string; label: string; amount: number; target: 'self' | 'enemy' }
     | { kind: 'phase-resolved'; phaseIndex: number; mark: 'clear' | 'overwhelmed' }
     | { kind: 'threat-fired'; phaseIndex: number; description: string; effects: CombatThreatEffect[] }
     | { kind: 'hand-drawn'; cards: string[] }
-    | { kind: 'momentum-carried'; dot: number; control: number }
     | { kind: 'mercy-opened'; message: string }
     | { kind: 'combat-ended'; outcome: CombatOutcome };
 
@@ -382,7 +385,7 @@ export interface CombatTransition {
     events: CombatEvent[];
 }
 
-/** A snapshot of one live effect for pressure attribution. */
+/** A snapshot of one live effect for HP attribution. */
 export interface LandedEffect {
     effectId: string;
     effect: Effect;

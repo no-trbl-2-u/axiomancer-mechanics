@@ -1,18 +1,18 @@
 /**
  * Spec 25 — Hazard-Pattern Combat: the engine (§4, §9).
  *
- * `resolveCombatPhase` replaces `resolveCombatRound` as the primary combat
- * driver. Every verb is a skill card; the player rolls four stance dice, plays
- * cards, and fills two Pressure Tracks that are the only practical win
- * conditions. The legacy resolver, the effects engine, the skill engine, and
- * all 112 effects are UNCHANGED — this engine *drives* `executeSkill` /
- * `applyEffect` / the Phase 125 resolution math differently.
+ * `resolveCombatPhase` drives the HP-model combat: the enemy's SOLE bar is HP,
+ * and the player drops it to 0. Every verb is a skill card; the player rolls
+ * stance dice and plays cards, where STATUS effects are the efficient damage
+ * (DoT erodes HP; control hinders the enemy's turn) and a raw strike is the weak
+ * baseline. The legacy resolver, the effects engine, the skill engine, and all
+ * effects are UNCHANGED — this engine *drives* `executeSkill` / `applyEffect`
+ * differently.
  *
- * Card bottom actions execute through the unchanged `executeSkill`: the stance
- * die authorizes the skill's heart/body/mind resource cost (basic-attack token
- * generation is gone), while Fallacy/Paradox costs must be pre-banked — that is
- * the Tier-3 gate (§4.3, §6). Landed `effect-applied` events drive the pressure
- * tracks (mirroring `effect-resolution.ts`) and the self-reinforcing die loop
+ * Card bottom actions execute through the unchanged `executeSkill`: the drafted
+ * stance die is the card's whole cost — combat cards are NOT token-gated
+ * (`grantStanceCost` covers the full cost just-in-time). Landed `effect-applied`
+ * events drive the post-combat attribution and the self-reinforcing die loop
  * (§4.7).
  *
  * Randomness flows through the seedable global RNG singleton; pass `seed` to
@@ -40,9 +40,9 @@ import {
     COMBAT_HAND_SIZE, buildCombatDeck, drawCombatCards, shuffleCombatDeck,
 } from './combat.deck';
 import {
-    toCombatCard, cardStanceColor, effectPressure,
+    toCombatCard, cardStanceColor, effectImpact,
 } from './combat.cards';
-import { recordAttribution } from './combat.pressure';
+import { recordAttribution } from './combat.attribution';
 import { canAct } from './effect-modifiers';
 import { getThreatSequence } from './combat.threat';
 import { getSignatureSkill, applySignatureSkill, playerArchetype, SIGNATURE_KITS } from './combat.signature';
@@ -63,7 +63,7 @@ const MAX_PHASES = 60;
 
 /** Strike-damage multipliers by stance-read result (drafted die vs hidden enemy
  *  stance). Winning the read hits harder; losing it glances. */
-export const READ_PRESSURE_MULT: Record<CombatReadResult, number> = {
+export const READ_DAMAGE_MULT: Record<CombatReadResult, number> = {
     advantage: 1.5, neutral: 1.0, disadvantage: 0.5, none: 1.0,
 };
 /** Conviction granted by the unpicked die each draft (§1). */
@@ -71,7 +71,7 @@ export const CONVICTION_PER_UNPICKED_DIE = 1;
 /** Bonus Conviction for winning the stance read (§1 — reading fuels power). */
 export const CONVICTION_READ_WIN_BONUS = 1;
 /** Flat bonus HP damage when the drafted die color matches the card's stance (§3). */
-export const COLOR_MATCH_PRESSURE_BONUS = 3;
+export const COLOR_MATCH_DAMAGE_BONUS = 3;
 /** An enemy threat action's damage is scaled by this so a fight stays threatening
  *  over its full length (the enemy attacks every phase in the HP model). HARD:
  *  bosses/elites can drop a careless player. */
@@ -165,8 +165,10 @@ function skillShim(enc: CombatEncounterState): CombatState {
     };
 }
 
-/** Heart/body/mind portion of a skill's cost — granted just-in-time by the die
- *  spend (§4.3). Fallacy/Paradox are NOT granted; they must be pre-banked. */
+/** Grants a skill's FULL resource cost just-in-time, authorized by the drafted
+ *  die (§4.3). Combat CARDS are NOT token-gated: Fallacy/Paradox are granted here
+ *  too, so any learned card plays without a pre-banked token (only out-of-combat
+ *  SKILLS pay tokens). The drafted die is the sole cost a card pays. */
 function grantStanceCost(resources: CombatResources, skill: Skill): CombatResources {
     const c = skill.resourceCost;
     return {
@@ -174,6 +176,8 @@ function grantStanceCost(resources: CombatResources, skill: Skill): CombatResour
         heart: resources.heart + (c.heart ?? 0),
         body: resources.body + (c.body ?? 0),
         mind: resources.mind + (c.mind ?? 0),
+        fallacy: resources.fallacy + (c.fallacy ?? 0),
+        paradox: resources.paradox + (c.paradox ?? 0),
     };
 }
 
@@ -375,8 +379,8 @@ function withLog(state: CombatEncounterState, events: CombatEvent[]): CombatEnco
 
 /**
  * Plays one card from hand. `useBottom` powers the full effect (costs dice via
- * RPS scaling, executes the skill, drives pressure + the die-refresh loop); the
- * free top action contributes a weak flat pressure with no die.
+ * RPS scaling, executes the skill, drives impact + the die-refresh loop); the
+ * free top action contributes a weak flat impact with no die.
  */
 export function playCombatCard(
     state: CombatEncounterState,
@@ -489,7 +493,7 @@ function playTopAction(
                 if (res.result.activeEffect) {
                     events.push({
                         kind: 'effect-landed', cardId: card.id, effectId: def.id, target: 'self',
-                        track: 'none', pressure: 0, intensity: res.result.activeEffect.intensity, effect: def,
+                        effectKind: 'none', intensity: res.result.activeEffect.intensity, effect: def,
                     });
                 }
             }
@@ -524,7 +528,7 @@ function playTopAction(
 
 /**
  * Powered bottom action (§4.3, §4.7, §4.8): pays dice via RPS scaling, runs the
- * full skill through `executeSkill`, folds landed effects into the pressure
+ * full skill through `executeSkill`, folds landed effects into the impact
  * tracks + attribution, and refreshes a matching die when a status effect
  * meaningfully lands.
  */
@@ -549,17 +553,19 @@ function playBottomAction(
         return { state: withLog(state, events), events };
     }
 
-    // 2. Resource affordability — stance granted by the drafted die; Fallacy/
-    //    Paradox must be pre-banked (the Tier-3 gate, unchanged from Spec 25).
+    // 2. Resources — granted just-in-time by the drafted die. Combat cards are
+    //    NOT token-gated: grantStanceCost covers the full cost, so any card plays.
     const granted = grantStanceCost(state.combatResources, skill);
-    if (!resourcesCover(granted, skill)) {
-        const events: CombatEvent[] = [{ kind: 'effect-fizzled', cardId: card.id, effectId: '', message: 'need a banked Fallacy/Paradox token to power this card' }];
-        return { state: withLog(state, events), events };
-    }
 
     // 3. The read (drafted die vs hidden enemy stance) + color-match bonus (§1, §3).
-    const read = state.lastRead;
-    const mult = READ_PRESSURE_MULT[read];
+    //    A WILD die has no stance of its own, so it ADOPTS the powered card's
+    //    stance for the read (contesting the enemy like a colored die); on a GOLD
+    //    (rare) card the wild die always reads advantage.
+    const enemyStance = currentPhaseStance(state);
+    const read: CombatReadResult = drafted.color === 'wild'
+        ? (card.rarity === 'gold' ? 'advantage' : resolveRead(card.stance as CombatDieColor, enemyStance))
+        : state.lastRead;
+    const mult = READ_DAMAGE_MULT[read];
     const colorMatch = drafted.color === 'wild' || drafted.color === card.stance;
     const advantage = readToAdvantage(read);
 
@@ -577,7 +583,7 @@ function playBottomAction(
     // applies (below) ticks the enemy down each phase, untouched by this scaling.
     const rawStrike = Math.max(0, state.enemy.health - (res.state.enemy as Enemy).health);
     const scaledStrike = rawStrike > 0
-        ? Math.max(1, Math.round(rawStrike * DIRECT_DAMAGE_WEIGHT * mult) + (colorMatch ? COLOR_MATCH_PRESSURE_BONUS : 0))
+        ? Math.max(1, Math.round(rawStrike * DIRECT_DAMAGE_WEIGHT * mult) + (colorMatch ? COLOR_MATCH_DAMAGE_BONUS : 0))
         : 0;
     let enemy = { ...(res.state.enemy as Enemy), health: Math.max(0, state.enemy.health - scaledStrike) };
     const combatResources = res.state.combatResources;
@@ -604,14 +610,14 @@ function playBottomAction(
             const active = sideEffects.find(a => a.effectId === def.id);
             if (active && target === 'enemy') {
                 const landed: LandedEffect = { effectId: def.id, effect: def, active, target };
-                const cls = effectPressure(def, active.intensity, active.remainingDuration).track;
+                const cls = effectImpact(def, active.intensity, active.remainingDuration).track;
                 attribution = recordAttribution(attribution, card.id, card.name, landed, 0);
-                events.push({ kind: 'effect-landed', cardId: card.id, effectId: def.id, target: 'enemy', track: cls, pressure: 0, intensity: active.intensity, effect: def });
+                events.push({ kind: 'effect-landed', cardId: card.id, effectId: def.id, target: 'enemy', effectKind: cls, intensity: active.intensity, effect: def });
                 if (cls === 'dot' || cls === 'control') landedOffensiveIds.push(def.id);
                 // Meaningful land = intensity increased over the snapshot (or new).
                 if ((before[def.id] ?? 0) < active.intensity) landedOnEnemy = true;
             } else if (active) {
-                events.push({ kind: 'effect-landed', cardId: card.id, effectId: def.id, target, track: 'none', pressure: 0, intensity: active.intensity, effect: def });
+                events.push({ kind: 'effect-landed', cardId: card.id, effectId: def.id, target, effectKind: 'none', intensity: active.intensity, effect: def });
             }
         } else if (ev.kind === 'buff-fumbled') {
             events.push({ kind: 'effect-fizzled', cardId: card.id, effectId: ev.effect.id, message: ev.message });
@@ -640,7 +646,7 @@ function playBottomAction(
     // scales like the immediate strike. Absorbed in `resolveThreatPhase`.
     const guardMech = (skill.specialMechanics ?? []).find(m => m.kind === 'guard') as { amount: number } | undefined;
     const guardGain = guardMech
-        ? Math.max(1, Math.round(guardMech.amount * mult)) + (colorMatch ? COLOR_MATCH_PRESSURE_BONUS : 0)
+        ? Math.max(1, Math.round(guardMech.amount * mult)) + (colorMatch ? COLOR_MATCH_DAMAGE_BONUS : 0)
         : 0;
 
     let next: CombatEncounterState = {
@@ -658,15 +664,6 @@ function playBottomAction(
     return checkImmediateOutcome(next, events);
 }
 
-/** True when `resources` cover the skill's full cost (post stance-grant). */
-function resourcesCover(resources: CombatResources, skill: Skill): boolean {
-    const c = skill.resourceCost;
-    return (resources.heart >= (c.heart ?? 0))
-        && (resources.body >= (c.body ?? 0))
-        && (resources.mind >= (c.mind ?? 0))
-        && (resources.fallacy >= (c.fallacy ?? 0))
-        && (resources.paradox >= (c.paradox ?? 0));
-}
 
 /** Checks for a global threshold crossing mid-phase (immediate outcome, §7.1). */
 function checkImmediateOutcome(state: CombatEncounterState, events: CombatEvent[]): CombatTransition {
@@ -1008,7 +1005,7 @@ export { SIGNATURE_SKILLS, SIGNATURE_SKILL_LIST, getSignatureSkill } from './com
 
 // ── Summary (§7.7) ───────────────────────────────────────────────────────────
 
-export { buildCombatSummary } from './combat.pressure';
+export { buildCombatSummary } from './combat.attribution';
 
 // ── Convenience selectors for the presenter ──────────────────────────────────
 
@@ -1065,21 +1062,21 @@ export function cardReadPreview(state: CombatEncounterState, card: CombatCard): 
  * separately.) `track` is the card's classification, for flavor. Neutral read
  * when no die is drafted.
  */
-export function projectCardPressure(
+export function projectCardImpact(
     state: CombatEncounterState,
     card: CombatCard,
 ): { track: 'dot' | 'control' | 'none'; amount: number } {
     const d = draftedDie(state);
     const read: CombatReadResult = d ? state.lastRead : 'neutral';
-    const mult = READ_PRESSURE_MULT[read];
+    const mult = READ_DAMAGE_MULT[read];
     const colorMatch = !!d && (d.color === 'wild' || d.color === card.stance);
     const skill = card.skillId ? lookupSkill(card.skillId) : undefined;
     const base = skill ? calculateSkillDamage(state.player, skill) : 0;
     const amount = base > 0
-        ? Math.max(1, Math.round(base * DIRECT_DAMAGE_WEIGHT * mult) + (colorMatch ? COLOR_MATCH_PRESSURE_BONUS : 0))
+        ? Math.max(1, Math.round(base * DIRECT_DAMAGE_WEIGHT * mult) + (colorMatch ? COLOR_MATCH_DAMAGE_BONUS : 0))
         : 0;
-    return { track: card.track, amount };
+    return { track: card.effectKind, amount };
 }
 
 /** Re-export for presenters that need to check die affordability directly. */
-export { combatDieCanPower, availableDiceFor, effectPressure, cardStanceColor };
+export { combatDieCanPower, availableDiceFor, effectImpact, cardStanceColor };
