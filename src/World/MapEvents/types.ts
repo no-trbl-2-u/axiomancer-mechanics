@@ -16,7 +16,10 @@ import type { EnemySlug } from '../../Enemy/enemy.library';
 import type { Encounter, NodeId } from '../types';
 import type { PhilosophicalAlignment } from '../../Philosophy/types';
 
-/** The nine MapEvent kinds ('quest' joined the original eight in Phase 137). */
+/**
+ * The MapEvent kinds. 'quest' joined the original eight in Phase 137;
+ * 'narration' (a dialogue-backed monologue shell) joined them in 2026-06.
+ */
 export type MapEventKind =
     | 'encounter'
     | 'interaction'
@@ -26,7 +29,8 @@ export type MapEventKind =
     | 'cutscene'
     | 'hazard'
     | 'loot-cache'
-    | 'quest';
+    | 'quest'
+    | 'narration';
 
 // ─── Per-kind authoring payloads ──────────────────────────────────────────────
 
@@ -111,6 +115,19 @@ export interface QuestEventPayload {
     description?: string;
 }
 
+export interface NarrationPayload {
+    kind: 'narration';
+    /**
+     * Dialogue tree the narration plays through (`src/NPCs/types.ts`). A
+     * narration is authored as a monologue — leaf `DialogueNode`s with no
+     * `choices` — so it reuses the existing dialogue runtime without
+     * branching. Unlike `interaction`, the tree is authored inline on the
+     * node rather than looked up from a map NPC.
+     */
+    dialogue: DialogueTree;
+    description?: string;
+}
+
 /** Discriminated union of all authoring payloads. */
 export type MapEventPayload =
     | EncounterPayload
@@ -121,7 +138,8 @@ export type MapEventPayload =
     | CutscenePayload
     | HazardPayload
     | LootCachePayload
-    | QuestEventPayload;
+    | QuestEventPayload
+    | NarrationPayload;
 
 // ─── Pools ────────────────────────────────────────────────────────────────────
 
@@ -157,6 +175,7 @@ export type ResolvedEvent =
     | { kind: 'hazard';      effects: ActiveEffect[]; damage: number }
     | { kind: 'loot-cache';  items: Item[]; currency: number }
     | { kind: 'quest';       boardId: string }
+    | { kind: 'narration';   dialogue: DialogueTree }
     | { kind: 'none' };
 
 export interface ResolveMapEventResult {

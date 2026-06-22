@@ -823,6 +823,7 @@
     "MinigameHarnessSummary",
     "ModifierDeltaEntry",
     "NPC",
+    "NarrationPayload",
     "NodeId",
     "NonCombatStats",
     "PactLines",

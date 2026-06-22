@@ -78,7 +78,7 @@ export type {
     MapEventKind, MapEventPayload, MapEventPool, MapEventPoolEntry,
     EncounterPayload, InteractionPayload, GatheringPayload, RestPayload,
     VillagePayload, CutscenePayload, HazardPayload, LootCachePayload,
-    QuestEventPayload, ResolvedEvent, ResolveMapEventResult,
+    QuestEventPayload, NarrationPayload, ResolvedEvent, ResolveMapEventResult,
 } from './MapEvents/types';
 
 export {

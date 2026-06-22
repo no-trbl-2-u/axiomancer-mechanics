@@ -41,11 +41,12 @@ afterEach(() => {
 });
 
 describe('fishing-village content — new-player map', () => {
-    // The starting map is combat-focused but varied: mostly encounters, with a
-    // few rest / gathering / hazard nodes for recovery + texture, exactly ONE
+    // The starting map is combat-focused but varied: a real spread of kinds
+    // (rest / gathering / hazard / loot-cache / narration / interaction) for
+    // recovery + texture, with encounters kept a slight plurality, exactly ONE
     // quest node (fv-15), and ONE boss node (fv-6, an `encounter` with isBoss).
     // See the new-player override block in `content.ts`.
-    it('is mostly encounters with a few rest/gathering/hazard nodes and one quest', () => {
+    it('is a balanced spread with encounters a slight plurality and one quest + one boss', () => {
         mockSequentialRng(0.5);
         let state = freshWorldAt('fishing-village');
 
@@ -56,13 +57,19 @@ describe('fishing-village content — new-player map', () => {
             state = r.state;
         }
 
-        // 15 encounter-kind nodes (14 regular + the fv-6 boss).
-        expect(counts.encounter).toBe(15);
-        expect(counts.rest).toBe(3);
-        expect(counts.gathering).toBe(3);
+        // 8 encounter-kind nodes (7 regular + the fv-6 boss) — a slight plurality.
+        expect(counts.encounter).toBe(8);
+        expect(counts.rest).toBe(4);
+        expect(counts.gathering).toBe(4);
         expect(counts.hazard).toBe(3);
+        expect(counts['loot-cache']).toBe(3);
+        expect(counts.narration).toBe(1);
+        expect(counts.interaction).toBe(1);
         expect(counts.quest).toBe(1);
-        // Encounters still dominate; every node resolved to a real kind.
+        // Encounters remain the single largest kind.
+        const maxCount = Math.max(...Object.values(counts));
+        expect(counts.encounter).toBe(maxCount);
+        // Every node resolved to a real kind.
         expect(Object.values(counts).reduce((a, b) => a + b, 0)).toBe(25);
     });
 
@@ -76,6 +83,24 @@ describe('fishing-village content — new-player map', () => {
         expect(result.event.kind).toBe('quest');
         if (result.event.kind === 'quest') {
             expect(result.event.boardId).toBe('build-the-boat');
+        }
+    });
+
+    it('fv-14 is a narration node carrying a dialogue tree', () => {
+        mockSequentialRng(0.5);
+        const state = freshWorldAt('fishing-village');
+        const result = resolveMapEvent({
+            ...state,
+            world: { ...state.world, currentMap: { ...state.world.currentMap, currentNode: 'fv-14', consumedNodes: [] } },
+        });
+        expect(result.event.kind).toBe('narration');
+        if (result.event.kind === 'narration') {
+            const tree = result.event.dialogue;
+            expect(tree.rootId).toBeTruthy();
+            expect(tree.nodes[tree.rootId]).toBeDefined();
+            // A narration is a monologue: the root leaf has no choices.
+            expect(tree.nodes[tree.rootId]!.choices).toBeUndefined();
+            expect(Object.keys(tree.nodes).length).toBeGreaterThanOrEqual(2);
         }
     });
 
@@ -157,7 +182,7 @@ describe('Phase 37 shop content', () => {
     });
 });
 
-describe('all 8 MapEventKind values are covered by Phase 24 content', () => {
+describe('every MapEventKind is covered by the authored content', () => {
     it('each kind appears at least once across the two maps', () => {
         mockSequentialRng(0.5);
         const kinds = new Set<string>();
@@ -170,12 +195,16 @@ describe('all 8 MapEventKind values are covered by Phase 24 content', () => {
                 state = r.state;
             }
         }
+        // The original eight kinds (covered across both maps) plus the two
+        // later additions — 'quest' (fv-15) and 'narration' (fv-14), both
+        // authored on fishing-village.
         const required = [
             'encounter', 'interaction', 'gathering', 'rest',
             'village', 'cutscene', 'hazard', 'loot-cache',
+            'quest', 'narration',
         ];
         for (const k of required) {
-            expect(kinds, `Phase 24 content should fire ${k} at least once`).toContain(k);
+            expect(kinds, `authored content should fire ${k} at least once`).toContain(k);
         }
     });
 });

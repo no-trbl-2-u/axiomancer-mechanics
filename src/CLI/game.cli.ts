@@ -197,6 +197,10 @@ function describeResolvedEvent(event: ResolvedEvent): string {
         case 'hazard':      return `Hazard! (-${event.damage} HP${event.effects.length > 0 ? `, ${event.effects.length} effect${event.effects.length === 1 ? '' : 's'}` : ''})`;
         case 'loot-cache':  return `Loot cache: ${event.items.length} item${event.items.length === 1 ? '' : 's'}, ${event.currency} currency.`;
         case 'quest':       return `Quest board: ${event.boardId}.`;
+        case 'narration': {
+            const root = event.dialogue.nodes[event.dialogue.rootId];
+            return root ? root.text : 'A moment of narration passes.';
+        }
         case 'none':        return 'Nothing of note happens.';
     }
 }

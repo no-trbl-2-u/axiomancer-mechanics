@@ -28,7 +28,7 @@ import { getQuestBoardDef } from '../QuestBoard/quest-board.content';
 import type {
     EncounterPayload, InteractionPayload, GatheringPayload, RestPayload,
     VillagePayload, CutscenePayload, HazardPayload, LootCachePayload,
-    QuestEventPayload, ResolveMapEventResult,
+    QuestEventPayload, NarrationPayload, ResolveMapEventResult,
 } from './types';
 
 function withPlayer(state: GameState, next: Character): GameState {
@@ -228,6 +228,25 @@ export function resolveQuest(
     };
 }
 
+// ─── narration ────────────────────────────────────────────────────────────────
+
+/**
+ * Narration events hand the host a `DialogueTree` to play through, reusing
+ * the existing dialogue runtime (modeled on the `interaction` handler, but
+ * with the tree authored inline on the node rather than fetched from a map
+ * NPC). The shell touches no state — the dialogue runtime owns any side
+ * effects (e.g. alignment shifts from authored monologue nodes).
+ */
+export function resolveNarration(
+    state: GameState,
+    payload: NarrationPayload,
+): ResolveMapEventResult {
+    return {
+        state,
+        event: { kind: 'narration', dialogue: payload.dialogue },
+    };
+}
+
 // ─── dispatch table ───────────────────────────────────────────────────────────
 
 import type { MapEventPayload } from './types';
@@ -247,5 +266,6 @@ export function applyPayload(
         case 'hazard':      return resolveHazard(state, payload, rng);
         case 'loot-cache':  return resolveLootCache(state, payload);
         case 'quest':       return resolveQuest(state, payload);
+        case 'narration':   return resolveNarration(state, payload);
     }
 }

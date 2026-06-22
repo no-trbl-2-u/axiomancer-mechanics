@@ -3,7 +3,7 @@
  *
  * Each existing fv-N / nf-N node gets a single-entry pool override so
  * the new dispatcher reproduces (and extends) the authored events
- * `processNode` used to fire. All 8 `MapEventKind` values are covered
+ * `processNode` used to fire. Every `MapEventKind` value is covered
  * at least once across the two maps.
  *
  * This file side-effects on import: `src/World/index.ts` imports it
@@ -429,9 +429,10 @@ const nfMistPools: MapEventPool = {
 // era) were registered here first and then silently clobbered by that block
 // (overrides are last-write-wins), so they could never fire even via the CLI.
 // They were removed; the new-player block is the authored fishing-village map.
-// northern-forest is unshadowed and remains the live source for its nodes —
-// and carries the village/cutscene/interaction/loot-cache kinds fishing-village
-// no longer authors, preserving the all-8-MapEventKind invariant.
+// northern-forest is unshadowed and remains the live source for its nodes — and
+// carries the only `village` and `cutscene` kinds (fishing-village authors the
+// other kinds, including the new `narration` shell). Together the two maps cover
+// every MapEventKind, preserving the all-kinds invariant.
 
 const NORTHERN_FOREST_POOLS: ReadonlyArray<{ nodeId: string; pool: MapEventPool }> = [
     // Existing pools (preserved)
@@ -463,18 +464,22 @@ const NORTHERN_FOREST_POOLS: ReadonlyArray<{ nodeId: string; pool: MapEventPool 
     { nodeId: 'nf-25', pool: nfMistPools        },
 ];
 
-// ─── New-player fishing-village override (2026-06, rebalanced) ────────────────
+// ─── New-player fishing-village override (2026-06, rebalanced for variety) ────
 //
-// The first continent's STARTING map is combat-FOCUSED but no longer a pure
-// gauntlet — a flat wall of identical encounters with no recovery was both
-// monotonous and unwinnable in playtests. The map now mixes:
-//   - 14 low-level ENCOUNTER nodes (the spine of the experience),
-//   - 3 REST nodes (recover HP — "The Night Watch"), placed so one sits on
-//     the spine just before the boss,
-//   - 3 GATHERING nodes (low-risk materials — "The Gleaning"),
-//   - 3 HAZARD nodes (light risk — the hazard minigame),
-//   - 1 QUEST node (fv-15, the story hook), and
-//   - 1 BOSS node (fv-6, the region climax).
+// The first continent's STARTING map is combat-FOCUSED but no longer "all
+// battle" — a flat wall of identical encounters with no recovery was both
+// monotonous and unwinnable in playtests. The map now spreads 25 nodes across
+// a real mix, with encounters kept a slight plurality:
+//   - 8 ENCOUNTER nodes  (7 regular + the fv-6 boss — the spine),
+//   - 4 REST nodes       (recover HP — "The Night Watch"), one on the spine
+//                         just before the boss,
+//   - 4 GATHERING nodes  (low-risk materials — "The Gleaning"),
+//   - 3 HAZARD nodes     (light risk — the hazard minigame),
+//   - 3 LOOT-CACHE nodes (a few coins the tide left behind),
+//   - 1 NARRATION node   (fv-14, the dialogue-backed monologue shell),
+//   - 1 INTERACTION node (fv-19, a coastal NPC),
+//   - 1 QUEST node       (fv-15, the story hook), and
+//   - 1 BOSS node        (fv-6, the region climax — an encounter w/ isBoss).
 // This block supersedes the legacy authored pools above (kept in source for
 // reference). Foes stay on the gentlest L1–L2 roster; the boss is pinned to a
 // low absolute level so a fresh player can actually win the climax (the shared
@@ -510,6 +515,7 @@ const FV_GATHER_MATERIALS: ReadonlyArray<{ id: string; name: string; description
     { id: 'driftwood',  name: 'Driftwood',       description: 'Salt-bleached and brittle, but burns clean.' },
     { id: 'tide-shell', name: 'Tide Shell',      description: 'Spiral and chalk-pale; the inside still smells of salt.' },
     { id: 'salt-fish',  name: 'Salt-Fish Strip', description: 'Cured hard; chewy, salty, will keep for the road.' },
+    { id: 'kelp-frond', name: 'Kelp Frond',      description: 'Rubbery and green-black; useful steeped or dried.' },
 ];
 function fvGatheringPool(nodeId: string, mat: { id: string; name: string; description: string }, description: string): MapEventPool {
     return {
@@ -531,6 +537,58 @@ function fvHazardPool(nodeId: string, description: string): MapEventPool {
         entries: [{ kind: 'hazard', weight: 1, payload: { kind: 'hazard', damage: 2, description } }],
     };
 }
+
+// Low-risk coastal scavenging — a few coins the tide or a dead sailor left.
+const FV_LOOT_CACHES: ReadonlyArray<{ currency: number; description: string }> = [
+    { currency: 8,  description: 'A coin-purse snagged in the netting, its owner long gone.' },
+    { currency: 12, description: 'A waterlogged strongbox wedged under the pilings.' },
+    { currency: 6,  description: 'Loose coppers spill from a cracked jar in the rocks.' },
+];
+function fvLootCachePool(nodeId: string, cache: { currency: number; description: string }): MapEventPool {
+    return {
+        id: `${nodeId}.loot-cache`,
+        entries: [{ kind: 'loot-cache', weight: 1, payload: { kind: 'loot-cache', currency: cache.currency, description: cache.description } }],
+    };
+}
+
+function fvInteractionPool(nodeId: string, npcName: string, description: string): MapEventPool {
+    return {
+        id: `${nodeId}.interaction`,
+        entries: [{ kind: 'interaction', weight: 1, payload: { kind: 'interaction', npcName, description } }],
+    };
+}
+
+// A narration node (the new dialogue-backed shell kind). Placeholder monologue
+// — leaf DialogueNodes with no choices — that the dialogue runtime plays
+// through. Content is a stub; this proves the wiring end to end.
+const fvNarrationPlaceholder: MapEventPool = {
+    id: 'fv-14.narration',
+    entries: [{
+        kind: 'narration', weight: 1,
+        payload: {
+            kind: 'narration',
+            description: 'The salt-wind carries an old voice across the strand.',
+            dialogue: {
+                id: 'fv-strand-recollection',
+                rootId: 'line-1',
+                nodes: {
+                    'line-1': {
+                        id: 'line-1',
+                        text: 'The tide has gone out, and the strand lies bare to the grey morning.',
+                    },
+                    'line-2': {
+                        id: 'line-2',
+                        text: 'Somewhere a gull cries, and you remember why you came so far north.',
+                    },
+                    'line-3': {
+                        id: 'line-3',
+                        text: 'The sea keeps its own counsel. You walk on.',
+                    },
+                },
+            },
+        },
+    }],
+};
 
 const fvBuildTheBoatQuest: MapEventPool = {
     id: 'fv-15.quest',
@@ -562,18 +620,29 @@ const fvGauntletBoss: MapEventPool = {
 };
 
 // Per-node kind assignment. Rest sits at fv-3 (spine, before the fv-6 boss) so
-// the player can heal before the climax; gather/hazard salt the rest of the map.
+// the player can heal before the climax; the rest of the kinds salt the map for
+// variety. Every node fv-1..fv-25 is assigned exactly once; anything not named
+// in these maps (and not the boss/quest/narration/interaction nodes below)
+// falls through to a regular ENCOUNTER, keeping encounters a slight plurality.
 const FV_REST_NODES: Record<string, string> = {
     'fv-3':  'A fisher’s lean-to, the embers still warm. You stop to bind your wounds.',
     'fv-9':  'A roofless cottage out of the wind. Enough shelter to catch your breath.',
     'fv-20': 'A dry hollow under an upturned hull. You rest a while.',
+    'fv-25': 'A tide-pool grotto, still and warm. You let the quiet mend you.',
 };
-const FV_GATHER_NODES: Record<string, number> = { 'fv-5': 0, 'fv-8': 1, 'fv-13': 2 };
+const FV_GATHER_NODES: Record<string, number> = { 'fv-5': 0, 'fv-8': 1, 'fv-13': 2, 'fv-22': 3 };
 const FV_HAZARD_NODES: Record<string, string> = {
     'fv-10': 'You stumble through a thicket of jagged barnacles.',
     'fv-18': 'The boards give way over a reeking bilge; you scramble clear.',
     'fv-23': 'A gull-slick ledge crumbles underfoot above the rocks.',
 };
+const FV_LOOT_NODES: Record<string, number> = { 'fv-2': 0, 'fv-11': 1, 'fv-17': 2 };
+// One coastal NPC for texture (the narration node fv-14 is wired separately).
+const fvShoreInteraction = fvInteractionPool(
+    'fv-19',
+    'Weathered Fisher',
+    'A weathered fisher mends a net on the quay and eyes you sidelong.',
+);
 
 const FISHING_VILLAGE_NEW_PLAYER_POOLS: ReadonlyArray<{ nodeId: string; pool: MapEventPool }> =
     (() => {
@@ -585,12 +654,18 @@ const FISHING_VILLAGE_NEW_PLAYER_POOLS: ReadonlyArray<{ nodeId: string; pool: Ma
                 out.push({ nodeId, pool: fvGauntletBoss });
             } else if (nodeId === 'fv-15') {
                 out.push({ nodeId, pool: fvBuildTheBoatQuest });
+            } else if (nodeId === 'fv-14') {
+                out.push({ nodeId, pool: fvNarrationPlaceholder });
+            } else if (nodeId === 'fv-19') {
+                out.push({ nodeId, pool: fvShoreInteraction });
             } else if (FV_REST_NODES[nodeId]) {
                 out.push({ nodeId, pool: fvRestPool(nodeId, FV_REST_NODES[nodeId]!) });
             } else if (nodeId in FV_GATHER_NODES) {
                 out.push({ nodeId, pool: fvGatheringPool(nodeId, FV_GATHER_MATERIALS[FV_GATHER_NODES[nodeId]!]!, 'You crouch to gather what the tide left behind.') });
             } else if (FV_HAZARD_NODES[nodeId]) {
                 out.push({ nodeId, pool: fvHazardPool(nodeId, FV_HAZARD_NODES[nodeId]!) });
+            } else if (nodeId in FV_LOOT_NODES) {
+                out.push({ nodeId, pool: fvLootCachePool(nodeId, FV_LOOT_CACHES[FV_LOOT_NODES[nodeId]!]!) });
             } else {
                 const foe = FV_NEW_PLAYER_FOES[foeIdx % FV_NEW_PLAYER_FOES.length]!;
                 foeIdx++;
