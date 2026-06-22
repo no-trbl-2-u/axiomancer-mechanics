@@ -413,3 +413,20 @@ by dispatching `store.unlockCodexEntry(entryId)`. See
 `docs/combat.md` § "Friendship Path" for the engine-side semantics
 and `docs/api.md` § "Codex slice (Phase 73)" for the public-surface
 shape. Source: GH#65 ask 3 (filed 2026-05-22).
+
+## Spec 26 / 26b author fields
+
+Two optional author-facing fields on `Enemy` / `CreateEnemyOptions`
+feed the Spec 26/26b Hazard-Pattern combat presentation (see
+`docs/combat.md` § "Spec 26 / 26b"). Both are sparse — absent fields
+fall back to engine defaults, so existing enemies need no migration.
+
+| Field | Type | Spec | Purpose |
+| --- | --- | --- | --- |
+| `portraitAsset` | `string` | 26 §3.1 | Kebab-case asset id for the enemy's combat portrait (e.g. `coastal-tyrant`). Mobile resolves it via the portrait registry; absent → fallback silhouette. |
+| `stanceHint` | `string` | 26b §2 | An enemy-level thematic tell that *implies* (never states) the foe's stance tendency. Surfaced in the combat reveal so reading the foe's character pays off in the hidden read. A per-phase `CombatThreatPhase.stanceHint` overrides it; if neither is set a generic per-stance hint is used. |
+
+Author coverage: the seven befriendable-stack enemies carry both
+fields — MournfulGull, HollowEyedBeggar, TideflukeReaver, HushWraith,
+HollowSaint, CoastalTyrant, and TheDisagreement. The remaining
+roster leaves both undefined and renders the engine fallbacks.
