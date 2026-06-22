@@ -42,6 +42,7 @@ const SYNTHETIC_CARDS: Record<string, CombatCard> = {
         topActionText: 'Brace — refresh 1 spent die.',
         bottomActionText: 'Flee combat. Costs all remaining available dice (§12 Q2).',
         bottomPressurePreview: 0,
+        primaryEffectId: null,
     },
 };
 
@@ -81,7 +82,17 @@ function isStatDebuff(effect: Effect): boolean {
  * intensity/duration the skill applies it at. Mirrors the Phase 125 resolution
  * math so the tracks are a faithful *leading indicator* of DoT-Erosion /
  * Control-Saturation (§5).
+ *
+ * Spec 26b tuning pass 2: Control was far weaker than DoT in playtest (control
+ * plays moved the track +2-4 vs DoT's +9-20), so the Control Saturation / mercy
+ * path never fired. Control contributions are scaled up here so racing Control
+ * is a genuine alternative — `CONTROL_HARD`/`CONTROL_SOFT` multipliers tuned
+ * against the balance sim.
  */
+export const CONTROL_HARD_MULT = 6;   // hard control (stun/fear/silence/forced-stance…)
+export const CONTROL_SOFT_MULT = 4;   // stat-debuffs + soft control
+export const DOT_PERROUND_WEIGHT = 1; // DoT keeps its raw perRound×intensity
+
 export function effectPressure(
     effect: Effect,
     intensity: number,
@@ -89,17 +100,17 @@ export function effectPressure(
 ): { track: PressureTrackKey; amount: number } {
     if (isDot(effect)) {
         const perRound = effect.payload.damageOverTime!.damagePerRound;
-        return { track: 'dot', amount: perRound * Math.max(1, intensity) };
+        return { track: 'dot', amount: DOT_PERROUND_WEIGHT * perRound * Math.max(1, intensity) };
     }
     if (isControl(effect)) {
         const r = effect.payload.actionRestriction;
         const restricts = !!r && (r.skipTurn === true || r.forcedStance !== undefined || (r.blockedStances?.length ?? 0) > 0);
-        const durationCredit = restricts ? Math.min(Math.max(0, duration), 3) : 0;
-        return { track: 'control', amount: Math.max(1, intensity) + durationCredit };
+        const durationCredit = Math.min(Math.max(0, duration), 3);
+        return { track: 'control', amount: Math.max(1, intensity) * CONTROL_HARD_MULT + (restricts ? durationCredit : 0) };
     }
     if (isStatDebuff(effect)) {
-        // Smaller contribution than hard control (§6 Rule: stat-debuff = control, smaller).
-        return { track: 'control', amount: Math.max(1, intensity) };
+        // Soft control — still a meaningful chunk of the Control track (pass 2).
+        return { track: 'control', amount: Math.max(1, intensity) * CONTROL_SOFT_MULT };
     }
     return { track: 'none', amount: 0 };
 }
@@ -149,6 +160,18 @@ export function bottomPressurePreview(skill: Skill, lookupEffect: EffectLookup):
     return total;
 }
 
+/** The primary enemy effect id a card applies (first that contributes pressure),
+ *  for the UI projection's diminishing-returns lookup. */
+export function primaryEnemyEffectId(skill: Skill, lookupEffect: EffectLookup): string | null {
+    for (const ce of enemyEffects(skill)) {
+        const def = lookupEffect(ce.effectId);
+        if (def && effectPressure(def, ce.intensity ?? 1, ce.duration ?? def.duration).track !== 'none') {
+            return def.id;
+        }
+    }
+    return null;
+}
+
 function tierLabel(tier: 1 | 2 | 3): string {
     return tier === 3 ? 'Tier 3' : tier === 2 ? 'Tier 2' : 'Tier 1';
 }
@@ -187,6 +210,7 @@ export function toCombatCard(cardId: string, lookupSkill: SkillLookup, lookupEff
         topActionText: `${topActionText} (${tierLabel(skill.tier)})`,
         bottomActionText,
         bottomPressurePreview: preview,
+        primaryEffectId: primaryEnemyEffectId(skill, lookupEffect),
     };
 }
 

@@ -17,8 +17,11 @@ import { getRng } from '../Utils/rng';
 import type { Character } from '../Character/types';
 import { SYNTHETIC_CARD_IDS } from './combat.cards';
 
-/** Cards drawn at the start of every threat phase. */
-export const COMBAT_HAND_SIZE = 5;
+/** Cards drawn at the start of every threat phase. Spec 26b hazard-combat tuning:
+ *  raised 5→6 so a phase (fought with ONE hand) can assemble a genuine multi-card
+ *  solution instead of being decided by raw draw luck — directly serves the
+ *  anti-single-card-spam / "assembled solution" doctrine. */
+export const COMBAT_HAND_SIZE = 6;
 
 const defaultRng = (): number => getRng().random();
 
@@ -39,12 +42,16 @@ export function shuffleCombatDeck<T>(items: readonly T[], rng: () => number = de
  */
 export function buildCombatDeck(player: Character): string[] {
     const known = player.knownSkills ?? [];
-    // De-dup defensively; preserve learn order so opening hands feel authored.
+    // De-dup the learned-skill baseline; preserve learn order so opening hands
+    // feel authored.
     const seen = new Set<string>();
     const deck: string[] = [];
     for (const id of known) {
         if (!seen.has(id)) { seen.add(id); deck.push(id); }
     }
+    // Spec 26b deckbuilder — reward cards stack on top (DUPLICATES kept: extra
+    // copies are the whole point of a deckbuilder pickup).
+    for (const id of player.combatRewardCards ?? []) deck.push(id);
     for (const id of SYNTHETIC_CARD_IDS) {
         if (!seen.has(id)) { seen.add(id); deck.push(id); }
     }

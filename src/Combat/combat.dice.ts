@@ -18,8 +18,11 @@ import { getRng } from '../Utils/rng';
 import type { Stance } from './types';
 import type { CombatDieColor, CombatManaDie } from './combat.encounter.types';
 
-/** Dice rolled once at combat start. */
+/** Legacy: dice rolled once at combat start (Spec 25). Kept for the shim. */
 export const COMBAT_DICE_COUNT = 4;
+
+/** Spec 26b §1 — dice rolled fresh at the start of EVERY turn (draft 1 of 2). */
+export const TURN_DICE_COUNT = 2;
 
 /**
  * The die-face bag (Spec 25 §4.2): Heart / Body / Mind / Wild at 1/6 each, and
@@ -55,6 +58,43 @@ export function rollCombatDice(
         });
     }
     return dice;
+}
+
+/**
+ * Spec 26b §1 — rolls THIS TURN's draft pool of 2 dice. Ids are turn-scoped
+ * (`t{turn}-d{0|1}`) so the UI can animate fresh dice each turn. X faces start
+ * `locked` (a drafted X can't power a card); colored/wild start `available`.
+ */
+const STANCE_FACES: readonly CombatDieColor[] = Object.freeze(['heart', 'body', 'mind']);
+
+export function rollTurnDice(
+    turn: number,
+    count: number = TURN_DICE_COUNT,
+    rng: () => number = defaultRng,
+): CombatManaDie[] {
+    const dice: CombatManaDie[] = [];
+    for (let i = 0; i < count; i++) {
+        const color = rollCombatDieColor(rng);
+        dice.push({
+            id: `t${turn}-d${i}`,
+            color,
+            state: color === 'x' ? 'locked' : 'available',
+            temporary: false,
+        });
+    }
+    // Spec 26b tuning §3 — guarantee at least one STANCE-bearing die (heart/body/
+    // mind) so every turn offers a real read + a usable play (no dead both-X /
+    // wild-only rolls). Convert the last die when none qualifies.
+    if (dice.length > 0 && !dice.some(d => dieHasStance(d.color))) {
+        const color = STANCE_FACES[Math.min(2, Math.floor(rng() * 3))];
+        dice[dice.length - 1] = { ...dice[dice.length - 1], color, state: 'available' };
+    }
+    return dice;
+}
+
+/** True when a die color carries a stance for the RPS read (heart/body/mind). */
+export function dieHasStance(color: CombatDieColor): boolean {
+    return color === 'heart' || color === 'body' || color === 'mind';
 }
 
 /**

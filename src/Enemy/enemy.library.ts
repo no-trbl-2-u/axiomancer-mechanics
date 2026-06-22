@@ -216,6 +216,8 @@ export const WetHound = createEnemy({
 
 export const MournfulGull = createEnemy({
     id: 'enemy-mournful-gull',
+    portraitAsset: 'mournful-gull',
+    stanceHint: 'A creature of pure grief; it acts on raw feeling, not calculation.',
     name: 'Mournful Gull',
     description: 'It circles overhead, screaming a list of every slight it remembers.',
     level: 2,
@@ -303,6 +305,8 @@ export const ForestSprite = createEnemy({
 
 export const HollowEyedBeggar = createEnemy({
     id: 'enemy-hollow-eyed-beggar',
+    portraitAsset: 'hollow-eyed-beggar',
+    stanceHint: 'Desperation has made it cunning and watchful — until hunger overrides the scheming.',
     name: 'Hollow-Eyed Beggar',
     description: 'You suspect they have not always been hollow. They want what you carry, not what you are.',
     level: 3,
@@ -396,6 +400,8 @@ export const ArgumentativeCrow = createEnemy({
 
 export const TideflukeReaver = createEnemy({
     id: 'enemy-tidefluke-reaver',
+    portraitAsset: 'tidefluke-reaver',
+    stanceHint: 'A raider who leads with the shoulder and the hook, then fights on fury once blood is up.',
     name: 'Tidefluke Reaver',
     description: 'Salt-bound and shore-cursed. Its fists move faster than the surf retreats.',
     level: 4,
@@ -459,6 +465,8 @@ export const TideflukeReaver = createEnemy({
 
 export const HushWraith = createEnemy({
     id: 'enemy-hush-wraith',
+    portraitAsset: 'hush-wraith',
+    stanceHint: 'A silencing spirit of cold calculation; only at the end does it act from desperate hunger.',
     name: 'Hush-Wraith',
     description: 'A presence shaped like the silence after a question. Listens until you doubt the answer.',
     level: 5,
@@ -521,6 +529,8 @@ export const HushWraith = createEnemy({
 
 export const HollowSaint = createEnemy({
     id: 'enemy-hollow-saint',
+    portraitAsset: 'hollow-saint',
+    stanceHint: 'A hollowed zealot whose broken faith is all feeling, then muscle, then cold judgment.',
     name: 'Hollow Saint',
     description: 'A martyr without a cause, looking for one. The wound it offers is your own.',
     level: 5,
@@ -587,6 +597,8 @@ export const HollowSaint = createEnemy({
 
 export const CoastalTyrant = createEnemy({
     id: 'enemy-coastal-tyrant',
+    portraitAsset: 'coastal-tyrant',
+    stanceHint: 'A coastal bully who has never stepped back from a fight — he answers everything with his fists, until cornered.',
     name: 'The Coastal Tyrant',
     description:
         'Once a magistrate of the bay; now a king whose subjects are all gulls and grievances. ' +
@@ -702,6 +714,8 @@ export const CoastalTyrant = createEnemy({
 
 export const TheDisagreement = createEnemy({
     id: 'enemy-the-disagreement',
+    portraitAsset: 'the-disagreement',
+    stanceHint: 'Pure argument — every move a reasoned counter, until it loses the thread and turns to feeling, then force.',
     name: 'The Disagreement',
     description:
         'Not a single creature so much as an unresolved argument given thorns and teeth. ' +

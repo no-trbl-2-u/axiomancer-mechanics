@@ -23,6 +23,42 @@ export function momentumCarry(surplus: number): number {
     return Math.max(0, Math.min(MOMENTUM_CAP, Math.floor(surplus / 2)));
 }
 
+// ── Spec 26b tuning §2 — anti-spam diminishing returns + diversity synergy ───
+
+/** Each re-application of the SAME effect this combat loses this much. Eased
+ *  (0.3→0.2) so a small, focused deck that must reuse its few status cards still
+ *  sustains real pressure into late phases — without this a minimal loadout is
+ *  walled on the final phase. Spam is still discouraged (the diversity SYNERGY
+ *  bonus and the floor keep variety attractive), just not punished into a loss. */
+export const DIMINISH_STEP = 0.2;
+/** …but never below this fraction of the base. */
+export const DIMINISH_FLOOR = 0.55;
+/** Flat bonus for landing a status while the enemy already carries the OTHER
+ *  track's status (DoT + Control on the board at once) — rewards a varied kit. */
+export const SYNERGY_BONUS = 3;
+
+/** Marginal multiplier for the Nth application of one effect (0-indexed prior). */
+export function diminishFactor(priorCount: number): number {
+    return Math.max(DIMINISH_FLOOR, 1 - DIMINISH_STEP * Math.max(0, priorCount));
+}
+
+/**
+ * The pressure a card's landed effect actually contributes after: diminishing
+ * returns (priorCount of the same effect), the stance-read multiplier, the
+ * color-match flat bonus, and the diversity synergy bonus. Single source for the
+ * engine (live) and `projectCardPressure` (the UI preview) so they never drift.
+ */
+export function marginalPressure(
+    base: number,
+    priorCount: number,
+    readMult: number,
+    colorMatchBonus: number,
+    synergyBonus: number,
+): number {
+    const diminished = base * diminishFactor(priorCount);
+    return Math.max(1, Math.round(diminished * readMult) + colorMatchBonus + synergyBonus);
+}
+
 /** Pressure a single landed effect contributes to its track. */
 export function pressureForLanded(landed: LandedEffect): { track: 'dot' | 'control' | 'none'; amount: number } {
     if (landed.target !== 'enemy') return { track: 'none', amount: 0 };
