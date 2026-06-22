@@ -141,7 +141,11 @@ export type SkillSpecialMechanic =
     | { kind: 'convert_enemy_buff_to_self' }
     | { kind: 'secondary_heal_self'; stat: SkillsStatType; multiplier?: number }
     | { kind: 'bypass_defense' }
-    | { kind: 'befriend_attempt' };
+    | { kind: 'befriend_attempt' }
+    /** Hazard-Pattern Combat — grants the player GUARD (a shield that absorbs the
+     *  enemy's next telegraphed threat). Handled by the combat engine, not the
+     *  skill engine. `amount` is the base Guard before read/free scaling. */
+    | { kind: 'guard'; amount: number };
 
 /**
  * Phase 66 — synergy predicate. The matched ActiveEffect on `on`

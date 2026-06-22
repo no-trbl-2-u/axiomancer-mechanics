@@ -243,6 +243,7 @@ export function initializeCombatEncounter(
         round: 1,
         attribution: {},
         chainEffectIds: [],
+        guard: 0,
         carriedDie: null,
         directDamageDealt: 0,
         log: [],
@@ -471,6 +472,7 @@ function playTopAction(
     let player = state.player;
     let enemy = state.enemy;
     let directDamage = state.directDamageDealt;
+    let guardGain = 0;
     const skill = card.skillId ? lookupSkill(card.skillId) : undefined;
 
     events.push({ kind: 'card-played', cardId: card.id, useBottom: false, dieId: null, advantage: 'neutral' });
@@ -496,6 +498,10 @@ function playTopAction(
             player = heal(player, amount);
             events.push({ kind: 'damage-dealt', cardId: card.id, target: 'self', amount: -amount });
         }
+    } else if (card.verbClass === 'defend' && skill) {
+        // Free brace — a small Guard (half the base), no die, no read scaling.
+        const gm = (skill.specialMechanics ?? []).find(m => m.kind === 'guard') as { amount: number } | undefined;
+        guardGain = Math.max(1, Math.round((gm?.amount ?? 2) * 0.5));
     } else if (skill) {
         // Offensive free action — chip a sliver of enemy HP (die-free, weak). A
         // pure-damage card scales off its damage; a status card chips a flat bit.
@@ -509,6 +515,7 @@ function playTopAction(
 
     let next: CombatEncounterState = {
         ...state, player, enemy, directDamageDealt: directDamage,
+        guard: (state.guard ?? 0) + guardGain,
     };
     next = discardEntry(next, uid);
     next = withLog(next, events);
@@ -628,9 +635,18 @@ function playBottomAction(
         events.push({ kind: 'die-spent', dieId: drafted.id, color: drafted.color });
     }
 
+    // Defense card → GUARD: a shield vs the enemy's NEXT telegraphed threat,
+    // read-scaled (advantage powers a bigger brace) + the color-match bonus, so it
+    // scales like the immediate strike. Absorbed in `resolveThreatPhase`.
+    const guardMech = (skill.specialMechanics ?? []).find(m => m.kind === 'guard') as { amount: number } | undefined;
+    const guardGain = guardMech
+        ? Math.max(1, Math.round(guardMech.amount * mult)) + (colorMatch ? COLOR_MATCH_PRESSURE_BONUS : 0)
+        : 0;
+
     let next: CombatEncounterState = {
         ...state, player, enemy, dice, combatResources, attribution,
         chainEffectIds: [...chainBefore, ...newChainIds],
+        guard: (state.guard ?? 0) + guardGain,
         directDamageDealt: directDamage,
     };
     next = discardEntry(next, uid);
@@ -688,13 +704,20 @@ export function resolveThreatPhase(state: CombatEncounterState, rng: () => numbe
 
     let player = state.player;
     let enemy = state.enemy;
+    // GUARD (from defense cards) absorbs this phase's telegraphed hit before HP.
+    let guard = state.guard ?? 0;
     const penaltiesApplied: CombatThreatEffect[] = [];
 
     if (!hindered) {
         // The enemy attacks: its telegraphed threat action fires on the player.
         for (const eff of phase.threatAction.effects) {
             if (eff.damage && eff.damage > 0) {
-                player = applyDamage(player, Math.round(eff.damage * THREAT_DAMAGE_SCALE));
+                // Guard soaks the strike first (clamped), then HP takes the rest.
+                let dmg = Math.round(eff.damage * THREAT_DAMAGE_SCALE);
+                const absorbed = Math.min(guard, dmg);
+                guard -= absorbed;
+                dmg -= absorbed;
+                if (dmg > 0) player = applyDamage(player, dmg);
             }
             if (eff.effectId) {
                 const def = lookupEffectDef(eff.effectId);
@@ -734,6 +757,7 @@ export function resolveThreatPhase(state: CombatEncounterState, rng: () => numbe
         ...state,
         player,
         enemy,
+        guard: 0,                       // brace is spent on this phase's threat; resets each phase
         phase: 'phase-resolve',
         threatMarks,
         phaseResults: [...state.phaseResults, result],

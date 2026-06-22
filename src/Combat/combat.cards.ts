@@ -144,6 +144,10 @@ export function classifyVerbClass(
     if ((skill.specialMechanics ?? []).some(m => m.kind === 'befriend_attempt')) {
         return { verbClass: 'befriend', track: 'control' };
     }
+    // A defense card grants the player GUARD (a shield) — no enemy pressure.
+    if ((skill.specialMechanics ?? []).some(m => m.kind === 'guard')) {
+        return { verbClass: 'defend', track: 'none' };
+    }
 
     const enemy = enemyEffects(skill);
     const defs = enemy.map(e => lookupEffect(e.effectId)).filter((e): e is Effect => !!e);
@@ -199,17 +203,23 @@ export function toCombatCard(cardId: string, lookupSkill: SkillLookup, lookupEff
     const { verbClass, track } = classifyVerbClass(skill, lookupEffect);
     const preview = bottomPressurePreview(skill, lookupEffect);
 
-    const topActionText = verbClass === 'direct-damage'
-        ? 'Chip the enemy for a sliver of HP (0 pressure).'
-        : verbClass === 'buff-self'
-            ? 'Apply a weak version of the buff to yourself.'
-            : `Apply a weak version — +1 ${track} pressure, no die.`;
+    const guardN = ((skill.specialMechanics ?? []).find(m => m.kind === 'guard') as { amount: number } | undefined)?.amount ?? 0;
 
-    const bottomActionText = verbClass === 'direct-damage'
-        ? `Full strike (HP damage only — 0 pressure).`
-        : verbClass === 'buff-self'
-            ? 'Full buff to yourself. Costs 1 die.'
-            : `Full effect — +${preview} ${track} pressure. Costs 1 ${cardStanceColor(skill)} die${skill.tier === 3 ? ' + 1 banked token' : ''}.`;
+    const topActionText = verbClass === 'defend'
+        ? 'Brace — gain a little Guard (absorbs the next threat), no die.'
+        : verbClass === 'direct-damage'
+            ? 'Chip the enemy for a sliver of HP (0 pressure).'
+            : verbClass === 'buff-self'
+                ? 'Apply a weak version of the buff to yourself.'
+                : `Apply a weak version — +1 ${track} pressure, no die.`;
+
+    const bottomActionText = verbClass === 'defend'
+        ? `Gain ${guardN} Guard — absorbs the enemy's next threat. Costs 1 die.`
+        : verbClass === 'direct-damage'
+            ? `Full strike (HP damage only — 0 pressure).`
+            : verbClass === 'buff-self'
+                ? 'Full buff to yourself. Costs 1 die.'
+                : `Full effect — +${preview} ${track} pressure. Costs 1 ${cardStanceColor(skill)} die${skill.tier === 3 ? ' + 1 banked token' : ''}.`;
 
     return {
         id: skill.id,

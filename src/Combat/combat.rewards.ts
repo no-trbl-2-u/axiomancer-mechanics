@@ -28,10 +28,13 @@ import type { PlayerArchetype } from './combat.encounter.types';
 export const COMBAT_REWARD_POOL: readonly string[] = Object.freeze([
     // body
     'slippery-slope', 'ad-hominem-strike', 'mob-appeal', 'straw-giant',
+    'brace-for-impact',     // defense (GUARD)
     // mind
     'false-dilemma', 'liars-echo', 'undistributed-middle', 'sorites-cascade',
+    'suspend-judgment',     // defense (GUARD)
     // heart
     'eternal-regress', 'appeal-to-pity', 'ship-of-theseus', 'bootstrap-paradox',
+    'stoic-reserve',        // defense (GUARD)
 ]);
 
 /** The single skill a brand-new player starts with (Spec 26b §D). The rest are

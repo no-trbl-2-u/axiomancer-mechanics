@@ -845,5 +845,10 @@ function applySpecialMechanic(
             });
             return { caster, target, events };
         }
+
+        case 'guard':
+            // Hazard-Pattern GUARD is granted by the combat engine (playBottom/Top
+            // action → CombatEncounterState.guard); the skill engine no-ops it.
+            return { caster, target, events };
     }
 }

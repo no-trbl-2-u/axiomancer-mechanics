@@ -1160,6 +1160,72 @@ const apophaticAegis: Skill = {
     tags: ['late-game', 'defensive', 'buff', 'heal'],
 };
 
+// ─── Defense cards (Spec 26b — Hazard GUARD) ─────────────────────────────────
+// basePower 0, targetType 'self', a `guard` specialMechanic → the combat engine
+// grants GUARD (a shield) that absorbs the enemy's NEXT telegraphed threat
+// (`resolveThreatPhase`). POWER scales the brace by the stance read; FREE gives a
+// small one. Defense is a TEMPO/survival tool — it deals no damage and spends your
+// die for the turn, so STATUS (DoT) stays the efficient way to actually win.
+const braceForImpact: Skill = {
+    id: 'brace-for-impact',
+    name: 'Brace for Impact',
+    category: 'paradox',
+    philosophicalAspect: 'body',
+    description:
+        'You set your stance and meet the blow on your own terms — what is ' +
+        'braced for cannot break you. The strike still comes; it simply finds ' +
+        'a body that has already decided not to fall.',
+    tier: 1,
+    resourceCost: { body: 2 },
+    targetType: 'self',
+    basePower: 0,
+    scalingStat: 'body',
+    specialMechanics: [{ kind: 'guard', amount: 12 }],
+    learningRequirement: { level: 1 },
+    addedIn: '2026-06-22',
+    tags: ['defense', 'guard', 'early-game'],
+};
+
+const suspendJudgment: Skill = {
+    id: 'suspend-judgment',
+    name: 'Suspend Judgment',
+    category: 'paradox',
+    philosophicalAspect: 'mind',
+    description:
+        'You withhold assent from the attack\'s premise — refuse to grant that ' +
+        'it must land, and the conclusion loses its grip. The skeptic\'s shield ' +
+        'is built from everything left unconceded.',
+    tier: 1,
+    resourceCost: { mind: 2 },
+    targetType: 'self',
+    basePower: 0,
+    scalingStat: 'mind',
+    specialMechanics: [{ kind: 'guard', amount: 12 }],
+    learningRequirement: { level: 1 },
+    addedIn: '2026-06-22',
+    tags: ['defense', 'guard', 'early-game'],
+};
+
+const stoicReserve: Skill = {
+    id: 'stoic-reserve',
+    name: 'Stoic Reserve',
+    category: 'paradox',
+    philosophicalAspect: 'heart',
+    description:
+        'What is not in your power to prevent, you decline to be wounded by. ' +
+        'You hold a reserve of stillness against the blow — it spends its force ' +
+        'on a self that has agreed, in advance, to remain unmoved.',
+    tier: 2,
+    resourceCost: { heart: 3 },
+    targetType: 'self',
+    basePower: 0,
+    scalingStat: 'heart',
+    specialMechanics: [{ kind: 'guard', amount: 18 }],
+    learningRequirement: { level: 6 },
+    addedIn: '2026-06-22',
+    tags: ['defense', 'guard', 'mid-game'],
+};
+
 // ─── Library Export ──────────────────────────────────────────────────────────
 
 /**
@@ -1207,14 +1273,17 @@ export const skillLibrary: Skill[] = [
     // Phase 108 — Befriend heart skill
     befriend,
     // 2026-06-07 content drop — mid/late-game expansion (20 skills)
-    // Tier 1 (5)
+    // Tier 1 (7)
     hastyGeneralization,
     redHerring,
     wishfulThinking,
     arrowParadox,
     heapOfDoubt,
-    // Tier 2 (8)
+    braceForImpact,     // defense (BODY) — Hazard GUARD
+    suspendJudgment,    // defense (MIND) — Hazard GUARD
+    // Tier 2 (9)
     slipperySlope,
+    stoicReserve,       // defense (HEART) — Hazard GUARD
     appealToAuthority,
     tuQuoque,
     baradoxsBarber,

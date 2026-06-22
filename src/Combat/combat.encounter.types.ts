@@ -68,6 +68,7 @@ export type CombatVerbClass =
     | 'buff-self'         // buffs the player (regen, resistance, accuracy) → 0 pressure
     | 'direct-damage'     // raw HP damage, no status effect → 0 pressure
     | 'befriend'          // Befriend skill card → opens the mercy choice (§6 Q6)
+    | 'defend'            // Guard/defense card → shields against the enemy's next threat
     | 'retreat';          // Retreat skill card → leaves combat (§3, §12 Q2)
 
 /** The two pressure tracks a card may feed. `none` = utility / damage only. */
@@ -332,6 +333,10 @@ export interface CombatEncounterState {
     turn: number;
     /** Conviction (◆) bank — funds Signature Skills (Spec 26b §4). */
     conviction: number;
+    /** Hazard GUARD — a transient shield (HP) granted by defense cards that
+     *  absorbs the enemy's NEXT telegraphed threat, then resets each phase.
+     *  Optional for back-compat with state literals (treated as 0 when absent). */
+    guard?: number;
     /** Phase indices whose hidden enemy stance the player has revealed (§2). */
     revealedStances: number[];
     /** Read result of the most recent draft (transient — for the UI flash). */
