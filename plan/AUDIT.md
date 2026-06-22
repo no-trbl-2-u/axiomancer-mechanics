@@ -46,7 +46,7 @@
 
 ## Pending
 
-<!-- No pending findings -->
+- [ ] **[H — release bookkeeping] CHANGELOG/tag drift breaks `npm run deploy:check`** — the latest git tag is `v0.29.0` and `package.json` is `0.29.0`, but the top *tagged* CHANGELOG heading is `[0.22.0]` (the `[0.23.0]` block is still marked `— unreleased`). The Phase 52 deploy-check guard (`scripts/deploy-check.mjs:107-121`) requires the normalised latest tag to equal the top non-unreleased CHANGELOG version, so `npm run deploy:check` exits 1 on a "git tag / CHANGELOG.md disagreement" — the publish/release gate is red. Six release commits (`chore(release): bump to 0.25.0`, `0.24.1`, `0.24.2`, Spec 25 / 26 / 26b) shipped after the `[0.23.0] — unreleased` block was opened (2026-06-20) without ever dating it or recording the post-0.23 work. Type-check / lint / build / public-surface snapshot are all green — this is the *only* red gate. Fix: date the `[0.23.0]` block to its real release date and add a dated consolidated `[0.29.0]` heading covering the post-0.23 work (node event-kind API + level-ladder presets + resource carry + fishing-village gauntlet, Rest/LootCache sims, Spec 25 Hazard-Pattern Combat, Spec 26/26b combat redesign), so the top tagged heading matches `v0.29.0` per the documented escape hatch. Score 7 × 8 / 10 = 5.6.
 
 ## Done
 
