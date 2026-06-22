@@ -1,6 +1,6 @@
 {
   "name": "axiomancer-mechanics",
-  "version": "0.28.0",
+  "version": "0.29.0",
   "description": "Turn-based RPG combat mechanics with philosophical themes",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
