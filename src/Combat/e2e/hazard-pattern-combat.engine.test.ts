@@ -32,7 +32,7 @@ import {
     draftStanceDie, getDraftedDie, isPhaseStanceRevealed,
     playSignatureSkill, discardCombatCard, projectCardPressure, startTurn, endTurn,
 } from '../combat.engine';
-import { diminishFactor, marginalPressure } from '../combat.pressure';
+import { diminishFactor, marginalPressure, diversitySynergy } from '../combat.pressure';
 import { SIGNATURE_KITS, playerArchetype } from '../combat.signature';
 import { rollCombatCardRewards, addRewardCard, unlockSkillViaDilemma, COMBAT_REWARD_POOL } from '../combat.rewards';
 import { buildCombatDeck, COMBAT_HAND_SIZE } from '../combat.deck';
@@ -339,14 +339,53 @@ describe('Spec 26b §4 — Signature Skills (Conviction-funded)', () => {
 
 describe('Spec 26b tuning — diminishing returns + projection + carry', () => {
     it('diminishFactor falls off then floors; marginalPressure honours it', () => {
-        // Eased diminishing returns (DIMINISH_STEP 0.2, floor 0.55) so a focused
-        // deck that must reuse its few status cards still sustains late-phase pressure.
+        // Steepened diminishing returns (DIMINISH_STEP 0.3, floor 0.4, Spec 26b
+        // §3) so leaning on ONE status card decays fast — by the 3rd cast it's at
+        // the floor — while a still-survivable floor keeps a thin starter deck
+        // (one status card) able to chip. Variety is rewarded by the escalating
+        // diversity synergy, not by punishing spam into a loss.
         expect(diminishFactor(0)).toBe(1);
-        expect(diminishFactor(1)).toBeCloseTo(0.8);
-        expect(diminishFactor(3)).toBe(0.55); // floored
+        expect(diminishFactor(1)).toBeCloseTo(0.7);
+        expect(diminishFactor(3)).toBe(0.4); // floored
         // 10 base, neutral read, no bonuses: 1st full, 2nd reduced.
         expect(marginalPressure(10, 0, 1, 0, 0)).toBe(10);
-        expect(marginalPressure(10, 1, 1, 0, 0)).toBe(8);
+        expect(marginalPressure(10, 1, 1, 0, 0)).toBe(7);
+    });
+
+    it('diversitySynergy escalates with distinct statuses; single-status spam earns none', () => {
+        // The combo snowball (Spec 26b §3): one status → +0 (spam gets nothing),
+        // each additional DISTINCT status active adds SYNERGY_BONUS (3).
+        expect(diversitySynergy(0)).toBe(0);
+        expect(diversitySynergy(1)).toBe(0);
+        expect(diversitySynergy(2)).toBe(3);
+        expect(diversitySynergy(3)).toBe(6);
+        expect(diversitySynergy(4)).toBe(9);
+    });
+
+    it('the combo loop refreshes the die for a NEW status but spends it on a repeat (variety-gated)', () => {
+        mockSequentialRng(0.05); // low rolls → effects land
+        // Repetition: two copies of one DoT. First land refreshes the die; the
+        // second (same effect, already in this chain) SPENDS it — spam can't chain.
+        let spam = initializeCombatEncounter(makePlayer([DOT_BODY]), makeEnemy(160, 'mind'), [DOT_BODY, DOT_BODY], 7);
+        spam = rollEncounterDice(spam).state;
+        spam = setDice(spam, ['body', 'heart']);
+        const first = draftAndPlay(spam, DOT_BODY);
+        expect(first.events!.some(e => e.kind === 'die-refreshed')).toBe(true);
+        const repeatEntry = first.state.hand.find(h => h.cardId === DOT_BODY)!;
+        const repeat = playCombatCard(first.state, { uid: repeatEntry.uid }, true);
+        expect(repeat.events.some(e => e.kind === 'die-spent')).toBe(true);
+        expect(repeat.events.some(e => e.kind === 'die-refreshed')).toBe(false);
+
+        // Variety: a DoT then a DISTINCT control status — the new status refreshes
+        // the die for a genuine combo chain (the Mage-Knight "big turn").
+        let varied = initializeCombatEncounter(makePlayer([DOT_BODY, CONTROL_HEART]), makeEnemy(160, 'mind'), [DOT_BODY, CONTROL_HEART], 7);
+        varied = rollEncounterDice(varied).state;
+        varied = setDice(varied, ['body', 'heart']);
+        const dot = draftAndPlay(varied, DOT_BODY);
+        expect(dot.events!.some(e => e.kind === 'die-refreshed')).toBe(true);
+        const ctrlEntry = dot.state.hand.find(h => h.cardId === CONTROL_HEART)!;
+        const ctrl = playCombatCard(dot.state, { uid: ctrlEntry.uid }, true);
+        expect(ctrl.events.some(e => e.kind === 'die-refreshed')).toBe(true);
     });
 
     it('projectCardPressure previews less for a repeatedly-applied effect', () => {

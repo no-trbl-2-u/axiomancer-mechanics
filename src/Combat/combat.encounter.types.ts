@@ -354,6 +354,12 @@ export interface CombatEncounterState {
     /** Times each enemy effect id has been applied by a card this combat. Drives
      *  diminishing returns on spamming the SAME effect (Spec 26b tuning §2). */
     effectApplyCounts: Record<string, number>;
+    /** Spec 26b tuning §3 — distinct OFFENSIVE effect ids landed during the
+     *  current drafted-die chain (this turn). The status-combo loop refreshes the
+     *  die only when a card lands a status NEW to this chain, so a long "big turn"
+     *  comes from playing DIFFERENT cards; re-applying the same status ends the
+     *  turn. Reset on each draft. Optional for back-compat with state literals. */
+    chainEffectIds?: string[];
     /** A carried unspent drafted die color, kept into the next turn so a good die
      *  isn't wasted (Spec 26b tuning §3). Null when nothing carried. */
     carriedDie: CombatDieColor | null;

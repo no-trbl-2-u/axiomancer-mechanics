@@ -92,25 +92,38 @@ function isStatDebuff(effect: Effect): boolean {
 export const CONTROL_HARD_MULT = 6;   // hard control (stun/fear/silence/forced-stance…)
 export const CONTROL_SOFT_MULT = 4;   // stat-debuffs + soft control
 export const DOT_PERROUND_WEIGHT = 1; // DoT keeps its raw perRound×intensity
+/**
+ * Spec 26b tuning §3 — intensity credited toward PRESSURE is capped here. Effects
+ * stack intensity up to MAX_EFFECT_INTENSITY (10), and pressure was raw
+ * `perRound × intensity`, so re-applying ONE DoT card ramped its base pressure
+ * (3×2 → 3×10 = 30) faster than diminishing returns could claw back — a single
+ * spammed card outran every anti-spam lever. Capping the pressure-credited
+ * intensity means stacking the SAME effect past the cap adds no more track
+ * pressure, so the per-application diminishing actually bites and a VARIED kit
+ * (distinct effects, each fresh) decisively out-paces mono-spam. The effect's
+ * real intensity (and its HP erosion) is untouched — only its track credit caps.
+ */
+export const PRESSURE_INTENSITY_CAP = 3;
 
 export function effectPressure(
     effect: Effect,
     intensity: number,
     duration: number,
 ): { track: PressureTrackKey; amount: number } {
+    const i = Math.min(Math.max(1, intensity), PRESSURE_INTENSITY_CAP);
     if (isDot(effect)) {
         const perRound = effect.payload.damageOverTime!.damagePerRound;
-        return { track: 'dot', amount: DOT_PERROUND_WEIGHT * perRound * Math.max(1, intensity) };
+        return { track: 'dot', amount: DOT_PERROUND_WEIGHT * perRound * i };
     }
     if (isControl(effect)) {
         const r = effect.payload.actionRestriction;
         const restricts = !!r && (r.skipTurn === true || r.forcedStance !== undefined || (r.blockedStances?.length ?? 0) > 0);
         const durationCredit = Math.min(Math.max(0, duration), 3);
-        return { track: 'control', amount: Math.max(1, intensity) * CONTROL_HARD_MULT + (restricts ? durationCredit : 0) };
+        return { track: 'control', amount: i * CONTROL_HARD_MULT + (restricts ? durationCredit : 0) };
     }
     if (isStatDebuff(effect)) {
         // Soft control — still a meaningful chunk of the Control track (pass 2).
-        return { track: 'control', amount: Math.max(1, intensity) * CONTROL_SOFT_MULT };
+        return { track: 'control', amount: i * CONTROL_SOFT_MULT };
     }
     return { track: 'none', amount: 0 };
 }

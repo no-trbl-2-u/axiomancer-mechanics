@@ -44,7 +44,7 @@ import {
 } from './combat.cards';
 import {
     pressureForLanded, momentumCarry, dotErosionReached, controlSaturationReached,
-    recordAttribution, marginalPressure, SYNERGY_BONUS,
+    recordAttribution, marginalPressure, diversitySynergy,
 } from './combat.pressure';
 import { getThreatSequence, deriveGlobalThresholds } from './combat.threat';
 import { getSignatureSkill, applySignatureSkill, playerArchetype, SIGNATURE_KITS } from './combat.signature';
@@ -79,6 +79,19 @@ export const COLOR_MATCH_PRESSURE_BONUS = 2;
 export const THREAT_DAMAGE_SCALE = 1.05;
 /** HARD (§6): Conviction is capped so a long grind can't bank a Signature spam. */
 export const CONVICTION_CAP = 12;
+/** Spec 26b tuning §3 — fraction of realized enemy DoT erosion that feeds the DoT
+ *  track between phases. <1 because a DoT card's LAND pressure already credits its
+ *  projected erosion; feeding the full per-round tick on TOP of that double-counted
+ *  DoT and let a single spammed DoT card fill the global track in ~1 round. The
+ *  scaled tick keeps erosion a real, felt contribution without making mono-DoT the
+ *  dominant line (varied status play is the efficient path — the doctrine). */
+export const DOT_EROSION_TRACK_WEIGHT = 0.4;
+/** Spec 26b tuning §3 — fraction of a POWER action's IMMEDIATE strike (basePower)
+ *  HP damage that actually lands on the enemy. <1 because a card's job here is to
+ *  apply PRESSURE (status), not to trade HP blows — the doctrine is that
+ *  basic-attack trading is no longer a win path. Curbs a high-basePower card from
+ *  simply bursting the enemy's HP to 0; DoT erosion (over-time) is untouched. */
+export const DIRECT_DAMAGE_WEIGHT = 0.35;
 
 const EMPTY_RESOURCES: CombatResources = { heart: 0, body: 0, mind: 0, fallacy: 0, paradox: 0 };
 const defaultRng = (): number => getRng().random();
@@ -176,19 +189,19 @@ function intensityMap(effects: readonly ActiveEffect[]): Record<string, number> 
     return m;
 }
 
-/** True when the enemy carries BOTH a DoT-track and a Control-track status at
- *  once — the diversity-synergy condition (Spec 26b tuning §2). */
-function enemyHasDiverseStatus(effects: readonly ActiveEffect[]): boolean {
-    let hasDot = false, hasControl = false;
+/** Count of DISTINCT offensive statuses (DoT- or Control-track effect ids) live
+ *  on the enemy — drives the escalating diversity synergy (Spec 26b tuning §3).
+ *  More distinct statuses on the board → a bigger bonus on every land, so a
+ *  varied kit snowballs while single-status spam stays at 1 (no synergy). */
+function countEnemyOffensiveStatuses(effects: readonly ActiveEffect[]): number {
+    const ids = new Set<string>();
     for (const ae of effects) {
         const def = lookupEffectDef(ae.effectId);
         if (!def) continue;
         const t = effectPressure(def, ae.intensity, ae.remainingDuration).track;
-        if (t === 'dot') hasDot = true;
-        else if (t === 'control') hasControl = true;
-        if (hasDot && hasControl) return true;
+        if (t === 'dot' || t === 'control') ids.add(ae.effectId);
     }
-    return false;
+    return ids.size;
 }
 
 const currentPhaseStance = (enc: CombatEncounterState): Stance => {
@@ -254,6 +267,7 @@ export function initializeCombatEncounter(
         round: 1,
         attribution: {},
         effectApplyCounts: {},
+        chainEffectIds: [],
         carriedDie: null,
         directDamageDealt: 0,
         log: [],
@@ -355,6 +369,8 @@ export function draftStanceDie(state: CombatEncounterState, dieId: string): Comb
 
     const next: CombatEncounterState = {
         ...state, dice, draftedDieId: dieId, conviction, revealedStances, lastRead: read,
+        // A fresh draft starts a fresh combo chain (Spec 26b tuning §3).
+        chainEffectIds: [],
     };
     return { state: withLog(next, events), events };
 }
@@ -578,6 +594,16 @@ function playBottomAction(
 
     let player = res.state.player as Character;
     let enemy = res.state.enemy as Enemy;
+    // Spec 26b tuning §3 — scale the IMMEDIATE strike damage down (the over-time
+    // DoT erosion the skill also applies is untouched). A POWER action wins by
+    // PRESSURE, not by bursting HP, so a high-basePower card can't simply drop the
+    // enemy to 0 before the pressure tracks resolve (the doctrine: basic-attack
+    // trading is not a win path).
+    const immediateDmg = Math.max(0, state.enemy.health - enemy.health);
+    if (immediateDmg > 0) {
+        const kept = Math.round(immediateDmg * DIRECT_DAMAGE_WEIGHT);
+        enemy = { ...enemy, health: state.enemy.health - kept };
+    }
     const combatResources = res.state.combatResources;
     let tracks = state.pressureTracks;
     let phaseProgress = state.phaseProgress;
@@ -587,19 +613,24 @@ function playBottomAction(
     let landedOnEnemy = false;
     let landedOffensive = false;
     let mercyOpened = res.activateMercyChoice === true;
-    // Diversity synergy is judged against the post-skill board (all of this
-    // card's effects have landed by the time we fold events).
-    const diverse = enemyHasDiverseStatus(enemy.effects);
+    // Escalating diversity synergy is judged against the post-skill board (all of
+    // this card's effects have landed by the time we fold events): each distinct
+    // offensive status on the enemy past the first adds to every land.
+    const distinctOffensive = countEnemyOffensiveStatuses(enemy.effects);
+    // Offensive effect ids this card landed — gates the combo loop on VARIETY (a
+    // status new to this chain refreshes the die; a repeat spends it, Spec 26b §3).
+    const landedOffensiveIds: string[] = [];
 
     const addPressure = (track: 'dot' | 'control', base: number, landed: LandedEffect, def: Effect, intensity: number) => {
         const prior = applyCounts[def.id] ?? 0;
-        const synergy = diverse ? SYNERGY_BONUS : 0;
+        const synergy = diversitySynergy(distinctOffensive);
         // Diminishing returns on spamming the SAME effect + read mult + synergy.
         const amount = marginalPressure(base, prior, mult, 0, synergy);
         tracks = { ...tracks, [track]: tracks[track] + amount };
         phaseProgress = { ...phaseProgress, [track]: phaseProgress[track] + amount };
         attribution = recordAttribution(attribution, card.id, card.name, landed, amount);
         applyCounts = { ...applyCounts, [def.id]: prior + 1 };
+        landedOffensiveIds.push(def.id);
         events.push({ kind: 'effect-landed', cardId: card.id, effectId: def.id, target: 'enemy', track, pressure: amount, intensity, effect: def });
         landedOffensive = true;
     };
@@ -645,11 +676,17 @@ function playBottomAction(
         phaseProgress = { ...phaseProgress, control: phaseProgress.control + TOP_ACTION_PRESSURE };
     }
 
-    // 8. Status-combo loop (§1): a meaningful enemy land REFRESHES the drafted
-    //    die so the player may chain another powered card this turn (no new roll
-    //    → no new Conviction). A play that lands nothing SPENDS the drafted die.
+    // 8. Status-combo loop (§1, Spec 26b tuning §3): the drafted die REFRESHES so
+    //    the player can chain another powered card this turn ONLY when this card
+    //    landed a status NEW to the current chain — a long "big turn" comes from
+    //    playing DIFFERENT cards. Re-applying a status already landed this chain
+    //    (mono-spam) still lands its diminished hit but SPENDS the die, ending the
+    //    turn. A play that lands nothing on the enemy also spends the die.
+    const chainBefore = state.chainEffectIds ?? [];
+    const newChainIds = landedOffensiveIds.filter(id => !chainBefore.includes(id));
+    const landedNewDistinct = newChainIds.length > 0;
     let dice = state.dice;
-    if (landedOnEnemy) {
+    if (landedOnEnemy && landedNewDistinct) {
         events.push({ kind: 'die-refreshed', dieId: drafted.id, color: drafted.color });
     } else {
         dice = spendDice(state.dice, [drafted.id]);
@@ -661,6 +698,7 @@ function playBottomAction(
     let next: CombatEncounterState = {
         ...state, player, enemy, dice, combatResources,
         pressureTracks: tracks, phaseProgress, attribution, effectApplyCounts: applyCounts,
+        chainEffectIds: [...chainBefore, ...newChainIds],
         directDamageDealt: directDamage,
     };
     next = discardEntry(next, uid);
@@ -827,15 +865,20 @@ export function processBetweenPhases(
     for (const t of enemyDotTicks) events.push({ kind: 'dot-tick', effectId: t.effectId, label: t.label, amount: t.amount, target: 'enemy' });
     for (const t of playerDotTicks) events.push({ kind: 'dot-tick', effectId: t.effectId, label: t.label, amount: t.amount, target: 'self' });
 
-    // 4. Enemy DoT erosion feeds the dot track (real erosion progress).
+    // 4. Enemy DoT erosion feeds the dot track as REALIZED progress — scaled by
+    //    DOT_EROSION_TRACK_WEIGHT (Spec 26b tuning §3). The card's LAND pressure
+    //    already credits the projected erosion; feeding the full per-round tick on
+    //    top double-counted DoT and let one spammed DoT card win in ~1 round.
+    const erosionToTrack = Math.round(enemyDotTotal * DOT_EROSION_TRACK_WEIGHT);
     let tracks = state.pressureTracks;
-    if (enemyDotTotal > 0) {
-        tracks = { ...tracks, dot: tracks.dot + enemyDotTotal };
+    if (erosionToTrack > 0) {
+        tracks = { ...tracks, dot: tracks.dot + erosionToTrack };
     }
 
-    // 5. Momentum carry seeds the next phase's contribution; add enemy DoT to it.
+    // 5. Momentum carry seeds the next phase's contribution; add the (scaled)
+    //    enemy DoT erosion to it.
     const phaseProgress = {
-        dot: state.momentumCarry.dot + enemyDotTotal,
+        dot: state.momentumCarry.dot + erosionToTrack,
         control: state.momentumCarry.control,
     };
     if (state.momentumCarry.dot > 0 || state.momentumCarry.control > 0) {
@@ -1108,12 +1151,12 @@ export function projectCardPressure(
     const mult = READ_PRESSURE_MULT[read];
     const colorMatch = !!d && (d.color === 'wild' || d.color === card.stance);
     const prior = card.primaryEffectId ? (state.effectApplyCounts[card.primaryEffectId] ?? 0) : 0;
-    const otherTrack: 'dot' | 'control' = card.track === 'dot' ? 'control' : 'dot';
-    const wouldSynergize = state.enemy.effects.some(ae => {
-        const def = lookupEffectDef(ae.effectId);
-        return def && effectPressure(def, ae.intensity, ae.remainingDuration).track === otherTrack;
-    });
-    const synergy = wouldSynergize ? SYNERGY_BONUS : 0;
+    // Escalating diversity synergy preview: distinct offensive statuses already
+    // live, +1 if THIS card would add a new distinct status (Spec 26b §3).
+    const baseDistinct = countEnemyOffensiveStatuses(state.enemy.effects);
+    const addsDistinct = card.primaryEffectId !== null
+        && !state.enemy.effects.some(ae => ae.effectId === card.primaryEffectId);
+    const synergy = diversitySynergy(baseDistinct + (addsDistinct ? 1 : 0));
     const amount = marginalPressure(card.bottomPressurePreview, prior, mult, colorMatch ? COLOR_MATCH_PRESSURE_BONUS : 0, synergy);
     return { track: card.track, amount };
 }

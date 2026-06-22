@@ -23,23 +23,38 @@ export function momentumCarry(surplus: number): number {
     return Math.max(0, Math.min(MOMENTUM_CAP, Math.floor(surplus / 2)));
 }
 
-// ── Spec 26b tuning §2 — anti-spam diminishing returns + diversity synergy ───
+// ── Spec 26b tuning §3 — "variety snowballs, repetition decays" ──────────────
+// The whole engagement thesis (and the project doctrine) is that EXPLOITING A
+// VARIETY of status effects is the fun, and winning by spamming one card is not.
+// Three levers enforce it: same-effect diminishing returns (below) punish
+// repetition; the escalating diversity synergy (`diversitySynergy`) rewards
+// stacking DISTINCT statuses into a snowballing combo; and the variety-gated
+// combo loop in the engine (a re-applied status no longer refreshes the die)
+// makes a long "big turn" come from playing DIFFERENT cards, not the same one.
 
-/** Each re-application of the SAME effect this combat loses this much. Eased
- *  (0.3→0.2) so a small, focused deck that must reuse its few status cards still
- *  sustains real pressure into late phases — without this a minimal loadout is
- *  walled on the final phase. Spam is still discouraged (the diversity SYNERGY
- *  bonus and the floor keep variety attractive), just not punished into a loss. */
-export const DIMINISH_STEP = 0.2;
-/** …but never below this fraction of the base. */
-export const DIMINISH_FLOOR = 0.55;
-/** Flat bonus for landing a status while the enemy already carries the OTHER
- *  track's status (DoT + Control on the board at once) — rewards a varied kit. */
+/** Each re-application of the SAME effect this combat loses this much of its
+ *  base. Steepened (0.2→0.3) so leaning on one card decays fast — by the 3rd
+ *  cast it's at the floor. */
+export const DIMINISH_STEP = 0.3;
+/** …but never below this fraction of the base, so a thin starter deck that must
+ *  reuse its single status card can still chip (a new player is never walled). */
+export const DIMINISH_FLOOR = 0.4;
+/** Per-extra-distinct-status increment for the diversity synergy (see
+ *  `diversitySynergy`). */
 export const SYNERGY_BONUS = 3;
 
 /** Marginal multiplier for the Nth application of one effect (0-indexed prior). */
 export function diminishFactor(priorCount: number): number {
     return Math.max(DIMINISH_FLOOR, 1 - DIMINISH_STEP * Math.max(0, priorCount));
+}
+
+/** Escalating diversity synergy: with `distinctOffensive` distinct offensive
+ *  statuses live on the enemy, each land earns `(distinctOffensive − 1) ×
+ *  SYNERGY_BONUS` bonus pressure. One status → +0 (single-card spam earns no
+ *  synergy); two → +3; three → +6; four → +9. This is the combo snowball that
+ *  makes a varied kit decisively out-pace mono-spam (the Mage-Knight big turn). */
+export function diversitySynergy(distinctOffensive: number): number {
+    return SYNERGY_BONUS * Math.max(0, distinctOffensive - 1);
 }
 
 /**

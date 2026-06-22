@@ -101,10 +101,19 @@ function targetTrack(s: CombatEncounterState): 'dot' | 'control' {
  * this turn.
  */
 function bestCard(s: CombatEncounterState, track: 'dot' | 'control', notUids?: Set<string>) {
+    // Spec 26b §3 — a competent player builds VARIETY: a status the enemy doesn't
+    // yet carry lands a NEW distinct effect, which earns the escalating diversity
+    // synergy AND refreshes the die for a combo chain. So the bot prefers a fresh
+    // status over re-applying one already on the board (mono-spam), then the
+    // target track, then raw preview.
+    const activeIds = new Set(s.enemy.effects.map(e => e.effectId));
     const cards = handCards(s)
         .filter(c => (c.card.track === 'dot' || c.card.track === 'control' || c.card.verbClass === 'befriend')
             && !(notUids && notUids.has(c.uid)))
         .sort((a, b) => {
+            const af = a.card.primaryEffectId && !activeIds.has(a.card.primaryEffectId) ? 0 : 1;
+            const bf = b.card.primaryEffectId && !activeIds.has(b.card.primaryEffectId) ? 0 : 1;
+            if (af !== bf) return af - bf;
             const at = a.card.track === track ? 0 : 1;
             const bt = b.card.track === track ? 0 : 1;
             if (at !== bt) return at - bt;
