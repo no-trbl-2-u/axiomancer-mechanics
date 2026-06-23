@@ -56,7 +56,7 @@ export interface AuthoredThreatPhase {
  * tier + authored pattern + threat damage — there are no clear thresholds.
  */
 const DIFFICULTY_MULT: Record<string, number> = {
-    simple: 0.7, normal: 0.92, elite: 1.08, boss: 1.5, unique: 1.45,
+    simple: 0.7, normal: 0.92, elite: 1.08, boss: 2.6, unique: 1.45,
 };
 
 /** Resolves an enemy's per-difficulty threat-damage multiplier (neutral fallback). */
