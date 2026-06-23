@@ -46,8 +46,6 @@
 
 ## Pending
 
-- **[Z — critique-84 LOW-2] dead-code — vestigial dotFactor/controlFactor fields in AuthoredThreatPhase** — `src/Combat/combat.threat.ts:35-36` defines `dotFactor?`/`controlFactor?` marked VESTIGIAL; `combat.threat-sequences.ts` carries ~213 occurrences; zero callers in `combat.engine.ts`. Misleads content authors about active tuning parameters. Fix: remove the fields from the interface and delete all occurrences in `combat.threat-sequences.ts`. Type-safe delete. Score: 3 × 8 / 10 = 2.4. Source: critique-84 (commit 0655e61).
-
 - **[G — deps] Minor patch bumps: @typescript-eslint/eslint-plugin 8.61.1→8.62.0, typescript-eslint 8.61.1→8.62.0, globals 17.6.0→17.7.0** — `npm outdated` shows 3 safe minor/patch bumps. `@types/node` 25.9.4→26.0.0 is a major bump (skip). Score: 3 × 9 / 10 = 2.7. Fix: `npm install --save-dev @typescript-eslint/eslint-plugin@^8.62.0 typescript-eslint@^8.62.0 globals@^17.7.0`.
 
 ## Done

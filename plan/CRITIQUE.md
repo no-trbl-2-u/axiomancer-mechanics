@@ -61,18 +61,11 @@
 
 
 
-### [LOW] dead-code — vestigial `dotFactor`/`controlFactor` fields in `AuthoredThreatPhase`
-- pass: critique-84 (commit 0655e61)
-- area: dead-code
-- observation: `src/Combat/combat.threat.ts:35-36` defines `AuthoredThreatPhase.dotFactor?` and `controlFactor?` as optional fields marked "VESTIGIAL (HP model): kept OPTIONAL so the ~60 authored literals still compile; unused now that HP is the sole win condition." `combat.threat-sequences.ts` carries 213 occurrences of these fields across ~60 authored threat-phase entries. Zero callers in `combat.engine.ts` (confirmed by Phase 164 grep). The fields preserve the ghost of the two-pressure-track model in the most-read authored content file and mislead content authors about active tuning parameters.
-- evidence: `src/Combat/combat.threat.ts:35-36`; `src/Combat/combat.threat-sequences.ts` (213 hits); `divergences.md` DIV-MECH-004
-- suggested_fix: Remove `dotFactor`/`controlFactor` from the `AuthoredThreatPhase` interface and delete all occurrences in `combat.threat-sequences.ts`. TypeScript will validate completeness. Low-risk; type-safe delete.
-- source: critique (Phase 164 divergence audit)
-
 ---
 
 ## Done
 
+- [x] **[LOW] dead-code — vestigial `dotFactor`/`controlFactor` fields in `AuthoredThreatPhase`** — resolved at `c9eeaee` (iterate, 2026-06-23). Removed `dotFactor?`/`controlFactor?` from `AuthoredThreatPhase` interface and all 213 occurrences from `combat.threat-sequences.ts`. Updated `skills/combat-tuning.md` + comment blocks. Marked DIV-MECH-004 resolved in `divergences.md`. 2004 tests + type-check + lint + build green. Score 3 × 8 / 10 = 2.4. Source: critique-84 (commit 0655e61).
 - [x] **[LOW] docs — specs/25-hazard-pattern-combat.md: two-pressure-track model not marked superseded** — resolved at `f35ee34` (iterate, 2026-06-23). Added a prominent SUPERSEDED caveat block at the top of `specs/25-hazard-pattern-combat.md` noting the HP-only model shipped 2026-06-22 and pointing to VISION.md, docs/combat.md, and CLAUDE.md as authoritative sources. File retained as design history artefact; mechanical structure still live. Doc-only; 144 test files / 2004 tests + type-check + build green. Score 3 × 9 / 10 = 2.7. Source: critique-84 (commit 0655e61).
 - [x] **[MED] docs — docs/combat.md Overview frames Hazard-Pattern Combat as secondary** — resolved at `c3f24cc` (iterate, 2026-06-23). Rewrote Overview to lead with Hazard-Pattern Combat as the primary player-facing system; added Legacy/dev-only callout demoting `resolveCombatRound` at top of doc; updated §Hazard-Pattern Combat header to drop "second, additive" framing. Doc-only; 2004 tests + type-check + lint + build + deploy:check green. Score 5 × 8 / 10 = 4.0. Source: critique-84 (commit 0655e61).
 
