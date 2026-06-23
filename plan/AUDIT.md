@@ -46,7 +46,9 @@
 
 ## Pending
 
-<!-- No pending findings -->
+- **[Z — plan drift] CRITIQUE.md Pending row for critique-82 LOW not moved to Done after fix at e14424c** — The lone critique-82 finding (`docs — Enemy.portraitAsset / stanceHint author fields undocumented`) was resolved at `e14424c` (2026-06-22) and the resolution is reflected in AUDIT.md Done, but `plan/CRITIQUE.md`'s `## Pending` section still shows the row as open. Plan state is inconsistent with shipped work. Score: 3 × 10 / 10 = 3.0. Fix: move the row to `## Done` in `plan/CRITIQUE.md`.
+
+- **[G — deps] Minor patch bumps: @typescript-eslint/eslint-plugin 8.61.1→8.62.0, typescript-eslint 8.61.1→8.62.0, globals 17.6.0→17.7.0** — `npm outdated` shows 3 safe minor/patch bumps. `@types/node` 25.9.4→26.0.0 is a major bump (skip). Score: 3 × 9 / 10 = 2.7. Fix: `npm install --save-dev @typescript-eslint/eslint-plugin@^8.62.0 typescript-eslint@^8.62.0 globals@^17.7.0`.
 
 ## Done
 
