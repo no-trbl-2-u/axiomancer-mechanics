@@ -111,8 +111,8 @@ player-side helpers under `Effects/`:
 The current dispatcher is `resolveMapEvent(state, rng?)` from
 `src/World/MapEvents/resolve-map-event.ts`, shipped in Spec 23 and
 populated with content in Phase 24. It returns `{ state, event }`
-where `event` is a discriminated union over the nine `MapEventKind`
-values ('quest' joined the original eight in Phase 137):
+where `event` is a discriminated union over the ten `MapEventKind`
+values ('quest' joined the original eight in Phase 137; 'narration' joined in 2026-06):
 
 | Event kind     | Result shape                                                              |
 |----------------|---------------------------------------------------------------------------|
@@ -125,6 +125,7 @@ values ('quest' joined the original eight in Phase 137):
 | `hazard`       | `{ kind: 'hazard', effects, damage }` — applies effects + damage.         |
 | `loot-cache`   | `{ kind: 'loot-cache', items, currency }` — fixed grant.                  |
 | `quest`        | `{ kind: 'quest', boardId }` — hands the host a Quest Board id (`World/QuestBoard`); the host starts the board-game minigame. |
+| `narration`    | `{ kind: 'narration', dialogue }` — inline monologue; the `DialogueTree` is authored directly on the node (no map NPC lookup). Barrel: `NarrationPayload`. |
 | `none`         | Consumed node (one-shot) or no pool registered.                            |
 
 Note (Phase 137): the engine handlers above remain the CLI map loop's
