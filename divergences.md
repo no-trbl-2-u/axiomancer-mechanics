@@ -75,18 +75,8 @@ Commit: f6b5bb3
 ### DIV-MECH-004 — `dotFactor` / `controlFactor` vestigial fields remain in ~60 authored threat-phase literals
 - Severity: Medium
 - Owner: mechanics
-- Status: open
-- Evidence:
-  - `src/Combat/combat.threat-sequences.ts`: 213 occurrences of `dotFactor` / `controlFactor` across ~60 authored threat-phase entries.
-  - `src/Combat/combat.threat.ts:34-36`: `AuthoredThreatPhase.dotFactor?` / `controlFactor?` marked "VESTIGIAL (HP model): kept OPTIONAL so the ~60 authored literals still compile; unused now that HP is the sole win condition."
-  - No engine consumer found for these fields (`grep` across `src/Combat/combat.engine.ts` returns no matches for `dotFactor` or `controlFactor`).
-  - `skills/combat-tuning.md:23`: "The old `dotFactor`/`controlFactor` authored fields are now vestigial (kept optional so the ~60 authored literals still compile)."
-- Why it matters:
-  The fields create false documentation for anyone reading threat sequences. A new content author or mobile worker might interpret them as active tuning parameters. They also preserve the ghost of the two-pressure-track model in the most-read authored content file.
-- Proposed next action:
-  Remove all `dotFactor` / `controlFactor` fields from `combat.threat-sequences.ts` and the `AuthoredThreatPhase` interface. TypeScript will validate they are all gone. Low-risk automated edit.
-- Follow-up phase/issue candidate:
-  Suitable for a single iterate commit (type-safe delete; no logic change).
+- Status: **resolved** — removed in iterate (critique-84 LOW-2 drain)
+- Resolution: Removed `dotFactor?` / `controlFactor?` from `AuthoredThreatPhase` interface (`src/Combat/combat.threat.ts`) and all 213 occurrences from `combat.threat-sequences.ts`. Updated `skills/combat-tuning.md` and comment blocks. TypeScript confirms clean compilation.
 
 ---
 

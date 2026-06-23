@@ -19,11 +19,9 @@
 > two-Pressure-Track win model (DoT Erosion + Control Saturation as the only win
 > conditions). **That model was REMOVED on 2026-06-22.** The live model is
 > HP-only (Spec 26 / 26b; canonical in `VISION.md` → Combat vision and
-> `docs/combat.md`). The old `dotFactor`/`controlFactor` authored fields are now
-> **vestigial** (kept optional so the ~60 authored literals still compile);
-> there are no pressure tracks, no clear thresholds, no `effectPressure` /
-> `MOMENTUM_CAP`. If you still see those terms anywhere in tooling, they are
-> stale.
+> `docs/combat.md`). There are no pressure tracks, no clear thresholds, no
+> `effectPressure` / `MOMENTUM_CAP`. If you still see those terms anywhere in
+> tooling, they are stale.
 
 ## North star — status is the EFFICIENT path to the only win condition
 
@@ -203,8 +201,7 @@ Read in full before forming a hypothesis:
   `THREAT_PER_LEVEL`, the budget math, and how authored phases feed `damageWeight`
   / `threatEffectId` / `enemyHeal`.
 - `src/Combat/combat.threat-sequences.ts` — `AUTHORED_THREAT_SEQUENCES`: per-phase
-  `damageWeight`, threat effects, enemy heals, stance + stanceHint. (`dotFactor`/
-  `controlFactor` here are VESTIGIAL — do not tune them.)
+  `damageWeight`, threat effects, enemy heals, stance + stanceHint.
 - `src/Combat/combat.engine.ts` — `TOP_ACTION_CHIP`, `CONVICTION_PER_UNPICKED_DIE`,
   `CONVICTION_READ_WIN_BONUS`, `COLOR_MATCH_DAMAGE_BONUS`, `THREAT_DAMAGE_SCALE`,
   `CONVICTION_CAP`, `DIRECT_DAMAGE_WEIGHT` (+ the RPS read / GUARD soak / mercy
@@ -317,7 +314,7 @@ status-beats-basic delta.
 |---|---|---|
 | Per-tier threat-damage multiplier (primary win-rate lever) | `src/Combat/combat.threat.ts` | `DIFFICULTY_MULT` (simple 0.7 / normal 0.92 / elite 1.08 / boss 1.5 / unique 1.45) |
 | Threat-damage budget curve | `src/Combat/combat.threat.ts` | `THREAT_BASE` (4), `THREAT_PER_LEVEL` (0.95) |
-| Authored threat sequences | `src/Combat/combat.threat-sequences.ts` | per-phase `damageWeight`, `threatEffectId`/`threatIntensity`, `enemyHeal` (NOT the vestigial `dotFactor`/`controlFactor`) |
+| Authored threat sequences | `src/Combat/combat.threat-sequences.ts` | per-phase `damageWeight`, `threatEffectId`/`threatIntensity`, `enemyHeal` |
 | Resolution threat scale | `src/Combat/combat.engine.ts` | `THREAT_DAMAGE_SCALE` (1.6) |
 | Basic-strike weakness | `src/Combat/combat.engine.ts` | `DIRECT_DAMAGE_WEIGHT` (0.25) — keep status > strikes |
 | Free top-action chip | `src/Combat/combat.engine.ts` | `TOP_ACTION_CHIP` (2) |

@@ -29,11 +29,6 @@ import { AUTHORED_THREAT_SEQUENCES } from './combat.threat-sequences';
  */
 export interface AuthoredThreatPhase {
     enemyStance: Stance;
-    /** VESTIGIAL (HP model): the old DoT/Control relative clear factors. Kept
-     *  OPTIONAL so the ~60 authored literals still compile; unused now that HP is
-     *  the sole win condition (no pressure tracks / thresholds). */
-    dotFactor?: number;
-    controlFactor?: number;
     /** Threat-action damage as a multiple of the level/difficulty budget (default 1.0). */
     damageWeight?: number;
     /** Optional player-debuff applied when this phase is Overwhelmed (telegraphed punish). */
