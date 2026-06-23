@@ -84,9 +84,9 @@ jobs:
         uses: anthropics/claude-code-base-action@beta
         with:
           prompt: '/mechanics-tuning --focus="${{ github.event.inputs.focus }}" --max-iterations=${{ github.event.inputs.max_iterations }}'
-          # Pin an active Opus model and medium effort. The action default can
+          # Pin the current Sonnet latest family model and medium effort. The action default can
           # drift or retire; tuning runs should not depend on it.
-          model: claude-opus-4-8
+          model: claude-sonnet-4-6
           claude_env: |
             CLAUDE_CODE_EFFORT_LEVEL: medium
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}

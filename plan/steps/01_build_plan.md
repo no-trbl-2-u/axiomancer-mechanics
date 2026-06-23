@@ -32,6 +32,8 @@ future oversight). `/march` dispatches only `[ ]` rows.
 
 **Next up (autonomous loop's queue):**
 
+- [ ] Phase 162 — Hazard-style combat tuning audit. Filed by T direct steering 2026-06-23 after the Spec 25/26 Hazard-pattern combat overhaul. Audit the live combat tuning surface before another numeric `/combat-tuning` tick: inventory stance dice, card/deck cadence, Signature Skills, Conviction, hidden-stance reads, enemy answers, HP-only resolution, anti-spam/variety levers, and status-effect payoffs; classify each as data/content, tunable, witness-policy, or core mechanics requiring T approval. Run the cheapest existing evidence commands to identify harness visibility gaps, patch settled `skills/combat-tuning.md` / combat docs where legacy assumptions would mislead workers, and promote concrete follow-up tuning phases if the audit finds missing metrics or stale witnesses. Brief: `plan/phases/phase_162_hazard_style_combat_tuning_audit.md`. Verification: documented audit matrix + real command output, `git diff --check`, targeted tests/docs checks; `npm run verify` if source/test code changes. Source: T Telegram steering 2026-06-23.
+
 > **Oversight 2026-06-20 refuel.** The autonomous queue was empty (0 `[ ]`
 > rows; `/expand` filed 0 candidates across passes 56–73). T promoted seven
 > autonomous phases (155–161; numbered above main's already-merged Phase
