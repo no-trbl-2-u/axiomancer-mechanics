@@ -92,26 +92,27 @@ Combat:     determineAdvantage, getAttackStat, getDefenseStat, getSaveStat,
             (+ Spec 25 Hazard-Pattern Combat engine — card-and-dice driver that
             ships ALONGSIDE resolveCombatRound: initializeCombatEncounter,
             playCombatCard, resolveCombatPhase, processBetweenPhases,
-            simulateHazardPatternCombat + the CombatEncounterState / CombatCard /
-            CombatPressureTracks type family. Status effects fill two Pressure
-            Tracks — DoT Erosion + Control Saturation — the only practical win
-            conditions; basic-attack trading removed. Doctrine-central.)
+            simulateHazardPatternCombat + the CombatEncounterState / CombatCard
+            type family. HP is the SOLE win condition (Spec 26/26b, 2026-06-22):
+            DoT erodes HP far faster than the weak basic strike; control hinders
+            the enemy's turn. CombatPressureTracks / the two pressure tracks were
+            REMOVED. Doctrine-central.)
             (+ Spec 26/26b depth layer on the Hazard engine — per-turn 2-die
             stance DRAFT + hidden-stance READ (startTurn, draftStanceDie, endTurn,
             resolveRead, chooseDraft, discardCombatCard, getDraftedDie,
             isPhaseStanceRevealed, revealedCurrentStance, cardReadPreview,
-            projectCardPressure; tuning READ_PRESSURE_MULT,
+            projectCardImpact; tuning READ_DAMAGE_MULT,
             CONVICTION_PER_UNPICKED_DIE, CONVICTION_READ_WIN_BONUS,
-            COLOR_MATCH_PRESSURE_BONUS, TURN_DICE_COUNT, rollTurnDice, dieHasStance,
+            COLOR_MATCH_DAMAGE_BONUS, TURN_DICE_COUNT, rollTurnDice, dieHasStance,
             deriveIntentType); always-available CONVICTION-funded Signature Skills
             (playSignatureSkill, getSignatureSkill, SIGNATURE_SKILLS,
             SIGNATURE_SKILL_LIST, SIGNATURE_KITS, signaturesForArchetype,
             playerArchetype); deckbuilder card rewards (COMBAT_REWARD_POOL,
-            STARTING_SKILL_ID, rollCombatCardRewards, addRewardCard,
+            STARTING_SKILL_ID, STARTING_SKILL_IDS, rollCombatCardRewards, addRewardCard,
             unlockSkillViaDilemma) + types CombatIntentType / CombatReadResult /
             SignatureSkill / SignatureSkillId / SignatureSkillKind / PlayerArchetype.
-            Reading the hidden stance multiplies status pressure — the read IS the
-            status-as-win-path lever. Note "Spec 26b" is in-flight scaffolding with
+            Reading the hidden stance boosts card damage + earns Conviction — the
+            read IS the efficiency lever for status play. Note "Spec 26b" is in-flight scaffolding with
             no spec file yet (distinct from specs/26-catalyst-multiplicative-scaling.md).)
 Combat reducer: initializeCombat, setPhase, setPlayerStance, setPlayerAction,
                 appendLog, incrementFriendship, endCombat

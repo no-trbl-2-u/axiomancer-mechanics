@@ -65,7 +65,8 @@ for (const name of names) {
         `  ${name.padEnd(16)} win=${(s.winRate * 100).toFixed(0).padStart(3)}%`
         + `  V/M/D/R=${s.victories}/${s.mercies}/${s.defeats}/${s.retreats}`
         + `  rounds=${s.avgRounds.toFixed(1).padStart(4)}`
-        + `  statusEng=${(s.statusEngagement * 100).toFixed(0).padStart(3)}%\n`,
+        + `  statusEng=${(s.statusEngagement * 100).toFixed(0).padStart(3)}%`
+        + `  conviction=${s.avgConvictionSpent.toFixed(1).padStart(4)}\n`,
     );
 }
 process.stdout.write('\n');

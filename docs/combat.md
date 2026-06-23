@@ -482,11 +482,14 @@ round-resolution entry point used by every UI client.
 A second, additive combat driver that ships **alongside** `resolveCombatRound`
 (the effects + skill engines are unchanged). It is a card-and-dice system
 structurally mirrored on the Hazard minigame: every verb is a skill card, and
-status effects fill two **Pressure Tracks** that are the only practical win
-conditions — **DoT Erosion** (cumulative damage-over-time) and **Control
-Saturation** (cumulative control/debuff). Basic-attack trading is gone as a
-concept; the doctrine path (status effects = the main fun) is now the structural
-path. Full design: [`specs/25-hazard-pattern-combat.md`](../specs/25-hazard-pattern-combat.md).
+the enemy's **sole bar is HP** — dropping it to 0 (`isDefeated(enemy)`) is the
+only win condition. Status effects are the **efficient** path: DoT erodes HP far
+faster than the deliberately weak basic strike (`DIRECT_DAMAGE_WEIGHT`), and
+control hinders the enemy's telegraphed threat turn. Basic-attack trading is the
+weak baseline, not a parallel win track. Full design:
+[`specs/25-hazard-pattern-combat.md`](../specs/25-hazard-pattern-combat.md)
+(note: that spec's two-pressure-track narrative is superseded by the HP-only
+model shipped 2026-06-22 — `VISION.md` → Combat vision is canonical).
 
 The engine lives in `src/Combat/`:
 
@@ -496,8 +499,6 @@ The engine lives in `src/Combat/`:
 - `combat.dice.ts` — the four colored mana dice and their state machine.
 - `combat.deck.ts` — Fisher-Yates shuffle + draw-up-to-`COMBAT_HAND_SIZE`.
 - `combat.cards.ts` — the skill→card adapter and verb classification.
-- `combat.pressure.ts` — the two Pressure Tracks, momentum carry, and the
-  `dotErosionReached` / `controlSaturationReached` thresholds.
 - `combat.threat.ts` — authored + generated enemy threat sequences.
 - `combat.encounter.sim.ts` — `simulateHazardPatternCombat`, a Monte-Carlo
   greedy bot used for balance evidence.
@@ -506,9 +507,9 @@ The engine lives in `src/Combat/`:
 
 | Function / Type | Description |
 |-----------------|-------------|
-| `initializeCombatEncounter(...)` | Builds the `CombatEncounterState` for a fight (deck, dice, pressure tracks, threat sequence). |
+| `initializeCombatEncounter(...)` | Builds the `CombatEncounterState` for a fight (deck, dice, threat sequence). |
 | `rollEncounterDice(state)` | Rolls the colored mana dice at phase start. |
-| `playCombatCard(state, cardId, dice)` | Plays one skill card, spending dice; lands its effects and credits pressure. |
+| `playCombatCard(state, cardId, dice)` | Plays one skill card, spending dice; lands its effects and deals HP damage via status/strike. |
 | `resolveCombatPhase(state, cardsPlayed)` | Resolves a full player phase (card-play driven; replaces the per-round attack/defend resolution). |
 | `resolveThreatPhase(state)` | Resolves the enemy threat phase (Clear / Overwhelmed ledger). |
 | `processBetweenPhases(state)` | Between-phase upkeep — persistent buffs, die refresh, momentum carry. |
@@ -516,7 +517,7 @@ The engine lives in `src/Combat/`:
 | `getCard` / `handCards` / `cardDieCostPreview` / `availableDice` | Read-only previews for a UI to render the hand and affordances. |
 | `buildCombatSummary(state)` | End-of-fight `CombatSummary` with per-effect attribution rows. |
 | `simulateHazardPatternCombat(...)` | Monte-Carlo greedy bot returning `CombatSimStats` for balance runs. |
-| `CombatEncounterState`, `CombatCard`, `CombatPressureTracks`, `CombatThreatPhase`, `CombatOutcome`, `CombatSummary` | The core encounter type family. |
+| `CombatEncounterState`, `CombatCard`, `CombatThreatPhase`, `CombatOutcome`, `CombatSummary` | The core encounter type family. (`CombatPressureTracks` was REMOVED 2026-06-22 — HP is the sole win condition.) |
 
 ### Spec 26 / 26b — stance draft, the read, Conviction, Signature Skills, deckbuilding
 
@@ -534,10 +535,10 @@ progression levers, keeping status effects the win path.
   die is not wasted (it grants Conviction and can carry forward). The enemy's
   phase stance is hidden behind a thematic hint; the drafted die's color is the
   player's **read** of it. A winning read (`resolveRead` → `advantage`)
-  multiplies the pressure of cards played that turn (`READ_PRESSURE_MULT`), and a
-  card whose stance matches the drafted die color earns a flat
-  `COLOR_MATCH_PRESSURE_BONUS`. Reading the hidden stance is therefore the
-  primary lever for amplifying status pressure — the doctrine path.
+  multiplies the HP damage of cards played that turn (the read bonus scales the
+  direct-damage fraction), and a card whose stance matches the drafted die color
+  earns a flat `COLOR_MATCH_DAMAGE_BONUS` HP damage. Reading the hidden stance is
+  therefore the primary lever for amplifying card output — the doctrine path.
 - **Conviction (◆).** A second resource that accrues from the unpicked draft die
   (`CONVICTION_PER_UNPICKED_DIE`) and from winning the read
   (`CONVICTION_READ_WIN_BONUS`). It funds Signature Skills.
@@ -557,22 +558,22 @@ progression levers, keeping status effects the win path.
 | `draftStanceDie(state, dieId)` / `getDraftedDie` / `chooseDraft` | Commit one die as the stance; read the committed die. |
 | `resolveRead(dieColor, enemyStance)` → `CombatReadResult` | The drafted die vs the hidden enemy stance: `advantage` / `neutral` / `disadvantage` / `none`. |
 | `isPhaseStanceRevealed` / `revealedCurrentStance` | Whether (and what) the enemy's hidden stance is now known. |
-| `cardReadPreview` / `projectCardPressure` | UI previews — a card's read result + color match, and its projected pressure. |
+| `cardReadPreview` / `projectCardImpact` | UI previews — a card's read result + color match, and its projected HP impact. |
 | `discardCombatCard` | Discard a card from hand (tempo/sculpting). |
 | `playSignatureSkill(state, id, ...)` / `getSignatureSkill` | Spend Conviction on an always-available Signature Skill. |
 | `SIGNATURE_SKILLS` / `SIGNATURE_SKILL_LIST` / `SIGNATURE_KITS` / `signaturesForArchetype` / `playerArchetype` | The signature kit catalogue + per-archetype selection. |
 | `rollCombatCardRewards` / `addRewardCard` / `COMBAT_REWARD_POOL` | Post-combat deckbuilder draft + persist. |
 | `unlockSkillViaDilemma` / `STARTING_SKILL_ID` | Forward hook for ethical-dilemma skill unlocks; the new-player starting card. |
-| `READ_PRESSURE_MULT`, `CONVICTION_PER_UNPICKED_DIE`, `CONVICTION_READ_WIN_BONUS`, `COLOR_MATCH_PRESSURE_BONUS`, `TURN_DICE_COUNT` | Tuning constants for the read / Conviction / draft economy. |
+| `READ_DAMAGE_MULT`, `CONVICTION_PER_UNPICKED_DIE`, `CONVICTION_READ_WIN_BONUS`, `COLOR_MATCH_DAMAGE_BONUS`, `TURN_DICE_COUNT` | Tuning constants for the read / Conviction / draft economy. (`READ_PRESSURE_MULT` / `COLOR_MATCH_PRESSURE_BONUS` were renamed 2026-06-22 on HP-model landing.) |
 | `rollTurnDice` / `dieHasStance` / `deriveIntentType` | Draft-pool roll + stance helpers. |
 | `CombatIntentType`, `CombatReadResult`, `SignatureSkill`, `SignatureSkillId`, `SignatureSkillKind`, `PlayerArchetype` | The depth-layer type family. |
 
 The whole roster is now authored for this system: `combat.threat-sequences.ts`
 ships a deterministic, fully-telegraphed threat pattern for all 62 library
-enemies (each phase declares a hidden stance + relative DoT/control weakness so
-both win paths stay live), and `combat.threat.ts` scales clear thresholds by
-level + difficulty rather than raw HP so status pressure (which is HP-independent)
-out-races the roster.
+enemies (each phase declares a hidden stance, a damage weight, and optional
+threat debuffs). `combat.threat.ts` scales threat damage by level + difficulty
+(`DIFFICULTY_MULT`), and status DoT erodes the enemy's sole HP bar far faster
+than the weak basic strike — status is the efficient win path.
 
 ## Pending
 
