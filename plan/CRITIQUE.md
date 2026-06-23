@@ -59,13 +59,6 @@
 
 ## Pending
 
-### [MED] docs — docs/combat.md Overview frames Hazard-Pattern Combat as secondary
-- pass: critique-84 (commit 0655e61)
-- area: docs
-- observation: `docs/combat.md:482` introduces Hazard-Pattern Combat as "A second, additive combat driver that ships **alongside** `resolveCombatRound`". The Overview section (lines 1–15) leads with `resolveCombatRound` and the legacy resolver pipeline, with no mention that Hazard-Pattern Combat is the primary player-facing system per doctrine. CLAUDE.md, VISION.md, and bearings.md all describe `resolveCombatRound` as the "dev-only legacy combat tab" — the doc framing is inverted. A mobile or external developer reading `docs/combat.md` as the API reference gets the wrong mental model before reaching §Hazard-Pattern Combat at line 480.
-- evidence: `docs/combat.md:1-15`, `docs/combat.md:482`; `CLAUDE.md:27`; `divergences.md` DIV-MECH-003
-- suggested_fix: Rewrite the `docs/combat.md` Overview section to lead with Hazard-Pattern Combat as the primary system. Demote `resolveCombatRound` to a "Legacy / dev-only" callout early in the doc. No source change.
-- source: critique (Phase 164 divergence audit)
 
 ### [LOW] docs — specs/25-hazard-pattern-combat.md: two-pressure-track model not marked superseded
 - pass: critique-84 (commit 0655e61)
@@ -86,6 +79,8 @@
 ---
 
 ## Done
+
+- [x] **[MED] docs — docs/combat.md Overview frames Hazard-Pattern Combat as secondary** — resolved at `c3f24cc` (iterate, 2026-06-23). Rewrote Overview to lead with Hazard-Pattern Combat as the primary player-facing system; added Legacy/dev-only callout demoting `resolveCombatRound` at top of doc; updated §Hazard-Pattern Combat header to drop "second, additive" framing. Doc-only; 2004 tests + type-check + lint + build + deploy:check green. Score 5 × 8 / 10 = 4.0. Source: critique-84 (commit 0655e61).
 
 - [x] **[LOW] docs — spec.md + bearings.md: new barrel exports not in front-door docs** — resolved at `65c7d4e` + `08d804e` (iterate, 2026-06-23). `GOLD_CARD_IDS`/`isGoldCard`/`CardEffectKind`/`STARTING_SKILL_IDS` added to spec.md Contracts Combat row at 65c7d4e; `STARTING_SKILL_IDS` + HP-only model added to bearings.md Combat block at 08d804e. `NarrationPayload` added to spec.md Contracts World row at 65c7d4e. All five exports now documented in front-door readers. Stale-row drift: this Pending row was never moved to Done at drain time (discovered critique-84). Self-corrected here. Source: critique-83 (commit bf56ab8).
 
