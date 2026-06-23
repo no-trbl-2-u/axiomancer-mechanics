@@ -6,11 +6,11 @@
  * This sibling suite gives each of those exports a direct contract test, with a
  * deliberate focus on the doctrine-critical surface:
  *
- *   - the two Pressure-Track win-condition predicates (`dotErosionReached` /
- *     `controlSaturationReached`) — these ARE the win conditions per the
- *     load-bearing doctrine (status effects are the main fun);
  *   - the self-reinforcing status-loop dice primitives (`combatDieCanPower` /
- *     `refreshOneDie` / `rollCombatDice`);
+ *     `refreshOneDie` / `rollCombatDice`) — HP is the sole win condition
+ *     (2026-06-22); DoT/control skills deplete HP far faster than the weak
+ *     basic strike; `dotErosionReached` / `controlSaturationReached` were
+ *     removed with the old Pressure-Track model;
  *   - the Befriend mercy entry (`selectEncounterMercyChoice`);
  *   - the deck / threat / card-adapter / UI-preview helpers.
  *
