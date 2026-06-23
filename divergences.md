@@ -57,7 +57,7 @@ Commit: f6b5bb3
 ### DIV-MECH-003 — `docs/combat.md` frames Hazard-Pattern Combat as additive/secondary, not primary
 - Severity: Medium
 - Owner: mechanics
-- Status: open
+- Status: **resolved** — fixed in iterate (`c3f24cc`; docs/combat.md Overview rewrite, 2026-06-23)
 - Evidence:
   - `docs/combat.md:482`: "A second, additive combat driver that ships **alongside** `resolveCombatRound`".
   - `docs/combat.md:9`: The Overview section leads with `resolveCombatRound` and the legacy resolver pipeline — no mention that Hazard-Pattern Combat is the primary system.
@@ -102,7 +102,7 @@ Commit: f6b5bb3
 ### DIV-MECH-006 — Spec 25 spec file still describes the removed two-pressure-track model
 - Severity: Low
 - Owner: mechanics
-- Status: open
+- Status: **resolved** — fixed in iterate (`f35ee34`; SUPERSEDED caveat added to `specs/25-hazard-pattern-combat.md`, 2026-06-23)
 - Evidence:
   - `docs/combat.md:491-492`: "note: that spec's two-pressure-track narrative is superseded by the HP-only model shipped 2026-06-22 — `VISION.md` → Combat vision is canonical."
   - The `specs/25-hazard-pattern-combat.md` spec file itself has not been updated to reflect the HP-only model (the doc reference is the evidence; the spec file carries the old two-pressure-track win-condition narrative).
