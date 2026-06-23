@@ -1,5 +1,21 @@
 # Spec 25 — Hazard-Pattern Combat: Status Effects as Win Condition
 
+> **⚠ SUPERSEDED — 2026-06-22**
+> The two-pressure-track win-condition model described in this spec (DoT Erosion + Control
+> Saturation as the *only* practical win conditions) **was removed** when the HP-only combat
+> model shipped. HP is now the sole win condition; basic-attack trading is the weak baseline
+> rather than absent. Status effects remain the *efficient* path to 0 HP.
+>
+> **Authoritative sources:**
+> - Game doctrine: `VISION.md` → "Combat vision"
+> - Front-door doc: `docs/combat.md` → [§Hazard-Pattern Combat](#hazard-pattern-combat-spec-25)
+> - CLAUDE.md "Load-bearing doctrine" block
+>
+> This file is retained as a **design history artefact** — the mechanical structure (cards,
+> dice, phases, threat sequences) is still live; only the win-condition framing is obsolete.
+
+---
+
 > **Status:** Draft — design locked, implementation pending.
 > **Date:** 2026-06-21
 > **Depends on:** Spec 01 (effects engine), Spec 04/04b (skills), Hazard engine (`src/World/Hazard/`)
