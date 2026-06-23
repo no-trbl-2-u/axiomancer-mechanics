@@ -57,21 +57,12 @@
 
 ## Pending
 
-### [LOW] docs — Enemy.portraitAsset / stanceHint author fields undocumented
-- pass: critique-82 (commit 856ffdb)
-- area: docs
-- observation: The Spec 26/26b combat-depth landing added two author-facing optional fields to the public `Enemy` interface and `CreateEnemyOptions` — `portraitAsset?` (Spec 26 §3.1, combat-portrait asset id) and `stanceHint?` (Spec 26b §2, thematic stance tell surfaced in the combat reveal) — and authored values across 7 enemies in `enemy.library.ts`. `docs/enemy.md` documents every other author field (`journalEntry`, `friendshipReward`, `tags`, level bands) but has zero rows for these two. Not a public-surface-fixture concern (the snapshot tracks type *names*; optional members on the existing `Enemy` type leave the fixture byte-identical, as with `addedIn`/`tags`); docs/combat.md describes the read/stance *behaviour* but not the per-enemy authoring fields.
-- evidence: src/Enemy/types.ts:331-347, src/Enemy/index.ts:55-58, src/Enemy/enemy.library.ts (7 enemies); absent from docs/enemy.md
-- suggested_fix: Add a short docs/enemy.md authoring-fields note (or row) for `portraitAsset` (kebab-case asset id, mobile portrait registry, fallback silhouette) and `stanceHint` (thematic tell that implies — never states — stance tendency; per-phase `CombatThreatPhase.stanceHint` overrides). Drain via /iterate.
-- source: critique
-
-
-
-
 
 ---
 
 ## Done
+
+- [x] **[LOW] docs — Enemy.portraitAsset / stanceHint author fields undocumented** — resolved at `e14424c` (2026-06-22). Spec 26/26b combat-depth landing added `portraitAsset?` (Spec 26 §3.1, combat-portrait asset id) and `stanceHint?` (Spec 26b §2, thematic stance tell) to the public `Enemy` interface + `CreateEnemyOptions` and applied them across 7 enemies in `enemy.library.ts`; `docs/enemy.md` had zero rows for these fields. Added `## Spec 26 / 26b author fields` section with field table, sparse-fallback note, per-phase `CombatThreatPhase.stanceHint` override caveat, author-coverage roster, and cross-link to `docs/combat.md`. Doc-only; type-check + lint + build + deploy:check green. Score 3 × 10 / 10 = 3.0. Source: critique-82 (commit 856ffdb).
 
 - [x] **[LOW] plan — CURRENT-STATE.md references removed actions.constants COMBAT_ACTION** — resolved at iterate (2026-06-21). `plan/CURRENT-STATE.md:50` bullet 4 still listed `actions.constants.ts` as carrying `COMBAT_ACTION`, stale since the 6fc2a08 removal (confirmed live: `src/Game/actions.constants.ts` absent, `rg COMBAT_ACTION src/` → 0 hits). This is the plan-file twin of the spec-09 reference drained at `9a8688f`; rewrote the bullet to state combat actions are modelled via the `Action` type and that the `actions.constants.ts` / `COMBAT_ACTION` module was removed at `6fc2a08`, per the suggested_fix. Pure plan-file maintenance; no source change. Score 2 × 10 / 10 = 2.0. Source: critique-76 (commit 6fc2a08).
 - [x] **[LOW] structure — computeEquipDelta tested outside the e2e/*.engine.test.ts convention** — resolved at commit b2488a3 (iterate, 2026-06-21). Phase 154's `computeEquipDelta` engine module was tested only at `src/Character/equip-delta.test.ts` (a module-root `*.test.ts`) rather than the `src/Character/e2e/*.engine.test.ts` hermetic convention every sibling Character surface follows (character/presets/level-ladder-presets/preview-stat-allocation). Relocated the file to `src/Character/e2e/equip-delta.engine.test.ts` (git rename, 93% similarity) and rewrote the relative imports for the e2e/ depth (`../index`, `../equip-delta`, `../../Items/types`); coverage unchanged (5 cases — deltas-only contract, equip/unequip/swap modes, structured affix keywords). type-check + build green (test runner blocked by the documented env ERR_REQUIRE_ESM vite/vitest mismatch — not a finding). Source: critique-77 (commit 9098d3c). Impact 4 × Ease 7 / 10 = 2.8.

@@ -46,11 +46,11 @@
 
 ## Pending
 
-- **[Z — plan drift] CRITIQUE.md Pending row for critique-82 LOW not moved to Done after fix at e14424c** — The lone critique-82 finding (`docs — Enemy.portraitAsset / stanceHint author fields undocumented`) was resolved at `e14424c` (2026-06-22) and the resolution is reflected in AUDIT.md Done, but `plan/CRITIQUE.md`'s `## Pending` section still shows the row as open. Plan state is inconsistent with shipped work. Score: 3 × 10 / 10 = 3.0. Fix: move the row to `## Done` in `plan/CRITIQUE.md`.
-
 - **[G — deps] Minor patch bumps: @typescript-eslint/eslint-plugin 8.61.1→8.62.0, typescript-eslint 8.61.1→8.62.0, globals 17.6.0→17.7.0** — `npm outdated` shows 3 safe minor/patch bumps. `@types/node` 25.9.4→26.0.0 is a major bump (skip). Score: 3 × 9 / 10 = 2.7. Fix: `npm install --save-dev @typescript-eslint/eslint-plugin@^8.62.0 typescript-eslint@^8.62.0 globals@^17.7.0`.
 
 ## Done
+
+- [x] **[Z — plan drift] CRITIQUE.md Pending row for critique-82 LOW not moved to Done after fix at e14424c** — resolved (this commit). The lone critique-82 finding (`docs — Enemy.portraitAsset / stanceHint author fields undocumented`) was resolved at `e14424c` (2026-06-22) but `plan/CRITIQUE.md`'s `## Pending` section still showed the row as open. Moved to `## Done` in `plan/CRITIQUE.md`. Plan-file only; no source change. Score 3 × 10 / 10 = 3.0.
 
 - [x] **[E — docs drift] Spec 26 author-facing enemy fields absent from `docs/enemy.md`** — resolved at `e14424c` (2026-06-22). Critique pass 82's lone LOW. The Spec 26/26b combat-depth landing added two author-facing fields to the public `Enemy` interface + `CreateEnemyOptions` — `portraitAsset?` (Spec 26 §3.1 combat-portrait asset id) and `stanceHint?` (Spec 26b §2 thematic stance tell) — at `src/Enemy/types.ts:339/346` + `src/Enemy/index.ts:56/58`, applied across the 7 befriendable-stack enemies in `enemy.library.ts` (MournfulGull / HollowEyedBeggar / TideflukeReaver / HushWraith / HollowSaint / CoastalTyrant / TheDisagreement). They are not a public-surface-fixture concern (optional members on the existing `Enemy` type don't change the snapshot — same as `addedIn`/`tags` before them), and `docs/combat.md` §"Spec 26 / 26b" covers the *behaviour*, but the per-enemy authoring fields had no `docs/enemy.md` row despite that page documenting every other author field (`journalEntry`/`friendshipReward`/`tags`/cell-pins/aftermath/codex). Added a `## Spec 26 / 26b author fields` section with a field table (type/spec/purpose), the sparse-fallback note, the per-phase `CombatThreatPhase.stanceHint` override caveat, the author-coverage roster, and a cross-link to `docs/combat.md`. Doc-only; type-check + lint + build + deploy:check green. Score 5 × 8 / 10 = 4.0.
 
