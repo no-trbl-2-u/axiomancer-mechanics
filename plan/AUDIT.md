@@ -46,9 +46,9 @@
 
 ## Pending
 
-- **[G — deps] Minor patch bumps: @typescript-eslint/eslint-plugin 8.61.1→8.62.0, typescript-eslint 8.61.1→8.62.0, globals 17.6.0→17.7.0** — `npm outdated` shows 3 safe minor/patch bumps. `@types/node` 25.9.4→26.0.0 is a major bump (skip). Score: 3 × 9 / 10 = 2.7. Fix: `npm install --save-dev @typescript-eslint/eslint-plugin@^8.62.0 typescript-eslint@^8.62.0 globals@^17.7.0`.
-
 ## Done
+
+- [x] **[G — deps] Minor patch bumps: @typescript-eslint/eslint-plugin 8.61.1→8.62.0, typescript-eslint 8.61.1→8.62.0, globals 17.6.0→17.7.0** — resolved at `<this-commit>` (iterate, 2026-06-23). `npm install --save-dev` bumped all three packages; `--legacy-peer-deps` needed due to a transitive peer resolution conflict with the existing lock tree (safe: no API changes). type-check + lint + build green post-bump. Score 3 × 9 / 10 = 2.7.
 
 - [x] **[A — stale comment] `hazard-pattern-combat-helpers.engine.test.ts` header references removed Pressure-Track predicates as "the win conditions"** — resolved at `b45e3cb` (iterate, 2026-06-23). Replaced the bullet describing `dotErosionReached`/`controlSaturationReached` as "the win conditions per the load-bearing doctrine" with accurate HP-only model framing; notes both predicates were removed with the old Pressure-Track model (2026-06-22) and that DoT/control skills still deplete HP faster than the basic strike. Comment-only change; 144 test files / 2004 tests + type-check + lint + build green. Score 3 × 9 / 10 = 2.7.
 
@@ -80,6 +80,10 @@
 - [x] **[E — docs drift] Front-door docs referenced removed `getResistStat`** — resolved at `45b611e` (2026-06-18). `getResistStat` was removed at Phase 106 (v0.13.0) but `README.md:84` still listed it as a `_(deprecated)_` Combat stat accessor and `docs/api.md:56` called it "deprecated (use `getSaveStat`)". Dropped the README accessor entry and corrected api.md to "removed at v0.13.0 (use `getSaveStat`)". No source change (symbol already gone); verify green. Score 5 × 9 / 10 = 4.5.
 
 ## Audit Pass Log
+
+### 2026-06-23 (Pass 110) — Z–H walk (march→iterate dispatch)
+
+Z: CRITIQUE.md Pending empty (all critique-84 rows drained). A: no stale comments or test-convention drift found. B: no open spec-gap placeholders. C: type-check exits 0; lint exits 0; zero @ts-ignore/as any in non-test src. D: no dead code. E: all modules have docs; public surface byte-identical post-build. F: lint green. G: 3 minor/patch dep bumps — `@typescript-eslint/eslint-plugin` 8.61.1→8.62.0, `typescript-eslint` 8.61.1→8.62.0, `globals` 17.6.0→17.7.0 (score 2.7). H: no plan drift. Top finding: [G] dep bumps (score 2.7; only finding in queue).
 
 ### 2026-06-23 (Pass 109) — Z–H walk (march→iterate dispatch)
 
