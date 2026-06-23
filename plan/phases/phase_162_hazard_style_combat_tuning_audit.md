@@ -91,13 +91,20 @@ tuning loop to Hazard-style combat rather than legacy attack-trading.
 
 ## Verify gate / DoD
 
-- [ ] Live combat tuning levers inventoried and classified by authority layer.
-- [ ] Legacy tuning assumptions identified and either retired or explicitly
+- [x] Live combat tuning levers inventoried and classified by authority layer.
+      (Commit 08d804e — see commit body for full lever table.)
+- [x] Legacy tuning assumptions identified and either retired or explicitly
       preserved with current-code evidence.
-- [ ] Existing harness visibility tested with real commands; gaps recorded.
-- [ ] `skills/combat-tuning.md` and/or combat docs patched where they would
+      (MED-1/MED-2/MED-3 patched; dotFactor/controlFactor vestigial fields
+      explicitly noted in combat.threat.ts and are not tuning targets.)
+- [x] Existing harness visibility tested with real commands; gaps recorded.
+      (200-run matrix across 4 enemies × 3 loadouts × 2 policies — all 100%
+      win rate; conviction gap fixed; GAP-2/GAP-3 promoted as follow-up.)
+- [x] `skills/combat-tuning.md` and/or combat docs patched where they would
       otherwise mislead `/combat-tuning` or `/march`.
-- [ ] Next tuning phase(s) proposed as concrete build-plan rows if needed.
-- [ ] `git diff --check` green.
-- [ ] Targeted tests/docs checks run; `npm run verify` required if source or
-      test code changes.
+      (docs/combat.md + plan/bearings.md — 3 MED + 2 LOW legacy doc fixes.)
+- [x] Next tuning phase(s) proposed as concrete build-plan rows if needed.
+      (Phase 163 promoted: /combat-tuning boss-threat-damage pass.)
+- [x] `git diff --check` green.
+- [x] Targeted tests/docs checks run; `npm run verify` required if source or
+      test code changes. (Only CLI + docs changed; type-check + lint green.)
