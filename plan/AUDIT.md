@@ -46,11 +46,11 @@
 
 ## Pending
 
-- **[A — stale comment] `hazard-pattern-combat-helpers.engine.test.ts` header references removed Pressure-Track predicates as "the win conditions"** — File header (lines 9-11) says `dotErosionReached`/`controlSaturationReached` "ARE the win conditions per the load-bearing doctrine" — but both predicates were removed when the HP-only model shipped (2026-06-22). The comment contradicts current doctrine and will confuse future maintainers. Fix: rewrite the header bullet to describe HP as the sole win condition and note these predicates were removed. Score: 3 × 9 / 10 = 2.7.
-
 - **[G — deps] Minor patch bumps: @typescript-eslint/eslint-plugin 8.61.1→8.62.0, typescript-eslint 8.61.1→8.62.0, globals 17.6.0→17.7.0** — `npm outdated` shows 3 safe minor/patch bumps. `@types/node` 25.9.4→26.0.0 is a major bump (skip). Score: 3 × 9 / 10 = 2.7. Fix: `npm install --save-dev @typescript-eslint/eslint-plugin@^8.62.0 typescript-eslint@^8.62.0 globals@^17.7.0`.
 
 ## Done
+
+- [x] **[A — stale comment] `hazard-pattern-combat-helpers.engine.test.ts` header references removed Pressure-Track predicates as "the win conditions"** — resolved at `b45e3cb` (iterate, 2026-06-23). Replaced the bullet describing `dotErosionReached`/`controlSaturationReached` as "the win conditions per the load-bearing doctrine" with accurate HP-only model framing; notes both predicates were removed with the old Pressure-Track model (2026-06-22) and that DoT/control skills still deplete HP faster than the basic strike. Comment-only change; 144 test files / 2004 tests + type-check + lint + build green. Score 3 × 9 / 10 = 2.7.
 
 - [x] **[Z — critique-84 LOW-1] docs — specs/25-hazard-pattern-combat.md: two-pressure-track model not marked superseded** — resolved at `f35ee34` (iterate, 2026-06-23). Added a prominent SUPERSEDED caveat block at the top of `specs/25-hazard-pattern-combat.md` noting the HP-only model shipped 2026-06-22 and pointing to VISION.md + docs/combat.md + CLAUDE.md as authoritative. File retained as design history artefact. Doc-only; 144 test files / 2004 tests + type-check + build green. Score 3 × 9 / 10 = 2.7. Source: critique-84 (commit 0655e61). CRITIQUE.md LOW-1 moved to Done.
 
