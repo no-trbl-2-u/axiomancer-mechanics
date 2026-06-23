@@ -58,14 +58,6 @@
 
 ## Pending
 
-### [LOW] docs — docs/world.md: narration MapEventKind missing from table
-- pass: critique-83 (commit bf56ab8)
-- area: docs
-- observation: `docs/world.md` line 113 says "nine `MapEventKind` values" and the table below it has no row for `'narration'` (added to `src/World/MapEvents/types.ts:33` in commit 093a558, exported as `NarrationPayload` in the barrel). The `content-parity.engine.test.ts` all-8-MapEventKind invariant comment was also not updated (it still checks 8 kinds; now 10 exist but narration is not required to be in a pool so the guard may be intentionally scoped — regardless, the front-door docs table is incomplete).
-- evidence: `docs/world.md:113-130`, `src/World/MapEvents/types.ts:23-33`
-- suggested_fix: Add a `narration` row to the MapEventKind table in docs/world.md; update the prose from "nine" to "ten" `MapEventKind` values.
-- source: critique
-
 ### [LOW] docs — spec.md + bearings.md: new barrel exports not in front-door docs
 - pass: critique-83 (commit bf56ab8)
 - area: docs
@@ -77,6 +69,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] docs — docs/world.md: narration MapEventKind missing from table** — resolved at `bfb0b73` (iterate, 2026-06-23). `docs/world.md` prose updated from "nine" to "ten" `MapEventKind` values (narration joined in 2026-06), and a `narration` row added to the discriminated-union event-kind table with result shape `{ kind: 'narration', dialogue }` and `NarrationPayload` barrel reference. The "All 8 MapEventKind" count in the fishing-village content section and the content-parity guard note are intentionally unchanged — narration is not required to be present in a map pool. Doc-only; 2004 tests + type-check + lint + build + deploy:check green. Score 3 × 9 / 10 = 2.7. Source: critique-83 (commit bf56ab8).
 
 - [x] **[MED] docs — bearings.md Combat block: stale pressure-track language** — resolved at `08d804e` (Phase 162 audit, 2026-06-23). Phase 162 audit patched `plan/bearings.md` Combat contract block: Spec 25 annotation now says "HP is the SOLE win condition" with `CombatPressureTracks / the two pressure tracks were REMOVED`; Spec 26/26b annotation updated constant names to live barrel (`READ_DAMAGE_MULT`, `COLOR_MATCH_DAMAGE_BONUS`, `projectCardImpact`); `STARTING_SKILL_IDS` added. Doc-only; type-check + lint + build green. Score 5 × 9 / 10 = 4.5. Source: critique-83 (commit bf56ab8).
 
