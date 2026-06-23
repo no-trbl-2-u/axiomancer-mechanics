@@ -46,13 +46,13 @@
 
 ## Pending
 
-- **[Z — critique-84 LOW-1] docs — specs/25-hazard-pattern-combat.md: two-pressure-track model not marked superseded** — `specs/25-hazard-pattern-combat.md` describes DoT Erosion + Control Saturation as the only win conditions with no caveat that the HP-only model replaced them 2026-06-22. A worker reading this file first sees the old model with no guidance it was superseded. Fix: add a prominent SUPERSEDED caveat block at the top pointing to VISION.md + docs/combat.md. Doc-only. Score: 3 × 9 / 10 = 2.7. Source: critique-84 (commit 0655e61).
-
 - **[Z — critique-84 LOW-2] dead-code — vestigial dotFactor/controlFactor fields in AuthoredThreatPhase** — `src/Combat/combat.threat.ts:35-36` defines `dotFactor?`/`controlFactor?` marked VESTIGIAL; `combat.threat-sequences.ts` carries ~213 occurrences; zero callers in `combat.engine.ts`. Misleads content authors about active tuning parameters. Fix: remove the fields from the interface and delete all occurrences in `combat.threat-sequences.ts`. Type-safe delete. Score: 3 × 8 / 10 = 2.4. Source: critique-84 (commit 0655e61).
 
 - **[G — deps] Minor patch bumps: @typescript-eslint/eslint-plugin 8.61.1→8.62.0, typescript-eslint 8.61.1→8.62.0, globals 17.6.0→17.7.0** — `npm outdated` shows 3 safe minor/patch bumps. `@types/node` 25.9.4→26.0.0 is a major bump (skip). Score: 3 × 9 / 10 = 2.7. Fix: `npm install --save-dev @typescript-eslint/eslint-plugin@^8.62.0 typescript-eslint@^8.62.0 globals@^17.7.0`.
 
 ## Done
+
+- [x] **[Z — critique-84 LOW-1] docs — specs/25-hazard-pattern-combat.md: two-pressure-track model not marked superseded** — resolved at `f35ee34` (iterate, 2026-06-23). Added a prominent SUPERSEDED caveat block at the top of `specs/25-hazard-pattern-combat.md` noting the HP-only model shipped 2026-06-22 and pointing to VISION.md + docs/combat.md + CLAUDE.md as authoritative. File retained as design history artefact. Doc-only; 144 test files / 2004 tests + type-check + build green. Score 3 × 9 / 10 = 2.7. Source: critique-84 (commit 0655e61). CRITIQUE.md LOW-1 moved to Done.
 
 - [x] **[Z — critique-84 MED] docs/combat.md Overview frames Hazard-Pattern Combat as secondary** — resolved at `c3f24cc` (iterate, 2026-06-23). Rewrote the Overview to open with Hazard-Pattern Combat as the primary player-facing system; added a Legacy/dev-only callout demoting `resolveCombatRound` early in the doc; updated the §Hazard-Pattern Combat section header to drop the "second, additive" framing. Doc-only; 2004 tests + type-check + lint + build + deploy:check green. Score 5 × 8 / 10 = 4.0. Source: critique-84 (commit 0655e61). CRITIQUE.md MED moved to Done.
 

@@ -60,13 +60,6 @@
 ## Pending
 
 
-### [LOW] docs — specs/25-hazard-pattern-combat.md: two-pressure-track model not marked superseded
-- pass: critique-84 (commit 0655e61)
-- area: docs
-- observation: `specs/25-hazard-pattern-combat.md` still describes the two-pressure-track win-condition model (DoT Erosion + Control Saturation as the only win conditions). The HP-only model shipped 2026-06-22. `docs/combat.md:491-492` carries a caveat pointing to VISION.md as canonical, but the spec file itself has no such header — a new worker reading it first will see the old model with no guidance that it was superseded.
-- evidence: `specs/25-hazard-pattern-combat.md`; `docs/combat.md:491-492`; `divergences.md` DIV-MECH-006
-- suggested_fix: Add a prominent SUPERSEDED caveat block at the top of `specs/25-hazard-pattern-combat.md` pointing to VISION.md → Combat vision and docs/combat.md as authoritative. Optionally rename the `hazard-pattern-combat.engine.test.ts` suite from "victory via DoT Erosion" to "victory by HP depletion via status play". No source logic change.
-- source: critique (Phase 164 divergence audit)
 
 ### [LOW] dead-code — vestigial `dotFactor`/`controlFactor` fields in `AuthoredThreatPhase`
 - pass: critique-84 (commit 0655e61)
@@ -80,6 +73,7 @@
 
 ## Done
 
+- [x] **[LOW] docs — specs/25-hazard-pattern-combat.md: two-pressure-track model not marked superseded** — resolved at `f35ee34` (iterate, 2026-06-23). Added a prominent SUPERSEDED caveat block at the top of `specs/25-hazard-pattern-combat.md` noting the HP-only model shipped 2026-06-22 and pointing to VISION.md, docs/combat.md, and CLAUDE.md as authoritative sources. File retained as design history artefact; mechanical structure still live. Doc-only; 144 test files / 2004 tests + type-check + build green. Score 3 × 9 / 10 = 2.7. Source: critique-84 (commit 0655e61).
 - [x] **[MED] docs — docs/combat.md Overview frames Hazard-Pattern Combat as secondary** — resolved at `c3f24cc` (iterate, 2026-06-23). Rewrote Overview to lead with Hazard-Pattern Combat as the primary player-facing system; added Legacy/dev-only callout demoting `resolveCombatRound` at top of doc; updated §Hazard-Pattern Combat header to drop "second, additive" framing. Doc-only; 2004 tests + type-check + lint + build + deploy:check green. Score 5 × 8 / 10 = 4.0. Source: critique-84 (commit 0655e61).
 
 - [x] **[LOW] docs — spec.md + bearings.md: new barrel exports not in front-door docs** — resolved at `65c7d4e` + `08d804e` (iterate, 2026-06-23). `GOLD_CARD_IDS`/`isGoldCard`/`CardEffectKind`/`STARTING_SKILL_IDS` added to spec.md Contracts Combat row at 65c7d4e; `STARTING_SKILL_IDS` + HP-only model added to bearings.md Combat block at 08d804e. `NarrationPayload` added to spec.md Contracts World row at 65c7d4e. All five exports now documented in front-door readers. Stale-row drift: this Pending row was never moved to Done at drain time (discovered critique-84). Self-corrected here. Source: critique-83 (commit bf56ab8).
