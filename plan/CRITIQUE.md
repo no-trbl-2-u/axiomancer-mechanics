@@ -58,30 +58,6 @@
 
 ## Pending
 
-### [MED] docs — bearings.md Combat block: stale pressure-track language
-- pass: critique-83 (commit bf56ab8)
-- area: docs
-- observation: `plan/bearings.md` lines 96-98 still say "Status effects fill two Pressure Tracks — DoT Erosion + Control Saturation — the only practical win conditions; basic-attack trading removed." This is factually wrong post-cb67ad3 (HP-only model). The same block lists removed/renamed barrel names: `CombatPressureTracks` (type removed), `projectCardPressure` (renamed `projectCardImpact`), `READ_PRESSURE_MULT` (renamed `READ_DAMAGE_MULT`), `COLOR_MATCH_PRESSURE_BONUS` (renamed `COLOR_MATCH_DAMAGE_BONUS`).
-- evidence: `plan/bearings.md:96-98`, `:103`, `:105`
-- suggested_fix: Rewrite the Spec 25 annotation in the Combat contract block to reflect the HP-only model (HP is the sole win condition; status is the efficient path); update the renamed constant names in the Spec 26/26b annotation to match the live barrel.
-- source: critique
-
-### [MED] docs — spec.md contracts table: stale Combat row post HP-only model
-- pass: critique-83 (commit bf56ab8)
-- area: docs
-- observation: `spec.md` Contracts table Combat row (line 93) lists `CombatPressureTracks` (removed from barrel at cb67ad3) and `projectCardPressure` (renamed `projectCardImpact`). Also missing the new additions from this window: defense card / GUARD mechanic, gold-tier cards, `Press Fate` reroll, `STARTING_SKILL_IDS`, `CardEffectKind`, `NarrationPayload` (World row).
-- evidence: `spec.md:93`
-- suggested_fix: Update the Combat row to remove `CombatPressureTracks`/`projectCardPressure` and update `READ_PRESSURE_MULT`/`COLOR_MATCH_PRESSURE_BONUS` to their renamed forms; add a brief note for defense cards / GUARD + gold tier; add `NarrationPayload` to the World row.
-- source: critique
-
-### [MED] docs — docs/combat.md: stale Spec 25/26b section post HP-only model
-- pass: critique-83 (commit bf56ab8)
-- area: docs
-- observation: `docs/combat.md` describes the old two-Pressure-Track win model at lines 485-500 ("`combat.pressure.ts` — the two Pressure Tracks, momentum carry, and the `dotErosionReached`/`controlSaturationReached` thresholds") and line 381 (legacy DoT Erosion win-condition prose). The Spec 25 API table at line 519 lists `CombatPressureTracks` as a current type. The Spec 26b API table at lines 560/566 uses `projectCardPressure`, `READ_PRESSURE_MULT`, `COLOR_MATCH_PRESSURE_BONUS` — all renamed or removed in this window.
-- evidence: `docs/combat.md:381`, `:485-500`, `:519`, `:560`, `:566`
-- suggested_fix: Remove the `combat.pressure.ts` module description and the `dotErosionReached`/`controlSaturationReached`/`momentumCarry` references from the Spec 25 section; update the API tables to replace removed/renamed symbols with their HP-model equivalents; update the Spec 26b tuning-constants table row to use the live names.
-- source: critique
-
 ### [LOW] docs — docs/world.md: narration MapEventKind missing from table
 - pass: critique-83 (commit bf56ab8)
 - area: docs
@@ -101,6 +77,12 @@
 ---
 
 ## Done
+
+- [x] **[MED] docs — bearings.md Combat block: stale pressure-track language** — resolved at `08d804e` (Phase 162 audit, 2026-06-23). Phase 162 audit patched `plan/bearings.md` Combat contract block: Spec 25 annotation now says "HP is the SOLE win condition" with `CombatPressureTracks / the two pressure tracks were REMOVED`; Spec 26/26b annotation updated constant names to live barrel (`READ_DAMAGE_MULT`, `COLOR_MATCH_DAMAGE_BONUS`, `projectCardImpact`); `STARTING_SKILL_IDS` added. Doc-only; type-check + lint + build green. Score 5 × 9 / 10 = 4.5. Source: critique-83 (commit bf56ab8).
+
+- [x] **[MED] docs — spec.md contracts table: stale Combat row post HP-only model** — resolved at `65c7d4e` (iterate, 2026-06-23). Removed `CombatPressureTracks` (barrel-removed at cb67ad3), replaced `projectCardPressure` with `projectCardImpact`, added HP-only model note to Spec 25 annotation, added defense cards / GUARD mechanic with `GOLD_CARD_IDS`/`isGoldCard`/`CardEffectKind`, added `STARTING_SKILL_IDS` to deckbuilder annotation, added `NarrationPayload` to World row. Doc-only; type-check + lint + 2004 tests + build green; deploy:check green. Score 5 × 7 / 10 = 3.5. Source: critique-83 (commit bf56ab8).
+
+- [x] **[MED] docs — docs/combat.md: stale Spec 25/26b section post HP-only model** — resolved at `08d804e` (Phase 162 audit, 2026-06-23). Phase 162 audit patched `docs/combat.md`: Spec 25 intro now describes HP-only win condition; `combat.pressure.ts` module description removed; Spec 26b API table updated to use live constant names (`READ_DAMAGE_MULT`, `COLOR_MATCH_DAMAGE_BONUS`, `projectCardImpact`); `CombatPressureTracks` noted as REMOVED at line 520. The line 381 DoT Erosion prose is the legacy `resolveCombatRound` path (Phase 125 effects-resolution for the turn-based system) — still accurate, not a finding. Doc-only; type-check + lint + build green. Score 5 × 6 / 10 = 3.0. Source: critique-83 (commit bf56ab8).
 
 - [x] **[LOW] docs — Enemy.portraitAsset / stanceHint author fields undocumented** — resolved at `e14424c` (2026-06-22). Spec 26/26b combat-depth landing added `portraitAsset?` (Spec 26 §3.1, combat-portrait asset id) and `stanceHint?` (Spec 26b §2, thematic stance tell) to the public `Enemy` interface + `CreateEnemyOptions` and applied them across 7 enemies in `enemy.library.ts`; `docs/enemy.md` had zero rows for these fields. Added `## Spec 26 / 26b author fields` section with field table, sparse-fallback note, per-phase `CombatThreatPhase.stanceHint` override caveat, author-coverage roster, and cross-link to `docs/combat.md`. Doc-only; type-check + lint + build + deploy:check green. Score 3 × 10 / 10 = 3.0. Source: critique-82 (commit 856ffdb).
 
