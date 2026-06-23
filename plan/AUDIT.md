@@ -48,7 +48,7 @@
 
 ## Done
 
-- [x] **[G — deps] Minor patch bumps: @typescript-eslint/eslint-plugin 8.61.1→8.62.0, typescript-eslint 8.61.1→8.62.0, globals 17.6.0→17.7.0** — resolved at `<this-commit>` (iterate, 2026-06-23). `npm install --save-dev` bumped all three packages; `--legacy-peer-deps` needed due to a transitive peer resolution conflict with the existing lock tree (safe: no API changes). type-check + lint + build green post-bump. Score 3 × 9 / 10 = 2.7.
+- [x] **[G — deps] Minor patch bumps: @typescript-eslint/eslint-plugin 8.61.1→8.62.0, typescript-eslint 8.61.1→8.62.0, globals 17.6.0→17.7.0** — resolved at `725d28f` (iterate, 2026-06-23). `npm install --save-dev` bumped all three packages; `--legacy-peer-deps` needed due to a transitive peer resolution conflict with the existing lock tree (safe: no API changes). type-check + lint + build green post-bump. Score 3 × 9 / 10 = 2.7.
 
 - [x] **[A — stale comment] `hazard-pattern-combat-helpers.engine.test.ts` header references removed Pressure-Track predicates as "the win conditions"** — resolved at `b45e3cb` (iterate, 2026-06-23). Replaced the bullet describing `dotErosionReached`/`controlSaturationReached` as "the win conditions per the load-bearing doctrine" with accurate HP-only model framing; notes both predicates were removed with the old Pressure-Track model (2026-06-22) and that DoT/control skills still deplete HP faster than the basic strike. Comment-only change; 144 test files / 2004 tests + type-check + lint + build green. Score 3 × 9 / 10 = 2.7.
 
