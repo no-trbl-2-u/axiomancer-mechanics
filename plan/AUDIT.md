@@ -46,6 +46,8 @@
 
 ## Pending
 
+- **[A — stale comment] `hazard-pattern-combat-helpers.engine.test.ts` header references removed Pressure-Track predicates as "the win conditions"** — File header (lines 9-11) says `dotErosionReached`/`controlSaturationReached` "ARE the win conditions per the load-bearing doctrine" — but both predicates were removed when the HP-only model shipped (2026-06-22). The comment contradicts current doctrine and will confuse future maintainers. Fix: rewrite the header bullet to describe HP as the sole win condition and note these predicates were removed. Score: 3 × 9 / 10 = 2.7.
+
 - **[G — deps] Minor patch bumps: @typescript-eslint/eslint-plugin 8.61.1→8.62.0, typescript-eslint 8.61.1→8.62.0, globals 17.6.0→17.7.0** — `npm outdated` shows 3 safe minor/patch bumps. `@types/node` 25.9.4→26.0.0 is a major bump (skip). Score: 3 × 9 / 10 = 2.7. Fix: `npm install --save-dev @typescript-eslint/eslint-plugin@^8.62.0 typescript-eslint@^8.62.0 globals@^17.7.0`.
 
 ## Done
@@ -78,6 +80,10 @@
 - [x] **[E — docs drift] Front-door docs referenced removed `getResistStat`** — resolved at `45b611e` (2026-06-18). `getResistStat` was removed at Phase 106 (v0.13.0) but `README.md:84` still listed it as a `_(deprecated)_` Combat stat accessor and `docs/api.md:56` called it "deprecated (use `getSaveStat`)". Dropped the README accessor entry and corrected api.md to "removed at v0.13.0 (use `getSaveStat`)". No source change (symbol already gone); verify green. Score 5 × 9 / 10 = 4.5.
 
 ## Audit Pass Log
+
+### 2026-06-23 (Pass 109) — Z–H walk (march→iterate dispatch)
+
+Z: CRITIQUE.md Pending empty. A: stale file-header comment in hazard-pattern-combat-helpers.engine.test.ts references removed Pressure-Track predicates as "win conditions" (score 2.7). B: no open spec-gap placeholders. C: one @ts-ignore with explanatory comment (already fixed). D: no dead code found. E: all modules have docs. G: 3 minor/patch dep bumps (score 2.7). H: no plan drift. Top finding: [A] stale comment (ties G at 2.7; A wins tie-break over G per category order).
 
 ### 2026-06-22 (Pass 108) — Z–H walk (march→iterate dispatch)
 
