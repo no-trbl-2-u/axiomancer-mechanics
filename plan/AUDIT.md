@@ -81,6 +81,10 @@
 
 ## Audit Pass Log
 
+### 2026-06-23 (Pass 111) — Z–H walk (march→iterate dispatch)
+
+Z: CRITIQUE.md Pending has 3 LOWs from critique-85 (DIV-MECH-003/006 status tracking, combat-sim.cli.ts docs gap, stale "DoT Erosion" test label). A: no test-convention drift; `vi.spyOn(Math,'random')` clean outside test-utils. B: no open spec-gap placeholders. C: type-check exits 0; lint exits 0; zero `@ts-ignore`/`as any` in non-test src. D: no dead code. E: docs current. F: lint green. G: `@types/node` 25→26 is a major bump (skip per policy). H: no plan drift. Top finding: [Z] critique-85 LOW-1 — divergences.md DIV-MECH-003/006 still `Status: open` (score 3 × 9 / 10 = 2.7; doc-only, ease 9/10). Shipped at `eafe9e7`. Remaining queue: critique-85 LOW-2 (combat-sim.cli.ts docs, 2.7) and LOW-3 (stale test label, 2.4).
+
 ### 2026-06-23 (Pass 110) — Z–H walk (march→iterate dispatch)
 
 Z: CRITIQUE.md Pending empty (all critique-84 rows drained). A: no stale comments or test-convention drift found. B: no open spec-gap placeholders. C: type-check exits 0; lint exits 0; zero @ts-ignore/as any in non-test src. D: no dead code. E: all modules have docs; public surface byte-identical post-build. F: lint green. G: 3 minor/patch dep bumps — `@typescript-eslint/eslint-plugin` 8.61.1→8.62.0, `typescript-eslint` 8.61.1→8.62.0, `globals` 17.6.0→17.7.0 (score 2.7). H: no plan drift. Top finding: [G] dep bumps (score 2.7; only finding in queue).

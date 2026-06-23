@@ -60,13 +60,6 @@
 
 ## Pending
 
-### [LOW] docs — divergences.md: DIV-MECH-003 and DIV-MECH-006 still marked open after resolution
-- pass: critique-85 (commit 6b03a25)
-- area: docs
-- observation: `divergences.md` lines 60 and 105 still carry `Status: open` for DIV-MECH-003 and DIV-MECH-006 respectively, despite both being resolved in the iterate window: DIV-MECH-003 was fixed by `c3f24cc` (docs/combat.md Overview rewrite) and DIV-MECH-006 by `f35ee34` (specs/25 SUPERSEDED caveat). DIV-MECH-004 was correctly updated to `Status: **resolved**` at `c9eeaee` — the same pattern was not applied to the other two.
-- evidence: `divergences.md:60` (`Status: open` for DIV-MECH-003) and `divergences.md:105` (`Status: open` for DIV-MECH-006); iter commits `c3f24cc` + `f35ee34` confirm the fixes.
-- suggested_fix: Update DIV-MECH-003 and DIV-MECH-006 status lines to `Status: **resolved**` with a resolution note citing the commit, matching DIV-MECH-004 pattern at line 78.
-
 ### [LOW] docs — docs/cli.md: combat-sim.cli.ts / `npm run combat-sim` undocumented
 - pass: critique-85 (commit 6b03a25)
 - area: docs
@@ -84,6 +77,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] docs — divergences.md: DIV-MECH-003 and DIV-MECH-006 still marked open after resolution** — resolved at `eafe9e7` (iterate, 2026-06-23). Updated `divergences.md` DIV-MECH-003 status from `open` to `**resolved** — fixed in iterate (c3f24cc; docs/combat.md Overview rewrite, 2026-06-23)` and DIV-MECH-006 status from `open` to `**resolved** — fixed in iterate (f35ee34; SUPERSEDED caveat added to specs/25-hazard-pattern-combat.md, 2026-06-23)`, matching the DIV-MECH-004 resolved pattern. Doc-only; type-check + lint + build green. Score 3 × 9 / 10 = 2.7. Source: critique-85 (commit 6b03a25).
 
 - [x] **[LOW] dead-code — vestigial `dotFactor`/`controlFactor` fields in `AuthoredThreatPhase`** — resolved at `c9eeaee` (iterate, 2026-06-23). Removed `dotFactor?`/`controlFactor?` from `AuthoredThreatPhase` interface and all 213 occurrences from `combat.threat-sequences.ts`. Updated `skills/combat-tuning.md` + comment blocks. Marked DIV-MECH-004 resolved in `divergences.md`. 2004 tests + type-check + lint + build green. Score 3 × 8 / 10 = 2.4. Source: critique-84 (commit 0655e61).
 - [x] **[LOW] docs — specs/25-hazard-pattern-combat.md: two-pressure-track model not marked superseded** — resolved at `f35ee34` (iterate, 2026-06-23). Added a prominent SUPERSEDED caveat block at the top of `specs/25-hazard-pattern-combat.md` noting the HP-only model shipped 2026-06-22 and pointing to VISION.md, docs/combat.md, and CLAUDE.md as authoritative sources. File retained as design history artefact; mechanical structure still live. Doc-only; 144 test files / 2004 tests + type-check + build green. Score 3 × 9 / 10 = 2.7. Source: critique-84 (commit 0655e61).
