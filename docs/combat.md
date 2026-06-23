@@ -2,7 +2,17 @@
 
 ## Overview
 
-Turn-based combat with rock-paper-scissors mechanics. All combat functions are pure and live in:
+**Hazard-Pattern Combat (Spec 25) is the primary player-facing combat system** — the one
+consumed by the mobile app and exercised by `/combat-tuning`. It is a card-and-dice system
+where the enemy's sole bar is HP; status effects are the efficient path to 0.
+See [§Hazard-Pattern Combat](#hazard-pattern-combat-spec-25) below for the full API surface.
+
+> **Legacy / dev-only:** `resolveCombatRound` (the turn-based resolver described in the
+> sections below) backs only the dev-only legacy combat tab. It is NOT the player-facing
+> system. Mobile consumers should use `initializeCombatEncounter` / `playCombatCard` /
+> `resolveCombatPhase` instead.
+
+The legacy resolver lives in:
 
 - `Combat/index.ts` — module barrel + small mechanics helpers (advantage, stats, dice, damage, health, effect queries).
 - `Combat/combat.reducer.ts` — small `(state, …args) => newState` mutations on `CombatState`.
@@ -479,14 +489,13 @@ round-resolution entry point used by every UI client.
 
 ## Hazard-Pattern Combat (Spec 25)
 
-A second, additive combat driver that ships **alongside** `resolveCombatRound`
-(the effects + skill engines are unchanged). It is a card-and-dice system
-structurally mirrored on the Hazard minigame: every verb is a skill card, and
-the enemy's **sole bar is HP** — dropping it to 0 (`isDefeated(enemy)`) is the
-only win condition. Status effects are the **efficient** path: DoT erodes HP far
-faster than the deliberately weak basic strike (`DIRECT_DAMAGE_WEIGHT`), and
-control hinders the enemy's telegraphed threat turn. Basic-attack trading is the
-weak baseline, not a parallel win track. Full design:
+**The primary player-facing combat system** (mobile map encounters, `/combat-tuning`).
+A card-and-dice system structurally mirrored on the Hazard minigame: every verb is a
+skill card, and the enemy's **sole bar is HP** — dropping it to 0 (`isDefeated(enemy)`)
+is the only win condition. Status effects are the **efficient** path: DoT erodes HP far
+faster than the deliberately weak basic strike (`DIRECT_DAMAGE_WEIGHT`), and control
+hinders the enemy's telegraphed threat turn. Basic-attack trading is the weak baseline,
+not a parallel win track. Full design:
 [`specs/25-hazard-pattern-combat.md`](../specs/25-hazard-pattern-combat.md)
 (note: that spec's two-pressure-track narrative is superseded by the HP-only
 model shipped 2026-06-22 — `VISION.md` → Combat vision is canonical).
