@@ -38,7 +38,8 @@ import {
 } from '../combat.dice';
 import { buildCombatDeck, COMBAT_HAND_SIZE } from '../combat.deck';
 import { classifyVerbClass, toCombatCard, projectDeck } from '../combat.cards';
-import { generateDefaultThreatSequence } from '../combat.threat';
+import { generateDefaultThreatSequence, AUTHORED_THREAT_ENEMY_IDS } from '../combat.threat';
+import { ENEMY_REGISTRY } from '../../Enemy/enemy.library';
 import type { CombatManaDie, CombatEvent } from '../combat.encounter.types';
 
 const DOT_BODY = 'slippery-slope';       // body, tier 2, DoT
@@ -373,5 +374,31 @@ describe('Spec 26b §4 — rerollSpentDice', () => {
 describe('Spec 25 — constants', () => {
     it('COMBAT_HAND_SIZE is the draw cap', () => {
         expect(COMBAT_HAND_SIZE).toBeGreaterThan(0);
+    });
+});
+
+// ── AUTHORED_THREAT_ENEMY_IDS ─────────────────────────────────────────────────
+
+describe('Spec 25 — AUTHORED_THREAT_ENEMY_IDS', () => {
+    it('contains exactly 61 authored-threat enemy slugs', () => {
+        expect(AUTHORED_THREAT_ENEMY_IDS.length).toBe(61);
+    });
+
+    it('every entry follows the "enemy-<slug>" naming convention', () => {
+        for (const id of AUTHORED_THREAT_ENEMY_IDS) {
+            expect(id).toMatch(/^enemy-/);
+        }
+    });
+
+    it('every authored-threat enemy slug exists in the enemy registry', () => {
+        const registryKeys = Object.keys(ENEMY_REGISTRY);
+        for (const id of AUTHORED_THREAT_ENEMY_IDS) {
+            const slug = id.replace(/^enemy-/, '');
+            expect(registryKeys).toContain(slug);
+        }
+    });
+
+    it('is frozen (immutable array)', () => {
+        expect(Object.isFrozen(AUTHORED_THREAT_ENEMY_IDS)).toBe(true);
     });
 });
