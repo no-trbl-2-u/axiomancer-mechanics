@@ -60,13 +60,6 @@
 
 ## Pending
 
-### [LOW] docs — docs/cli.md: combat-sim.cli.ts / `npm run combat-sim` undocumented
-- pass: critique-85 (commit 6b03a25)
-- area: docs
-- observation: `src/CLI/combat-sim.cli.ts` ships as an npm script (`npm run combat-sim`) and provides the Hazard-Pattern Combat sim driver (win-rate playthroughs across difficulty tiers, `--blind` / `--enemy` / `--runs` / `--seed` flags). It shipped at `d97b450` in the pass-83 window but `docs/cli.md` Components section still lists only `game.cli.ts`, `hazard.cli.ts`, `gathering.cli.ts`, `rest.cli.ts`, `lootcache.cli.ts`, `quest-board.cli.ts`, `dev-tools.ts`, and `io.ts` — `combat-sim.cli.ts` is absent. Consistent with the pass-79 CLI-doc MED pattern for the three minigame CLIs.
-- evidence: `src/CLI/combat-sim.cli.ts:1-20` (full header with flags documented); `package.json` `combat-sim` script; `docs/cli.md` (no `combat-sim` reference).
-- suggested_fix: Add a `combat-sim.cli.ts` subsection to `docs/cli.md` Components documenting `npm run combat-sim`, its flags (`--blind`, `--enemy`, `--runs`, `--seed`, `--loadout`), and its purpose (Hazard-Pattern Combat balance sim driver).
-
 ### [LOW] docs — hazard-pattern-combat.engine.test.ts: "DoT Erosion" in test comment/suite name
 - pass: critique-85 (commit 6b03a25)
 - area: docs
@@ -77,6 +70,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] docs — docs/cli.md: combat-sim.cli.ts / `npm run combat-sim` undocumented** — resolved at `c147ecf` (iterate, 2026-06-24). Added a `combat-sim.cli.ts` subsection to `docs/cli.md` Components documenting `npm run combat-sim`, all five flags (`--blind`, `--enemy`, `--loadout`, `--runs`, `--seed`), usage examples, and the Monte-Carlo balance-witness purpose. Placed between `combat.cli.ts` and `hazard.cli.ts`. Doc-only; 146 test files / 2025 passing + type-check + lint + build + deploy:check green. Score 3 × 9 / 10 = 2.7. Source: critique-85 (commit 6b03a25).
 
 - [x] **[LOW] docs — divergences.md: DIV-MECH-003 and DIV-MECH-006 still marked open after resolution** — resolved at `eafe9e7` (iterate, 2026-06-23). Updated `divergences.md` DIV-MECH-003 status from `open` to `**resolved** — fixed in iterate (c3f24cc; docs/combat.md Overview rewrite, 2026-06-23)` and DIV-MECH-006 status from `open` to `**resolved** — fixed in iterate (f35ee34; SUPERSEDED caveat added to specs/25-hazard-pattern-combat.md, 2026-06-23)`, matching the DIV-MECH-004 resolved pattern. Doc-only; type-check + lint + build green. Score 3 × 9 / 10 = 2.7. Source: critique-85 (commit 6b03a25).
 
