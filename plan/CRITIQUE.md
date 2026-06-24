@@ -70,13 +70,7 @@
   - suggested_fix: Either promote these to the root barrel + spec.md/bearings.md if they are intended consumer-facing utilities, or remove them from `src/Combat/index.ts` if they are purely intra-module. `availableDiceFor`/`availableDieCount`/`stanceToDieColor` have no external callers (grep = 0 outside `combat.dice.ts` + `combat.engine.ts`); `effectImpact` and `cardStanceColor` similarly. Removing from sub-barrel is the safer default.
   - source: critique
 
-- [ ] **[LOW] docs — DIV-MECH-005 follow-up has no loop tracking entry**
-  - pass: critique-87 (commit 9b6e037)
-  - area: docs
-  - observation: `divergences.md` DIV-MECH-005 (line 86-98) states "Phase 165 shipped (DIV-MECH-001 resolved). File a dedicated phase or iterate-tier task to update the fishing-village walkthrough to use `combat.cli.ts` for Hazard-Pattern Combat." No Pending row has been filed in CRITIQUE, AUDIT, or the build plan for this follow-up; the divergence entry is self-referential with no loop hook. Without a queued row the follow-up will stale undetected across passes.
-  - evidence: `divergences.md:86-98` (DIV-MECH-005 entry); `plan/CRITIQUE.md` Pending section (no DIV-MECH-005 row); `plan/AUDIT.md` Pending section (confirm no row); `plan/steps/01_build_plan.md` (no phase row for walkthrough update).
-  - suggested_fix: Queue an iterate-tier task: update `automation/scripts/walkthroughs/fishing-village-exploration.json` (and `.goal.md`) to enter `combat.cli.ts` via `npm run combat` from the encounter trigger at fv-15, replacing the legacy Combat-tab defend rounds; update `src/Game/e2e/spec08.engine.test.ts` encounter coverage comment to note Hazard-Pattern Combat is the live surface.
-  - source: critique
+- [x] **[LOW] docs — DIV-MECH-005 follow-up has no loop tracking entry** — resolved at `<HASH>` (iterate, 2026-06-24). Added a `[needs-user-call — DIV-MECH-005]` Pending row to `plan/AUDIT.md` scoping the game.cli.ts map-encounter routing decision and the downstream walkthrough + spec08 updates; the routing change (game.cli.ts:180-183) requires a T call before the walkthrough JSON can be updated. Loop tracking now present. Score 3 × 9 / 10 = 2.7. Source: critique-87 (commit 9b6e037).
 
 - [x] **[HIGH] api — Combat barrel missing 3 PR #190 dice-reroll exports** — resolved at `ba19c41` (iterate, 2026-06-24). Added `dieIsRerollable`, `hasRerollableDice`, `rerollSpentDice` to the `combat.dice` export block in `src/Combat/index.ts` and re-exported from `src/index.ts` Spec 25 block. Also updated the stale two-Pressure-Track comment in `src/index.ts:101-104` to the HP-only model (critique-86 LOW-2 fix bundled — same line). Refreshed `scripts/public-surface.expected.json` (576→584 values / 393→395 types); `npm run deploy:check` green. 146 test files / 2025 passing. Score 8 × 9 / 10 = 7.2. Source: critique-86 (commit 1c08b46).
 

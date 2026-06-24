@@ -46,6 +46,12 @@
 
 ## Pending
 
+- [ ] **[needs-user-call — DIV-MECH-005] game.cli.ts map-encounter routing: route to Hazard-Pattern Combat instead of legacy `resolveCombatRound`**
+  - area: mechanics / CLI
+  - observation: `game.cli.ts:180-183` explicitly routes map-triggered encounters to `legacyCombatTab` (legacy `resolveCombatRound` loop). The comment says "map-triggered encounters use the legacy path; the new Hazard-style combat is reachable standalone via `npm run combat`." Updating the fishing-village walkthrough (`automation/scripts/walkthroughs/fishing-village-exploration.json`) to drive Hazard-Pattern Combat requires this routing to change first — otherwise the walkthrough JSON's encounter steps will still enter the legacy tab. `divergences.md:83-98` (DIV-MECH-005) confirms the block was lifted when Phase 165 shipped (DIV-MECH-001 resolved), but the game.cli.ts routing decision remains open.
+  - suggested_fix: T decision needed: should map-encounter triggers in `game.cli.ts` route to the Hazard-style combat CLI (calling `combat.cli.ts` logic or `initializeCombatEncounter`) rather than `legacyCombatTab`? Once decided, update `game.cli.ts:180-183`, update `automation/scripts/walkthroughs/fishing-village-exploration.json` and `.goal.md` to drive the Hazard-style encounter, and add a comment to `src/Game/e2e/spec08.engine.test.ts` noting Hazard-Pattern Combat is the live map-encounter surface.
+  - source: critique-87 LOW-3 (commit 9b6e037); divergences.md DIV-MECH-005
+
 ## Done
 
 - [x] **[E — docs drift] `spec.md` Combat Contracts row missing `deriveIntentType`, `CombatIntentType`, `AUTHORED_THREAT_ENEMY_IDS`** — resolved at `efb0d54` (iterate, 2026-06-24). Added `deriveIntentType`, `CombatIntentType`, `getThreatSequence`, `generateDefaultThreatSequence`, `AUTHORED_THREAT_ENEMY_IDS` to the spec.md Contracts Combat row. Also added the three threat-sequence exports to the bearings.md Spec 26/26b annotation block (bundled CRITIQUE LOW-1 fix of same shape). Doc-only; type-check + lint green. Score 3 × 9 / 10 = 2.7.
