@@ -46,6 +46,8 @@
 
 ## Pending
 
+- [x] **[E — docs drift] PR #190 dice helpers + preset deck absent from front-door docs** — resolved at this commit. `rerollSpentDice`/`hasRerollableDice`/`dieIsRerollable` (Press Fate partial re-roll) and `COMBAT_DECK_PRESETS`/`COMBAT_DECK_PRESET_ORDER`/`listDeckPresets`/`getDeckPreset`/`buildPresetDeck` (preset deck system) shipped at `3337d32` (2026-06-23) with zero front-door doc coverage. Added: a PR #190 annotation to the `spec.md` Contracts Combat row; a `(+ PR #190 …)` block to the `bearings.md` Combat group; two new rows in `docs/combat.md` §Spec 26/26b API table (one for the re-roll helpers, one for the preset deck surface). Doc-only; type-check + lint + build + deploy:check green. Score 4 × 9 / 10 = 3.6.
+
 ## Done
 
 - [x] **[G — deps] Minor patch bumps: @typescript-eslint/eslint-plugin 8.61.1→8.62.0, typescript-eslint 8.61.1→8.62.0, globals 17.6.0→17.7.0** — resolved at `725d28f` (iterate, 2026-06-23). `npm install --save-dev` bumped all three packages; `--legacy-peer-deps` needed due to a transitive peer resolution conflict with the existing lock tree (safe: no API changes). type-check + lint + build green post-bump. Score 3 × 9 / 10 = 2.7.

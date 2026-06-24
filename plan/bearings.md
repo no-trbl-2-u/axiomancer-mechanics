@@ -114,6 +114,10 @@ Combat:     determineAdvantage, getAttackStat, getDefenseStat, getSaveStat,
             Reading the hidden stance boosts card damage + earns Conviction — the
             read IS the efficiency lever for status play. Note "Spec 26b" is in-flight scaffolding with
             no spec file yet (distinct from specs/26-catalyst-multiplicative-scaling.md).)
+            (+ PR #190 partial Press Fate re-roll (2026-06-23) — rerollSpentDice,
+            hasRerollableDice, dieIsRerollable (combat.dice); preset combat decks —
+            COMBAT_DECK_PRESETS, COMBAT_DECK_PRESET_ORDER, listDeckPresets,
+            getDeckPreset, buildPresetDeck (combat.deck-presets).)
 Combat reducer: initializeCombat, setPhase, setPlayerStance, setPlayerAction,
                 appendLog, incrementFriendship, endCombat
 Effects:    applyEffect, applyTier1CombatEffect, clearTier1EffectsForStance,
