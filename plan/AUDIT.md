@@ -46,13 +46,6 @@
 
 ## Pending
 
-- [ ] **[Z — critique-87 LOW] structure — Combat sub-barrel over-exposes 5 internal cross-module helpers**
-  - area: structure
-  - observation: `src/Combat/index.ts:253-265` re-exports `availableDiceFor`, `availableDieCount`, `stanceToDieColor` (from `combat.dice`) and `effectImpact`, `cardStanceColor` (from `combat.cards`) but none reach `src/index.ts`, `scripts/public-surface.expected.json`, or spec.md/bearings.md. They have zero external consumers (grep confirms only defining files + sub-barrel use them). Creates a half-visible undocumented API on the sub-barrel.
-  - suggested_fix: Remove the 5 helpers from the sub-barrel export lines in `src/Combat/index.ts`. No source logic changes needed.
-  - source: critique-87 (commit 9b6e037)
-  - score: 3 × 8 / 10 = 2.4
-
 - [ ] **[needs-user-call — DIV-MECH-005] game.cli.ts map-encounter routing: route to Hazard-Pattern Combat instead of legacy `resolveCombatRound`**
   - area: mechanics / CLI
   - observation: `game.cli.ts:180-183` explicitly routes map-triggered encounters to `legacyCombatTab` (legacy `resolveCombatRound` loop). The comment says "map-triggered encounters use the legacy path; the new Hazard-style combat is reachable standalone via `npm run combat`." Updating the fishing-village walkthrough (`automation/scripts/walkthroughs/fishing-village-exploration.json`) to drive Hazard-Pattern Combat requires this routing to change first — otherwise the walkthrough JSON's encounter steps will still enter the legacy tab. `divergences.md:83-98` (DIV-MECH-005) confirms the block was lifted when Phase 165 shipped (DIV-MECH-001 resolved), but the game.cli.ts routing decision remains open.
@@ -60,6 +53,8 @@
   - source: critique-87 LOW-3 (commit 9b6e037); divergences.md DIV-MECH-005
 
 ## Done
+
+- [x] **[Z — critique-87 LOW] structure — Combat sub-barrel over-exposes 5 internal cross-module helpers** — resolved at `2027028` (iterate, 2026-06-24). Removed `availableDiceFor`, `availableDieCount`, `stanceToDieColor` from the `combat.dice` export line and `effectImpact`, `cardStanceColor` from the `combat.cards` export line in `src/Combat/index.ts`. All 5 had zero external consumers (grep confirmed only defining files + sub-barrel); none reach `src/index.ts` or the public-surface fixture. 146 test files / 2041 tests + type-check + lint + build green. Score 3 × 8 / 10 = 2.4. Source: critique-87 (commit 9b6e037).
 
 - [x] **[E — docs drift] `spec.md` Combat Contracts row missing `deriveIntentType`, `CombatIntentType`, `AUTHORED_THREAT_ENEMY_IDS`** — resolved at `efb0d54` (iterate, 2026-06-24). Added `deriveIntentType`, `CombatIntentType`, `getThreatSequence`, `generateDefaultThreatSequence`, `AUTHORED_THREAT_ENEMY_IDS` to the spec.md Contracts Combat row. Also added the three threat-sequence exports to the bearings.md Spec 26/26b annotation block (bundled CRITIQUE LOW-1 fix of same shape). Doc-only; type-check + lint green. Score 3 × 9 / 10 = 2.7.
 

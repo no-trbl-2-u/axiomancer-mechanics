@@ -62,13 +62,7 @@
 
 ## Pending
 
-- [ ] **[LOW] structure — Combat sub-barrel over-exposes internal cross-module helpers**
-  - pass: critique-87 (commit 9b6e037)
-  - area: structure
-  - observation: `src/Combat/index.ts` re-exports five intra-Combat helpers (`availableDiceFor`, `availableDieCount`, `stanceToDieColor`, `effectImpact`, `cardStanceColor`) that do not reach `src/index.ts` or the public fixture, are not in spec.md or bearings.md, and have no external consumer-facing tests. They are used only within the Combat module (engine imports from dice/cards). Surfacing them on the sub-barrel without promoting to the root barrel creates a half-visible API that a consumer doing a deep import (`axiomancer-mechanics/Combat`) would encounter undocumented.
-  - evidence: `src/Combat/index.ts:253-264` (re-exports); `src/index.ts` (no corresponding root-level re-export); `scripts/public-surface.expected.json` (`availableDiceFor` absent from fixture, confirmed `node -e` check); `spec.md` (not listed in Combat contracts row).
-  - suggested_fix: Either promote these to the root barrel + spec.md/bearings.md if they are intended consumer-facing utilities, or remove them from `src/Combat/index.ts` if they are purely intra-module. `availableDiceFor`/`availableDieCount`/`stanceToDieColor` have no external callers (grep = 0 outside `combat.dice.ts` + `combat.engine.ts`); `effectImpact` and `cardStanceColor` similarly. Removing from sub-barrel is the safer default.
-  - source: critique
+- [x] **[LOW] structure — Combat sub-barrel over-exposes internal cross-module helpers** — resolved at `2027028` (iterate, 2026-06-24). Removed `availableDiceFor`, `availableDieCount`, `stanceToDieColor` from the `combat.dice` line and `effectImpact`, `cardStanceColor` from the `combat.cards` line in `src/Combat/index.ts`. All 5 had zero external consumers; none reached `src/index.ts` or public-surface fixture. 146 test files / 2041 tests + type-check + lint + build green. Score 3 × 8 / 10 = 2.4. Source: critique-87 (commit 9b6e037).
 
 - [x] **[LOW] docs — DIV-MECH-005 follow-up has no loop tracking entry** — resolved at `c74e543` (iterate, 2026-06-24). Added a `[needs-user-call — DIV-MECH-005]` Pending row to `plan/AUDIT.md` scoping the game.cli.ts map-encounter routing decision and the downstream walkthrough + spec08 updates; the routing change (game.cli.ts:180-183) requires a T call before the walkthrough JSON can be updated. Loop tracking now present. Score 3 × 9 / 10 = 2.7. Source: critique-87 (commit 9b6e037).
 
