@@ -366,7 +366,7 @@ async function promptCardChoice(state: CombatEncounterState): Promise<{ uid: str
 async function promptSignatureChoice(state: CombatEncounterState): Promise<string | null> {
     const affordable = state.signatures
         .map(id => getSignatureSkill(id))
-        .filter((s): s is NonNullable<typeof s> => s !== null && state.conviction >= s.cost);
+        .filter((s): s is NonNullable<ReturnType<typeof getSignatureSkill>> => s !== undefined && state.conviction >= s.cost);
     if (affordable.length === 0) return null;
     const { choice } = await prompt<{ choice: string }>([{
         type: 'rawlist', name: 'choice',
@@ -621,7 +621,7 @@ export async function runLegacyCombatCli(rawArgs: string[]): Promise<void> {
     log(`Enemy:  ${enemyDef.name}  HP ${enemyDef.maxHealth}\n`);
 
     const { initializeCombat } = await import('../Combat');
-    let combat = initializeCombat(player, { enemies: [enemyDef] });
+    let combat = initializeCombat(player, enemyDef);
 
     const skillLookup = (id: string) => getSkillById(id);
 
