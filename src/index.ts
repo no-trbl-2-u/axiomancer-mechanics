@@ -99,8 +99,9 @@ export type {
 } from './Combat';
 
 // ─── Spec 25 — Hazard-Pattern Combat ──────────────────────────────────────────
-// Card-and-dice combat: status effects fill two Pressure Tracks that are the
-// only practical win conditions. Ships alongside the legacy resolver.
+// Card-and-dice combat: HP is the sole win condition. Status effects erode HP
+// far faster than the deliberately weak basic strike. Ships alongside the
+// legacy resolver (dev-only).
 export {
     initializeCombatEncounter, rollEncounterDice, playCombatCard,
     resolveCombatPhase, resolveThreatPhase, processBetweenPhases,
@@ -125,6 +126,8 @@ export {
     SIGNATURE_KITS, signaturesForArchetype, playerArchetype,
     COMBAT_REWARD_POOL, STARTING_SKILL_ID, STARTING_SKILL_IDS, rollCombatCardRewards, addRewardCard,
     unlockSkillViaDilemma,
+    // PR #190 Press Fate partial re-roll
+    dieIsRerollable, hasRerollableDice, rerollSpentDice,
 } from './Combat';
 export type {
     CombatEncounterState, CombatEncounterPhase, CombatTransition,

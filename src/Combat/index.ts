@@ -251,7 +251,7 @@ export {
     COMBAT_DICE_COUNT, TURN_DICE_COUNT, COMBAT_DIE_FACES, rollCombatDice, rollTurnDice,
     rollCombatDieColor, dieHasStance,
     combatDieCanPower, availableDiceFor, availableDieCount, refreshOneDie,
-    stanceToDieColor,
+    stanceToDieColor, dieIsRerollable, hasRerollableDice, rerollSpentDice,
 } from './combat.dice';
 export { COMBAT_HAND_SIZE, buildCombatDeck, drawCombatCards, shuffleCombatDeck } from './combat.deck';
 export {
