@@ -11,15 +11,15 @@ import { describe, it, expect } from 'vitest';
 import {
     COMBAT_DECK_PRESETS, COMBAT_DECK_PRESET_ORDER,
     listDeckPresets, getDeckPreset, buildPresetDeck,
-} from './combat.deck-presets';
-import { SYNTHETIC_CARD_IDS, classifyVerbClass } from './combat.cards';
-import { getSkillById } from '../Skills/skill.library';
-import { lookupEffect } from '../Effects';
-import { initializeCombatEncounter, rollEncounterDice } from './combat.engine';
-import { Player } from '../Character/characters.mock';
-import { TidepoolCrab } from '../Enemy/enemy.library';
-import { deepClone } from '../Utils';
-import type { CombatVerbClass } from './combat.encounter.types';
+} from '../combat.deck-presets';
+import { SYNTHETIC_CARD_IDS, classifyVerbClass } from '../combat.cards';
+import { getSkillById } from '../../Skills/skill.library';
+import { lookupEffect } from '../../Effects';
+import { initializeCombatEncounter, rollEncounterDice } from '../combat.engine';
+import { Player } from '../../Character/characters.mock';
+import { TidepoolCrab } from '../../Enemy/enemy.library';
+import { deepClone } from '../../Utils';
+import type { CombatVerbClass } from '../combat.encounter.types';
 
 /** The verb-classes that count toward each focus (a focus's "dominant lever"). */
 const FOCUS_CLASSES: Record<string, CombatVerbClass[]> = {
