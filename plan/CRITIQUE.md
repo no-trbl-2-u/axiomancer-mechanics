@@ -61,21 +61,9 @@
 
 ## Pending
 
-- [ ] **[HIGH] api — Combat barrel missing 3 PR #190 dice-reroll exports**
-  - pass: critique-86 (commit 1c08b46)
-  - area: api
-  - observation: `rerollSpentDice`, `hasRerollableDice`, `dieIsRerollable` exist in `src/Combat/combat.dice.ts:105-135` and are documented in spec.md Contracts (Combat row), bearings.md (line 117-118), and docs/combat.md (line 578) as barrel exports. They are NOT exported from `src/Combat/index.ts` (line 251-255 exports other combat.dice functions but not these three) and are NOT in `src/index.ts`. Runtime `import('./dist/index.js')` returns `undefined` for all three. The AUDIT row E (`887e023`) added docs for them without wiring the barrel. The public-surface fixture (`scripts/public-surface.expected.json`) also has no entry for them. A mobile-host consumer calling `rerollSpentDice` at the package root gets `undefined`.
-  - evidence: `src/Combat/index.ts:251-255`; `src/index.ts:104-128`; `scripts/public-surface.expected.json` (0 hits for any of the three names)
-  - suggested_fix: Add `rerollSpentDice`, `hasRerollableDice`, `dieIsRerollable` to the export block in `src/Combat/index.ts` (alongside the existing `combat.dice` exports at line 251-255); re-export from `src/index.ts` in the Spec 25 block (line 104-128); run `node scripts/snapshot-public-surface.mjs --write` to refresh the fixture; verify `npm run deploy:check` green.
-  - source: critique
+- [x] **[HIGH] api — Combat barrel missing 3 PR #190 dice-reroll exports** — resolved at `ba19c41` (iterate, 2026-06-24). Added `dieIsRerollable`, `hasRerollableDice`, `rerollSpentDice` to the `combat.dice` export block in `src/Combat/index.ts` and re-exported from `src/index.ts` Spec 25 block. Also updated the stale two-Pressure-Track comment in `src/index.ts:101-104` to the HP-only model (critique-86 LOW-2 fix bundled — same line). Refreshed `scripts/public-surface.expected.json` (576→584 values / 393→395 types); `npm run deploy:check` green. 146 test files / 2025 passing. Score 8 × 9 / 10 = 7.2. Source: critique-86 (commit 1c08b46).
 
-- [ ] **[LOW] structure — `src/index.ts` line 102 comment cites removed Pressure Tracks**
-  - pass: critique-86 (commit 1c08b46)
-  - area: structure
-  - observation: The comment block above the Spec 25 exports (`src/index.ts:102-103`) says "status effects fill two Pressure Tracks that are the only practical win conditions. Ships alongside the legacy resolver." The Pressure Track model was removed at `cb67ad3` (2026-06-22); HP is now the sole win condition. Every other front-door file (CLAUDE.md, VISION.md, bearings.md, docs/combat.md) reflects the HP-only model. This comment is the only surviving reference to the old two-track framing in production code.
-  - evidence: `src/index.ts:102-103`
-  - suggested_fix: Replace the comment to say HP is the sole win condition and status effects erode HP far faster than the basic strike (matching the CLAUDE.md doctrine phrasing). Two-line comment-only edit.
-  - source: critique
+- [x] **[LOW] structure — `src/index.ts` line 102 comment cites removed Pressure Tracks** — resolved at `ba19c41` (iterate, 2026-06-24, bundled with HIGH fix). Updated the Spec 25 comment block to "HP is the sole win condition. Status effects erode HP far faster than the deliberately weak basic strike. Ships alongside the legacy resolver (dev-only)." — matches CLAUDE.md/VISION.md doctrine. Score 3 × 9 / 10 = 2.7. Source: critique-86 (commit 1c08b46).
 
 - [ ] **[LOW] structure — `combat.deck-presets.test.ts` tests public API from module-root, not `e2e/`**
   - pass: critique-86 (commit 1c08b46)
