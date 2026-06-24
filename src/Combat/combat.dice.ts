@@ -98,6 +98,49 @@ export function dieHasStance(color: CombatDieColor): boolean {
 }
 
 /**
+ * A die Press Fate (the `reroll` signature) re-rolls: one you have USED this turn
+ * (`spent`/`exhausted`) or a dead `x` face that can't power anything. A still-
+ * usable die — an `available` colored/wild die — is LEFT ALONE.
+ */
+export function dieIsRerollable(die: CombatManaDie): boolean {
+    return die.state === 'spent' || die.state === 'exhausted' || die.color === 'x';
+}
+
+/** True when at least one die in the pool would actually be re-rolled. */
+export function hasRerollableDice(dice: readonly CombatManaDie[]): boolean {
+    return dice.some(dieIsRerollable);
+}
+
+/**
+ * Spec 26b §4 — Press Fate PARTIAL re-roll. Bends fate on the bad dice only:
+ * re-rolls each die you've used (`spent`/`exhausted`) or that shows a dead `x`
+ * face, and leaves every still-usable die untouched. Re-rolled dice get a fresh
+ * color and reset state (X → `locked`, else `available`) while KEEPING their id
+ * (so the UI animates the same die object). Like `rollTurnDice`, guarantees at
+ * least one stance-bearing die across the resulting pool — converting one of the
+ * re-rolled dice (never a preserved one) when none qualifies.
+ */
+export function rerollSpentDice(
+    dice: readonly CombatManaDie[],
+    rng: () => number = defaultRng,
+): { dice: CombatManaDie[]; rerolledIds: string[] } {
+    const rerolledIds: string[] = [];
+    const next = dice.map(d => {
+        if (!dieIsRerollable(d)) return d;
+        rerolledIds.push(d.id);
+        const color = rollCombatDieColor(rng);
+        return { ...d, color, state: color === 'x' ? ('locked' as const) : ('available' as const) };
+    });
+    if (rerolledIds.length > 0 && !next.some(d => dieHasStance(d.color))) {
+        const lastId = rerolledIds[rerolledIds.length - 1];
+        const idx = next.findIndex(d => d.id === lastId);
+        const color = STANCE_FACES[Math.min(2, Math.floor(rng() * 3))];
+        next[idx] = { ...next[idx], color, state: 'available' };
+    }
+    return { dice: next, rerolledIds };
+}
+
+/**
  * True if `die` can power a card of `cardColor`: a matching-color die, or the
  * WILD die (powers any color). X is never usable (unless an x-die-interaction
  * card has flipped it to `available`, in which case it acts wild). Mirrors the

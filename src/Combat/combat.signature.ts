@@ -20,7 +20,7 @@ import type { Character } from '../Character/types';
 import type { Enemy } from '../Enemy/types';
 import { applyDamage, heal } from './health';
 import { drawCombatCards } from './combat.deck';
-import { rollTurnDice, TURN_DICE_COUNT } from './combat.dice';
+import { rerollSpentDice } from './combat.dice';
 import { recordAttribution } from './combat.attribution';
 import { effectImpact } from './combat.cards';
 import type {
@@ -36,7 +36,7 @@ export const SIGNATURE_SKILLS: Record<SignatureSkillId, SignatureSkill> = {
     },
     'sig-press-the-point': {
         id: 'sig-press-the-point', name: 'Press Fate', kind: 'reroll', cost: 4, magnitude: 0,
-        description: 'Bend fate — re-roll this turn\'s dice for a fresh draft.',
+        description: 'Bend fate — re-roll only your spent and blocked (X) dice; keep the ones still in play.',
     },
     'sig-second-wind': {
         id: 'sig-second-wind', name: 'Second Wind', kind: 'sustain', cost: 4, magnitude: 2,
@@ -132,11 +132,19 @@ export function applySignatureSkill(
             break;
         }
         case 'reroll': {
-            // Press Fate — bend fate: re-roll THIS turn's dice for a fresh draft
-            // (both dice), clearing the current draft. The engine wrapper spends
-            // the Conviction; this is a pure re-roll.
-            const dice = rollTurnDice(state.turn, TURN_DICE_COUNT, rng);
-            next = { ...state, dice, draftedDieId: null, lastRead: 'none' };
+            // Press Fate — bend fate on the BAD dice only: re-roll the dice you've
+            // USED (spent/exhausted) or that show a dead X face, and KEEP every
+            // still-usable die. The engine wrapper spends the Conviction; this is a
+            // pure partial re-roll.
+            const { dice, rerolledIds } = rerollSpentDice(state.dice, rng);
+            // The draft survives unless its die was one of the re-rolled (used/X)
+            // dice — in which case the read is gone and the player can re-draft.
+            const draftRerolled = state.draftedDieId !== null && rerolledIds.includes(state.draftedDieId);
+            next = {
+                ...state, dice,
+                draftedDieId: draftRerolled ? null : state.draftedDieId,
+                lastRead: draftRerolled ? 'none' : state.lastRead,
+            };
             events.push({ kind: 'turn-dice-rolled', turn: state.turn, dice });
             break;
         }

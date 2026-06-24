@@ -334,6 +334,53 @@ describe('Spec 26b §4 — Signature Skills (Conviction-funded)', () => {
         expect(r.state.conviction).toBe(1);
         expect(r.events.some(e => e.kind === 'effect-fizzled')).toBe(true);
     });
+
+    it('Press Fate re-rolls ONLY spent dice and keeps a still-usable die', () => {
+        mockSequentialRng(0.5); // re-rolled face → floor(0.5*6)=3 → wild
+        let state = initializeCombatEncounter(makePlayer([DOT_BODY]), makeEnemy(60, 'mind'), [DOT_BODY], 2);
+        state = rollEncounterDice(state).state;
+        // A usable heart die (KEEP) + a spent body die (RE-ROLL).
+        state = { ...state, conviction: 6, dice: [
+            { id: 't1-d0', color: 'heart', state: 'available', temporary: false },
+            { id: 't1-d1', color: 'body', state: 'spent', temporary: false },
+        ] };
+        const r = playSignatureSkill(state, 'sig-press-the-point'); // cost 4
+        expect(r.state.conviction).toBe(2); // ◆ spent — work happened
+        // The usable die is untouched (same color + still available).
+        expect(r.state.dice.find(d => d.id === 't1-d0')).toEqual(
+            { id: 't1-d0', color: 'heart', state: 'available', temporary: false });
+        // The spent die was re-rolled back into play (no longer spent).
+        const rerolled = r.state.dice.find(d => d.id === 't1-d1')!;
+        expect(rerolled.state).not.toBe('spent');
+    });
+
+    it('Press Fate re-rolls a dead X die', () => {
+        mockSequentialRng(0.1); // re-rolled face → floor(0.1*6)=0 → heart
+        let state = initializeCombatEncounter(makePlayer([DOT_BODY]), makeEnemy(60, 'mind'), [DOT_BODY], 2);
+        state = rollEncounterDice(state).state;
+        state = { ...state, conviction: 6, dice: [
+            { id: 't1-d0', color: 'heart', state: 'available', temporary: false },
+            { id: 't1-d1', color: 'x', state: 'locked', temporary: false },
+        ] };
+        const r = playSignatureSkill(state, 'sig-press-the-point');
+        const x = r.state.dice.find(d => d.id === 't1-d1')!;
+        expect(x.color).not.toBe('x');     // the blocked face is gone
+        expect(x.state).toBe('available'); // and it's now usable
+    });
+
+    it('Press Fate is a no-op (keeps ◆) when every die is still usable', () => {
+        mockSequentialRng(0.5);
+        let state = initializeCombatEncounter(makePlayer([DOT_BODY]), makeEnemy(60, 'mind'), [DOT_BODY], 2);
+        state = rollEncounterDice(state).state;
+        state = { ...state, conviction: 6, dice: [
+            { id: 't1-d0', color: 'heart', state: 'available', temporary: false },
+            { id: 't1-d1', color: 'body', state: 'available', temporary: false },
+        ] };
+        const r = playSignatureSkill(state, 'sig-press-the-point');
+        expect(r.state.conviction).toBe(6); // nothing to re-roll → ◆ not burned
+        expect(r.events.some(e => e.kind === 'effect-fizzled')).toBe(true);
+        expect(r.state.dice).toEqual(state.dice); // pool unchanged
+    });
 });
 
 // ── Tuning pass 2: anti-spam, control, read-loop (Spec 26b §2/§3) ────────────

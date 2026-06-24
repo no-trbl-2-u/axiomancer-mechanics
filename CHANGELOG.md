@@ -10,6 +10,16 @@ Pre-1.0.0 status: minor bumps may carry breaking public-API changes
 map exposes `.` (top-level barrel) and `./node` (Node.js adapter); no
 deep imports are part of the supported surface.
 
+## [Unreleased]
+
+### Added
+
+- **Preset combat decks.** A roster of focused, ready-to-play decks — Erosion (DoT), Saturation (control), Bulwark (utility/defense + Befriend), Onslaught (damage), and Generalist (balanced) — each a curated card list with a single design focus and a built-in GUARD. `COMBAT_DECK_PRESETS`, `COMBAT_DECK_PRESET_ORDER`, `listDeckPresets`, `getDeckPreset`, `buildPresetDeck`; `CombatDeckPreset` / `CombatDeckFocus`. Feed `buildPresetDeck(id)` straight into `initializeCombatEncounter(player, enemy, deck)`.
+
+### Changed
+
+- **Press Fate is now a PARTIAL re-roll.** The `sig-press-the-point` (reroll) Signature re-rolls only the dice you have USED (spent/exhausted) plus any dead `x` faces, and LEAVES every still-usable die in play (previously it re-rolled BOTH dice, discarding good ones). A still-usable drafted die keeps its read; casting it with nothing to re-roll is a no-op that refunds the Conviction. `rerollSpentDice` / `hasRerollableDice` / `dieIsRerollable` (`combat.dice`).
+
 ## [0.32.0] — 2026-06-22
 
 Combat content + cleanup: defense cards, a Gold rare tier, Press Fate, de-token-gated cards, the "pressure" purge, and a starting-map rebalance + narration encounters.

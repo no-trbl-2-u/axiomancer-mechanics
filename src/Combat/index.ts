@@ -255,6 +255,11 @@ export {
 } from './combat.dice';
 export { COMBAT_HAND_SIZE, buildCombatDeck, drawCombatCards, shuffleCombatDeck } from './combat.deck';
 export {
+    COMBAT_DECK_PRESETS, COMBAT_DECK_PRESET_ORDER,
+    listDeckPresets, getDeckPreset, buildPresetDeck,
+} from './combat.deck-presets';
+export type { CombatDeckPreset, CombatDeckFocus } from './combat.deck-presets';
+export {
     toCombatCard, projectDeck, classifyVerbClass, effectImpact,
     cardStanceColor, bottomDamagePreview, isSyntheticCard, SYNTHETIC_CARD_IDS,
     GOLD_CARD_IDS, isGoldCard,
