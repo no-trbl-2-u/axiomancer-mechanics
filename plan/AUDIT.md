@@ -46,9 +46,9 @@
 
 ## Pending
 
-- [ ] **[A — test-coverage gap] `AUTHORED_THREAT_ENEMY_IDS`: zero dedicated tests** — Public barrel export (`src/Combat/combat.threat.ts`, re-exported via `src/Combat/index.ts` and `src/index.ts`) with no direct test assertions. The constant is `Object.freeze(Object.keys(AUTHORED_THREAT_SEQUENCES))` — it should be asserted for length (61 at v0.32.0) and membership (all IDs must be valid enemy slugs in the enemy library). `deriveIntentType` + `getThreatSequence` are exercised in `hazard-pattern-combat.engine.test.ts`; `AUTHORED_THREAT_ENEMY_IDS` itself is never imported in any test file. Score 5 × 9 / 10 = 4.5.
-
 ## Done
+
+- [x] **[A — test-coverage gap] `AUTHORED_THREAT_ENEMY_IDS`: zero dedicated tests** — resolved at `a5725c9` (iterate, 2026-06-24). Added 4 new cases to `hazard-pattern-combat-helpers.engine.test.ts` under a `Spec 25 — AUTHORED_THREAT_ENEMY_IDS` describe block: length is 61; every id follows the `"enemy-<slug>"` naming convention; every slug resolves to a key in `ENEMY_REGISTRY`; the array is frozen. 2041 tests passing; type-check + lint + build green. Score 5 × 9 / 10 = 4.5.
 
 - [x] **[E — docs drift] `docs/combat.md` threat section: stale "62" count + missing `AUTHORED_THREAT_ENEMY_IDS` API row** — resolved at `907d31c` (iterate, 2026-06-24). `combat.threat-sequences.ts` has 61 authored sequences (live: `AUTHORED_THREAT_ENEMY_IDS.length === 61`), but `docs/combat.md:583` said "62 library enemies". Corrected to "61". Also added a missing API table row for `AUTHORED_THREAT_ENEMY_IDS` (the barrel-exported read-only array of authored-threat enemy slugs) — `deriveIntentType` was in the table but its co-exported sibling was absent. Doc-only. Score 3 × 9 / 10 = 2.7.
 
