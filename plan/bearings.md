@@ -104,7 +104,9 @@ Combat:     determineAdvantage, getAttackStat, getDefenseStat, getSaveStat,
             projectCardImpact; tuning READ_DAMAGE_MULT,
             CONVICTION_PER_UNPICKED_DIE, CONVICTION_READ_WIN_BONUS,
             COLOR_MATCH_DAMAGE_BONUS, TURN_DICE_COUNT, rollTurnDice, dieHasStance,
-            deriveIntentType); always-available CONVICTION-funded Signature Skills
+            deriveIntentType); authored threat-sequence read API (getThreatSequence,
+            generateDefaultThreatSequence, AUTHORED_THREAT_ENEMY_IDS — read-only
+            array of 61 enemy slugs with authored threat sequences); always-available CONVICTION-funded Signature Skills
             (playSignatureSkill, getSignatureSkill, SIGNATURE_SKILLS,
             SIGNATURE_SKILL_LIST, SIGNATURE_KITS, signaturesForArchetype,
             playerArchetype); deckbuilder card rewards (COMBAT_REWARD_POOL,
