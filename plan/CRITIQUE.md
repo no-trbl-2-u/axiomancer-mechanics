@@ -62,14 +62,6 @@
 
 ## Pending
 
-- [ ] **[LOW] docs — threat-surface exports absent from front-door contracts**
-  - pass: critique-87 (commit 9b6e037)
-  - area: docs
-  - observation: `AUTHORED_THREAT_ENEMY_IDS`, `getThreatSequence`, `generateDefaultThreatSequence` are in `src/index.ts` and the public-surface fixture (584 values / 395 types) but do not appear in the `spec.md` Contracts table Combat row or `plan/bearings.md` locked-contract group. The Spec 26b doc fold that added `deriveIntentType` to bearings.md did not include the three threat helper exports that shipped alongside it.
-  - evidence: `src/index.ts:114-115` (barrel); `spec.md` line 93 (Combat contracts row — `deriveIntentType` present, others absent); `plan/bearings.md` lines 99-121 (Spec 26b annotation — `deriveIntentType` present, others absent); `docs/combat.md:578` correctly documents `AUTHORED_THREAT_ENEMY_IDS` in the API table but that page is a submodule doc, not a front-door contract reference.
-  - suggested_fix: Add `AUTHORED_THREAT_ENEMY_IDS` / `getThreatSequence` / `generateDefaultThreatSequence` to the spec.md Contracts Combat row (after `deriveIntentType` in the Spec 26b clause) and to the bearings.md Spec 26/26b annotation block.
-  - source: critique
-
 - [ ] **[LOW] structure — Combat sub-barrel over-exposes internal cross-module helpers**
   - pass: critique-87 (commit 9b6e037)
   - area: structure
@@ -95,6 +87,8 @@
 ---
 
 ## Done
+
+- [x] **[LOW] docs — threat-surface exports absent from front-door contracts** — resolved at `efb0d54` (iterate, 2026-06-24, bundled with AUDIT E fix). Added `getThreatSequence`, `generateDefaultThreatSequence`, `AUTHORED_THREAT_ENEMY_IDS` to the spec.md Contracts Combat row (alongside `deriveIntentType` and `CombatIntentType`); added the three threat-sequence exports to the bearings.md Spec 26/26b annotation block. Doc-only; type-check + lint green. Score 2 × 9 / 10 = 1.8. Source: critique-87 (commit 9b6e037).
 
 - [x] **[LOW] docs — hazard-pattern-combat.engine.test.ts: "DoT Erosion" in test comment/suite name** — resolved at `65a2812` (iterate, 2026-06-24). Renamed line 13 header comment from "victory via DoT Erosion using only skill cards" to "victory by HP depletion via status play (skill cards only)"; updated line 531 section banner and line 533 `describe` label to match ("Spec 25 §11 — victory by HP depletion via status play, skill cards only"). Test logic was always correct (asserts HP→0 via status-effect skill cards); only the label was stale. 146 test files / 2025 passing + type-check + lint + build green. Score 3 × 9 / 10 = 2.7. Source: critique-85 (commit 6b03a25).
 

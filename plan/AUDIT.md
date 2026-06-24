@@ -46,9 +46,9 @@
 
 ## Pending
 
-- [ ] **[E — docs drift] `spec.md` Combat Contracts row missing `deriveIntentType`, `CombatIntentType`, `AUTHORED_THREAT_ENEMY_IDS`** — all three are public barrel exports in `src/index.ts` (confirmed: `grep` finds them). `deriveIntentType` is listed in `bearings.md` (line 107) under the Spec 26/26b depth-layer annotation. `CombatIntentType` is in `bearings.md` (line 112) and `docs/combat.md`. `AUTHORED_THREAT_ENEMY_IDS` is in `docs/combat.md` (API table) and `src/index.ts`, but not in `bearings.md` nor `spec.md`. None of the three are present in `spec.md` line 93 Combat Contracts row — the last update to that row added the PR #190 entries but did not sweep the Spec 26/26b depth-layer constants+types for completeness. Score 3 × 9 / 10 = 2.7.
-
 ## Done
+
+- [x] **[E — docs drift] `spec.md` Combat Contracts row missing `deriveIntentType`, `CombatIntentType`, `AUTHORED_THREAT_ENEMY_IDS`** — resolved at `efb0d54` (iterate, 2026-06-24). Added `deriveIntentType`, `CombatIntentType`, `getThreatSequence`, `generateDefaultThreatSequence`, `AUTHORED_THREAT_ENEMY_IDS` to the spec.md Contracts Combat row. Also added the three threat-sequence exports to the bearings.md Spec 26/26b annotation block (bundled CRITIQUE LOW-1 fix of same shape). Doc-only; type-check + lint green. Score 3 × 9 / 10 = 2.7.
 
 - [x] **[H — plan drift] `divergences.md` DIV-MECH-001 still marked `Status: open`** — resolved at `1f82779` (iterate, 2026-06-24). Phase 165 (`feat(cli): Phase 165 — agentic Hazard-style combat CLI`, commit `3ed4755`) shipped `src/CLI/combat.cli.ts`, resolving DIV-MECH-001. Updated DIV-MECH-001 status to "resolved" with commit hash + confirmation. Also updated DIV-MECH-005 block-lifted note and follow-up candidate. Plan-file only; no source change. Score 3 × 10 / 10 = 3.0.
 
