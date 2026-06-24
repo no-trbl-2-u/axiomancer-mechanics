@@ -238,7 +238,7 @@ export type {
 export {
     initializeCombatEncounter, rollEncounterDice, playCombatCard,
     resolveCombatPhase, resolveThreatPhase, processBetweenPhases,
-    selectMercyChoice as selectEncounterMercyChoice, resolveCardDieCost, stanceBeats, getCard,
+    selectMercyChoice as selectEncounterMercyChoice, resolveCardDieCost, getCard,
     handCards, cardDieCostPreview, availableDice, buildCombatSummary,
     // Spec 26b — turn lifecycle + read + Conviction + Signature Skills
     startTurn, draftStanceDie, endTurn, resolveRead, chooseDraft, discardCombatCard,
