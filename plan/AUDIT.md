@@ -46,6 +46,8 @@
 
 ## Pending
 
+- [x] **[E — docs drift] `docs/combat.md` threat section: stale "62" count + missing `AUTHORED_THREAT_ENEMY_IDS` API row** — resolved (this commit). `combat.threat-sequences.ts` has 61 authored sequences (live: `AUTHORED_THREAT_ENEMY_IDS.length === 61`), but `docs/combat.md:583` said "62 library enemies". Corrected to "61". Also added a missing API table row for `AUTHORED_THREAT_ENEMY_IDS` (the barrel-exported read-only array of authored-threat enemy slugs) — `deriveIntentType` was in the table but its co-exported sibling was absent. Doc-only. Score 3 × 9 / 10 = 2.7.
+
 ## Done
 
 - [x] **[A — test-coverage gap] dieIsRerollable / hasRerollableDice / rerollSpentDice: zero dedicated e2e tests** — resolved at `35013a6` (iterate, 2026-06-24). All three are public barrel exports (since PR #190 / ba19c41) with no direct contract tests — exercised only indirectly via `playSignatureSkill('sig-press-the-point')`. Added three describe blocks (Spec 26b §4) to `hazard-pattern-combat-helpers.engine.test.ts` covering: `dieIsRerollable` (spent/exhausted/x → rerollable; available non-x → not); `hasRerollableDice` (false for all-available pool, true with any spent or x die, false for empty pool); `rerollSpentDice` (only targets rerollable dice; ids preserved through re-roll; x result stays locked; stance/wild result becomes available; at-least-one-stance guard fires when all re-rolled would be x; no-op when nothing rerollable). 2037 tests passing; type-check + lint + build + deploy:check green. Score 6 × 8 / 10 = 4.8.

@@ -575,12 +575,13 @@ progression levers, keeping status effects the win path.
 | `unlockSkillViaDilemma` / `STARTING_SKILL_ID` | Forward hook for ethical-dilemma skill unlocks; the new-player starting card. |
 | `READ_DAMAGE_MULT`, `CONVICTION_PER_UNPICKED_DIE`, `CONVICTION_READ_WIN_BONUS`, `COLOR_MATCH_DAMAGE_BONUS`, `TURN_DICE_COUNT` | Tuning constants for the read / Conviction / draft economy. (`READ_PRESSURE_MULT` / `COLOR_MATCH_PRESSURE_BONUS` were renamed 2026-06-22 on HP-model landing.) |
 | `rollTurnDice` / `dieHasStance` / `deriveIntentType` | Draft-pool roll + stance helpers. |
+| `AUTHORED_THREAT_ENEMY_IDS` | Read-only array of every enemy slug that has a deterministic authored threat sequence (i.e. keys of `combat.threat-sequences.ts`). Length = 61 at `v0.32.0`. |
 | `rerollSpentDice(state, rng?)` / `hasRerollableDice(state)` / `dieIsRerollable(die)` | PR #190 — partial Press Fate re-roll: re-rolls only spent/exhausted + dead `x`-face dice, leaving usable dice in play. A no-op (refunds Conviction) when nothing is rerollable. |
 | `COMBAT_DECK_PRESETS` / `COMBAT_DECK_PRESET_ORDER` / `listDeckPresets()` / `getDeckPreset(id)` / `buildPresetDeck(id)` | PR #190 — five named preset decks (Erosion, Saturation, Bulwark, Onslaught, Generalist), each with a single design focus. `buildPresetDeck` appends the synthetic Retreat baseline and is ready to feed `initializeCombatEncounter`. |
 | `CombatIntentType`, `CombatReadResult`, `SignatureSkill`, `SignatureSkillId`, `SignatureSkillKind`, `PlayerArchetype` | The depth-layer type family. |
 
 The whole roster is now authored for this system: `combat.threat-sequences.ts`
-ships a deterministic, fully-telegraphed threat pattern for all 62 library
+ships a deterministic, fully-telegraphed threat pattern for all 61 library
 enemies (each phase declares a hidden stance, a damage weight, and optional
 threat debuffs). `combat.threat.ts` scales threat damage by level + difficulty
 (`DIFFICULTY_MULT`), and status DoT erodes the enemy's sole HP bar far faster
