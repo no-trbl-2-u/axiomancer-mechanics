@@ -250,8 +250,8 @@ export {
 export {
     COMBAT_DICE_COUNT, TURN_DICE_COUNT, COMBAT_DIE_FACES, rollCombatDice, rollTurnDice,
     rollCombatDieColor, dieHasStance,
-    combatDieCanPower, availableDiceFor, availableDieCount, refreshOneDie,
-    stanceToDieColor, dieIsRerollable, hasRerollableDice, rerollSpentDice,
+    combatDieCanPower, refreshOneDie,
+    dieIsRerollable, hasRerollableDice, rerollSpentDice,
 } from './combat.dice';
 export { COMBAT_HAND_SIZE, buildCombatDeck, drawCombatCards, shuffleCombatDeck } from './combat.deck';
 export {
@@ -260,8 +260,8 @@ export {
 } from './combat.deck-presets';
 export type { CombatDeckPreset, CombatDeckFocus } from './combat.deck-presets';
 export {
-    toCombatCard, projectDeck, classifyVerbClass, effectImpact,
-    cardStanceColor, bottomDamagePreview, isSyntheticCard, SYNTHETIC_CARD_IDS,
+    toCombatCard, projectDeck, classifyVerbClass,
+    bottomDamagePreview, isSyntheticCard, SYNTHETIC_CARD_IDS,
     GOLD_CARD_IDS, isGoldCard,
 } from './combat.cards';
 export {
