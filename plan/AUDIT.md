@@ -48,6 +48,8 @@
 
 ## Done
 
+- [x] **[Z — critique-86 LOW] structure — combat.deck-presets.test.ts off hermetic e2e convention** — resolved at `35cd2bc` (iterate, 2026-06-24). Relocated `src/Combat/combat.deck-presets.test.ts` → `src/Combat/e2e/deck-presets.engine.test.ts` (git rename, 88% similarity); updated relative imports for e2e/ depth (../prefix). 146 test files / 2025 passing; type-check + lint + build green. Score 2 × 9 / 10 = 1.8. Source: critique-86 (commit 1c08b46). CRITIQUE.md LOW moved to Done.
+
 - [x] **[Z — critique-85 LOW] docs — docs/cli.md missing combat-sim.cli.ts section** — resolved at `c147ecf` (iterate, 2026-06-24). Added a `combat-sim.cli.ts` subsection documenting `npm run combat-sim`, all five flags, usage examples, and the Monte-Carlo balance-witness purpose. Doc-only; type-check + lint + build + deploy:check green. Score 3 × 9 / 10 = 2.7. Source: critique-85 (commit 6b03a25). CRITIQUE.md LOW moved to Done.
 
 - [x] **[E — docs drift] PR #190 dice helpers + preset deck absent from front-door docs** — resolved at `887e023` (iterate, 2026-06-24). `rerollSpentDice`/`hasRerollableDice`/`dieIsRerollable` (Press Fate partial re-roll) and `COMBAT_DECK_PRESETS`/`COMBAT_DECK_PRESET_ORDER`/`listDeckPresets`/`getDeckPreset`/`buildPresetDeck` (preset deck system) shipped at `3337d32` (2026-06-23) with zero front-door doc coverage. Added: a PR #190 annotation to the `spec.md` Contracts Combat row; a `(+ PR #190 …)` block to the `bearings.md` Combat group; two new rows in `docs/combat.md` §Spec 26/26b API table (one for the re-roll helpers, one for the preset deck surface). Doc-only; type-check + lint + build + deploy:check green. Score 4 × 9 / 10 = 3.6.

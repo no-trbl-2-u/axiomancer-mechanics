@@ -65,13 +65,7 @@
 
 - [x] **[LOW] structure — `src/index.ts` line 102 comment cites removed Pressure Tracks** — resolved at `ba19c41` (iterate, 2026-06-24, bundled with HIGH fix). Updated the Spec 25 comment block to "HP is the sole win condition. Status effects erode HP far faster than the deliberately weak basic strike. Ships alongside the legacy resolver (dev-only)." — matches CLAUDE.md/VISION.md doctrine. Score 3 × 9 / 10 = 2.7. Source: critique-86 (commit 1c08b46).
 
-- [ ] **[LOW] structure — `combat.deck-presets.test.ts` tests public API from module-root, not `e2e/`**
-  - pass: critique-86 (commit 1c08b46)
-  - area: structure
-  - observation: `src/Combat/combat.deck-presets.test.ts` tests `buildPresetDeck`, `getDeckPreset`, `listDeckPresets`, `COMBAT_DECK_PRESETS`, `COMBAT_DECK_PRESET_ORDER` — all public barrel exports — from a module-root position rather than `src/Combat/e2e/deck-presets.engine.test.ts`. This is the same convention drift as the critique-77 LOW for `computeEquipDelta` (fixed at `b2488a3`). The bearings state: "Hermetic e2e tests: located at `src/<Module>/e2e/<feature>.engine.test.ts`. Every module with public engine logic ships one." The 12 remaining module-root `*.test.ts` files are all explicitly internal-helper unit tests; `combat.deck-presets` exports are in the public barrel and their only test is off-convention.
-  - evidence: `src/Combat/combat.deck-presets.test.ts` (module-root); `src/Combat/e2e/` (no deck-presets entry); `plan/bearings.md` hermetic-e2e paragraph
-  - suggested_fix: Relocate `src/Combat/combat.deck-presets.test.ts` → `src/Combat/e2e/deck-presets.engine.test.ts` (git rename, update relative imports for the e2e/ depth); same pattern as the `b2488a3` equip-delta relocation.
-  - source: critique
+- [x] **[LOW] structure — `combat.deck-presets.test.ts` tests public API from module-root, not `e2e/`** — resolved at `35cd2bc` (iterate, 2026-06-24). Relocated `src/Combat/combat.deck-presets.test.ts` → `src/Combat/e2e/deck-presets.engine.test.ts` (git rename, 88% similarity); updated relative imports for e2e/ depth. 146 test files / 2025 passing; type-check + lint + build green. Score 2 × 9 / 10 = 1.8. Source: critique-86 (commit 1c08b46).
 
 ---
 
