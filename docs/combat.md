@@ -518,6 +518,7 @@ The engine lives in `src/Combat/`:
 |-----------------|-------------|
 | `initializeCombatEncounter(...)` | Builds the `CombatEncounterState` for a fight (deck, dice, threat sequence). |
 | `rollEncounterDice(state)` | Rolls the colored mana dice at phase start. |
+| `resolveCardDieCost(cardColor, enemyPhaseStance)` | Returns the `CardDieCost` for playing a card: `{ cost, advantage }`. Advantage if card stance beats the enemy phase stance (RPS), disadvantage if beaten, neutral otherwise. Wild/X dice always cost 1. |
 | `playCombatCard(state, cardId, dice)` | Plays one skill card, spending dice; lands its effects and deals HP damage via status/strike. |
 | `resolveCombatPhase(state, cardsPlayed)` | Resolves a full player phase (card-play driven; replaces the per-round attack/defend resolution). |
 | `resolveThreatPhase(state)` | Resolves the enemy threat phase (Clear / Overwhelmed ledger). |

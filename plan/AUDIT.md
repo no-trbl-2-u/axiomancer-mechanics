@@ -54,6 +54,8 @@
 
 ## Done
 
+- [x] **[E — docs drift] `docs/combat.md` Spec 25 API table missing `resolveCardDieCost`** — resolved at `PENDING` (iterate, 2026-06-24). `resolveCardDieCost(cardColor, enemyPhaseStance)` is a public root barrel export (in `scripts/public-surface.expected.json`) — the RPS die-cost helper returning `{ cost, advantage }` for a card stance vs. enemy phase stance — but had no row in `docs/combat.md` §Hazard-Pattern Combat API table. Added a row between `rollEncounterDice` and `playCombatCard`. Doc-only; type-check + lint + build green. Score 3 × 9 / 10 = 2.7.
+
 - [x] **[Z — critique-87 LOW] structure — Combat sub-barrel over-exposes 5 internal cross-module helpers** — resolved at `2027028` (iterate, 2026-06-24). Removed `availableDiceFor`, `availableDieCount`, `stanceToDieColor` from the `combat.dice` export line and `effectImpact`, `cardStanceColor` from the `combat.cards` export line in `src/Combat/index.ts`. All 5 had zero external consumers (grep confirmed only defining files + sub-barrel); none reach `src/index.ts` or the public-surface fixture. 146 test files / 2041 tests + type-check + lint + build green. Score 3 × 8 / 10 = 2.4. Source: critique-87 (commit 9b6e037).
 
 - [x] **[E — docs drift] `spec.md` Combat Contracts row missing `deriveIntentType`, `CombatIntentType`, `AUTHORED_THREAT_ENEMY_IDS`** — resolved at `efb0d54` (iterate, 2026-06-24). Added `deriveIntentType`, `CombatIntentType`, `getThreatSequence`, `generateDefaultThreatSequence`, `AUTHORED_THREAT_ENEMY_IDS` to the spec.md Contracts Combat row. Also added the three threat-sequence exports to the bearings.md Spec 26/26b annotation block (bundled CRITIQUE LOW-1 fix of same shape). Doc-only; type-check + lint green. Score 3 × 9 / 10 = 2.7.
@@ -104,6 +106,10 @@
 - [x] **[E — docs drift] Front-door docs referenced removed `getResistStat`** — resolved at `45b611e` (2026-06-18). `getResistStat` was removed at Phase 106 (v0.13.0) but `README.md:84` still listed it as a `_(deprecated)_` Combat stat accessor and `docs/api.md:56` called it "deprecated (use `getSaveStat`)". Dropped the README accessor entry and corrected api.md to "removed at v0.13.0 (use `getSaveStat`)". No source change (symbol already gone); verify green. Score 5 × 9 / 10 = 4.5.
 
 ## Audit Pass Log
+
+### 2026-06-24 (Pass 112) — Z–H walk (march→iterate dispatch)
+
+Z: CRITIQUE.md Pending all `[x]` (fully drained — critique-87 LOWs resolved). A: all modules have `e2e/*.engine.test.ts`; `vi.spyOn(Math,'random')` clean outside test-utils; 146 test files / 2041 passing. B: Specs 26-30 blank `> Your answer:` are stale (Pressure-Track model removed; await `/oversight`); Knowledge-Gaps Q28 deferred (endgame). C: zero `@ts-ignore`/`as any` in non-test src; lint exits 0. D: no dead code. E: **[top finding]** `resolveCardDieCost` public root barrel export (in public-surface fixture) had no row in `docs/combat.md` §Hazard-Pattern Combat API table — doc gap, score 2.7. F: lint green. G: `@types/node` 25→26 major (skip per policy). H: working tree clean. Top finding: [E] `resolveCardDieCost` absent from `docs/combat.md` (score 3 × 9 / 10 = 2.7). Shipped (this commit). Next queue: none — only `[needs-user-call — DIV-MECH-005]` outstanding (awaiting T decision).
 
 ### 2026-06-23 (Pass 111) — Z–H walk (march→iterate dispatch)
 
