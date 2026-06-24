@@ -60,16 +60,11 @@
 
 ## Pending
 
-### [LOW] docs — hazard-pattern-combat.engine.test.ts: "DoT Erosion" in test comment/suite name
-- pass: critique-85 (commit 6b03a25)
-- area: docs
-- observation: `src/Combat/e2e/hazard-pattern-combat.engine.test.ts:13` (file header comment) and `:486` (`describe` block) still name the full-victory test scenario "victory via DoT Erosion using only skill cards" / "Spec 25 §11 — victory via DoT Erosion, skill cards only". The actual test asserts HP drops to 0 via status-effect skill cards (correct for the HP-only model); the label is stale terminology from the removed two-pressure-track model. Flagged in `divergences.md` DIV-MECH-006 but the specs/25 SUPERSEDED caveat fix (`f35ee34`) did not update the test label.
-- evidence: `src/Combat/e2e/hazard-pattern-combat.engine.test.ts:13,484,486`.
-- suggested_fix: Rename to "victory by HP depletion via status play" (or similar) in the header comment (line 13), the block comment (line 484), and the `describe` label (line 486) to match the HP-only model framing.
-
 ---
 
 ## Done
+
+- [x] **[LOW] docs — hazard-pattern-combat.engine.test.ts: "DoT Erosion" in test comment/suite name** — resolved at `65a2812` (iterate, 2026-06-24). Renamed line 13 header comment from "victory via DoT Erosion using only skill cards" to "victory by HP depletion via status play (skill cards only)"; updated line 531 section banner and line 533 `describe` label to match ("Spec 25 §11 — victory by HP depletion via status play, skill cards only"). Test logic was always correct (asserts HP→0 via status-effect skill cards); only the label was stale. 146 test files / 2025 passing + type-check + lint + build green. Score 3 × 9 / 10 = 2.7. Source: critique-85 (commit 6b03a25).
 
 - [x] **[LOW] docs — docs/cli.md: combat-sim.cli.ts / `npm run combat-sim` undocumented** — resolved at `c147ecf` (iterate, 2026-06-24). Added a `combat-sim.cli.ts` subsection to `docs/cli.md` Components documenting `npm run combat-sim`, all five flags (`--blind`, `--enemy`, `--loadout`, `--runs`, `--seed`), usage examples, and the Monte-Carlo balance-witness purpose. Placed between `combat.cli.ts` and `hazard.cli.ts`. Doc-only; 146 test files / 2025 passing + type-check + lint + build + deploy:check green. Score 3 × 9 / 10 = 2.7. Source: critique-85 (commit 6b03a25).
 
