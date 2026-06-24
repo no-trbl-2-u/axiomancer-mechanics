@@ -16,7 +16,7 @@ Commit: f6b5bb3
 ### DIV-MECH-001 — Game CLI combat tab drives legacy `resolveCombatRound`, not Hazard-Pattern Combat
 - Severity: High
 - Owner: mechanics
-- Status: open
+- Status: **resolved** — Phase 165 shipped `src/CLI/combat.cli.ts` (`feat(cli): Phase 165 — agentic Hazard-style combat CLI`, commit `3ed4755`, 2026-06-23). The new CLI drives `initializeCombatEncounter` / `playCombatCard` / `resolveCombatPhase` / `processBetweenPhases` from the Hazard-Pattern Combat engine; reachable via `npm run combat` (also `npm run game -- combat`). The legacy Combat tab in `game.cli.ts` remains as a dev-only option. Confirmed: `src/CLI/combat.cli.ts` exists; `npm run combat` alias in `package.json`.
 - Evidence:
   - `src/CLI/game.cli.ts:7-15` (header comment): "Combat — drives `resolveCombatRound` against the active encounter."
   - `src/CLI/game.cli.ts` (import line ~52): `import { isCombatOngoing, determineEnemyAction, resolveCombatRound, ... } from '../Combat';`
@@ -83,7 +83,7 @@ Commit: f6b5bb3
 ### DIV-MECH-005 — First-level CLI walkthrough uses legacy `resolveCombatRound` for encounter combat
 - Severity: Medium
 - Owner: mechanics
-- Status: open
+- Status: open — **DIV-MECH-001 block lifted** (Phase 165 shipped 2026-06-23; see above). The fishing-village walkthrough can now be updated to enter Hazard-Pattern Combat. No dedicated phase filed yet; candidate for next `/oversight` or `/expand` pass.
 - Evidence:
   - `automation/scripts/walkthroughs/fishing-village-exploration.json` and `.goal.md`: walkthrough drives the Map tab to fv-15, triggers an encounter (MournfulGull), then issues 2-3 `defend` round actions via the legacy Combat tab.
   - `automation/scripts/walkthroughs/fishing-village-exploration.goal.md:16-18`: "The combat that fires at fv-15 is **not** graded on outcome — the script issues 2-3 defend rounds then quits."
@@ -95,7 +95,7 @@ Commit: f6b5bb3
 - Proposed next action:
   Once DIV-MECH-001 (CLI Hazard harness) ships, update the fishing-village walkthrough to enter the Hazard-Pattern Combat surface. The encounter trigger already fires correctly.
 - Follow-up phase/issue candidate:
-  Blocked by DIV-MECH-001 (Phase 165). File as a follow-up after the CLI harness ships.
+  Phase 165 shipped (DIV-MECH-001 resolved). File a dedicated phase or iterate-tier task to update the fishing-village walkthrough to use `combat.cli.ts` for Hazard-Pattern Combat.
 
 ---
 
