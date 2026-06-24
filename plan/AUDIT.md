@@ -46,6 +46,10 @@
 
 ## Pending
 
+- [ ] **[H — plan drift] `divergences.md` DIV-MECH-001 still marked `Status: open`** — Phase 165 (`feat(cli): Phase 165 — agentic Hazard-style combat CLI`, commit `3ed4755`) shipped `src/CLI/combat.cli.ts`, the Hazard-Pattern Combat interactive CLI harness, resolving the proposed next action in DIV-MECH-001 ("Add a Hazard-Pattern Combat tab … to `game.cli.ts` that calls `initializeCombatEncounter` / `playCombatCard` / `resolveCombatPhase`"). The row is stale. Additionally, DIV-MECH-005 was "blocked by DIV-MECH-001 (Phase 165)" — so its block is now lifted; its own status should note that Phase 165 shipped and the follow-up (update the fishing-village walkthrough) is unblocked. Plan-file only; no source change. Score 3 × 10 / 10 = 3.0.
+
+- [ ] **[E — docs drift] `spec.md` Combat Contracts row missing `deriveIntentType`, `CombatIntentType`, `AUTHORED_THREAT_ENEMY_IDS`** — all three are public barrel exports in `src/index.ts` (confirmed: `grep` finds them). `deriveIntentType` is listed in `bearings.md` (line 107) under the Spec 26/26b depth-layer annotation. `CombatIntentType` is in `bearings.md` (line 112) and `docs/combat.md`. `AUTHORED_THREAT_ENEMY_IDS` is in `docs/combat.md` (API table) and `src/index.ts`, but not in `bearings.md` nor `spec.md`. None of the three are present in `spec.md` line 93 Combat Contracts row — the last update to that row added the PR #190 entries but did not sweep the Spec 26/26b depth-layer constants+types for completeness. Score 3 × 9 / 10 = 2.7.
+
 ## Done
 
 - [x] **[A — test-coverage gap] `AUTHORED_THREAT_ENEMY_IDS`: zero dedicated tests** — resolved at `a5725c9` (iterate, 2026-06-24). Added 4 new cases to `hazard-pattern-combat-helpers.engine.test.ts` under a `Spec 25 — AUTHORED_THREAT_ENEMY_IDS` describe block: length is 61; every id follows the `"enemy-<slug>"` naming convention; every slug resolves to a key in `ENEMY_REGISTRY`; the array is frozen. 2041 tests passing; type-check + lint + build green. Score 5 × 9 / 10 = 4.5.
