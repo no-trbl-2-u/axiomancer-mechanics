@@ -139,7 +139,7 @@ export type CombatReadResult = 'advantage' | 'neutral' | 'disadvantage' | 'none'
 /** What a signature skill does (drives the engine dispatch + the UI icon). */
 export type SignatureSkillKind =
     | 'scout'          // reveal current + next enemy stance
-    | 'reroll'         // re-roll this turn's dice for a fresh draft (Press Fate)
+    | 'reroll'         // re-roll only the SPENT / blocked-X dice, keeping usable ones (Press Fate)
     | 'sustain'        // draw cards + small heal
     | 'control'        // apply a control debuff to the enemy (hinders its turn)
     | 'dot'            // guaranteed DoT application at boosted intensity

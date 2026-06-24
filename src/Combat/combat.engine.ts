@@ -35,6 +35,7 @@ import { processRoundStartEffects, processRoundEndEffects } from './effects';
 import {
     TURN_DICE_COUNT, rollTurnDice, dieHasStance,
     combatDieCanPower, availableDiceFor, spendDice, refreshOneDie, availableDieCount,
+    hasRerollableDice,
 } from './combat.dice';
 import {
     COMBAT_HAND_SIZE, buildCombatDeck, drawCombatCards, shuffleCombatDeck,
@@ -987,6 +988,11 @@ export function playSignatureSkill(
     if (!skill) return { state, events: [] };
     if (state.conviction < skill.cost) {
         const events: CombatEvent[] = [{ kind: 'effect-fizzled', cardId: skill.id, effectId: '', message: `need ${skill.cost} ◆ Conviction (have ${state.conviction})` }];
+        return { state: withLog(state, events), events };
+    }
+    // Press Fate with no used/blocked dice to re-roll is a no-op — don't burn ◆.
+    if (skill.kind === 'reroll' && !hasRerollableDice(state.dice)) {
+        const events: CombatEvent[] = [{ kind: 'effect-fizzled', cardId: skill.id, effectId: '', message: 'no spent or blocked (X) dice to re-roll' }];
         return { state: withLog(state, events), events };
     }
 

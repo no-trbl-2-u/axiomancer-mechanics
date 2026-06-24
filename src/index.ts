@@ -109,6 +109,7 @@ export {
     COMBAT_DICE_COUNT, COMBAT_HAND_SIZE, COMBAT_DIE_FACES,
     rollCombatDice, combatDieCanPower, refreshOneDie,
     toCombatCard, projectDeck, classifyVerbClass, buildCombatDeck,
+    COMBAT_DECK_PRESETS, COMBAT_DECK_PRESET_ORDER, listDeckPresets, getDeckPreset, buildPresetDeck,
     getThreatSequence, generateDefaultThreatSequence,
     AUTHORED_THREAT_ENEMY_IDS,
     simulateHazardPatternCombat,
@@ -135,6 +136,7 @@ export type {
     CombatSimStats, CombatSimPolicyId,
     CombatIntentType, CombatReadResult,
     SignatureSkill, SignatureSkillId, SignatureSkillKind, PlayerArchetype,
+    CombatDeckPreset, CombatDeckFocus,
 } from './Combat';
 
 // ─── Effects ──────────────────────────────────────────────────────────────────
