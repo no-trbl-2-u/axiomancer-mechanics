@@ -6,17 +6,24 @@
  * Wires every public verb on the game store into a tabbed inquirer prompt
  * so the engine can be exercised by hand. Five tabs:
  *
- *   • Map        — list adjacent nodes, dispatch MOVE_TO_NODE, then
- *                  PROCESS_NODE to trigger the node's authored event.
- *   • Combat     — drives `resolveCombatRound` against the active
- *                  encounter. Skipped when no combat is in progress.
- *   • Journal    — read-only: active / completed quests + alignment stub.
- *   • Skills     — read-only: known/unlocked skills.
- *   • Inventory  — read-only listing of carried items.
+ *   • Map             — list adjacent nodes, dispatch MOVE_TO_NODE, then
+ *                       PROCESS_NODE to trigger the node's authored event.
+ *   • Legacy Combat   — drives `resolveCombatRound` (the old Spec 02 stance/
+ *                       action loop) against the active encounter. Named
+ *                       explicitly as LEGACY after Phase 165 — the new
+ *                       Hazard-style combat lives in `npm run combat`.
+ *   • Journal         — read-only: active / completed quests + alignment stub.
+ *   • Skills          — read-only: known/unlocked skills.
+ *   • Inventory       — read-only listing of carried items.
  *
  * Logic stays in the store / reducer. This file only formats and dispatches.
  *
  * Run with: `npm run game` (which invokes `ts-node src/CLI/game.cli.ts`).
+ *
+ * Phase 165 — combat routing:
+ *   `npm run combat`        = new Hazard-style combat (combat.cli.ts)
+ *   `legacy-combat` tab     = old resolveCombatRound stance/action loop
+ *   `npm run combat-sim`    = Monte-Carlo balance witness (not agentic play)
  */
 
 import fs from 'fs';
@@ -52,7 +59,7 @@ import { getConsumableById } from '../Items/consumable.library';
 import { bucketAxis, getAlignmentCell } from '../Philosophy';
 import { CombatEndReport } from '../Game/store';
 
-type Tab = 'map' | 'combat' | 'journal' | 'skills' | 'codex' | 'inventory' | 'character' | 'dev' | 'reset' | 'save' | 'load' | 'quit';
+type Tab = 'map' | 'legacy-combat' | 'journal' | 'skills' | 'codex' | 'inventory' | 'character' | 'dev' | 'reset' | 'save' | 'load' | 'quit';
 
 type GameStoreHandle = ReturnType<typeof createGameStore>;
 
@@ -100,8 +107,8 @@ async function bootstrapStore(adapter: PersistenceAdapter): Promise<GameStoreHan
 
 async function pickTab(canFight: boolean): Promise<Tab> {
     const tabs: Array<{ name: string; value: Tab }> = [
-        { name: 'Map        — travel + resolve node events', value: 'map' },
-        ...(canFight ? [{ name: 'Combat     — resume the active fight', value: 'combat' as Tab }] : []),
+        { name: 'Map             — travel + resolve node events', value: 'map' },
+        ...(canFight ? [{ name: 'Legacy Combat    — resume the active fight (old resolveCombatRound loop)', value: 'legacy-combat' as Tab }] : []),
         { name: 'Journal    — quests + alignment', value: 'journal' },
         { name: 'Skills     — known/unlocked', value: 'skills' },
         { name: 'Codex      — unlocked journal entries from befriended foes (Phase 73)', value: 'codex' },
@@ -170,8 +177,10 @@ async function mapTab(store: GameStoreHandle): Promise<void> {
     if (result.event.kind === 'encounter') {
         // The CLI consumer is responsible for pushing the encounter into
         // combat. Driving combat here lets the player feel the loop close.
+        // Phase 165: map-triggered encounters use the legacy path; the new
+        // Hazard-style combat is reachable standalone via `npm run combat`.
         store.getState().startCombat(result.event.encounter);
-        await combatTab(store);
+        await legacyCombatTab(store);
     }
 
     // Phase 37 — village with a shop opens a buy/sell loop. Logic stays in
@@ -281,7 +290,7 @@ async function shopLoop(store: GameStoreHandle, shop: { wares: ReadonlyArray<{ i
     }
 }
 
-async function chooseCombatAction(
+async function chooseLegacyCombatAction(
     store: GameStoreHandle,
     combat: CombatState,
 ): Promise<CombatAction> {
@@ -354,15 +363,19 @@ async function chooseCombatAction(
     return { stance, action };
 }
 
-async function combatTab(store: GameStoreHandle): Promise<void> {
+async function legacyCombatTab(store: GameStoreHandle): Promise<void> {
     let combat = store.getState().combat;
     if (!combat) {
-        log('No combat in progress — pick the Map tab to trigger an encounter.');
+        log('No legacy combat in progress — pick the Map tab to trigger an encounter.');
+        log('For the new Hazard-style combat, use: npm run combat');
         return;
     }
 
+    log('\n[Legacy Combat] Using the old resolveCombatRound loop.');
+    log('For the new Hazard-style combat engine, use: npm run combat\n');
+
     while (combat && isCombatOngoing(combat)) {
-        const playerAction = await chooseCombatAction(store, combat);
+        const playerAction = await chooseLegacyCombatAction(store, combat);
         const enemyAction = determineEnemyAction(combat.enemy, combat);
         const before = store.getState();
         const { state: next, combatEvents } = resolveCombatRound(
@@ -372,11 +385,8 @@ async function combatTab(store: GameStoreHandle): Promise<void> {
             skillLookup,
         );
         store.getState().updateCombat(next, combatEvents);
-        logState('combatRound', before, store.getState(), {
+        logState('legacyCombatRound', before, store.getState(), {
             playerAction, enemyAction, eventCount: combatEvents.length,
-            // Surface the per-round sub-event stream so the agent-e2e grader
-            // can inspect effect applications, resists, crits, item / skill
-            // outcomes — see the iterate finding drained alongside this commit.
             combatEvents,
         });
         combat = store.getState().combat;
@@ -388,14 +398,13 @@ async function combatTab(store: GameStoreHandle): Promise<void> {
 
     const beforeEnd = store.getState();
     const report: CombatEndReport = store.getState().endCombat();
-    logState('endCombat', beforeEnd, store.getState(), report);
+    logState('legacyEndCombat', beforeEnd, store.getState(), report);
     const outcomeLabel =
         report.outcome === 'friendship' ? 'befriended'
         : report.outcome === 'victory' ? 'victory'
         : report.outcome === 'defeat' ? 'defeat'
         : 'fled';
-    log(`\nCombat ended: ${outcomeLabel}  ·  XP +${report.xpGained}  ·  loot ×${report.loot.length}`);
-    // Friendship grants XP too (Phase 36), so cascade the level-ups if any.
+    log(`\nLegacy Combat ended: ${outcomeLabel}  ·  XP +${report.xpGained}  ·  loot ×${report.loot.length}`);
     if (report.outcome === 'victory' || report.outcome === 'friendship') {
         const beforeLevel = store.getState();
         store.getState().levelUp();
@@ -799,8 +808,8 @@ async function devTab(store: GameStoreHandle): Promise<void> {
             const before = store.getState();
             const r = devSpawnEnemy(store, slug);
             logState('debugSpawn', before, store.getState(), { slug, enemyName: ENEMY_REGISTRY[slug].name });
-            log(`\n${r.detail}. Resolving combat...\n`);
-            await combatTab(store);
+            log(`\n${r.detail}. Resolving combat (legacy path)...\n`);
+            await legacyCombatTab(store);
             break;
         }
         case 'max-out': {
@@ -815,6 +824,22 @@ async function devTab(store: GameStoreHandle): Promise<void> {
 
 async function main(): Promise<void> {
     const rawArgs = process.argv.slice(2);
+
+    // Subcommand: `npm run game -- combat [flags]` (Phase 165) hands off to
+    // the new Hazard-style combat agentic driver. This is the NEW combat path.
+    if (rawArgs[0] === 'combat') {
+        const { runCombatCli } = await import('./combat.cli');
+        await runCombatCli(rawArgs.slice(1));
+        return;
+    }
+
+    // Subcommand: `npm run game -- legacy-combat [flags]` hands off to the
+    // old resolveCombatRound driver (now named explicitly as legacy).
+    if (rawArgs[0] === 'legacy-combat') {
+        const { runLegacyCombatCli } = await import('./combat.cli');
+        await runLegacyCombatCli(rawArgs.slice(1));
+        return;
+    }
 
     // Subcommand: `npm run game -- hazard [flags]` hands off to the standalone
     // hazard mini-game driver, which owns its own flag set.
@@ -890,7 +915,7 @@ async function main(): Promise<void> {
             const tab = await pickTab(store.getState().combat !== null);
             switch (tab) {
                 case 'map':       await mapTab(store);                       break;
-                case 'combat':    await combatTab(store);                    break;
+                case 'legacy-combat': await legacyCombatTab(store);           break;
                 case 'journal':   journalTab(store);                         break;
                 case 'skills':    skillsTab(store);                          break;
                 case 'codex':     codexTab(store);                           break;

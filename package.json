@@ -28,6 +28,8 @@
     "quest-board": "ts-node src/CLI/game.cli.ts quest-board",
     "playtest": "ts-node src/Playtest/cli.ts",
     "tune": "ts-node src/Tuning/cli.ts",
+    "combat": "ts-node src/CLI/game.cli.ts combat",
+    "legacy-combat": "ts-node src/CLI/game.cli.ts legacy-combat",
     "combat-sim": "ts-node src/CLI/combat-sim.cli.ts",
     "agent-e2e": "node automation/agent-e2e.mjs",
     "dev": "echo Please use check 'package.json' or README.md for available commands...\n ",

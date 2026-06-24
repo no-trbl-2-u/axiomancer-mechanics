@@ -35,6 +35,8 @@ and the goal file to the grader for pass/fail.
 | `codex-unlock` | Phase 82 CLI Codex tab + Phase 73 codex-unlock-on-friendship path. Apprentice → fv-11 → fv-14 → fv-15 (MournfulGull guaranteed encounter) → 5 heart-defends to attempt friendship → Codex tab. Grades on either friendship-fires-and-codex-renders OR script-exhausted-with-empty-codex (per Phase 82 D3). | `apprentice` | `mournful-gull` (organic encounter at fv-15) | — | `quit` reason after the Codex tab render; combat may have ended via friendship OR continued past script tail |
 | `synergy-skills-chain` | **Phase 120 ship.** Phase 66 Tier 2 synergy skill (`resonance-burst`) casting with predicate match. Extended Wanderer preset (now includes synergy skills) → debug-spawn Wet Hound → cast `eternal-regress` (applies `debuff_confusion`) → cast `resonance-burst` (synergizes with confusion). Closes the deferred Phase 81 Unit 2 synergy walkthrough coverage. | `wanderer` | `wet-hound` (debug-spawned) | — | `quit` reason or `scriptExhausted`; `synergy-fired` event must appear in the `resonance-burst` cast round |
 
+**Phase 165 — new combat CLI walkthroughs** are hermetic in-process e2e tests (`src/CLI/e2e/combat.cli.engine.test.ts`) rather than agent-e2e JSON walkthroughs, because the new combat CLI's `--auto` mode drives state without scripted answers. Run them with `npm test` or `npx vitest run src/CLI/e2e/combat.cli.engine.test.ts`.
+
 ## Conventions
 
 - **Hermetic.** The harness seeds the RNG; replays are deterministic.

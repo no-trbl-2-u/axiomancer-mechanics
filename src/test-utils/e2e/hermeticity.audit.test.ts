@@ -112,6 +112,7 @@ describe('hermeticity guard: isolation (no disk / network / subprocess)', () => 
         'CLI/e2e/rest.cli.engine.test.ts',
         'CLI/e2e/lootcache.cli.engine.test.ts',
         'CLI/e2e/quest-board.cli.engine.test.ts',
+        'CLI/e2e/combat.cli.engine.test.ts',
         'Game/persistence/node.adapter.test.ts',
         'Tuning/e2e/strategist-health-experiment.engine.test.ts',
         'Tuning/e2e/tuning-improvements.engine.test.ts',

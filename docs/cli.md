@@ -13,7 +13,7 @@ The CLI module provides a complete command-line interface for playing and testin
 The primary CLI driver that provides a tabbed inquirer interface for playing the game. Includes five main tabs:
 
 - **Map** - Navigate between nodes and trigger map events
-- **Combat** - Resolve combat rounds against active encounters  
+- **Legacy Combat** - Resolve combat rounds via the old `resolveCombatRound` stance/action loop (dev-only). The new Hazard-style combat is reached via `npm run combat`.
 - **Journal** - View active/completed quests and philosophical alignment
 - **Skills** - View learned/unlocked skills; combat should show only currently affordable skills
 - **Inventory** - View carried items and equipment
@@ -28,6 +28,64 @@ npm run game
 - Real-time combat resolution
 - Save/load functionality
 - Development cheats and debugging
+
+### `combat.cli.ts` - New Hazard-style Combat CLI (Phase 165)
+
+A standalone driver for the **new Spec 25/26b Hazard-style combat engine**, reachable as a subcommand of the game CLI. Drives the card-and-dice HP-model combat (the primary system — status effects are the efficient path, raw strikes are the weak baseline). Supports interactive TTY play, `--auto` bot policies, and scripted/stdin agentic modes. The **old** `resolveCombatRound` loop is `legacy-combat`.
+
+**Usage:**
+```bash
+npm run game -- combat [flags]
+npm run combat -- [flags]             # convenience alias
+npm run game -- legacy-combat [flags]
+npm run legacy-combat -- [flags]      # old stance/action loop
+```
+
+**Combat routing (Phase 165):**
+
+| Command | Engine |
+| --- | --- |
+| `npm run combat` | New Hazard-style card/dice engine (`combat.cli.ts`) |
+| `npm run legacy-combat` | Old `resolveCombatRound` stance/action loop |
+| `npm run combat-sim` | Monte-Carlo balance witness (not player-facing) |
+
+**New-combat flags:**
+
+| Flag | Effect |
+| --- | --- |
+| `--enemy <slug>` | Enemy from the registry (default `mournful-gull`). |
+| `--preset <id>` | Character preset id (default `apprentice`). |
+| `--seed <n>` | Deterministic RNG seed — same seed → same dice, same outcome. |
+| `--auto` | Run a bot policy without TTY (no prompts). |
+| `--policy naive\|safe\|aggressive\|status` | Bot policy for `--auto` (default `status`). `status` prioritises landing new distinct status effects (DoT/control) for the combo-refresh loop. |
+| `--max-turns <n>` | Stop auto play after N threat phases (default `8`). |
+| `--script <path>` | JSON answer array (shared `io.ts` layer). |
+| `--stdin` | Line-buffered JSONL answers (shared `io.ts` layer). |
+| `--json-events` | Machine-clean event stream on stdout. |
+| `--state-log <path>` | JSONL state mutation log (start / phase / end records). |
+
+**Examples:**
+```bash
+# Deterministic auto run (status-focused bot, reproducible)
+npm run combat -- --auto --policy status --enemy mournful-gull --seed 42 \
+  --max-turns 12 --json-events --state-log /tmp/combat.jsonl
+
+# Interactive TTY play
+npm run combat -- --enemy wet-hound --preset wanderer
+
+# Legacy engine (old stance/action loop)
+npm run legacy-combat -- --enemy mournful-gull --preset wanderer
+```
+
+**State-log records** (for agentic consumers):
+- `hazardCombat:start` — encounter initialised (player + enemy + policy)
+- `hazardCombat:autoPhase` — one full auto-played threat phase
+- `hazardCombat:draft` — die drafted (interactive)
+- `hazardCombat:playCard` — card played (interactive)
+- `hazardCombat:resolveThreat` — threat phase resolved + between-phases
+- `hazardCombat:mercy` — mercy choice made
+- `hazardCombat:signature` — signature skill cast
+- `hazardCombat:end` — encounter over; `event.outcome` ∈ `{victory, mercy, defeat, retreat}`
 
 ### `hazard.cli.ts` - Hazard Mini-Game Driver
 
