@@ -54,7 +54,7 @@
 
 ## Done
 
-- [x] **[E — docs drift] `docs/combat.md` Spec 25 API table missing `resolveCardDieCost`** — resolved at `PENDING` (iterate, 2026-06-24). `resolveCardDieCost(cardColor, enemyPhaseStance)` is a public root barrel export (in `scripts/public-surface.expected.json`) — the RPS die-cost helper returning `{ cost, advantage }` for a card stance vs. enemy phase stance — but had no row in `docs/combat.md` §Hazard-Pattern Combat API table. Added a row between `rollEncounterDice` and `playCombatCard`. Doc-only; type-check + lint + build green. Score 3 × 9 / 10 = 2.7.
+- [x] **[E — docs drift] `docs/combat.md` Spec 25 API table missing `resolveCardDieCost`** — resolved at `b97553a` (iterate, 2026-06-24). `resolveCardDieCost(cardColor, enemyPhaseStance)` is a public root barrel export (in `scripts/public-surface.expected.json`) — the RPS die-cost helper returning `{ cost, advantage }` for a card stance vs. enemy phase stance — but had no row in `docs/combat.md` §Hazard-Pattern Combat API table. Added a row between `rollEncounterDice` and `playCombatCard`. Doc-only; type-check + lint + build green. Score 3 × 9 / 10 = 2.7.
 
 - [x] **[Z — critique-87 LOW] structure — Combat sub-barrel over-exposes 5 internal cross-module helpers** — resolved at `2027028` (iterate, 2026-06-24). Removed `availableDiceFor`, `availableDieCount`, `stanceToDieColor` from the `combat.dice` export line and `effectImpact`, `cardStanceColor` from the `combat.cards` export line in `src/Combat/index.ts`. All 5 had zero external consumers (grep confirmed only defining files + sub-barrel); none reach `src/index.ts` or the public-surface fixture. 146 test files / 2041 tests + type-check + lint + build green. Score 3 × 8 / 10 = 2.4. Source: critique-87 (commit 9b6e037).
 
