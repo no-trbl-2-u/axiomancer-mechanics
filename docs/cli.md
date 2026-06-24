@@ -87,6 +87,34 @@ npm run legacy-combat -- --enemy mournful-gull --preset wanderer
 - `hazardCombat:signature` — signature skill cast
 - `hazardCombat:end` — encounter over; `event.outcome` ∈ `{victory, mercy, defeat, retreat}`
 
+### `combat-sim.cli.ts` - Hazard-Pattern Combat Balance Sim
+
+A non-interactive Monte-Carlo witness that runs `simulateHazardPatternCombat`
+against a curated set of enemies across difficulty tiers and prints win-rate,
+outcome distribution, round count, and status-engagement stats. Used for
+balance tuning — not player-facing.
+
+**Usage:**
+```bash
+npm run combat-sim
+npm run combat-sim -- --blind
+npm run combat-sim -- --enemy=CoastalTyrant
+npm run combat-sim -- --loadout=slippery-slope,eternal-regress,befriend
+npm run combat-sim -- --runs=300 --seed=1 --blind
+```
+
+**Flags:**
+
+| Flag | Effect |
+| --- | --- |
+| `--blind` | Realistic-player witness: the bot drafts using only information a real player can see (no hidden-stance peek). Use to gauge the difficulty a real player feels. Default is `--greedy` (omniscient bot, the balance ceiling). |
+| `--enemy <Name>` | Run against one enemy only (e.g. `CoastalTyrant`, `HushWraith`). Omit to run the full tier sweep. |
+| `--loadout <ids>` | Comma-separated skill IDs for the player's deck (default `slippery-slope`). |
+| `--runs <n>` | Number of Monte-Carlo playthroughs (default `200`). |
+| `--seed <n>` | Deterministic RNG seed for reproducible runs (default `1`). |
+
+**Output:** Win-rate percentage, round count, status-effect hit distribution, and per-enemy breakdown printed to stdout.
+
 ### `hazard.cli.ts` - Hazard Mini-Game Driver
 
 A standalone driver for the hazard mini-game, reachable as a **subcommand** of
