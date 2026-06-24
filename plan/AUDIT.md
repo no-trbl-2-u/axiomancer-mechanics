@@ -46,6 +46,12 @@
 
 ## Pending
 
+- [ ] **[D — dead code] `stanceBeats` in `src/Combat/index.ts` sub-barrel has zero external consumers**
+  - area: structure / dead code
+  - observation: `src/Combat/combat.engine.ts:108` exports `stanceBeats(a: Stance, b: Stance): boolean` (the RPS predicate). It is re-exported via `src/Combat/index.ts:241` but NOT forwarded to `src/index.ts` (the root barrel) and is absent from `scripts/public-surface.expected.json`. All callers are in `combat.engine.ts` itself (lines 127, 128, 141, 142, and the die-selection one-liner). The sub-barrel re-export is an over-exposure analogous to the 5 helpers removed at `2027028`. `grep` of full `src/` confirms no external consumer.
+  - suggested_fix: Remove `stanceBeats` from the `src/Combat/index.ts:238-249` export block (the `export { ..., stanceBeats, ... } from './combat.engine'` line). Confirm no external callers survive; run `npm run verify`. Score 3 × 8 / 10 = 2.4.
+  - source: expand pass 79 audit (commit b97ea30)
+
 - [ ] **[needs-user-call — DIV-MECH-005] game.cli.ts map-encounter routing: route to Hazard-Pattern Combat instead of legacy `resolveCombatRound`**
   - area: mechanics / CLI
   - observation: `game.cli.ts:180-183` explicitly routes map-triggered encounters to `legacyCombatTab` (legacy `resolveCombatRound` loop). The comment says "map-triggered encounters use the legacy path; the new Hazard-style combat is reachable standalone via `npm run combat`." Updating the fishing-village walkthrough (`automation/scripts/walkthroughs/fishing-village-exploration.json`) to drive Hazard-Pattern Combat requires this routing to change first — otherwise the walkthrough JSON's encounter steps will still enter the legacy tab. `divergences.md:83-98` (DIV-MECH-005) confirms the block was lifted when Phase 165 shipped (DIV-MECH-001 resolved), but the game.cli.ts routing decision remains open.
