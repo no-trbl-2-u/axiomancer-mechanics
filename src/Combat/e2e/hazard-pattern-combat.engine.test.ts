@@ -10,7 +10,7 @@
  *   - the status-combo loop refreshes the drafted die for a chain
  *   - between-phases fires DoT ticks + ticks durations + draws a fresh hand
  *   - Signature Skills spend Conviction (scout / DoT / pressure) regardless of hand
- *   - victory via DoT Erosion using only skill cards; post-combat attribution
+ *   - victory by HP depletion via status play (skill cards only); post-combat attribution
  *   - the Monte-Carlo sim reports per-phase Clear rates
  *
  * The effects + skill engines are unchanged, so their suites (run separately)
@@ -528,9 +528,9 @@ describe('Spec 26b §B/§C/§D — archetype kit, rewards, unlock, difficulty fl
     });
 });
 
-// ── Full victory via DoT Erosion (skill cards only) (§11) ────────────────────
+// ── Full victory by HP depletion via status play (skill cards only) (§11) ─────
 
-describe('Spec 25 §11 — victory via DoT Erosion, skill cards only', () => {
+describe('Spec 25 §11 — victory by HP depletion via status play, skill cards only', () => {
     it('a small enemy is destroyed by stacked DoT pressure with no attack/defend', () => {
         mockSequentialRng(0.05);
         const player = makePlayer([DOT_BODY]);
