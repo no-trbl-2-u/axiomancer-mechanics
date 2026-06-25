@@ -126,6 +126,11 @@ Combat:     determineAdvantage, getAttackStat, getDefenseStat, getSaveStat,
             (+ die-cost helpers — resolveCardDieCost(cardColor, enemyPhaseStance)
             → CardDieCost { cost, advantage } (RPS-based die cost for playing a card);
             cardDieCostPreview — read-only preview variant for UI rendering.)
+            (+ Spec 25 engine/deck-build helpers — COMBAT_DICE_COUNT / COMBAT_HAND_SIZE /
+            COMBAT_DIE_FACES (tuning constants); rollCombatDice (rolls the initial die pool);
+            combatDieCanPower (die-affordance check); refreshOneDie (refresh a single spent
+            die); toCombatCard (skill → CombatCard converter); projectDeck (hand-projection
+            read); classifyVerbClass (card intent classifier); buildCombatDeck (deck assembly).)
 Combat reducer: initializeCombat, setPhase, setPlayerStance, setPlayerAction,
                 appendLog, incrementFriendship, endCombat
 Effects:    applyEffect, applyTier1CombatEffect, clearTier1EffectsForStance,
