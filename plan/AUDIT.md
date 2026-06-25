@@ -54,11 +54,7 @@
 
 - [x] **[Z — critique-90 LOW-2] `CombatDeckPreset` and `CombatDeckFocus` absent from spec.md + bearings.md + docs/combat.md** — resolved at `cc93eb0` (iterate, 2026-06-25, bundled with LOW-1 — same files). Added `CombatDeckPreset`/`CombatDeckFocus` to spec.md PR #190 block + bearings.md; added types row to docs/combat.md §Spec 26/26b table. Score 2 × 9 / 10 = 1.8. Source: critique-90 (commit 6569da3).
 
-- [ ] **[E — docs drift] spec.md Faction row missing 9 exports; spec.md Playtest row missing 10 exports; spec.md NPCs row missing 5 exports; spec.md Utils row missing 9 exports**
-  - area: docs / front-door contracts
-  - observation: Silent-accumulation gap across four Contracts rows. Faction row lists 5 names but `src/index.ts` exports 14 (`FACTION_REPUTATION_MIN`, `FACTION_REPUTATION_MAX`, `DEFAULT_FACTION_REPUTATION`, `createDefaultFactionReputations`, `getFactionReputation`, `getAllFactions`, `FactionReputations`, `FactionReputationDelta`, `FactionInfo` missing). Playtest row lists 5 but barrel exports ~13 (`aggregateMetrics`, `selectPolicyAction`, `renderPlaytestMarkdown`, `earlyGameWispFixture`, `endgameDisagreementFixture`, `PlaytestMetrics`, `PlaytestRunSummary`, `PlaytestPolicy`, `PlaytestOutcome`, `PlaytestPolicySummary` missing). NPCs row lists 5 but barrel exports 10 (`isLeafNode`, `DialogueMap`, `DialogueChoice`, `DialogueContext`, `AlignmentGate` missing). Utils row lists 8 but barrel exports 17+ (`average`, `sum`, `max`, `min`, `inRange`, `capitalize`, `formatPercent`, `createDie`, `determineRollAdvantageModifier`, `deriveNonCombatStats`, `setSeed`, `isCombatActive`, `Rng`, `Image` missing).
-  - suggested_fix: Update spec.md Contracts table rows for Faction, Playtest, NPCs, Utils to reflect all current `src/index.ts` exports. Doc-only; no code change.
-  - score: 2 × 9 / 10 = 1.8
+- [x] **[E — docs drift] spec.md Faction/Playtest/NPCs/Utils rows missing many exports** — resolved at `5a239dc` (iterate, 2026-06-25). Updated all four Contracts rows to match the full `src/index.ts` export surface: Faction 5→14 names, NPCs 5→10, Playtest 5→15, Utils 8→23. Doc-only; type-check + lint green. Score 2 × 9 / 10 = 1.8.
 
 - [ ] **[needs-user-call — DIV-MECH-005] game.cli.ts map-encounter routing: route to Hazard-Pattern Combat instead of legacy `resolveCombatRound`**
   - area: mechanics / CLI
