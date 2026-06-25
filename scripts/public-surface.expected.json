@@ -613,6 +613,7 @@
     "BlockedRoute",
     "CacheItemRef",
     "CacheLootTier",
+    "CardDieCost",
     "CardEffectKind",
     "CardPlay",
     "CauseLines",

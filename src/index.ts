@@ -140,6 +140,7 @@ export type {
     CombatIntentType, CombatReadResult,
     SignatureSkill, SignatureSkillId, SignatureSkillKind, PlayerArchetype,
     CombatDeckPreset, CombatDeckFocus,
+    CardDieCost,
 } from './Combat';
 
 // ─── Effects ──────────────────────────────────────────────────────────────────
