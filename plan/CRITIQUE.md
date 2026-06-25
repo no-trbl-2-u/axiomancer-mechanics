@@ -63,14 +63,6 @@
 
 ## Pending
 
-- [ ] **[LOW] docs — `SYNTHETIC_CARD_IDS`, `dieCanPower`, `dieCanPowerCard` absent from front-door contracts**
-  - pass: critique-88 (commit 9d5e981)
-  - area: docs
-  - observation: Three root-barrel / fixture exports are undocumented in all three front-door readers. `SYNTHETIC_CARD_IDS` (a `readonly string[]` of synthetic card ids — currently `['card-retreat']`) is exported via `src/Combat/index.ts` and `src/index.ts` and is present in the fixture, but absent from `spec.md` Contracts Combat row, `plan/bearings.md` locked-contract group, and `docs/combat.md`. Likewise `dieCanPower` and `dieCanPowerCard` (boolean predicates on `CombatManaDie` — "can this die power a card of the given color/card") are in the fixture but referenced nowhere in spec.md, bearings.md, or docs/combat.md. Same accumulation pattern as pass-83 LOW-2 (`GOLD_CARD_IDS`), pass-87 LOW-1 (threat-sequence API).
-  - evidence: `scripts/public-surface.expected.json` (values list — `SYNTHETIC_CARD_IDS`, `dieCanPower`, `dieCanPowerCard` present); `rg 'SYNTHETIC_CARD_IDS|dieCanPower|dieCanPowerCard' spec.md plan/bearings.md docs/combat.md` → 0 hits
-  - suggested_fix: Add `SYNTHETIC_CARD_IDS`, `dieCanPower`, `dieCanPowerCard` to the spec.md Contracts Combat row (alongside `GOLD_CARD_IDS`/`isGoldCard`) and to the bearings.md Spec 25/26b annotation block; optionally add a one-liner to the docs/combat.md Hazard-Pattern Combat API table.
-  - source: critique
-
 - [ ] **[LOW] docs — `resolveCardDieCost` and `cardDieCostPreview` underdocumented in docs/combat.md API table**
   - pass: critique-88 (commit 9d5e981)
   - area: docs
@@ -78,6 +70,8 @@
   - evidence: `rg 'resolveCardDieCost|cardDieCostPreview' spec.md plan/bearings.md` → 0 hits; `docs/combat.md:521` has one-liner for `resolveCardDieCost`; `docs/combat.md:527` bundles `cardDieCostPreview` in a multi-entry row
   - suggested_fix: Add `resolveCardDieCost` to the spec.md Contracts Combat row (alongside `cardDieCostPreview`) and annotate both in bearings.md Spec 25/26b block as "die-cost helpers".
   - source: critique
+
+- [x] **[LOW] docs — `SYNTHETIC_CARD_IDS`, `dieCanPower`, `dieCanPowerCard` absent from front-door contracts** — resolved at `b807c46` (iterate, 2026-06-25). Added `SYNTHETIC_CARD_IDS` (readonly string[], currently `['card-retreat']`) + `isSyntheticCard` to spec.md Contracts Combat row (alongside `GOLD_CARD_IDS`/`CardEffectKind`); annotated `dieCanPower`/`dieCanPowerCard` in spec.md Hazard row wildcard; added `SYNTHETIC_CARD_IDS`/`isSyntheticCard` annotation to bearings.md Combat block + a new Hazard sub-group entry for `dieCanPower`/`dieCanPowerCard`; added `SYNTHETIC_CARD_IDS`/`isSyntheticCard` row to docs/combat.md Hazard-Pattern Combat API table. Doc-only; type-check + lint green. Score 3 × 9 / 10 = 2.7. Source: critique-88 (commit 9d5e981).
 
 - [x] **[LOW] structure — Combat sub-barrel over-exposes internal cross-module helpers** — resolved at `2027028` (iterate, 2026-06-24). Removed `availableDiceFor`, `availableDieCount`, `stanceToDieColor` from the `combat.dice` line and `effectImpact`, `cardStanceColor` from the `combat.cards` line in `src/Combat/index.ts`. All 5 had zero external consumers; none reached `src/index.ts` or public-surface fixture. 146 test files / 2041 tests + type-check + lint + build green. Score 3 × 8 / 10 = 2.4. Source: critique-87 (commit 9b6e037).
 
