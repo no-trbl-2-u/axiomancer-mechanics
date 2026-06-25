@@ -120,6 +120,9 @@ Combat:     determineAdvantage, getAttackStat, getDefenseStat, getSaveStat,
             hasRerollableDice, dieIsRerollable (combat.dice); preset combat decks —
             COMBAT_DECK_PRESETS, COMBAT_DECK_PRESET_ORDER, listDeckPresets,
             getDeckPreset, buildPresetDeck (combat.deck-presets).)
+            (+ synthetic card ids — SYNTHETIC_CARD_IDS (readonly string[], currently
+            ['card-retreat']), isSyntheticCard (combat.cards) — built-in non-deck
+            cards injected by the deck builder; filtered out of reward drafts.)
 Combat reducer: initializeCombat, setPhase, setPlayerStance, setPlayerAction,
                 appendLog, incrementFriendship, endCombat
 Effects:    applyEffect, applyTier1CombatEffect, clearTier1EffectsForStance,
@@ -188,6 +191,11 @@ World:      createStartingWorld, world reducer, WorldState, MapState, MapDefinit
             node-event-kind read API over the registered MapEventPools; lets a
             client preview which MapEventKinds a given continent/map/node fires
             without resolving an event)
+Hazard (re-exported via World/*): wildcard surface; key combat-bridge predicates:
+            dieCanPower(dieKind, cardKind) — whether a die kind can power a card
+            of a given Hazard color; dieCanPowerCard(dieKind, cardDef) — same
+            check against a full HazardCardDef. Referenced by combat.dice.ts
+            die-affordance logic.
 Utils:      clamp, randomInt, deepClone, deriveStats, calculateMaxHealth,
             createDieRoll, isCharacter, isEnemy
 Philosophy: bucketAxis, getAlignmentCell, applyAlignmentDelta, defaultAlignment,

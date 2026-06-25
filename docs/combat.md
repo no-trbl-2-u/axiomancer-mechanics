@@ -527,6 +527,7 @@ The engine lives in `src/Combat/`:
 | `getCard` / `handCards` / `cardDieCostPreview` / `availableDice` | Read-only previews for a UI to render the hand and affordances. |
 | `buildCombatSummary(state)` | End-of-fight `CombatSummary` with per-effect attribution rows. |
 | `simulateHazardPatternCombat(...)` | Monte-Carlo greedy bot returning `CombatSimStats` for balance runs. |
+| `SYNTHETIC_CARD_IDS` / `isSyntheticCard` | `SYNTHETIC_CARD_IDS` is a `readonly string[]` of built-in non-deck cards (currently `['card-retreat']`). The deck builder injects them into every hand; `isSyntheticCard(id)` is the boolean predicate. Filtered out of deckbuilder reward drafts. |
 | `CombatEncounterState`, `CombatCard`, `CombatThreatPhase`, `CombatOutcome`, `CombatSummary` | The core encounter type family. (`CombatPressureTracks` was REMOVED 2026-06-22 — HP is the sole win condition.) |
 
 ### Spec 26 / 26b — stance draft, the read, Conviction, Signature Skills, deckbuilding
