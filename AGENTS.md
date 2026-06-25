@@ -10,6 +10,8 @@ Axiomancer Mechanics is a TypeScript TTRPG game engine (Node.js CLI). No databas
 
 **Scheduled evidence doctrine (2026-06):** Command-green playtests can still be design-red. Treat late-game/boss witnesses as failed evidence when they sit outside the 65–75% resolution-success band, record 0 player damage, never exercise Heart/Befriend/mercy attempts, or collapse into low-status Body/damage dominance. Capture generated playtest metrics in the dated report, then revert generated tracked reports unless the task explicitly updates those fixtures.
 
+**Hazard-style combat witness doctrine (2026-06):** A direct combat CLI run or passing combat tests prove the engine command path, not first-level route integration. When scheduled evidence claims route-level Hazard-style combat, the walkthrough must actually traverse an authored map encounter, enter the current HP-only/Hazard-style board, and record `hazardCombat:start`/resolution events. If a Fishing Village route now resolves loot/narration/quest instead of combat, repair or replace the route witness before claiming coverage.
+
 ### Key commands
 
 All commands are in `package.json`:
