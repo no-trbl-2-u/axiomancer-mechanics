@@ -114,7 +114,7 @@ export {
     getThreatSequence, generateDefaultThreatSequence,
     AUTHORED_THREAT_ENEMY_IDS,
     simulateHazardPatternCombat,
-    SYNTHETIC_CARD_IDS, GOLD_CARD_IDS, isGoldCard,
+    SYNTHETIC_CARD_IDS, isSyntheticCard, GOLD_CARD_IDS, isGoldCard,
     // Spec 26 / 26b — stance draft, hidden read, Conviction, Signature Skills
     TURN_DICE_COUNT, rollTurnDice, dieHasStance,
     startTurn, draftStanceDie, endTurn, resolveRead, chooseDraft, discardCombatCard,

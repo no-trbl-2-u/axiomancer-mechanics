@@ -416,6 +416,7 @@
     "isQuestComplete",
     "isQuestItem",
     "isRouteBlocked",
+    "isSyntheticCard",
     "isWorldMovedEvent",
     "isWorldProcessedEvent",
     "itemSetLibrary",
