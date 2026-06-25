@@ -102,11 +102,11 @@ The barrel at `src/index.ts` is the contract surface. Groups:
 | Rest | `*` (wildcard export from `./World/Rest`) |
 | LootCache | `*` (wildcard export from `./World/LootCache`) |
 | Philosophy | `getAlignmentCell`, `applyAlignmentDelta`, `PhilosophicalAlignment`, `bucketAxis`, `philosophicalAlignmentLibrary` |
-| Faction | `applyFactionReputationDeltas`, `FactionReputation`, `factionLibrary`, `getFactionInfo`, `clampFactionReputation` |
-| NPCs | `getDialogueNode`, `visibleChoices`, `NPC`, `DialogueTree`, `DialogueNode` |
-| Playtest | `runPlaytestScenario`, `PlaytestScenario`, `PlaytestReport`, `earlyGameFixture`, `endgameFixture` |
+| Faction | `FACTION_REPUTATION_MIN`, `FACTION_REPUTATION_MAX`, `DEFAULT_FACTION_REPUTATION`, `clampFactionReputation`, `createDefaultFactionReputations`, `applyFactionReputationDeltas`, `getFactionReputation`, `factionLibrary`, `getFactionInfo`, `getAllFactions`, `FactionReputation`, `FactionReputations`, `FactionReputationDelta`, `FactionInfo` |
+| NPCs | `getDialogueNode`, `visibleChoices`, `isLeafNode`, `NPC`, `DialogueMap`, `DialogueTree`, `DialogueNode`, `DialogueChoice`, `DialogueContext`, `AlignmentGate` |
+| Playtest | `runPlaytestScenario`, `aggregateMetrics`, `selectPolicyAction`, `renderPlaytestMarkdown`, `earlyGameFixture`, `earlyGameWispFixture`, `endgameFixture`, `endgameDisagreementFixture`, `PlaytestScenario`, `PlaytestReport`, `PlaytestMetrics`, `PlaytestRunSummary`, `PlaytestPolicy`, `PlaytestOutcome`, `PlaytestPolicySummary` |
 | Events | `EnginePayload`, `TypedGameEvent`, `isCombatStartedEvent`, `isWorldMovedEvent`, type guards |
-| Utils | `clamp`, `randomInt`, `deepClone`, `deriveStats`, `setRng`, `getRng`, `isCharacter`, `isEnemy` |
+| Utils | `clamp`, `randomInt`, `deepClone`, `average`, `sum`, `max`, `min`, `inRange`, `capitalize`, `formatPercent`, `createDie`, `createDieRoll`, `determineRollAdvantageModifier`, `deriveStats`, `deriveNonCombatStats`, `calculateMaxHealth`, `setRng`, `getRng`, `setSeed`, `isCharacter`, `isEnemy`, `isCombatActive`, `Rng`, `Image` |
 
 Breaking changes to these exports require a semver major. The CLIs
 (`src/CLI/`) are **not** part of the public API and are excluded from the
