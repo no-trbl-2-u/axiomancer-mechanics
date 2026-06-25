@@ -202,6 +202,22 @@ STRATEGIST cross-encounter path the combat vision optimises for (`VISION.md`).
 The sparse `Partial<CombatResources>` result is suitable for
 `Character.carriedResources`, which seeds the next `initializeCombat`.
 
+### Phase 142 — Extended Synergy Predicates
+
+`Skill.synergy?` accepts either a `SynergyPredicate` (the original Phase 66 predicate — `anyOf`, `allOf`, `minCount`) or an `ExtendedSynergyPredicate` (Phase 142 — richer multi-condition check). The extended predicate adds per-effect-type filtering, buff/debuff combo checks, and total-intensity gates.
+
+| Function / Type | Description |
+|---|---|
+| `evaluateExtendedSynergyPredicate(predicate, effects, effectLibrary)` | Top-level dispatcher — routes to the matching check function and returns a boolean. |
+| `checkSinglePredicate(predicate, effects)` | `any_effect` mode: at least one active effect matches `predicate.effectId`, optionally filtered by `predicate.effectType` (buff/debuff) and `predicate.minimumIntensity`. |
+| `checkAnyCountPredicate(predicate, effects)` | `any_count` mode: at least `predicate.minimumCount` effects from `predicate.effectIds` are active on the target. |
+| `checkAllRequiredPredicate(predicate, effects)` | `all_required` mode: every id in `predicate.effectIds` is active; optionally requires each to reach `predicate.minimumIntensity`. |
+| `checkBuffDebuffCombo(predicate, effects, effectLibrary)` | `buff_debuff_combo` mode: a specific buff (`predicate.buffId`) and a specific debuff (`predicate.debuffId`) are both active. Looks up types from the provided effect library. |
+| `checkTotalIntensityPredicate(predicate, effects, effectLibrary)` | `total_intensity` mode: the sum of intensity across all `predicate.effectType` effects reaches `predicate.minimumTotalIntensity`. |
+| `ExtendedSynergyPredicate` | Union type discriminated by `mode` covering the five check variants above. Importable as `import type { ExtendedSynergyPredicate } from 'axiomancer-mechanics'`. |
+
+Source: `src/Skills/synergy-predicates.ts`.
+
 ### Character skill access
 
 Canonical design:

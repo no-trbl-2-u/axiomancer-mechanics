@@ -622,6 +622,29 @@ Full per-effect documentation: [`docs/effects/debuffs/`](./effects/debuffs/)
 | `applyCleanse(target, tier)` | `src/Combat/effects.ts` | Strip debuffs of `tier ≤ cleanseTier` (Q10) |
 | `applyDispel(target, tier)` | `src/Combat/effects.ts` | Strip buffs of `tier ≤ dispelTier` (Q10) |
 
+### Phase 142 — Status Effect Interaction Engine
+
+`EFFECT_INTERACTIONS` is the registry of authored combo rules. Each rule (`EffectInteraction`) fires when a specific primary effect plus one or more secondary effects are both active on the same target, optionally requiring a minimum combined intensity or primary duration. When triggered the interaction amplifies the target effect's intensity, duration, or DoT damage, or grants a combat advantage modifier.
+
+| Function / Constant | Description |
+|---|---|
+| `EFFECT_INTERACTIONS` | `readonly EffectInteraction[]` — the full authored registry. Currently one entry: `'acid-poison-dissolution'` (acid + poison → `amplify_damage` × 1.5 on the acid DoT). |
+| `evaluateInteractions(effects)` | Walks the registry against the combatant's active effects and returns every triggered interaction result. Called by `getActiveEffectModifiers` to fold DoT amplification into the damage total before the round resolves. |
+| `checkInteractionTrigger(trigger, activeEffects)` | Checks one trigger condition; returns `{ primary, secondaries }` on a match or `null`. |
+| `applyInteractionResult(effects, result)` | Mutates the active effects array per the result (intensity boost, duration extension, or damage amplification). |
+| `getInteractionsForEffect(effectId)` | Returns every registered interaction that has the given effect as a trigger or target. |
+| `getAllInteractionIds()` | Returns `string[]` of every interaction id in the registry. |
+| `getInteractionById(id)` | `EffectInteraction \| undefined` — lookup by interaction id. |
+| `validateInteractions(liveEffectIds)` | Returns every registered interaction that references an effect id not in the provided set. Used in tests to guard against dead-combo drift. |
+| `INTERACTION_AMPLIFICATION` | Bounds object: `MAX_INTENSITY_MULTIPLIER` (2.0), `MAX_DURATION_MULTIPLIER` (2.5), `MAX_DAMAGE_MULTIPLIER` (2.0), `MIN_MEANINGFUL_AMPLIFICATION` (1.1). |
+| `INTERACTION_PRIORITY` | Priority tier thresholds for interaction evaluation order: `CRITICAL` (100), `HIGH` (80), `MEDIUM` (60), `LOW` (40). |
+| `STATUS_RESOLUTION_DEBUFF_THRESHOLD` | Minimum combined control+debuff intensity to trigger the Saturation Yield (friendship) path via `getEffectsResolutionOutcome`. Default 3 (tuned from original 8 via Phase 126/130). |
+| `STATUS_RESOLUTION_DOT_THRESHOLD` | Minimum DoT damage per round to trigger the DoT Erosion (victory) path. Default 2 (tuned from original 5). |
+| `STATUS_RESOLUTION_DOT_MAX_ROUNDS` | Maximum rounds over which pending DoT damage accumulates for the erosion calculation. Default 15. |
+| `STATUS_ENGAGEMENT_FLOOR_PERCENT` | Doctrine gauge: status-effect actions must comprise at least this percentage of rounds for a STRATEGIST run to be considered on-doctrine (`VISION.md`). Default 40. |
+
+All constants above are on the root barrel. The interaction-engine source lives in `src/Effects/interactions.ts`; the constants in `src/Combat/resolution.constants.ts`.
+
 ---
 
 ## Implementation Status

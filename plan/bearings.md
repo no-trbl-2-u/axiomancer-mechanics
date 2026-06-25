@@ -145,6 +145,13 @@ Effects:    applyEffect, applyTier1CombatEffect, clearTier1EffectsForStance,
             Phase 86 equipment audit: zero drift confirmed;
             Phase 88 effect coverage sweep: 86 new hermetic cases across
             stat-band / advantage / control / damage-variant / fallacy)
+            (+ Phase 142 status effect interaction engine: EFFECT_INTERACTIONS
+            registry, evaluateInteractions, checkInteractionTrigger,
+            applyInteractionResult, getInteractionsForEffect, getAllInteractionIds,
+            getInteractionById, validateInteractions, INTERACTION_AMPLIFICATION,
+            INTERACTION_PRIORITY; and Phase 125/142 resolution constants:
+            STATUS_RESOLUTION_DEBUFF_THRESHOLD, STATUS_RESOLUTION_DOT_THRESHOLD,
+            STATUS_RESOLUTION_DOT_MAX_ROUNDS, STATUS_ENGAGEMENT_FLOOR_PERCENT)
 Skills:     executeSkill, canUseSkill, learnSkill, getAvailableSkills,
             skillLibrary, getSkillById, Skill, SkillEvent
             (+ SkillSynergy, SynergyPredicate types + Skill.synergy?
@@ -154,6 +161,13 @@ Skills:     executeSkill, canUseSkill, learnSkill, getAvailableSkills,
             unspent), capped); stance tokens never carry, so it rewards
             skill-casting/status-effect play over basic-attack token-banking
             (STRATEGIST path); defaults live in the Game RESOURCE_CARRY const)
+            (+ Phase 142 extended synergy predicate helpers:
+            evaluateExtendedSynergyPredicate, checkSinglePredicate,
+            checkAnyCountPredicate, checkAllRequiredPredicate,
+            checkBuffDebuffCombo, checkTotalIntensityPredicate,
+            ExtendedSynergyPredicate type — richer multi-condition synergy
+            check supporting per-effect-type filtering, buff/debuff combos,
+            and total-intensity gates; used via Skill.synergy? field)
 Items:      addItem, removeItem, useConsumable, stackItem, Item (and variants)
             (+ buyItem / sellItem / defaultSellPrice + ShopWare /
             ShopInventory types — Phase 37 shop economy),
