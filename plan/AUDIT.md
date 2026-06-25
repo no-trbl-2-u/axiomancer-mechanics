@@ -53,6 +53,12 @@
   - source: critique-89 (commit b7d377f)
   - score: 2 × 9 / 10 = 1.8
 
+- [ ] **[E — docs drift] spec.md Faction row missing 9 exports; spec.md Playtest row missing 10 exports; spec.md NPCs row missing 5 exports; spec.md Utils row missing 9 exports**
+  - area: docs / front-door contracts
+  - observation: Silent-accumulation gap across four Contracts rows. Faction row lists 5 names but `src/index.ts` exports 14 (`FACTION_REPUTATION_MIN`, `FACTION_REPUTATION_MAX`, `DEFAULT_FACTION_REPUTATION`, `createDefaultFactionReputations`, `getFactionReputation`, `getAllFactions`, `FactionReputations`, `FactionReputationDelta`, `FactionInfo` missing). Playtest row lists 5 but barrel exports ~13 (`aggregateMetrics`, `selectPolicyAction`, `renderPlaytestMarkdown`, `earlyGameWispFixture`, `endgameDisagreementFixture`, `PlaytestMetrics`, `PlaytestRunSummary`, `PlaytestPolicy`, `PlaytestOutcome`, `PlaytestPolicySummary` missing). NPCs row lists 5 but barrel exports 10 (`isLeafNode`, `DialogueMap`, `DialogueChoice`, `DialogueContext`, `AlignmentGate` missing). Utils row lists 8 but barrel exports 17+ (`average`, `sum`, `max`, `min`, `inRange`, `capitalize`, `formatPercent`, `createDie`, `determineRollAdvantageModifier`, `deriveNonCombatStats`, `setSeed`, `isCombatActive`, `Rng`, `Image` missing).
+  - suggested_fix: Update spec.md Contracts table rows for Faction, Playtest, NPCs, Utils to reflect all current `src/index.ts` exports. Doc-only; no code change.
+  - score: 2 × 9 / 10 = 1.8
+
 - [ ] **[needs-user-call — DIV-MECH-005] game.cli.ts map-encounter routing: route to Hazard-Pattern Combat instead of legacy `resolveCombatRound`**
   - area: mechanics / CLI
   - observation: `game.cli.ts:180-183` explicitly routes map-triggered encounters to `legacyCombatTab` (legacy `resolveCombatRound` loop). The comment says "map-triggered encounters use the legacy path; the new Hazard-style combat is reachable standalone via `npm run combat`." Updating the fishing-village walkthrough (`automation/scripts/walkthroughs/fishing-village-exploration.json`) to drive Hazard-Pattern Combat requires this routing to change first — otherwise the walkthrough JSON's encounter steps will still enter the legacy tab. `divergences.md:83-98` (DIV-MECH-005) confirms the block was lifted when Phase 165 shipped (DIV-MECH-001 resolved), but the game.cli.ts routing decision remains open.
