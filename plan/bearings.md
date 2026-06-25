@@ -123,6 +123,9 @@ Combat:     determineAdvantage, getAttackStat, getDefenseStat, getSaveStat,
             (+ synthetic card ids — SYNTHETIC_CARD_IDS (readonly string[], currently
             ['card-retreat']), isSyntheticCard (combat.cards) — built-in non-deck
             cards injected by the deck builder; filtered out of reward drafts.)
+            (+ die-cost helpers — resolveCardDieCost(cardColor, enemyPhaseStance)
+            → CardDieCost { cost, advantage } (RPS-based die cost for playing a card);
+            cardDieCostPreview — read-only preview variant for UI rendering.)
 Combat reducer: initializeCombat, setPhase, setPlayerStance, setPlayerAction,
                 appendLog, incrementFriendship, endCombat
 Effects:    applyEffect, applyTier1CombatEffect, clearTier1EffectsForStance,
