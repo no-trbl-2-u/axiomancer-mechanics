@@ -81,13 +81,7 @@
   - suggested_fix: Add `CombatDeckPreset` and `CombatDeckFocus` to the spec.md PR #190 annotation and bearings.md, and add a types row to the docs/combat.md §Spec 26/26b preset deck table. Doc-only; no code change.
   - score: 2 × 9 / 10 = 1.8
 
-- [ ] **[LOW] docs — 9 Spec 25 engine helpers absent from `docs/combat.md` API table**
-  - pass: critique-90 (commit 6569da3)
-  - area: docs
-  - observation: `COMBAT_DICE_COUNT`, `COMBAT_HAND_SIZE`, `COMBAT_DIE_FACES`, `rollCombatDice`, `combatDieCanPower`, `refreshOneDie`, `toCombatCard`, `projectDeck`, `classifyVerbClass`, `buildCombatDeck` were added to spec.md + bearings.md at `e2eca58` (pass-89 LOW-1 drain) but are still absent from `docs/combat.md` which is the consumer-facing API reference. The spec.md/bearings.md first-fill is complete; `docs/combat.md` is the second layer. The pattern: every prior group of helpers (Spec 26/26b stance-draft surface, PR #190 re-roll + preset deck, die-cost helpers) eventually required a second `docs/combat.md` row to close the gap.
-  - evidence: `docs/combat.md` (grep `COMBAT_DICE_COUNT`, `rollCombatDice`, `buildCombatDeck` = 0 results); `spec.md:93` (all 10 present after `e2eca58`); `plan/bearings.md` (all 10 present after `e2eca58`).
-  - suggested_fix: Add a Spec 25 engine helpers row (or two rows split between tuning constants and deck-build helpers) to the `docs/combat.md` §Hazard-Pattern Combat API table. Doc-only; no code change.
-  - score: 2 × 9 / 10 = 1.8
+- [x] **[LOW] docs — 9 Spec 25 engine helpers absent from `docs/combat.md` API table** — resolved at `783ca9e` (iterate, 2026-06-25). Added 5 rows to `docs/combat.md` §Hazard-Pattern Combat API table covering all 10 helpers. Doc-only; type-check + lint + build green. Score 2 × 9 / 10 = 1.8.
 
 - [x] **[HIGH] api — `isSyntheticCard` documented but absent from root barrel** — resolved at `c9dc545` (iterate, 2026-06-25). Added `isSyntheticCard` to the `SYNTHETIC_CARD_IDS` line in `src/index.ts` Spec 25 block; refreshed `scripts/public-surface.expected.json` (584→585 values / 395 types). `src/Combat/index.ts:264` already exported it; root barrel gap was the only issue. 2041 tests + type-check + lint + build green. Score 8 × 9 / 10 = 7.2. Source: critique-89 (commit b7d377f).
 - [x] **[LOW] docs — 9 Spec 25 Combat helpers absent from spec.md + bearings.md front-door contracts** — resolved at `e2eca58` (iterate, 2026-06-25). Added `COMBAT_DICE_COUNT`, `COMBAT_HAND_SIZE`, `COMBAT_DIE_FACES`, `rollCombatDice`, `combatDieCanPower`, `refreshOneDie`, `toCombatCard`, `projectDeck`, `classifyVerbClass`, `buildCombatDeck` to spec.md Contracts Combat row (after die-cost helpers annotation) and a matching block to bearings.md Combat group. Doc-only; type-check + lint + build green. Score 2 × 9 / 10 = 1.8. Source: critique-89 (commit b7d377f).

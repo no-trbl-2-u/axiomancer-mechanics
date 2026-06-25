@@ -48,12 +48,7 @@
 
 - [x] **[Z — critique-89 LOW-1] 9 Spec 25 engine helpers absent from spec.md Contracts and bearings.md locked-contract group** — resolved at `e2eca58` (iterate, 2026-06-25). Added `COMBAT_DICE_COUNT`, `COMBAT_HAND_SIZE`, `COMBAT_DIE_FACES`, `rollCombatDice`, `combatDieCanPower`, `refreshOneDie`, `toCombatCard`, `projectDeck`, `classifyVerbClass`, `buildCombatDeck` to the spec.md Contracts Combat row (after die-cost helpers annotation) and matching block to bearings.md Combat group. Doc-only; 2041 tests + type-check + lint + build green. Score 2 × 9 / 10 = 1.8. Source: critique-89 (commit b7d377f).
 
-- [ ] **[Z — critique-90 LOW-3] 9 Spec 25 engine helpers absent from `docs/combat.md` API table**
-  - area: docs
-  - observation: `COMBAT_DICE_COUNT`, `COMBAT_HAND_SIZE`, `COMBAT_DIE_FACES`, `rollCombatDice`, `combatDieCanPower`, `refreshOneDie`, `toCombatCard`, `projectDeck`, `classifyVerbClass`, `buildCombatDeck` were added to spec.md + bearings.md at `e2eca58` (pass-89 LOW-1 drain) but are still absent from `docs/combat.md` which is the consumer-facing API reference. The spec.md/bearings.md first-fill is complete; `docs/combat.md` is the second layer.
-  - evidence: `docs/combat.md` (grep `COMBAT_DICE_COUNT`, `rollCombatDice`, `buildCombatDeck` = 0 results in the API tables); `spec.md` and `plan/bearings.md` (all 10 present after `e2eca58`).
-  - suggested_fix: Add a Spec 25 engine helpers row (or two rows split between tuning constants and deck-build helpers) to the `docs/combat.md` §Hazard-Pattern Combat API table. Doc-only; no code change.
-  - score: 2 × 9 / 10 = 1.8
+- [x] **[Z — critique-90 LOW-3] 9 Spec 25 engine helpers absent from `docs/combat.md` API table** — resolved at `783ca9e` (iterate, 2026-06-25). Added 5 rows to `docs/combat.md` §Hazard-Pattern Combat API table covering: `COMBAT_DICE_COUNT`/`COMBAT_HAND_SIZE`/`COMBAT_DIE_FACES` constants; `rollCombatDice`/`combatDieCanPower`/`refreshOneDie` dice helpers; `toCombatCard`/`projectDeck` card-view converters; `classifyVerbClass` intent classifier; `buildCombatDeck` deck assembler. Doc-only; type-check + lint + build green. Score 2 × 9 / 10 = 1.8. Source: critique-90 (commit 608a931).
 
 - [ ] **[Z — critique-90 LOW-1] `CardDieCost` not listed as named type export in spec.md + bearings.md types sequence**
   - area: docs
