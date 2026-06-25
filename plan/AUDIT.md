@@ -109,6 +109,10 @@
 
 ## Audit Pass Log
 
+### 2026-06-25 (Pass 114) — Z–H walk (march→iterate dispatch)
+
+Z: CRITIQUE.md Pending has 1 LOW from critique-88 — `resolveCardDieCost`/`cardDieCostPreview` absent from spec.md/bearings.md. A: all modules have `e2e/*.engine.test.ts`; `vi.spyOn(Math,'random')` clean outside test-utils; 146 test files / 2041 passing. B: Specs 26-30 blank `> Your answer:` stale (Pressure-Track model removed; await `/oversight`); Knowledge-Gaps Q28 deferred (endgame). C: zero `@ts-ignore`/`as any` in non-test src; lint exits 0. D: no dead code. E: docs current post-fix. F: lint green. G: `@types/node` 25→26 major (skip per policy). H: working tree clean. Top finding: [Z] critique-88 LOW-2 — `resolveCardDieCost`/`cardDieCostPreview` absent from spec.md Contracts Combat row and bearings.md (score 3 × 9 / 10 = 2.7). Shipped at d076a0d. Queue now empty (only `[needs-user-call — DIV-MECH-005]` outstanding, awaiting T decision).
+
 ### 2026-06-25 (Pass 113) — Z–H walk (march→iterate dispatch)
 
 Z: CRITIQUE.md Pending has 2 LOWs from critique-88 (SYNTHETIC_CARD_IDS/dieCanPower/dieCanPowerCard absent from front-door contracts; resolveCardDieCost/cardDieCostPreview absent from spec.md/bearings.md). A: all modules have `e2e/*.engine.test.ts`; `vi.spyOn(Math,'random')` clean outside test-utils; 146 test files / 2041 passing. B: Specs 26-30 blank `> Your answer:` are stale (Pressure-Track model removed; await `/oversight`); Knowledge-Gaps Q28 deferred (endgame). C: zero `@ts-ignore`/`as any` in non-test src; lint exits 0. D: no dead code. E: docs current post-fix. F: lint green. G: `@types/node` 25→26 major (skip per policy). H: working tree clean. Top finding: [Z] critique-88 LOW-1 — `SYNTHETIC_CARD_IDS`, `dieCanPower`, `dieCanPowerCard` absent from spec.md/bearings.md/docs/combat.md (score 3 × 9 / 10 = 2.7). Shipped (this commit). Remaining queue: critique-88 LOW-2 (`resolveCardDieCost`/`cardDieCostPreview` absent from spec.md/bearings.md, 2.7).

@@ -63,13 +63,7 @@
 
 ## Pending
 
-- [ ] **[LOW] docs — `resolveCardDieCost` and `cardDieCostPreview` underdocumented in docs/combat.md API table**
-  - pass: critique-88 (commit 9d5e981)
-  - area: docs
-  - observation: `resolveCardDieCost` was added to `docs/combat.md` at line 521 (as a single-row stub in the Hazard-Pattern Combat API table — iterate pass b97553a, 2026-06-24) but the adjacent `cardDieCostPreview` (a read-only preview variant already in the table at line 527 via the `getCard / handCards / cardDieCostPreview / availableDice` multi-entry row) is not individually described. More importantly, neither `resolveCardDieCost` nor `cardDieCostPreview` appear in the spec.md Contracts Combat row or bearings.md — they are in the fixture and were documented in docs/combat.md but still absent from the two primary front-door contract readers. Consistent with the cluster of combat helpers (`GOLD_CARD_IDS`, `rerollSpentDice`, threat-sequence API) that accumulated doc lag.
-  - evidence: `rg 'resolveCardDieCost|cardDieCostPreview' spec.md plan/bearings.md` → 0 hits; `docs/combat.md:521` has one-liner for `resolveCardDieCost`; `docs/combat.md:527` bundles `cardDieCostPreview` in a multi-entry row
-  - suggested_fix: Add `resolveCardDieCost` to the spec.md Contracts Combat row (alongside `cardDieCostPreview`) and annotate both in bearings.md Spec 25/26b block as "die-cost helpers".
-  - source: critique
+- [x] **[LOW] docs — `resolveCardDieCost` and `cardDieCostPreview` absent from spec.md and bearings.md** — resolved at `d076a0d` (iterate, 2026-06-25). Added `resolveCardDieCost` (returns `CardDieCost { cost, advantage }`, RPS-based die cost) + `cardDieCostPreview` (read-only preview variant) to the spec.md Contracts Combat row (appended to the PR #190 cluster as "die-cost helpers") and added a matching annotation block to bearings.md Combat group (after the synthetic-card-ids block). Doc-only; type-check + lint + build green. Score 3 × 9 / 10 = 2.7. Source: critique-88 (commit 9d5e981).
 
 - [x] **[LOW] docs — `SYNTHETIC_CARD_IDS`, `dieCanPower`, `dieCanPowerCard` absent from front-door contracts** — resolved at `b807c46` (iterate, 2026-06-25). Added `SYNTHETIC_CARD_IDS` (readonly string[], currently `['card-retreat']`) + `isSyntheticCard` to spec.md Contracts Combat row (alongside `GOLD_CARD_IDS`/`CardEffectKind`); annotated `dieCanPower`/`dieCanPowerCard` in spec.md Hazard row wildcard; added `SYNTHETIC_CARD_IDS`/`isSyntheticCard` annotation to bearings.md Combat block + a new Hazard sub-group entry for `dieCanPower`/`dieCanPowerCard`; added `SYNTHETIC_CARD_IDS`/`isSyntheticCard` row to docs/combat.md Hazard-Pattern Combat API table. Doc-only; type-check + lint green. Score 3 × 9 / 10 = 2.7. Source: critique-88 (commit 9d5e981).
 
