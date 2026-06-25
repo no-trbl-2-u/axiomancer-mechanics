@@ -46,6 +46,20 @@
 
 ## Pending
 
+- [ ] **[Z — critique-89 LOW-2] `CardDieCost` interface not exported as a type from `src/Combat/index.ts` or `src/index.ts`**
+  - area: public surface / types
+  - observation: `CardDieCost` (defined at `src/Combat/combat.engine.ts:114`) is the return type of both `resolveCardDieCost` and `cardDieCostPreview` — both barrel-exported and documented in spec.md, bearings.md, and docs/combat.md. However, `CardDieCost` as a named type is absent from `src/Combat/index.ts` and `src/index.ts`. A consumer who wants to annotate the return type must use `ReturnType<typeof resolveCardDieCost>` or inline the shape.
+  - suggested_fix: Add `CardDieCost` to the `src/Combat/index.ts` type-export block (alongside `CombatCard`, `CombatEncounterState`, etc.) and to `src/index.ts` Combat type group. Refresh `scripts/public-surface.expected.json` (adds 1 type entry). Verify fixture is byte-stable post-build + deploy:check green.
+  - source: critique-89 (commit b7d377f)
+  - score: 3 × 8 / 10 = 2.4
+
+- [ ] **[Z — critique-89 LOW-1] 9 Spec 25 engine helpers absent from spec.md Contracts and bearings.md locked-contract group**
+  - area: docs / front-door contracts
+  - observation: `COMBAT_DICE_COUNT`, `COMBAT_HAND_SIZE`, `COMBAT_DIE_FACES`, `rollCombatDice`, `combatDieCanPower`, `refreshOneDie`, `toCombatCard`, `projectDeck`, `classifyVerbClass`, `buildCombatDeck` are all in `src/index.ts` (lines 110-112) and the public-surface fixture, but absent from the spec.md Contracts Combat row and bearings.md locked-contract group — same silent-accumulation pattern as passes 83/87/88. All have internal callers; not dead code.
+  - suggested_fix: Add the 10 names to the spec.md Contracts Combat row (Spec 25 annotation block, after the existing helpers) and to the bearings.md Combat group Spec 25 annotation. Doc-only; no fixture change needed.
+  - source: critique-89 (commit b7d377f)
+  - score: 2 × 9 / 10 = 1.8
+
 - [ ] **[needs-user-call — DIV-MECH-005] game.cli.ts map-encounter routing: route to Hazard-Pattern Combat instead of legacy `resolveCombatRound`**
   - area: mechanics / CLI
   - observation: `game.cli.ts:180-183` explicitly routes map-triggered encounters to `legacyCombatTab` (legacy `resolveCombatRound` loop). The comment says "map-triggered encounters use the legacy path; the new Hazard-style combat is reachable standalone via `npm run combat`." Updating the fishing-village walkthrough (`automation/scripts/walkthroughs/fishing-village-exploration.json`) to drive Hazard-Pattern Combat requires this routing to change first — otherwise the walkthrough JSON's encounter steps will still enter the legacy tab. `divergences.md:83-98` (DIV-MECH-005) confirms the block was lifted when Phase 165 shipped (DIV-MECH-001 resolved), but the game.cli.ts routing decision remains open.
