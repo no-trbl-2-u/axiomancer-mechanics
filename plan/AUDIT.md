@@ -46,13 +46,6 @@
 
 ## Pending
 
-- [ ] **[Z — critique-89 LOW-2] `CardDieCost` interface not exported as a type from `src/Combat/index.ts` or `src/index.ts`**
-  - area: public surface / types
-  - observation: `CardDieCost` (defined at `src/Combat/combat.engine.ts:114`) is the return type of both `resolveCardDieCost` and `cardDieCostPreview` — both barrel-exported and documented in spec.md, bearings.md, and docs/combat.md. However, `CardDieCost` as a named type is absent from `src/Combat/index.ts` and `src/index.ts`. A consumer who wants to annotate the return type must use `ReturnType<typeof resolveCardDieCost>` or inline the shape.
-  - suggested_fix: Add `CardDieCost` to the `src/Combat/index.ts` type-export block (alongside `CombatCard`, `CombatEncounterState`, etc.) and to `src/index.ts` Combat type group. Refresh `scripts/public-surface.expected.json` (adds 1 type entry). Verify fixture is byte-stable post-build + deploy:check green.
-  - source: critique-89 (commit b7d377f)
-  - score: 3 × 8 / 10 = 2.4
-
 - [ ] **[Z — critique-89 LOW-1] 9 Spec 25 engine helpers absent from spec.md Contracts and bearings.md locked-contract group**
   - area: docs / front-door contracts
   - observation: `COMBAT_DICE_COUNT`, `COMBAT_HAND_SIZE`, `COMBAT_DIE_FACES`, `rollCombatDice`, `combatDieCanPower`, `refreshOneDie`, `toCombatCard`, `projectDeck`, `classifyVerbClass`, `buildCombatDeck` are all in `src/index.ts` (lines 110-112) and the public-surface fixture, but absent from the spec.md Contracts Combat row and bearings.md locked-contract group — same silent-accumulation pattern as passes 83/87/88. All have internal callers; not dead code.
@@ -67,6 +60,8 @@
   - source: critique-87 LOW-3 (commit 9b6e037); divergences.md DIV-MECH-005
 
 ## Done
+
+- [x] **[Z — critique-89 LOW-2] `CardDieCost` interface not exported as a type from `src/Combat/index.ts` or `src/index.ts`** — resolved at `bd75f48` (iterate, 2026-06-25). Added `export type { CardDieCost } from './combat.engine'` to `src/Combat/index.ts` and `CardDieCost` to the `export type { ... } from './Combat'` block in `src/index.ts`; refreshed `scripts/public-surface.expected.json` (585 values / 396 types, +1 type). 2041 tests + type-check + lint + build green. Score 3 × 8 / 10 = 2.4. Source: critique-89 (commit b7d377f).
 
 - [x] **[Z — api] `isSyntheticCard` documented but absent from root barrel** — resolved at `c9dc545` (iterate, 2026-06-25). Added `isSyntheticCard` to `src/index.ts` Spec 25 block alongside `SYNTHETIC_CARD_IDS`; refreshed `scripts/public-surface.expected.json` (584→585 values / 395 types). 2041 tests + type-check + lint + build green. Score 8 × 9 / 10 = 7.2. Source: critique-89 (commit b7d377f).
 
