@@ -214,11 +214,20 @@ Game:       createGameStore, GameState, nullAdapter, persistence adapters
             6 → 7 with migrateV6toV7),
             (+ RESOURCE_CARRY const (FRACTION/CAP) — defaults for the Skills
             carryPhilosophicalResources cross-combat carry)
+            (+ DEFENSE_MULTIPLIERS { advantage/neutral/disadvantage } + PASSIVE_DEFENSE_MULTIPLIER —
+            active/passive defense stance bonuses;
+            MAX_EFFECT_INTENSITY (10) + MAX_EFFECT_DURATION (99) — effect stack caps;
+            FRIENDSHIP_COUNTER_MAX (3) — befriend attempts before success)
 World:      createStartingWorld, world reducer, WorldState, MapState, MapDefinition
             (+ getNodeEventPool / getNodeEventKinds / getNodePrimaryEventKind —
             node-event-kind read API over the registered MapEventPools; lets a
             client preview which MapEventKinds a given continent/map/node fires
             without resolving an event)
+            (+ runMinigameHarness — Phase 148 harness runner for minigame
+            simulation/replay; NarrationPayload — Phase 83 type for 'narration'
+            MapEventKind payload; getShadowedNodeOverrideKeys — Phase 161
+            no-shadow parity guard: returns keys overridden in both the default
+            pool and the override map for a given map)
 Hazard (re-exported via World/*): wildcard surface; key combat-bridge predicates:
             dieCanPower(dieKind, cardKind) — whether a die kind can power a card
             of a given Hazard color; dieCanPowerCard(dieKind, cardDef) — same
