@@ -46,12 +46,7 @@
 
 ## Pending
 
-- [ ] **[Z — critique-89 LOW-1] 9 Spec 25 engine helpers absent from spec.md Contracts and bearings.md locked-contract group**
-  - area: docs / front-door contracts
-  - observation: `COMBAT_DICE_COUNT`, `COMBAT_HAND_SIZE`, `COMBAT_DIE_FACES`, `rollCombatDice`, `combatDieCanPower`, `refreshOneDie`, `toCombatCard`, `projectDeck`, `classifyVerbClass`, `buildCombatDeck` are all in `src/index.ts` (lines 110-112) and the public-surface fixture, but absent from the spec.md Contracts Combat row and bearings.md locked-contract group — same silent-accumulation pattern as passes 83/87/88. All have internal callers; not dead code.
-  - suggested_fix: Add the 10 names to the spec.md Contracts Combat row (Spec 25 annotation block, after the existing helpers) and to the bearings.md Combat group Spec 25 annotation. Doc-only; no fixture change needed.
-  - source: critique-89 (commit b7d377f)
-  - score: 2 × 9 / 10 = 1.8
+- [x] **[Z — critique-89 LOW-1] 9 Spec 25 engine helpers absent from spec.md Contracts and bearings.md locked-contract group** — resolved at `e2eca58` (iterate, 2026-06-25). Added `COMBAT_DICE_COUNT`, `COMBAT_HAND_SIZE`, `COMBAT_DIE_FACES`, `rollCombatDice`, `combatDieCanPower`, `refreshOneDie`, `toCombatCard`, `projectDeck`, `classifyVerbClass`, `buildCombatDeck` to the spec.md Contracts Combat row (after die-cost helpers annotation) and matching block to bearings.md Combat group. Doc-only; 2041 tests + type-check + lint + build green. Score 2 × 9 / 10 = 1.8. Source: critique-89 (commit b7d377f).
 
 - [ ] **[E — docs drift] spec.md Faction row missing 9 exports; spec.md Playtest row missing 10 exports; spec.md NPCs row missing 5 exports; spec.md Utils row missing 9 exports**
   - area: docs / front-door contracts
