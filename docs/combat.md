@@ -585,6 +585,8 @@ progression levers, keeping status effects the win path.
 | `AUTHORED_THREAT_ENEMY_IDS` | Read-only array of every enemy slug that has a deterministic authored threat sequence (i.e. keys of `combat.threat-sequences.ts`). Length = 61 at `v0.32.0`. |
 | `rerollSpentDice(state, rng?)` / `hasRerollableDice(state)` / `dieIsRerollable(die)` | PR #190 — partial Press Fate re-roll: re-rolls only spent/exhausted + dead `x`-face dice, leaving usable dice in play. A no-op (refunds Conviction) when nothing is rerollable. |
 | `COMBAT_DECK_PRESETS` / `COMBAT_DECK_PRESET_ORDER` / `listDeckPresets()` / `getDeckPreset(id)` / `buildPresetDeck(id)` | PR #190 — five named preset decks (Erosion, Saturation, Bulwark, Onslaught, Generalist), each with a single design focus. `buildPresetDeck` appends the synthetic Retreat baseline and is ready to feed `initializeCombatEncounter`. |
+| `CombatDeckPreset`, `CombatDeckFocus` | PR #190 type exports — `CombatDeckPreset` describes a single named preset deck entry (id, label, focus, cardIds); `CombatDeckFocus` is the discriminated string union of the five design-focus tags (`erosion` / `saturation` / `bulwark` / `onslaught` / `generalist`). Both are importable as `import type { CombatDeckPreset, CombatDeckFocus } from 'axiomancer-mechanics'`. |
+| `CardDieCost` | Die-cost helper type — `{ cost: number; advantage: boolean }` returned by `resolveCardDieCost` and `cardDieCostPreview`. Importable as `import type { CardDieCost } from 'axiomancer-mechanics'`. |
 | `CombatIntentType`, `CombatReadResult`, `SignatureSkill`, `SignatureSkillId`, `SignatureSkillKind`, `PlayerArchetype` | The depth-layer type family. |
 
 The whole roster is now authored for this system: `combat.threat-sequences.ts`

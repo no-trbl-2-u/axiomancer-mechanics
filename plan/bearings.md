@@ -119,13 +119,16 @@ Combat:     determineAdvantage, getAttackStat, getDefenseStat, getSaveStat,
             (+ PR #190 partial Press Fate re-roll (2026-06-23) — rerollSpentDice,
             hasRerollableDice, dieIsRerollable (combat.dice); preset combat decks —
             COMBAT_DECK_PRESETS, COMBAT_DECK_PRESET_ORDER, listDeckPresets,
-            getDeckPreset, buildPresetDeck (combat.deck-presets).)
+            getDeckPreset, buildPresetDeck (combat.deck-presets) + types
+            CombatDeckPreset / CombatDeckFocus.)
             (+ synthetic card ids — SYNTHETIC_CARD_IDS (readonly string[], currently
             ['card-retreat']), isSyntheticCard (combat.cards) — built-in non-deck
             cards injected by the deck builder; filtered out of reward drafts.)
             (+ die-cost helpers — resolveCardDieCost(cardColor, enemyPhaseStance)
             → CardDieCost { cost, advantage } (RPS-based die cost for playing a card);
-            cardDieCostPreview — read-only preview variant for UI rendering.)
+            cardDieCostPreview — read-only preview variant for UI rendering;
+            CardDieCost — named type export (importable as
+            `import type { CardDieCost } from 'axiomancer-mechanics'`).)
             (+ Spec 25 engine/deck-build helpers — COMBAT_DICE_COUNT / COMBAT_HAND_SIZE /
             COMBAT_DIE_FACES (tuning constants); rollCombatDice (rolls the initial die pool);
             combatDieCanPower (die-affordance check); refreshOneDie (refresh a single spent
