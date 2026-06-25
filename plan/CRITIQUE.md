@@ -66,13 +66,7 @@
 
 ## Pending
 
-- [ ] **[LOW] docs — `PASSIVE_DEFENSE_MULTIPLIER` absent from `docs/game.md` constants table**
-  - pass: critique-91 (commit e7d16a3)
-  - area: docs
-  - observation: `PASSIVE_DEFENSE_MULTIPLIER` is exported from the root barrel (`src/index.ts:235`) and listed in spec.md Contracts Game row, but the `docs/game.md` constants table (the consumer-facing reference) documents only `DEFENSE_MULTIPLIERS`, `MAX_EFFECT_INTENSITY`, `MAX_EFFECT_DURATION`, and `FRIENDSHIP_COUNTER_MAX`. The passive-defense multiplier (value: 1) is silently absent. Same silent-accumulation pattern as prior docs-only LOWs.
-  - evidence: `docs/game.md` line 201 (constants table); `src/index.ts:235`; `spec.md` line 97 (Game row)
-  - suggested_fix: Add a `PASSIVE_DEFENSE_MULTIPLIER` row to the `docs/game.md` constants table alongside `DEFENSE_MULTIPLIERS`.
-  - source: critique
+- [x] **[LOW] docs — `PASSIVE_DEFENSE_MULTIPLIER` absent from `docs/game.md` constants table** — resolved at `b1c1260` (iterate, 2026-06-25). Added `PASSIVE_DEFENSE_MULTIPLIER` row (value: 1, "Defense multiplier when not in active defense stance") to the `docs/game.md` constants table alongside `DEFENSE_MULTIPLIERS`. Doc-only; type-check + lint + build green. Score 3 × 9 / 10 = 2.7. Source: critique-91 (commit e7d16a3).
 
 - [ ] **[LOW] docs — `getThreatSequence` and `generateDefaultThreatSequence` absent from `docs/combat.md` API table**
   - pass: critique-91 (commit e7d16a3)

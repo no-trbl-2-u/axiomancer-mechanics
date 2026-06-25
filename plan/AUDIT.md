@@ -62,7 +62,7 @@
 
 - [x] **[E — docs drift] `getShadowedNodeOverrideKeys`, `NarrationPayload`, `runMinigameHarness` absent from bearings.md World group** — resolved at `4f796b8` (iterate, 2026-06-25). Added `getShadowedNodeOverrideKeys`/`runMinigameHarness`/`NarrationPayload` annotation block to bearings.md World group; added `getShadowedNodeOverrideKeys` to spec.md World row. Added `DEFENSE_MULTIPLIERS`, `PASSIVE_DEFENSE_MULTIPLIER`, `MAX_EFFECT_INTENSITY`, `MAX_EFFECT_DURATION`, `FRIENDSHIP_COUNTER_MAX` to bearings.md Game group and spec.md Game row. Doc-only; 2041 tests + type-check + lint + build green. Score 2 × 9 / 10 = 1.8.
 
-- [x] **[Z — critique-91 LOW-1] docs — `PASSIVE_DEFENSE_MULTIPLIER` absent from `docs/game.md` constants table** — resolved at `<this-commit>` (iterate, 2026-06-25). Added `PASSIVE_DEFENSE_MULTIPLIER` row (`1` / "Defense multiplier when not in active defense stance") to the `docs/game.md` constants table alongside `DEFENSE_MULTIPLIERS`. Doc-only; type-check + lint + build green. Score 3 × 9 / 10 = 2.7. Source: critique-91 (commit e7d16a3).
+- [x] **[Z — critique-91 LOW-1] docs — `PASSIVE_DEFENSE_MULTIPLIER` absent from `docs/game.md` constants table** — resolved at `b1c1260` (iterate, 2026-06-25). Added `PASSIVE_DEFENSE_MULTIPLIER` row (`1` / "Defense multiplier when not in active defense stance") to the `docs/game.md` constants table alongside `DEFENSE_MULTIPLIERS`. Doc-only; type-check + lint + build green. Score 3 × 9 / 10 = 2.7. Source: critique-91 (commit e7d16a3).
 
 - [ ] **[Z — critique-91 LOW-2] docs — `getThreatSequence` and `generateDefaultThreatSequence` absent from `docs/combat.md` API table**
   - pass: critique-91 (commit e7d16a3)
