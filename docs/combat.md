@@ -519,6 +519,11 @@ The engine lives in `src/Combat/`:
 | `initializeCombatEncounter(...)` | Builds the `CombatEncounterState` for a fight (deck, dice, threat sequence). |
 | `rollEncounterDice(state)` | Rolls the colored mana dice at phase start. |
 | `resolveCardDieCost(cardColor, enemyPhaseStance)` | Returns the `CardDieCost` for playing a card: `{ cost, advantage }`. Advantage if card stance beats the enemy phase stance (RPS), disadvantage if beaten, neutral otherwise. Wild/X dice always cost 1. |
+| `COMBAT_DICE_COUNT` / `COMBAT_HAND_SIZE` / `COMBAT_DIE_FACES` | Spec 25 tuning constants: opening dice pool size (4), max hand size (6), and the die-face bag (`heart`/`body`/`mind`/`wild` at 1/6 each; `x` at 2/6). |
+| `rollCombatDice(count?, rng?)` / `combatDieCanPower(die, cardColor)` / `refreshOneDie(dice, color)` | Dice helpers: roll the opening pool; check whether a die can power a card of a given color (wild powers any; x powers nothing unless flipped); refresh one spent die of a matching color back to available (self-reinforcing status loop, §4.7). |
+| `toCombatCard(cardId, lookupSkill, lookupEffect)` / `projectDeck(cardIds, lookupSkill, lookupEffect)` | Card-view converters: project a single skill (or synthetic card) into a `CombatCard` view, or an entire deck of ids into a `CombatCard[]` (unknown ids dropped). |
+| `classifyVerbClass(skill, lookupEffect)` | Classifies a skill into a `CombatVerbClass` + `CardEffectKind` pair. Priority: DoT > control > stat-debuff > buff > direct-damage. Used by `toCombatCard` to generate top/bottom action text. |
+| `buildCombatDeck(player)` | Assembles the player's combat deck from `knownSkills` + `combatRewardCards` (de-duped for the baseline, duplicates kept for reward cards) + the synthetic `card-retreat` baseline. Ready to feed `initializeCombatEncounter`. |
 | `playCombatCard(state, cardId, dice)` | Plays one skill card, spending dice; lands its effects and deals HP damage via status/strike. |
 | `resolveCombatPhase(state, cardsPlayed)` | Resolves a full player phase (card-play driven; replaces the per-round attack/defend resolution). |
 | `resolveThreatPhase(state)` | Resolves the enemy threat phase (Clear / Overwhelmed ledger). |
