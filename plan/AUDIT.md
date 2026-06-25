@@ -62,6 +62,20 @@
 
 - [x] **[E — docs drift] `getShadowedNodeOverrideKeys`, `NarrationPayload`, `runMinigameHarness` absent from bearings.md World group** — resolved at `4f796b8` (iterate, 2026-06-25). Added `getShadowedNodeOverrideKeys`/`runMinigameHarness`/`NarrationPayload` annotation block to bearings.md World group; added `getShadowedNodeOverrideKeys` to spec.md World row. Added `DEFENSE_MULTIPLIERS`, `PASSIVE_DEFENSE_MULTIPLIER`, `MAX_EFFECT_INTENSITY`, `MAX_EFFECT_DURATION`, `FRIENDSHIP_COUNTER_MAX` to bearings.md Game group and spec.md Game row. Doc-only; 2041 tests + type-check + lint + build green. Score 2 × 9 / 10 = 1.8.
 
+- [x] **[Z — critique-91 LOW-1] docs — `PASSIVE_DEFENSE_MULTIPLIER` absent from `docs/game.md` constants table** — resolved at `<this-commit>` (iterate, 2026-06-25). Added `PASSIVE_DEFENSE_MULTIPLIER` row (`1` / "Defense multiplier when not in active defense stance") to the `docs/game.md` constants table alongside `DEFENSE_MULTIPLIERS`. Doc-only; type-check + lint + build green. Score 3 × 9 / 10 = 2.7. Source: critique-91 (commit e7d16a3).
+
+- [ ] **[Z — critique-91 LOW-2] docs — `getThreatSequence` and `generateDefaultThreatSequence` absent from `docs/combat.md` API table**
+  - pass: critique-91 (commit e7d16a3)
+  - observation: Both functions are in the root barrel and spec.md Contracts Combat row, but `docs/combat.md` documents only `AUTHORED_THREAT_ENEMY_IDS` as the threat-sequence surface — the two function APIs that read and generate threat sequences are absent from the API table.
+  - suggested_fix: Add `getThreatSequence(enemyId)` and `generateDefaultThreatSequence(phases)` entries to the `docs/combat.md` §Hazard-Pattern Combat API table alongside `AUTHORED_THREAT_ENEMY_IDS`.
+  - score: 3 × 9 / 10 = 2.7
+
+- [ ] **[Z — critique-91 LOW-3] docs — `dropItemAtRarity`, `countNamedAffixes`, `hasBakedAffix`, `AFFIXES_PER_RARITY` absent from `docs/equipment.md`**
+  - pass: critique-91 (commit e7d16a3)
+  - observation: All four Phase 154 loot-generation helpers are in the root barrel (`src/index.ts:179`) and spec.md Contracts Items row, but absent from `docs/equipment.md`. The page documents sibling Phase 154 exports (`equipmentFromTemplate`, `generateRarityDrop`, `firstEquippedPerSlot`, `isEquippedFirstOfSlot`, `findEquippedInSlot`) but not these four.
+  - suggested_fix: Add `dropItemAtRarity`, `countNamedAffixes`, `hasBakedAffix`, `AFFIXES_PER_RARITY` rows to `docs/equipment.md` alongside the existing Phase 154 loot-generation entries.
+  - score: 3 × 9 / 10 = 2.7
+
 - [ ] **[needs-user-call — DIV-MECH-005] game.cli.ts map-encounter routing: route to Hazard-Pattern Combat instead of legacy `resolveCombatRound`**
   - area: mechanics / CLI
   - observation: `game.cli.ts:180-183` explicitly routes map-triggered encounters to `legacyCombatTab` (legacy `resolveCombatRound` loop). The comment says "map-triggered encounters use the legacy path; the new Hazard-style combat is reachable standalone via `npm run combat`." Updating the fishing-village walkthrough (`automation/scripts/walkthroughs/fishing-village-exploration.json`) to drive Hazard-Pattern Combat requires this routing to change first — otherwise the walkthrough JSON's encounter steps will still enter the legacy tab. `divergences.md:83-98` (DIV-MECH-005) confirms the block was lifted when Phase 165 shipped (DIV-MECH-001 resolved), but the game.cli.ts routing decision remains open.
@@ -132,6 +146,10 @@
 - [x] **[E — docs drift] Front-door docs referenced removed `getResistStat`** — resolved at `45b611e` (2026-06-18). `getResistStat` was removed at Phase 106 (v0.13.0) but `README.md:84` still listed it as a `_(deprecated)_` Combat stat accessor and `docs/api.md:56` called it "deprecated (use `getSaveStat`)". Dropped the README accessor entry and corrected api.md to "removed at v0.13.0 (use `getSaveStat`)". No source change (symbol already gone); verify green. Score 5 × 9 / 10 = 4.5.
 
 ## Audit Pass Log
+
+### 2026-06-25 (Pass 116) — Z–H walk (march→iterate dispatch)
+
+Z: CRITIQUE.md Pending has 3 LOWs from critique-91 — `PASSIVE_DEFENSE_MULTIPLIER` absent from `docs/game.md` (LOW-1); `getThreatSequence`/`generateDefaultThreatSequence` absent from `docs/combat.md` API table (LOW-2); `dropItemAtRarity`/`countNamedAffixes`/`hasBakedAffix`/`AFFIXES_PER_RARITY` absent from `docs/equipment.md` (LOW-3). A: all 146 test files passing (2041 tests); `vi.spyOn(Math,'random')` clean outside test-utils; no new `*.engine.test.ts` gaps. B: Specs 26-30 blank `> Your answer:` stale (Pressure-Track model removed; await `/oversight`); Knowledge-Gaps Q28 deferred (endgame). C: zero `@ts-ignore`/`as any` in non-test src; lint exits 0. D: no dead code. E: docs current aside from critique-91 LOWs above. F: lint green. G: `@types/node` 25→26 major (skip per policy). H: working tree clean. Top finding: [Z] critique-91 LOW-1 — `PASSIVE_DEFENSE_MULTIPLIER` absent from `docs/game.md` constants table (score 3 × 9 / 10 = 2.7). Shipping this tick. Remaining queue: critique-91 LOW-2 (getThreatSequence/generateDefaultThreatSequence docs, 2.7) and LOW-3 (dropItemAtRarity/countNamedAffixes/hasBakedAffix/AFFIXES_PER_RARITY docs, 2.7).
 
 ### 2026-06-25 (Pass 115) — Z–H walk (march→iterate dispatch)
 

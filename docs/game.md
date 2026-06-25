@@ -199,6 +199,7 @@ Core balance values are defined in `game-mechanics.constants.ts`:
 | `EXPERIENCE_PER_LEVEL` | `100` | XP required per level |
 | `STAT_POINTS_PER_LEVEL` | `2` | Stat points gained per level |
 | `DEFENSE_MULTIPLIERS` | `{ advantage: 3, neutral: 2, disadvantage: 1.5 }` | Active defense stance bonuses |
+| `PASSIVE_DEFENSE_MULTIPLIER` | `1` | Defense multiplier when not in active defense stance |
 | `MAX_EFFECT_INTENSITY` | `10` | Maximum effect stack intensity |
 | `MAX_EFFECT_DURATION` | `99` | Maximum effect duration in rounds |
 | `FRIENDSHIP_COUNTER_MAX` | `3` | Befriend attempts before success |
