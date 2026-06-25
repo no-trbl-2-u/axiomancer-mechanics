@@ -46,8 +46,6 @@
 
 ## Pending
 
-- [ ] **[E — docs drift] `spec.md` Contracts Combat row missing 10 Spec 26/26b exports** — `discardCombatCard`, `getDraftedDie`, `isPhaseStanceRevealed`, `revealedCurrentStance` (turn lifecycle) and `getSignatureSkill`, `SIGNATURE_SKILL_LIST`, `SIGNATURE_KITS`, `STARTING_SKILL_ID`, `SignatureSkillId`, `SignatureSkillKind` (Signature Skills) are all in `src/index.ts` and listed in `plan/bearings.md` Spec 26/26b block but absent from `spec.md` Contracts Combat row. Score: 3 × 9 / 10 = 2.7.
-
 - [ ] **[needs-user-call — DIV-MECH-005] game.cli.ts map-encounter routing: route to Hazard-Pattern Combat instead of legacy `resolveCombatRound`**
   - area: mechanics / CLI
   - observation: `game.cli.ts:180-183` explicitly routes map-triggered encounters to `legacyCombatTab` (legacy `resolveCombatRound` loop). The comment says "map-triggered encounters use the legacy path; the new Hazard-style combat is reachable standalone via `npm run combat`." Updating the fishing-village walkthrough (`automation/scripts/walkthroughs/fishing-village-exploration.json`) to drive Hazard-Pattern Combat requires this routing to change first — otherwise the walkthrough JSON's encounter steps will still enter the legacy tab. `divergences.md:83-98` (DIV-MECH-005) confirms the block was lifted when Phase 165 shipped (DIV-MECH-001 resolved), but the game.cli.ts routing decision remains open.
@@ -55,6 +53,8 @@
   - source: critique-87 LOW-3 (commit 9b6e037); divergences.md DIV-MECH-005
 
 ## Done
+
+- [x] **[E — docs drift] `spec.md` Contracts Combat row missing 10 Spec 26/26b exports** — resolved at `c1871a0` (iterate, 2026-06-25). Added turn lifecycle (`discardCombatCard`, `getDraftedDie`, `isPhaseStanceRevealed`, `revealedCurrentStance`) and Signature Skills (`getSignatureSkill`, `SIGNATURE_SKILL_LIST`, `SIGNATURE_KITS`, `STARTING_SKILL_ID`, `SignatureSkillId`, `SignatureSkillKind`) to the spec.md Contracts Combat row Spec 26/26b block. All 10 were in `src/index.ts` and `plan/bearings.md` but absent from spec.md. Doc-only; type-check + lint + build green. Score 3 × 9 / 10 = 2.7.
 
 - [x] **[E — docs drift] `dropItemAtRarity`, `countNamedAffixes`, `hasBakedAffix`, `AFFIXES_PER_RARITY` absent from spec.md Items contracts and bearings.md** — resolved at `1c08cf4` (iterate, 2026-06-25). All 4 are in the root barrel and public-surface fixture (added Phase 154) but were not named in the spec.md Items Contracts row (which listed the group as `loot.generation` without naming the individual helpers) or bearings.md Phase 154 annotation. Added 4 helpers to spec.md Items row and extended the bearings.md Phase 154 annotation. Doc-only; type-check + lint + build green. Score 3 × 9 / 10 = 2.7.
 
