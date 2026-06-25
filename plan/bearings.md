@@ -171,10 +171,13 @@ Items:      addItem, removeItem, useConsumable, stackItem, Item (and variants)
             name),
             (+ equipmentFromTemplate + generateRarityDrop +
             GenerateRarityDropOptions / GenerateRarityDropResult types
-            (loot.generation), and firstEquippedPerSlot /
-            isEquippedFirstOfSlot / findEquippedInSlot (equipped
-            helpers) — Phase 154 loot-generation + equipped-slot read
-            APIs)
+            (loot.generation); dropItemAtRarity (single item at explicit
+            rarity), countNamedAffixes (prefix+suffix count on an
+            Equipment), hasBakedAffix (curated-variant guard),
+            AFFIXES_PER_RARITY (target prefix+suffix count per rarity);
+            and firstEquippedPerSlot / isEquippedFirstOfSlot /
+            findEquippedInSlot (equipped helpers) — Phase 154
+            loot-generation + equipped-slot read APIs)
 Game:       createGameStore, GameState, nullAdapter, persistence adapters
             (+ GameState.lastSeenAlignmentCells? — Phase 63 alignment-observer
             cache, additive optional, no GAME_STATE_VERSION bump),

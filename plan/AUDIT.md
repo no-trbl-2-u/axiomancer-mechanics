@@ -54,6 +54,8 @@
 
 ## Done
 
+- [x] **[E — docs drift] `dropItemAtRarity`, `countNamedAffixes`, `hasBakedAffix`, `AFFIXES_PER_RARITY` absent from spec.md Items contracts and bearings.md** — resolved at `<this-commit>` (iterate, 2026-06-25). All 4 are in the root barrel and public-surface fixture (added Phase 154) but were not named in the spec.md Items Contracts row (which listed the group as `loot.generation` without naming the individual helpers) or bearings.md Phase 154 annotation. Added 4 helpers to spec.md Items row and extended the bearings.md Phase 154 annotation. Doc-only; type-check + lint + build green. Score 3 × 9 / 10 = 2.7.
+
 - [x] **[D — dead code] `stanceBeats` in `src/Combat/index.ts` sub-barrel has zero external consumers** — resolved at `df0e857` (iterate, 2026-06-24). `stanceBeats(a, b)` is defined and used only within `combat.engine.ts` (5 callers, all internal); removed from the `src/Combat/index.ts` export block. Zero external consumers confirmed by grep; not in root barrel or fixture. 146 test files / 2041 tests + type-check + lint + build green. Score 3 × 8 / 10 = 2.4. Source: expand pass 79 audit (commit b97ea30).
 
 - [x] **[E — docs drift] `docs/combat.md` Spec 25 API table missing `resolveCardDieCost`** — resolved at `b97553a` (iterate, 2026-06-24). `resolveCardDieCost(cardColor, enemyPhaseStance)` is a public root barrel export (in `scripts/public-surface.expected.json`) — the RPS die-cost helper returning `{ cost, advantage }` for a card stance vs. enemy phase stance — but had no row in `docs/combat.md` §Hazard-Pattern Combat API table. Added a row between `rollEncounterDice` and `playCombatCard`. Doc-only; type-check + lint + build green. Score 3 × 9 / 10 = 2.7.
