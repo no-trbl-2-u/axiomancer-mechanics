@@ -50,19 +50,9 @@
 
 - [x] **[Z — critique-90 LOW-3] 9 Spec 25 engine helpers absent from `docs/combat.md` API table** — resolved at `783ca9e` (iterate, 2026-06-25). Added 5 rows to `docs/combat.md` §Hazard-Pattern Combat API table covering: `COMBAT_DICE_COUNT`/`COMBAT_HAND_SIZE`/`COMBAT_DIE_FACES` constants; `rollCombatDice`/`combatDieCanPower`/`refreshOneDie` dice helpers; `toCombatCard`/`projectDeck` card-view converters; `classifyVerbClass` intent classifier; `buildCombatDeck` deck assembler. Doc-only; type-check + lint + build green. Score 2 × 9 / 10 = 1.8. Source: critique-90 (commit 608a931).
 
-- [ ] **[Z — critique-90 LOW-1] `CardDieCost` not listed as named type export in spec.md + bearings.md types sequence**
-  - area: docs
-  - observation: `CardDieCost` is a named type export on the root barrel (added at `bd75f48`, now in the fixture at 396 types) and mentioned inline in spec.md Contracts Combat row + bearings.md as a return-type annotation for `resolveCardDieCost`. However it is NOT listed as a standalone named type alongside `SignatureSkill`, `CombatReadResult`, `CombatIntentType`, `PlayerArchetype` etc. in the spec.md types sequence or bearings.md types list.
-  - evidence: `spec.md` types sequence ends `SignatureSkill`, `SignatureSkillId`, `SignatureSkillKind`, `CombatReadResult`, `CombatIntentType`, `PlayerArchetype` — no `CardDieCost`; `plan/bearings.md` Combat group same omission; `scripts/public-surface.expected.json` type `CardDieCost` present.
-  - suggested_fix: Add `CardDieCost` to the spec.md Combat types list and bearings.md types annotation after `CombatIntentType`/`PlayerArchetype`. Doc-only; no code change.
-  - score: 2 × 9 / 10 = 1.8
+- [x] **[Z — critique-90 LOW-1] `CardDieCost` not listed as named type export in spec.md + bearings.md types sequence** — resolved at `cc93eb0` (iterate, 2026-06-25). Added `CardDieCost` as a named type to spec.md die-cost annotation and bearings.md die-cost block. Score 2 × 9 / 10 = 1.8. Source: critique-90 (commit 6569da3).
 
-- [ ] **[Z — critique-90 LOW-2] `CombatDeckPreset` and `CombatDeckFocus` absent from spec.md + bearings.md + docs/combat.md**
-  - area: docs
-  - observation: `CombatDeckPreset` and `CombatDeckFocus` are in the public fixture as types (from PR #190 preset deck system, shipped at `3337d32`). The PR #190 annotation in spec.md Contracts Combat row documents the value exports but omits the two type exports. Both are absent from bearings.md locked-contract group and docs/combat.md API table.
-  - evidence: `scripts/public-surface.expected.json` types `CombatDeckPreset`, `CombatDeckFocus` present; `spec.md` PR #190 block types absent; `plan/bearings.md` types absent; `docs/combat.md` PR #190 row types absent.
-  - suggested_fix: Add `CombatDeckPreset` and `CombatDeckFocus` to the spec.md PR #190 annotation and bearings.md, and add a types note to the docs/combat.md §Spec 26/26b preset deck table row. Doc-only; no code change.
-  - score: 2 × 9 / 10 = 1.8
+- [x] **[Z — critique-90 LOW-2] `CombatDeckPreset` and `CombatDeckFocus` absent from spec.md + bearings.md + docs/combat.md** — resolved at `cc93eb0` (iterate, 2026-06-25, bundled with LOW-1 — same files). Added `CombatDeckPreset`/`CombatDeckFocus` to spec.md PR #190 block + bearings.md; added types row to docs/combat.md §Spec 26/26b table. Score 2 × 9 / 10 = 1.8. Source: critique-90 (commit 6569da3).
 
 - [ ] **[E — docs drift] spec.md Faction row missing 9 exports; spec.md Playtest row missing 10 exports; spec.md NPCs row missing 5 exports; spec.md Utils row missing 9 exports**
   - area: docs / front-door contracts
