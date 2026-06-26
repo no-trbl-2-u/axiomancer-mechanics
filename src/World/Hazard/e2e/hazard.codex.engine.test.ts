@@ -473,6 +473,187 @@ describe('FORETELL state machine', () => {
     });
 });
 
+// ---------------------------------------------------------------------------
+// New-card mechanics — commit b271270 (JEOPARDY / MIRACLE / BUYBACK / DELVE)
+// ---------------------------------------------------------------------------
+
+describe('JEOPARDY', () => {
+    it('bonus force fires when ≥1 round mark is already X', () => {
+        let s = playingSession(5);
+        s = rig(s, { marks: ['X', 'pending', 'pending'] });
+        const baseForce = s.progressBase.force;
+        s = stageAndApply(s, 'spite');
+        const def = getHazardCardDef('spite');
+        expect(s.progressBase.force - baseForce).toBe(def.jeopardyForce ?? 0);
+    });
+
+    it('no jeopardy bonus when no X marks exist', () => {
+        let s = playingSession(5);
+        s = rig(s, { marks: ['O', 'pending', 'pending'] });
+        const baseForce = s.progressBase.force;
+        s = stageAndApply(s, 'spite');
+        expect(s.progressBase.force - baseForce).toBe(0);
+    });
+
+    it('CORNERED (reward) major jeopardy bonus fires on X mark', () => {
+        let s = playingSession(5);
+        s = rig(s, { marks: ['X', 'pending', 'pending'] });
+        const baseForce = s.progressBase.force;
+        s = stageAndApply(s, 'r_cornered');
+        const def = getHazardCardDef('r_cornered');
+        expect(s.progressBase.force - baseForce).toBe(def.jeopardyForce ?? 0);
+    });
+
+    it('RALLY CRY gives both force and escape jeopardy bonuses', () => {
+        let s = playingSession(5);
+        s = rig(s, { marks: ['X', 'pending', 'pending'] });
+        const baseForce = s.progressBase.force;
+        const baseEscape = s.progressBase.escape;
+        s = stageAndApply(s, 'r_rallycry');
+        const def = getHazardCardDef('r_rallycry');
+        expect(s.progressBase.force - baseForce).toBe(def.jeopardyForce ?? 0);
+        expect(s.progressBase.escape - baseEscape).toBe(def.jeopardyEscape ?? 0);
+    });
+});
+
+describe('MIRACLE (first-play)', () => {
+    it('bonus fires when card is the first applied this round', () => {
+        let s = playingSession(5);
+        s = rig(s, { play: [] });
+        const baseForce = s.progressBase.force;
+        const baseEscape = s.progressBase.escape;
+        s = stageAndApply(s, 'firstlight');
+        const def = getHazardCardDef('firstlight');
+        expect(s.progressBase.force - baseForce).toBe(def.firstPlayForce ?? 0);
+        expect(s.progressBase.escape - baseEscape).toBe(def.firstPlayEscape ?? 0);
+    });
+
+    it('no miracle bonus when another card was applied first', () => {
+        let s = playingSession(5);
+        const priorApplied = { uid: 'prior', cardId: 'steps', dieId: null, applied: true };
+        s = rig(s, { play: [priorApplied] });
+        const baseForce = s.progressBase.force;
+        s = rig(s, { hand: [{ uid: 'fl', cardId: 'firstlight', dieId: null }] });
+        s = stageHazardCard(s, 'fl', BAG);
+        s = applyHazardCard(s, 'fl', BAG);
+        expect(s.progressBase.force - baseForce).toBe(0);
+    });
+
+    it('PRIMUS (reward) gives first-play bonus to both force and escape', () => {
+        let s = playingSession(5);
+        s = rig(s, { play: [] });
+        const baseForce = s.progressBase.force;
+        const baseEscape = s.progressBase.escape;
+        s = stageAndApply(s, 'r_primus');
+        const def = getHazardCardDef('r_primus');
+        expect(s.progressBase.force - baseForce).toBe(def.firstPlayForce ?? 0);
+        expect(s.progressBase.escape - baseEscape).toBe(def.firstPlayEscape ?? 0);
+    });
+
+    it('OPENING RITE force miracle does not fire when prior card already applied', () => {
+        let s = playingSession(5);
+        const priorApplied = { uid: 'prior2', cardId: 'steps', dieId: null, applied: true };
+        s = rig(s, { play: [priorApplied] });
+        const baseForce = s.progressBase.force;
+        s = rig(s, { hand: [{ uid: 'or1', cardId: 'r_openingrite', dieId: null }] });
+        s = stageHazardCard(s, 'or1', BAG);
+        s = applyHazardCard(s, 'or1', BAG);
+        expect(s.progressBase.force - baseForce).toBe(0);
+    });
+});
+
+describe('DELVE', () => {
+    it('no delve bonus when discard pile is empty', () => {
+        let s = playingSession(5);
+        s = rig(s, { discardPile: [] });
+        const baseForce = s.progressBase.force;
+        s = stageAndApply(s, 'r_depthcharge');
+        expect(s.progressBase.force - baseForce).toBe(0);
+    });
+
+    it('delve bonus scales with discard pile size', () => {
+        let s = playingSession(5);
+        const discardPile = ['steps', 'haul', 'steps'];
+        s = rig(s, { discardPile });
+        const baseForce = s.progressBase.force;
+        s = stageAndApply(s, 'r_depthcharge');
+        const def = getHazardCardDef('r_depthcharge');
+        expect(s.progressBase.force - baseForce).toBe((def.delveForce ?? 0) * discardPile.length);
+    });
+
+    it('CIPHER (reward) burst fires and delve bonus scales escape by discard pile size', () => {
+        let s = playingSession(5);
+        const discardPile = ['steps', 'haul'];
+        s = rig(s, { discardPile });
+        const baseEscape = s.progressBase.escape;
+        s = stageAndApply(s, 'r_cipher');
+        const def = getHazardCardDef('r_cipher');
+        const burstEscape = def.burstBase?.escape ?? 0;
+        expect(s.progressBase.escape - baseEscape).toBe(burstEscape + (def.delveEscape ?? 0) * discardPile.length);
+    });
+
+    it('DELVE gives zero bonus at exactly 0 discard cards vs N discard cards', () => {
+        const def = getHazardCardDef('r_inscription');
+        let sEmpty = playingSession(5);
+        sEmpty = rig(sEmpty, { discardPile: [] });
+        const baseBefore = sEmpty.progressBase.escape;
+        sEmpty = stageAndApply(sEmpty, 'r_inscription');
+        expect(sEmpty.progressBase.escape - baseBefore).toBe(0);
+
+        let sFull = playingSession(5);
+        const pile = ['steps', 'haul'];
+        sFull = rig(sFull, { discardPile: pile });
+        const baseBeforeFull = sFull.progressBase.escape;
+        sFull = stageAndApply(sFull, 'r_inscription');
+        expect(sFull.progressBase.escape - baseBeforeFull).toBe((def.delveEscape ?? 0) * pile.length);
+    });
+});
+
+describe('BUYBACK', () => {
+    it('powered buyback card returns to hand after round, not to discard', () => {
+        let s = playingSession(5, 'safe');
+        const goldDie = die('gBk', 'gold');
+        s = rig(s, {
+            dice: [...s.dice.filter((d) => d.kind !== 'gold'), goldDie],
+            hand: [{ uid: 'bk1', cardId: 'r_eternal', dieId: null }],
+            play: [],
+        });
+        s = stageHazardCard(s, 'bk1', BAG);
+        s = { ...s, play: s.play.map((p) => (p.uid === 'bk1' ? { ...p, dieId: 'gBk' } : p)), dice: s.dice.map((d) => (d.id === 'gBk' ? { ...d, state: 'spent' as const } : d)) };
+        s = applyHazardCard(s, 'bk1', BAG);
+        s = rig(s, {
+            marks: ['O', 'O', 'pending'],
+            progressBase: { force: 999, escape: 0 },
+            hand: [],
+        });
+        s = resolveHazardRound(s, BAG);
+        s = continueHazardAfterResolve(s, BAG);
+        expect(s.phase).toBe('playing');
+        expect(s.hand.some((h) => h.cardId === 'r_eternal')).toBe(true);
+        expect(s.discardPile.includes('r_eternal')).toBe(false);
+    });
+
+    it('unpowered buyback card goes to discard (no free return)', () => {
+        let s = playingSession(5, 'safe');
+        s = rig(s, {
+            hand: [{ uid: 'bk2', cardId: 'refrain', dieId: null }],
+            play: [],
+        });
+        s = stageHazardCard(s, 'bk2', BAG);
+        s = applyHazardCard(s, 'bk2', BAG);
+        s = rig(s, {
+            marks: ['O', 'O', 'pending'],
+            progressBase: { force: 999, escape: 0 },
+            hand: [],
+        });
+        s = resolveHazardRound(s, BAG);
+        s = continueHazardAfterResolve(s, BAG);
+        expect(s.phase).toBe('playing');
+        expect(s.hand.some((h) => h.cardId === 'refrain')).toBe(false);
+        expect(s.discardPile.includes('refrain')).toBe(true);
+    });
+});
+
 describe('CRACK-as-punishment', () => {
     it('a failed round inserts a CRACK card before the next round draws', () => {
         let s = playingSession(5, 'safe');
