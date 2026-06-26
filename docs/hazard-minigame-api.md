@@ -167,6 +167,7 @@ Mobile owns:
 - Gold cards are rare/powerful and normally require gold dice to power.
 - Red, blue, purple, and gold all include direct and utility cards; utility includes draw, convert, recast, enchant/aura, burst, vow, choose, and related manipulation.
 - Score is the `O`/`X` mark ledger. `hazardTierOf` maps marks to `perfect`, `complete`, or `failure`.
+- A failed round (progress threshold not reached, `resolveInfo.cleared === false`) automatically inserts a FRACTURE (CRACK) card into the middle of the draw pile before the next round begins. FRACTURE contributes 0 force/escape and clogs the hand; only a PURGE-family card removes it during a session. Mobile must not insert or count CRACK cards locally — the engine handles this in `processBetweenHazardRounds`.
 - Rewards and consequences come from `claimHazardRewards` and the authored hazard/reward tables, not local mobile math.
 
 ## Presenter guidance
