@@ -231,8 +231,10 @@ World:      createStartingWorld, world reducer, WorldState, MapState, MapDefinit
 Hazard (re-exported via World/*): wildcard surface; key combat-bridge predicates:
             dieCanPower(dieKind, cardKind) — whether a die kind can power a card
             of a given Hazard color; dieCanPowerCard(dieKind, cardDef) — same
-            check against a full HazardCardDef. Referenced by combat.dice.ts
-            die-affordance logic. Key state-machine entry point:
+            check against a full HazardCardDef; hazardCardPowerColors(def) —
+            returns the set of die colors that can power a given card (sibling
+            predicate to dieCanPower/dieCanPowerCard, used for UI die-drop hints).
+            Referenced by combat.dice.ts die-affordance logic. Key state-machine entry point:
             confirmHazardForetell(session, orderedIds) — resolves the
             foretell-pending state after a FORETELL card play (restores captured
             dice, applies SCOUR discard if scour mode active, awards drawCount
