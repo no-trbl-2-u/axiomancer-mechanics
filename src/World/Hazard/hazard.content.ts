@@ -52,11 +52,14 @@ export const HAZARD_KEYWORDS: Record<HazardKeywordId, { name: string; desc: stri
     vow: { name: 'VOW', desc: 'Primes a one-time boon onto the next wild GOLD die you spend.' },
     choose: { name: 'CHOOSE', desc: 'You pick which meter its powered value feeds when you apply it.' },
     purge: { name: 'PURGE', desc: 'Cuts CRACK dead weight out of your deck for the rest of this crossing. Minor cuts one; major scours hand, pile, and discard.' },
-    transmute: { name: 'TRANSMUTE', desc: 'Recolors your unspent dice to this card’s colour. Minor turns one; major turns them all. Hostile ✕ stays hostile.' },
+    transmute: { name: 'TRANSMUTE', desc: "Recolors your unspent dice to this card's colour. Minor turns one; major turns them all. Hostile ✕ stays hostile." },
     mend: { name: 'MEND', desc: 'Restores VITAE when you claim a survived crossing. A failure forfeits the cure.' },
     bounty: { name: 'BOUNTY', desc: 'Banks shillings paid out when you claim a survived crossing. A failure forfeits the purse.' },
-    ward: { name: 'WARD', desc: 'Blunts the route’s VITAE penalty for lost rounds, down to nothing.' },
+    ward: { name: 'WARD', desc: "Blunts the route's VITAE penalty for lost rounds, down to nothing." },
     anchor: { name: 'ANCHOR', desc: 'Sets a momentum FLOOR — you carry at least this much into the next round, even off a failed round.' },
+    foretell: { name: 'FORETELL', desc: 'Look at the top cards of your deck and put them back in any order. Powered: also discard one of them.' },
+    echo: { name: 'ECHO', desc: 'Adds bonus progress for each card you already played this round. The later you play it, the bigger the payoff.' },
+    scour: { name: 'SCOUR', desc: 'Look at the top cards and permanently discard any number of them — they leave your deck for good. Thinning.' },
 };
 
 // ---------------------------------------------------------------------------
@@ -66,7 +69,8 @@ export const HAZARD_KEYWORDS: Record<HazardKeywordId, { name: string; desc: stri
 
 export const HAZARD_DECK: HazardCardDef[] = [
     // RED — pure FORCE numbers (single meter), considerably higher than purple.
-    { id: 'steps', name: 'STONE STEPS', kind: 'red', rarity: 'common', weight: 3, f: C.redBlue.common.free, e: 0, fp: C.redBlue.common.powered, ep: 0, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'Kick footholds into the failing rock.', keywords: ['force', 'surge'] },
+    // STONE STEPS: weight:0 keeps the def for legacy saves; new games use IRON WILL instead.
+    { id: 'steps', name: 'STONE STEPS', kind: 'red', rarity: 'common', weight: 0, f: C.redBlue.common.free, e: 0, fp: C.redBlue.common.powered, ep: 0, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'Kick footholds into the failing rock.', keywords: ['force', 'surge'] },
     { id: 'haul', name: 'DEAD-MAN HAUL', kind: 'red', rarity: 'common', weight: 3, f: C.redBlue.common.free, e: 0, fp: C.redBlue.common.powered, ep: 0, salvage: { type: 'mana' }, flavor: 'Drag yourself up by rope and will.', keywords: ['force', 'surge'] },
     { id: 'grip', name: 'IRON GRIP', kind: 'red', rarity: 'uncommon', weight: 2, f: C.redBlue.uncommon.free, e: 0, fp: C.redBlue.uncommon.powered, ep: 0, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'Hands like a closing vise.', keywords: ['force', 'surge'] },
 
@@ -86,6 +90,18 @@ export const HAZARD_DECK: HazardCardDef[] = [
     // DUAL number that only appears once a (wild) gold die is applied. Rare.
     { id: 'oath', name: 'UNBROKEN OATH', kind: 'gold', rarity: 'rare', weight: 1, f: C.gold.free, e: C.gold.free, fp: C.gold.powered, ep: C.gold.powered, effect: 'draw', majorEffect: true, drawBase: U.drawMajor, drawPowered: U.drawMajor, salvage: { type: 'mana' }, flavor: 'You will not fall. You refuse — and the path answers.', keywords: ['gilded', 'draw', 'surge'] },
     { id: 'blessing', name: "PILGRIM'S BLESSING", kind: 'gold', rarity: 'rare', weight: 1, f: C.gold.free, e: C.gold.free, fp: C.gold.strongPowered, ep: C.gold.strongPowered, effect: 'recast', majorEffect: true, salvage: { type: 'mana' }, flavor: 'Something older than the cliff steadies your hand.', keywords: ['gilded', 'recast', 'surge'] },
+
+    // ── KEYWORD EXPANSION (2026-06-25) — 3 starter cards replace 3 STONE STEPS ──
+
+    // STEADIED HAND: teaches ENCHANT. Free dual + aura on surge.
+    { id: 'steadied', name: 'STEADIED HAND', kind: 'purple', rarity: 'common', weight: 1, f: 1, e: 1, fp: 1, ep: 1, effect: 'aura', auraBase: { auraForce: 1 }, auraPowered: { auraForce: 1 }, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'The grip tightens. The ledge does not.', keywords: ['enchant', 'surge'] },
+
+    // FORK IN THE ROAD: teaches CHOOSE. Small free dual + choose-a-meter on surge.
+    { id: 'fork', name: 'FORK IN THE ROAD', kind: 'purple', rarity: 'common', weight: 1, f: C.purple.free, e: C.purple.free, fp: C.purple.powered, ep: C.purple.powered, choose: true, salvage: { type: 'mana' }, flavor: 'Two paths diverge. You choose which stone holds your weight.', keywords: ['choose', 'surge'] },
+
+    // IRON WILL: teaches ANCHOR. Common-stat force card + momentum floor on surge.
+    // Uses common (not uncommon) numbers so the ANCHOR is the value, not raw force.
+    { id: 'ironwill', name: 'IRON WILL', kind: 'red', rarity: 'uncommon', weight: 1, f: C.redBlue.common.free, e: 0, fp: C.redBlue.common.powered, ep: 0, effect: 'anchor', anchorBase: CX.anchor.minor, anchorPowered: CX.anchor.major, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'The cliff takes what it wants. The rest is yours.', keywords: ['force', 'anchor', 'surge'] },
 ];
 
 /**
@@ -304,6 +320,73 @@ export const HAZARD_REWARD_CARDS: HazardCardDef[] = [
     { id: 'x_mooringline', name: 'MOORING LINE', kind: 'blue', rarity: 'uncommon', f: 0, e: CX.numbers.common.free, fp: 0, ep: CX.numbers.common.powered, effect: 'anchor', anchorBase: CX.anchor.minor, anchorPowered: CX.anchor.major, salvage: { type: 'progress', key: 'escape', amount: 1 }, flavor: 'However far you swing, you start tomorrow attached.', keywords: ['escape', 'anchor', 'surge'] },
     { id: 'x_rootedstance', name: 'ROOTED STANCE', kind: 'red', rarity: 'uncommon', f: CX.numbers.common.free, e: 0, fp: CX.numbers.common.powered, ep: 0, effect: 'anchor', anchorBase: CX.anchor.minor, anchorPowered: CX.anchor.major, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'Lose the round, keep the ground.', keywords: ['force', 'anchor', 'surge'] },
     { id: 'x_oldcapstan', name: 'THE OLD CAPSTAN', kind: 'purple', rarity: 'rare', f: CX.dual.rare.free, e: CX.dual.rare.free, fp: CX.dual.rare.free, ep: CX.dual.rare.free, effect: 'anchor', anchorBase: CX.anchor.major, anchorPowered: CX.anchor.major, salvage: { type: 'mana' }, flavor: 'It has hauled worse days than this one ashore.', keywords: ['anchor', 'surge'] },
+
+    // ====================================================================
+    // KEYWORD EXPANSION (2026-06-25) — new mechanics: RALLY-ESC / FORETELL.
+    // ====================================================================
+
+    // --- RALLY-ESCAPE (1) — mirrors WAR-CRY for escape. -----------------------
+    { id: 'r_tideturn', name: 'TIDE TURNS', kind: 'blue', rarity: 'uncommon', f: 0, e: C.redBlue.uncommon.free, fp: 0, ep: C.redBlue.uncommon.powered, effect: 'burst', burstPerUnspentDieEscape: 1, salvage: { type: 'progress', key: 'escape', amount: 1 }, flavor: 'Read the gap. Time the step.', keywords: ['escape', 'rally', 'surge'] },
+
+    // --- SACRIFICE + dual burst (1). -------------------------------------------
+    { id: 'r_bloodprice', name: 'BLOOD PRICE', kind: 'red', rarity: 'uncommon', f: C.redBlue.uncommon.free, e: 0, fp: 0, ep: 0, effect: 'burst', burstPowered: { force: 8, escape: 4 }, vitaeCost: 4, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'The mountain takes its toll in blood. Pay it.', keywords: ['force', 'sacrifice', 'surge'] },
+
+    // --- PURGE (1) — early access to crack removal. ----------------------------
+    { id: 'r_thepurge', name: 'THE PURGE', kind: 'purple', rarity: 'uncommon', f: CX.purge.number, e: CX.purge.number, fp: CX.purge.number, ep: CX.purge.number, effect: 'purge', salvage: { type: 'mana' }, flavor: 'Dead weight is a choice you keep making.', keywords: ['purge', 'surge'] },
+
+    // --- TRANSMUTE (1) — dice recolour. ----------------------------------------
+    { id: 'r_spuncoin', name: 'SPUN COIN', kind: 'purple', rarity: 'uncommon', f: CX.transmute.number, e: CX.transmute.number, fp: CX.transmute.number, ep: CX.transmute.number, effect: 'transmute', salvage: { type: 'mana' }, flavor: 'The right colour, at the right moment — the impossible gap becomes a step.', keywords: ['transmute', 'surge'] },
+
+    // --- WARD (1) — extra penalty blunting. ------------------------------------
+    { id: 'r_pilward', name: "PILGRIM'S WARD", kind: 'purple', rarity: 'rare', f: CX.dual.rare.free, e: CX.dual.rare.free, fp: CX.dual.rare.free, ep: CX.dual.rare.free, effect: 'ward', wardBase: CX.ward.minor, wardPowered: CX.ward.major, salvage: { type: 'mana' }, flavor: 'Carry your skin lightly and the road breaks upon it.', keywords: ['ward', 'surge'] },
+
+    // --- FORETELL (2) — scry / deck manipulation. ------------------------------
+    { id: 'r_readpath', name: 'READ THE PATH', kind: 'purple', rarity: 'common', f: C.purple.free, e: C.purple.free, fp: C.purple.powered, ep: C.purple.powered, effect: 'foretell', foretellBase: 2, foretellPowered: 2, salvage: { type: 'progress', key: 'escape', amount: 1 }, flavor: 'Some maps are written in the stones ahead.', keywords: ['foretell', 'surge'] },
+    { id: 'r_secondsight', name: 'SECOND SIGHT', kind: 'blue', rarity: 'uncommon', f: 0, e: C.redBlue.uncommon.free, fp: 0, ep: C.redBlue.uncommon.powered, effect: 'foretell', foretellBase: 2, foretellPowered: 3, salvage: { type: 'progress', key: 'escape', amount: 1 }, flavor: 'The mind that sees three steps ahead never slips.', keywords: ['escape', 'foretell', 'surge'] },
+
+    // ====================================================================
+    // MTG EXPANSION (2026-06-25) — ECHO / SCOUR / PURGE+DRAW / SACRIFICE+MEND
+    // Inspired by Scryfall research: Storm, Surveil, Flashback patterns.
+    // ====================================================================
+
+    // --- ECHO — burst that rewards chain-playing (MTG Storm analogue). --------
+    // Free tier: +3 force per card already applied. Powered: +6 per card.
+    // Play last in a 3-card chain for a 9 or 18 force gut-punch.
+    { id: 'r_tempestecho', name: 'TEMPEST ECHO', kind: 'red', rarity: 'rare', f: 4, e: 0, fp: 0, ep: 0, effect: 'burst', burstBase: { force: 4 }, echoPerCardForce: 3, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'Each word earns the next. The last one costs the most.', keywords: ['force', 'burst', 'echo', 'surge'] },
+    { id: 'r_chaincurrent', name: 'CHAIN CURRENT', kind: 'blue', rarity: 'rare', f: 0, e: 4, fp: 0, ep: 0, effect: 'burst', burstBase: { escape: 4 }, echoPerCardEscape: 3, salvage: { type: 'progress', key: 'escape', amount: 1 }, flavor: 'Momentum compounds without asking permission.', keywords: ['escape', 'burst', 'echo', 'surge'] },
+    // Dual echo: +2/+2 per card applied. Rewards balanced mixed-color play.
+    { id: 'r_risingchorus', name: 'RISING CHORUS', kind: 'purple', rarity: 'rare', f: C.purple.free, e: C.purple.free, fp: C.purple.powered, ep: C.purple.powered, effect: 'burst', echoPerCardForce: 2, echoPerCardEscape: 2, salvage: { type: 'mana' }, flavor: 'The steps keep time. The cliff keeps count.', keywords: ['burst', 'echo', 'surge'] },
+
+    // --- SCOUR — Surveil equivalent: look at top N, permanently discard any. ----
+    // Unlike FORETELL (which reorders), SCOUR thins the deck permanently.
+    { id: 'r_oraclesgaze', name: "ORACLE'S GAZE", kind: 'purple', rarity: 'rare', f: C.purple.strong, e: C.purple.strong, fp: C.purple.strong, ep: C.purple.strong, effect: 'foretell', foretellBase: 3, foretellPowered: 4, foretellScour: true, salvage: { type: 'mana' }, flavor: 'What she sees, she may also bury.', keywords: ['scour', 'surge'] },
+    // High-information card: look at 2, draw 2, but costs 3 vitae (DARK KNOWLEDGE).
+    { id: 'r_darkknowledge', name: 'DARK KNOWLEDGE', kind: 'purple', rarity: 'rare', f: C.purple.free, e: C.purple.free, fp: C.purple.powered, ep: C.purple.powered, effect: 'foretell', foretellBase: 2, foretellPowered: 3, foretellScour: true, foretellDrawCount: 2, vitaeCost: 3, salvage: { type: 'mana' }, flavor: 'True sight costs the body something. Pay.', keywords: ['scour', 'sacrifice', 'surge'] },
+
+    // --- PURGE + DRAW combo (MTG cycling / Soul-Guide Lantern pattern). ----------
+    // Purge one CRACK and immediately draw a replacement card.
+    { id: 'r_cleanbreak', name: 'CLEAN BREAK', kind: 'purple', rarity: 'uncommon', f: CX.purge.number, e: CX.purge.number, fp: CX.purge.number, ep: CX.purge.number, effect: 'purge', purgeDrawCount: 1, salvage: { type: 'mana' }, flavor: 'Cut the rot. The deck breathes. A new card rises.', keywords: ['purge', 'draw', 'surge'] },
+
+    // --- SACRIFICE + MEND rider (MTG Starving Revenant pattern). ----------------
+    // Pay vitae for a burst of force, but the mend at claim partially offsets the cost.
+    { id: 'r_martyrdom', name: 'MARTYRDOM', kind: 'red', rarity: 'rare', f: 0, e: 0, fp: 0, ep: 0, effect: 'burst', burstBase: { force: 14 }, vitaeCost: 6, burstMendBase: 3, burstMendPowered: 5, salvage: { type: 'progress', key: 'force', amount: 2 }, flavor: 'Bleed now. The path pays it back — barely.', keywords: ['force', 'burst', 'sacrifice', 'mend', 'surge'] },
+    // Blue version: sacrifice for escape + mend.
+    { id: 'r_desperatelunge', name: 'DESPERATE LUNGE', kind: 'blue', rarity: 'rare', f: 0, e: 0, fp: 0, ep: 0, effect: 'burst', burstBase: { escape: 12 }, vitaeCost: 4, burstMendBase: 2, burstMendPowered: 4, salvage: { type: 'progress', key: 'escape', amount: 2 }, flavor: 'The gap was closed by someone who could not afford to miss.', keywords: ['escape', 'burst', 'sacrifice', 'mend', 'surge'] },
+
+    // --- FORETELL + burst combo (FATEFUL STEP: see ahead then strike). -----------
+    { id: 'r_fatecard', name: 'FATEFUL STEP', kind: 'purple', rarity: 'rare', f: C.purple.free, e: C.purple.free, fp: C.purple.powered, ep: C.purple.powered, effect: 'foretell', foretellBase: 2, foretellPowered: 2, salvage: { type: 'mana' }, flavor: 'See the next step. Then take it — hard.', keywords: ['foretell', 'burst', 'surge'] },
+
+    // --- SCOUR + FORCE (SEER'S DISCIPLINE): look at 3, discard 2, get force. ---
+    { id: 'r_seersdiscipline', name: "SEER'S DISCIPLINE", kind: 'red', rarity: 'uncommon', f: CX.numbers.uncommon.free, e: 0, fp: CX.numbers.uncommon.powered, ep: 0, effect: 'foretell', foretellBase: 3, foretellPowered: 3, foretellScour: true, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'The soldier culls the plan until only the move remains.', keywords: ['force', 'scour', 'surge'] },
+
+    // --- ECHO + GOLD (gilded storm): gold card with echo bonus. -----------------
+    { id: 'r_gildedsurge', name: 'GILDED SURGE', kind: 'gold', rarity: 'rare', f: C.gold.free, e: C.gold.free, fp: C.gold.powered, ep: C.gold.powered, effect: 'burst', majorEffect: true, burstBase: { force: 4, escape: 4 }, echoPerCardForce: 2, echoPerCardEscape: 2, salvage: { type: 'mana' }, flavor: 'The gold die finds the end of a story already in motion.', keywords: ['gilded', 'burst', 'echo', 'surge'] },
+
+    // --- WARD (big numbers, rare) — high-value penalty blunting. ----------------
+    { id: 'r_ironshell', name: 'IRON SHELL', kind: 'purple', rarity: 'rare', f: CX.dual.rare.free, e: CX.dual.rare.free, fp: CX.dual.rare.free, ep: CX.dual.rare.free, effect: 'ward', wardBase: CX.ward.major, wardPowered: CX.ward.major, salvage: { type: 'mana' }, flavor: 'Blunt the toll. Lock the floor. Refuse to slide.', keywords: ['ward', 'anchor', 'surge'] },
+
+    // --- FORETELL + DRAW (WAYSTONE: see 2, then draw 1 — balanced information). --
+    { id: 'r_waystone', name: 'WAYSTONE', kind: 'purple', rarity: 'uncommon', f: C.purple.free, e: C.purple.free, fp: C.purple.powered, ep: C.purple.powered, effect: 'foretell', foretellBase: 2, foretellPowered: 2, foretellDrawCount: 1, salvage: { type: 'mana' }, flavor: 'Mark the path, then step it.', keywords: ['foretell', 'draw', 'surge'] },
 ];
 
 export function getHazardCardDef(cardId: string): HazardCardDef {

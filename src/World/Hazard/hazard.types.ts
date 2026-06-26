@@ -107,7 +107,12 @@ export type HazardUtilityEffect =
     | 'mend'
     | 'bounty'
     | 'ward'
-    | 'anchor';
+    | 'anchor'
+    // ── keyword expansion (2026-06-25) ──
+    | 'foretell'
+    // ── MTG expansion (2026-06-25) ──
+    | 'echo'
+    | 'scour';
 
 export type HazardKeywordId =
     | 'surge'
@@ -132,7 +137,12 @@ export type HazardKeywordId =
     | 'mend'
     | 'bounty'
     | 'ward'
-    | 'anchor';
+    | 'anchor'
+    // ── keyword expansion (2026-06-25) ──
+    | 'foretell'
+    // ── MTG expansion (2026-06-25) ──
+    | 'echo'
+    | 'scour';
 
 /**
  * Persistent enchantment modifiers (auras). Accumulated on the session by
@@ -229,6 +239,8 @@ export interface HazardCardDef {
     burstPowered?: { force?: number; escape?: number };
     /** WAR-CRY: +force per unspent non-hex die in the pool, fired on apply. */
     burstPerUnspentDieForce?: number;
+    /** TIDE TURNS: +escape per unspent non-hex die in the pool, fired on apply. */
+    burstPerUnspentDieEscape?: number;
     /** SACRIFICE (BLOODPRICE): VITAE spent on apply (accrues to session). */
     vitaeCost?: number;
     /** GILDED VOW (`effect: 'goldvow'`): one-shot bonus primed onto the next
@@ -257,6 +269,35 @@ export interface HazardCardDef {
      */
     anchorBase?: number;
     anchorPowered?: number;
+    /**
+     * FORETELL (`effect: 'foretell'`): reveal top N cards, reorder freely.
+     * At powered tier the player may also discard one of the revealed cards.
+     * When `foretellScour` is true the player may discard ANY number of
+     * revealed cards (Surveil-equivalent — permanent deck thinning).
+     */
+    foretellBase?: number;
+    foretellPowered?: number;
+    foretellScour?: boolean;
+    /** Draw N cards after the FORETELL resolves (awarded in confirmHazardForetell). */
+    foretellDrawCount?: number;
+    /**
+     * ECHO (`effect: 'burst'` variant inspired by MTG Storm): +force/escape for
+     * each card ALREADY applied this round. Rewards playing ECHO last in a chain.
+     * Powered tier doubles the per-card bonus.
+     */
+    echoPerCardForce?: number;
+    echoPerCardEscape?: number;
+    /**
+     * PURGE combo: after a PURGE effect fires, draw this many cards.
+     * Rewards the "cut dead weight, draw fresh options" pattern.
+     */
+    purgeDrawCount?: number;
+    /**
+     * MEND rider alongside a BURST effect: queues a vitae restoration at claim.
+     * Lets sacrifice-burst cards offset their vitae cost with a mend promise.
+     */
+    burstMendBase?: number;
+    burstMendPowered?: number;
     /**
      * Dead cards (consequence CRACK cards) cannot be powered and
      * contribute nothing — they only clog the hand.
@@ -487,6 +528,7 @@ export type HazardPhase =
     | 'route-select'
     | 'rolling'
     | 'playing'
+    | 'foretell-pending'
     | 'resolve-flash'
     | 'outcome'
     | 'rewards'
@@ -531,6 +573,12 @@ export interface HazardSessionState {
     /** Momentum FLOOR: minimum total carry banked into the next round,
      *  even off a failed round (ANCHOR cards). Respects `momentumCap`. */
     carryFloor: number;
+    /**
+     * FORETELL pending state: revealed card ids, powered flag, scour mode
+     * (allows discarding any number, not just one), and optional draw reward
+     * after the player confirms their ordering.
+     */
+    foretellPending: { revealed: string[]; powered: boolean; scour: boolean; drawCount: number } | null;
     resolveInfo: HazardResolveInfo | null;
     outcome: HazardOutcome | null;
     /** Reward card picked in the rewards phase (null = skipped / none). */

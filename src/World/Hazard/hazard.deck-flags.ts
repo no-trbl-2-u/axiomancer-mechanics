@@ -23,7 +23,9 @@ export function hazardStarterBag(): string[] {
     const scale = HAZARD_TUNING.deck.starterWeightScale;
     const bag: string[] = [];
     for (const card of HAZARD_DECK) {
-        const copies = Math.max(1, Math.round((card.weight ?? 1) * scale));
+        const w = card.weight ?? 1;
+        if (w === 0) continue; // weight:0 = keep def accessible but exclude from starter
+        const copies = Math.max(1, Math.round(w * scale));
         for (let i = 0; i < copies; i++) bag.push(card.id);
     }
     return bag;

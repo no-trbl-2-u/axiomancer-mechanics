@@ -28,11 +28,17 @@ const RUNS = 300;
 describe('hazard balance bands (greedy bot, no re-cast doctrine)', () => {
     for (const hazard of HAZARD_LIBRARY) {
         describe(hazard.title, () => {
-            it('safe route stays forgiving but no longer easy (tuned: ~30-40% perfect, ~0-3% failure)', () => {
+            // 2026-06-25: threshold raised 0.52 → 0.65 after starter deck refresh.
+            // Three STONE STEPS copies replaced with STEADIED HAND (dual 1+1 + aura),
+            // FORK IN THE ROAD (choose), IRON WILL (force + anchor). The aura bonus
+            // lifts the greedy bot's perfect rate to ~55-58% on safe routes, which is
+            // intentional — the new cards add more decision depth and a slightly higher
+            // ceiling. The failure cap (0.1) still holds.
+            it('safe route stays forgiving but no longer easy (tuned: ~45-65% perfect, ~0-3% failure)', () => {
                 const stats = simulateHazard(hazard.id, 'safe', BAG, RUNS);
                 expect(stats.atLeastOneWinRate).toBeGreaterThanOrEqual(0.9);
                 expect(stats.perfectRate).toBeGreaterThanOrEqual(0.18);
-                expect(stats.perfectRate).toBeLessThanOrEqual(0.52);
+                expect(stats.perfectRate).toBeLessThanOrEqual(0.65);
                 expect(stats.failureRate).toBeLessThanOrEqual(0.1);
             });
 

@@ -126,6 +126,8 @@ export {
     selectSubquestFromDraft,
     getHazardDeckIdentity,
     removeHazardDeckCard,
+    // Foretell resolution (2026-06-25)
+    confirmHazardForetell,
 } from './hazard.engine';
 
 // ── Simulation / balance evidence ──────────────────────────────────────────

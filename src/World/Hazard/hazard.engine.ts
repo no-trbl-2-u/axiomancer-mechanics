@@ -22,6 +22,7 @@ import {
     getHazardCardDef,
     getHazardDef,
     getHazardSubquestDef,
+    HAZARD_CRACK_CARD,
     HAZARD_DIE_FACES,
     HAZARD_REWARD_CARDS,
     HAZARD_SUBQUESTS,
@@ -295,6 +296,7 @@ export function createHazardSession(
         bountyShillings: 0,
         wardPenaltyReduction: 0,
         carryFloor: 0,
+        foretellPending: null,
         resolveInfo: null,
         outcome: null,
         pickedRewardCardId: null,
@@ -426,8 +428,24 @@ function applyUtilityEffect(
             const unspent = s.dice.filter((d) => d.kind !== 'hex' && d.state === 'available').length;
             force += unspent * def.burstPerUnspentDieForce;
         }
+        if (def.burstPerUnspentDieEscape) {
+            const unspent = s.dice.filter((d) => d.kind !== 'hex' && d.state === 'available').length;
+            escape += unspent * def.burstPerUnspentDieEscape;
+        }
+        // ECHO (MTG Storm analogue): +force/escape per card already applied this round.
+        // Powered tier doubles the per-card bonus — ECHO cards shine when played last.
+        if (def.echoPerCardForce || def.echoPerCardEscape) {
+            const alreadyApplied = s.play.filter((p) => p.applied).length;
+            const mult = major ? 2 : 1;
+            force += alreadyApplied * (def.echoPerCardForce ?? 0) * mult;
+            escape += alreadyApplied * (def.echoPerCardEscape ?? 0) * mult;
+        }
         const vitaeCost = s.vitaeCost + (def.vitaeCost ?? 0);
-        if (force === 0 && escape === 0 && vitaeCost === s.vitaeCost) return s;
+        // MEND rider: sacrifice-burst cards may also promise a vitae mend at claim.
+        const vitaeRestore = s.vitaeRestore + (major
+            ? (def.burstMendPowered ?? def.burstMendBase ?? 0)
+            : (def.burstMendBase ?? 0));
+        if (force === 0 && escape === 0 && vitaeCost === s.vitaeCost && vitaeRestore === s.vitaeRestore) return s;
         return {
             ...s,
             progressBase: {
@@ -435,6 +453,7 @@ function applyUtilityEffect(
                 escape: s.progressBase.escape + escape,
             },
             vitaeCost,
+            vitaeRestore,
         };
     }
     if (def.effect === 'goldvow') {
@@ -446,23 +465,37 @@ function applyUtilityEffect(
         // first, then the draw pile; major scours hand, pile, AND discard
         // (so a refill never shuffles the flaw back in this session).
         const isCrack = (cardId: string) => getHazardCardDef(cardId).dead === true;
+        let afterPurge: HazardSessionState;
         if (major) {
-            return {
+            afterPurge = {
                 ...s,
                 hand: s.hand.filter((h) => !isCrack(h.cardId)),
                 drawPile: s.drawPile.filter((id) => !isCrack(id)),
                 discardPile: s.discardPile.filter((id) => !isCrack(id)),
             };
+        } else {
+            const handIdx = s.hand.findIndex((h) => isCrack(h.cardId));
+            if (handIdx >= 0) {
+                afterPurge = { ...s, hand: s.hand.filter((_, i) => i !== handIdx) };
+            } else {
+                const pileIdx = s.drawPile.findIndex(isCrack);
+                afterPurge = pileIdx >= 0
+                    ? { ...s, drawPile: s.drawPile.filter((_, i) => i !== pileIdx) }
+                    : s;
+            }
         }
-        const handIdx = s.hand.findIndex((h) => isCrack(h.cardId));
-        if (handIdx >= 0) {
-            return { ...s, hand: s.hand.filter((_, i) => i !== handIdx) };
+        // Purge+Draw combo: some purge cards reward the clean-up with extra cards.
+        if (def.purgeDrawCount && def.purgeDrawCount > 0) {
+            const draw = drawFromPile(afterPurge.rng, afterPurge.uidCounter, afterPurge.drawPile, deckBag, def.purgeDrawCount);
+            return {
+                ...afterPurge,
+                hand: [...afterPurge.hand, ...draw.drawn],
+                drawPile: draw.drawPile,
+                rng: draw.rng,
+                uidCounter: draw.uidCounter,
+            };
         }
-        const pileIdx = s.drawPile.findIndex(isCrack);
-        if (pileIdx >= 0) {
-            return { ...s, drawPile: s.drawPile.filter((_, i) => i !== pileIdx) };
-        }
-        return s;
+        return afterPurge;
     }
     if (def.effect === 'transmute') {
         // TRANSMUTE: recolor available dice to THIS card's colour (hex
@@ -498,6 +531,21 @@ function applyUtilityEffect(
         const amount = (major ? def.anchorPowered ?? def.anchorBase : def.anchorBase) ?? 0;
         if (amount <= 0) return s;
         return { ...s, carryFloor: Math.min(s.momentumCap, s.carryFloor + amount) };
+    }
+    if (def.effect === 'foretell') {
+        // Pause in foretell-pending: reveal top N cards, let player reorder (and
+        // in powered/scour mode optionally discard any number of them).
+        // confirmHazardForetell resolves the pending state back to 'playing'.
+        const n = major ? (def.foretellPowered ?? def.foretellBase ?? 2) : (def.foretellBase ?? 2);
+        const revealed = s.drawPile.slice(0, n);
+        const drawCount = def.foretellDrawCount ?? 0;
+        const scour = def.foretellScour ?? false;
+        return {
+            ...s,
+            phase: 'foretell-pending',
+            drawPile: s.drawPile.slice(n),
+            foretellPending: { revealed, powered: major, scour, drawCount },
+        };
     }
     return s;
 }
@@ -1014,9 +1062,16 @@ export function continueHazardAfterResolve(
         const { outcome, rng } = computeOutcome(s, deckBag);
         return { ...s, phase: 'outcome', outcome, resolveInfo: null, rng };
     }
+    let drawPile = s.drawPile;
+    // CRACK-as-punishment: a failed round shuffles FRACTURE into the middle
+    // of the draw pile — it clogs the hand and only PURGE can remove it.
+    if (!info.cleared) {
+        const mid = Math.floor(drawPile.length / 2);
+        drawPile = [...drawPile.slice(0, mid), HAZARD_CRACK_CARD.id, ...drawPile.slice(mid)];
+    }
     const discardPile = [...s.discardPile, ...s.play.map((p) => p.cardId)];
     const drawCount = Math.max(0, HAZARD_HAND_SIZE - s.hand.length);
-    const draw = drawFromPile(s.rng, s.uidCounter, s.drawPile, deckBag, drawCount);
+    const draw = drawFromPile(s.rng, s.uidCounter, drawPile, deckBag, drawCount);
     return {
         ...s,
         phase: 'playing',
@@ -1051,6 +1106,53 @@ export function claimHazardRewards(s: HazardSessionState, cardId: string | null)
     if (cardId !== null && !s.outcome.offerCards.find((c) => c.id === cardId)) return s;
     if (cardId === null && s.outcome.offerCards.length > 0 && !s.outcome.canSkip) return s;
     return { ...s, phase: 'done', pickedRewardCardId: cardId };
+}
+
+// ---------------------------------------------------------------------------
+// FORETELL resolution
+// ---------------------------------------------------------------------------
+
+/**
+ * Resolves a `foretell-pending` pause. The player has seen the revealed cards
+ * and chosen their order. `orderedIds` are the card ids to put back on top of
+ * the draw pile (in desired order). Any revealed card NOT in `orderedIds` goes
+ * to the discard pile — this naturally handles:
+ *  - Normal FORETELL (reorder only): pass all revealed cards back.
+ *  - Powered FORETELL (discard 1): omit one id from `orderedIds`.
+ *  - SCOUR mode: omit any number (or all) of the revealed cards.
+ *
+ * After reordering, if the foretell carried a `drawCount`, that many cards are
+ * drawn into hand as a bonus (DARK KNOWLEDGE / WAYSTONE pattern).
+ */
+export function confirmHazardForetell(
+    s: HazardSessionState,
+    orderedIds: string[],
+    deckBag: readonly string[],
+): HazardSessionState {
+    if (s.phase !== 'foretell-pending' || !s.foretellPending) return s;
+    const { revealed, drawCount } = s.foretellPending;
+    // Any revealed card not included in orderedIds is permanently discarded.
+    const keptSet = new Set(orderedIds);
+    const permanentDiscard = revealed.filter((id) => !keptSet.has(id));
+    let ns: HazardSessionState = {
+        ...s,
+        phase: 'playing',
+        foretellPending: null,
+        drawPile: [...orderedIds, ...s.drawPile],
+        discardPile: [...s.discardPile, ...permanentDiscard],
+    };
+    // DARK KNOWLEDGE / WAYSTONE draw reward.
+    if (drawCount > 0) {
+        const draw = drawFromPile(ns.rng, ns.uidCounter, ns.drawPile, deckBag, drawCount);
+        ns = {
+            ...ns,
+            hand: [...ns.hand, ...draw.drawn],
+            drawPile: draw.drawPile,
+            rng: draw.rng,
+            uidCounter: draw.uidCounter,
+        };
+    }
+    return ns;
 }
 
 // ---------------------------------------------------------------------------
