@@ -232,7 +232,11 @@ Hazard (re-exported via World/*): wildcard surface; key combat-bridge predicates
             dieCanPower(dieKind, cardKind) — whether a die kind can power a card
             of a given Hazard color; dieCanPowerCard(dieKind, cardDef) — same
             check against a full HazardCardDef. Referenced by combat.dice.ts
-            die-affordance logic.
+            die-affordance logic. Key state-machine entry point:
+            confirmHazardForetell(session, orderedIds) — resolves the
+            foretell-pending state after a FORETELL card play (restores captured
+            dice, applies SCOUR discard if scour mode active, awards drawCount
+            bonus if foretellDrawCount set).
 Utils:      clamp, randomInt, deepClone, deriveStats, calculateMaxHealth,
             createDieRoll, isCharacter, isEnemy
 Philosophy: bucketAxis, getAlignmentCell, applyAlignmentDelta, defaultAlignment,
