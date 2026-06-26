@@ -176,6 +176,9 @@ This land enters tapped.
 
 ---
 
+
+> ⚠️ **MARKED FOR REMOVAL** — Does not fit Axiomancer's 3-round hazard sessions.
+> Replace with: **Jump-start** — Discard a card from hand to replay this from discard — better fit for 3-round sessions where full replay is rarely meaningful.
 ## Flashback — cast again from discard pile (one-time)
 
 **MTG Rules:** "You may cast this card from your graveyard for its flashback cost. Then exile it."
@@ -387,6 +390,9 @@ Madness {2}{B}.
 
 ---
 
+
+> ⚠️ **MARKED FOR REMOVAL** — Does not fit Axiomancer's 3-round hazard sessions.
+> Replace with: **Channel** — Alternative discard effect: this card has two modes — normal apply OR discard from hand for a different effect.
 ## Dredge — replace a draw with a graveyard return
 
 **MTG Rules:** "If you would draw a card, you may mill N cards instead. If you do, return
@@ -611,6 +617,9 @@ At the beginning of your upkeep, this creature deals 1 damage to each player. Th
 AND adds a CRACK to the deck if vitae is low.)*
 
 ---
+
+> ⚠️ **MARKED FOR REMOVAL** — Does not fit Axiomancer's 3-round hazard sessions.
+> Replace with: **Escalate** — Pay for each mode you want — maps to progressive tier unlocking without requiring multi-die spending.
 ## Replicate — pay extra to copy the same spell N times
 
 **MTG Rules:** "When you cast this spell, you may pay {cost} any number of times. Each time you do, copy this spell."
@@ -727,6 +736,9 @@ Cipher
 Target player loses 3 life.
 Cipher
 ---
+
+> ⚠️ **MARKED FOR REMOVAL** — Does not fit Axiomancer's 3-round hazard sessions.
+> Replace with: **Escape** — Purge N cards from discard pile to replay this — cleaner than two-phase card structure; salvage already covers fire-from-discard.
 ## Aftermath — split card; back half only castable from graveyard
 
 **MTG Rules:** "[Back half]: Cast this only from your graveyard." The front is cast normally from hand; the back half is dormant in the discard pile until you choose to cast it.
