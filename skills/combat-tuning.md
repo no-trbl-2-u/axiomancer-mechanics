@@ -15,6 +15,28 @@
 > witness. Deliver findings and any numeric changes on ONE new branch + PR.
 > Nothing auto-lands on `main`.
 
+## Disambiguation — Hazard-Pattern Combat vs. Hazard Minigame
+
+There are two separate "hazard" systems in this codebase. **This skill only covers
+the fight system.**
+
+| | Hazard-Pattern Combat | Hazard Minigame |
+|---|---|---|
+| What it is | Fights against enemies (HP, Conviction, status, GUARD) | Traversal / crossing events (force/escape, rounds, deck) |
+| Skill | `/combat-tuning` ← **this file** | `/hazard-tuning` (`skills/hazard-tuning.md`) |
+| Source root | `src/Combat/` | `src/World/Hazard/` |
+| Sim witness | `simulateHazardPatternCombat` | `simulateHazard` |
+| Card pool | `src/Combat/combat.cards.ts` (Body/Mind/Heart/GUARD cards) | `src/World/Hazard/hazard.content.ts` (force/escape/purge/foretell cards) |
+| Dice | `COMBAT_DIE_FACES` in `combat.dice.ts` | `hazardDicePool()` in `hazard.engine.ts` |
+
+Both systems use the same color scheme (red/blue/purple/gold) but are entirely
+independent implementations — die-frequency changes in one do NOT affect the other.
+
+Do not cross-contaminate: hazard minigame card mechanics (JEOPARDY, MIRACLE,
+BUYBACK, DELVE, FORETELL, ECHO, SCOUR) are not present in combat cards and are
+never a tuning lever here. They ARE valid design inspiration for future combat
+card types — see the propose-only note in §4.
+
 > **Win-model note (read first).** The original Spec 25 narrative describes a
 > two-Pressure-Track win model (DoT Erosion + Control Saturation as the only win
 > conditions). **That model was REMOVED on 2026-06-22.** The live model is
@@ -96,6 +118,7 @@ alone does not answer phone-interaction questions.
 /combat-tuning --focus="blind-vs-greedy gap"
 /combat-tuning --focus="befriend mercy viability"
 /combat-tuning --focus="single-card-spam"
+/combat-tuning --focus="card-pool-variety"
 /loop 6h /combat-tuning            # periodic autonomous tuning
 ```
 
@@ -160,6 +183,22 @@ the `greedy` (ceiling) and `blind` (player-feel) policies.
 | Befriend mercy path | a control+befriend loadout reaches `mercies > 0` and `mercies ≥ victories` on a low-difficulty foe; a DoT loadout's `victories` exceed its `mercies` |
 | Avg rounds to resolve | 3–8 (boss up to ~10); not a drag, not a one-shot |
 | Single-card-spam check (propose-only metric) | no single skill id should account for >70% of a typical win's damage/impact — read `buildCombatSummary` attribution |
+| **Combat card pool variety** | direct-damage/basic-strike cards ≤ 20% of the pool; the remaining pool must contain status (DoT + control), GUARD/defense, Befriend, and state-interactive cards — analogous to the hazard minigame's <15% pure-stat rule |
+| **State-interactive card coverage** | at least one card per color pairing (Body/Mind/Heart) that reads game state (enemy stance, prior play, Conviction level) to scale its effect — pure-stat cards with no conditional are the baseline, not the norm |
+
+**Propose-only design signal — hazard minigame mechanic equivalents:** The v0.32.2
+hazard minigame introduced four engagement mechanics (JEOPARDY = bonus when losing,
+MIRACLE = bonus on first play of a round, BUYBACK = card returns to hand when powered,
+DELVE = scales with discard pile depth). None of these have combat card equivalents.
+If a tuning run finds combat engagement flat or single-card-spam dominant, these
+mechanics offer strong combat card archetypes:
+- JEOPARDY → "low-HP bonus" or "last-stand" combat card
+- MIRACLE → "opening gambit" card (bonus if first card played in a threat phase)
+- BUYBACK → card returns to deck top when played with a WILD die
+- DELVE → card scales with cards already played this encounter
+
+These are structural additions — never apply in a tuning run, only note them under
+"Propose-only findings" in the PR.
 
 **Stance-die calibration baseline (Spec 25 §4.2, current bag):**
 `COMBAT_DIE_FACES` = Heart/Body/Mind/Wild at 1/6 each + X at 2/6. Opening roll is
@@ -215,6 +254,22 @@ Read in full before forming a hypothesis:
   `SIGNATURE_KITS`, `SECOND_WIND_HEAL_FRAC`, `STRIKE_DAMAGE_MULT` (the kit
   STRUCTURE / kinds are propose-only; per-skill cost/magnitude are tunable).
 - `src/Combat/combat.deck.ts` — `COMBAT_HAND_SIZE`.
+
+**Step 1b — Card pool ratio audit.** After reading the above, tally combat cards
+by class. Flag if the pool is outside the §4 targets:
+
+| Class | What to count | Flag if |
+|---|---|---|
+| Direct-damage / basic-strike | Cards whose effect is a flat damage value with no conditions | > 20% of pool |
+| Status (DoT) | Cards that apply a damage-over-time effect | < 25% of pool |
+| Control (hard/soft) | Cards that apply stun, skip, confusion, or similar hindering effects | < 15% of pool |
+| GUARD / defense | Cards that apply GUARD soak before HP | Exists (at least 1 per color family) |
+| Befriend | Cards that enable the mercy path | At least 1 |
+| State-interactive | Cards with a conditional bonus tied to game state (low HP, prior play count, stance match, Conviction threshold) | < 2 in pool |
+
+If direct-damage cards exceed 20% or state-interactive cards are fewer than 2,
+file under "Propose-only findings" (adding or removing card types is structural —
+never applied autonomously).
 
 ### Step 2 — Run the sim evidence matrix
 The sim is the witness. Drive it via the CLI for a quick read, and via a
@@ -359,6 +414,21 @@ under-exercises some lines — see §7).
 **Mobile witness:** `axiomancer-mobile` — `/combat-encounter` route, dev button
 `debug-combat-encounter-button`, seed `globalThis.__AXM_COMBAT_SEED__`,
 e2e `npm run e2e:combat`.
+
+**Combat card pool (card-level tunable — numeric values only; new card types are propose-only):**
+- All combat cards: `src/Combat/combat.cards.ts` — base effect magnitudes, keyword intensities, GUARD soak values
+- Card class composition: tally from `combat.cards.ts` exports against the §4 ratio targets
+- GOLD card designations: `GOLD_CARD_IDS` in `combat.cards.ts` (structural, propose-only)
+- Hand size: `COMBAT_HAND_SIZE` in `combat.deck.ts`
+
+**Related system — Hazard Minigame (NOT this skill):**
+- Tuned by `/hazard-tuning` (`skills/hazard-tuning.md`)
+- Source: `src/World/Hazard/hazard.content.ts` (card pool) + `hazard.engine.ts` (mechanics)
+- Sim: `simulateHazard` + `hazardStarterBag()`
+- Cards added in v0.32.2 with no combat equivalents: JEOPARDY (`jeopardyForce`/`jeopardyEscape`),
+  MIRACLE (`firstPlayForce`/`firstPlayEscape`), BUYBACK (`buyback`), DELVE (`delveForce`/`delveEscape`)
+- If a combat-tuning run recommends adding a combat card with one of these engagement patterns,
+  note it under "Propose-only: new combat card type inspired by hazard mechanic X"
 
 **Legacy:** the turn-based combat is tuned by `/legacy-combat-tuning`
 (`skills/legacy-combat-tuning.md`) — do not conflate the two surfaces.
