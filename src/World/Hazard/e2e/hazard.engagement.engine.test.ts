@@ -12,6 +12,7 @@ import {
     calculateDeckScars,
     generateRewardOffer,
     generateSubquestDraft,
+    chooseSubquest,
     generateDeckIdentity,
     removeCardFromDeck,
     createHazardSession,
@@ -160,15 +161,34 @@ describe('Hazard Engagement (Phase 149)', () => {
             expect(draft.candidates.length).toBe(2); // Limited by available
         });
 
-        it('handles choosing a sub-quest from draft', () => {
+        it('chooseSubquest — stamps the chosen candidate by id', () => {
             const rng = seedRng('test-seed');
             const draft = generateSubquestDraft(HAZARD_SUBQUESTS, rng, 3);
             const candidateId = draft.candidates[0].id;
-            
-            const updatedDraft = { ...draft, chosen: draft.candidates[0] };
-            
-            expect(updatedDraft.chosen).toBeDefined();
-            expect(updatedDraft.chosen!.id).toBe(candidateId);
+
+            const result = chooseSubquest(draft, candidateId);
+
+            expect(result.chosen).not.toBeNull();
+            expect(result.chosen!.id).toBe(candidateId);
+        });
+
+        it('chooseSubquest — preserves candidates list unchanged', () => {
+            const rng = seedRng('test-seed');
+            const draft = generateSubquestDraft(HAZARD_SUBQUESTS, rng, 3);
+
+            const result = chooseSubquest(draft, draft.candidates[2].id);
+
+            expect(result.candidates).toEqual(draft.candidates);
+            expect(result.candidates.length).toBe(3);
+        });
+
+        it('chooseSubquest — unknown id sets chosen to null', () => {
+            const rng = seedRng('test-seed');
+            const draft = generateSubquestDraft(HAZARD_SUBQUESTS, rng, 3);
+
+            const result = chooseSubquest(draft, 'not-a-real-subquest-id');
+
+            expect(result.chosen).toBeNull();
         });
     });
 
@@ -346,6 +366,18 @@ describe('Hazard Engagement (Phase 149)', () => {
             const candidateId = draft.candidates[1].id;
             const updatedDraft = { ...draft, chosen: draft.candidates[1] };
             expect(updatedDraft.chosen!.id).toBe(candidateId);
+        });
+
+        it('chooseSubquest stamps chosen candidate onto draft', () => {
+            const rng = seedRng('test-seed');
+            const draft = generateSubquestDraft(HAZARD_SUBQUESTS, rng, 3);
+            const candidateId = draft.candidates[1].id;
+
+            const chosen = chooseSubquest(draft, candidateId);
+
+            expect(chosen.chosen).not.toBeNull();
+            expect(chosen.chosen!.id).toBe(candidateId);
+            expect(chosen.candidates).toEqual(draft.candidates);
         });
 
         it('hazard state exposes data mobile needs without rule simulation', () => {
