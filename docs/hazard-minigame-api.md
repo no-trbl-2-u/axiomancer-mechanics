@@ -73,6 +73,8 @@ import {
   selectSubquestFromDraft,
   getHazardDeckIdentity,
   removeHazardDeckCard,
+  // 2026-06-25 — Foretell resolution
+  confirmHazardForetell,
   classifyDeckFocus,
   calculateDeckScars,
   generateRewardOffer,
@@ -107,6 +109,7 @@ The engine-owned phases are:
 
 ```text
 route-select -> rolling -> playing -> resolving -> outcome -> rewards -> done
+                                    |-> foretell-pending -> playing (via confirmHazardForetell)
 ```
 
 A normal host flow is:
@@ -122,6 +125,14 @@ session = stageHazardCard(session, session.hand[0]!.uid, bag);
 session = powerHazardCard(session, session.play[0]!.uid, session.dice[0]!.id);
 session = applyHazardCard(session, session.play[0]!.uid, bag);
 session = resolveHazardRound(session, bag);
+
+if (session.phase === 'foretell-pending') {
+  // FORETELL card applied: session.foretellPending.revealed holds the reordered candidate ids.
+  // Player inspects and optionally discards (if session.foretellPending.scour is true).
+  // Call confirmHazardForetell with the desired ordering to resume playing.
+  const { revealed } = session.foretellPending!;
+  session = confirmHazardForetell(session, revealed); // or a subset for scour mode
+}
 
 if (session.phase === 'playing') {
   // next round was prepared by continueHazardAfterResolve / resolver flow
@@ -231,6 +242,37 @@ const scars = calculateDeckScars(deckCardIds);
 
 // Mobile can surface scar ratio as a deck health indicator
 const healthPercent = Math.max(0, 100 - (scars.scarRatio * 100));
+```
+
+## MTG-inspired card expansion (2026-06-25)
+
+New `HazardCardEffect` keywords and matching `HazardCardDef` fields added in `v0.32.1`:
+
+| Keyword / field | Description |
+|---|---|
+| `effect: 'foretell'` | Reveal top N draw-bag cards. Player reorders freely; with `foretellScour: true` may also permanently discard any number (Surveil-equivalent). Resolves via `confirmHazardForetell`. |
+| `foretellBase` / `foretellPowered` | Cards revealed at unpowered / powered tier. |
+| `foretellScour` | When `true`, player may discard any number of revealed cards (not just reorder). |
+| `foretellDrawCount` | Cards drawn immediately after `confirmHazardForetell` resolves. |
+| `effect: 'echo'` | Burst-scaling analogue: awards `echoPerCardForce` / `echoPerCardEscape` for each card already applied this round. Rewards playing ECHO last in a sequence. Powered tier doubles the bonus. |
+| `echoPerCardForce` / `echoPerCardEscape` | Per-card bonus force / escape for the ECHO keyword. |
+| `effect: 'scour'` | Direct deck-thinning effect that lets the player permanently discard the top N cards from the draw bag without revealing them to reorder. |
+| `purgeDrawCount` | After a PURGE effect fires, draw this many additional cards. |
+| `burstMendBase` / `burstMendPowered` | MEND rider on a BURST card: queues a vitae restoration at claim, offsetting the burst's vitae cost. |
+| `burstPerUnspentDieEscape` | TIDE TURNS variant: awards escape per unspent non-hex die still in the pool at apply time. |
+
+The `foretell-pending` session phase is the interruption point between `applyHazardCard` (FORETELL card) and the player's reorder confirmation. Mobile must check for this phase and show the revealed cards before calling `confirmHazardForetell`.
+
+```ts
+session = applyHazardCard(session, foretellCardUid, bag);
+
+if (session.phase === 'foretell-pending') {
+  const { revealed, scour } = session.foretellPending!;
+  // Mobile: show revealed cards; if scour, allow multi-select for discard
+  const orderedIds = scour ? playerSelectedSubset : revealed;
+  session = confirmHazardForetell(session, orderedIds);
+  // session.phase returns to 'playing'
+}
 ```
 
 ## Migration note
