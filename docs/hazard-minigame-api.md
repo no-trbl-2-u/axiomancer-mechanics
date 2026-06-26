@@ -245,9 +245,9 @@ const scars = calculateDeckScars(deckCardIds);
 const healthPercent = Math.max(0, 100 - (scars.scarRatio * 100));
 ```
 
-## MTG-inspired card expansion (2026-06-25)
+## MTG-inspired card expansion (2026-06-25 / 2026-06-26)
 
-New `HazardCardEffect` keywords and matching `HazardCardDef` fields added in `v0.32.1`:
+New `HazardCardEffect` keywords and matching `HazardCardDef` fields added in `v0.32.1` (FORETELL/ECHO/SCOUR/PURGE/BURSTMEND) and `v0.32.2` (JEOPARDY/MIRACLE/BUYBACK/DELVE):
 
 | Keyword / field | Description |
 |---|---|
@@ -261,6 +261,13 @@ New `HazardCardEffect` keywords and matching `HazardCardDef` fields added in `v0
 | `purgeDrawCount` | After a PURGE effect fires, draw this many additional cards. |
 | `burstMendBase` / `burstMendPowered` | MEND rider on a BURST card: queues a vitae restoration at claim, offsetting the burst's vitae cost. |
 | `burstPerUnspentDieEscape` | TIDE TURNS variant: awards escape per unspent non-hex die still in the pool at apply time. |
+| `effect: 'jeopardy'` | JEOPARDY (Spectacle analogue): awards `jeopardyForce` / `jeopardyEscape` bonus when ≥1 round mark is already `'X'` (i.e. the player has previously failed a round). Comeback mechanic — the card becomes stronger the worse things are going. No host interruption needed; engine applies the bonus automatically in `applyHazardCard`. |
+| `jeopardyForce` / `jeopardyEscape` | Bonus force / escape awarded when the jeopardy trigger fires. |
+| `effect: 'miracle'` | MIRACLE (Miracle analogue): awards `firstPlayForce` / `firstPlayEscape` bonus when this card is the **first** card applied in the current round (no prior applied cards in `s.play`). Rewards leading with the miracle card rather than saving it. No host interruption; engine checks `s.play` count at apply time. |
+| `firstPlayForce` / `firstPlayEscape` | Bonus force / escape awarded when the miracle (first-play) trigger fires. |
+| `buyback` | BUYBACK (Buyback analogue): when this card is applied **and** powered by a die (`dieId !== null`), it is returned to hand at the start of the next round (via `continueHazardAfterResolve`) instead of going to the discard pile. Mobile does not need to track this — the engine adds a fresh entry to `s.hand` automatically. |
+| `effect: 'delve'` | DELVE (Delve analogue): awards `delveForce × s.discardPile.length` and/or `delveEscape × s.discardPile.length` bonus at apply time. Scales with how many cards have already been spent — rewards late-round or multi-round commitment. No host interruption; engine reads `s.discardPile.length` at apply time. |
+| `delveForce` / `delveEscape` | Per-discard-pile-card bonus force / escape for the DELVE keyword. |
 
 The `foretell-pending` session phase is the interruption point between `applyHazardCard` (FORETELL card) and the player's reorder confirmation. Mobile must check for this phase and show the revealed cards before calling `confirmHazardForetell`.
 
