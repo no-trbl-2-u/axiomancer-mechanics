@@ -236,7 +236,13 @@ Hazard (re-exported via World/*): wildcard surface; key combat-bridge predicates
             confirmHazardForetell(session, orderedIds) — resolves the
             foretell-pending state after a FORETELL card play (restores captured
             dice, applies SCOUR discard if scour mode active, awards drawCount
-            bonus if foretellDrawCount set).
+            bonus if foretellDrawCount set). Key engagement-layer state-machine
+            functions: generateSubquestDraft(subquests, rng, count) — generates
+            draft subquest candidates from the authored pool before a session
+            begins; chooseSubquest(draft, id) — picks one candidate from the
+            draft, returning an updated HazardSubquestDraft (standalone, no
+            session state); selectSubquestFromDraft(session, id) — applies the
+            chosen subquest to a live HazardSessionState (session-level API).
 Utils:      clamp, randomInt, deepClone, deriveStats, calculateMaxHealth,
             createDieRoll, isCharacter, isEnemy
 Philosophy: bucketAxis, getAlignmentCell, applyAlignmentDelta, defaultAlignment,
