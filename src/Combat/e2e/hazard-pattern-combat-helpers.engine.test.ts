@@ -25,12 +25,13 @@ import type { Enemy } from '../../Enemy/types';
 import { TidepoolCrab } from '../../Enemy/enemy.library';
 import { deepClone } from '../../Utils';
 import { getSkillById } from '../../Skills/skill.library';
-import { lookupEffect } from '../../Effects';
+import { lookupEffect, applyEffect } from '../../Effects';
 
 import {
     initializeCombatEncounter, rollEncounterDice,
     resolveCardDieCost, cardDieCostPreview, availableDice,
     selectMercyChoice as selectEncounterMercyChoice, getCard,
+    handCards, resolveThreatPhase,
 } from '../combat.engine';
 import {
     rollCombatDice, combatDieCanPower, refreshOneDie, COMBAT_DICE_COUNT,
@@ -400,5 +401,68 @@ describe('Spec 25 — AUTHORED_THREAT_ENEMY_IDS', () => {
 
     it('is frozen (immutable array)', () => {
         expect(Object.isFrozen(AUTHORED_THREAT_ENEMY_IDS)).toBe(true);
+    });
+});
+
+// ── Hand presenter (§7) — `handCards` ────────────────────────────────────────
+
+describe('Spec 25 §7 — handCards', () => {
+    it('returns { uid, card } pairs for the opening hand (dealt by initializeCombatEncounter)', () => {
+        const state = initializeCombatEncounter(makePlayer([DOT_BODY]), makeEnemy(80), undefined, SEED);
+        const hand = handCards(state);
+        expect(hand.length).toBe(state.hand.length);
+        expect(hand.length).toBeGreaterThan(0);
+        for (const entry of hand) {
+            expect(typeof entry.uid).toBe('string');
+            expect(entry.card).not.toBeNull();
+            expect(typeof entry.card.id).toBe('string');
+        }
+    });
+
+    it('uid values match state.hand slot uids (order preserved)', () => {
+        const state = initializeCombatEncounter(makePlayer([DOT_BODY]), makeEnemy(80), undefined, SEED);
+        const hand = handCards(state);
+        expect(hand.map(h => h.uid)).toEqual(state.hand.map(h => h.uid));
+    });
+
+    it('returns empty when state.hand is empty (e.g. all cards played)', () => {
+        const state = initializeCombatEncounter(makePlayer([DOT_BODY]), makeEnemy(80), undefined, SEED);
+        const emptyHand = { ...state, hand: [] };
+        expect(handCards(emptyHand)).toEqual([]);
+    });
+});
+
+// ── Enemy threat resolver (§4.5) — `resolveThreatPhase` ─────────────────────
+
+describe('Spec 25 §4.5 — resolveThreatPhase', () => {
+    it('fires the threat (mark=overwhelmed) when enemy can act', () => {
+        let state = initializeCombatEncounter(makePlayer([DOT_BODY]), makeEnemy(100, 'heart'), undefined, SEED);
+        state = rollEncounterDice(state).state;
+        const result = resolveThreatPhase(state);
+        const phaseEvent = result.events.find(e => e.kind === 'phase-resolved') as
+            { kind: 'phase-resolved'; phaseIndex: number; mark: string } | undefined;
+        expect(phaseEvent).toBeDefined();
+        expect(phaseEvent!.mark).toBe('overwhelmed');
+    });
+
+    it('hinders the enemy (mark=clear) when a skipTurn effect is active on it', () => {
+        const sleepEffect = lookupEffect('debuff_sleep')!;
+        const player = makePlayer([DOT_BODY]);
+        const enemy = makeEnemy(100, 'heart');
+        const { activeEffects: enemyEffects } = applyEffect(enemy.effects, sleepEffect, 1);
+        let state = initializeCombatEncounter(player, { ...enemy, effects: enemyEffects }, undefined, SEED);
+        state = rollEncounterDice(state).state;
+        const result = resolveThreatPhase(state);
+        const phaseEvent = result.events.find(e => e.kind === 'phase-resolved') as
+            { kind: 'phase-resolved'; phaseIndex: number; mark: string } | undefined;
+        expect(phaseEvent!.mark).toBe('clear');
+    });
+
+    it('is a no-op (returns same state) when combat is already complete', () => {
+        const state = initializeCombatEncounter(makePlayer([DOT_BODY]), makeEnemy(100), undefined, SEED);
+        const complete = { ...state, phase: 'complete' as const, finalOutcome: 'victory' as const };
+        const result = resolveThreatPhase(complete);
+        expect(result.state).toBe(complete);
+        expect(result.events).toEqual([]);
     });
 });
