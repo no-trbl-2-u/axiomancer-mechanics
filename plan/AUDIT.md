@@ -72,6 +72,8 @@
 
 - [x] **[Z — critique-92 MED] tests — MTG Hazard mechanics zero hermetic e2e coverage** — resolved at `5980a49` (iterate, 2026-06-26). Added 15 hermetic cases across 5 describe blocks to `hazard.codex.engine.test.ts`: ECHO scaling / burstMend rider / purge+draw combo / FORETELL state machine (incl. confirmHazardForetell) / CRACK-as-punishment. 2056 tests green. Score 5 × 8 / 10 = 4.0. Source: critique-92 (commit 3dc07bb).
 
+- [x] **[Z — critique-92 LOW] docs — `confirmHazardForetell` absent from spec.md Contracts Hazard row and bearings.md Hazard wildcard annotation** — resolved at `1ba3cce` (iterate, 2026-06-26). Appended to spec.md Hazard row; added Key state-machine entry point paragraph to bearings.md Hazard block. Doc-only; 2056 tests + type-check + lint + build green. Score 3 × 9 / 10 = 2.7. Source: critique-92 (commit 3dc07bb).
+
 - [ ] **[needs-user-call — DIV-MECH-005] game.cli.ts map-encounter routing: route to Hazard-Pattern Combat instead of legacy `resolveCombatRound`**
   - area: mechanics / CLI
   - observation: `game.cli.ts:180-183` explicitly routes map-triggered encounters to `legacyCombatTab` (legacy `resolveCombatRound` loop). The comment says "map-triggered encounters use the legacy path; the new Hazard-style combat is reachable standalone via `npm run combat`." Updating the fishing-village walkthrough (`automation/scripts/walkthroughs/fishing-village-exploration.json`) to drive Hazard-Pattern Combat requires this routing to change first — otherwise the walkthrough JSON's encounter steps will still enter the legacy tab. `divergences.md:83-98` (DIV-MECH-005) confirms the block was lifted when Phase 165 shipped (DIV-MECH-001 resolved), but the game.cli.ts routing decision remains open.
