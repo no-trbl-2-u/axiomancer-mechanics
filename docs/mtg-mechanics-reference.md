@@ -175,49 +175,34 @@ This land enters tapped.
 *(Conditional Scry 1 — shows that Scry is so good it can be a minor incidental bonus.)*
 
 ---
+## Jump-start — discard a card to cast again from your discard pile
 
-
-> ⚠️ **MARKED FOR REMOVAL** — Does not fit Axiomancer's 3-round hazard sessions.
-> Replace with: **Jump-start** — Discard a card from hand to replay this from discard — better fit for 3-round sessions where full replay is rarely meaningful.
-## Flashback — cast again from discard pile (one-time)
-
-**MTG Rules:** "You may cast this card from your graveyard for its flashback cost. Then exile it."
-**Design pattern:** Every Flashback card is two cards in one: once from hand, once from discard.
-Forces opponents to respect your graveyard. The flashback cost is usually higher or differently
-colored.
-**Axiomancer translation → TRANSMUTE (existing):** The existing `effect: 'transmute'` already
-handles color conversion. A cleaner translation: a card with two rows where `f/e` = the free
-play and `fp/ep` = a *second casting* — but the hazard engine applies a card once. Closest
-mechanical analog: `salvage` bonus that generates a new card of the same type (no direct
-Flashback, but the "discard payoff" feeling is covered by salvage). OR: a future `effect:
-'recycle'` that puts the card back in the draw pile when discarded.
-**Balance lever:** Flashback cards are intrinsically card-advantageous. Price the second use
-at +1 to +3 cost vs the first. The exile-after-second-use rule prevents infinite loops.
+**MTG Rules:** "You may cast this card from your graveyard by discarding a card in addition to paying its other costs. Then exile this card." (Ravnica Allegiance, 2019)
+**Design pattern:** Jump-start creates a real decision point around the discard pile — you can reuse a spent card, but it costs you another card from hand. The discard cost is painful enough to prevent infinite loops; the exile-after means each card can jump-start at most once. It rewards holding "fodder" cards to pay the discard cost.
+**Axiomancer translation → JUMP-START / DISCARD-TO-REPLAY:** A jump-start card in the discard pile becomes replayable if the player discards another card from hand as payment. Engine field: `jumpstart: true`. In the engine, during the "playing" phase, jump-start cards appear as greyed-out options in the discard pile; tapping one moves it back to hand, then moves the payment card from hand to discard. After use, the jump-start card is permanently removed (not re-discarded). Short-term approximation without full engine support: model as a very powerful `channelEffect` salvage — when the card is discarded intentionally, its utility fires at double power instead.
+**Balance lever:** The discard-a-card cost is the entire constraint. Jump-start cards should have effects slightly below what they'd be worth as a one-shot spell, since the second cast is "free" beyond the discard payment. Cards that cantrip (draw a card) are dangerous because the draw replaces the discard cost.
 
 ### Example cards
 
-#### Faithless Looting ({R})
-*Sorcery*
-Draw two cards, then discard two cards.
-Flashback {2}{R} (You may cast this card from your graveyard for its flashback cost. Then exile it.)
+#### Radical Idea ({1}{U})
+*Instant*
+Draw a card.
+Jump-start (You may cast this card from your graveyard by discarding a card in addition to paying its other costs. Then exile this card.)
 
-#### Strike It Rich ({R})
-*Sorcery*
-Create a Treasure token.
-Flashback {2}{R}
+#### Chemister's Insight ({3}{U})
+*Instant*
+Draw two cards.
+Jump-start (You may cast this card from your graveyard by discarding a card in addition to paying its other costs. Then exile this card.)
 
-#### Sevinne's Reclamation ({2}{W})
-*Sorcery*
-Return target permanent card with mana value 3 or less from your graveyard to the battlefield. If this spell was cast from a graveyard, you may copy this spell.
-Flashback {4}{W}
+#### Risk Factor ({2}{R})
+*Instant*
+Target opponent may have Risk Factor deal 4 damage to them. If that player doesn't, you draw three cards.
+Jump-start (You may cast this card from your graveyard by discarding a card in addition to paying its other costs. Then exile this card.)
 
-#### Dread Return ({2}{B}{B})
+#### Quasiduplicate ({1}{U}{U})
 *Sorcery*
-Return target creature card from your graveyard to the battlefield.
-Flashback — Sacrifice three creatures.
-*(Alternative cost as flashback — shows cost can be resource-based rather than mana-based,
-maps to vitaeCost or sacrifice requirements.)*
-
+Create a token that's a copy of target creature you control.
+Jump-start (You may cast this card from your graveyard by discarding a card in addition to paying its other costs. Then exile this card.)
 ---
 
 ## Kicker — pay extra at cast time for an upgraded effect
@@ -389,56 +374,45 @@ Madness {2}{B}.
 *(Madness at the same cost — this one is more about the convoke interaction.)*
 
 ---
+## Escalate — pay more to unlock additional modes on a modal spell
 
-
-> ⚠️ **MARKED FOR REMOVAL** — Does not fit Axiomancer's 3-round hazard sessions.
-> Replace with: **Channel** — Alternative discard effect: this card has two modes — normal apply OR discard from hand for a different effect.
-## Dredge — replace a draw with a graveyard return
-
-**MTG Rules:** "If you would draw a card, you may mill N cards instead. If you do, return
-this card from your graveyard to your hand."
-**Design pattern:** Dredge cards perpetually recycle through the graveyard by milling N cards
-each time they're dredged. High dredge numbers (5-6) fill the graveyard quickly and are
-extremely powerful in graveyard-value decks.
-**Axiomancer translation → DRAW-PILE REPLACEMENT:** No direct Dredge equivalent. The spirit:
-a card that, when in the discard pile, can "come back" by replacing the next draw. Implementable
-as: a card with `effect: 'recycle'` that, when applied, returns itself to a specific position
-in the draw pile (instead of going to discard). The "mill N cards" cost maps to `purgeDrawCount`
-in reverse — instead of drawing after purge, you mill N cards (add N CRAKs? too punishing).
-Better analog: a card that lets you draw from discard pile instead of draw pile.
-**Balance lever:** Dredge is broken when the number is high (Golgari Grave-Troll at 6).
-In Axiomancer: recycling a card every round would be too strong; gate behind high vitaeCost.
+**MTG Rules:** "Pay this cost for each mode chosen beyond the first." (Shadows Over Innistrad / Eldritch Moon, 2016)
+**Design pattern:** Escalate puts flexible value on a single card — you choose which effects you want and pay for each one you add. A cheap casting gets one effect; paying more unlocks additional effects simultaneously. It rewards resource-rich turns and punishes low-resource situations by still providing a baseline.
+**Axiomancer translation → ESCALATE / DUAL-MODE CARDS:** Since the engine supports exactly 0 or 1 die per card, model escalate as: free tier = one effect fires; powered tier = both effects fire simultaneously. Implement by combining two normally-separate effects on one card: e.g., `effect: 'mend'` (fires free) + `jeopardyForce` bonus (only fires when powered). More complex: add an `escalateModes` array field where index 0 is the free effect and the full array fires when powered. Simpler pairs that work now: MEND free + BURST powered, or FORETELL free + DRAW powered, or ANCHOR free + WARD powered.
+**Balance lever:** Each mode must be priced as if it were a standalone card slightly below rate. The flexibility premium means escalate cards should cost slightly more than their best single mode. Cards where both modes are universally good at any point become must-plays; design modes that are situationally valuable so the choice matters.
 
 ### Example cards
 
-#### Life from the Loam ({1}{G})
+#### Collective Defiance ({1}{R}{R})
 *Sorcery*
-Return up to three target land cards from your graveyard to your hand.
-Dredge 3.
-*(Dredge 3 returns 3 lands each time — perpetual engine. Maps to: a card that returns
-3 cards from discard to draw pile when "dredged.")*
+Escalate {1} (Pay this cost for each mode chosen beyond the first.)
+Choose one or more —
+• Target player discards all the cards in their hand, then draws that many cards.
+• Collective Defiance deals 4 damage to target creature.
+• Collective Defiance deals 3 damage to target opponent or planeswalker.
 
-#### Stinkweed Imp ({2}{B})
-*Creature — Imp*
-Flying. Whenever this creature deals combat damage, destroy that creature.
-Dredge 5.
-*(Dredge 5 at a 3-drop — strong enough to fill a graveyard in 2 dredges. Maps to
-an aggressive recycler that costs a lot in deck-thinning.)*
+#### Collective Brutality ({1}{B})
+*Sorcery*
+Escalate—Discard a card. (Pay this cost for each mode chosen beyond the first.)
+Choose one or more —
+• Target opponent reveals their hand. You choose an instant or sorcery card from it. That player discards that card.
+• Target creature gets -2/-2 until end of turn.
+• Target opponent loses 2 life and you gain 2 life.
 
-#### Golgari Grave-Troll ({4}{G})
-*Creature — Troll Skeleton*
-Enters with a +1/+1 counter per creature card in your graveyard. {1}, remove a counter: Regenerate.
-Dredge 6.
-*(The banned Dredge 6. 6 cards milled per draw replacement. Maps to the strongest possible
-recycler at rare/gold tier.)*
+#### Collective Effort ({1}{W}{W})
+*Sorcery*
+Escalate—Tap an untapped creature you control. (Pay this cost for each mode chosen beyond the first.)
+Choose one or more —
+• Destroy target creature with power 4 or greater.
+• Destroy target enchantment.
+• Put a +1/+1 counter on each creature target player controls.
 
-#### Dakmor Salvage (Land)
-*Land*
-Enters tapped. {T}: Add {B}.
-Dredge 2.
-*(A land with Dredge 2 — "disposable" assets that can also recycle. Maps to a utility
-card with minor stats + a recycle effect.)*
-
+#### Borrowed Hostility ({R})
+*Instant*
+Escalate {3} (Pay this cost for each mode chosen beyond the first.)
+Choose one or both —
+• Target creature gets +3/+0 until end of turn.
+• Target creature gains first strike until end of turn.
 ---
 
 ## Investigate — create "Clue" tokens that can be sacrificed to draw
@@ -617,37 +591,37 @@ At the beginning of your upkeep, this creature deals 1 damage to each player. Th
 AND adds a CRACK to the deck if vitae is low.)*
 
 ---
+## Escape — cast from graveyard by exiling other cards as additional cost
 
-> ⚠️ **MARKED FOR REMOVAL** — Does not fit Axiomancer's 3-round hazard sessions.
-> Replace with: **Escalate** — Pay for each mode you want — maps to progressive tier unlocking without requiring multi-die spending.
-## Replicate — pay extra to copy the same spell N times
-
-**MTG Rules:** "When you cast this spell, you may pay {cost} any number of times. Each time you do, copy this spell."
-**Design pattern:** Scales linearly with investment — pay once for baseline, pay again for each additional copy. Rewards resource surplus committed into a single card.
-**Axiomancer translation → SCALED BURST:** A burst card where the player optionally commits extra dice to multiply the output. Implement as `replicateForce` / `replicateEscape` fields — per-die multiplier applied at burst resolution. Similar to ECHO but scalar is dice spent, not cards applied.
-**Balance lever:** Baseline must justify the one-copy cost. Cap at hand/die ceiling. Uncapped replicate cards snowball hard in late-round stacks.
+**MTG Rules:** "You may cast this card from your graveyard for its escape cost." The escape cost always includes exiling N other cards from your graveyard. (Theros Beyond Death, 2020)
+**Design pattern:** Escape rewards building up a large discard pile — the more cards you've spent, the more you can escape. It creates a second economy: your discard pile becomes fuel for replaying powerful cards. Unlike jump-start (one discard = one replay), escape demands a large upfront investment of multiple cards already in the graveyard.
+**Axiomancer translation → ESCAPE / PURGE-TO-REPLAY:** A card with `escapePurgeCost: N` can be replayed from the discard pile by permanently purging N other cards from that pile. Engine field: `escapePurgeCost: number`. In the engine, if this card is in the discard pile during the playing phase, it appears as an available option; activating it purges N random (or player-chosen) cards from the discard pile and moves this card to hand. The card re-discards after use. Unlike jump-start, escape does NOT exile the card afterward — it can be escaped repeatedly as long as you can keep paying the purge cost.
+**Balance lever:** The purge cost is the constraint. Escape cards in Axiomancer should be slightly above-rate for their effect, since paying `escapePurgeCost: 3` means sacrificing 3 cards you've already spent. Small discard piles make escape impossible. Cards that both fill the discard pile AND have good escape effects create a self-reinforcing engine — watch for run-away loops.
 
 ### Example cards
 
-#### Pyromatics ({2}{R})
-*Instant*
-Replicate {2}{R}
-Pyromatics deals 1 damage to any target.
+#### Uro, Titan of Nature's Wrath ({1}{G}{U})
+*Legendary Creature — Elder Giant*
+When Uro enters, sacrifice it unless it escaped.
+Whenever Uro enters or attacks, you gain 3 life and draw a card, then you may put a land card from your hand onto the battlefield.
+Escape—{G}{G}{U}{U}, Exile five other cards from your graveyard.
 
-#### Train of Thought ({1}{U})
-*Sorcery*
-Replicate {1}{U}
-Draw a card.
+#### Kroxa, Titan of Death's Hunger ({B}{R})
+*Legendary Creature — Elder Giant*
+When Kroxa enters, sacrifice it unless it escaped.
+Whenever Kroxa enters or attacks, each opponent discards a card, then each opponent who didn't discard a nonland card this way loses 3 life.
+Escape—{B}{B}{R}{R}, Exile five other cards from your graveyard.
 
-#### Gigadrowse ({U})
-*Instant*
-Replicate {U}
-Tap target permanent.
+#### Woe Strider ({2}{B})
+*Creature — Horror*
+When this creature enters, create a 0/1 white Goat creature token.
+Sacrifice another creature: Scry 1.
+Escape—{3}{B}{B}, Exile four other cards from your graveyard. This creature escapes with two +1/+1 counters on it.
 
-#### Vacuumelt ({2}{U})
-*Sorcery*
-Replicate {2}{U}
-Return target creature to its owner's hand.
+#### Bloodbraid Challenger ({3}{R}{G})
+*Creature — Elf Berserker*
+Cascade. Haste.
+Escape—{3}{R}{G}, Exile three other cards from your graveyard.
 ---
 ## Buyback — pay extra to return the spell to your hand
 
@@ -736,37 +710,34 @@ Cipher
 Target player loses 3 life.
 Cipher
 ---
+## Channel — discard this card to activate a completely different effect
 
-> ⚠️ **MARKED FOR REMOVAL** — Does not fit Axiomancer's 3-round hazard sessions.
-> Replace with: **Escape** — Purge N cards from discard pile to replay this — cleaner than two-phase card structure; salvage already covers fire-from-discard.
-## Aftermath — split card; back half only castable from graveyard
-
-**MTG Rules:** "[Back half]: Cast this only from your graveyard." The front is cast normally from hand; the back half is dormant in the discard pile until you choose to cast it.
-**Design pattern:** Two-act card. Act 1 (hand → discard) is weaker or sets up. Act 2 (discard → resolve) fires later, sometimes much stronger. Rewards planning and discard management.
-**Axiomancer translation → SALVAGE / CRACK-AS-RESOURCE:** The `salvage` field already implements single-use discard bonuses. Aftermath is a richer version: the card has a primary effect on apply AND a secondary effect that fires when you choose to "trigger from discard" — either automatically at round end or via a PURGE-like action. Could implement as `aftermathForce/aftermathEscape` — when this card is in the discard pile and a designated trigger fires (e.g., a PURGE card), the aftermath bonus resolves.
-**Balance lever:** Front half should be below-rate — you're paying for the combo potential. If both halves are individually good, the card is strictly dominant.
+**MTG Rules:** "Channel — [cost], Discard this card: [effect]." The channel ability is activated by discarding the card itself, bypassing its normal casting entirely. (Kamigawa: Neon Dynasty, 2022)
+**Design pattern:** Channel creates a dual-identity card — it has a normal play mode AND a discard mode that does something completely different, often at an immediate speed advantage (no "play slot" required). The player chooses which identity to use each time they see the card. High-value channel effects on otherwise modest cards create consistent utility; strong channel effects on strong cards create genuinely difficult decisions.
+**Axiomancer translation → CHANNEL / DUAL-MODE SALVAGE:** This is a richer version of the existing `salvage` mechanic. Where salvage gives a flat stat bonus on discard, channel fires a distinct, named effect instead. Engine field: `channelEffect: { kind: 'draw' | 'burst' | 'mend' | 'foretell', ...params }`. When the player discards this card via the salvage action, instead of adding +N force/escape to the round, the channel effect fires (draw N cards, burst +N force, mend N vitae, reveal top N cards, etc.). This requires no UI change — the salvage discard trigger fires the channel instead. The card's normal apply mode (stats + effect) remains fully intact.
+**Balance lever:** The channel effect should be stronger than a normal salvage bonus but weaker than the card's full play effect. The tradeoff is tempo — channel is instant (no play slot needed) vs. play requires staging the card. Designs where channel is strictly better than playing the card normally are failures; there must always be a reason to play it normally.
 
 ### Example cards
 
-#### Cut // Ribbons ({1}{R} // {X}{B}{B})
-*Sorcery // Sorcery*
-Cut: Target creature gets -2/-2 until end of turn.
-Ribbons: Each opponent loses X life. (Cast only from graveyard.)
+#### Boseiju, Who Endures (no mana cost)
+*Legendary Land*
+{T}: Add {G}.
+Channel — {1}{G}, Discard this card: Destroy target artifact, enchantment, or nonbasic land an opponent controls. That player may search their library for a land card with a basic land type, put it onto the battlefield, then shuffle. This ability costs {1} less for each legendary creature you control.
 
-#### Farm // Industry ({2}{W} // {4}{G})
-*Sorcery // Sorcery*
-Farm: Destroy target attacking or blocking creature.
-Industry: Create three 1/1 colorless Thopter artifact creature tokens with flying.
+#### Otawara, Soaring City (no mana cost)
+*Legendary Land*
+{T}: Add {U}.
+Channel — {3}{U}, Discard this card: Return target artifact, creature, enchantment, or planeswalker to its owner's hand. This ability costs {1} less for each legendary creature you control.
 
-#### Refuse // Cooperate ({2}{R} // {2}{U})
-*Instant // Instant*
-Refuse: This spell deals damage equal to target spell's mana value to that spell's controller.
-Cooperate: Copy target instant or sorcery spell. You may choose new targets.
+#### Takenuma, Abandoned Mire (no mana cost)
+*Legendary Land*
+{T}: Add {B}.
+Channel — {3}{B}, Discard this card: Mill three cards, then return a creature or planeswalker card from your graveyard to your hand. This ability costs {1} less for each legendary creature you control.
 
-#### Driven // Despair ({1}{G} // {1}{B})
-*Sorcery // Sorcery*
-Driven: Until end of turn, creatures you control gain trample and "draw a card on damage."
-Despair: Until end of turn, creatures you control gain menace and "target player discards on damage."
+#### Eiganjo, Seat of the Empire (no mana cost)
+*Legendary Land*
+{T}: Add {W}.
+Channel — {2}{W}, Discard this card: It deals 4 damage to target attacking or blocking creature. This ability costs {1} less for each legendary creature you control.
 ---
 
 ## Quick-Reference: Axiomancer Field → MTG Mechanic
@@ -787,6 +758,10 @@ Despair: Until end of turn, creatures you control gain menace and "target player
 | `effect: 'purge'` minor/major | Overload | Single CRACK vs all CRAKs |
 | `effect: 'transmute'` | *(Axiomancer only: die color)* | Recolor dice; distinct from MTG Transmute |
 | `burstPerUnspentDieForce` | Convoke (inverted) | Bonus scales with unspent dice |
+| `jumpstart` *(planned)* | Jump-start | Discard a card from hand to replay this from discard; exiled after |
+| `escalateModes` *(planned)* | Escalate | Free tier = first mode; powered tier = all modes fire simultaneously |
+| `escapePurgeCost` *(planned)* | Escape | Purge N from discard pile to replay this card from discard |
+| `channelEffect` *(planned)* | Channel | Discard this card to fire a distinct named effect instead of playing it |
 
 ---
 
