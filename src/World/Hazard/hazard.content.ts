@@ -427,21 +427,21 @@ export const HAZARD_REWARD_CARDS: HazardCardDef[] = [
 
     // --- BUYBACK (MTG Buyback) — powered: return to hand next round. -----------
     // Red buyback: repeatable force. Powered for big number; returns.
-    { id: 'r_eternal', name: 'ETERNAL GRIP', kind: 'red', rarity: 'rare', f: CX.numbers.uncommon.free, e: 0, fp: CX.numbers.uncommon.powered, ep: 0, buyback: true, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'He has played this card before. He will play it again.', keywords: ['force', 'buyback', 'surge'] },
+    { id: 'r_eternal', name: 'ETERNAL GRIP', kind: 'red', rarity: 'rare', f: CX.numbers.common.free, e: 0, fp: 5, ep: 0, buyback: true, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'He has played this card before. He will play it again.', keywords: ['force', 'buyback', 'surge'] },
     // Blue buyback: repeatable escape.
-    { id: 'r_recursive', name: 'RECURSIVE STEP', kind: 'blue', rarity: 'rare', f: 0, e: CX.numbers.uncommon.free, fp: 0, ep: CX.numbers.uncommon.powered, buyback: true, salvage: { type: 'progress', key: 'escape', amount: 1 }, flavor: 'Every crossing teaches the one after it.', keywords: ['escape', 'buyback', 'surge'] },
+    { id: 'r_recursive', name: 'RECURSIVE STEP', kind: 'blue', rarity: 'rare', f: 0, e: CX.numbers.common.free, fp: 0, ep: 5, buyback: true, salvage: { type: 'progress', key: 'escape', amount: 1 }, flavor: 'Every crossing teaches the one after it.', keywords: ['escape', 'buyback', 'surge'] },
     // Purple buyback: dual-meter, returns when powered — premium econ.
-    { id: 'r_mantra', name: 'THE MANTRA', kind: 'purple', rarity: 'rare', f: CX.dual.uncommon.free, e: CX.dual.uncommon.free, fp: CX.dual.uncommon.powered, ep: CX.dual.uncommon.powered, buyback: true, salvage: { type: 'mana' }, flavor: 'Say it again. Mean it more.', keywords: ['buyback', 'surge'] },
+    { id: 'r_mantra', name: 'THE MANTRA', kind: 'purple', rarity: 'rare', f: CX.dual.common.free, e: CX.dual.common.free, fp: 2, ep: 2, buyback: true, salvage: { type: 'mana' }, flavor: 'Say it again. Mean it more.', keywords: ['buyback', 'surge'] },
     // Gold buyback: best-in-slot repeatable; gold die only, major utility.
     { id: 'r_everpilgrim', name: 'EVERPILGRIM', kind: 'gold', rarity: 'rare', f: 0, e: 0, fp: C.gold.powered, ep: C.gold.powered, effect: 'draw', majorEffect: true, drawBase: U.drawMinorBase, drawPowered: U.drawMinorPowered, buyback: true, salvage: { type: 'mana' }, flavor: 'The road never ends for those who never stop.', keywords: ['gilded', 'draw', 'buyback', 'surge'] },
 
     // --- DELVE (MTG Delve) — bonus per card in discard pile. ------------------
     // Red delve: +N force per discard. Scales with how deep you've gone.
     { id: 'r_depthcharge', name: 'DEPTH CHARGE', kind: 'red', rarity: 'uncommon', f: CX.numbers.uncommon.free, e: 0, fp: CX.numbers.uncommon.powered, ep: 0, delveForce: CX.delve.minor, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'The longer the fall, the louder it lands.', keywords: ['force', 'delve', 'surge'] },
-    { id: 'r_sunkost', name: 'SUNK COST', kind: 'red', rarity: 'rare', f: 0, e: 0, fp: 0, ep: 0, effect: 'burst', burstBase: { force: 0 }, delveForce: CX.delve.major, salvage: { type: 'progress', key: 'force', amount: 2 }, flavor: 'Count what is already spent. Then spend it again.', keywords: ['force', 'burst', 'delve'] },
+    { id: 'r_sunkost', name: 'SUNK COST', kind: 'red', rarity: 'rare', f: 1, e: 0, fp: 3, ep: 0, effect: 'burst', burstBase: { force: 2 }, delveForce: CX.delve.major, salvage: { type: 'progress', key: 'force', amount: 2 }, flavor: 'Count what is already spent. Then spend it again.', keywords: ['force', 'burst', 'delve'] },
     // Blue delve: +N escape per discard.
     { id: 'r_inscription', name: 'INSCRIPTION', kind: 'blue', rarity: 'uncommon', f: 0, e: CX.numbers.uncommon.free, fp: 0, ep: CX.numbers.uncommon.powered, delveEscape: CX.delve.minor, salvage: { type: 'progress', key: 'escape', amount: 1 }, flavor: 'The ones who came before wrote it in the rock.', keywords: ['escape', 'delve', 'surge'] },
-    { id: 'r_cipher', name: 'CIPHER', kind: 'blue', rarity: 'rare', f: 0, e: 0, fp: 0, ep: 0, effect: 'burst', burstBase: { escape: 0 }, delveEscape: CX.delve.major, salvage: { type: 'progress', key: 'escape', amount: 2 }, flavor: 'Every card spent is a key. This is the lock.', keywords: ['escape', 'burst', 'delve'] },
+    { id: 'r_cipher', name: 'CIPHER', kind: 'blue', rarity: 'rare', f: 0, e: 1, fp: 0, ep: 3, effect: 'burst', burstBase: { escape: 2 }, delveEscape: CX.delve.major, salvage: { type: 'progress', key: 'escape', amount: 2 }, flavor: 'Every card spent is a key. This is the lock.', keywords: ['escape', 'burst', 'delve'] },
     // Purple delve: dual bonus. Rewards rich discard piles.
     { id: 'r_channelrage', name: 'CHANNEL RAGE', kind: 'purple', rarity: 'rare', f: CX.dual.uncommon.free, e: CX.dual.uncommon.free, fp: CX.dual.uncommon.powered, ep: CX.dual.uncommon.powered, delveForce: CX.delve.minor, delveEscape: CX.delve.minor, salvage: { type: 'mana' }, flavor: 'Spent in full and still running.', keywords: ['delve', 'surge'] },
     // Gold delve: massive dual bonus per discard, but requires wild die.
