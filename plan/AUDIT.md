@@ -64,17 +64,9 @@
 
 - [x] **[Z — critique-91 LOW-1] docs — `PASSIVE_DEFENSE_MULTIPLIER` absent from `docs/game.md` constants table** — resolved at `b1c1260` (iterate, 2026-06-25). Added `PASSIVE_DEFENSE_MULTIPLIER` row (`1` / "Defense multiplier when not in active defense stance") to the `docs/game.md` constants table alongside `DEFENSE_MULTIPLIERS`. Doc-only; type-check + lint + build green. Score 3 × 9 / 10 = 2.7. Source: critique-91 (commit e7d16a3).
 
-- [ ] **[Z — critique-91 LOW-2] docs — `getThreatSequence` and `generateDefaultThreatSequence` absent from `docs/combat.md` API table**
-  - pass: critique-91 (commit e7d16a3)
-  - observation: Both functions are in the root barrel and spec.md Contracts Combat row, but `docs/combat.md` documents only `AUTHORED_THREAT_ENEMY_IDS` as the threat-sequence surface — the two function APIs that read and generate threat sequences are absent from the API table.
-  - suggested_fix: Add `getThreatSequence(enemyId)` and `generateDefaultThreatSequence(phases)` entries to the `docs/combat.md` §Hazard-Pattern Combat API table alongside `AUTHORED_THREAT_ENEMY_IDS`.
-  - score: 3 × 9 / 10 = 2.7
+- [x] **[Z — critique-91 LOW-2] docs — `getThreatSequence` and `generateDefaultThreatSequence` absent from `docs/combat.md` API table** — resolved at `b343e76` (iterate, 2026-06-26). Added `getThreatSequence(enemy)` and `generateDefaultThreatSequence(enemy)` rows to `docs/combat.md` §Hazard-Pattern Combat API table immediately after the `AUTHORED_THREAT_ENEMY_IDS` entry. Doc-only; type-check + lint + build green. Score 3 × 9 / 10 = 2.7. Source: critique-91 (commit e7d16a3).
 
-- [ ] **[Z — critique-91 LOW-3] docs — `dropItemAtRarity`, `countNamedAffixes`, `hasBakedAffix`, `AFFIXES_PER_RARITY` absent from `docs/equipment.md`**
-  - pass: critique-91 (commit e7d16a3)
-  - observation: All four Phase 154 loot-generation helpers are in the root barrel (`src/index.ts:179`) and spec.md Contracts Items row, but absent from `docs/equipment.md`. The page documents sibling Phase 154 exports (`equipmentFromTemplate`, `generateRarityDrop`, `firstEquippedPerSlot`, `isEquippedFirstOfSlot`, `findEquippedInSlot`) but not these four.
-  - suggested_fix: Add `dropItemAtRarity`, `countNamedAffixes`, `hasBakedAffix`, `AFFIXES_PER_RARITY` rows to `docs/equipment.md` alongside the existing Phase 154 loot-generation entries.
-  - score: 3 × 9 / 10 = 2.7
+- [x] **[Z — critique-91 LOW-3] docs — `dropItemAtRarity`, `countNamedAffixes`, `hasBakedAffix`, `AFFIXES_PER_RARITY` absent from `docs/equipment.md`** — resolved at `be10e34` (iterate, 2026-06-26). Added four rows to `docs/equipment.md` §Phase 154 table: `dropItemAtRarity(templateId, playerLevel, rarity, rng?)`, `countNamedAffixes(item)`, `hasBakedAffix(template)`, `AFFIXES_PER_RARITY`. Doc-only; type-check + lint + build green. Score 3 × 9 / 10 = 2.7. Source: critique-91 (commit e7d16a3).
 
 - [ ] **[needs-user-call — DIV-MECH-005] game.cli.ts map-encounter routing: route to Hazard-Pattern Combat instead of legacy `resolveCombatRound`**
   - area: mechanics / CLI

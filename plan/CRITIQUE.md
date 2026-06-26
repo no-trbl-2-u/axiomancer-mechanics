@@ -70,13 +70,7 @@
 
 - [x] **[LOW] docs — `getThreatSequence` and `generateDefaultThreatSequence` absent from `docs/combat.md` API table** — resolved at `b343e76` (iterate, 2026-06-26). Added `getThreatSequence(enemy)` and `generateDefaultThreatSequence(enemy)` rows to `docs/combat.md` §Hazard-Pattern Combat API table immediately after the `AUTHORED_THREAT_ENEMY_IDS` entry. Doc-only; type-check + lint + build + 2041 tests green. Score 3 × 9 / 10 = 2.7. Source: critique-91 (commit e7d16a3).
 
-- [ ] **[LOW] docs — 4 Phase 154 loot-generation helpers absent from `docs/equipment.md`**
-  - pass: critique-91 (commit e7d16a3)
-  - area: docs
-  - observation: `dropItemAtRarity`, `countNamedAffixes`, `hasBakedAffix`, `AFFIXES_PER_RARITY` (Phase 154 loot-gen additions) are in the root barrel (`src/index.ts:179`) and spec.md Contracts Items row, but absent from `docs/equipment.md`. The page documents sibling Phase 154 exports (`equipmentFromTemplate`, `generateRarityDrop`, `firstEquippedPerSlot`, `isEquippedFirstOfSlot`, `findEquippedInSlot`) but not these four. Same silent-accumulation pattern as passes 83/86/87/88/89/90.
-  - evidence: `docs/equipment.md` lines 134-138 (documents other Phase 154 helpers); `src/index.ts:179`; `spec.md` line 95 (Items row)
-  - suggested_fix: Add `dropItemAtRarity`, `countNamedAffixes`, `hasBakedAffix`, `AFFIXES_PER_RARITY` rows to `docs/equipment.md` alongside the existing Phase 154 loot-generation entries.
-  - source: critique
+- [x] **[LOW] docs — 4 Phase 154 loot-generation helpers absent from `docs/equipment.md`** — resolved at `be10e34` (iterate, 2026-06-26). Added `dropItemAtRarity`, `countNamedAffixes`, `hasBakedAffix`, `AFFIXES_PER_RARITY` rows to `docs/equipment.md` §Phase 154 table alongside existing sibling exports. Doc-only; type-check + lint + build green. Score 3 × 9 / 10 = 2.7. Source: critique-91 (commit e7d16a3).
 
 - [x] **[LOW] docs — `CardDieCost` not listed as named type export in spec.md + bearings.md types sequence** — resolved at `cc93eb0` (iterate, 2026-06-25). Added `CardDieCost` as a named type to spec.md die-cost helpers annotation and bearings.md die-cost block; added `CombatDeckPreset`/`CombatDeckFocus` to PR #190 annotation in spec.md + bearings.md; added two rows to docs/combat.md §Spec 26/26b API table. Doc-only; type-check + lint + build green. Score 2 × 9 / 10 = 1.8. Source: critique-90 (commit 6569da3).
 
