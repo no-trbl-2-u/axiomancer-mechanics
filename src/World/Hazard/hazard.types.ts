@@ -142,7 +142,12 @@ export type HazardKeywordId =
     | 'foretell'
     // ── MTG expansion (2026-06-25) ──
     | 'echo'
-    | 'scour';
+    | 'scour'
+    // ── heavy card library swap (2026-06-26) ──
+    | 'jeopardy'
+    | 'miracle'
+    | 'buyback'
+    | 'delve';
 
 /**
  * Persistent enchantment modifiers (auras). Accumulated on the session by
@@ -298,6 +303,33 @@ export interface HazardCardDef {
      */
     burstMendBase?: number;
     burstMendPowered?: number;
+    /**
+     * JEOPARDY (MTG Spectacle analogue): bonus force/escape when ≥1 round
+     * mark is 'X' (i.e. the player has already lost a round). Encourages
+     * comeback plays — the cards get better the worse things are going.
+     */
+    jeopardyForce?: number;
+    jeopardyEscape?: number;
+    /**
+     * MIRACLE (MTG Miracle analogue): bonus force/escape when this is the
+     * FIRST card applied this round (no prior applied cards in s.play).
+     * Rewards leading with the miracle card instead of saving it.
+     */
+    firstPlayForce?: number;
+    firstPlayEscape?: number;
+    /**
+     * BUYBACK (MTG Buyback analogue): when powered by a die, this card
+     * returns to hand instead of the discard pile after the round resolves.
+     * The engine handles this in continueHazardAfterResolve.
+     */
+    buyback?: boolean;
+    /**
+     * DELVE (MTG Delve analogue): +N force/escape for EACH card already
+     * in the discard pile when applied. Scales with how much of the deck
+     * has been spent — rewards late-round or multi-round commitment.
+     */
+    delveForce?: number;
+    delveEscape?: number;
     /**
      * Dead cards (consequence CRACK cards) cannot be powered and
      * contribute nothing — they only clog the hand.

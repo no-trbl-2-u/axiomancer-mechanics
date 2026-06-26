@@ -60,6 +60,10 @@ export const HAZARD_KEYWORDS: Record<HazardKeywordId, { name: string; desc: stri
     foretell: { name: 'FORETELL', desc: 'Look at the top cards of your deck and put them back in any order. Powered: also discard one of them.' },
     echo: { name: 'ECHO', desc: 'Adds bonus progress for each card you already played this round. The later you play it, the bigger the payoff.' },
     scour: { name: 'SCOUR', desc: 'Look at the top cards and permanently discard any number of them — they leave your deck for good. Thinning.' },
+    jeopardy: { name: 'JEOPARDY', desc: 'Grants bonus progress when you have already lost a round this crossing. Worst situations bring out the best.' },
+    miracle: { name: 'MIRACLE', desc: 'Grants a bonus when played first in a round — before any other card is applied. Lead with it.' },
+    buyback: { name: 'BUYBACK', desc: 'When powered by a die, this card returns to your hand after the round instead of going to the discard pile.' },
+    delve: { name: 'DELVE', desc: 'Grants bonus progress for each card already in your discard pile. The more you have spent, the harder it hits.' },
 };
 
 // ---------------------------------------------------------------------------
@@ -71,13 +75,13 @@ export const HAZARD_DECK: HazardCardDef[] = [
     // RED — pure FORCE numbers (single meter), considerably higher than purple.
     // STONE STEPS: weight:0 keeps the def for legacy saves; new games use IRON WILL instead.
     { id: 'steps', name: 'STONE STEPS', kind: 'red', rarity: 'common', weight: 0, f: C.redBlue.common.free, e: 0, fp: C.redBlue.common.powered, ep: 0, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'Kick footholds into the failing rock.', keywords: ['force', 'surge'] },
-    { id: 'haul', name: 'DEAD-MAN HAUL', kind: 'red', rarity: 'common', weight: 3, f: C.redBlue.common.free, e: 0, fp: C.redBlue.common.powered, ep: 0, salvage: { type: 'mana' }, flavor: 'Drag yourself up by rope and will.', keywords: ['force', 'surge'] },
-    { id: 'grip', name: 'IRON GRIP', kind: 'red', rarity: 'uncommon', weight: 2, f: C.redBlue.uncommon.free, e: 0, fp: C.redBlue.uncommon.powered, ep: 0, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'Hands like a closing vise.', keywords: ['force', 'surge'] },
+    { id: 'haul', name: 'DEAD-MAN HAUL', kind: 'red', rarity: 'common', weight: 1, f: C.redBlue.common.free, e: 0, fp: C.redBlue.common.powered, ep: 0, salvage: { type: 'mana' }, flavor: 'Drag yourself up by rope and will.', keywords: ['force', 'surge'] },
+    { id: 'grip', name: 'IRON GRIP', kind: 'red', rarity: 'uncommon', weight: 1, f: C.redBlue.uncommon.free, e: 0, fp: C.redBlue.uncommon.powered, ep: 0, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'Hands like a closing vise.', keywords: ['force', 'surge'] },
 
     // BLUE — pure ESCAPE numbers (single meter).
-    { id: 'scram', name: 'SCRAMBLE', kind: 'blue', rarity: 'common', weight: 3, f: 0, e: C.redBlue.common.free, fp: 0, ep: C.redBlue.common.powered, salvage: { type: 'progress', key: 'escape', amount: 1 }, flavor: 'Half-fall, half-fly across the gap.', keywords: ['escape', 'surge'] },
-    { id: 'runner', name: 'CLIFFRUNNER', kind: 'blue', rarity: 'common', weight: 3, f: 0, e: C.redBlue.common.free, fp: 0, ep: C.redBlue.common.powered, salvage: { type: 'mana' }, flavor: 'Momentum is the only thing holding you up.', keywords: ['escape', 'surge'] },
-    { id: 'leap', name: 'FAITH LEAP', kind: 'blue', rarity: 'uncommon', weight: 2, f: 0, e: C.redBlue.uncommon.free, fp: 0, ep: C.redBlue.uncommon.powered, salvage: { type: 'progress', key: 'escape', amount: 1 }, flavor: 'Close your eyes. Trust the far side.', keywords: ['escape', 'surge'] },
+    { id: 'scram', name: 'SCRAMBLE', kind: 'blue', rarity: 'common', weight: 1, f: 0, e: C.redBlue.common.free, fp: 0, ep: C.redBlue.common.powered, salvage: { type: 'progress', key: 'escape', amount: 1 }, flavor: 'Half-fall, half-fly across the gap.', keywords: ['escape', 'surge'] },
+    { id: 'runner', name: 'CLIFFRUNNER', kind: 'blue', rarity: 'common', weight: 1, f: 0, e: C.redBlue.common.free, fp: 0, ep: C.redBlue.common.powered, salvage: { type: 'mana' }, flavor: 'Momentum is the only thing holding you up.', keywords: ['escape', 'surge'] },
+    { id: 'leap', name: 'FAITH LEAP', kind: 'blue', rarity: 'uncommon', weight: 1, f: 0, e: C.redBlue.uncommon.free, fp: 0, ep: C.redBlue.uncommon.powered, salvage: { type: 'progress', key: 'escape', amount: 1 }, flavor: 'Close your eyes. Trust the far side.', keywords: ['escape', 'surge'] },
 
     // PURPLE — low DUAL number (both meters) + a MINOR utility that the die
     // upgrades to MAJOR. The die powers the utility, not the number, so the
@@ -102,6 +106,16 @@ export const HAZARD_DECK: HazardCardDef[] = [
     // IRON WILL: teaches ANCHOR. Common-stat force card + momentum floor on surge.
     // Uses common (not uncommon) numbers so the ANCHOR is the value, not raw force.
     { id: 'ironwill', name: 'IRON WILL', kind: 'red', rarity: 'uncommon', weight: 1, f: C.redBlue.common.free, e: 0, fp: C.redBlue.common.powered, ep: 0, effect: 'anchor', anchorBase: CX.anchor.minor, anchorPowered: CX.anchor.major, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'The cliff takes what it wants. The rest is yours.', keywords: ['force', 'anchor', 'surge'] },
+
+    // ── heavy-swap starters (2026-06-26) ────────────────────────────────────
+    // SPITE: teaches JEOPARDY. Red — gets stronger after a failed round.
+    { id: 'spite', name: 'SPITE', kind: 'red', rarity: 'common', weight: 2, f: C.redBlue.common.free, e: 0, fp: C.redBlue.common.powered, ep: 0, jeopardyForce: CX.jeopardy.minor, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'The fall only makes the grip angrier.', keywords: ['force', 'jeopardy', 'surge'] },
+
+    // FIRSTLIGHT: teaches MIRACLE. Purple — big dual bonus if played first.
+    { id: 'firstlight', name: 'FIRSTLIGHT', kind: 'purple', rarity: 'common', weight: 2, f: C.purple.free, e: C.purple.free, fp: C.purple.powered, ep: C.purple.powered, firstPlayForce: CX.miracle.minor, firstPlayEscape: CX.miracle.minor, salvage: { type: 'mana' }, flavor: 'The first step taken in light — before doubt can follow.', keywords: ['miracle', 'surge'] },
+
+    // REFRAIN: teaches BUYBACK. Purple uncommon — returns to hand when powered.
+    { id: 'refrain', name: 'REFRAIN', kind: 'purple', rarity: 'uncommon', weight: 1, f: C.purple.free, e: C.purple.free, fp: C.purple.powered, ep: C.purple.powered, buyback: true, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'The path repeats. You are more ready for it this time.', keywords: ['buyback', 'surge'] },
 ];
 
 /**
@@ -387,6 +401,51 @@ export const HAZARD_REWARD_CARDS: HazardCardDef[] = [
 
     // --- FORETELL + DRAW (WAYSTONE: see 2, then draw 1 — balanced information). --
     { id: 'r_waystone', name: 'WAYSTONE', kind: 'purple', rarity: 'uncommon', f: C.purple.free, e: C.purple.free, fp: C.purple.powered, ep: C.purple.powered, effect: 'foretell', foretellBase: 2, foretellPowered: 2, foretellDrawCount: 1, salvage: { type: 'mana' }, flavor: 'Mark the path, then step it.', keywords: ['foretell', 'draw', 'surge'] },
+
+    // ====================================================================
+    // HEAVY-SWAP EXPANSION (2026-06-26) — JEOPARDY / MIRACLE / BUYBACK / DELVE
+    // All reward-pool. Numbers from HAZARD_TUNING.cards.codex.
+    // ====================================================================
+
+    // --- JEOPARDY (MTG Spectacle) — bonus when ≥1 mark is 'X'. ---------------
+    // Minor tier: +2 force when behind. Major: +4 force when behind.
+    { id: 'r_cornered', name: 'CORNERED', kind: 'red', rarity: 'uncommon', f: CX.numbers.uncommon.free, e: 0, fp: CX.numbers.uncommon.powered, ep: 0, jeopardyForce: CX.jeopardy.major, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'The worst position breeds the sharpest move.', keywords: ['force', 'jeopardy', 'surge'] },
+    { id: 'r_rallycry', name: 'RALLY CRY', kind: 'red', rarity: 'rare', f: CX.numbers.rare.free, e: 0, fp: CX.numbers.rare.powered, ep: 0, jeopardyForce: CX.jeopardy.major, jeopardyEscape: CX.jeopardy.minor, salvage: { type: 'mana' }, flavor: 'Falling behind only makes the charge louder.', keywords: ['force', 'jeopardy', 'surge'] },
+    // Blue jeopardy: escape when behind.
+    { id: 'r_laststrike', name: 'LAST STRIDE', kind: 'blue', rarity: 'uncommon', f: 0, e: CX.numbers.uncommon.free, fp: 0, ep: CX.numbers.uncommon.powered, jeopardyEscape: CX.jeopardy.major, salvage: { type: 'progress', key: 'escape', amount: 1 }, flavor: 'The route has taken enough. He takes it back.', keywords: ['escape', 'jeopardy', 'surge'] },
+    // Purple: dual jeopardy — bonus to BOTH meters when down a round.
+    { id: 'r_defiance', name: 'DEFIANCE', kind: 'purple', rarity: 'rare', f: CX.dual.uncommon.free, e: CX.dual.uncommon.free, fp: CX.dual.uncommon.powered, ep: CX.dual.uncommon.powered, jeopardyForce: CX.jeopardy.minor, jeopardyEscape: CX.jeopardy.minor, salvage: { type: 'mana' }, flavor: 'Both feet, both meters, both fists. Still here.', keywords: ['jeopardy', 'surge'] },
+
+    // --- MIRACLE (MTG Miracle, first-play bonus). ------------------------------
+    // Red: big force bonus if played first in the round.
+    { id: 'r_openingrite', name: 'OPENING RITE', kind: 'red', rarity: 'uncommon', f: CX.numbers.uncommon.free, e: 0, fp: CX.numbers.uncommon.powered, ep: 0, firstPlayForce: CX.miracle.major, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'The first stone placed decides the arch.', keywords: ['force', 'miracle', 'surge'] },
+    { id: 'r_dawnstrike', name: 'DAWNSTRIKE', kind: 'red', rarity: 'rare', f: CX.numbers.rare.free, e: 0, fp: CX.numbers.rare.powered, ep: 0, firstPlayForce: CX.miracle.major, salvage: { type: 'mana' }, flavor: 'Lead with everything. The round catches up.', keywords: ['force', 'miracle', 'surge'] },
+    // Blue miracle: lead with escape.
+    { id: 'r_firstword', name: 'FIRST WORD', kind: 'blue', rarity: 'uncommon', f: 0, e: CX.numbers.uncommon.free, fp: 0, ep: CX.numbers.uncommon.powered, firstPlayEscape: CX.miracle.major, salvage: { type: 'progress', key: 'escape', amount: 1 }, flavor: 'The path respects the one who moves first.', keywords: ['escape', 'miracle', 'surge'] },
+    // Purple dual miracle: bonus to BOTH if played first.
+    { id: 'r_primus', name: 'PRIMUS', kind: 'purple', rarity: 'rare', f: CX.dual.rare.free, e: CX.dual.rare.free, fp: CX.dual.rare.free, ep: CX.dual.rare.free, firstPlayForce: CX.miracle.major, firstPlayEscape: CX.miracle.major, salvage: { type: 'mana' }, flavor: 'What comes first comes hardest.', keywords: ['miracle', 'surge'] },
+
+    // --- BUYBACK (MTG Buyback) — powered: return to hand next round. -----------
+    // Red buyback: repeatable force. Powered for big number; returns.
+    { id: 'r_eternal', name: 'ETERNAL GRIP', kind: 'red', rarity: 'rare', f: CX.numbers.uncommon.free, e: 0, fp: CX.numbers.uncommon.powered, ep: 0, buyback: true, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'He has played this card before. He will play it again.', keywords: ['force', 'buyback', 'surge'] },
+    // Blue buyback: repeatable escape.
+    { id: 'r_recursive', name: 'RECURSIVE STEP', kind: 'blue', rarity: 'rare', f: 0, e: CX.numbers.uncommon.free, fp: 0, ep: CX.numbers.uncommon.powered, buyback: true, salvage: { type: 'progress', key: 'escape', amount: 1 }, flavor: 'Every crossing teaches the one after it.', keywords: ['escape', 'buyback', 'surge'] },
+    // Purple buyback: dual-meter, returns when powered — premium econ.
+    { id: 'r_mantra', name: 'THE MANTRA', kind: 'purple', rarity: 'rare', f: CX.dual.uncommon.free, e: CX.dual.uncommon.free, fp: CX.dual.uncommon.powered, ep: CX.dual.uncommon.powered, buyback: true, salvage: { type: 'mana' }, flavor: 'Say it again. Mean it more.', keywords: ['buyback', 'surge'] },
+    // Gold buyback: best-in-slot repeatable; gold die only, major utility.
+    { id: 'r_everpilgrim', name: 'EVERPILGRIM', kind: 'gold', rarity: 'rare', f: 0, e: 0, fp: C.gold.powered, ep: C.gold.powered, effect: 'draw', majorEffect: true, drawBase: U.drawMinorBase, drawPowered: U.drawMinorPowered, buyback: true, salvage: { type: 'mana' }, flavor: 'The road never ends for those who never stop.', keywords: ['gilded', 'draw', 'buyback', 'surge'] },
+
+    // --- DELVE (MTG Delve) — bonus per card in discard pile. ------------------
+    // Red delve: +N force per discard. Scales with how deep you've gone.
+    { id: 'r_depthcharge', name: 'DEPTH CHARGE', kind: 'red', rarity: 'uncommon', f: CX.numbers.uncommon.free, e: 0, fp: CX.numbers.uncommon.powered, ep: 0, delveForce: CX.delve.minor, salvage: { type: 'progress', key: 'force', amount: 1 }, flavor: 'The longer the fall, the louder it lands.', keywords: ['force', 'delve', 'surge'] },
+    { id: 'r_sunkost', name: 'SUNK COST', kind: 'red', rarity: 'rare', f: 0, e: 0, fp: 0, ep: 0, effect: 'burst', burstBase: { force: 0 }, delveForce: CX.delve.major, salvage: { type: 'progress', key: 'force', amount: 2 }, flavor: 'Count what is already spent. Then spend it again.', keywords: ['force', 'burst', 'delve'] },
+    // Blue delve: +N escape per discard.
+    { id: 'r_inscription', name: 'INSCRIPTION', kind: 'blue', rarity: 'uncommon', f: 0, e: CX.numbers.uncommon.free, fp: 0, ep: CX.numbers.uncommon.powered, delveEscape: CX.delve.minor, salvage: { type: 'progress', key: 'escape', amount: 1 }, flavor: 'The ones who came before wrote it in the rock.', keywords: ['escape', 'delve', 'surge'] },
+    { id: 'r_cipher', name: 'CIPHER', kind: 'blue', rarity: 'rare', f: 0, e: 0, fp: 0, ep: 0, effect: 'burst', burstBase: { escape: 0 }, delveEscape: CX.delve.major, salvage: { type: 'progress', key: 'escape', amount: 2 }, flavor: 'Every card spent is a key. This is the lock.', keywords: ['escape', 'burst', 'delve'] },
+    // Purple delve: dual bonus. Rewards rich discard piles.
+    { id: 'r_channelrage', name: 'CHANNEL RAGE', kind: 'purple', rarity: 'rare', f: CX.dual.uncommon.free, e: CX.dual.uncommon.free, fp: CX.dual.uncommon.powered, ep: CX.dual.uncommon.powered, delveForce: CX.delve.minor, delveEscape: CX.delve.minor, salvage: { type: 'mana' }, flavor: 'Spent in full and still running.', keywords: ['delve', 'surge'] },
+    // Gold delve: massive dual bonus per discard, but requires wild die.
+    { id: 'r_throwitall', name: 'THROW IT ALL', kind: 'gold', rarity: 'rare', f: 0, e: 0, fp: C.gold.powered, ep: C.gold.powered, effect: 'burst', majorEffect: true, burstBase: { force: 0, escape: 0 }, delveForce: CX.delve.major, delveEscape: CX.delve.major, salvage: { type: 'mana' }, flavor: 'The whole crossing is the hand. Spend it.', keywords: ['gilded', 'burst', 'delve', 'surge'] },
 ];
 
 export function getHazardCardDef(cardId: string): HazardCardDef {

@@ -114,16 +114,16 @@ describe('Hazard Mobile Parity Audit', () => {
             // This tests the powering logic - gold dice can power non-gold cards
             // but non-gold dice cannot power gold cards
             const sessionWithDice = finishHazardRolling(selectHazardRoute(session, 'safe', []));
-            
+
             if (sessionWithDice.hand.length > 0) {
                 const card = sessionWithDice.hand[0];
                 const goldDie = sessionWithDice.dice.find(die => die.kind === 'gold');
-                
+
                 if (goldDie && card.cardId !== 'CRACK') {
-                    // Gold die should be able to power any non-gold card
-                    // deckBag is unused (voided) by powerHazardCard.
-                    const poweredSession = powerHazardCard(sessionWithDice, card.uid, goldDie.id, []);
-                    const poweredCard = poweredSession.hand.find(h => h.uid === card.uid);
+                    // Stage the card first (powerHazardCard operates on play area, not hand).
+                    const stagedSession = stageHazardCard(sessionWithDice, card.uid, []);
+                    const poweredSession = powerHazardCard(stagedSession, card.uid, goldDie.id, []);
+                    const poweredCard = poweredSession.play.find(p => p.uid === card.uid);
                     expect(poweredCard?.dieId).toBe(goldDie.id);
                 }
             }

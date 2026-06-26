@@ -1,8 +1,9 @@
 /**
- * Hazard codex library (2026-06-25) — hermetic e2e for the 173-card
+ * Hazard codex library (2026-06-26) — hermetic e2e for the 194-card
  * roster. Mechanics: PURGE / TRANSMUTE / MEND / BOUNTY / WARD / ANCHOR /
  * FORETELL / RALLY-ESC / ECHO / SCOUR / burstMend / purge+draw /
- * foretell+scour / foretell+drawCount / CRACK-as-punishment.
+ * foretell+scour / foretell+drawCount / CRACK-as-punishment /
+ * JEOPARDY / MIRACLE / BUYBACK / DELVE.
  * Seeded RNG only; no timers, no network, no Math.random.
  */
 
@@ -68,9 +69,9 @@ function stageAndApply(s: HazardSessionState, cardId: string, dieId: string | nu
 describe('codex library shape', () => {
     const ALL = [...HAZARD_DECK, ...HAZARD_REWARD_CARDS, HAZARD_CRACK_CARD];
 
-    it('the full library is exactly 173 cards with unique ids', () => {
-        expect(ALL).toHaveLength(173);
-        expect(new Set(ALL.map((c) => c.id)).size).toBe(173);
+    it('the full library is exactly 194 cards with unique ids', () => {
+        expect(ALL).toHaveLength(194);
+        expect(new Set(ALL.map((c) => c.id)).size).toBe(194);
     });
 
     it('every keyword on every card is in the glossary', () => {

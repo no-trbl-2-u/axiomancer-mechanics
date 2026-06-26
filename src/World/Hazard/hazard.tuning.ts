@@ -162,6 +162,12 @@ export const HAZARD_TUNING = {
             ward: { minor: 2, major: 4 },
             /** ANCHOR: momentum floor raised (minor / major tier). */
             anchor: { minor: 1, major: 2 },
+            /** JEOPARDY: bonus progress per meter when ≥1 mark is 'X'. */
+            jeopardy: { minor: 2, major: 4 },
+            /** MIRACLE (first-play): bonus progress per meter when played first. */
+            miracle: { minor: 2, major: 4 },
+            /** DELVE: bonus per discard-pile card per meter. */
+            delve: { minor: 1, major: 2 },
         },
     },
 

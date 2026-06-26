@@ -706,6 +706,26 @@ export function applyHazardCard(
                 },
             };
         }
+        // JEOPARDY: bonus progress when ≥1 round mark is already 'X'.
+        const inJeopardy = ns.marks.some((m) => m === 'X');
+        if (inJeopardy) {
+            if (def.jeopardyForce) ns = { ...ns, progressBase: { ...ns.progressBase, force: ns.progressBase.force + def.jeopardyForce } };
+            if (def.jeopardyEscape) ns = { ...ns, progressBase: { ...ns.progressBase, escape: ns.progressBase.escape + def.jeopardyEscape } };
+        }
+        // MIRACLE (first-play): bonus when this card is the first applied this round.
+        // ns.play already has this card marked applied, so a count of 1 means us.
+        const firstPlay = ns.play.filter((p) => p.applied).length === 1;
+        if (firstPlay) {
+            if (def.firstPlayForce) ns = { ...ns, progressBase: { ...ns.progressBase, force: ns.progressBase.force + def.firstPlayForce } };
+            if (def.firstPlayEscape) ns = { ...ns, progressBase: { ...ns.progressBase, escape: ns.progressBase.escape + def.firstPlayEscape } };
+        }
+        // DELVE: +N per card already in discard pile at apply time.
+        if (def.delveForce && ns.discardPile.length > 0) {
+            ns = { ...ns, progressBase: { ...ns.progressBase, force: ns.progressBase.force + def.delveForce * ns.discardPile.length } };
+        }
+        if (def.delveEscape && ns.discardPile.length > 0) {
+            ns = { ...ns, progressBase: { ...ns.progressBase, escape: ns.progressBase.escape + def.delveEscape * ns.discardPile.length } };
+        }
     }
     return ns;
 }
@@ -1069,7 +1089,18 @@ export function continueHazardAfterResolve(
         const mid = Math.floor(drawPile.length / 2);
         drawPile = [...drawPile.slice(0, mid), HAZARD_CRACK_CARD.id, ...drawPile.slice(mid)];
     }
-    const discardPile = [...s.discardPile, ...s.play.map((p) => p.cardId)];
+    // BUYBACK: powered buyback cards return to hand instead of going to discard.
+    const buybackHand: HazardHandEntry[] = [];
+    const discardFromPlay: string[] = [];
+    for (const p of s.play) {
+        const def = getHazardCardDef(p.cardId);
+        if (def.buyback && p.dieId !== null) {
+            buybackHand.push({ uid: `bk-${p.uid}`, cardId: p.cardId, dieId: null, applied: false });
+        } else {
+            discardFromPlay.push(p.cardId);
+        }
+    }
+    const discardPile = [...s.discardPile, ...discardFromPlay];
     const drawCount = Math.max(0, HAZARD_HAND_SIZE - s.hand.length);
     const draw = drawFromPile(s.rng, s.uidCounter, drawPile, deckBag, drawCount);
     return {
@@ -1077,7 +1108,7 @@ export function continueHazardAfterResolve(
         phase: 'playing',
         round: info.round + 1,
         play: [],
-        hand: [...s.hand, ...draw.drawn],
+        hand: [...s.hand, ...buybackHand, ...draw.drawn],
         drawPile: draw.drawPile,
         discardPile,
         progressBase: { force: info.carryForce, escape: info.carryEscape },
