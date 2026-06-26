@@ -239,7 +239,14 @@ Each `Affix` couples a display `word` to one or more existing catalogue
 stats. `affixesForSlot(slot, level, role)` returns the declaration-ordered
 candidates whose `validSlots` include the slot and whose `minLevel <= level`.
 Affix draws reuse the hidden-mod rarity scale (`AFFIX_RARITY_WEIGHTS`:
-`common_mod` 10 / `uncommon_mod` 3 / `rare_mod` 1).
+`common_mod` 10 / `uncommon_mod` 3 / `rare_mod` 1). Offensive status affixes
+on `weapon`/`hands` slots (those classified by `isOffensiveStatusAffix` — tagged
+`status`, on an offensive slot, and not defensive/sustain/cleanse) receive an
+additional draw-weight multiplier from `STATUS_AFFIX_DRAW_BIAS` (default `3`,
+registered as `loot.statusAffixDrawBias` in the tunable registry). This raises
+their effective weights to `common_mod` 30 / `uncommon_mod` 9 / `rare_mod` 3,
+making an uncommon status affix competitive with a common flat-stat prefix and
+ensuring status-effect play is the expected affix outcome on these slots.
 
 **Prefixes (66)** — lead the item name (`"<word> <base>"`):
 
