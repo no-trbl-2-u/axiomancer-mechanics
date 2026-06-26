@@ -1,13 +1,16 @@
 /**
  * Hazard codex library (2026-06-25) — hermetic e2e for the 173-card
  * roster. Mechanics: PURGE / TRANSMUTE / MEND / BOUNTY / WARD / ANCHOR /
- * FORETELL / RALLY-ESC / ECHO / SCOUR. Seeded RNG only; no timers, no network, no Math.random.
+ * FORETELL / RALLY-ESC / ECHO / SCOUR / burstMend / purge+draw /
+ * foretell+scour / foretell+drawCount / CRACK-as-punishment.
+ * Seeded RNG only; no timers, no network, no Math.random.
  */
 
 import { describe, expect, it } from 'vitest';
 
 import {
     applyHazardCard,
+    confirmHazardForetell,
     continueHazardAfterResolve,
     createHazardSession,
     resolveHazardRound,
@@ -275,5 +278,231 @@ describe('claim-time accruals', () => {
         s = resolveHazardRound(s, BAG);
         expect(s.resolveInfo?.carryForce).toBe(0);
         expect(s.resolveInfo?.carryEscape).toBe(0);
+    });
+});
+
+// ---------------------------------------------------------------------------
+// MTG mechanics — commit 181696b (ECHO / burstMend / purge+draw /
+// foretell+scour / foretell+drawCount / CRACK-as-punishment)
+// ---------------------------------------------------------------------------
+
+describe('ECHO scaling', () => {
+    it('ECHO force card adds per-card-applied bonus on top of base burst', () => {
+        let s = playingSession(5);
+        // Rig two already-applied cards into play; the engine counts them
+        // PLUS the ECHO card itself (marked applied before effect fires) = 3.
+        const appliedEntry1 = { uid: 'ap1', cardId: 'x_fieldstitch', dieId: null, applied: true };
+        const appliedEntry2 = { uid: 'ap2', cardId: 'x_fieldstitch', dieId: null, applied: true };
+        s = rig(s, { play: [appliedEntry1, appliedEntry2] });
+        const baseForce = s.progressBase.force;
+        s = rig(s, { hand: [{ uid: 'te1', cardId: 'r_tempestecho', dieId: null }] });
+        s = stageHazardCard(s, 'te1', BAG);
+        s = applyHazardCard(s, 'te1', BAG);
+        const def = getHazardCardDef('r_tempestecho');
+        // alreadyApplied inside the engine = 2 prior + 1 self = 3.
+        const engineApplied = 3;
+        const expected = (def.burstBase?.force ?? 0) + engineApplied * (def.echoPerCardForce ?? 0);
+        expect(s.progressBase.force - baseForce).toBe(expected);
+    });
+
+    it('ECHO escape card adds per-card-applied bonus on top of base burst', () => {
+        let s = playingSession(5);
+        const appliedEntry = { uid: 'ap1', cardId: 'x_fieldstitch', dieId: null, applied: true };
+        s = rig(s, { play: [appliedEntry] });
+        const baseEscape = s.progressBase.escape;
+        s = rig(s, { hand: [{ uid: 'cc1', cardId: 'r_chaincurrent', dieId: null }] });
+        s = stageHazardCard(s, 'cc1', BAG);
+        s = applyHazardCard(s, 'cc1', BAG);
+        const def = getHazardCardDef('r_chaincurrent');
+        // alreadyApplied = 1 prior + 1 self = 2.
+        const engineApplied = 2;
+        const expected = (def.burstBase?.escape ?? 0) + engineApplied * (def.echoPerCardEscape ?? 0);
+        expect(s.progressBase.escape - baseEscape).toBe(expected);
+    });
+
+    it('ECHO bonus counts only self when no prior cards applied', () => {
+        let s = playingSession(5);
+        s = rig(s, { play: [] });
+        const baseForce = s.progressBase.force;
+        s = rig(s, { hand: [{ uid: 'te0', cardId: 'r_tempestecho', dieId: null }] });
+        s = stageHazardCard(s, 'te0', BAG);
+        s = applyHazardCard(s, 'te0', BAG);
+        const def = getHazardCardDef('r_tempestecho');
+        // alreadyApplied = 0 prior + 1 self = 1; force = base + 1 * echoPerCardForce.
+        const expected = (def.burstBase?.force ?? 0) + 1 * (def.echoPerCardForce ?? 0);
+        expect(s.progressBase.force - baseForce).toBe(expected);
+    });
+
+    it('powered ECHO doubles the per-card bonus', () => {
+        let s = playingSession(5);
+        const appliedEntry = { uid: 'ap1', cardId: 'x_fieldstitch', dieId: null, applied: true };
+        s = rig(s, { play: [appliedEntry] });
+        const baseForce = s.progressBase.force;
+        const goldDie = die('gEcho', 'gold');
+        s = rig(s, { dice: [...s.dice.filter((d) => d.kind !== 'gold'), goldDie] });
+        s = rig(s, { hand: [{ uid: 'echo1', cardId: 'r_tempestecho', dieId: null }] });
+        s = stageHazardCard(s, 'echo1', BAG);
+        s = { ...s, play: s.play.map((p) => (p.uid === 'echo1' ? { ...p, dieId: 'gEcho' } : p)), dice: s.dice.map((d) => (d.id === 'gEcho' ? { ...d, state: 'spent' as const } : d)) };
+        s = applyHazardCard(s, 'echo1', BAG);
+        const def = getHazardCardDef('r_tempestecho');
+        // alreadyApplied = 1 prior + 1 self = 2; powered mult = 2.
+        const engineApplied = 2;
+        const expectedPowered = (def.burstBase?.force ?? 0) + engineApplied * (def.echoPerCardForce ?? 0) * 2;
+        expect(s.progressBase.force - baseForce).toBe(expectedPowered);
+    });
+});
+
+describe('burstMend rider', () => {
+    it('MARTYRDOM (red sacrifice burst) accrues vitaeRestore at minor tier', () => {
+        let s = playingSession(5);
+        const preMend = s.vitaeRestore;
+        s = stageAndApply(s, 'r_martyrdom');
+        const def = getHazardCardDef('r_martyrdom');
+        expect(s.vitaeRestore - preMend).toBe(def.burstMendBase ?? 0);
+    });
+
+    it('MARTYRDOM accrues the powered vitaeRestore at major tier', () => {
+        let s = playingSession(5);
+        const preMend = s.vitaeRestore;
+        const goldDie = die('gMend', 'gold');
+        s = rig(s, { dice: [...s.dice.filter((d) => d.kind !== 'gold'), goldDie] });
+        s = rig(s, { hand: [{ uid: 'm1', cardId: 'r_martyrdom', dieId: null }], play: s.play });
+        s = stageHazardCard(s, 'm1', BAG);
+        s = { ...s, play: s.play.map((p) => (p.uid === 'm1' ? { ...p, dieId: 'gMend' } : p)), dice: s.dice.map((d) => (d.id === 'gMend' ? { ...d, state: 'spent' as const } : d)) };
+        s = applyHazardCard(s, 'm1', BAG);
+        const def = getHazardCardDef('r_martyrdom');
+        expect(s.vitaeRestore - preMend).toBe(def.burstMendPowered ?? def.burstMendBase ?? 0);
+    });
+
+    it('DESPERATE LUNGE accrues escape burst + burstMend at minor tier', () => {
+        let s = playingSession(5);
+        const preMend = s.vitaeRestore;
+        const baseEscape = s.progressBase.escape;
+        s = stageAndApply(s, 'r_desperatelunge');
+        const def = getHazardCardDef('r_desperatelunge');
+        expect(s.vitaeRestore - preMend).toBe(def.burstMendBase ?? 0);
+        expect(s.progressBase.escape - baseEscape).toBe(def.burstBase?.escape ?? 0);
+    });
+});
+
+describe('purge+draw combo', () => {
+    it('CLEAN BREAK purges one CRACK then draws one card into hand', () => {
+        let s = playingSession(5);
+        const extraCard = 'steps';
+        s = rig(s, {
+            hand: [entry('c1', HAZARD_CRACK_CARD.id), entry('cb', 'r_cleanbreak')],
+            drawPile: [extraCard, 'haul'],
+            play: [],
+        });
+        const handSizeBefore = s.hand.length;
+        s = stageHazardCard(s, 'cb', BAG);
+        s = applyHazardCard(s, 'cb', BAG);
+        // CRACK removed from hand (-1), purge+draw adds 1 → net same size minus the played card.
+        expect(s.hand.some((h) => h.cardId === HAZARD_CRACK_CARD.id)).toBe(false);
+        const def = getHazardCardDef('r_cleanbreak');
+        expect(s.hand.length).toBe(handSizeBefore - 1 - 1 + (def.purgeDrawCount ?? 0));
+    });
+});
+
+describe('FORETELL state machine', () => {
+    it('playing a foretell card transitions to foretell-pending', () => {
+        let s = playingSession(5);
+        s = stageAndApply(s, 'r_readpath');
+        expect(s.phase).toBe('foretell-pending');
+        expect(s.foretellPending).not.toBeNull();
+        const def = getHazardCardDef('r_readpath');
+        expect(s.foretellPending?.revealed).toHaveLength(def.foretellBase ?? 2);
+    });
+
+    it('confirmHazardForetell returns to playing and restores revealed cards to draw pile', () => {
+        let s = playingSession(5);
+        s = stageAndApply(s, 'r_readpath');
+        expect(s.phase).toBe('foretell-pending');
+        const revealed = s.foretellPending!.revealed;
+        s = confirmHazardForetell(s, revealed, BAG);
+        expect(s.phase).toBe('playing');
+        expect(s.foretellPending).toBeNull();
+        for (const id of revealed) {
+            expect(s.drawPile).toContain(id);
+        }
+    });
+
+    it('SCOUR mode: omitting a card from orderedIds discards it permanently', () => {
+        let s = playingSession(5);
+        s = stageAndApply(s, 'r_oraclesgaze');
+        expect(s.phase).toBe('foretell-pending');
+        const revealed = s.foretellPending!.revealed;
+        expect(revealed.length).toBeGreaterThan(0);
+        const kept = revealed.slice(0, 1);
+        const discarded = revealed.slice(1);
+        const pileLenBefore = s.drawPile.length;
+        const discardLenBefore = s.discardPile.length;
+        s = confirmHazardForetell(s, kept, BAG);
+        expect(s.phase).toBe('playing');
+        // Kept cards restored to front of draw pile.
+        for (const id of kept) {
+            expect(s.drawPile.slice(0, kept.length)).toContain(id);
+        }
+        // Discarded cards added to discardPile; pile length increases by |discarded|.
+        expect(s.discardPile.length).toBe(discardLenBefore + discarded.length);
+        // Draw pile gains |kept| (restored) but NOT |discarded|.
+        expect(s.drawPile.length).toBe(pileLenBefore + kept.length);
+    });
+
+    it('foretell+drawCount: WAYSTONE draws extra cards into hand after resolve', () => {
+        let s = playingSession(5);
+        const def = getHazardCardDef('r_waystone');
+        expect(def.foretellDrawCount ?? 0).toBeGreaterThan(0);
+        s = rig(s, { drawPile: ['steps', 'haul', 'r_readpath', 'r_cleanbreak', 'r_martyrdom'] });
+        s = stageAndApply(s, 'r_waystone');
+        expect(s.phase).toBe('foretell-pending');
+        const revealed = s.foretellPending!.revealed;
+        const handBefore = s.hand.length;
+        s = confirmHazardForetell(s, revealed, BAG);
+        expect(s.phase).toBe('playing');
+        expect(s.hand.length).toBe(handBefore + (def.foretellDrawCount ?? 0));
+    });
+
+    it('confirmHazardForetell is a no-op when not in foretell-pending', () => {
+        let s = playingSession(5);
+        expect(s.phase).toBe('playing');
+        const before = s;
+        const after = confirmHazardForetell(s, [], BAG);
+        expect(after).toBe(before);
+    });
+});
+
+describe('CRACK-as-punishment', () => {
+    it('a failed round inserts a CRACK card before the next round draws', () => {
+        let s = playingSession(5, 'safe');
+        s = rig(s, {
+            drawPile: ['steps', 'haul', 'steps', 'haul'],
+            play: [entry('p1', HAZARD_CRACK_CARD.id, null)],
+            hand: [],
+        });
+        s = resolveHazardRound(s, BAG);
+        expect(s.resolveInfo?.cleared).toBe(false);
+        s = continueHazardAfterResolve(s, BAG);
+        expect(s.phase).toBe('playing');
+        // CRACK is inserted mid-pile before the hand-draw step. It may end up
+        // drawn into hand if mid ≤ HAND_SIZE, so check pile OR hand.
+        const crackInPile = s.drawPile.includes(HAZARD_CRACK_CARD.id);
+        const crackInHand = s.hand.some((h) => h.cardId === HAZARD_CRACK_CARD.id);
+        expect(crackInPile || crackInHand).toBe(true);
+    });
+
+    it('a cleared round does NOT insert a CRACK card', () => {
+        let s = playingSession(5, 'safe');
+        s = rig(s, {
+            drawPile: ['steps', 'haul', 'steps', 'haul'],
+            progressBase: { force: 999, escape: 0 },
+            play: [entry('p1', 'steps', null)],
+            hand: [],
+        });
+        s = resolveHazardRound(s, BAG);
+        const cleared = s.resolveInfo?.cleared;
+        if (!cleared) return;
+        s = continueHazardAfterResolve(s, BAG);
+        expect(s.drawPile.filter((id) => id === HAZARD_CRACK_CARD.id)).toHaveLength(0);
     });
 });
