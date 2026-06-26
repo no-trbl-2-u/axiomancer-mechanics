@@ -133,6 +133,10 @@ Two thin read-side helpers were absorbed from the mobile app
 |--------|-------------|
 | `equipmentFromTemplate(template)` | Materialise a bare `Equipment` instance from an `EquipmentTemplate` with no rarity roll — base stats only, no rolled mods. The deterministic floor under `dropItem`. |
 | `generateRarityDrop(rarity, opts)` | Roll an affixed drop **at a target rarity** (rather than from the weighted table), returning a `GenerateRarityDropResult`. `opts` carries `playerLevel`, an optional seeded `rng`, and `maxAttempts` (default 16) for the affix-count retry loop. |
+| `dropItemAtRarity(templateId, playerLevel, rarity, rng?)` | Roll one equipment drop carrying exactly the rarity's named-affix count (`AFFIXES_PER_RARITY[rarity]`), with the display rarity stamped on the instance. Passes an optional seeded `rng` for deterministic drops; used by the loot-cache reward table. |
+| `countNamedAffixes(item)` | Count the *named* affixes (prefix + suffix) on an `Equipment` instance — the visible affix count that drives the rarity contract. Distinct from `rolledMods.length` since one affix can carry several modifier ids. |
+| `hasBakedAffix(template)` | True when a base template pins a `prefixId` or `suffixId` (a curated library variant). Such templates are skipped by procedural rarity drops because their baked affix prevents meeting an exact rolled-affix count. |
+| `AFFIXES_PER_RARITY` | `Record<ItemRarity, number>` — the canonical named-affix count per rarity tier: `common` 0 / `uncommon` 1 / `rare` 2 / `unique` 3. |
 | `firstEquippedPerSlot(inventory)` | Map each occupied `Equipment['slot']` to the first worn item in that slot — the canonical "what's currently equipped" read. |
 | `isEquippedFirstOfSlot(inventory, target)` | True when `target` is the slot's first-worn item. |
 | `findEquippedInSlot(inventory, target)` | The worn sibling occupying `target`'s slot, or `null`. Pairs with `computeEquipDelta` (see [character.md](character.md#api)) to compute equip-change deltas. |
