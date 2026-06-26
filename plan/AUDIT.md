@@ -74,6 +74,13 @@
 
 - [x] **[Z — critique-92 LOW] docs — `confirmHazardForetell` absent from spec.md Contracts Hazard row and bearings.md Hazard wildcard annotation** — resolved at `1ba3cce` (iterate, 2026-06-26). Appended to spec.md Hazard row; added Key state-machine entry point paragraph to bearings.md Hazard block. Doc-only; 2056 tests + type-check + lint + build green. Score 3 × 9 / 10 = 2.7. Source: critique-92 (commit 3dc07bb).
 
+- [ ] **[E — docs gap] CRACK-as-punishment mechanic absent from `docs/hazard-minigame-api.md` Core rules**
+  - area: docs / hazard
+  - observation: `hazard.engine.ts:1066-1070` — a failed round (where `resolveInfo.cleared === false`) silently inserts `HAZARD_CRACK_CARD.id` ("FRACTURE") into the middle of the draw pile before the next round begins. This is the CRACK-as-punishment mechanic: the engine comment says "it clogs the hand and only PURGE can remove it." The behaviour is exercised by two hermetic test cases (critique-92 MED drain, 2026-06-26), documented in the source comment, but **absent from `docs/hazard-minigame-api.md`**. The "Core rules the UI must not invent" section and the MTG expansion section both omit this mechanic. Mobile authors have no documented signal that a failed round silently modifies the draw pile.
+  - suggested_fix: Add a "CRACK-as-punishment" paragraph to the "Core rules the UI must not invent" section of `docs/hazard-minigame-api.md`: "A failed round (one where the required progress was not reached) inserts a FRACTURE (CRACK) card into the middle of the draw pile before the next round draws begin. FRACTURE contributes 0 force/escape when drawn or played; only a PURGE-family card removes it from the session. Mobile must not insert or count CRACK cards locally — the engine's `processBetweenHazardRounds` manages this automatically."
+  - source: iterate audit 2026-06-26
+  - score: 3 × 9 / 10 = 2.7
+
 - [ ] **[needs-user-call — DIV-MECH-005] game.cli.ts map-encounter routing: route to Hazard-Pattern Combat instead of legacy `resolveCombatRound`**
   - area: mechanics / CLI
   - observation: `game.cli.ts:180-183` explicitly routes map-triggered encounters to `legacyCombatTab` (legacy `resolveCombatRound` loop). The comment says "map-triggered encounters use the legacy path; the new Hazard-style combat is reachable standalone via `npm run combat`." Updating the fishing-village walkthrough (`automation/scripts/walkthroughs/fishing-village-exploration.json`) to drive Hazard-Pattern Combat requires this routing to change first — otherwise the walkthrough JSON's encounter steps will still enter the legacy tab. `divergences.md:83-98` (DIV-MECH-005) confirms the block was lifted when Phase 165 shipped (DIV-MECH-001 resolved), but the game.cli.ts routing decision remains open.
