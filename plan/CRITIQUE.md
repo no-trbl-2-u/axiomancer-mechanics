@@ -67,13 +67,7 @@
 
 ## Pending
 
-- [ ] **[MED] tests — MTG Hazard mechanics (ECHO/SCOUR/FORETELL+DRAW/purgeDrawCount/burstMend/CRACK-punishment) have zero hermetic e2e cases**
-  - pass: critique-92 (commit 3dc07bb)
-  - area: tests
-  - observation: commit 181696b added 6 new engine branches in `hazard.engine.ts` — ECHO per-card scaling (`:437-441`), burstMend rider (`:446-447`), purge+draw (`:488-489`), foretell+scour flag (`:541-542`), foretell+drawCount (`:541`), and CRACK-as-punishment on failed rounds (`:1066-1070`) — with zero hermetic test cases. `hazard.codex.engine.test.ts` lists these mechanics in its header comment and bumped the card-count assertion to 173, but added no `it()` blocks exercising any of the new code paths. `confirmHazardForetell` (the FORETELL resolution function, ~50 lines at `:1127`) is never imported or called by any test file.
-  - evidence: `src/World/Hazard/hazard.engine.ts:437,446,488,541,1066,1127`; `src/World/Hazard/e2e/hazard.codex.engine.test.ts` (no ECHO/SCOUR/foretell/confirmHazardForetell calls — confirmed via grep)
-  - suggested_fix: add a `describe('MTG mechanics — Phase 181696b')` block to `hazard.codex.engine.test.ts` (or a new `hazard.mtg-mechanics.engine.test.ts`) covering: ECHO scaling accumulates per cards-already-applied; foretell+scour puts session in `foretell-pending` state and `confirmHazardForetell` with a subset discards those cards; foretell+drawCount draws N after resolve; purgeDrawCount draws N after purge; burstMend queues vitae restore; failed round inserts one `HAZARD_CRACK_CARD` id at mid-pile.
-  - source: critique
+- [x] **[MED] tests — MTG Hazard mechanics (ECHO/SCOUR/FORETELL+DRAW/purgeDrawCount/burstMend/CRACK-punishment) have zero hermetic e2e cases** — resolved at `5980a49` (iterate, 2026-06-26). Added 15 new hermetic cases across 5 new describe blocks in `hazard.codex.engine.test.ts`: ECHO scaling (4 cases — force/escape bonus, no-prior baseline, powered tier doubling); burstMend rider (3 cases — MARTYRDOM minor/major, DESPERATE LUNGE combo); purge+draw combo (1 case — CLEAN BREAK crack+draw); FORETELL state machine (5 cases — foretell-pending transition, confirmHazardForetell restore, SCOUR discard accounting, WAYSTONE drawCount bonus, no-op guard); CRACK-as-punishment (2 cases — failed vs cleared round). confirmHazardForetell imported and called. 2056 tests + type-check + lint + build + deploy:check green. Score 5 × 8 / 10 = 4.0. Source: critique-92 (commit 3dc07bb).
 
 - [ ] **[LOW] docs — `confirmHazardForetell` absent from spec.md Contracts Hazard row and bearings.md Hazard wildcard annotation**
   - pass: critique-92 (commit 3dc07bb)
