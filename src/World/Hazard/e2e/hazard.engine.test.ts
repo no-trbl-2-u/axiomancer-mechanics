@@ -12,8 +12,11 @@ import {
     claimHazardRewards,
     continueHazardAfterResolve,
     createHazardSession,
+    dieCanPower,
+    dieCanPowerCard,
     discardHazardCard,
     finishHazardRolling,
+    hazardCardPowerColors,
     hazardCardValue,
     hazardProjectedProgress,
     hazardStagedProgress,
@@ -1065,5 +1068,78 @@ describe('sub-quests — outcome payout', () => {
         const scav = s.outcome?.subquests.find((q) => q.id === 'scavenger');
         expect(scav?.status).toBe('done'); // achieved…
         expect(s.outcome?.questVitae).toBe(0); // …but forfeit on a failure
+    });
+});
+
+describe('dieCanPower — die-kind × card-color affordance', () => {
+    it('matching color powers the card', () => {
+        expect(dieCanPower('red', 'red')).toBe(true);
+        expect(dieCanPower('blue', 'blue')).toBe(true);
+        expect(dieCanPower('purple', 'purple')).toBe(true);
+        expect(dieCanPower('gold', 'gold')).toBe(true);
+    });
+    it('gold (wild) die powers any color', () => {
+        expect(dieCanPower('gold', 'red')).toBe(true);
+        expect(dieCanPower('gold', 'blue')).toBe(true);
+        expect(dieCanPower('gold', 'purple')).toBe(true);
+    });
+    it('mismatched color does not power the card', () => {
+        expect(dieCanPower('red', 'blue')).toBe(false);
+        expect(dieCanPower('blue', 'purple')).toBe(false);
+        expect(dieCanPower('purple', 'red')).toBe(false);
+    });
+    it('hex die never powers any card', () => {
+        expect(dieCanPower('hex', 'red')).toBe(false);
+        expect(dieCanPower('hex', 'blue')).toBe(false);
+        expect(dieCanPower('hex', 'gold')).toBe(false);
+    });
+});
+
+describe('dieCanPowerCard — two-tone colors[] variant', () => {
+    const singleRed = getHazardCardDef('steps')!;
+    const twoToneRB = getHazardCardDef('r_pivot')!;
+
+    it('single-color card: matching die powers it', () => {
+        expect(dieCanPowerCard('red', singleRed)).toBe(true);
+    });
+    it('single-color card: mismatched die does not power it', () => {
+        expect(dieCanPowerCard('blue', singleRed)).toBe(false);
+        expect(dieCanPowerCard('purple', singleRed)).toBe(false);
+    });
+    it('single-color card: gold die (wild) powers it', () => {
+        expect(dieCanPowerCard('gold', singleRed)).toBe(true);
+    });
+    it('single-color card: hex die never powers it', () => {
+        expect(dieCanPowerCard('hex', singleRed)).toBe(false);
+    });
+    it('two-tone card: first color powers it', () => {
+        expect(dieCanPowerCard('red', twoToneRB)).toBe(true);
+    });
+    it('two-tone card: second color also powers it', () => {
+        expect(dieCanPowerCard('blue', twoToneRB)).toBe(true);
+    });
+    it('two-tone card: unrelated color does not power it', () => {
+        expect(dieCanPowerCard('purple', twoToneRB)).toBe(false);
+    });
+    it('two-tone card: gold die powers it', () => {
+        expect(dieCanPowerCard('gold', twoToneRB)).toBe(true);
+    });
+    it('two-tone card: hex die never powers it', () => {
+        expect(dieCanPowerCard('hex', twoToneRB)).toBe(false);
+    });
+});
+
+describe('hazardCardPowerColors — colors[] vs kind fallback', () => {
+    it('single-color card returns [kind]', () => {
+        const def = getHazardCardDef('steps')!;
+        expect(hazardCardPowerColors(def)).toEqual([def.kind]);
+    });
+    it('two-tone card returns its colors array', () => {
+        const def = getHazardCardDef('r_pivot')!;
+        expect(hazardCardPowerColors(def)).toEqual(['red', 'blue']);
+    });
+    it('two-tone red/purple card returns its colors array', () => {
+        const def = getHazardCardDef('x_brawlerfeint')!;
+        expect(hazardCardPowerColors(def)).toEqual(['red', 'purple']);
     });
 });
