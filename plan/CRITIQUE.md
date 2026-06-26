@@ -68,13 +68,7 @@
 
 - [x] **[LOW] docs — `PASSIVE_DEFENSE_MULTIPLIER` absent from `docs/game.md` constants table** — resolved at `b1c1260` (iterate, 2026-06-25). Added `PASSIVE_DEFENSE_MULTIPLIER` row (value: 1, "Defense multiplier when not in active defense stance") to the `docs/game.md` constants table alongside `DEFENSE_MULTIPLIERS`. Doc-only; type-check + lint + build green. Score 3 × 9 / 10 = 2.7. Source: critique-91 (commit e7d16a3).
 
-- [ ] **[LOW] docs — `getThreatSequence` and `generateDefaultThreatSequence` absent from `docs/combat.md` API table**
-  - pass: critique-91 (commit e7d16a3)
-  - area: docs
-  - observation: `getThreatSequence` and `generateDefaultThreatSequence` are in the root barrel and spec.md Contracts Combat row, but `docs/combat.md` documents only `AUTHORED_THREAT_ENEMY_IDS` (line 585) as the threat-sequence surface — the two function APIs that read and generate threat sequences are not in the API table. Silent accumulation since the Spec 26b threat-read API shipped.
-  - evidence: `docs/combat.md` line 585 (AUTHORED_THREAT_ENEMY_IDS entry); `spec.md` line 93 (Combat row, "threat-sequence read API"); `src/index.ts` Combat block
-  - suggested_fix: Add `getThreatSequence(enemyId)` and `generateDefaultThreatSequence(phases)` entries to the `docs/combat.md` §Hazard-Pattern Combat API table alongside the `AUTHORED_THREAT_ENEMY_IDS` entry.
-  - source: critique
+- [x] **[LOW] docs — `getThreatSequence` and `generateDefaultThreatSequence` absent from `docs/combat.md` API table** — resolved at `b343e76` (iterate, 2026-06-26). Added `getThreatSequence(enemy)` and `generateDefaultThreatSequence(enemy)` rows to `docs/combat.md` §Hazard-Pattern Combat API table immediately after the `AUTHORED_THREAT_ENEMY_IDS` entry. Doc-only; type-check + lint + build + 2041 tests green. Score 3 × 9 / 10 = 2.7. Source: critique-91 (commit e7d16a3).
 
 - [ ] **[LOW] docs — 4 Phase 154 loot-generation helpers absent from `docs/equipment.md`**
   - pass: critique-91 (commit e7d16a3)
