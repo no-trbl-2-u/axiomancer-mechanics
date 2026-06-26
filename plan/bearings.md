@@ -134,6 +134,15 @@ Combat:     determineAdvantage, getAttackStat, getDefenseStat, getSaveStat,
             combatDieCanPower (die-affordance check); refreshOneDie (refresh a single spent
             die); toCombatCard (skill → CombatCard converter); projectDeck (hand-projection
             read); classifyVerbClass (card intent classifier); buildCombatDeck (deck assembly).)
+            (+ Spec 25 encounter/UI helpers — rollEncounterDice (rolls colored mana dice at
+            phase start); resolveThreatPhase (resolves enemy threat phase — Clear/Overwhelmed
+            ledger); selectEncounterMercyChoice (opens Befriend mercy choice, Phase 112 logic
+            intact); getCard / handCards / availableDice (read-only UI previews for hand and
+            die affordances — mobile calls these to render the combat UI); buildCombatSummary
+            (end-of-fight CombatSummary with per-effect CombatAttributionRow / LandedEffect
+            attribution rows); CombatSummary / CombatAttributionRow / LandedEffect — named
+            type exports for the attribution view (importable as
+            `import type { CombatSummary } from 'axiomancer-mechanics'`).)
 Combat reducer: initializeCombat, setPhase, setPlayerStance, setPlayerAction,
                 appendLog, incrementFriendship, endCombat
 Effects:    applyEffect, applyTier1CombatEffect, clearTier1EffectsForStance,
