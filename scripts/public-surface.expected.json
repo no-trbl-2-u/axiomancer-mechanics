@@ -205,6 +205,7 @@
     "completeUniqueEvent",
     "composeItemName",
     "computeEquipDelta",
+    "confirmHazardForetell",
     "consumableLibrary",
     "continueGatheringAfterReprisal",
     "continueHazardAfterResolve",
