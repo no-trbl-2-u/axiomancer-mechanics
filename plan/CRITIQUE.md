@@ -69,13 +69,7 @@
 
 ## Pending
 
-- [ ] **[LOW] docs — 8 Spec 25 combat helpers absent from spec.md Contracts Combat row and bearings.md** — `rollEncounterDice`, `resolveThreatPhase`, `selectEncounterMercyChoice`, `getCard`, `handCards`, `availableDice`, `buildCombatSummary` (values) + `CombatSummary` (type) are on the public barrel (`src/index.ts:107-109`) and documented in `docs/combat.md` (§Spec 25 API table, lines 520/529/531-536) but absent from the spec.md Contracts Combat row and bearings.md locked-contract group. These are genuine consumer-facing UI helpers the mobile host is expected to call. Score 3 × 9 / 10 = 2.7. Source: critique-94 (commit 2347d8a).
-  - pass: critique-94 (commit 2347d8a)
-  - area: docs
-  - observation: `rollEncounterDice`, `resolveThreatPhase`, `selectEncounterMercyChoice`, `getCard`, `handCards`, `availableDice`, `buildCombatSummary`, and type `CombatSummary` are exported from `src/index.ts:107-109`, present in the fixture, and documented in `docs/combat.md` §Spec 25 API table, but not enumerated in `spec.md` Contracts Combat row or `bearings.md` locked-contract group.
-  - evidence: `src/index.ts:107-109`; `docs/combat.md:520,529,531-536`
-  - suggested_fix: Append the 7 values + 1 type to the spec.md Contracts Combat row annotation and the bearings.md Spec 25 block alongside the existing Spec 25 exports list.
-  - source: critique
+- [x] **[LOW] docs — 8 Spec 25 combat helpers absent from spec.md Contracts Combat row and bearings.md** — resolved at `7a35a90` (iterate, 2026-06-26). Added `rollEncounterDice`, `resolveThreatPhase`, `selectEncounterMercyChoice`, `getCard` / `handCards` / `availableDice`, `buildCombatSummary` to spec.md Combat row; added `CombatSummary` / `CombatAttributionRow` / `LandedEffect` as named type exports; added Spec 25 encounter/UI helpers block to bearings.md Combat group. Doc-only; type-check + lint + build green. Score 3 × 9 / 10 = 2.7. Source: critique-94 (commit 2347d8a).
 
 - [x] **[MED] tests — JEOPARDY/MIRACLE/BUYBACK/DELVE have zero hermetic e2e cases** — resolved at `4d79702` (iterate, 2026-06-26). Added 14 new hermetic cases across 4 new describe blocks in `hazard.codex.engine.test.ts`: JEOPARDY (4 cases — bonus fires on X mark, no bonus on O mark, CORNERED major tier, RALLY CRY dual force+escape); MIRACLE/first-play (4 cases — bonus fires when first applied, no bonus when prior applied, PRIMUS dual bonus, OPENING RITE negative guard); DELVE (4 cases — zero bonus at empty discard, scales with discard count, CIPHER burst+delve composition, INSCRIPTION 0-vs-N contrast); BUYBACK (2 cases — powered card returns to hand after continueHazardAfterResolve, unpowered goes to discard). 2073 tests + type-check + lint + build green. Score 5 × 8 / 10 = 4.0. Source: critique-93 (commit 7d0af1a).
 

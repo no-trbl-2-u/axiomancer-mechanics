@@ -46,7 +46,7 @@
 
 ## Pending
 
-- [ ] **[Z — critique-94 LOW] docs — 8 Spec 25 combat helpers absent from spec.md Contracts Combat row and bearings.md locked-contract group** — `rollEncounterDice`, `resolveThreatPhase`, `selectEncounterMercyChoice`, `getCard`, `handCards`, `availableDice`, `buildCombatSummary` (values) + `CombatSummary` (type) are on the public barrel (`src/index.ts:106-138`) and documented in `docs/combat.md` (§Spec 25 API table, lines 520/529/531-536) but absent from spec.md Contracts Combat row and bearings.md locked-contract group. Genuine consumer-facing UI helpers. Score: 3 × 9 / 10 = 2.7. Source: critique-94 (commit 2347d8a).
+- [x] **[Z — critique-94 LOW] docs — 8 Spec 25 combat helpers absent from spec.md Contracts Combat row and bearings.md locked-contract group** — resolved at `7a35a90` (iterate, 2026-06-26). Added `rollEncounterDice`, `resolveThreatPhase`, `selectEncounterMercyChoice`, `getCard` / `handCards` / `availableDice`, `buildCombatSummary` to spec.md Combat row; added `CombatSummary` / `CombatAttributionRow` / `LandedEffect` as named type exports; added matching Spec 25 encounter/UI helpers block to bearings.md Combat group. Doc-only; type-check + lint + build green. Score: 3 × 9 / 10 = 2.7. Source: critique-94 (commit 2347d8a).
 
 - [x] **[E — docs gap] `hazardCardPowerColors` absent from spec.md Contracts Hazard row and bearings.md Hazard block** — resolved at `e9c9c20` (iterate, 2026-06-26). Added `hazardCardPowerColors(def)` to spec.md Contracts Hazard row (alongside `dieCanPower`/`dieCanPowerCard`) and to bearings.md Hazard block as a sibling predicate annotation. Doc-only; 2089 tests + type-check + lint + build green. Score: 3 × 9 / 10 = 2.7.
 
