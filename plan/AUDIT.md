@@ -46,7 +46,7 @@
 
 ## Pending
 
-- [ ] **[A — test coverage gap] `buildCombatSummary` attribution structure shallow — only `rows.length > 0` asserted** — `hazard-pattern-combat.engine.test.ts:553-558` calls `buildCombatSummary` but only checks `rows.length > 0`; no test verifies `CombatAttributionRow` field shape (effectId, totalDamage, hitCount) or `LandedEffect` structure. Score: 4 × 7 / 10 = 2.8. Source: iterate audit pass 118 (2026-06-26).
+- [x] **[A — test coverage gap] `buildCombatSummary` attribution structure shallow — only `rows.length > 0` asserted** — resolved at `58ca7bd` (iterate, 2026-06-27). Added 7 hermetic cases across 2 describe blocks in `hazard-pattern-combat-helpers.engine.test.ts`: `recordAttribution` (3 cases — field shape on first call, accumulation across calls, separate rows for different cards); `buildCombatSummary` (4 cases — outcome/headline/directDamage fields, full `CombatAttributionRow` field shape on rows[], rows sorted descending + bestCard, empty-ledger guard). 2111 tests + type-check + lint + build green. Score: 4 × 7 / 10 = 2.8. Source: iterate audit pass 118 (2026-06-26).
 
 - [ ] **[E — docs gap] `CombatAttributionRow` and `LandedEffect` absent from `docs/combat.md` types row** — both are named type exports in `src/index.ts:138`, documented in spec.md/bearings.md, but `docs/combat.md` line 536 types row only lists `CombatEncounterState`, `CombatCard`, `CombatThreatPhase`, `CombatOutcome`, `CombatSummary` — omitting the two attribution sub-types consumers need to annotate `buildCombatSummary` return value. Score: 3 × 9 / 10 = 2.7. Source: iterate audit pass 118 (2026-06-26).
 
