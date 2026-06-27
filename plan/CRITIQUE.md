@@ -72,13 +72,7 @@
 
 ## Pending
 
-### [LOW] docs — `GOLD_CARD_IDS`, `isGoldCard` absent from bearings.md and docs/combat.md
-- pass: critique-97 (commit 9e28e11)
-- area: docs
-- observation: `GOLD_CARD_IDS` and `isGoldCard` are live barrel exports (`src/index.ts:117`; confirmed in `scripts/public-surface.expected.json`). They appear in `spec.md` Contracts Combat row ("defense cards / GUARD mechanic — `GOLD_CARD_IDS`, `isGoldCard`, `CardEffectKind`") but are absent from `plan/bearings.md` locked-contract group (the prior-pass Done record at critique-83 LOW-2 claimed they were added to bearings.md at `08d804e`; the current file does not contain them — silent re-accumulation). Also absent from `docs/combat.md` API table — no row describes the gold-card GUARD mechanic or the `isGoldCard` predicate for consumers building UI affordances.
-- evidence: `src/index.ts:117`, `scripts/public-surface.expected.json` (values: "GOLD_CARD_IDS", "isGoldCard"), `plan/bearings.md` (no match for "GOLD_CARD"), `docs/combat.md` (no match for "GOLD_CARD" or "isGoldCard")
-- suggested_fix: Add `GOLD_CARD_IDS` / `isGoldCard` to the bearings.md Combat locked-contract group (alongside `SYNTHETIC_CARD_IDS`/`isSyntheticCard`); add a row to the `docs/combat.md` Hazard-Pattern Combat API table describing the GUARD gold-tier mechanic and `isGoldCard(cardId)` predicate.
-- source: critique-97
+- [x] **[LOW] docs — `GOLD_CARD_IDS`, `isGoldCard`, `CardEffectKind` absent from bearings.md and docs/combat.md** — resolved at `3bd4b27` (iterate, 2026-06-27). Added gold (rare) cards / GUARD mechanic block to bearings.md Combat locked-contract group; added `GOLD_CARD_IDS / isGoldCard / CardEffectKind` row to docs/combat.md Hazard-Pattern Combat API table. Doc-only; 2121 tests + type-check + lint + build green. Score: 3 × 9 / 10 = 2.7. Source: critique-97 (commit 9e28e11).
 
 ### [LOW] docs — Skills barrel exports absent from spec.md + bearings.md
 - pass: critique-97 (commit 9e28e11)
