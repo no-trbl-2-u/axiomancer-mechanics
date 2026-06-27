@@ -326,12 +326,23 @@ describe('Spec 26b §4 — Signature Skills (Conviction-funded)', () => {
         expect(r.state.hand.find(h => h.uid === uid)).toBeUndefined();
     });
 
+    it('Overwhelming Argument (heart capstone) applies Petrify to the enemy', () => {
+        mockSequentialRng(0.5);
+        let state = initializeCombatEncounter(makePlayer([DOT_BODY]), makeEnemy(90, 'heart'), [DOT_BODY], 4);
+        state = rollEncounterDice(state).state;
+        state = { ...state, conviction: 10 };
+        const r = playSignatureSkill(state, 'sig-overwhelming-argument');
+        expect(r.state.conviction).toBe(2); // cost 8
+        expect(r.state.enemy.effects.some(e => e.effectId === 'debuff_petrify')).toBe(true);
+        expect(r.events.some(e => e.kind === 'signature-cast')).toBe(true);
+    });
+
     it('a signature skill fizzles (no-op) when underfunded', () => {
         mockSequentialRng(0.5);
         let state = initializeCombatEncounter(makePlayer([DOT_BODY]), makeEnemy(60), [DOT_BODY], 8);
         state = rollEncounterDice(state).state;
         state = { ...state, conviction: 1 };
-        const r = playSignatureSkill(state, 'sig-overwhelming-argument'); // cost 5
+        const r = playSignatureSkill(state, 'sig-overwhelming-argument'); // cost 8
         expect(r.state.conviction).toBe(1);
         expect(r.events.some(e => e.kind === 'effect-fizzled')).toBe(true);
     });
