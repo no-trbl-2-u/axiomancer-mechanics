@@ -5,7 +5,7 @@
  * minigame (`src/World/Hazard/`). HP MODEL: the enemy's SOLE bar is HP and the
  * player drops it to 0. Status effects are the EFFICIENT path (DoT erodes HP;
  * control hinders the enemy's turn); a raw strike is the weak baseline — every
- * verb is a skill card.
+ * verb is a combat card (projected from a learned skill).
  *
  * This subsystem ships ALONGSIDE the legacy `resolveCombatRound` driver (Spec
  * 25 §12 Q4 recommendation (b)): the effects engine, skill engine, and the old
@@ -54,7 +54,7 @@ export interface CombatManaDie {
 }
 
 // ---------------------------------------------------------------------------
-// Cards — skill-card view over a learned Skill (Spec 25 §4.3, §6)
+// Cards — combat card projected from a learned Skill (Spec 25 §4.3, §6)
 // ---------------------------------------------------------------------------
 
 /**
@@ -67,9 +67,9 @@ export type CombatVerbClass =
     | 'stat-debuff'       // applies stat-reduction debuffs → soft control
     | 'buff-self'         // buffs the player (regen, resistance, accuracy) → utility
     | 'direct-damage'     // raw HP damage, no status effect
-    | 'befriend'          // Befriend skill card → opens the mercy choice (§6 Q6)
+    | 'befriend'          // Befriend card → opens the mercy choice (§6 Q6)
     | 'defend'            // Guard/defense card → shields against the enemy's next threat
-    | 'retreat';          // Retreat skill card → leaves combat (§3, §12 Q2)
+    | 'retreat';          // Retreat card → leaves combat (§3, §12 Q2)
 
 /** The effect-kind a card's bottom action applies. `none` = utility / damage only. */
 export type CardEffectKind = 'dot' | 'control' | 'none';
@@ -269,7 +269,7 @@ export interface CombatSummary {
     rows: CombatAttributionRow[];
     totalDotDamage: number;
     directDamage: number;
-    /** Skill card that dealt the most enemy HP damage ('' if none). */
+    /** Card that dealt the most enemy HP damage ('' if none). */
     bestCard: string;
 }
 
@@ -286,7 +286,7 @@ export type CombatOutcome =
 export type CombatEncounterPhase =
     | 'reveal'         // enemy + opening hand visible before dice are rolled
     | 'dice-roll'      // player rolls stance dice
-    | 'phase-play'     // player plays skill cards
+    | 'phase-play'     // player plays cards
     | 'phase-resolve'  // effect kinds compared, enemy action fires, Clear/Overwhelmed
     | 'between-phases' // DoT ticks, durations tick, draw 5
     | 'mercy-choice'   // Control Saturation opened the Phase 112 spare/exploit modal

@@ -119,6 +119,7 @@ describe('hermeticity guard: isolation (no disk / network / subprocess)', () => 
         'Tuning/e2e/registry-applier.engine.test.ts',
         'test-utils/e2e/agent-vitest-reporter.engine.test.ts',
         'test-utils/e2e/hermeticity.audit.test.ts',
+        'Combat/e2e/terminology-boundary.engine.test.ts',
     ]);
 
     const IO_PATTERN =

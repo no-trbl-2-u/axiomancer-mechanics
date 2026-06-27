@@ -1,5 +1,5 @@
 /**
- * Spec 25 — Hazard-Pattern Combat: skill-card adapter (§4.3, §6).
+ * Spec 25 — Hazard-Pattern Combat: skill→card projection adapter (§4.3, §6).
  *
  * Projects a learned `Skill` into a `CombatCard` view: stance color, verb
  * class, effect-kind, and top/bottom action text. The projection is pure —
@@ -140,7 +140,7 @@ export function effectImpact(
     return { track: 'none', amount: 0 };
 }
 
-/** Stance color for a skill card — its philosophical aspect (§4.3). */
+/** Stance color for a projected combat card — its philosophical aspect (§4.3). */
 export function cardStanceColor(skill: Skill): CombatDieColor {
     return skill.philosophicalAspect;
 }
@@ -176,7 +176,7 @@ export function classifyVerbClass(
     return { verbClass: 'direct-damage', track: 'none' };
 }
 
-/** Total projected bottom-action impact for a skill card (preview; §7.3). */
+/** Total projected bottom-action impact for a combat card (preview; §7.3). */
 export function bottomDamagePreview(skill: Skill, lookupEffect: EffectLookup): number {
     let total = 0;
     for (const ce of enemyEffects(skill)) {

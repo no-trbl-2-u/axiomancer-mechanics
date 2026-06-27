@@ -5,6 +5,16 @@
 > skill system work. The specs contain implementation history and checklists;
 > this document contains the canonical design.
 
+## Skills vs Cards — Terminology Boundary
+
+**Skills** and **cards** are distinct concepts:
+
+- **Skill** — a learned/unlocked action in `knownSkills`, gated only by token/resource affordability (`combatResources`). Always available once learned; executed through `executeSkill`.
+- **Card** — a Hazard-style combat entity in the deck/hand/reward loop, with free/powered action halves, a stance color, a die cost, and draw/discard/deck cadence.
+- **Projected card** (or **skill-sourced card**) — a card derived from a skill-library entry via `toCombatCard`. The *source* is a skill; the *object in play* is still a card. Never call it a "skill".
+
+Cross-reference: `docs/combat.md` → Skills vs Cards.
+
 ## Overview
 
 Skills are unlockable abilities aligned with one of three philosophical aspects

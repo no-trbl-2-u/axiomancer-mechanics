@@ -487,11 +487,23 @@ round-resolution entry point used by every UI client.
 | `extendRandomBuffDuration(target, amount)` | Extends one random buff |
 | `applyRegen(target)` | Sums and applies all regen effects |
 
+## Skills vs Cards — Terminology Boundary
+
+**Skills** and **cards** are distinct concepts. Do not use them interchangeably.
+
+| Concept | Definition |
+|---------|-----------|
+| **Skill** | A learned/unlocked action in `knownSkills`, gated only by token/resource affordability (`combatResources`). Always available once learned. Executed through `executeSkill`. |
+| **Card** | A Hazard-style combat entity in the deck/hand/reward loop — with free/powered action halves, a stance color, a die cost, and draw/discard/deck cadence. |
+| **Projected card** | A card derived from a skill-library entry via `toCombatCard`. The *source* is a skill; the *object in play* is still a card. Call it a "projected card" or "skill-sourced card", never a "skill". |
+
+Cross-reference: `docs/skills.md` → Skills vs Cards.
+
 ## Hazard-Pattern Combat (Spec 25)
 
 **The primary player-facing combat system** (mobile map encounters, `/combat-tuning`).
 A card-and-dice system structurally mirrored on the Hazard minigame: every verb is a
-skill card, and the enemy's **sole bar is HP** — dropping it to 0 (`isDefeated(enemy)`)
+combat card, and the enemy's **sole bar is HP** — dropping it to 0 (`isDefeated(enemy)`)
 is the only win condition. Status effects are the **efficient** path: DoT erodes HP far
 faster than the deliberately weak basic strike (`DIRECT_DAMAGE_WEIGHT`), and control
 hinders the enemy's telegraphed threat turn. Basic-attack trading is the weak baseline,
@@ -524,7 +536,7 @@ The engine lives in `src/Combat/`:
 | `toCombatCard(cardId, lookupSkill, lookupEffect)` / `projectDeck(cardIds, lookupSkill, lookupEffect)` | Card-view converters: project a single skill (or synthetic card) into a `CombatCard` view, or an entire deck of ids into a `CombatCard[]` (unknown ids dropped). |
 | `classifyVerbClass(skill, lookupEffect)` | Classifies a skill into a `CombatVerbClass` + `CardEffectKind` pair. Priority: DoT > control > stat-debuff > buff > direct-damage. Used by `toCombatCard` to generate top/bottom action text. |
 | `buildCombatDeck(player)` | Assembles the player's combat deck from `knownSkills` + `combatRewardCards` (de-duped for the baseline, duplicates kept for reward cards) + the synthetic `card-retreat` baseline. Ready to feed `initializeCombatEncounter`. |
-| `playCombatCard(state, cardId, dice)` | Plays one skill card, spending dice; lands its effects and deals HP damage via status/strike. |
+| `playCombatCard(state, cardId, dice)` | Plays one combat card, spending dice; lands its effects and deals HP damage via status/strike. |
 | `resolveCombatPhase(state, cardsPlayed)` | Resolves a full player phase (card-play driven; replaces the per-round attack/defend resolution). |
 | `resolveThreatPhase(state)` | Resolves the enemy threat phase (Clear / Overwhelmed ledger). |
 | `processBetweenPhases(state)` | Between-phase upkeep — persistent buffs, die refresh, momentum carry. |

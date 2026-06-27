@@ -10,7 +10,7 @@
  *   - the status-combo loop refreshes the drafted die for a chain
  *   - between-phases fires DoT ticks + ticks durations + draws a fresh hand
  *   - Signature Skills spend Conviction (scout / DoT / pressure) regardless of hand
- *   - victory by HP depletion via status play (skill cards only); post-combat attribution
+ *   - victory by HP depletion via status play (skill-sourced cards only); post-combat attribution
  *   - the Monte-Carlo sim reports per-phase Clear rates
  *
  * The effects + skill engines are unchanged, so their suites (run separately)
@@ -493,7 +493,7 @@ describe('Spec 26b §B/§C/§D — archetype kit, rewards, unlock, difficulty fl
         expect(r.state.enemy.health).toBeLessThan(hpBefore);
     });
 
-    it('rollCombatCardRewards offers valid distinct skill cards, biased to archetype', () => {
+    it('rollCombatCardRewards offers valid distinct skill-sourced cards, biased to archetype', () => {
         const player = makePlayer([DOT_BODY]); player.baseStats = { heart: 2, body: 9, mind: 2 };
         let i = 0; const rng = () => [0.1, 0.5, 0.9, 0.3, 0.7][i++ % 5];
         const offers = rollCombatCardRewards(player, rng, 3);
@@ -528,9 +528,9 @@ describe('Spec 26b §B/§C/§D — archetype kit, rewards, unlock, difficulty fl
     });
 });
 
-// ── Full victory by HP depletion via status play (skill cards only) (§11) ─────
+// ── Full victory by HP depletion via status play (skill-sourced cards only) (§11) ─────
 
-describe('Spec 25 §11 — victory by HP depletion via status play, skill cards only', () => {
+describe('Spec 25 §11 — victory by HP depletion via status play, skill-sourced cards only', () => {
     it('a small enemy is destroyed by stacked DoT pressure with no attack/defend', () => {
         mockSequentialRng(0.05);
         const player = makePlayer([DOT_BODY]);

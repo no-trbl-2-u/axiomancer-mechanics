@@ -2,7 +2,7 @@
  * Spec 25 — Hazard-Pattern Combat: the engine (§4, §9).
  *
  * `resolveCombatPhase` drives the HP-model combat: the enemy's SOLE bar is HP,
- * and the player drops it to 0. Every verb is a skill card; the player rolls
+ * and the player drops it to 0. Every verb is a combat card (projected from a learned skill); the player rolls
  * stance dice and plays cards, where STATUS effects are the efficient damage
  * (DoT erodes HP; control hinders the enemy's turn) and a raw strike is the weak
  * baseline. The legacy resolver, the effects engine, the skill engine, and all

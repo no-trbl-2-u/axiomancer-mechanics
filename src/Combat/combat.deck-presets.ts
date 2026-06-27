@@ -138,7 +138,7 @@ export function getDeckPreset(id: string): CombatDeckPreset | undefined {
     return COMBAT_DECK_PRESETS[id];
 }
 
-/** True when a card id resolves to a real skill (presets carry only skill cards). */
+/** True when a card id resolves to a real skill (presets carry only skill-sourced cards). */
 function isValidPresetCard(id: string): boolean {
     return !!getSkillById(id);
 }
