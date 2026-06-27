@@ -20,6 +20,8 @@ deep imports are part of the supported surface.
 
 - **Press Fate is now a PARTIAL re-roll.** The `sig-press-the-point` (reroll) Signature re-rolls only the dice you have USED (spent/exhausted) plus any dead `x` faces, and LEAVES every still-usable die in play (previously it re-rolled BOTH dice, discarding good ones). A still-usable drafted die keeps its read; casting it with nothing to re-roll is a no-op that refunds the Conviction. `rerollSpentDice` / `hasRerollableDice` / `dieIsRerollable` (`combat.dice`).
 
+- **Skills vs Cards terminology boundary enforced (Phase 166).** Source comments, doc-strings, and the test suite now consistently distinguish *skills* (always-available token-spending actions in `knownSkills`) from *cards* (Hazard-style deck/hand/reward objects). A `CombatCard` projected from a skill is a "projected card" or "skill-sourced card" — never a "skill". `CombatCard.skillId` is the accepted field for the backing skill id; `toCombatCard` is the accepted projection entry-point. A regression guard (`terminology-boundary.engine.test.ts`) asserts that banned conflation identifiers (`skillCard` / `skill_card` / `SkillCard`) are absent from the guarded Combat source files. No public API change; no new exports.
+
 ## [0.32.0] — 2026-06-22
 
 Combat content + cleanup: defense cards, a Gold rare tier, Press Fate, de-token-gated cards, the "pressure" purge, and a starting-map rebalance + narration encounters.
