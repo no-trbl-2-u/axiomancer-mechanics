@@ -132,6 +132,13 @@ Combat:     determineAdvantage, getBaseStat, getAttackStat, getDefenseStat, getS
             (+ synthetic card ids — SYNTHETIC_CARD_IDS (readonly string[], currently
             ['card-retreat']), isSyntheticCard (combat.cards) — built-in non-deck
             cards injected by the deck builder; filtered out of reward drafts.)
+            (+ gold (rare) cards / GUARD mechanic — GOLD_CARD_IDS (ReadonlySet<string>
+            of the three rare card ids: 'pyrrhic-victory', 'the-final-word',
+            'unmoved-mover'); isGoldCard(cardId) — boolean predicate; CardEffectKind
+            ('dot' | 'control' | 'none') — the status-payload classification used by
+            classifyVerbClass and CombatCard.effectKind. A WILD die on a gold card
+            always reads advantage; 'brace-for-impact' is the baseline GUARD defense
+            card included in STARTING_SKILL_IDS.)
             (+ die-cost helpers — resolveCardDieCost(cardColor, enemyPhaseStance)
             → CardDieCost { cost, advantage } (RPS-based die cost for playing a card);
             cardDieCostPreview — read-only preview variant for UI rendering;
