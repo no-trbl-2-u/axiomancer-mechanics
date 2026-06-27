@@ -115,6 +115,8 @@
 
 ## Done
 
+- [x] **[Z — critique-96 LOW] docs — `getHazardSubquestDef`, `hazardSubquestResults`, `hazardSubquestStatus` absent from spec.md Contracts Hazard row and bearings.md Hazard annotation** — resolved at `3984552` (iterate, 2026-06-27). Added three subquest query helpers to spec.md Contracts Hazard row; added matching annotation block to bearings.md Hazard wildcard section. Doc-only; type-check + lint + build green. Score: 3 × 9 / 10 = 2.7. Source: critique-96 (commit 5cbec42).
+
 - [x] **[Z — critique-89 LOW-2] `CardDieCost` interface not exported as a type from `src/Combat/index.ts` or `src/index.ts`** — resolved at `bd75f48` (iterate, 2026-06-25). Added `export type { CardDieCost } from './combat.engine'` to `src/Combat/index.ts` and `CardDieCost` to the `export type { ... } from './Combat'` block in `src/index.ts`; refreshed `scripts/public-surface.expected.json` (585 values / 396 types, +1 type). 2041 tests + type-check + lint + build green. Score 3 × 8 / 10 = 2.4. Source: critique-89 (commit b7d377f).
 
 - [x] **[Z — api] `isSyntheticCard` documented but absent from root barrel** — resolved at `c9dc545` (iterate, 2026-06-25). Added `isSyntheticCard` to `src/index.ts` Spec 25 block alongside `SYNTHETIC_CARD_IDS`; refreshed `scripts/public-surface.expected.json` (584→585 values / 395 types). 2041 tests + type-check + lint + build green. Score 8 × 9 / 10 = 7.2. Source: critique-89 (commit b7d377f).
