@@ -46,7 +46,7 @@
 
 ## Pending
 
-- [x] **[E — docs gap] `CombatCard.skillId` field not described in `docs/combat.md` type family row** — resolved at `<hash>` (iterate, 2026-06-27). Phase 166 established `CombatCard.skillId` as the canonical field for the backing learned-skill id (`string | null`; `null` for synthetic cards like Retreat), but the `CombatCard` type family row in `docs/combat.md` §Spec 25 API table did not describe it. Added an inline note to the `CombatEncounterState`, `CombatCard`, … row. Doc-only; 2111 tests + type-check + lint + build green. Score: 3 × 9 / 10 = 2.7. Source: iterate audit pass 120 (2026-06-27).
+- [x] **[E — docs gap] `CombatCard.skillId` field not described in `docs/combat.md` type family row** — resolved at `8427eb6` (iterate, 2026-06-27). Phase 166 established `CombatCard.skillId` as the canonical field for the backing learned-skill id (`string | null`; `null` for synthetic cards like Retreat), but the `CombatCard` type family row in `docs/combat.md` §Spec 25 API table did not describe it. Added an inline note to the `CombatEncounterState`, `CombatCard`, … row. Doc-only; 2111 tests + type-check + lint + build green. Score: 3 × 9 / 10 = 2.7. Source: iterate audit pass 120 (2026-06-27).
 
 - [x] **[E — docs gap] Phase 166 CHANGELOG `[Unreleased]` entry missing** — resolved at `b93187d` (iterate, 2026-06-27). Added `### Changed` entry to CHANGELOG.md `[Unreleased]` for Phase 166: describes the skills-vs-cards terminology boundary, the `CombatCard.skillId` field, `toCombatCard` entry-point, and the `terminology-boundary.engine.test.ts` regression guard; notes no public API change. Doc-only; 2111 tests + type-check + lint + build green. Score: 2 × 10 / 10 = 2.0. Source: iterate audit pass 119 (2026-06-27).
 
