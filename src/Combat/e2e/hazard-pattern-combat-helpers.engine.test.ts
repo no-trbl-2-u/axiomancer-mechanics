@@ -40,7 +40,7 @@ import {
     dieIsRerollable, hasRerollableDice, rerollSpentDice,
 } from '../combat.dice';
 import { buildCombatDeck, COMBAT_HAND_SIZE } from '../combat.deck';
-import { classifyVerbClass, toCombatCard, projectDeck } from '../combat.cards';
+import { classifyVerbClass, toCombatCard, projectDeck, isGoldCard, GOLD_CARD_IDS } from '../combat.cards';
 import { generateDefaultThreatSequence, AUTHORED_THREAT_ENEMY_IDS } from '../combat.threat';
 import { ENEMY_REGISTRY } from '../../Enemy/enemy.library';
 import type { CombatManaDie, CombatEvent } from '../combat.encounter.types';
@@ -567,5 +567,25 @@ describe('Spec 25 §7.7 — buildCombatSummary field shape', () => {
         expect(summary.rows).toEqual([]);
         expect(summary.bestCard).toBe('');
         expect(summary.outcome).toBe('defeat');
+    });
+});
+
+describe('isGoldCard / GOLD_CARD_IDS', () => {
+    it('GOLD_CARD_IDS contains exactly 3 members', () => {
+        expect(GOLD_CARD_IDS.size).toBe(3);
+    });
+
+    it('returns true for each of the 3 gold card ids', () => {
+        for (const id of GOLD_CARD_IDS) {
+            expect(isGoldCard(id)).toBe(true);
+        }
+    });
+
+    it('returns false for a non-gold card id', () => {
+        expect(isGoldCard('slippery-slope')).toBe(false);
+    });
+
+    it('returns false for an empty string', () => {
+        expect(isGoldCard('')).toBe(false);
     });
 });
