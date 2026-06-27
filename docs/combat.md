@@ -486,6 +486,26 @@ round-resolution entry point used by every UI client.
 | `removeRandomBuff(target)` | Strips one random buff |
 | `extendRandomBuffDuration(target, amount)` | Extends one random buff |
 | `applyRegen(target)` | Sums and applies all regen effects |
+| `isAlive(combatant)` | True if `health > 0` |
+| `isDefeated(combatant)` | True if `health <= 0` — the sole win condition for Hazard-Pattern Combat |
+| `getHealthPercentage(combatant)` | `health / maxHealth` as a 0–1 fraction |
+| `updateEffectDuration(target, effectId)` | Decrements one effect's duration by 1 and removes it when it reaches 0 |
+| `getActiveEffectModifiers(effects)` | Aggregates all `ActiveEffect` modifiers into an `AggregatedEffectModifiers` object |
+| `getEffectiveStats(combatant)` | Returns `EffectiveStats` — base stats and derived stats after all active-effect modifiers are applied |
+| `calculateEnemyStatMultiplier(moralMeter)` | Maps moral-meter value (−100…+100) to an enemy-stat scale factor (0.5×…2×) |
+| `applyMoralMeterScaling(baseStats, moralMeter)` | Returns a copy of `BaseStats` with every stat scaled by `calculateEnemyStatMultiplier(moralMeter)` |
+
+### Combat Types
+
+| Type | Description |
+|------|-------------|
+| `Advantage` | `'advantage' \| 'neutral' \| 'disadvantage'` — RPS matchup outcome |
+| `CritStyle` | `'double' \| 'pierce'` — Phase 32 auto-selected crit variant |
+| `CombatAction` | `{ stance: Stance; action: Action }` — the combined stance + action choice for one side of a round |
+| `CombatPhase` | `'choosing_stance' \| 'choosing_action' \| 'choosing_skill' \| 'mercy_choice' \| 'resolving' \| 'ended'` — the state-machine phase of a turn-based combat encounter |
+| `AggregatedEffectModifiers` | Summed numeric modifiers from all active effects; consumed by `getEffectiveStats` |
+| `EffectiveStats` | `{ baseStats, derivedStats, nonCombatStats, defenseDelta }` — combatant stats after all active-effect modifiers are applied; produced by `getEffectiveStats` |
+| `DamageType` | `'physical' \| 'mental' \| 'emotional'` — damage category used by resistance calculations |
 
 ## Skills vs Cards — Terminology Boundary
 
