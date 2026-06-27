@@ -5,6 +5,7 @@ import {
   isCriticalHit, isCriticalMiss, isAttackSuccessful,
   isAlive, isDefeated, getHealthPercentage,
   removeRandomBuff, extendRandomBuffDuration, updateEffectDuration,
+  getStudyMarkIntensity, getThornsReflect,
 } from './index';
 import { createCharacter } from '../Character';
 import { createEnemy } from '../Enemy';
@@ -235,5 +236,47 @@ describe('tickAllEffects', () => {
     const { target, expired } = tickAllEffects(p);
     expect(target.effects).toHaveLength(1);
     expect(expired).toHaveLength(0);
+  });
+});
+
+describe('getStudyMarkIntensity', () => {
+  it('returns 0 when no effects are present', () => {
+    expect(getStudyMarkIntensity(makePlayer())).toBe(0);
+  });
+
+  it('returns the intensity of the mind studying mark when present', () => {
+    const mark: ActiveEffect = { effectId: 'tier1_mind_mark', remainingDuration: 2, intensity: 3, appliedAt: 0, tier: 1 };
+    const p = { ...makePlayer(), effects: [mark] };
+    expect(getStudyMarkIntensity(p)).toBe(3);
+  });
+
+  it('returns 0 when only a non-mark effect is present', () => {
+    const other: ActiveEffect = { effectId: 'debuff_burn', remainingDuration: 2, intensity: 2, appliedAt: 0, tier: 1 };
+    const p = { ...makePlayer(), effects: [other] };
+    expect(getStudyMarkIntensity(p)).toBe(0);
+  });
+});
+
+describe('getThornsReflect', () => {
+  it('returns 0 when no effects are present', () => {
+    expect(getThornsReflect(makePlayer())).toBe(0);
+  });
+
+  it('returns reflectDamage × intensity for tier1_body_defend (reflectDamage: 1)', () => {
+    const thorns: ActiveEffect = { effectId: 'tier1_body_defend', remainingDuration: 3, intensity: 2, appliedAt: 0, tier: 1 };
+    const p = { ...makePlayer(), effects: [thorns] };
+    expect(getThornsReflect(p)).toBe(2);
+  });
+
+  it('returns reflectDamage × intensity for buff_brazen_thorns (reflectDamage: 2)', () => {
+    const thorns: ActiveEffect = { effectId: 'buff_brazen_thorns', remainingDuration: 3, intensity: 3, appliedAt: 0, tier: 2 };
+    const p = { ...makePlayer(), effects: [thorns] };
+    expect(getThornsReflect(p)).toBe(6);
+  });
+
+  it('returns 0 for an effect with no reflectDamage payload', () => {
+    const burn: ActiveEffect = { effectId: 'debuff_burn', remainingDuration: 2, intensity: 4, appliedAt: 0, tier: 1 };
+    const p = { ...makePlayer(), effects: [burn] };
+    expect(getThornsReflect(p)).toBe(0);
   });
 });
