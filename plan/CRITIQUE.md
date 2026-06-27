@@ -74,13 +74,7 @@
 
 - [x] **[LOW] docs — `GOLD_CARD_IDS`, `isGoldCard`, `CardEffectKind` absent from bearings.md and docs/combat.md** — resolved at `3bd4b27` (iterate, 2026-06-27). Added gold (rare) cards / GUARD mechanic block to bearings.md Combat locked-contract group; added `GOLD_CARD_IDS / isGoldCard / CardEffectKind` row to docs/combat.md Hazard-Pattern Combat API table. Doc-only; 2121 tests + type-check + lint + build green. Score: 3 × 9 / 10 = 2.7. Source: critique-97 (commit 9e28e11).
 
-### [LOW] docs — Skills barrel exports absent from spec.md + bearings.md
-- pass: critique-97 (commit 9e28e11)
-- area: docs
-- observation: `generateBasicActionResources`, `generatePhilosophicalResource`, `spendResources`, `calculateSkillDamage` are live barrel exports (`src/index.ts:216-218`; confirmed in fixture). They are documented in `docs/skills.md` API table (rows 188–192) but absent from `spec.md` Contracts Skills row (line 96 — lists `canUseSkill`/`executeSkill`/`learnSkill`/`carryPhilosophicalResources`/…) and `plan/bearings.md` Skills group (line 172 — `executeSkill, canUseSkill, learnSkill, getAvailableSkills, skillLibrary, getSkillById`). Same silent-accumulation pattern as repeated docs findings across passes 83–96.
-- evidence: `src/index.ts:216-218`, `scripts/public-surface.expected.json` (values: "generateBasicActionResources", "generatePhilosophicalResource", "spendResources", "calculateSkillDamage"), `spec.md:96`, `plan/bearings.md:172`
-- suggested_fix: Append `generateBasicActionResources`, `generatePhilosophicalResource`, `spendResources`, `calculateSkillDamage` to spec.md Contracts Skills row and to bearings.md Skills group.
-- source: critique-97
+- [x] **[LOW] docs — Skills resource helpers absent from spec.md + bearings.md** — resolved at `4b6d50d` (iterate, 2026-06-27). Added `generateBasicActionResources`, `generatePhilosophicalResource`, `spendResources`, `calculateSkillDamage` to spec.md Contracts Skills row (resource helpers description) and a matching annotation block to bearings.md Skills group. Doc-only; 2121 tests + type-check + lint + build green. Score: 3 × 9 / 10 = 2.7. Source: critique-97 (commit 9e28e11).
 
 ### [LOW] docs — Enemy barrel exports absent from spec.md + bearings.md
 - pass: critique-97 (commit 9e28e11)
