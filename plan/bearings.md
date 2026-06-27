@@ -192,6 +192,12 @@ Skills:     executeSkill, canUseSkill, learnSkill, getAvailableSkills,
             ExtendedSynergyPredicate type — richer multi-condition synergy
             check supporting per-effect-type filtering, buff/debuff combos,
             and total-intensity gates; used via Skill.synergy? field)
+            (+ resource helpers: generateBasicActionResources (adds stance
+            tokens per generation table given stance + outcome: 'hit'|'miss'|
+            'defend'), generatePhilosophicalResource (adds 1 Fallacy or
+            Paradox token after skill use), spendResources (deducts resource
+            cost; guard with canUseSkill first), calculateSkillDamage (applies
+            the damage formula for a skill + advantage))
 Items:      addItem, removeItem, useConsumable, stackItem, Item (and variants)
             (+ buyItem / sellItem / defaultSellPrice + ShopWare /
             ShopInventory types — Phase 37 shop economy),
