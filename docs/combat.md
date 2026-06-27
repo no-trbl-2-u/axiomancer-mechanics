@@ -545,7 +545,7 @@ The engine lives in `src/Combat/`:
 | `buildCombatSummary(state)` | End-of-fight `CombatSummary` with per-effect attribution rows. |
 | `simulateHazardPatternCombat(...)` | Monte-Carlo greedy bot returning `CombatSimStats` for balance runs. |
 | `SYNTHETIC_CARD_IDS` / `isSyntheticCard` | `SYNTHETIC_CARD_IDS` is a `readonly string[]` of built-in non-deck cards (currently `['card-retreat']`). The deck builder injects them into every hand; `isSyntheticCard(id)` is the boolean predicate. Filtered out of deckbuilder reward drafts. |
-| `CombatEncounterState`, `CombatCard`, `CombatThreatPhase`, `CombatOutcome`, `CombatSummary` | The core encounter type family. (`CombatPressureTracks` was REMOVED 2026-06-22 — HP is the sole win condition.) |
+| `CombatEncounterState`, `CombatCard`, `CombatThreatPhase`, `CombatOutcome`, `CombatSummary` | The core encounter type family. (`CombatPressureTracks` was REMOVED 2026-06-22 — HP is the sole win condition.) `CombatCard.skillId` is the canonical field for the backing learned-skill id (`string \| null`; `null` for synthetic cards like Retreat). Use it to trace a projected card back to its source skill. |
 | `CombatAttributionRow`, `LandedEffect` | Attribution sub-types for `buildCombatSummary`. `CombatAttributionRow` is a per-card row (`cardId`, `name`, `dotDamage`, `damageDealt`, `phases`); `LandedEffect` is a snapshot of one live effect used internally during attribution (`effectId`, `effect`, `active`, `target`). |
 
 ### Spec 26 / 26b — stance draft, the read, Conviction, Signature Skills, deckbuilding
