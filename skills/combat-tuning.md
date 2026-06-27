@@ -243,8 +243,11 @@ Read in full before forming a hypothesis:
   `damageWeight`, threat effects, enemy heals, stance + stanceHint.
 - `src/Combat/combat.engine.ts` — `TOP_ACTION_CHIP`, `CONVICTION_PER_UNPICKED_DIE`,
   `CONVICTION_READ_WIN_BONUS`, `COLOR_MATCH_DAMAGE_BONUS`, `THREAT_DAMAGE_SCALE`,
-  `CONVICTION_CAP`, `DIRECT_DAMAGE_WEIGHT` (+ the RPS read / GUARD soak / mercy
-  gate logic, which is **propose-only**).
+  `CONVICTION_CAP`, `DIRECT_DAMAGE_WEIGHT`,
+  `THREAT_WEAKEN_PER_ROLL` (default 0.06 — hit fraction lost per roll-penalty point),
+  `THREAT_DENY_AT` (default 8 — cumulative roll penalty that fully denies the turn),
+  `THREAT_WEAKEN_FLOOR` (default 0.4 — min damage mult when weakened but not denied)
+  (+ the RPS read / GUARD soak / mercy gate logic, which is **propose-only**).
 - `src/Combat/combat.cards.ts` — `CONTROL_HARD_MULT`, `CONTROL_SOFT_MULT`,
   `DOT_PERROUND_WEIGHT`, `IMPACT_INTENSITY_CAP`, `GOLD_CARD_IDS` (the
   `effectImpact` formula itself is **propose-only**).
@@ -371,6 +374,7 @@ status-beats-basic delta.
 | Threat-damage budget curve | `src/Combat/combat.threat.ts` | `THREAT_BASE` (4), `THREAT_PER_LEVEL` (0.95) |
 | Authored threat sequences | `src/Combat/combat.threat-sequences.ts` | per-phase `damageWeight`, `threatEffectId`/`threatIntensity`, `enemyHeal` |
 | Resolution threat scale | `src/Combat/combat.engine.ts` | `THREAT_DAMAGE_SCALE` (1.6) |
+| Soft-control / stat-debuff threshold | `src/Combat/combat.engine.ts` | `THREAT_WEAKEN_PER_ROLL` (0.06), `THREAT_DENY_AT` (8), `THREAT_WEAKEN_FLOOR` (0.4) |
 | Basic-strike weakness | `src/Combat/combat.engine.ts` | `DIRECT_DAMAGE_WEIGHT` (0.25) — keep status > strikes |
 | Free top-action chip | `src/Combat/combat.engine.ts` | `TOP_ACTION_CHIP` (2) |
 | Read color-match bonus | `src/Combat/combat.engine.ts` | `COLOR_MATCH_DAMAGE_BONUS` (3) |

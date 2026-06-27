@@ -246,6 +246,7 @@ export {
     cardReadPreview, projectCardImpact, getSignatureSkill, SIGNATURE_SKILLS, SIGNATURE_SKILL_LIST,
     READ_DAMAGE_MULT, CONVICTION_PER_UNPICKED_DIE, CONVICTION_READ_WIN_BONUS,
     COLOR_MATCH_DAMAGE_BONUS,
+    THREAT_WEAKEN_PER_ROLL, THREAT_DENY_AT, THREAT_WEAKEN_FLOOR,
 } from './combat.engine';
 export type { CardDieCost } from './combat.engine';
 export {

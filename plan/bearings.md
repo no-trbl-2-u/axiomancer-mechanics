@@ -165,6 +165,12 @@ Combat:     determineAdvantage, getBaseStat, getAttackStat, getDefenseStat, getS
             attribution rows); CombatSummary / CombatAttributionRow / LandedEffect — named
             type exports for the attribution view (importable as
             `import type { CombatSummary } from 'axiomancer-mechanics'`).)
+            (+ soft-control / stat-debuff threat tunables — THREAT_WEAKEN_PER_ROLL (number,
+            default 0.06 — fraction of incoming hit reduced per point of enemy roll penalty);
+            THREAT_DENY_AT (number, default 8 — cumulative roll penalty at which the enemy
+            turn is fully denied); THREAT_WEAKEN_FLOOR (number, default 0.4 — minimum damage
+            multiplier when weakened but not denied). Used by resolveThreatPhase; consumers
+            can read these to display soft-control thresholds in the UI.)
 Combat reducer: initializeCombat, setPhase, setPlayerStance, setPlayerAction,
                 appendLog, incrementFriendship, endCombat
 Effects:    applyEffect, applyTier1CombatEffect, clearTier1EffectsForStance,

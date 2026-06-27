@@ -128,6 +128,8 @@ export {
     unlockSkillViaDilemma,
     // PR #190 Press Fate partial re-roll
     dieIsRerollable, hasRerollableDice, rerollSpentDice,
+    // soft-control + stat-debuff threat tunables
+    THREAT_WEAKEN_PER_ROLL, THREAT_DENY_AT, THREAT_WEAKEN_FLOOR,
 } from './Combat';
 export type {
     CombatEncounterState, CombatEncounterPhase, CombatTransition,
