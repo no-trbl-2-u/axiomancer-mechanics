@@ -61,7 +61,7 @@
 
 ## Pending
 
-- [ ] **[A — test coverage gap] `getActiveRollModifier` has no direct hermetic test** — `getActiveRollModifier(target)` sums every active effect's `rollModifier` flat value plus `rollModifierPerIntensity × intensity` (non-trivial reduce in `src/Combat/effects.ts:29-36`). It is a public locked-contract export (`src/index.ts:63`; confirmed in fixture). No `*.test.ts` file calls it directly. Companions `getStudyMarkIntensity` and `getThornsReflect` received hermetic cases at `1c00318`; `getActiveRollModifier` is the same pattern and was deferred due to indirect soft-control coverage. `Combat/index.test.ts` is the natural home.
+- [x] **[A — test coverage gap] `getActiveRollModifier` has no direct hermetic test** — resolved at `adc5c4d` (iterate, 2026-06-27). Added 4 hermetic cases to `src/Combat/index.test.ts`: returns 0 when no effects present; returns flat rollModifier for debuff_confusion (-5); returns rollModifierPerIntensity × intensity for tier1_body_attack at intensity 3 (→ 3); sums flat + per-intensity across confusion (-5) + buff_accuracy_up (+3) = -2. 2140 tests + type-check + lint + build green. Score: 3 × 9 / 10 = 2.7. Source: iterate audit pass 136 (2026-06-27).
   - area: tests / Combat
   - observation: Exported from `src/Combat/effects.ts:29`; re-exported via `src/Combat/index.ts:38` and `src/index.ts:63`. Called transitively by `combat.engine.ts:726` (soft-control deny) and `scenario.ts:572/578/637/669` but never by any test file directly. The function has two summation paths (flat `rollModifier` + scaled `rollModifierPerIntensity × intensity`) that are independently exercisable.
   - evidence: `src/Combat/effects.ts:29-36`; `src/Combat/index.test.ts` — no mention of `getActiveRollModifier`.
