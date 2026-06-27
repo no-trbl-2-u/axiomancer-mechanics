@@ -70,7 +70,7 @@
 
 ## Pending
 
-- [ ] **[LOW] structure — `bottomDamagePreview` in Combat sub-barrel but not root barrel** — `bottomDamagePreview` (`src/Combat/combat.cards.ts:180`, internal card-projection helper) is exported from `src/Combat/index.ts:265` but absent from `src/index.ts` and the public fixture. Not in spec.md or bearings.md; no consumer-facing tests call it directly. Same sub-barrel over-exposure pattern as critique-87 LOW-2 (5 helpers cleaned at `df0e857`; this one was missed). Fix: remove `bottomDamagePreview` from the `src/Combat/index.ts` export list — internal callers in `combat.cards.ts` itself and `combat.encounter.sim.ts` use local imports. Score: 2 × 9 / 10 = 1.8. Source: critique-95 (commit 3f9ae86).
+- [x] **[LOW] structure — `bottomDamagePreview` in Combat sub-barrel but not root barrel** — resolved at `39eb361` (iterate, 2026-06-27). Removed `bottomDamagePreview` from the `src/Combat/index.ts` export block; internal callers in `combat.cards.ts` and `combat.encounter.sim.ts` import directly from the source file. 2111 tests + type-check + lint + build green. Score: 2 × 9 / 10 = 1.8. Source: critique-95 (commit 3f9ae86).
 
 - [x] **[LOW] docs — 8 Spec 25 combat helpers absent from spec.md Contracts Combat row and bearings.md** — resolved at `7a35a90` (iterate, 2026-06-26). Added `rollEncounterDice`, `resolveThreatPhase`, `selectEncounterMercyChoice`, `getCard` / `handCards` / `availableDice`, `buildCombatSummary` to spec.md Combat row; added `CombatSummary` / `CombatAttributionRow` / `LandedEffect` as named type exports; added Spec 25 encounter/UI helpers block to bearings.md Combat group. Doc-only; type-check + lint + build green. Score 3 × 9 / 10 = 2.7. Source: critique-94 (commit 2347d8a).
 

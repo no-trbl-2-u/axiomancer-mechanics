@@ -46,6 +46,8 @@
 
 ## Pending
 
+- [x] **[Z — critique-95 LOW] structure — `bottomDamagePreview` in Combat sub-barrel but not root barrel** — resolved at `39eb361` (iterate, 2026-06-27). Removed `bottomDamagePreview` from the `src/Combat/index.ts` export block; internal callers in `combat.cards.ts` and `combat.encounter.sim.ts` import directly from the source file. 2111 tests + type-check + lint + build green. Score: 2 × 9 / 10 = 1.8. Source: critique-95 (commit 3f9ae86).
+
 - [x] **[A — test coverage gap] `buildCombatSummary` attribution structure shallow — only `rows.length > 0` asserted** — resolved at `58ca7bd` (iterate, 2026-06-27). Added 7 hermetic cases across 2 describe blocks in `hazard-pattern-combat-helpers.engine.test.ts`: `recordAttribution` (3 cases — field shape on first call, accumulation across calls, separate rows for different cards); `buildCombatSummary` (4 cases — outcome/headline/directDamage fields, full `CombatAttributionRow` field shape on rows[], rows sorted descending + bestCard, empty-ledger guard). 2111 tests + type-check + lint + build green. Score: 4 × 7 / 10 = 2.8. Source: iterate audit pass 118 (2026-06-26).
 
 - [x] **[E — docs gap] `CombatAttributionRow` and `LandedEffect` absent from `docs/combat.md` types row** — resolved at `9f46098` (iterate, 2026-06-27). Added a new row to the §Spec 25 Hazard-Pattern Combat API table in `docs/combat.md` describing `CombatAttributionRow` (per-card row: `cardId`, `name`, `dotDamage`, `damageDealt`, `phases`) and `LandedEffect` (live-effect snapshot used during attribution: `effectId`, `effect`, `active`, `target`). Doc-only; 2111 tests + type-check + lint + build green. Score: 3 × 9 / 10 = 2.7. Source: iterate audit pass 118 (2026-06-26).
