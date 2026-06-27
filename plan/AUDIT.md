@@ -55,7 +55,7 @@
 
 ## Pending
 
-- [ ] **[A — test coverage gap] `isGoldCard` and `GOLD_CARD_IDS` have zero hermetic test cases**
+- [x] **[A — test coverage gap] `isGoldCard` and `GOLD_CARD_IDS` have zero hermetic test cases** — resolved at `e7a3252` (iterate, 2026-06-27). Added 4 hermetic cases to `hazard-pattern-combat-helpers.engine.test.ts`: `GOLD_CARD_IDS` has exactly 3 members; `isGoldCard` returns true for each of the 3 gold ids; `isGoldCard` returns false for a non-gold id; `isGoldCard` returns false for an empty string. 2125 tests + type-check + lint + build green. Score: 3 × 9 / 10 = 2.7. Source: iterate audit pass 128 (2026-06-27).
   - area: tests / Combat
   - observation: `isGoldCard(cardId)` (defined at `src/Combat/combat.cards.ts:62`) and `GOLD_CARD_IDS` (defined at `src/Combat/combat.cards.ts:57`) are public locked-contract barrel exports named in `src/index.ts:115` (confirmed in `scripts/public-surface.expected.json`) and documented in spec.md/bearings.md/docs/combat.md. Zero `*.engine.test.ts` or `*.test.ts` files call `isGoldCard()` directly or test `GOLD_CARD_IDS` membership. The mobile renders the rare card frame based on `isGoldCard`; `combat.rewards.ts` uses it for archetype reward scaling. The analogous `isSyntheticCard` gap was a critique-89 HIGH (barrel export gap); this is a test-coverage LOW (correctly barrel-exported, just untested). Score: 3 × 9 / 10 = 2.7.
   - suggested_fix: Add 3–4 hermetic cases to `src/Combat/e2e/hazard-pattern-combat-helpers.engine.test.ts` (already imports from `combat.cards`): `isGoldCard` returns true for each of the 3 gold ids; `isGoldCard` returns false for a non-gold id; `GOLD_CARD_IDS` has exactly 3 members.
