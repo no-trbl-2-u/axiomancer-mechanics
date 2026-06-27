@@ -262,7 +262,7 @@ export {
 export type { CombatDeckPreset, CombatDeckFocus } from './combat.deck-presets';
 export {
     toCombatCard, projectDeck, classifyVerbClass,
-    bottomDamagePreview, isSyntheticCard, SYNTHETIC_CARD_IDS,
+    isSyntheticCard, SYNTHETIC_CARD_IDS,
     GOLD_CARD_IDS, isGoldCard,
 } from './combat.cards';
 export {
