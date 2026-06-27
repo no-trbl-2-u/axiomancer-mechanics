@@ -59,7 +59,7 @@
 
 ## Pending
 
-- [ ] **[A — test coverage gap] `sig-overwhelming-argument` has no funded/applied hermetic test**
+- [x] **[A — test coverage gap] `sig-overwhelming-argument` has no funded/applied hermetic test** — resolved at `1d83c96` (iterate, 2026-06-27). Added "Overwhelming Argument applies Petrify to the enemy" test to `hazard-pattern-combat.engine.test.ts`: funds state with 10 Conviction, plays sig-overwhelming-argument (cost 8), asserts Conviction reduced to 2, `debuff_petrify` on `enemy.effects`, and `signature-cast` event emitted. Also fixed stale cost comment in fizzle test (5 → 8). 2129 tests + type-check + lint + build green. Score: 3 × 9 / 10 = 2.7. Source: iterate audit pass 134 (2026-06-27).
   - area: tests / Combat
   - observation: `sig-overwhelming-argument` (heart capstone Signature, cost 8) was re-pointed from `debuff_confusion` → `debuff_petrify` in `e907fb6`. The only test for this sig is a fizzle (underfunded Conviction) case at `hazard-pattern-combat.engine.test.ts:334`. No test verifies the funded path: that spending 8 Conviction applies `debuff_petrify` to the enemy and returns a `signature-cast` event. `sig-conviction-strike` (line 307–315), `sig-rallying-blow` (line 472–483), and `sig-disarming-plea` (line 485–494) each have a funded path test verifying the effect lands. The sig-overwhelming-argument is the only control-tier Signature with zero success-path coverage.
   - evidence: `src/Combat/combat.signature.ts` — `sig-overwhelming-argument` effectId: `debuff_petrify`; `src/Combat/e2e/hazard-pattern-combat.engine.test.ts:329-337` — only fizzle case present.
