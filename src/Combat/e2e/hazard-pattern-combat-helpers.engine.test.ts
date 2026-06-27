@@ -33,6 +33,8 @@ import {
     selectMercyChoice as selectEncounterMercyChoice, getCard,
     handCards, resolveThreatPhase,
 } from '../combat.engine';
+import { recordAttribution, buildCombatSummary } from '../combat.attribution';
+import type { CombatAttributionRow } from '../combat.encounter.types';
 import {
     rollCombatDice, combatDieCanPower, refreshOneDie, COMBAT_DICE_COUNT,
     dieIsRerollable, hasRerollableDice, rerollSpentDice,
@@ -464,5 +466,106 @@ describe('Spec 25 §4.5 — resolveThreatPhase', () => {
         const result = resolveThreatPhase(complete);
         expect(result.state).toBe(complete);
         expect(result.events).toEqual([]);
+    });
+});
+
+// ── Attribution ledger (§7.7) — `recordAttribution` ─────────────────────────
+
+describe('Spec 25 §7.7 — recordAttribution field shape', () => {
+    it('creates a new CombatAttributionRow with all required fields', () => {
+        const ledger = recordAttribution({}, 'slippery-slope', 'Slippery Slope', null, 10);
+        const row: CombatAttributionRow = ledger['slippery-slope'];
+        expect(row.cardId).toBe('slippery-slope');
+        expect(row.name).toBe('Slippery Slope');
+        expect(row.dotDamage).toBe(0);
+        expect(row.damageDealt).toBe(10);
+        expect(row.phases).toBe(1);
+    });
+
+    it('accumulates damageDealt and phases across multiple calls for the same card', () => {
+        let ledger = recordAttribution({}, 'slippery-slope', 'Slippery Slope', null, 5);
+        ledger = recordAttribution(ledger, 'slippery-slope', 'Slippery Slope', null, 8);
+        const row = ledger['slippery-slope'];
+        expect(row.damageDealt).toBe(13);
+        expect(row.phases).toBe(2);
+    });
+
+    it('tracks separate rows for different cards in the same ledger', () => {
+        let ledger = recordAttribution({}, 'slippery-slope', 'Slippery Slope', null, 5);
+        ledger = recordAttribution(ledger, 'achilles-gambit', 'Achilles Gambit', null, 12);
+        expect(Object.keys(ledger)).toHaveLength(2);
+        expect(ledger['slippery-slope'].damageDealt).toBe(5);
+        expect(ledger['achilles-gambit'].damageDealt).toBe(12);
+    });
+});
+
+// ── Post-combat summary (§7.7) — `buildCombatSummary` ───────────────────────
+
+describe('Spec 25 §7.7 — buildCombatSummary field shape', () => {
+    it('returns a CombatSummary with correct outcome, headline, and directDamage', () => {
+        const state = initializeCombatEncounter(makePlayer([DOT_BODY]), makeEnemy(100), undefined, SEED);
+        const complete = {
+            ...state,
+            phase: 'complete' as const,
+            finalOutcome: 'victory' as const,
+            directDamageDealt: 30,
+            attribution: recordAttribution({}, DOT_BODY, 'Slippery Slope', null, 20),
+        };
+        const summary = buildCombatSummary(complete);
+        expect(summary.outcome).toBe('victory');
+        expect(summary.headline).toMatch(/Victory/);
+        expect(summary.directDamage).toBe(30);
+    });
+
+    it('rows carry all CombatAttributionRow fields (cardId, name, dotDamage, damageDealt, phases)', () => {
+        const ledger = recordAttribution({}, DOT_BODY, 'Slippery Slope', null, 15);
+        const state = initializeCombatEncounter(makePlayer([DOT_BODY]), makeEnemy(100), undefined, SEED);
+        const complete = {
+            ...state,
+            phase: 'complete' as const,
+            finalOutcome: 'victory' as const,
+            directDamageDealt: 0,
+            attribution: ledger,
+        };
+        const summary = buildCombatSummary(complete);
+        expect(summary.rows).toHaveLength(1);
+        const row = summary.rows[0];
+        expect(row.cardId).toBe(DOT_BODY);
+        expect(row.name).toBe('Slippery Slope');
+        expect(typeof row.dotDamage).toBe('number');
+        expect(row.damageDealt).toBe(15);
+        expect(row.phases).toBe(1);
+    });
+
+    it('rows are sorted descending by damageDealt and bestCard names the top contributor', () => {
+        let ledger = recordAttribution({}, DOT_BODY, 'Slippery Slope', null, 5);
+        ledger = recordAttribution(ledger, DAMAGE_BODY, 'Achilles Gambit', null, 20);
+        const state = initializeCombatEncounter(makePlayer([DOT_BODY, DAMAGE_BODY]), makeEnemy(100), undefined, SEED);
+        const complete = {
+            ...state,
+            phase: 'complete' as const,
+            finalOutcome: 'victory' as const,
+            directDamageDealt: 0,
+            attribution: ledger,
+        };
+        const summary = buildCombatSummary(complete);
+        expect(summary.rows[0].cardId).toBe(DAMAGE_BODY);
+        expect(summary.rows[1].cardId).toBe(DOT_BODY);
+        expect(summary.bestCard).toBe('Achilles Gambit');
+    });
+
+    it('returns an empty rows array and empty bestCard when attribution ledger is empty', () => {
+        const state = initializeCombatEncounter(makePlayer([DOT_BODY]), makeEnemy(100), undefined, SEED);
+        const complete = {
+            ...state,
+            phase: 'complete' as const,
+            finalOutcome: 'defeat' as const,
+            directDamageDealt: 0,
+            attribution: {},
+        };
+        const summary = buildCombatSummary(complete);
+        expect(summary.rows).toEqual([]);
+        expect(summary.bestCard).toBe('');
+        expect(summary.outcome).toBe('defeat');
     });
 });
