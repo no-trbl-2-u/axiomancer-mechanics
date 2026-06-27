@@ -5,7 +5,7 @@ import {
   isCriticalHit, isCriticalMiss, isAttackSuccessful,
   isAlive, isDefeated, getHealthPercentage,
   removeRandomBuff, extendRandomBuffDuration, updateEffectDuration,
-  getStudyMarkIntensity, getThornsReflect,
+  getStudyMarkIntensity, getThornsReflect, getActiveRollModifier,
 } from './index';
 import { createCharacter } from '../Character';
 import { createEnemy } from '../Enemy';
@@ -278,5 +278,30 @@ describe('getThornsReflect', () => {
     const burn: ActiveEffect = { effectId: 'debuff_burn', remainingDuration: 2, intensity: 4, appliedAt: 0, tier: 1 };
     const p = { ...makePlayer(), effects: [burn] };
     expect(getThornsReflect(p)).toBe(0);
+  });
+});
+
+describe('getActiveRollModifier', () => {
+  it('returns 0 when no effects are present', () => {
+    expect(getActiveRollModifier(makePlayer())).toBe(0);
+  });
+
+  it('returns flat rollModifier for an effect with a flat modifier (debuff_confusion: -5)', () => {
+    const confusion: ActiveEffect = { effectId: 'debuff_confusion', remainingDuration: 3, intensity: 1, appliedAt: 0, tier: 2 };
+    const p = { ...makePlayer(), effects: [confusion] };
+    expect(getActiveRollModifier(p)).toBe(-5);
+  });
+
+  it('returns rollModifierPerIntensity × intensity for an effect with per-intensity modifier (tier1_body_attack: 1/intensity, intensity=3)', () => {
+    const bodyAttack: ActiveEffect = { effectId: 'tier1_body_attack', remainingDuration: 2, intensity: 3, appliedAt: 0, tier: 1 };
+    const p = { ...makePlayer(), effects: [bodyAttack] };
+    expect(getActiveRollModifier(p)).toBe(3);
+  });
+
+  it('sums flat and per-intensity contributions across multiple effects', () => {
+    const confusion: ActiveEffect = { effectId: 'debuff_confusion', remainingDuration: 3, intensity: 1, appliedAt: 0, tier: 2 };
+    const accuracy: ActiveEffect = { effectId: 'buff_accuracy_up', remainingDuration: 2, intensity: 1, appliedAt: 0, tier: 2 };
+    const p = { ...makePlayer(), effects: [confusion, accuracy] };
+    expect(getActiveRollModifier(p)).toBe(-2);
   });
 });
