@@ -31,7 +31,7 @@ import { executeSkill, calculateSkillDamage } from '../Skills/skill.engine';
 import type { Skill, CombatResources } from '../Skills/types';
 import type { CombatState, Stance } from './types';
 import { applyDamage, heal, isDefeated } from './health';
-import { processRoundStartEffects, processRoundEndEffects } from './effects';
+import { processRoundStartEffects, processRoundEndEffects, getActiveRollModifier } from './effects';
 import {
     TURN_DICE_COUNT, rollTurnDice, dieHasStance,
     combatDieCanPower, availableDiceFor, spendDice, refreshOneDie, availableDieCount,
@@ -77,6 +77,25 @@ export const COLOR_MATCH_DAMAGE_BONUS = 3;
  *  over its full length (the enemy attacks every phase in the HP model). HARD:
  *  bosses/elites can drop a careless player. */
 export const THREAT_DAMAGE_SCALE = 1.6;
+/**
+ * Soft control "weakens" the enemy's telegraphed attack. Each point of NEGATIVE
+ * roll modifier on the enemy — the universal marker of the soft-control /
+ * accuracy / attack-down bucket (confusion -5, fear -4, daze -3, slow -2,
+ * blind -5, accuracy/attack-down …) — shaves THREAT_WEAKEN_PER_ROLL off the
+ * incoming hit. Once the enemy's cumulative roll penalty reaches THREAT_DENY_AT
+ * it loses the turn outright — reached by a VARIETY of soft-controls
+ * (e.g. confusion + fear = 9), NOT by stacking one (the roll penalty is flat per
+ * effect), which keeps hard control (stun/sleep/petrify — a guaranteed skipTurn)
+ * distinct. THREAT_WEAKEN_FLOOR is a safety clamp: a weakened-but-not-denied
+ * enemy still lands at least this fraction (it does not bind at the current
+ * tunables — deny triggers first — but guards against future deep stacks).
+ * Tuned by /combat-tuning. Exported so the mobile presenter can state the honest
+ * "-X% enemy attack" a control card actually delivers. (Until 0.33.0 the HP
+ * engine never read these mods, so ~24 control/stat debuffs were inert.)
+ */
+export const THREAT_WEAKEN_PER_ROLL = 0.06;
+export const THREAT_DENY_AT = 8;
+export const THREAT_WEAKEN_FLOOR = 0.4;
 /** Conviction is capped so a long grind can't bank a Signature spam. */
 export const CONVICTION_CAP = 12;
 /**
@@ -696,9 +715,18 @@ export function resolveThreatPhase(state: CombatEncounterState, rng: () => numbe
     const phase = state.threatPhases[idx];
     const events: CombatEvent[] = [];
 
-    // Control on the enemy can rob it of this phase's turn (skipTurn → hindered).
+    // Control on the enemy hinders its turn. HARD control (skipTurn) denies it
+    // outright via canAct; SOFT control (confusion/fear/daze/slow/blind/accuracy-
+    // & attack-down) carries a negative roll modifier that WEAKENS the telegraphed
+    // hit, and a committed VARIETY of soft-controls (cumulative penalty ≥
+    // THREAT_DENY_AT) denies the turn too. This is what finally makes the
+    // soft-control / stat-debuff bucket DO something — the aggregators always
+    // computed the penalty; the HP engine just never read it (pre-0.33.0).
     const act = canAct(state.enemy.effects as ActiveEffect[], phase.enemyStance);
-    const hindered = !act.canAct;
+    const rollPenalty = Math.max(0, -getActiveRollModifier(state.enemy));
+    const denied = rollPenalty >= THREAT_DENY_AT;
+    const weakenMult = Math.max(THREAT_WEAKEN_FLOOR, Math.min(1, 1 - rollPenalty * THREAT_WEAKEN_PER_ROLL));
+    const hindered = !act.canAct || denied;
 
     let player = state.player;
     let enemy = state.enemy;
@@ -711,7 +739,9 @@ export function resolveThreatPhase(state: CombatEncounterState, rng: () => numbe
         for (const eff of phase.threatAction.effects) {
             if (eff.damage && eff.damage > 0) {
                 // Guard soaks the strike first (clamped), then HP takes the rest.
-                let dmg = Math.round(eff.damage * THREAT_DAMAGE_SCALE);
+                // weakenMult (<1) is the soft-control reduction; 1 when the enemy
+                // carries no roll penalty (every pre-0.33.0 case → byte-identical).
+                let dmg = Math.round(eff.damage * THREAT_DAMAGE_SCALE * weakenMult);
                 const absorbed = Math.min(guard, dmg);
                 guard -= absorbed;
                 dmg -= absorbed;

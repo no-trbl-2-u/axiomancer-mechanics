@@ -44,8 +44,8 @@ export const SIGNATURE_SKILLS: Record<SignatureSkillId, SignatureSkill> = {
     },
     'sig-overwhelming-argument': {
         id: 'sig-overwhelming-argument', name: 'Overwhelming Argument', kind: 'control', cost: 8,
-        magnitude: 5, effectKind: 'control', effectId: 'debuff_confusion',
-        description: 'Hit the enemy with deep Confusion — it loses its turn while the control holds.',
+        magnitude: 5, effectKind: 'control', effectId: 'debuff_petrify',
+        description: 'Petrify the enemy — it turns to stone and loses its turns while the control holds.',
     },
     'sig-conviction-strike': {
         id: 'sig-conviction-strike', name: 'Conviction Strike', kind: 'dot', cost: 7,

@@ -27,7 +27,7 @@ import { deepClone } from '../../Utils';
 import { mockSequentialRng } from '../../test-utils/rng';
 import {
     initializeCombatEncounter, rollEncounterDice, playCombatCard,
-    resolveCombatPhase, processBetweenPhases,
+    resolveCombatPhase, resolveThreatPhase, processBetweenPhases,
     resolveCardDieCost, resolveRead, getCard, buildCombatSummary,
     draftStanceDie, getDraftedDie, isPhaseStanceRevealed,
     playSignatureSkill, discardCombatCard, projectCardImpact, startTurn, endTurn,
@@ -39,6 +39,7 @@ import { getSkillById } from '../../Skills/skill.library';
 import { simulateHazardPatternCombat } from '../combat.encounter.sim';
 import { getThreatSequence, deriveIntentType } from '../combat.threat';
 import type { CombatDieColor, CombatEncounterState } from '../combat.encounter.types';
+import type { ActiveEffect } from '../../Effects/types';
 
 afterEach(() => {
     vi.restoreAllMocks();
@@ -567,6 +568,46 @@ describe('Spec 25 §9 — resolveCombatPhase batch entry point', () => {
         const state = initializeCombatEncounter(makePlayer([DOT_BODY]), makeEnemy(60, 'mind'), [DOT_BODY, DOT_BODY], 13);
         const res = resolveCombatPhase(state, [{ cardId: DOT_BODY, useBottom: true }]);
         expect(res.state.phaseResults.length + (res.state.finalOutcome ? 1 : 0)).toBeGreaterThan(0);
+    });
+});
+
+// ── Soft-control de-inert (0.33.0) ───────────────────────────────────────────
+// The HP engine now READS the enemy's aggregated roll penalty (it always
+// computed it; the engine just never consulted it). Soft control weakens the
+// telegraphed hit, and a committed VARIETY denies it — making ~24 previously
+// inert debuffs actually do something.
+describe('0.33.0 — soft control weakens & denies the enemy threat', () => {
+    const ae = (effectId: string): ActiveEffect => ({
+        effectId, remainingDuration: 3, intensity: 1, appliedAt: 0, tier: 1,
+    });
+    // A state parked at phase-play with a known 10-damage threat on the current
+    // phase and the given effects on the enemy; resolveThreatPhase then fires.
+    function threatState(enemyEffects: ActiveEffect[]): CombatEncounterState {
+        let s = initializeCombatEncounter(makePlayer([DOT_BODY]), makeEnemy(200, 'heart'), [DOT_BODY], 7);
+        s = rollEncounterDice(s).state;
+        const idx = Math.min(s.currentPhaseIndex, s.threatPhases.length - 1);
+        const threatPhases = s.threatPhases.map((p, i) =>
+            i === idx ? { ...p, threatAction: { ...p.threatAction, effects: [{ damage: 10 }] } } : p);
+        return { ...s, phase: 'phase-play', guard: 0, threatPhases, enemy: { ...s.enemy, effects: enemyEffects } };
+    }
+    const hpLoss = (effects: ActiveEffect[]): number => {
+        const s = threatState(effects);
+        return s.player.health - resolveThreatPhase(s).state.player.health;
+    };
+
+    it('a clean enemy lands its full telegraphed hit', () => {
+        expect(hpLoss([])).toBeGreaterThan(0);
+    });
+
+    it('one soft-control (Confusion, roll -5) WEAKENS the hit but does not deny it', () => {
+        const clean = hpLoss([]);
+        const weakened = hpLoss([ae('debuff_confusion')]);
+        expect(weakened).toBeGreaterThan(0);   // a single soft-control only reduces
+        expect(weakened).toBeLessThan(clean);  // ~30% weaker telegraphed hit
+    });
+
+    it('a VARIETY of soft-controls (Confusion -5 + Fear -4 = 9 ≥ deny) denies the turn', () => {
+        expect(hpLoss([ae('debuff_confusion'), ae('debuff_fear')])).toBe(0);
     });
 });
 

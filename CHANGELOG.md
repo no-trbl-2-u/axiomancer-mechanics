@@ -12,15 +12,24 @@ deep imports are part of the supported surface.
 
 ## [Unreleased]
 
+## [0.33.0] — 2026-06-27
+
+Combat truthfulness: the HP engine now reads the enemy's roll penalty, so soft-control / stat debuffs finally weaken (and a committed variety denies) the enemy's telegraphed turn — ~24 previously inert effects now do what their cards promise.
+
 ### Added
 
 - **Preset combat decks.** A roster of focused, ready-to-play decks — Erosion (DoT), Saturation (control), Bulwark (utility/defense + Befriend), Onslaught (damage), and Generalist (balanced) — each a curated card list with a single design focus and a built-in GUARD. `COMBAT_DECK_PRESETS`, `COMBAT_DECK_PRESET_ORDER`, `listDeckPresets`, `getDeckPreset`, `buildPresetDeck`; `CombatDeckPreset` / `CombatDeckFocus`. Feed `buildPresetDeck(id)` straight into `initializeCombatEncounter(player, enemy, deck)`.
 
 ### Changed
 
+- **Soft control & stat debuffs now affect the enemy (de-inert).** `resolveThreatPhase` now reads the enemy's aggregated roll penalty: each point of negative roll modifier (confusion, fear, daze, slow, blind, accuracy/attack-down, …) weakens the enemy's telegraphed hit by `THREAT_WEAKEN_PER_ROLL`, and a committed VARIETY of soft-controls (cumulative penalty ≥ `THREAT_DENY_AT`) denies the turn outright. Previously the aggregators computed these mods but the HP engine never consulted them, so ~24 control/stat effects were inert. New exported tunables `THREAT_WEAKEN_PER_ROLL` / `THREAT_DENY_AT` / `THREAT_WEAKEN_FLOOR`. Hard control (stun/sleep/petrify — a guaranteed skipTurn) is unchanged, and an enemy carrying no roll penalty behaves exactly as before.
 - **Press Fate is now a PARTIAL re-roll.** The `sig-press-the-point` (reroll) Signature re-rolls only the dice you have USED (spent/exhausted) plus any dead `x` faces, and LEAVES every still-usable die in play (previously it re-rolled BOTH dice, discarding good ones). A still-usable drafted die keeps its read; casting it with nothing to re-roll is a no-op that refunds the Conviction. `rerollSpentDice` / `hasRerollableDice` / `dieIsRerollable` (`combat.dice`).
 
 - **Skills vs Cards terminology boundary enforced (Phase 166).** Source comments, doc-strings, and the test suite now consistently distinguish *skills* (always-available token-spending actions in `knownSkills`) from *cards* (Hazard-style deck/hand/reward objects). A `CombatCard` projected from a skill is a "projected card" or "skill-sourced card" — never a "skill". `CombatCard.skillId` is the accepted field for the backing skill id; `toCombatCard` is the accepted projection entry-point. A regression guard (`terminology-boundary.engine.test.ts`) asserts that banned conflation identifiers (`skillCard` / `skill_card` / `SkillCard`) are absent from the guarded Combat source files. No public API change; no new exports.
+
+### Fixed
+
+- **Overwhelming Argument (heart capstone Signature) now matches its text.** It applied `debuff_confusion` — which (until this release's de-inert) did nothing and never denied the enemy's turn despite the "it loses its turn" description. Re-pointed to `debuff_petrify` (a guaranteed skipTurn), so the marquee 8-Conviction play actually makes the enemy lose its turns.
 
 ## [0.32.0] — 2026-06-22
 
