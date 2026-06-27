@@ -486,6 +486,8 @@ round-resolution entry point used by every UI client.
 | `removeRandomBuff(target)` | Strips one random buff |
 | `extendRandomBuffDuration(target, amount)` | Extends one random buff |
 | `applyRegen(target)` | Sums and applies all regen effects |
+| `getActiveRollModifier(target)` | Sums all `rollModifier` + `rollModifierPerIntensity × intensity` across active effects — flat roll-mod total consumed by the combat resolver |
+| `canAct(effects, requestedStance?)` | Action-restriction gate — returns `{ canAct, resolvedStance, reason }` reflecting forced/blocked-stance and skipTurn constraints |
 | `isAlive(combatant)` | True if `health > 0` |
 | `isDefeated(combatant)` | True if `health <= 0` — the sole win condition for Hazard-Pattern Combat |
 | `getHealthPercentage(combatant)` | `health / maxHealth` as a 0–1 fraction |
@@ -506,6 +508,8 @@ round-resolution entry point used by every UI client.
 | `AggregatedEffectModifiers` | Summed numeric modifiers from all active effects; consumed by `getEffectiveStats` |
 | `EffectiveStats` | `{ baseStats, derivedStats, nonCombatStats, defenseDelta }` — combatant stats after all active-effect modifiers are applied; produced by `getEffectiveStats` |
 | `DamageType` | `'physical' \| 'mental' \| 'emotional'` — damage category used by resistance calculations |
+| `Combatant` | `Character \| Enemy` — the union type for any participant in a combat encounter |
+| `BattleLogEntry` | Per-round log record (`round`, `playerAction`, `enemyAction`, `advantage`, rolls, damage fields, `result`) stored in `CombatState.log` |
 
 ## Skills vs Cards — Terminology Boundary
 
