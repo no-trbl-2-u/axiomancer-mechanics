@@ -254,6 +254,12 @@ Hazard (re-exported via World/*): wildcard surface; key combat-bridge predicates
             draft, returning an updated HazardSubquestDraft (standalone, no
             session state); selectSubquestFromDraft(session, id) — applies the
             chosen subquest to a live HazardSessionState (session-level API).
+            Subquest query helpers: getHazardSubquestDef(id) — looks up a
+            subquest definition by id from HAZARD_SUBQUESTS;
+            hazardSubquestStatus(session, subquest) — returns objective
+            completion status for a live session;
+            hazardSubquestResults(session, final) — returns subquest outcome
+            results for display after a session ends.
 Utils:      clamp, randomInt, deepClone, deriveStats, calculateMaxHealth,
             createDieRoll, isCharacter, isEnemy
 Philosophy: bucketAxis, getAlignmentCell, applyAlignmentDelta, defaultAlignment,
