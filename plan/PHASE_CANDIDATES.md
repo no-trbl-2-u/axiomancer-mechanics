@@ -217,6 +217,13 @@
 
 ## Promoted
 
+### Phase 166 — Skills ≠ Cards terminology boundary
+- promoted: 2026-06-27 via T direct steering.
+- source: T corrected legacy-combat vocabulary: skills are always-available token-used effects; cards are Hazard-style deck/hand/reward objects; **Skills != Cards**.
+- scope: Audit mechanics source/docs/tests/tuning guidance for skill/card conflation; rename misleading internal identifiers where safe; document the boundary in combat/skills docs; add a small regression guard.
+- build-plan row: `plan/steps/01_build_plan.md`.
+- brief: `plan/phases/phase_166_skills_cards_terminology_boundary.md`.
+
 ### Phase 160 — Phase 137 minigame sims + CLIs (subsumes "Hazard simulation harness")
 - promoted: 2026-06-20 via oversight (Q1: T selected NEEDS_ATTENTION §3 + §4 to refuel the empty autonomous queue).
 - source: NEEDS_ATTENTION.md §3 (QuestBoard/Rest/LootCache have no sims) + §4 (CLI doesn't play the Phase 137 minigames) + the standing "Hazard simulation harness" candidate (utility-deck CLI injection + utility-aware bot + the `ts-node` game.cli.ts:185 repair blocker), all folded into one sims+CLIs cluster.
