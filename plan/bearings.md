@@ -79,10 +79,18 @@ Enemy:      createEnemy, Enemy, EnemyLogic, decideEnemyAction, randomLogic,
             pactLines, causeLines}? — Phase 71 closes GH#65 ask 1),
             CodexEntry (+ Enemy.journalEntry? — Phase 73 closes GH#65
             ask 3; auto-unlocks on friendship outcome)
-Combat:     determineAdvantage, getAttackStat, getDefenseStat, getSaveStat,
-            applyDamage, heal, tickAllEffects,
+Combat:     determineAdvantage, getBaseStat, getAttackStat, getDefenseStat, getSaveStat,
+            applyDamage, heal, healCharacter, isAlive, isDefeated, getHealthPercentage,
+            getStudyMarkIntensity, tickAllEffects, updateEffectDuration,
+            removeRandomBuff, extendRandomBuffDuration,
             applyRegen, getActiveRollModifier, getThornsReflect,
-            resolveEffectApplication, isValidCombatAction, Stance, Action, CombatState, Combatant
+            getActiveEffectModifiers, getEffectiveStats, canAct,
+            resolveEffectApplication, calculateDamageResistance, getSkillDamageType,
+            determineEnemyAction, isCombatOngoing, determineCombatEnd,
+            calculateEnemyStatMultiplier, applyMoralMeterScaling,
+            isValidCombatAction, Stance, Action, CombatState, Combatant,
+            Advantage, CritStyle, CombatAction, CombatPhase,
+            BattleLogEntry, AggregatedEffectModifiers, EffectiveStats, DamageType
             (+ Phase 80 always-land: Tier 2 debuff + Tier 3 always land;
             target-resist roll removed; only Tier 2 buff caster fumble/crit
             survives. SkillEvent `effect-resisted` renamed `buff-fumbled`,
