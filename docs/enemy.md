@@ -61,6 +61,13 @@ Combat consumes the AI via `determineEnemyAction(enemy, state?)` in
 [`Combat/index.ts`](../src/Combat/index.ts). Strategies that need to react to
 the player (every non-random strategy) receive the live `CombatState`.
 
+**Stance helpers** (used by the built-in strategies; also exported for custom logic):
+
+| Helper | Signature | Returns |
+|--------|-----------|---------|
+| `counterStanceOf` | `(stance: Stance) => Stance` | The counter-stance for RPS advantage: heart→body, body→mind, mind→heart. Used by `aggressiveLogic` and `balancedLogic`. |
+| `weakestStanceOf` | `(enemy: Enemy) => Stance` | The stance with the lowest base stat for the given enemy. Used by `defensiveLogic` to attack the player's vulnerability. |
+
 ## Alignment-driven AI tuning (Phase 45)
 
 `Enemy.philosophicalAlignment?: PhilosophicalAlignment` (optional) pins an
