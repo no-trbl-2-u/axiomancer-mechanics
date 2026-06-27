@@ -60,7 +60,7 @@
 
 ## Pending
 
-- [ ] **[A — test coverage gap] `getStudyMarkIntensity` and `getThornsReflect` have no direct hermetic tests**
+- [x] **[A — test coverage gap] `getStudyMarkIntensity` and `getThornsReflect` have no direct hermetic tests** — resolved at `1c00318` (iterate, 2026-06-27). Added 3 cases for `getStudyMarkIntensity` (zero-effects / mark-at-intensity-3 / non-mark) and 4 cases for `getThornsReflect` (zero-effects / tier1_body_defend×2 / buff_brazen_thorns×3 / non-thorns effect) to `src/Combat/index.test.ts`. 2136 tests + type-check + lint + build green. Score: 3 × 9 / 10 = 2.7. Source: iterate audit pass 135 (2026-06-27).
   - area: tests / Combat
   - observation: Both are public locked-contract exports (`src/index.ts:63`; confirmed in `scripts/public-surface.expected.json` at 589 values). `getStudyMarkIntensity(target)` returns the intensity of the mind studying mark on a combatant (0 if absent). `getThornsReflect(bearer)` sums `reflectDamage × intensity` across all active effects. Both are called transitively via `src/Combat/phases/scenario.ts:713` and `scenario.ts:775` respectively, but no `*.test.ts` or `*.engine.test.ts` file ever imports or calls them directly. Same pattern as critique-96 MED (`removeRandomBuff`/`extendRandomBuffDuration`/`updateEffectDuration` — resolved at `317f40c`). `Combat/index.test.ts` already covers the analogous pattern and is the natural home.
   - evidence: `src/Combat/effects.ts:20-23` (`getStudyMarkIntensity`), `src/Combat/effects.ts:42-47` (`getThornsReflect`); `src/Combat/index.test.ts` — no mention of either function.
