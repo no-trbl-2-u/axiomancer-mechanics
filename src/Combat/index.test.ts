@@ -1,13 +1,15 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import {
   determineAdvantage, getAdvantageModifier, hasAdvantage,
   calculateFinalDamage, applyDamage, heal, tickAllEffects,
   isCriticalHit, isCriticalMiss, isAttackSuccessful,
   isAlive, isDefeated, getHealthPercentage,
+  removeRandomBuff, extendRandomBuffDuration, updateEffectDuration,
 } from './index';
 import { createCharacter } from '../Character';
 import { createEnemy } from '../Enemy';
 import { ActiveEffect } from '../Effects/types';
+import { setSeed } from '../Utils/rng';
 
 const makePlayer = () => createCharacter({ name: 'Test', level: 1, baseStats: { heart: 4, body: 3, mind: 2 } });
 const makeEnemy = () => createEnemy({
@@ -112,6 +114,101 @@ describe('isAttackSuccessful', () => {
   it('equal or lower fails', () => {
     expect(isAttackSuccessful(10, 10)).toBe(false);
     expect(isAttackSuccessful(5, 10)).toBe(false);
+  });
+});
+
+const BUFF_ID = 'tier1_body_attack';
+const DEBUFF_ID = 'debuff_burn';
+const makeActiveBuff = (overrides: Partial<ActiveEffect> = {}): ActiveEffect => ({
+  effectId: BUFF_ID, remainingDuration: 3, intensity: 1, appliedAt: 0, tier: 1, ...overrides,
+});
+const makeActiveDebuff = (): ActiveEffect => ({
+  effectId: DEBUFF_ID, remainingDuration: 3, intensity: 1, appliedAt: 0, tier: 1,
+});
+
+describe('removeRandomBuff', () => {
+  beforeEach(() => { setSeed('remove-buff-test'); });
+
+  it('returns null removed when no active effects', () => {
+    const p = makePlayer();
+    const { target, removed } = removeRandomBuff(p);
+    expect(removed).toBeNull();
+    expect(target.effects).toHaveLength(0);
+  });
+
+  it('returns null removed when only debuffs are active', () => {
+    const p = { ...makePlayer(), effects: [makeActiveDebuff()] };
+    const { target, removed } = removeRandomBuff(p);
+    expect(removed).toBeNull();
+    expect(target.effects).toHaveLength(1);
+  });
+
+  it('removes the buff and returns it when one buff is active', () => {
+    const buff = makeActiveBuff();
+    const p = { ...makePlayer(), effects: [buff] };
+    const { target, removed } = removeRandomBuff(p);
+    expect(removed).not.toBeNull();
+    expect(removed?.effectId).toBe(BUFF_ID);
+    expect(target.effects).toHaveLength(0);
+  });
+});
+
+describe('extendRandomBuffDuration', () => {
+  beforeEach(() => { setSeed('extend-buff-test'); });
+
+  it('returns null extended when no active effects', () => {
+    const p = makePlayer();
+    const { target, extended } = extendRandomBuffDuration(p, 2);
+    expect(extended).toBeNull();
+    expect(target.effects).toHaveLength(0);
+  });
+
+  it('returns null extended when only debuffs are active', () => {
+    const p = { ...makePlayer(), effects: [makeActiveDebuff()] };
+    const { target, extended } = extendRandomBuffDuration(p, 2);
+    expect(extended).toBeNull();
+    expect(target.effects).toHaveLength(1);
+  });
+
+  it('extends the buff duration when one buff is active', () => {
+    const buff = makeActiveBuff({ remainingDuration: 3 });
+    const p = { ...makePlayer(), effects: [buff] };
+    const { target, extended } = extendRandomBuffDuration(p, 2);
+    expect(extended).not.toBeNull();
+    expect(extended?.remainingDuration).toBe(5);
+    expect(target.effects[0].remainingDuration).toBe(5);
+  });
+
+  it('caps extended duration at MAX_EFFECT_DURATION (10)', () => {
+    const buff = makeActiveBuff({ remainingDuration: 9 });
+    const p = { ...makePlayer(), effects: [buff] };
+    const { extended } = extendRandomBuffDuration(p, 5);
+    expect(extended?.remainingDuration).toBe(10);
+  });
+});
+
+describe('updateEffectDuration', () => {
+  it('decrements duration for the matched effectId', () => {
+    const effect: ActiveEffect = { effectId: 'e1', remainingDuration: 3, intensity: 1, appliedAt: 0, tier: 1 };
+    const p = { ...makePlayer(), effects: [effect] };
+    const result = updateEffectDuration(p, 'e1');
+    expect(result.effects[0].remainingDuration).toBe(2);
+  });
+
+  it('leaves other effects untouched', () => {
+    const e1: ActiveEffect = { effectId: 'e1', remainingDuration: 3, intensity: 1, appliedAt: 0, tier: 1 };
+    const e2: ActiveEffect = { effectId: 'e2', remainingDuration: 5, intensity: 1, appliedAt: 0, tier: 1 };
+    const p = { ...makePlayer(), effects: [e1, e2] };
+    const result = updateEffectDuration(p, 'e1');
+    expect(result.effects[0].remainingDuration).toBe(2);
+    expect(result.effects[1].remainingDuration).toBe(5);
+  });
+
+  it('does not decrement permanent effects (remainingDuration === -1)', () => {
+    const perm: ActiveEffect = { effectId: 'p1', remainingDuration: -1, intensity: 1, appliedAt: 0, tier: 1 };
+    const p = { ...makePlayer(), effects: [perm] };
+    const result = updateEffectDuration(p, 'p1');
+    expect(result.effects[0].remainingDuration).toBe(-1);
   });
 });
 
