@@ -71,6 +71,7 @@ Character:  createCharacter, Character, BaseStats, DerivedStats, NonCombatStats
             ladderL30Preset / ladderL50Preset — level-explicit evidence ladder
             (L1/L15/L30/L50), separate from characterPresets)
 Enemy:      createEnemy, Enemy, EnemyLogic, decideEnemyAction, randomLogic,
+            enemyStatBudget,
             FriendshipReward (+ Enemy.friendshipReward? — Phase 60;
             + flagSet? extension — Phase 62;
             + alignmentDelta? extension — Phase 69 closes Spec 14 Q4),
@@ -79,6 +80,12 @@ Enemy:      createEnemy, Enemy, EnemyLogic, decideEnemyAction, randomLogic,
             pactLines, causeLines}? — Phase 71 closes GH#65 ask 1),
             CodexEntry (+ Enemy.journalEntry? — Phase 73 closes GH#65
             ask 3; auto-unlocks on friendship outcome)
+            (+ named logic constructors — aggressiveLogic, defensiveLogic,
+            balancedLogic, strategicLogic, bossLogic; stance helpers —
+            counterStanceOf (returns the counter-stance for RPS advantage),
+            weakestStanceOf (returns the weakest stance given a target stance);
+            loot/XP helpers — rollLootMany (multi-roll variant of rollLoot),
+            DEFAULT_XP_BY_DIFFICULTY (constant map: difficulty → base XP reward))
 Combat:     determineAdvantage, getBaseStat, getAttackStat, getDefenseStat, getSaveStat,
             applyDamage, heal, healCharacter, isAlive, isDefeated, getHealthPercentage,
             getStudyMarkIntensity, tickAllEffects, updateEffectDuration,
