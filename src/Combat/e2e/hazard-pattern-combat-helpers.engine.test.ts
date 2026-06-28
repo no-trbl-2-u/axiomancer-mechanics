@@ -32,6 +32,7 @@ import {
     resolveCardDieCost, cardDieCostPreview, availableDice,
     selectMercyChoice as selectEncounterMercyChoice, getCard,
     handCards, resolveThreatPhase,
+    THREAT_WEAKEN_PER_ROLL, THREAT_DENY_AT, THREAT_WEAKEN_FLOOR,
 } from '../combat.engine';
 import { recordAttribution, buildCombatSummary } from '../combat.attribution';
 import type { CombatAttributionRow } from '../combat.encounter.types';
@@ -505,6 +506,27 @@ describe('Spec 25 §4.5 — resolveThreatPhase', () => {
             { kind: 'phase-resolved'; phaseIndex: number; mark: string } | undefined;
         expect(phaseEvent!.mark).toBe('clear');
         expect(result.state.player.health).toBe(player.health);
+    });
+});
+
+// ── Soft-control threat tunable contracts ────────────────────────────────────
+
+describe('Soft-control threat tunables — contract values', () => {
+    it('THREAT_WEAKEN_PER_ROLL is 0.06', () => {
+        expect(THREAT_WEAKEN_PER_ROLL).toBe(0.06);
+    });
+
+    it('THREAT_DENY_AT is 8', () => {
+        expect(THREAT_DENY_AT).toBe(8);
+    });
+
+    it('THREAT_WEAKEN_FLOOR is 0.4', () => {
+        expect(THREAT_WEAKEN_FLOOR).toBe(0.4);
+    });
+
+    it('floor never binds at current tunables: 1 - THREAT_DENY_AT * THREAT_WEAKEN_PER_ROLL > THREAT_WEAKEN_FLOOR', () => {
+        const weakenAtDenyThreshold = 1 - THREAT_DENY_AT * THREAT_WEAKEN_PER_ROLL;
+        expect(weakenAtDenyThreshold).toBeGreaterThan(THREAT_WEAKEN_FLOOR);
     });
 });
 
