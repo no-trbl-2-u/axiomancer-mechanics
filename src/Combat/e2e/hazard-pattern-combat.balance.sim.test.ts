@@ -39,6 +39,7 @@ function loadout(skills: string[]): Character {
 const DOT = ['slippery-slope'];                          // DoT — erodes enemy HP to 0
 const DAMAGE_ONLY = ['achilles-gambit'];                 // pure strike, no status (the weak baseline)
 const MERCY = ['eternal-regress', 'befriend'];           // control + befriend → the spare path
+const CONTROL = ['false-dilemma', 'red-herring'];        // soft-control — roll-penalty debuffs (confusion −5, accuracy_down −3)
 
 describe('HP combat — authored enemies are winnable with status play', () => {
     for (const [name, enemy] of [['MournfulGull', MournfulGull], ['HollowEyedBeggar', HollowEyedBeggar]] as const) {
@@ -85,5 +86,28 @@ describe('HP combat — the befriend mercy path is live', () => {
         const mercy = simulateHazardPatternCombat(loadout(MERCY), MournfulGull, RUNS, SEED);
         expect(dot.victories).toBeGreaterThan(mercy.victories);
         expect(mercy.mercies).toBeGreaterThan(dot.mercies);
+    });
+});
+
+describe('HP combat — soft-control is a viable status modality (0.33.0 de-inert witness)', () => {
+    it('a CONTROL loadout lands status and wins reliably — soft-control play is viable', () => {
+        // Doctrine: status effects are the main fun; low engagement is a balance failure.
+        // CONTROL loadout applies roll-penalty debuffs (confusion −5 + accuracy_down −3 = −8),
+        // hitting the THREAT_DENY_AT (8) threshold that fully denies the enemy's turn.
+        // This confirms the 0.33.0 soft-control de-inert actually delivers a playable,
+        // winning strategy — not just code that compiles.
+        const ctrl = simulateHazardPatternCombat(loadout(CONTROL), MournfulGull, RUNS, SEED);
+        expect(ctrl.winRate).toBeGreaterThanOrEqual(0.5);
+        expect(ctrl.statusEngagement).toBeGreaterThan(0);
+    });
+
+    it('a CONTROL loadout outperforms the no-status baseline against the boss — soft-control > basic attacks', () => {
+        // Doctrine: status is the efficient path; basic-attack trading is the weak baseline.
+        // Against the boss, a pure-strike loadout is the documented weak path (no status).
+        // A soft-control loadout must beat it by denying the enemy's threat turns.
+        const ctrl = simulateHazardPatternCombat(loadout(CONTROL), CoastalTyrant, RUNS, SEED);
+        const damage = simulateHazardPatternCombat(loadout(DAMAGE_ONLY), CoastalTyrant, RUNS, SEED);
+        expect(ctrl.winRate).toBeGreaterThanOrEqual(damage.winRate);
+        expect(ctrl.statusEngagement).toBeGreaterThan(damage.statusEngagement);
     });
 });
