@@ -40,12 +40,21 @@ export {
     removeRandomBuff, extendRandomBuffDuration, applyRegen, applyDrain,
     processDamageOverTime, processRoundStartEffects, processRoundEndEffects,
     applyCleanse, applyDispel,
+    // 0.34.0 status-depth epic — HP-model selectors + tunable scalars
+    getDamageTakenMultiplier, getPendingDotTotal, consumeDotEffects,
+    getDistinctDebuffCount, getDistinctControlCount,
+    VULNERABLE_MAX_MULT, RUPTURE_BURST_CAP, COMPOUND_COUNT_CAP,
+    DISRUPT_DENY_AT, EXECUTE_DAMAGE_FRACTION,
 } from './effects';
+export type { PendingDotEntry } from './effects';
 export {
     getActiveEffectModifiers, getEffectiveStats, canAct,
+    // 0.34.0 — surfaced DoT amplification (Hemorrhage / Dissolution / Corrosive Fire)
+    getDotAmplificationByEffect, getActiveDotTotal, getActiveDotAmplifications,
 } from './effect-modifiers';
 export type {
     AggregatedEffectModifiers, EffectiveStats,
+    ActiveDotEntry, ActiveDotAmplification,
 } from './effect-modifiers';
 export { resolveEffectApplication } from './resist';
 export { calculateDamageResistance, getSkillDamageType } from './damage-resist';
@@ -247,6 +256,9 @@ export {
     READ_DAMAGE_MULT, CONVICTION_PER_UNPICKED_DIE, CONVICTION_READ_WIN_BONUS,
     COLOR_MATCH_DAMAGE_BONUS,
     THREAT_WEAKEN_PER_ROLL, THREAT_DENY_AT, THREAT_WEAKEN_FLOOR,
+    // 0.34.0 status-depth epic — honesty selectors
+    getEnemyIncomingDamageMultiplier, getDisruptMeter,
+    projectRupture, isExecuteReady, projectExecute, projectSiphonHeal,
 } from './combat.engine';
 export type { CardDieCost } from './combat.engine';
 export {

@@ -695,7 +695,8 @@
             "value": -3,
             "isMultiplier": false
           }
-        ]
+        ],
+        "damageTakenMult": 1.5
       },
       "tier": 2
     },
@@ -726,7 +727,8 @@
             "value": -3,
             "isMultiplier": false
           }
-        ]
+        ],
+        "damageTakenMult": 1.5
       },
       "tier": 2
     },
@@ -757,9 +759,27 @@
             "value": -3,
             "isMultiplier": false
           }
-        ]
+        ],
+        "damageTakenMult": 1.5
       },
       "tier": 2
+    },
+    {
+      "id": "debuff_vulnerable",
+      "name": "Breach",
+      "description": "A seam pried open in their guard, stance-agnostic and bleeding-obvious. Every blow you land now finds the gap and digs deeper.",
+      "type": "debuff",
+      "category": "defense",
+      "duration": 3,
+      "stacking": "duration",
+      "resistedBy": "body",
+      "resistDR": 12,
+      "payload": {
+        "damageTakenMult": 1.5
+      },
+      "tier": 2,
+      "addedIn": "2026-06-26",
+      "tags": ["status-effect", "vulnerable", "debuff", "amplify"]
     },
     {
       "id": "debuff_mark",

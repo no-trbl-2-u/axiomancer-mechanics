@@ -10,7 +10,7 @@ import { removeEffectsByType } from '../Effects';
 import { MAX_EFFECT_DURATION } from '../Game/game-mechanics.constants';
 import { Combatant } from './types';
 import { applyDamage, heal } from './health';
-import { getActiveEffectModifiers } from './effect-modifiers';
+import { getActiveEffectModifiers, getDotAmplificationByEffect } from './effect-modifiers';
 import { getRng } from '../Utils/rng';
 
 /** ID of the Mind studying mark. Used by Mind/Attack to add bonus damage. */
@@ -45,6 +45,126 @@ export function getThornsReflect(bearer: Combatant): number {
         const perIntensity = def?.payload.reflectDamage ?? 0;
         return total + perIntensity * (ae.intensity ?? 1);
     }, 0);
+}
+
+// ─── 0.34.0 status-depth epic — HP-model selectors + tunable scalars ──────────
+// These power the new card mechanics (VULNERABLE / RUPTURE / COMPOUND / DISRUPT)
+// and the mobile honesty layer. Pure reads over a combatant's `effects`; the HP
+// behavior itself is owned by `combat.engine.ts`. Registered in the tuning
+// registry (`src/Tuning/tunable.registry.ts`) so `/combat-tuning` can rebalance
+// them by simulation; `effects.ts` is a writable (non-engine) home for them.
+
+/** VULNERABLE — hard ceiling on the outgoing-damage multiplier against a marked
+ *  target. Conservative for burst (a marked foe takes at most ×2.0). Tunable. */
+export const VULNERABLE_MAX_MULT = 2.0;
+/** RUPTURE — hard cap on a single detonation's burst HP, so a long DoT stack
+ *  can't one-shot a boss. Tunable. */
+export const RUPTURE_BURST_CAP = 80;
+/** COMPOUND — cap on the distinct-debuff count credited to a compound hit, so
+ *  variety pays off without unbounded scaling. Tunable. */
+export const COMPOUND_COUNT_CAP = 6;
+/** DISRUPT — distinct-control pip threshold that DENIES the enemy's telegraphed
+ *  turn (an ADDITIVE OR path on top of the legacy roll-penalty deny). Tunable. */
+export const DISRUPT_DENY_AT = 3;
+/** EXECUTE — fraction of the foe's MAX HP a ready finisher deals (clamped to the
+ *  foe's remaining HP, so it is typically lethal at/below the HP gate). Tunable. */
+export const EXECUTE_DAMAGE_FRACTION = 0.75;
+
+/**
+ * VULNERABLE multiplier — the outgoing-damage multiplier the HP engine applies to
+ * every HP source it lands on this bearer. Aggregated additively across the
+ * bearer's OWN `damageTakenMult` payloads:
+ *   mult = 1 + Σ ((damageTakenMult - 1) × intensity)
+ * clamped to `[1, VULNERABLE_MAX_MULT]`. Returns EXACTLY `1` when the bearer
+ * carries no marker, so every existing exact-HP assertion is byte-identical.
+ * Pure.
+ */
+export function getDamageTakenMultiplier(bearer: Combatant): number {
+    let mult = 1;
+    for (const ae of bearer.effects) {
+        const def = lookupEffect(ae.effectId);
+        const dtm = def?.payload.damageTakenMult;
+        if (dtm === undefined) continue;
+        mult += (dtm - 1) * (ae.intensity ?? 1);
+    }
+    return Math.min(VULNERABLE_MAX_MULT, Math.max(1, mult));
+}
+
+/** One pending DoT effect's remaining lifetime total (amplification-aware). */
+export interface PendingDotEntry {
+    effectId: string;
+    label: string;
+    /** floor(damagePerRound × intensity × comboMultiplier) × max(1, remainingDuration). */
+    amount: number;
+}
+
+/**
+ * The total DoT HP still pending on the bearer over the effects' remaining
+ * lifetimes — the figure RUPTURE detonates. Amplification-aware (reuses the same
+ * combo multiplier the aggregator applies), floored per-tick then multiplied by
+ * the remaining duration (permanent DoT counts one tick). Pure.
+ */
+export function getPendingDotTotal(bearer: Combatant): { total: number; perEffect: PendingDotEntry[] } {
+    const dotAmp = getDotAmplificationByEffect(bearer.effects);
+    const perEffect: PendingDotEntry[] = [];
+    let total = 0;
+    for (const ae of bearer.effects) {
+        const def = lookupEffect(ae.effectId);
+        const dot = def?.payload.damageOverTime;
+        if (!def || !dot) continue;
+        const intensity = ae.intensity ?? 1;
+        const multiplier = dotAmp.get(ae.effectId) ?? 1;
+        const perTick = Math.floor(dot.damagePerRound * intensity * multiplier);
+        const ticks = Math.max(1, ae.remainingDuration);
+        const amount = perTick * ticks;
+        perEffect.push({ effectId: ae.effectId, label: def.name, amount });
+        total += amount;
+    }
+    return { total, perEffect };
+}
+
+/**
+ * Strips every DoT effect from the bearer (RUPTURE consumes them on detonation).
+ * Returns the updated combatant and the consumed effect ids. Pure.
+ */
+export function consumeDotEffects<T extends Combatant>(bearer: T): { combatant: T; consumed: string[] } {
+    const consumed: string[] = [];
+    const remaining = bearer.effects.filter(ae => {
+        if (lookupEffect(ae.effectId)?.payload.damageOverTime) {
+            consumed.push(ae.effectId);
+            return false;
+        }
+        return true;
+    });
+    return { combatant: { ...bearer, effects: remaining }, consumed };
+}
+
+/** Count of DISTINCT debuff effect ids on the bearer — COMPOUND's scaler. Pure. */
+export function getDistinctDebuffCount(bearer: Combatant): number {
+    const ids = new Set<string>();
+    for (const ae of bearer.effects) {
+        if (lookupEffect(ae.effectId)?.type === 'debuff') ids.add(ae.effectId);
+    }
+    return ids.size;
+}
+
+/**
+ * Count of DISTINCT CONTROL effect ids on the bearer — the DISRUPT deny meter's
+ * pip count. Control = an `actionRestriction` (skip/forced/blocked) OR a NEGATIVE
+ * roll modifier (the soft-control / accuracy-down bucket). Centralizes the
+ * predicate so the engine and the mobile meter agree on what counts. Pure.
+ */
+export function getDistinctControlCount(bearer: Combatant): number {
+    const ids = new Set<string>();
+    for (const ae of bearer.effects) {
+        const p = lookupEffect(ae.effectId)?.payload;
+        if (!p) continue;
+        const r = p.actionRestriction;
+        const restricts = !!r && (r.skipTurn === true || r.forcedStance !== undefined || (r.blockedStances?.length ?? 0) > 0);
+        const softControl = (p.rollModifier ?? 0) < 0 || (p.rollModifierPerIntensity ?? 0) < 0;
+        if (restricts || softControl) ids.add(ae.effectId);
+    }
+    return ids.size;
 }
 
 /**

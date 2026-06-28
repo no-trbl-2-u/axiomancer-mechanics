@@ -10,7 +10,7 @@
 
 import { ActiveEffect, DotTickPhase, EffectStatTarget } from '../Effects/types';
 import { lookupEffect } from '../Effects/effects.library';
-import { evaluateInteractions } from '../Effects/interactions';
+import { evaluateInteractions, checkInteractionTrigger } from '../Effects/interactions';
 import { EFFECT_INTERACTIONS } from '../Effects/amplification.registry';
 import { INTERACTION_AMPLIFICATION } from './resolution.constants';
 import { Stance, Combatant } from './types';
@@ -29,7 +29,7 @@ import { isCharacter } from '../Utils/typeGuards';
  * `MIN_MEANINGFUL_AMPLIFICATION` are dropped so trivial bonuses don't perturb
  * the integer DoT math. Pure — reads effects, mutates nothing persisted.
  */
-function getDotAmplificationByEffect(effects: ActiveEffect[]): Map<string, number> {
+export function getDotAmplificationByEffect(effects: ActiveEffect[]): Map<string, number> {
     const amp = new Map<string, number>();
     const results = evaluateInteractions(EFFECT_INTERACTIONS, effects);
     for (const result of results) {
@@ -40,6 +40,81 @@ function getDotAmplificationByEffect(effects: ActiveEffect[]): Map<string, numbe
         if (clamped > current) amp.set(result.targetEffectId, clamped);
     }
     return amp;
+}
+
+/** One DoT effect's per-tick contribution, with the live combo multiplier surfaced. */
+export interface ActiveDotEntry {
+    effectId: string;
+    label: string;
+    /** Unamplified per-tick HP: floor(damagePerRound × intensity). */
+    baseAmount: number;
+    /** Amplified per-tick HP that actually lands: floor(damagePerRound × intensity × multiplier). */
+    amount: number;
+    /** Combo multiplier applied to this effect (1 when no combo). */
+    multiplier: number;
+}
+
+/**
+ * Per-effect AMPLIFIED DoT total for one tick (start + end phases combined),
+ * surfacing the live combo multiplier so the mobile honesty layer can render the
+ * real numbers (and so payoff cards like RUPTURE read the true detonation total).
+ * Pure; mirrors the floor-per-tick math `getActiveEffectModifiers` uses, so the
+ * `amount`s sum to the HP the DoT actually erodes each round.
+ */
+export function getActiveDotTotal(effects: ActiveEffect[]): { perEffect: ActiveDotEntry[]; total: number } {
+    const dotAmp = getDotAmplificationByEffect(effects);
+    const perEffect: ActiveDotEntry[] = [];
+    let total = 0;
+    for (const ae of effects) {
+        const def = lookupEffect(ae.effectId);
+        const dot = def?.payload.damageOverTime;
+        if (!def || !dot) continue;
+        const intensity = ae.intensity ?? 1;
+        const multiplier = dotAmp.get(ae.effectId) ?? 1;
+        const baseAmount = Math.floor(dot.damagePerRound * intensity);
+        const amount = Math.floor(dot.damagePerRound * intensity * multiplier);
+        perEffect.push({ effectId: ae.effectId, label: def.name, baseAmount, amount, multiplier });
+        total += amount;
+    }
+    return { perEffect, total };
+}
+
+/** One live, triggered DoT-amplification combo (e.g. Hemorrhage), named via the registry. */
+export interface ActiveDotAmplification {
+    targetEffectId: string;
+    multiplier: number;
+    interactionId: string;
+    comboName: string;
+}
+
+/**
+ * The live `amplify_damage` combos currently triggered on `effects` (poison+bleed
+ * → Hemorrhage, acid+poison → Dissolution, burn+acid → Corrosive Fire, …), each
+ * with the clamped multiplier and the combo's display name from the registry.
+ * Feeds the mobile DoT-combo matrix. Sorted by priority (high first), then id,
+ * mirroring `evaluateInteractions`. Pure.
+ */
+export function getActiveDotAmplifications(effects: ActiveEffect[]): ActiveDotAmplification[] {
+    const out: ActiveDotAmplification[] = [];
+    for (const interaction of EFFECT_INTERACTIONS) {
+        if (interaction.result.type !== 'amplify_damage') continue;
+        if (!checkInteractionTrigger(interaction.trigger, effects)) continue;
+        const raw = interaction.result.amplificationValue;
+        if (raw < INTERACTION_AMPLIFICATION.MIN_MEANINGFUL_AMPLIFICATION) continue;
+        out.push({
+            targetEffectId: interaction.result.targetEffectId,
+            multiplier: Math.min(raw, INTERACTION_AMPLIFICATION.MAX_DAMAGE_MULTIPLIER),
+            interactionId: interaction.id,
+            comboName: interaction.name,
+        });
+    }
+    out.sort((a, b) => {
+        const pa = EFFECT_INTERACTIONS.find(i => i.id === a.interactionId)?.priority ?? 0;
+        const pb = EFFECT_INTERACTIONS.find(i => i.id === b.interactionId)?.priority ?? 0;
+        if (pa !== pb) return pb - pa;
+        return a.interactionId.localeCompare(b.interactionId);
+    });
+    return out;
 }
 
 /**

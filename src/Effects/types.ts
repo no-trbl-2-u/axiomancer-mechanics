@@ -101,6 +101,16 @@ export interface EffectPayload {
     defenseModifier?: number;
     /** Damage per intensity reflected back when the bearer is hit (thorns). */
     reflectDamage?: number;
+    /**
+     * VULNERABLE — outgoing-damage multiplier applied to HP the bearer TAKES.
+     * `1` (or absent) is neutral; `1.5` means the bearer takes +50% from the
+     * attacker's HP sources. Read by the HP-model combat engine
+     * (`getDamageTakenMultiplier`) and aggregated additively across the bearer's
+     * own payloads, then clamped to `VULNERABLE_MAX_MULT`. Inert in the legacy
+     * resolver (it never reads this field), so existing exact-HP tests are
+     * byte-identical. See the VULNERABLE epic (mechanics 0.34.0).
+     */
+    damageTakenMult?: number;
 }
 
 /**

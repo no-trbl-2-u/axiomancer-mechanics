@@ -850,5 +850,18 @@ function applySpecialMechanic(
             // Hazard-Pattern GUARD is granted by the combat engine (playBottom/Top
             // action → CombatEncounterState.guard); the skill engine no-ops it.
             return { caster, target, events };
+
+        // ── Hazard-Pattern card mechanics (HP behavior owned by combat.engine) ──
+        // Each mirrors `guard`: the SKILL engine no-ops it (so the shared engine,
+        // legacy resolver, and effect math are untouched); the HP-model combat
+        // engine reads the mechanic at its `playBottomAction` / `resolveThreatPhase`
+        // call sites. These cases exist for exhaustiveness over the union.
+        case 'rupture':
+        case 'compound':
+        case 'siphon':
+        case 'barrier':
+        case 'riposte':
+        case 'execute':
+            return { caster, target, events };
     }
 }

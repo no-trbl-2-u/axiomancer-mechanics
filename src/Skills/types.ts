@@ -145,7 +145,31 @@ export type SkillSpecialMechanic =
     /** Hazard-Pattern Combat — grants the player GUARD (a shield that absorbs the
      *  enemy's next telegraphed threat). Handled by the combat engine, not the
      *  skill engine. `amount` is the base Guard before read/free scaling. */
-    | { kind: 'guard'; amount: number };
+    | { kind: 'guard'; amount: number }
+    /** RUPTURE — consume ALL DoT on the foe and deal their remaining total as a
+     *  burst (read + vulnerable scaled, capped at `RUPTURE_BURST_CAP`). `bonusPct`
+     *  is an extra flat fraction on the detonation. HP behavior owned by the
+     *  combat engine (mirrors `guard`); the skill engine no-ops it. */
+    | { kind: 'rupture'; bonusPct?: number }
+    /** COMPOUND — deal `perDebuff` HP per DISTINCT debuff on the foe (counted
+     *  before this card's own debuff lands, capped at `COMPOUND_COUNT_CAP`,
+     *  read + vulnerable scaled). HP behavior owned by the combat engine. */
+    | { kind: 'compound'; perDebuff: number }
+    /** SIPHON — heal the player for `pct` of the HP this card erodes from the
+     *  foe (strike + any rupture/compound/execute burst). Combat-engine owned. */
+    | { kind: 'siphon'; pct: number }
+    /** BARRIER — add `amount` (read-scaled) to the player's STACKING, persistent
+     *  damage soak (`CombatEncounterState.barrier`), distinct from one-shot GUARD.
+     *  Combat-engine owned. */
+    | { kind: 'barrier'; amount: number }
+    /** RIPOSTE — a one-shot parry: reduce the foe's next telegraphed hit by
+     *  `reduce` and counter for `damage` (read-scaled). Combat-engine owned. */
+    | { kind: 'riposte'; damage: number; reduce: number }
+    /** EXECUTE — a finisher: when the foe is at/below `hpPct` of max HP OR carries
+     *  at least `dotStacks` distinct DoT effects, deal a large (typically lethal)
+     *  hit with optional `recoilPct` self-damage; otherwise fall back to the
+     *  normal small strike. Combat-engine owned. */
+    | { kind: 'execute'; hpPct: number; dotStacks: number; recoilPct?: number };
 
 /**
  * Phase 66 — synergy predicate. The matched ActiveEffect on `on`

@@ -30,12 +30,19 @@ export const COMBAT_REWARD_POOL: readonly string[] = Object.freeze([
     // body
     'slippery-slope', 'ad-hominem-strike', 'mob-appeal', 'straw-giant',
     'brace-for-impact',     // defense (GUARD)
+    'brazen-rebuttal',      // THORNS — reflect the telegraphed hit
+    'briar-riposte',        // RIPOSTE — parry + counter
     // mind
     'false-dilemma', 'liars-echo', 'undistributed-middle', 'sorites-cascade',
     'suspend-judgment',     // defense (GUARD)
+    'breach',               // VULNERABLE — mark the foe Breached (set-up-then-swing)
+    'mounting-contradictions', // COMPOUND — HP per distinct debuff
     // heart
     'eternal-regress', 'appeal-to-pity', 'ship-of-theseus', 'bootstrap-paradox',
     'stoic-reserve',        // defense (GUARD)
+    'resonance-rupture',    // RUPTURE — detonate the foe's DoT
+    'gabriels-bulwark',     // BARRIER — stacking, persistent soak
+    'leeching-syllogism',   // SIPHON — offense-scaled sustain
     // gold (rare) — the strongest tier; weighted RARE in the roll below
     'pyrrhic-victory', 'the-final-word', 'unmoved-mover',
 ]);

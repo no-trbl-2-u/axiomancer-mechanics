@@ -31,7 +31,12 @@ import { executeSkill, calculateSkillDamage } from '../Skills/skill.engine';
 import type { Skill, CombatResources } from '../Skills/types';
 import type { CombatState, Stance } from './types';
 import { applyDamage, heal, isDefeated } from './health';
-import { processRoundStartEffects, processRoundEndEffects, getActiveRollModifier } from './effects';
+import {
+    processRoundStartEffects, processRoundEndEffects, getActiveRollModifier,
+    getThornsReflect, getDamageTakenMultiplier, getPendingDotTotal, consumeDotEffects,
+    getDistinctDebuffCount, getDistinctControlCount,
+    RUPTURE_BURST_CAP, COMPOUND_COUNT_CAP, DISRUPT_DENY_AT, EXECUTE_DAMAGE_FRACTION,
+} from './effects';
 import {
     TURN_DICE_COUNT, rollTurnDice, dieHasStance,
     combatDieCanPower, availableDiceFor, spendDice, refreshOneDie, availableDieCount,
@@ -44,7 +49,7 @@ import {
     toCombatCard, cardStanceColor, effectImpact,
 } from './combat.cards';
 import { recordAttribution } from './combat.attribution';
-import { canAct } from './effect-modifiers';
+import { canAct, getActiveEffectModifiers, getActiveDotTotal } from './effect-modifiers';
 import { getThreatSequence } from './combat.threat';
 import { getSignatureSkill, applySignatureSkill, playerArchetype, SIGNATURE_KITS } from './combat.signature';
 import type {
@@ -529,9 +534,12 @@ function playTopAction(
     } else if (skill) {
         // Offensive free action — chip a sliver of enemy HP (die-free, weak). A
         // pure-damage card scales off its damage; a status card chips a flat bit.
-        const amount = card.verbClass === 'direct-damage'
+        // VULNERABLE scales even this chip (×1 when the foe carries no marker, so
+        // every pre-0.34.0 case is byte-identical).
+        const base = card.verbClass === 'direct-damage'
             ? Math.max(1, Math.floor(calculateSkillDamage(player, skill) * 0.15))
             : TOP_ACTION_CHIP;
+        const amount = Math.round(base * getDamageTakenMultiplier(enemy));
         enemy = applyDamage(enemy, amount);
         directDamage += amount;
         events.push({ kind: 'damage-dealt', cardId: card.id, target: 'enemy', amount });
@@ -596,14 +604,18 @@ function playBottomAction(
     const shim: CombatState = { ...skillShim(state), combatResources: granted };
     const res = executeSkill(shim, skill.id, lookupSkill, 'player');
 
-    const player = res.state.player as Character;
+    let player = res.state.player as Character;
+    // VULNERABLE — the foe's outgoing-damage multiplier, read from state.enemy
+    // BEFORE this card's own debuff lands (the set-up-then-swing beat). Exactly 1
+    // when the foe carries no marker, so every pre-0.34.0 strike is byte-identical.
+    const vulnMult = getDamageTakenMultiplier(state.enemy);
     // The skill's IMMEDIATE strike (basePower HP damage) — the WEAK basic baseline,
-    // scaled by DIRECT_DAMAGE_WEIGHT, the read (advantage/disadvantage), and a
-    // color-match bonus. The engaging damage is STATUS: the DoT this skill also
+    // scaled by DIRECT_DAMAGE_WEIGHT, the read (advantage/disadvantage), VULNERABLE,
+    // and a color-match bonus. The engaging damage is STATUS: the DoT this skill also
     // applies (below) ticks the enemy down each phase, untouched by this scaling.
     const rawStrike = Math.max(0, state.enemy.health - (res.state.enemy as Enemy).health);
     const scaledStrike = rawStrike > 0
-        ? Math.max(1, Math.round(rawStrike * DIRECT_DAMAGE_WEIGHT * mult) + (colorMatch ? COLOR_MATCH_DAMAGE_BONUS : 0))
+        ? Math.max(1, Math.round(rawStrike * DIRECT_DAMAGE_WEIGHT * mult * vulnMult) + (colorMatch ? COLOR_MATCH_DAMAGE_BONUS : 0))
         : 0;
     let enemy = { ...(res.state.enemy as Enemy), health: Math.max(0, state.enemy.health - scaledStrike) };
     const combatResources = res.state.combatResources;
@@ -614,6 +626,69 @@ function playBottomAction(
     if (scaledStrike > 0) {
         attribution = recordAttribution(attribution, card.id, card.name, null, scaledStrike);
         events.push({ kind: 'damage-dealt', cardId: card.id, target: 'enemy', amount: scaledStrike });
+    }
+
+    // ── 0.34.0 card mechanics — RUPTURE / COMPOUND / EXECUTE / SIPHON ─────────
+    // HP behavior owned here (the skill engine no-ops these kinds). RUPTURE/COMPOUND
+    // read state.enemy (pre-card) so the foe's own fresh debuff never self-counts.
+    const mechs = skill.specialMechanics ?? [];
+    let mechanicDamage = 0;
+    const ruptureMech = mechs.find(m => m.kind === 'rupture') as { kind: 'rupture'; bonusPct?: number } | undefined;
+    if (ruptureMech) {
+        const pending = getPendingDotTotal(state.enemy).total;
+        const consumedRes = consumeDotEffects(enemy);
+        enemy = consumedRes.combatant;
+        const burst = Math.min(
+            RUPTURE_BURST_CAP,
+            Math.round(pending * mult * (1 + (ruptureMech.bonusPct ?? 0)) * vulnMult),
+        );
+        if (burst > 0) {
+            enemy = applyDamage(enemy, burst);
+            mechanicDamage += burst;
+            directDamage += burst;
+            attribution = recordAttribution(attribution, card.id, card.name, null, burst);
+        }
+        events.push({ kind: 'rupture-detonated', amount: burst, consumed: consumedRes.consumed });
+    }
+    const compoundMech = mechs.find(m => m.kind === 'compound') as { kind: 'compound'; perDebuff: number } | undefined;
+    if (compoundMech) {
+        const count = Math.min(getDistinctDebuffCount(state.enemy), COMPOUND_COUNT_CAP);
+        const dmg = Math.round(compoundMech.perDebuff * count * mult * vulnMult);
+        if (dmg > 0) {
+            enemy = applyDamage(enemy, dmg);
+            mechanicDamage += dmg;
+            directDamage += dmg;
+            attribution = recordAttribution(attribution, card.id, card.name, null, dmg);
+        }
+        events.push({ kind: 'compound-hit', amount: dmg, debuffs: count });
+    }
+    const executeMech = mechs.find(m => m.kind === 'execute') as
+        { kind: 'execute'; hpPct: number; dotStacks: number; recoilPct?: number } | undefined;
+    if (executeMech) {
+        const ready = state.enemy.health <= state.enemy.maxHealth * executeMech.hpPct
+            || getPendingDotTotal(state.enemy).perEffect.length >= executeMech.dotStacks;
+        if (ready) {
+            const large = Math.round(state.enemy.maxHealth * EXECUTE_DAMAGE_FRACTION);
+            const dmg = Math.min(enemy.health, Math.round(large * vulnMult));
+            if (dmg > 0) {
+                enemy = applyDamage(enemy, dmg);
+                mechanicDamage += dmg;
+                directDamage += dmg;
+                attribution = recordAttribution(attribution, card.id, card.name, null, dmg);
+            }
+            const recoil = Math.round(player.maxHealth * (executeMech.recoilPct ?? 0));
+            if (recoil > 0) player = applyDamage(player, recoil);
+            events.push({ kind: 'execute-fired', amount: dmg, recoil });
+        }
+    }
+    // SIPHON — heal for a fraction of all HP this card eroded (strike + bursts).
+    const siphonMech = mechs.find(m => m.kind === 'siphon') as { kind: 'siphon'; pct: number } | undefined;
+    if (siphonMech) {
+        const healAmt = Math.round((scaledStrike + mechanicDamage) * siphonMech.pct);
+        if (healAmt > 0) {
+            player = heal(player, healAmt);
+            events.push({ kind: 'damage-dealt', cardId: card.id, target: 'self', amount: -healAmt });
+        }
     }
     // Offensive status ids this card landed on the enemy — gates the combo loop on
     // VARIETY (a status new to this chain refreshes the die; a repeat spends it).
@@ -668,11 +743,26 @@ function playBottomAction(
     const guardGain = guardMech
         ? Math.max(1, Math.round(guardMech.amount * mult)) + (colorMatch ? COLOR_MATCH_DAMAGE_BONUS : 0)
         : 0;
+    // BARRIER — a STACKING, persistent soak (distinct from one-shot guard); read-scaled.
+    const barrierMech = mechs.find(m => m.kind === 'barrier') as { kind: 'barrier'; amount: number } | undefined;
+    const barrierGain = barrierMech
+        ? Math.max(1, Math.round(barrierMech.amount * mult)) + (colorMatch ? COLOR_MATCH_DAMAGE_BONUS : 0)
+        : 0;
+    // RIPOSTE — arm a one-shot parry (read-scaled); a prior arming this phase survives.
+    const riposteMech = mechs.find(m => m.kind === 'riposte') as { kind: 'riposte'; damage: number; reduce: number } | undefined;
+    const riposteArmed = riposteMech
+        ? {
+            damage: Math.max(1, Math.round(riposteMech.damage * mult)) + (colorMatch ? COLOR_MATCH_DAMAGE_BONUS : 0),
+            reduce: Math.max(0, Math.round(riposteMech.reduce * mult)),
+          }
+        : state.riposte;
 
     let next: CombatEncounterState = {
         ...state, player, enemy, dice, combatResources, attribution,
         chainEffectIds: [...chainBefore, ...newChainIds],
         guard: (state.guard ?? 0) + guardGain,
+        barrier: (state.barrier ?? 0) + barrierGain,
+        riposte: riposteArmed,
         directDamageDealt: directDamage,
     };
     next = discardEntry(next, uid);
@@ -724,27 +814,48 @@ export function resolveThreatPhase(state: CombatEncounterState, rng: () => numbe
     // computed the penalty; the HP engine just never read it (pre-0.33.0).
     const act = canAct(state.enemy.effects as ActiveEffect[], phase.enemyStance);
     const rollPenalty = Math.max(0, -getActiveRollModifier(state.enemy));
-    const denied = rollPenalty >= THREAT_DENY_AT;
+    // DISRUPT — an ADDITIVE deny path on top of the legacy roll-penalty deny: a
+    // VARIETY of >= DISRUPT_DENY_AT DISTINCT controls cancels the telegraphed turn
+    // even before the cumulative penalty reaches THREAT_DENY_AT. Only denies MORE
+    // often, never less; fires at >=3 distinct controls (new content), so existing
+    // 1-2-control fights are byte-identical.
+    const controlPips = getDistinctControlCount(state.enemy);
+    const disruptDenied = controlPips >= DISRUPT_DENY_AT;
+    const denied = rollPenalty >= THREAT_DENY_AT || disruptDenied;
     const weakenMult = Math.max(THREAT_WEAKEN_FLOOR, Math.min(1, 1 - rollPenalty * THREAT_WEAKEN_PER_ROLL));
     const hindered = !act.canAct || denied;
+    if (disruptDenied) events.push({ kind: 'disrupt-denied', pips: controlPips });
 
     let player = state.player;
     let enemy = state.enemy;
-    // GUARD (from defense cards) absorbs this phase's telegraphed hit before HP.
+    // GUARD (one-shot, per-phase) absorbs first; BARRIER (persistent, stacking)
+    // soaks the remainder; RIPOSTE parries + counters once. All no-op when unset
+    // (guard 0 / barrier 0 / riposte null / no player thorns) → byte-identical.
     let guard = state.guard ?? 0;
+    let barrier = state.barrier ?? 0;
+    const riposte = state.riposte ?? null;
+    let riposteFired = false;
     const penaltiesApplied: CombatThreatEffect[] = [];
 
     if (!hindered) {
         // The enemy attacks: its telegraphed threat action fires on the player.
         for (const eff of phase.threatAction.effects) {
             if (eff.damage && eff.damage > 0) {
-                // Guard soaks the strike first (clamped), then HP takes the rest.
                 // weakenMult (<1) is the soft-control reduction; 1 when the enemy
                 // carries no roll penalty (every pre-0.33.0 case → byte-identical).
                 let dmg = Math.round(eff.damage * THREAT_DAMAGE_SCALE * weakenMult);
-                const absorbed = Math.min(guard, dmg);
-                guard -= absorbed;
-                dmg -= absorbed;
+                // RIPOSTE reduces the incoming hit once this phase.
+                if (riposte && !riposteFired) { dmg = Math.max(0, dmg - riposte.reduce); riposteFired = true; }
+                // GUARD soaks first (one-shot, clamped), then BARRIER (persistent).
+                const guardAbsorbed = Math.min(guard, dmg);
+                guard -= guardAbsorbed;
+                dmg -= guardAbsorbed;
+                const barrierAbsorbed = Math.min(barrier, dmg);
+                if (barrierAbsorbed > 0) {
+                    barrier -= barrierAbsorbed;
+                    dmg -= barrierAbsorbed;
+                    events.push({ kind: 'barrier-absorbed', amount: barrierAbsorbed });
+                }
                 if (dmg > 0) player = applyDamage(player, dmg);
             }
             if (eff.effectId) {
@@ -763,6 +874,21 @@ export function resolveThreatPhase(state: CombatEncounterState, rng: () => numbe
                 enemy = heal(enemy, eff.enemyHeal);
             }
             penaltiesApplied.push(eff);
+        }
+        // RIPOSTE counter + THORNS reflect — both punish the telegraphed swing,
+        // scaled by the foe's own VULNERABLE multiplier (×1 when unmarked).
+        if (riposte) {
+            const counter = Math.round(riposte.damage * getDamageTakenMultiplier(enemy));
+            if (counter > 0) {
+                enemy = applyDamage(enemy, counter);
+                events.push({ kind: 'riposte-fired', amount: counter });
+            }
+        }
+        const reflect = getThornsReflect(state.player);
+        if (reflect > 0) {
+            const amount = Math.round(reflect * getDamageTakenMultiplier(enemy));
+            enemy = applyDamage(enemy, amount);
+            events.push({ kind: 'thorns-reflected', amount, target: 'enemy' });
         }
         events.push({ kind: 'threat-fired', phaseIndex: phase.index, description: phase.threatAction.description, effects: phase.threatAction.effects });
     }
@@ -786,6 +912,8 @@ export function resolveThreatPhase(state: CombatEncounterState, rng: () => numbe
         player,
         enemy,
         guard: 0,                       // brace is spent on this phase's threat; resets each phase
+        barrier,                        // persistent soak — carries the unspent remainder across phases
+        riposte: undefined,             // one-shot parry — cleared each phase (like guard)
         phase: 'phase-resolve',
         threatMarks,
         phaseResults: [...state.phaseResults, result],
@@ -827,7 +955,20 @@ export function processBetweenPhases(
     //    (the status damage engine; no track, the HP loss is the win progress).
     const enemyStart = processRoundStartEffects(state.enemy);
     const enemyEnd = processRoundEndEffects(enemyStart.target);
-    const enemy = enemyEnd.target as Enemy;
+    let enemy = enemyEnd.target as Enemy;
+
+    // VULNERABLE DoT surcharge: the natural tick above lands at ×1 (already
+    // combo-amplified). Apply the EXTRA (mult-1) fraction the foe's vulnerability
+    // adds to its DoT, as one labeled tick so the emitted dot-tick events still
+    // sum to the HP that actually left the bar. No-op (and no event) when unmarked.
+    const enemyVulnMult = getDamageTakenMultiplier(state.enemy);
+    let vulnSurcharge = 0;
+    if (enemyVulnMult > 1) {
+        const mods = getActiveEffectModifiers(state.enemy.effects);
+        const naturalDot = mods.dotStart + mods.dotEnd;
+        vulnSurcharge = Math.round(naturalDot * (enemyVulnMult - 1));
+        if (vulnSurcharge > 0) enemy = applyDamage(enemy, vulnSurcharge);
+    }
 
     // 3. Process a full round of effects on the player (DoT / regen / drain).
     const playerStart = processRoundStartEffects(state.player);
@@ -835,6 +976,7 @@ export function processBetweenPhases(
     const player = playerEnd.target as Character;
 
     for (const t of enemyDotTicks) events.push({ kind: 'dot-tick', effectId: t.effectId, label: t.label, amount: t.amount, target: 'enemy' });
+    if (vulnSurcharge > 0) events.push({ kind: 'dot-tick', effectId: 'vulnerable-surcharge', label: 'Vulnerable', amount: vulnSurcharge, target: 'enemy' });
     for (const t of playerDotTicks) events.push({ kind: 'dot-tick', effectId: t.effectId, label: t.label, amount: t.amount, target: 'self' });
 
     // 4. Advance the phase pointer — loop the final phase so the enemy keeps acting.
@@ -876,15 +1018,17 @@ export function processBetweenPhases(
 }
 
 interface DotTick { effectId: string; label: string; amount: number; }
+/**
+ * Per-effect DoT amounts for the labeled `dot-tick` events. Routes through
+ * `getActiveDotTotal` so each emitted amount is the COMBO-AMPLIFIED HP that
+ * actually leaves the bar (poison+bleed → Hemorrhage etc.) — the latent honesty
+ * bug was recomputing the raw `damagePerRound × intensity` and understating the
+ * tick. Byte-identical for un-amplified integer DoTs (floor(x×1) === x).
+ */
 function dotTickBreakdown(effects: readonly ActiveEffect[]): DotTick[] {
-    const out: DotTick[] = [];
-    for (const ae of effects) {
-        const def = lookupEffectDef(ae.effectId);
-        const dot = def?.payload.damageOverTime;
-        if (!def || !dot) continue;
-        out.push({ effectId: ae.effectId, label: def.name, amount: dot.damagePerRound * ae.intensity });
-    }
-    return out;
+    return getActiveDotTotal(effects as ActiveEffect[]).perEffect.map(
+        e => ({ effectId: e.effectId, label: e.label, amount: e.amount }),
+    );
 }
 
 // ── Batch entry point (§9 resolveCombatPhase) ────────────────────────────────
@@ -1112,6 +1256,82 @@ export function projectCardImpact(
         ? Math.max(1, Math.round(base * DIRECT_DAMAGE_WEIGHT * mult) + (colorMatch ? COLOR_MATCH_DAMAGE_BONUS : 0))
         : 0;
     return { track: card.effectKind, amount };
+}
+
+// ── 0.34.0 status-depth epic — honesty selectors (the engine owns the rule) ──
+
+/** VULNERABLE — the foe's live incoming-damage multiplier (×1 when unmarked).
+ *  Mobile reads the real "+X% damage" off this; never hard-codes it. */
+export function getEnemyIncomingDamageMultiplier(state: CombatEncounterState): number {
+    return getDamageTakenMultiplier(state.enemy);
+}
+
+/**
+ * DISRUPT meter (the engine owns the threshold; mobile must NOT hard-code it):
+ * the live DISTINCT-control pip count, the deny threshold, the cumulative roll
+ * penalty, and whether the next telegraphed turn WILL be denied (matching the
+ * resolved phase mark === 'clear': hard skip, legacy roll-penalty deny, OR the
+ * additive distinct-control deny).
+ */
+export function getDisruptMeter(state: CombatEncounterState): {
+    pips: number; threshold: number; rollPenalty: number; willDeny: boolean;
+} {
+    const enemy = state.enemy;
+    const pips = getDistinctControlCount(enemy);
+    const rollPenalty = Math.max(0, -getActiveRollModifier(enemy));
+    const act = canAct(enemy.effects as ActiveEffect[], currentPhaseStance(state));
+    const willDeny = !act.canAct || rollPenalty >= THREAT_DENY_AT || pips >= DISRUPT_DENY_AT;
+    return { pips, threshold: DISRUPT_DENY_AT, rollPenalty, willDeny };
+}
+
+/**
+ * RUPTURE projection — the live amplified detonate total a rupture card would
+ * deal RIGHT NOW (pending DoT × read × vulnerable, capped). For the card glow.
+ * Uses bonusPct 0 (the per-card bonus is added on top in `playBottomAction`).
+ */
+export function projectRupture(state: CombatEncounterState): number {
+    const d = draftedDie(state);
+    const read: CombatReadResult = d ? state.lastRead : 'neutral';
+    const pending = getPendingDotTotal(state.enemy).total;
+    return Math.min(
+        RUPTURE_BURST_CAP,
+        Math.round(pending * READ_DAMAGE_MULT[read] * getDamageTakenMultiplier(state.enemy)),
+    );
+}
+
+/** EXECUTE readiness — true when the foe is at/below `hpPct` of max HP OR carries
+ *  at least `dotStacks` distinct DoT effects. The finisher's gate (mobile lights
+ *  the card off this). */
+export function isExecuteReady(state: CombatEncounterState, hpPct: number, dotStacks: number): boolean {
+    return state.enemy.health <= state.enemy.maxHealth * hpPct
+        || getPendingDotTotal(state.enemy).perEffect.length >= dotStacks;
+}
+
+/** EXECUTE projection for a card carrying the execute mechanic: whether it is
+ *  ready and the HP it would deal (clamped to the foe's remaining HP). */
+export function projectExecute(
+    state: CombatEncounterState,
+    card: CombatCard,
+): { ready: boolean; amount: number } {
+    const skill = card.skillId ? lookupSkill(card.skillId) : undefined;
+    const mech = (skill?.specialMechanics ?? []).find(m => m.kind === 'execute') as
+        { kind: 'execute'; hpPct: number; dotStacks: number; recoilPct?: number } | undefined;
+    if (!mech) return { ready: false, amount: 0 };
+    const ready = isExecuteReady(state, mech.hpPct, mech.dotStacks);
+    if (!ready) return { ready: false, amount: 0 };
+    const large = Math.round(state.enemy.maxHealth * EXECUTE_DAMAGE_FRACTION);
+    return { ready, amount: Math.min(state.enemy.health, Math.round(large * getDamageTakenMultiplier(state.enemy))) };
+}
+
+/** SIPHON projection — the heal a siphon card would grant if powered now (off the
+ *  projected strike). Convenience; the live heal in `playBottomAction` also scales
+ *  off any rupture/compound/execute burst the same card deals. */
+export function projectSiphonHeal(state: CombatEncounterState, card: CombatCard): number {
+    const skill = card.skillId ? lookupSkill(card.skillId) : undefined;
+    const mech = (skill?.specialMechanics ?? []).find(m => m.kind === 'siphon') as
+        { kind: 'siphon'; pct: number } | undefined;
+    if (!mech) return 0;
+    return Math.round(projectCardImpact(state, card).amount * mech.pct);
 }
 
 /** Re-export for presenters that need to check die affordability directly. */

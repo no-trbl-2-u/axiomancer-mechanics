@@ -313,6 +313,14 @@ export type CombatEvent =
     | { kind: 'die-refreshed'; dieId: string; color: CombatDieColor }
     | { kind: 'die-spent'; dieId: string; color: CombatDieColor }
     | { kind: 'dot-tick'; effectId: string; label: string; amount: number; target: 'self' | 'enemy' }
+    // ── 0.34.0 status-depth epic — new card-mechanic events ──────────────────
+    | { kind: 'rupture-detonated'; amount: number; consumed: string[] }
+    | { kind: 'compound-hit'; amount: number; debuffs: number }
+    | { kind: 'disrupt-denied'; pips: number }
+    | { kind: 'thorns-reflected'; amount: number; target: 'enemy' }
+    | { kind: 'barrier-absorbed'; amount: number }
+    | { kind: 'riposte-fired'; amount: number }
+    | { kind: 'execute-fired'; amount: number; recoil: number }
     | { kind: 'phase-resolved'; phaseIndex: number; mark: 'clear' | 'overwhelmed' }
     | { kind: 'threat-fired'; phaseIndex: number; description: string; effects: CombatThreatEffect[] }
     | { kind: 'hand-drawn'; cards: string[] }
@@ -340,6 +348,17 @@ export interface CombatEncounterState {
      *  absorbs the enemy's NEXT telegraphed threat, then resets each phase.
      *  Optional for back-compat with state literals (treated as 0 when absent). */
     guard?: number;
+    /** BARRIER — a STACKING, persistent damage soak (distinct from the per-phase
+     *  `guard`, which resets every phase). Absorbed AFTER guard in
+     *  `resolveThreatPhase`; only the absorbed amount is subtracted, the rest
+     *  carries across phases. Optional for back-compat with state literals
+     *  (treated as 0 when absent). 0.34.0 status-depth epic. */
+    barrier?: number;
+    /** RIPOSTE — a one-shot parry armed by a Briar Riposte card: reduces the
+     *  enemy's next telegraphed hit by `reduce` and counters for `damage`. Cleared
+     *  each phase (like guard). Optional for back-compat with state literals.
+     *  0.34.0 status-depth epic. */
+    riposte?: { damage: number; reduce: number };
     /** Phase indices whose hidden enemy stance the player has revealed (§2). */
     revealedStances: number[];
     /** Read result of the most recent draft (transient — for the UI flash). */

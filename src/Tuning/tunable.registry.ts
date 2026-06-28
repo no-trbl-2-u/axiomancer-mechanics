@@ -17,6 +17,9 @@ import type { FocusFilter, TunableParam } from './types';
 const CONSTANTS_FILE = 'src/Game/game-mechanics.constants.ts';
 const BUFFS_FILE = 'src/Effects/buffs.library.json';
 const DEBUFFS_FILE = 'src/Effects/debuffs.library.json';
+// 0.34.0 status-depth epic — the new HP-model scalar tunables live in effects.ts
+// (a writable, non-`.engine.ts` home so the safe applier can also mutate them).
+const COMBAT_EFFECTS_FILE = 'src/Combat/effects.ts';
 
 export const TUNABLE_REGISTRY: TunableParam[] = [
     {
@@ -386,6 +389,70 @@ export const TUNABLE_REGISTRY: TunableParam[] = [
         magnitudeCapPct: 0.5,
         tags: ['effect', 'control', 'status-effect', 'debuff', 'resolution'],
         rationale: 'Base duration of fear — longer control persists toward the saturation yield route.',
+        effect: { difficulty: 'lowers', engagement: 'raises' },
+    },
+
+    // ── 0.34.0 status-depth epic — the new HP-model card-mechanic knobs ────────
+    // The burst/multiplier/threshold levers can spike win-rates, so they are
+    // sim-gated: clamps here keep `/combat-tuning` rebalancing within safe bounds.
+    {
+        id: 'combat.vulnerableMaxMult',
+        kind: 'multiplier',
+        category: 'effect',
+        file: COMBAT_EFFECTS_FILE,
+        locator: { exportName: 'VULNERABLE_MAX_MULT' },
+        min: 1.25, max: 3, step: 0.25,
+        magnitudeCapPct: 0.5,
+        tags: ['effect', 'damage', 'status-effect', 'vulnerable', 'engagement'],
+        rationale: 'Ceiling on the VULNERABLE outgoing-damage multiplier against a marked foe — the build-around burst cap.',
+        effect: { difficulty: 'lowers', engagement: 'raises' },
+    },
+    {
+        id: 'combat.ruptureBurstCap',
+        kind: 'constant',
+        category: 'effect',
+        file: COMBAT_EFFECTS_FILE,
+        locator: { exportName: 'RUPTURE_BURST_CAP' },
+        min: 20, max: 200, step: 5,
+        magnitudeCapPct: 0.5,
+        tags: ['effect', 'damage', 'status-effect', 'rupture', 'dot', 'engagement'],
+        rationale: 'Hard cap on a single RUPTURE detonation so a long DoT stack cannot one-shot a boss.',
+        effect: { difficulty: 'lowers', engagement: 'raises' },
+    },
+    {
+        id: 'combat.compoundCountCap',
+        kind: 'constant',
+        category: 'effect',
+        file: COMBAT_EFFECTS_FILE,
+        locator: { exportName: 'COMPOUND_COUNT_CAP' },
+        min: 3, max: 10, step: 1,
+        magnitudeCapPct: 1.0,
+        tags: ['effect', 'damage', 'status-effect', 'compound', 'engagement'],
+        rationale: 'Cap on distinct debuffs credited to a COMPOUND hit — rewards variety without unbounded scaling.',
+        effect: { difficulty: 'lowers', engagement: 'raises' },
+    },
+    {
+        id: 'combat.disruptDenyAt',
+        kind: 'constant',
+        category: 'effect',
+        file: COMBAT_EFFECTS_FILE,
+        locator: { exportName: 'DISRUPT_DENY_AT' },
+        min: 2, max: 6, step: 1,
+        magnitudeCapPct: 1.0,
+        tags: ['effect', 'control', 'status-effect', 'disrupt', 'engagement'],
+        rationale: 'Distinct-control pip threshold that DENIES the enemy turn. RAISING it makes the deny harder to reach (enemy acts more often).',
+        effect: { difficulty: 'raises', engagement: 'lowers' },
+    },
+    {
+        id: 'combat.executeDamageFraction',
+        kind: 'multiplier',
+        category: 'effect',
+        file: COMBAT_EFFECTS_FILE,
+        locator: { exportName: 'EXECUTE_DAMAGE_FRACTION' },
+        min: 0.4, max: 1, step: 0.05,
+        magnitudeCapPct: 0.5,
+        tags: ['effect', 'damage', 'status-effect', 'execute', 'engagement'],
+        rationale: 'Fraction of the foe max HP a ready EXECUTE finisher deals (clamped to remaining HP).',
         effect: { difficulty: 'lowers', engagement: 'raises' },
     },
 ];

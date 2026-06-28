@@ -21,7 +21,9 @@ import {
     resolveThreatPhase, startTurn, draftStanceDie, endTurn, chooseDraft, revealedCurrentStance,
     playSignatureSkill, getDraftedDie, handCards, selectMercyChoice, getSignatureSkill,
 } from './combat.engine';
-import type { CombatEncounterState, CombatOutcome } from './combat.encounter.types';
+import { getPendingDotTotal, getDistinctDebuffCount } from './effects';
+import { getSkillById } from '../Skills/skill.library';
+import type { CombatCard, CombatEncounterState, CombatOutcome } from './combat.encounter.types';
 
 /**
  * `greedy` — a competent omniscient witness: drafts using the enemy's hidden
@@ -56,11 +58,33 @@ const currentPhase = (s: CombatEncounterState) =>
  * status card over a pure strike, then the highest preview. Token-gated cards
  * that fizzle are skipped via `notUids`.
  */
+/** The special-mechanic kinds a card's backing skill carries (0.34.0 payoffs). */
+function cardMechKinds(card: CombatCard): Set<string> {
+    const skill = card.skillId ? getSkillById(card.skillId) : undefined;
+    return new Set((skill?.specialMechanics ?? []).map(m => m.kind));
+}
+
 function bestCard(s: CombatEncounterState, notUids?: Set<string>) {
     const activeIds = new Set(s.enemy.effects.map(e => e.effectId));
     const lowHp = s.enemy.health <= s.enemy.maxHealth * 0.30;
     const cards = handCards(s)
-        .filter(c => c.card.verbClass !== 'retreat' && !(notUids && notUids.has(c.uid)))
+        .filter(c => c.card.verbClass !== 'retreat' && !(notUids && notUids.has(c.uid)));
+
+    // 0.34.0 payoff cards — cash in a built-up board before the generic sort.
+    // Only fires when these cards are actually in hand (existing balance loadouts
+    // carry none, so their bands are unaffected). Never steals a low-HP mercy turn.
+    if (!lowHp) {
+        const pendingDot = getPendingDotTotal(s.enemy).total;
+        const distinctDebuffs = getDistinctDebuffCount(s.enemy);
+        // RUPTURE — detonate once a worthwhile DoT stack has accrued.
+        const rupture = cards.find(c => cardMechKinds(c.card).has('rupture'));
+        if (rupture && pendingDot >= 12) return rupture;
+        // COMPOUND — cash in once the foe carries a variety of debuffs.
+        const compound = cards.find(c => cardMechKinds(c.card).has('compound'));
+        if (compound && distinctDebuffs >= 2) return compound;
+    }
+
+    cards
         .sort((a, b) => {
             if (lowHp) {
                 const ab = a.card.verbClass === 'befriend' ? 0 : 1;

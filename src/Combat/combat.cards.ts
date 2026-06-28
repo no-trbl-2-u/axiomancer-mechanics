@@ -80,13 +80,15 @@ function isControl(effect: Effect): boolean {
     return !!r && (r.skipTurn === true || r.forcedStance !== undefined || (r.blockedStances?.length ?? 0) > 0);
 }
 
-/** True if the effect is a stat-reduction debuff. */
+/** True if the effect is a stat-reduction / weakening debuff (incl. VULNERABLE,
+ *  whose `damageTakenMult > 1` is a real outgoing-damage amplifier). */
 function isStatDebuff(effect: Effect): boolean {
     if (effect.type !== 'debuff') return false;
     const mods = effect.payload.statModifiers ?? [];
     return mods.some(m => m.value < 0)
         || (effect.payload.rollModifier ?? 0) < 0
-        || (effect.payload.defenseModifier ?? 0) < 0;
+        || (effect.payload.defenseModifier ?? 0) < 0
+        || (effect.payload.damageTakenMult ?? 1) > 1;
 }
 
 /**
@@ -153,11 +155,12 @@ export function classifyVerbClass(
     skill: Skill,
     lookupEffect: EffectLookup,
 ): { verbClass: CombatVerbClass; track: CardEffectKind } {
-    if ((skill.specialMechanics ?? []).some(m => m.kind === 'befriend_attempt')) {
+    const mechs = skill.specialMechanics ?? [];
+    if (mechs.some(m => m.kind === 'befriend_attempt')) {
         return { verbClass: 'befriend', track: 'control' };
     }
-    // A defense card grants the player GUARD (a shield) — no enemy impact.
-    if ((skill.specialMechanics ?? []).some(m => m.kind === 'guard')) {
+    // A defense card grants the player GUARD / BARRIER / RIPOSTE — no enemy impact.
+    if (mechs.some(m => m.kind === 'guard' || m.kind === 'barrier' || m.kind === 'riposte')) {
         return { verbClass: 'defend', track: 'none' };
     }
 
@@ -167,6 +170,15 @@ export function classifyVerbClass(
     if (defs.some(isDot)) return { verbClass: 'direct-dot', track: 'dot' };
     if (defs.some(isControl)) return { verbClass: 'direct-control', track: 'control' };
     if (defs.some(isStatDebuff)) return { verbClass: 'stat-debuff', track: 'control' };
+
+    // 0.34.0 — offensive card mechanics with NO classifiable enemy effect
+    // (RUPTURE detonate / COMPOUND scaler / EXECUTE finisher) read as a
+    // damage-class card so they project a sensible verb/preview instead of
+    // falling through to buff-self. (A card that ALSO applies a DoT/control —
+    // e.g. Pyrrhic Victory's bleed + execute — keeps its effect class above.)
+    if (mechs.some(m => m.kind === 'rupture' || m.kind === 'compound' || m.kind === 'execute')) {
+        return { verbClass: 'direct-damage', track: 'none' };
+    }
 
     // No enemy debuff → either a self-buff or pure damage.
     const hasSelfBuff = (skill.combatEffects ?? []).some(e => e.appliedTo === 'self')
@@ -185,6 +197,16 @@ export function bottomDamagePreview(skill: Skill, lookupEffect: EffectLookup): n
         const intensity = Math.min(ce.intensity ?? 1, MAX_EFFECT_INTENSITY);
         const duration = ce.duration ?? def.duration;
         total += effectImpact(def, intensity, duration).amount;
+    }
+    // 0.34.0 — RUPTURE / COMPOUND / EXECUTE cards have no static enemy effect to
+    // sum (their payoff is dynamic: detonate total / distinct-debuff count / a
+    // finisher). Surface the card's strike (basePower) as a non-zero floor so the
+    // hand glow isn't blank; the live numbers come from projectRupture /
+    // projectExecute / projectCardImpact.
+    if (total === 0 && (skill.specialMechanics ?? []).some(
+        m => m.kind === 'rupture' || m.kind === 'compound' || m.kind === 'execute',
+    )) {
+        return Math.max(1, skill.basePower);
     }
     return total;
 }

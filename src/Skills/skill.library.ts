@@ -1250,6 +1250,14 @@ const pyrrhicVictory: Skill = {
     combatEffects: [
         { effectId: 'debuff_bleed', appliedTo: 'opponent', intensity: 3, duration: 5 },
     ],
+    // EXECUTE — a finisher (HP behavior in combat.engine): when the foe is at/below
+    // 30% HP OR carries >= 3 distinct DoT effects, deal a large (typically lethal)
+    // hit with 10% self-recoil (the Pyrrhic price); otherwise the normal strike +
+    // bleed. Synergizes with the low-HP Befriend/mercy window. Keeps its bleed, so
+    // the card still reads as a DoT card.
+    specialMechanics: [
+        { kind: 'execute', hpPct: 0.3, dotStacks: 3, recoilPct: 0.1 },
+    ],
     learningRequirement: { level: 12 },
     addedIn: '2026-06-22',
     tags: ['gold', 'rare'],
@@ -1297,6 +1305,169 @@ const unmovedMover: Skill = {
     learningRequirement: { level: 12 },
     addedIn: '2026-06-22',
     tags: ['gold', 'rare'],
+};
+
+// ─── 0.34.0 status-depth epic — payoff cards (HP behavior in combat.engine) ──
+// Each rides a new SkillSpecialMechanic kind (rupture/compound/siphon/barrier/
+// riposte) or applies the new VULNERABLE debuff. The SKILL engine no-ops these
+// kinds (same split as `guard`); the HP-model combat engine reads them at its
+// playBottomAction / resolveThreatPhase call sites. Authored as Tier 1/2 so the
+// tier-3 philosophical-token invariant and the Tier-2 level gate stay satisfied.
+
+/** RUPTURE — consume the foe's DoT and detonate the remaining total (read +
+ *  vulnerable scaled, capped). The marquee "make DoT exciting" card. */
+const resonanceRupture: Skill = {
+    id: 'resonance-rupture',
+    name: 'Resonance Rupture',
+    category: 'paradox',
+    philosophicalAspect: 'heart',
+    description:
+        'You stop feeding the wound and seize it instead — every slow poison, ' +
+        'every patient bleed, called home at once. What was going to take ten ' +
+        'rounds arrives in one.',
+    tier: 2,
+    resourceCost: { heart: 2, mind: 1 },
+    targetType: 'enemy',
+    basePower: 4,
+    scalingStat: 'heart',
+    specialMechanics: [{ kind: 'rupture' }],
+    learningRequirement: { level: 5 },
+    addedIn: '2026-06-26',
+    tags: ['status-effect', 'rupture', 'dot', 'mid-game'],
+};
+
+/** COMPOUND — deal HP per DISTINCT debuff on the foe (rewards variety offensively). */
+const mountingContradictions: Skill = {
+    id: 'mounting-contradictions',
+    name: 'Mounting Contradictions',
+    category: 'fallacy',
+    philosophicalAspect: 'mind',
+    description:
+        'You name every inconsistency at once and let them collide. The more ' +
+        'ways they are already coming apart, the harder the whole edifice falls.',
+    tier: 2,
+    resourceCost: { mind: 2 },
+    targetType: 'enemy',
+    basePower: 3,
+    scalingStat: 'mind',
+    specialMechanics: [{ kind: 'compound', perDebuff: 6 }],
+    learningRequirement: { level: 5 },
+    addedIn: '2026-06-26',
+    tags: ['status-effect', 'compound', 'mid-game'],
+};
+
+/** VULNERABLE — mark the foe Breached (+50% from your hits for 3 turns). The
+ *  set-up-then-swing card; replaces a thesaurus of cosmetic stat-downs. */
+const breach: Skill = {
+    id: 'breach',
+    name: 'Breach',
+    category: 'fallacy',
+    philosophicalAspect: 'mind',
+    description:
+        'You find the load-bearing premise and pull it. The whole defense does ' +
+        'not fall — it simply opens, and stays open, and everything after lands ' +
+        'where it hurts.',
+    tier: 2,
+    resourceCost: { mind: 2 },
+    targetType: 'enemy',
+    basePower: 0,
+    scalingStat: 'mind',
+    combatEffects: [
+        { effectId: 'debuff_vulnerable', appliedTo: 'opponent', intensity: 1, duration: 3 },
+    ],
+    learningRequirement: { level: 5 },
+    addedIn: '2026-06-26',
+    tags: ['status-effect', 'vulnerable', 'mid-game'],
+};
+
+/** THORNS — wrap yourself in reflect (Brazen Thorns); the foe's telegraphed hit
+ *  rebounds onto it. Promotes the inert reflectDamage payload in the HP duel. */
+const brazenRebuttal: Skill = {
+    id: 'brazen-rebuttal',
+    name: 'Brazen Rebuttal',
+    category: 'fallacy',
+    philosophicalAspect: 'body',
+    description:
+        'You answer in kind before they have finished speaking. To strike you ' +
+        'is to be cut by the strike — the harder the push, the deeper the ' +
+        'rebuttal bites back.',
+    tier: 1,
+    resourceCost: { body: 2 },
+    targetType: 'self',
+    basePower: 0,
+    scalingStat: 'body',
+    combatEffects: [
+        { effectId: 'buff_brazen_thorns', appliedTo: 'self', intensity: 1 },
+    ],
+    addedIn: '2026-06-26',
+    tags: ['status-effect', 'thorns', 'defense'],
+};
+
+/** BARRIER — a STACKING, persistent damage soak (distinct from one-shot Guard). */
+const gabrielsBulwark: Skill = {
+    id: 'gabriels-bulwark',
+    name: "Gabriel's Bulwark",
+    category: 'paradox',
+    philosophicalAspect: 'heart',
+    description:
+        'A shield of infinite surface but finite volume — each blow spreads ' +
+        'across its endless expanse and is diluted to almost nothing. What it ' +
+        'does not spend, it keeps.',
+    tier: 2,
+    resourceCost: { heart: 2 },
+    targetType: 'self',
+    basePower: 0,
+    scalingStat: 'heart',
+    specialMechanics: [{ kind: 'barrier', amount: 12 }],
+    learningRequirement: { level: 5 },
+    addedIn: '2026-06-26',
+    tags: ['status-effect', 'barrier', 'defense', 'mid-game'],
+};
+
+/** RIPOSTE — a one-shot parry: gain a little Guard, reduce the next telegraphed
+ *  hit, and counter for HP (read-scaled). Punishes the telegraph (Sekiro). */
+const briarRiposte: Skill = {
+    id: 'briar-riposte',
+    name: 'Briar Riposte',
+    category: 'paradox',
+    philosophicalAspect: 'body',
+    description:
+        'You root yourself like a thorn bush and wait for the swing. When it ' +
+        'comes you turn it aside and let the briar answer — measured, exact, ' +
+        'and theirs to regret.',
+    tier: 2,
+    resourceCost: { body: 2 },
+    targetType: 'self',
+    basePower: 0,
+    scalingStat: 'body',
+    specialMechanics: [
+        { kind: 'guard', amount: 6 },
+        { kind: 'riposte', damage: 8, reduce: 6 },
+    ],
+    learningRequirement: { level: 5 },
+    addedIn: '2026-06-26',
+    tags: ['status-effect', 'riposte', 'defense', 'mid-game'],
+};
+
+/** SIPHON — offense-scaled sustain: heal for part of the HP this strike erodes. */
+const leechingSyllogism: Skill = {
+    id: 'leeching-syllogism',
+    name: 'Leeching Syllogism',
+    category: 'fallacy',
+    philosophicalAspect: 'heart',
+    description:
+        'Every step of the argument takes something from them and gives it to ' +
+        'you. By the time the conclusion lands, their strength is already ' +
+        'yours.',
+    tier: 2,
+    resourceCost: { heart: 2 },
+    targetType: 'enemy',
+    basePower: 12,
+    scalingStat: 'heart',
+    specialMechanics: [{ kind: 'siphon', pct: 0.5 }],
+    learningRequirement: { level: 5 },
+    addedIn: '2026-06-26',
+    tags: ['siphon', 'sustain', 'mid-game'],
 };
 
 // ─── Library Export ──────────────────────────────────────────────────────────
@@ -1373,9 +1544,17 @@ export const skillLibrary: Skill[] = [
     grandfatherParadox,
     apophaticAegis,
     // Gold (rare) cards — the strongest tier
-    pyrrhicVictory,     // gold (BODY) — major Bleed + damage
+    pyrrhicVictory,     // gold (BODY) — major Bleed + damage + EXECUTE finisher
     theFinalWord,       // gold (MIND) — major Poison + damage
     unmovedMover,       // gold (HEART) — major Confusion + damage
+    // 0.34.0 status-depth epic — payoff cards (appended to keep find-order stable)
+    resonanceRupture,   // RUPTURE  (HEART) — detonate the foe's DoT
+    mountingContradictions, // COMPOUND (MIND) — HP per distinct debuff
+    breach,             // VULNERABLE (MIND) — mark the foe Breached (+50% taken)
+    brazenRebuttal,     // THORNS   (BODY) — reflect the foe's telegraphed hit
+    gabrielsBulwark,    // BARRIER  (HEART) — stacking, persistent soak
+    briarRiposte,       // RIPOSTE  (BODY) — parry + counter
+    leechingSyllogism,  // SIPHON   (HEART) — offense-scaled sustain
 ];
 
 const skillRegistry: ReadonlyMap<string, Skill> = new Map(

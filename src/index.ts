@@ -64,6 +64,12 @@ export {
     updateEffectDuration, tickAllEffects,
     removeRandomBuff, extendRandomBuffDuration, applyRegen,
     getActiveEffectModifiers, getEffectiveStats, canAct,
+    // 0.34.0 status-depth epic — HP-model selectors + tunable scalars
+    getDamageTakenMultiplier, getPendingDotTotal, consumeDotEffects,
+    getDistinctDebuffCount, getDistinctControlCount,
+    VULNERABLE_MAX_MULT, RUPTURE_BURST_CAP, COMPOUND_COUNT_CAP,
+    DISRUPT_DENY_AT, EXECUTE_DAMAGE_FRACTION,
+    getDotAmplificationByEffect, getActiveDotTotal, getActiveDotAmplifications,
     resolveEffectApplication,
     calculateDamageResistance, getSkillDamageType,
     determineEnemyAction, isCombatOngoing, determineCombatEnd,
@@ -79,6 +85,8 @@ export type {
     Stance, Action, Advantage, CritStyle, CombatAction, CombatPhase,
     BattleLogEntry, CombatState, Combatant,
     AggregatedEffectModifiers, EffectiveStats, DamageType,
+    // 0.34.0 status-depth epic — selector result types
+    PendingDotEntry, ActiveDotEntry, ActiveDotAmplification,
 } from './Combat';
 
 // ─── Combat reducer ───────────────────────────────────────────────────────────
@@ -122,6 +130,10 @@ export {
     cardReadPreview, projectCardImpact, getSignatureSkill, SIGNATURE_SKILLS, SIGNATURE_SKILL_LIST,
     READ_DAMAGE_MULT, CONVICTION_PER_UNPICKED_DIE, CONVICTION_READ_WIN_BONUS,
     COLOR_MATCH_DAMAGE_BONUS, deriveIntentType,
+    // 0.34.0 status-depth epic — honesty selectors + deny-threshold consts
+    getEnemyIncomingDamageMultiplier, getDisruptMeter,
+    projectRupture, isExecuteReady, projectExecute, projectSiphonHeal,
+    THREAT_DENY_AT, THREAT_WEAKEN_PER_ROLL,
     // Spec 26b tuning §B/§C/§D
     SIGNATURE_KITS, signaturesForArchetype, playerArchetype,
     COMBAT_REWARD_POOL, STARTING_SKILL_ID, STARTING_SKILL_IDS, rollCombatCardRewards, addRewardCard,
