@@ -133,7 +133,6 @@ export {
     // 0.34.0 status-depth epic — honesty selectors + deny-threshold consts
     getEnemyIncomingDamageMultiplier, getDisruptMeter,
     projectRupture, isExecuteReady, projectExecute, projectSiphonHeal,
-    THREAT_DENY_AT, THREAT_WEAKEN_PER_ROLL,
     // Spec 26b tuning §B/§C/§D
     SIGNATURE_KITS, signaturesForArchetype, playerArchetype,
     COMBAT_REWARD_POOL, STARTING_SKILL_ID, STARTING_SKILL_IDS, rollCombatCardRewards, addRewardCard,
