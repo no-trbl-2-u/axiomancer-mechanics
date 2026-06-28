@@ -12,6 +12,10 @@ deep imports are part of the supported surface.
 
 ## [Unreleased]
 
+## [0.34.0] — 2026-06-28
+
+Status-Depth: makes the status board the payoff, not just the setup. Ten keywords are now mechanically live in the HP combat engine and honestly readable by mobile — VULNERABLE (Breach marks a foe to take +50% from your hits), AMPLIFICATION (DoT Hemorrhage/Dissolution/Corrosive-Fire now report the HP that actually lands), RUPTURE (consume a foe's DoT and detonate the remaining total at once), COMPOUND (damage scaling with the number of distinct debuffs), DISRUPT (an additive control-deny path), plus THORNS, SIPHON, stacking BARRIER, one-shot RIPOSTE, and an EXECUTE finisher. Ships seven new build-around cards (Resonance Rupture, Mounting Contradictions, Breach, Brazen Rebuttal, Gabriel's Bulwark, Briar Riposte, Leeching Syllogism) and re-points Pyrrhic Victory as an execute, all draftable from the reward pool. Adds 24 additive public exports (HP-model selectors, projection helpers, five tunable scalars, three result types) for mobile to read combat honestly, widens the CombatEvent union with seven new variants, and lands 49 new tests. Status engagement stays central or rises in simulation (Breach drives it to ~70 percent); the pure-DoT doctrine baseline is byte-unchanged. Additive-only; no pressure vocabulary.
+
 ## [0.33.0] — 2026-06-27
 
 Combat truthfulness: the HP engine now reads the enemy's roll penalty, so soft-control / stat debuffs finally weaken (and a committed variety denies) the enemy's telegraphed turn — ~24 previously inert effects now do what their cards promise.
