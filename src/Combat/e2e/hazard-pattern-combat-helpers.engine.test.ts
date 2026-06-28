@@ -467,6 +467,45 @@ describe('Spec 25 §4.5 — resolveThreatPhase', () => {
         expect(result.state).toBe(complete);
         expect(result.events).toEqual([]);
     });
+
+    it('weakens (but does not deny) the threat when rollPenalty < THREAT_DENY_AT', () => {
+        const confusionEffect = lookupEffect('debuff_confusion')!;
+        const player = makePlayer([DOT_BODY]);
+        const enemy = makeEnemy(100, 'heart');
+        const { activeEffects: enemyEffects } = applyEffect(enemy.effects, confusionEffect, 1);
+
+        let baseState = initializeCombatEncounter(player, makeEnemy(100, 'heart'), undefined, SEED);
+        baseState = rollEncounterDice(baseState).state;
+        const baseResult = resolveThreatPhase(baseState);
+
+        let weakenState = initializeCombatEncounter(player, { ...enemy, effects: enemyEffects }, undefined, SEED);
+        weakenState = rollEncounterDice(weakenState).state;
+        const weakenResult = resolveThreatPhase(weakenState);
+
+        const weakenPhaseEvent = weakenResult.events.find(e => e.kind === 'phase-resolved') as
+            { kind: 'phase-resolved'; phaseIndex: number; mark: string } | undefined;
+        expect(weakenPhaseEvent!.mark).toBe('overwhelmed');
+        expect(weakenResult.state.player.health).toBeLessThan(player.health);
+        expect(weakenResult.state.player.health).toBeGreaterThan(baseResult.state.player.health);
+    });
+
+    it('denies the threat via soft-control when rollPenalty >= THREAT_DENY_AT', () => {
+        const confusionEffect = lookupEffect('debuff_confusion')!;
+        const fearEffect = lookupEffect('debuff_fear')!;
+        const player = makePlayer([DOT_BODY]);
+        const enemy = makeEnemy(100, 'heart');
+        const { activeEffects: withConfusion } = applyEffect(enemy.effects, confusionEffect, 1);
+        const { activeEffects: enemyEffects } = applyEffect(withConfusion, fearEffect, 1);
+
+        let state = initializeCombatEncounter(player, { ...enemy, effects: enemyEffects }, undefined, SEED);
+        state = rollEncounterDice(state).state;
+        const result = resolveThreatPhase(state);
+
+        const phaseEvent = result.events.find(e => e.kind === 'phase-resolved') as
+            { kind: 'phase-resolved'; phaseIndex: number; mark: string } | undefined;
+        expect(phaseEvent!.mark).toBe('clear');
+        expect(result.state.player.health).toBe(player.health);
+    });
 });
 
 // ── Attribution ledger (§7.7) — `recordAttribution` ─────────────────────────
