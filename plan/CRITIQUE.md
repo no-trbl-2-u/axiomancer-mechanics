@@ -72,6 +72,15 @@
 
 ## Pending
 
+- [ ] **[MED] design — 'rallying blow' → 'Conclusion': damage scales with enemy effect stacks**
+  - pass: user-jot (commit a15bee7)
+  - file: src/Combat/combat.signature.ts
+  - category: design
+  - observation: For the 6-token skill 'rallying blow', what if we called it 'Conclusion' instead and instead of it just doing raw, vanilla, damage, it was a calculation based on the number of effects the enemy has. (ie. 3x bleed, 5x poison, 10x confuse = 3*3, 5*2, 10*4 --> 59dmg) The actual "concludeMultiplier" for each effect, we'd have to tune, but it further encourages status effects
+  - evidence: user-spotted at 2026-06-29
+  - suggested_fix: [user has not specified — iterate to determine]. Likely: rename the sig + give it a `conclude`/`concludeMultiplier` special-mechanic that sums (stacks × per-effect-kind multiplier) across the foe's active effects (a sibling to COMPOUND, which scales with the COUNT of distinct debuffs; Conclusion would scale with STACKS × per-kind weight). On-vision: another payoff that rewards a built-up status board.
+  - source: user
+
 - [x] **[LOW] docs — `GOLD_CARD_IDS`, `isGoldCard`, `CardEffectKind` absent from bearings.md and docs/combat.md** — resolved at `3bd4b27` (iterate, 2026-06-27). Added gold (rare) cards / GUARD mechanic block to bearings.md Combat locked-contract group; added `GOLD_CARD_IDS / isGoldCard / CardEffectKind` row to docs/combat.md Hazard-Pattern Combat API table. Doc-only; 2121 tests + type-check + lint + build green. Score: 3 × 9 / 10 = 2.7. Source: critique-97 (commit 9e28e11).
 
 - [x] **[LOW] docs — Skills resource helpers absent from spec.md + bearings.md** — resolved at `4b6d50d` (iterate, 2026-06-27). Added `generateBasicActionResources`, `generatePhilosophicalResource`, `spendResources`, `calculateSkillDamage` to spec.md Contracts Skills row (resource helpers description) and a matching annotation block to bearings.md Skills group. Doc-only; 2121 tests + type-check + lint + build green. Score: 3 × 9 / 10 = 2.7. Source: critique-97 (commit 9e28e11).
