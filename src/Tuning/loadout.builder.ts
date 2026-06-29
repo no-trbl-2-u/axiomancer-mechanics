@@ -13,7 +13,7 @@ import type { Character, BaseStats } from '../Character/types';
 import { equipmentTemplates } from '../Items/equipment.templates';
 import { dropItem } from '../Items/item.factory';
 import type { Equipment, EquipmentSlot, ItemRarity } from '../Items/types';
-import { skillLibrary, getSkillById } from '../Skills';
+import { cardLibrary, getCardById } from '../Cards';
 import type { PlaytestPolicy } from '../Playtest/types';
 import type { MatrixCell } from './types';
 
@@ -65,11 +65,11 @@ function bestTemplateForSlot(slot: EquipmentSlot, level: number): string | undef
 
 /** Every skill the character is high enough level to know, biased by playstyle. */
 function eligibleSkills(level: number, playstyle: PlaytestPolicy): string[] {
-    const eligible = skillLibrary.filter(s => (s.learningRequirement?.level ?? 1) <= level);
+    const eligible = cardLibrary.filter(s => (s.learningRequirement?.level ?? 1) <= level);
     // Light playstyle bias: sort preferred skills first so the policy's skill
     // selection leans into the playstyle. The full eligible set stays known.
     const score = (id: string): number => {
-        const s = getSkillById(id);
+        const s = getCardById(id);
         if (!s) return 0;
         switch (playstyle) {
             case 'aggressive': return s.targetType === 'enemy' ? s.basePower : -5;

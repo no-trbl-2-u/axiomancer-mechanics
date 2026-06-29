@@ -76,8 +76,8 @@ import {
     resolveCombatRound,
 } from '../Combat';
 import type { Stance, CombatAction, Action } from '../Combat/types';
-import { getSkillById } from '../Skills/skill.library';
-import { canUseSkill } from '../Skills/skill.engine';
+import { getCardById } from '../Cards/cards.library';
+import { canUseSkill } from '../Cards/skill.engine';
 import { setSeed } from '../Utils/rng';
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -623,7 +623,7 @@ export async function runLegacyCombatCli(rawArgs: string[]): Promise<void> {
     const { initializeCombat } = await import('../Combat');
     let combat = initializeCombat(player, enemyDef);
 
-    const skillLookup = (id: string) => getSkillById(id);
+    const skillLookup = (id: string) => getCardById(id);
 
     while (isCombatOngoing(combat)) {
         const playerStance = await prompt<{ stance: Stance }>([{
@@ -646,7 +646,7 @@ export async function runLegacyCombatCli(rawArgs: string[]): Promise<void> {
         let playerAction: CombatAction = { stance: playerStance.stance, action };
         if (action === 'skill') {
             const { skillId } = await prompt<{ skillId: string }>([{
-                type: 'rawlist', name: 'skillId', message: 'Skill?',
+                type: 'rawlist', name: 'skillId', message: 'Card?',
                 choices: affordableSkills.map(id => ({ name: id, value: id })),
             }]);
             playerAction = { stance: playerStance.stance, action: 'skill', skillId };

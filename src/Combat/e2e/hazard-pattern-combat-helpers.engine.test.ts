@@ -24,7 +24,7 @@ import type { Character } from '../../Character/types';
 import type { Enemy } from '../../Enemy/types';
 import { TidepoolCrab } from '../../Enemy/enemy.library';
 import { deepClone } from '../../Utils';
-import { getSkillById } from '../../Skills/skill.library';
+import { getCardById } from '../../Cards/cards.library';
 import { lookupEffect, applyEffect } from '../../Effects';
 
 import {
@@ -169,35 +169,35 @@ describe('Spec 25 §4.3 — buildCombatDeck', () => {
 
 describe('Spec 25 §6 — card adapters', () => {
     it('classifyVerbClass routes a DoT skill to the dot track', () => {
-        const { verbClass, track } = classifyVerbClass(getSkillById(DOT_BODY)!, lookupEffect);
+        const { verbClass, track } = classifyVerbClass(getCardById(DOT_BODY)!, lookupEffect);
         expect(verbClass).toBe('direct-dot');
         expect(track).toBe('dot');
     });
 
     it('classifyVerbClass routes a control skill to the control track', () => {
-        const { verbClass, track } = classifyVerbClass(getSkillById(CONTROL_HEART)!, lookupEffect);
+        const { verbClass, track } = classifyVerbClass(getCardById(CONTROL_HEART)!, lookupEffect);
         expect(['direct-control', 'stat-debuff']).toContain(verbClass);
         expect(track).toBe('control');
     });
 
     it('classifyVerbClass marks a pure-damage skill as direct-damage / no track', () => {
-        const { verbClass, track } = classifyVerbClass(getSkillById(DAMAGE_BODY)!, lookupEffect);
+        const { verbClass, track } = classifyVerbClass(getCardById(DAMAGE_BODY)!, lookupEffect);
         expect(verbClass).toBe('direct-damage');
         expect(track).toBe('none');
     });
 
     it('toCombatCard projects a synthetic Retreat card without a skill lookup', () => {
-        const card = toCombatCard('card-retreat', getSkillById, lookupEffect);
+        const card = toCombatCard('card-retreat', getCardById, lookupEffect);
         expect(card).not.toBeNull();
         expect(card!.id).toBe('card-retreat');
     });
 
     it('toCombatCard returns null for an unknown card id', () => {
-        expect(toCombatCard('not-a-real-skill', getSkillById, lookupEffect)).toBeNull();
+        expect(toCombatCard('not-a-real-skill', getCardById, lookupEffect)).toBeNull();
     });
 
     it('projectDeck maps known ids and drops unknown ones', () => {
-        const cards = projectDeck([DOT_BODY, 'not-a-real-skill', CONTROL_HEART], getSkillById, lookupEffect);
+        const cards = projectDeck([DOT_BODY, 'not-a-real-skill', CONTROL_HEART], getCardById, lookupEffect);
         expect(cards.map(c => c.id)).toEqual([DOT_BODY, CONTROL_HEART]);
     });
 });

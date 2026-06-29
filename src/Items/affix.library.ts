@@ -264,7 +264,7 @@ export const prefixes: Affix[] = [
         addedIn: '2026-06-16',
         tags: ['affix', 'prefix', 'weapon', 'status'],
     },
-    // Skill / resource prefixes
+    // Card / resource prefixes
     {
         id: 'pfx-channeling',
         word: 'Channeling',

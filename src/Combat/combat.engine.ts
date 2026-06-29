@@ -26,9 +26,9 @@ import { lookupEffect, applyEffect } from '../Effects';
 import type { Effect, ActiveEffect } from '../Effects/types';
 import type { Character } from '../Character/types';
 import type { Enemy } from '../Enemy/types';
-import { getSkillById } from '../Skills/skill.library';
-import { executeSkill, calculateSkillDamage } from '../Skills/skill.engine';
-import type { Skill, CombatResources } from '../Skills/types';
+import { getCardById } from '../Cards/cards.library';
+import { executeSkill, calculateSkillDamage } from '../Cards/skill.engine';
+import type { Card, CombatResources } from '../Cards/types';
 import type { CombatState, Stance } from './types';
 import { applyDamage, heal, isDefeated } from './health';
 import {
@@ -151,9 +151,9 @@ export const READ_STATUS_MULT: Record<CombatReadResult, number> = {
 const EMPTY_RESOURCES: CombatResources = { heart: 0, body: 0, mind: 0, fallacy: 0, paradox: 0 };
 const defaultRng = (): number => getRng().random();
 
-// ── Skill / lookup adapters ──────────────────────────────────────────────────
+// ── Card / lookup adapters ──────────────────────────────────────────────────
 
-const lookupSkill = (id: string): Skill | undefined => getSkillById(id);
+const lookupSkill = (id: string): Card | undefined => getCardById(id);
 const lookupEffectDef = (id: string): Effect | undefined => lookupEffect(id);
 
 /** Projects a card id into its card view (skill or synthetic). */
@@ -229,7 +229,7 @@ function skillShim(enc: CombatEncounterState): CombatState {
  *  die (§4.3). Combat CARDS are NOT token-gated: Fallacy/Paradox are granted here
  *  too, so any learned card plays without a pre-banked token (only out-of-combat
  *  SKILLS pay tokens). The drafted die is the sole cost a card pays. */
-function grantStanceCost(resources: CombatResources, skill: Skill): CombatResources {
+function grantStanceCost(resources: CombatResources, skill: Card): CombatResources {
     const c = skill.resourceCost;
     return {
         ...resources,

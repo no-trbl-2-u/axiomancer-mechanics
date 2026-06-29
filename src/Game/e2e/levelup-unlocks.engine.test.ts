@@ -15,7 +15,7 @@ import { createGameStore } from '../store';
 import { createEventEmitter } from '../events';
 import { createNewGameState } from '../game.reducer';
 import { nullAdapter } from '../persistence/null.adapter';
-import { skillLibrary } from '../../Skills/skill.library';
+import { cardLibrary } from '../../Cards/cards.library';
 import { EXPERIENCE_PER_LEVEL } from '../game-mechanics.constants';
 import type { TypedLevelUpEvent } from '../events.types';
 
@@ -65,7 +65,7 @@ describe('character:levelup payload — Phase 30 unit 2', () => {
         // Default-gated tier-2 skills (level requirement = 5) unlock at L5.
         // Content-expansion tier-2 skills carry higher explicit levels and
         // unlock later, so assert containment rather than exact equality.
-        const defaultTier2Ids = skillLibrary
+        const defaultTier2Ids = cardLibrary
             .filter(s => s.tier === 2 && !s.learningRequirement)
             .map(s => s.id);
         expect(unlocked).toEqual(expect.arrayContaining(defaultTier2Ids));
@@ -88,14 +88,14 @@ describe('character:levelup payload — Phase 30 unit 2', () => {
         // Default-gated tier-2 (level 5) and tier-3 (level 10) skills must all
         // unlock by level 14. Higher explicit-requirement content skills only
         // appear once their level is reached, so assert containment.
-        const defaultT2T3Ids = skillLibrary
+        const defaultT2T3Ids = cardLibrary
             .filter(s => (s.tier === 2 || s.tier === 3) && !s.learningRequirement)
             .map(s => s.id);
         expect(unlocked).toEqual(expect.arrayContaining(defaultT2T3Ids));
     });
 
     it('omits already-known skills from the unlock list', () => {
-        const tier2KnownId = skillLibrary.find(s => s.tier === 2)!.id;
+        const tier2KnownId = cardLibrary.find(s => s.tier === 2)!.id;
         const { store, captured } = buildStore(4, {
             experience: 4 * EXPERIENCE_PER_LEVEL + 1,
             knownSkills: [tier2KnownId],

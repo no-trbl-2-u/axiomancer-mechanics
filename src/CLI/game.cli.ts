@@ -51,8 +51,8 @@ import { resolveMapEvent } from '../World';
 import type { ResolvedEvent } from '../World';
 import { isCombatOngoing, determineEnemyAction, resolveCombatRound, selectMercyChoice } from '../Combat';
 import { Stance, CombatState, CombatAction, Action } from '../Combat/types';
-import { getSkillById } from '../Skills/skill.library';
-import { canUseSkill, getAvailableSkills } from '../Skills/skill.engine';
+import { getCardById } from '../Cards/cards.library';
+import { canUseSkill, getAvailableSkills } from '../Cards/skill.engine';
 import { isConsumable } from '../Items/types';
 import { buyItem, sellItem, defaultSellPrice } from '../Items/shop.reducer';
 import { getConsumableById } from '../Items/consumable.library';
@@ -63,7 +63,7 @@ type Tab = 'map' | 'legacy-combat' | 'journal' | 'skills' | 'codex' | 'inventory
 
 type GameStoreHandle = ReturnType<typeof createGameStore>;
 
-const skillLookup = (id: string) => getSkillById(id);
+const skillLookup = (id: string) => getCardById(id);
 
 // Phase 82 — Codex lookup. Walks EnemyLibrary once at module load to build
 // an id → CodexEntry map. Future dialogue-driven codex entries will need a
@@ -428,7 +428,7 @@ function skillsTab(store: GameStoreHandle): void {
     log('\n— Skills —');
     log('Known skills:');
     for (const id of player.knownSkills) {
-        const s = getSkillById(id);
+        const s = getCardById(id);
         log(`  • ${s?.name ?? id}`);
     }
 }
@@ -742,7 +742,7 @@ async function devTab(store: GameStoreHandle): Promise<void> {
             break;
         }
         case 'equip-skills': {
-            log('\n[DEPRECATED] Skill equipment was removed in Phase 99.');
+            log('\n[DEPRECATED] Card equipment was removed in Phase 99.');
             log('All known skills are automatically available for combat use.');
             log('Use \'Learn skills\' to add skills to your known catalogue.');
             break;

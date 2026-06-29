@@ -35,7 +35,7 @@ import {
 import { SIGNATURE_KITS, playerArchetype } from '../combat.signature';
 import { rollCombatCardRewards, addRewardCard, unlockSkillViaDilemma, COMBAT_REWARD_POOL } from '../combat.rewards';
 import { buildCombatDeck, COMBAT_HAND_SIZE } from '../combat.deck';
-import { getSkillById } from '../../Skills/skill.library';
+import { getCardById } from '../../Cards/cards.library';
 import { simulateHazardPatternCombat } from '../combat.encounter.sim';
 import { getThreatSequence, deriveIntentType } from '../combat.threat';
 import type { CombatDieColor, CombatEncounterState } from '../combat.encounter.types';
@@ -511,7 +511,7 @@ describe('Spec 26b §B/§C/§D — archetype kit, rewards, unlock, difficulty fl
         const offers = rollCombatCardRewards(player, rng, 3);
         expect(offers.length).toBe(3);
         expect(new Set(offers).size).toBe(3); // distinct
-        for (const id of offers) { expect(getSkillById(id)).toBeTruthy(); expect(COMBAT_REWARD_POOL).toContain(id); }
+        for (const id of offers) { expect(getCardById(id)).toBeTruthy(); expect(COMBAT_REWARD_POOL).toContain(id); }
     });
 
     it('a reward card stacks onto the deck as an extra copy', () => {
@@ -524,7 +524,7 @@ describe('Spec 26b §B/§C/§D — archetype kit, rewards, unlock, difficulty fl
 
     it('unlockSkillViaDilemma adds a new skill, bypassing gates; no-op if known', () => {
         const player = makePlayer([DOT_BODY]);
-        const newId = COMBAT_REWARD_POOL.find(id => id !== DOT_BODY && getSkillById(id))!;
+        const newId = COMBAT_REWARD_POOL.find(id => id !== DOT_BODY && getCardById(id))!;
         const unlocked = unlockSkillViaDilemma(player, newId);
         expect(unlocked.knownSkills).toContain(newId);
         expect(unlockSkillViaDilemma(unlocked, newId)).toBe(unlocked); // already known → same ref

@@ -22,7 +22,7 @@ import {
     playSignatureSkill, getDraftedDie, handCards, selectMercyChoice, getSignatureSkill,
 } from './combat.engine';
 import { getPendingDotTotal, getDistinctDebuffCount } from './effects';
-import { getSkillById } from '../Skills/skill.library';
+import { getCardById } from '../Cards/cards.library';
 import type { CombatCard, CombatEncounterState, CombatOutcome } from './combat.encounter.types';
 
 /**
@@ -60,7 +60,7 @@ const currentPhase = (s: CombatEncounterState) =>
  */
 /** The special-mechanic kinds a card's backing skill carries (0.34.0 payoffs). */
 function cardMechKinds(card: CombatCard): Set<string> {
-    const skill = card.skillId ? getSkillById(card.skillId) : undefined;
+    const skill = card.skillId ? getCardById(card.skillId) : undefined;
     return new Set((skill?.specialMechanics ?? []).map(m => m.kind));
 }
 

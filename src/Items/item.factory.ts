@@ -29,7 +29,7 @@ import {
     ResourceInteraction,
     ResourceGenerationBonus,
 } from './types';
-import { CombatResources } from '../Skills/types';
+import { CombatResources } from '../Cards/types';
 import { StatModifier } from '../Effects/types';
 import { getEquipmentTemplate } from './equipment.templates';
 import { getUniqueTemplate } from './unique.templates';

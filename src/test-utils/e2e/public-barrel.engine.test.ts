@@ -17,8 +17,8 @@
 import { describe, it, expect } from 'vitest';
 
 import {
-    skillLibrary,
-    getSkillById,
+    cardLibrary,
+    getCardById,
     getActiveEffectModifiers,
     getEffectiveStats,
     canAct,
@@ -30,34 +30,34 @@ import type {
     GameState,
 } from '../../index';
 
-describe('Phase 50 — public barrel exposes skillLibrary + getSkillById', () => {
-    it('skillLibrary is a non-empty array of Skill entries', () => {
-        expect(skillLibrary).toBeDefined();
-        expect(Array.isArray(skillLibrary)).toBe(true);
-        expect(skillLibrary.length).toBeGreaterThan(0);
+describe('Phase 50 — public barrel exposes cardLibrary + getCardById', () => {
+    it('cardLibrary is a non-empty array of Card entries', () => {
+        expect(cardLibrary).toBeDefined();
+        expect(Array.isArray(cardLibrary)).toBe(true);
+        expect(cardLibrary.length).toBeGreaterThan(0);
     });
 
-    it('every entry in skillLibrary carries a non-empty id', () => {
-        for (const skill of skillLibrary) {
+    it('every entry in cardLibrary carries a non-empty id', () => {
+        for (const skill of cardLibrary) {
             expect(skill.id).toBeDefined();
             expect(typeof skill.id).toBe('string');
             expect(skill.id.length).toBeGreaterThan(0);
         }
     });
 
-    it('getSkillById is a function that returns a defined Skill for a real id', () => {
-        expect(getSkillById).toBeDefined();
-        expect(typeof getSkillById).toBe('function');
+    it('getCardById is a function that returns a defined Card for a real id', () => {
+        expect(getCardById).toBeDefined();
+        expect(typeof getCardById).toBe('function');
 
-        const firstId = skillLibrary[0].id;
-        const skill = getSkillById(firstId);
+        const firstId = cardLibrary[0].id;
+        const skill = getCardById(firstId);
 
         expect(skill).toBeDefined();
         expect(skill?.id).toBe(firstId);
     });
 
-    it('getSkillById returns undefined for an unknown id', () => {
-        const result = getSkillById('this-skill-id-does-not-exist-anywhere');
+    it('getCardById returns undefined for an unknown id', () => {
+        const result = getCardById('this-skill-id-does-not-exist-anywhere');
         expect(result).toBeUndefined();
     });
 });

@@ -1,7 +1,7 @@
 /**
  * Spec 25 — Hazard-Pattern Combat: skill→card projection adapter (§4.3, §6).
  *
- * Projects a learned `Skill` into a `CombatCard` view: stance color, verb
+ * Projects a learned `Card` into a `CombatCard` view: stance color, verb
  * class, effect-kind, and top/bottom action text. The projection is pure —
  * it reads the skill + effect libraries and never mutates. The engine executes
  * a card's bottom action through the *unchanged* `executeSkill`; this module
@@ -18,13 +18,13 @@
 
 import { MAX_EFFECT_INTENSITY } from '../Game/game-mechanics.constants';
 import type { Effect } from '../Effects/types';
-import type { Skill, SkillCombatEffects } from '../Skills/types';
+import type { Card, CardCombatEffects } from '../Cards/types';
 import type {
     CombatCard, CombatDieColor, CombatVerbClass, CardEffectKind,
 } from './combat.encounter.types';
 
 export type EffectLookup = (effectId: string) => Effect | undefined;
-export type SkillLookup = (skillId: string) => Skill | undefined;
+export type CardLookup = (skillId: string) => Card | undefined;
 
 /** Synthetic (non-skill) card ids always present in a combat deck. */
 export const SYNTHETIC_CARD_IDS: readonly string[] = Object.freeze(['card-retreat']);
@@ -64,7 +64,7 @@ export function isGoldCard(cardId: string): boolean {
 }
 
 /** Enemy-targeted effect payloads on a skill (`appliedTo: 'opponent'`). */
-function enemyEffects(skill: Skill): SkillCombatEffects[] {
+function enemyEffects(skill: Card): CardCombatEffects[] {
     return (skill.combatEffects ?? []).filter(e => e.appliedTo === 'opponent');
 }
 
@@ -143,7 +143,7 @@ export function effectImpact(
 }
 
 /** Stance color for a projected combat card — its philosophical aspect (§4.3). */
-export function cardStanceColor(skill: Skill): CombatDieColor {
+export function cardStanceColor(skill: Card): CombatDieColor {
     return skill.philosophicalAspect;
 }
 
@@ -152,7 +152,7 @@ export function cardStanceColor(skill: Skill): CombatDieColor {
  * advances. Priority: DoT > control > stat-debuff > buff > direct-damage.
  */
 export function classifyVerbClass(
-    skill: Skill,
+    skill: Card,
     lookupEffect: EffectLookup,
 ): { verbClass: CombatVerbClass; track: CardEffectKind } {
     const mechs = skill.specialMechanics ?? [];
@@ -189,7 +189,7 @@ export function classifyVerbClass(
 }
 
 /** Total projected bottom-action impact for a combat card (preview; §7.3). */
-export function bottomDamagePreview(skill: Skill, lookupEffect: EffectLookup): number {
+export function bottomDamagePreview(skill: Card, lookupEffect: EffectLookup): number {
     let total = 0;
     for (const ce of enemyEffects(skill)) {
         const def = lookupEffect(ce.effectId);
@@ -213,7 +213,7 @@ export function bottomDamagePreview(skill: Skill, lookupEffect: EffectLookup): n
 
 /** The primary enemy effect id a card applies (first that contributes impact),
  *  for the UI projection's diminishing-returns lookup. */
-export function primaryEnemyEffectId(skill: Skill, lookupEffect: EffectLookup): string | null {
+export function primaryEnemyEffectId(skill: Card, lookupEffect: EffectLookup): string | null {
     for (const ce of enemyEffects(skill)) {
         const def = lookupEffect(ce.effectId);
         if (def && effectImpact(def, ce.intensity ?? 1, ce.duration ?? def.duration).track !== 'none') {
@@ -228,7 +228,7 @@ function tierLabel(tier: 1 | 2 | 3): string {
 }
 
 /** Projects a learned skill (or synthetic card) into a `CombatCard` view. */
-export function toCombatCard(cardId: string, lookupSkill: SkillLookup, lookupEffect: EffectLookup): CombatCard | null {
+export function toCombatCard(cardId: string, lookupSkill: CardLookup, lookupEffect: EffectLookup): CombatCard | null {
     if (isSyntheticCard(cardId)) return SYNTHETIC_CARDS[cardId];
 
     const skill = lookupSkill(cardId);
@@ -282,7 +282,7 @@ export function toCombatCard(cardId: string, lookupSkill: SkillLookup, lookupEff
 /** Projects an entire deck (card ids) into card views, dropping unknown ids. */
 export function projectDeck(
     cardIds: readonly string[],
-    lookupSkill: SkillLookup,
+    lookupSkill: CardLookup,
     lookupEffect: EffectLookup,
 ): CombatCard[] {
     return cardIds

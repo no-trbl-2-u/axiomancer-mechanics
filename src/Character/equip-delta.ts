@@ -30,7 +30,7 @@ import type {
     EquipmentProcTrigger,
     ResourceGenerationBonus,
 } from '../Items/types';
-import type { CombatResources } from '../Skills/types';
+import type { CombatResources } from '../Cards/types';
 import type { StatModifier } from '../Effects/types';
 
 // ─── Public types ─────────────────────────────────────────────────────────────

@@ -20,7 +20,7 @@ import { describe, it, expect } from 'vitest';
 
 import { createCharacter } from '../../Character/index';
 import { initializeCombat } from '../../Combat/combat.reducer';
-import { generateBasicActionResources } from '../../Skills/skill.engine';
+import { generateBasicActionResources } from '../../Cards/skill.engine';
 import {
     getActiveSetBonuses,
     aggregateSetStartTokens,
@@ -32,7 +32,7 @@ import { itemSetLibrary, getItemSetById } from '../set.library';
 import { Disatree_01 } from '../../Enemy/enemy.library';
 import { tickAllEffects } from '../../Combat/effects';
 import type { Equipment, EquipmentSlot } from '../types';
-import type { CombatResources } from '../../Skills/types';
+import type { CombatResources } from '../../Cards/types';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 

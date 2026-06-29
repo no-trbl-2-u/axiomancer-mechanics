@@ -53,9 +53,9 @@ function roundHasStatusPlay(
     events: PlaytestRunSummary['transcript'][number]['combatEvents'],
 ): boolean {
     return events.some(event => {
-        // Skill landed a status effect (buff on self or debuff on the enemy).
+        // Card landed a status effect (buff on self or debuff on the enemy).
         if (event.phase === 'skill' && event.kind === 'effect-applied') return true;
-        // Skill exploited existing effects for a synergy payoff.
+        // Card exploited existing effects for a synergy payoff.
         if (event.phase === 'skill' && event.kind === 'synergy-fired') return true;
         // A player proc landed an effect on the opponent.
         if (event.phase === 'scenario' && event.kind === 'proc-applied'

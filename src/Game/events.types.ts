@@ -32,7 +32,7 @@ export interface EnginePayload {
     state: GameState;
     report?: CombatEndReport;
     /**
-     * Skill ids newly eligible to learn after this transition (Phase 30 unit
+     * Card ids newly eligible to learn after this transition (Phase 30 unit
      * 2 / Spec 06 Q7). Populated only on `character:levelup` when at least
      * one level promotion crossed a tier-eligibility threshold; an empty
      * array means the levelup didn't unlock anything new. Absent on every

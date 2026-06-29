@@ -30,12 +30,12 @@ import { createCharacter } from '../../Character';
 import { createEnemy } from '../../Enemy';
 import { initializeCombat } from '../combat.reducer';
 import { resolveCombatRound } from '../combat.resolver';
-import { getSkillById } from '../../Skills/skill.library';
+import { getCardById } from '../../Cards/cards.library';
 import { mockSequentialRng, restoreOriginalRng } from '../../test-utils/rng';
 import { ENEMY_SKILL_ANSWER_CHANCE } from '../../Game/game-mechanics.constants';
 import type { Enemy } from '../../Enemy/types';
 import type { ActiveEffect } from '../../Effects/types';
-import type { CombatResources } from '../../Skills/types';
+import type { CombatResources } from '../../Cards/types';
 import type { CombatAction } from '../types';
 
 afterEach(() => {
@@ -60,7 +60,7 @@ const FUNDED: CombatResources = {
 
 function makePlayer() {
     return createCharacter({
-        name: 'Skill User',
+        name: 'Card User',
         level: 5,
         baseStats: { heart: 6, body: 6, mind: 6 },
         knownSkills: [PLAYER_SKILL_ID, BEFRIEND_SKILL_ID],
@@ -76,7 +76,7 @@ function makeEnemy(overrides: Partial<Parameters<typeof createEnemy>[0]> = {}): 
         baseStats: { heart: 5, body: 5, mind: 5 },
         mapName: 'fishing-village',
         logic: 'aggressive',
-        skills: [getSkillById(ENEMY_SKILL_ID)!],
+        skills: [getCardById(ENEMY_SKILL_ID)!],
         ...overrides,
     });
 }
@@ -101,7 +101,7 @@ describe('Phase 150 — enemy skill answer to player skill use', () => {
         const state = { ...initializeCombat(makePlayer(), makeEnemy()), combatResources: FUNDED };
 
         const { combatEvents } = resolveCombatRound(
-            state, playerSkillAction, enemyBasicAction, getSkillById,
+            state, playerSkillAction, enemyBasicAction, getCardById,
         );
 
         const response = findResponse(combatEvents);
@@ -120,7 +120,7 @@ describe('Phase 150 — enemy skill answer to player skill use', () => {
         const state = { ...initializeCombat(makePlayer(), makeEnemy()), combatResources: FUNDED };
 
         const { combatEvents } = resolveCombatRound(
-            state, playerSkillAction, enemyBasicAction, getSkillById,
+            state, playerSkillAction, enemyBasicAction, getCardById,
         );
 
         expect(findResponse(combatEvents)).toBeUndefined();
@@ -131,7 +131,7 @@ describe('Phase 150 — enemy skill answer to player skill use', () => {
         const state = { ...initializeCombat(makePlayer(), makeEnemy()), combatResources: FUNDED };
 
         const { combatEvents } = resolveCombatRound(
-            state, playerSkillAction, enemyBasicAction, getSkillById,
+            state, playerSkillAction, enemyBasicAction, getCardById,
         );
 
         const playerDamage = combatEvents.find(
@@ -148,7 +148,7 @@ describe('Phase 150 — enemy skill answer to player skill use', () => {
         const state = { ...initializeCombat(makePlayer(), makeEnemy()), combatResources: FUNDED };
 
         const { combatEvents } = resolveCombatRound(
-            state, befriendAction, enemyBasicAction, getSkillById,
+            state, befriendAction, enemyBasicAction, getCardById,
         );
 
         expect(findResponse(combatEvents)).toBeUndefined();
@@ -160,7 +160,7 @@ describe('Phase 150 — enemy skill answer to player skill use', () => {
         const state = { ...initializeCombat(makePlayer(), enemy), combatResources: FUNDED };
 
         const { combatEvents } = resolveCombatRound(
-            state, playerSkillAction, enemyBasicAction, getSkillById,
+            state, playerSkillAction, enemyBasicAction, getCardById,
         );
 
         expect(findResponse(combatEvents)).toBeUndefined();
@@ -179,7 +179,7 @@ describe('Phase 150 — enemy skill answer to player skill use', () => {
         const state = { ...initializeCombat(makePlayer(), enemy), combatResources: FUNDED };
 
         const { combatEvents } = resolveCombatRound(
-            state, playerSkillAction, enemyBasicAction, getSkillById,
+            state, playerSkillAction, enemyBasicAction, getCardById,
         );
 
         expect(findResponse(combatEvents)).toBeUndefined();

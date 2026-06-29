@@ -8,7 +8,7 @@
  *   - getDistinctControlCount   (DISRUPT meter pips)
  *   - getActiveDotTotal / getActiveDotAmplifications  (amplification surface)
  *
- * Plus: every NEW SkillSpecialMechanic kind is a NO-OP through `executeSkill`
+ * Plus: every NEW CardSpecialMechanic kind is a NO-OP through `executeSkill`
  * (the HP behavior lives in combat.engine, not the skill engine — same split as
  * `guard`). Self-contained, deterministic, no disk / RNG dependence.
  */
@@ -22,9 +22,9 @@ import type { Enemy } from '../../Enemy/types';
 import { Player } from '../../Character/characters.mock';
 import { TidepoolCrab } from '../../Enemy/enemy.library';
 import { deepClone } from '../../Utils';
-import { getSkillById } from '../../Skills/skill.library';
-import { executeSkill } from '../../Skills/skill.engine';
-import type { Skill, SkillSpecialMechanic } from '../../Skills/types';
+import { getCardById } from '../../Cards/cards.library';
+import { executeSkill } from '../../Cards/skill.engine';
+import type { Card, CardSpecialMechanic } from '../../Cards/types';
 import type { CombatState } from '../types';
 import {
     getDamageTakenMultiplier, getPendingDotTotal, consumeDotEffects,
@@ -143,7 +143,7 @@ describe('getActiveDotTotal / getActiveDotAmplifications (amplification surface)
 
 // ── skill-engine no-op (the HP behavior lives in combat.engine) ──────────────
 
-const NEW_KINDS: SkillSpecialMechanic[] = [
+const NEW_KINDS: CardSpecialMechanic[] = [
     { kind: 'rupture' },
     { kind: 'compound', perDebuff: 6 },
     { kind: 'siphon', pct: 0.5 },
@@ -155,7 +155,7 @@ const NEW_KINDS: SkillSpecialMechanic[] = [
 describe('skill engine — every new mechanic kind is a NO-OP through executeSkill', () => {
     for (const mech of NEW_KINDS) {
         it(`'${mech.kind}' leaves caster/target HP + effects unchanged`, () => {
-            const skill: Skill = {
+            const skill: Card = {
                 id: 'test-mech-skill', name: 'Test Mechanic', category: 'fallacy',
                 philosophicalAspect: 'body', description: 'x', tier: 1,
                 resourceCost: { body: 1 }, targetType: 'enemy',
@@ -176,7 +176,7 @@ describe('skill engine — every new mechanic kind is a NO-OP through executeSki
                 player, enemy, playerChoice: {}, enemyChoice: {}, log: [],
                 combatResources: { heart: 0, body: 5, mind: 0, fallacy: 0, paradox: 0 },
             };
-            const res = executeSkill(state, 'test-mech-skill', id => id === 'test-mech-skill' ? skill : getSkillById(id), 'player');
+            const res = executeSkill(state, 'test-mech-skill', id => id === 'test-mech-skill' ? skill : getCardById(id), 'player');
 
             // No damage/heal/effect events from the mechanic itself.
             expect(res.events.some(e => e.kind === 'damage' || e.kind === 'heal' || e.kind === 'effect-applied')).toBe(false);

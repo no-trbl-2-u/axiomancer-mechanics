@@ -4,7 +4,7 @@
  * Drives the LEARN_SKILL action through the public game-store surface
  * to verify the reducer + store wiring. The underlying eligibility
  * filter (`getAvailableSkills`, `meetsLearningRequirement`) is tested
- * by `src/Skills/e2e/learning.engine.test.ts`; this suite focuses on
+ * by `src/Cards/e2e/learning.engine.test.ts`; this suite focuses on
  * the action-level path (already-known no-op, eligible-learn appends,
  * requirement-blocked no-op).
  */
@@ -15,7 +15,7 @@ import { createCharacter } from '../../Character';
 import { createGameStore } from '../store';
 import { createNewGameState } from '../game.reducer';
 import { nullAdapter } from '../persistence/null.adapter';
-import { skillLibrary } from '../../Skills/skill.library';
+import { cardLibrary } from '../../Cards/cards.library';
 
 function buildStore(level: number, knownSkills: string[] = []) {
     const player = createCharacter({
@@ -30,7 +30,7 @@ function buildStore(level: number, knownSkills: string[] = []) {
 
 describe('LEARN_SKILL action — Phase 30 unit 3', () => {
     it('appends an eligible skill id to knownSkills', () => {
-        const t1 = skillLibrary.find(s => s.tier === 1)!;
+        const t1 = cardLibrary.find(s => s.tier === 1)!;
         const store = buildStore(1, []);
         const before = store.getState().player.knownSkills.length;
         store.getState().learnSkill(t1.id);
@@ -40,7 +40,7 @@ describe('LEARN_SKILL action — Phase 30 unit 3', () => {
     });
 
     it('is a no-op when the skill is already known', () => {
-        const t1 = skillLibrary.find(s => s.tier === 1)!;
+        const t1 = cardLibrary.find(s => s.tier === 1)!;
         const store = buildStore(1, [t1.id]);
         const before = store.getState().player.knownSkills.slice();
         store.getState().learnSkill(t1.id);
@@ -50,7 +50,7 @@ describe('LEARN_SKILL action — Phase 30 unit 3', () => {
 
     it('is a no-op when the learning requirement is not met', () => {
         // T3 default level minimum is 10; level-5 character is below the gate.
-        const t3 = skillLibrary.find(s => s.tier === 3)!;
+        const t3 = cardLibrary.find(s => s.tier === 3)!;
         const store = buildStore(5, []);
         const before = store.getState().player.knownSkills.slice();
         store.getState().learnSkill(t3.id);

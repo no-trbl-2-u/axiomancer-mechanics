@@ -8,7 +8,7 @@
  */
 
 import type { ResourceEconomyMetrics, ResourcePattern } from './resource.metrics';
-import type { ResourceCost } from '../Skills/types';
+import type { ResourceCost } from '../Cards/types';
 
 /** Proposed adjustment to resource generation constants */
 export interface GenerationTuningProposal {
@@ -30,7 +30,7 @@ export interface GenerationTuningProposal {
 
 /** Proposed adjustment to specific skill costs */
 export interface SkillCostTuningProposal {
-    /** Skill ID to adjust */
+    /** Card ID to adjust */
     skillId: string;
     /** Current resource cost */
     currentCost: ResourceCost;

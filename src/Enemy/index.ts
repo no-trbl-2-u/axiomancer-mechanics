@@ -1,4 +1,4 @@
-import { Skill } from '../Skills/types';
+import { Card } from '../Cards/types';
 import { MapName } from '../World/map.library';
 import { ActiveEffect } from '../Effects/types';
 import { BaseStats } from '../Character/types';
@@ -28,7 +28,7 @@ export interface CreateEnemyOptions {
     tier1Overrides?: Tier1EffectOverrides;
     procUnlocks?: ProcUnlocks;
     procOverrides?: ProcOverrides;
-    skills?: Skill[];
+    skills?: Card[];
     loot?: LootTableEntry[];
     xpReward?: number;
     effects?: ActiveEffect[];

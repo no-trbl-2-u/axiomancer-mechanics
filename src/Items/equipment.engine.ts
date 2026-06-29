@@ -23,7 +23,7 @@ import { Equipment, EquipmentProcTrigger, EquipmentSlot, Consumable } from './ty
 import { Effect } from '../Effects/types';
 import { applyEffect } from '../Effects';
 import { heal } from '../Combat/health';
-import { CombatResources } from '../Skills/types';
+import { CombatResources } from '../Cards/types';
 import { Character } from '../Character/types';
 import { getEquippedItems } from '../Character/equipment.reducer';
 

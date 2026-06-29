@@ -44,11 +44,11 @@ import {
 import { getRng } from '../../Utils/rng';
 import type { CombatAction, CombatState, Stance, Action, Advantage } from '../types';
 import {
-    BasicActionOutcome, SkillEvent, SkillLookup,
+    BasicActionOutcome, CardEvent, CardLookup,
     canUseSkill, executeSkill, generateBasicActionResources,
-} from '../../Skills/skill.engine';
-import { CombatResources } from '../../Skills/types';
-import type { Skill } from '../../Skills/types';
+} from '../../Cards/skill.engine';
+import { CombatResources } from '../../Cards/types';
+import type { Card } from '../../Cards/types';
 import { Consumable } from '../../Items/types';
 import { isConsumable } from '../../Items/types';
 import { getEquipmentProcTriggers, useConsumableEffect } from '../../Items/equipment.engine';
@@ -71,7 +71,7 @@ import {
     extendRandomBuffDuration,
 } from '../effects';
 import type {
-    CombatActor, RoundEvent, SkillPhaseEvent,
+    CombatActor, RoundEvent, CardPhaseEvent,
 } from '../combat.resolver';
 
 export interface ScenarioPhaseResult {
@@ -100,7 +100,7 @@ export function runScenarioPhase(
     combatResourcesIn: CombatResources,
     friendshipCounterIn: number,
     round: number,
-    skillLookup: SkillLookup | undefined,
+    skillLookup: CardLookup | undefined,
     events: RoundEvent[],
     exploitedRegions?: string[],
     enemyCanAct: boolean = true,
@@ -476,7 +476,7 @@ function resolveExploitAttack(
  * treated as non-hostile (no answer) — the player-skill block above already
  * blocks unknown skills, so this is a defensive default.
  */
-function playerSkillIsHostile(skill: Skill | undefined): boolean {
+function playerSkillIsHostile(skill: Card | undefined): boolean {
     if (!skill) return false;
     const isFriendshipGesture =
         (skill.incrementsFriendship ?? 0) > 0 ||
@@ -501,12 +501,12 @@ function playerSkillIsHostile(skill: Skill | undefined): boolean {
  * the library knows about is affordable by construction; the lookup guard is
  * purely a content-integrity check against a stale / malformed rotation entry.
  *
- * Returns the skill id (not the Skill) so the caller routes execution through
+ * Returns the skill id (not the Card) so the caller routes execution through
  * the same `executeSkill(..., 'enemy')` path the Phase 49 cast uses.
  */
 function selectEnemySkillResponse(
     enemy: Enemy,
-    skillLookup: SkillLookup,
+    skillLookup: CardLookup,
 ): string | null {
     const rotation = enemy.skills ?? [];
     for (const skill of rotation) {
@@ -929,8 +929,8 @@ function playerWonAttackContest(events: RoundEvent[]): boolean {
     return false;
 }
 
-/** Translates a `SkillEvent` from the skill engine into the resolver's `RoundEvent` union. */
-function toRoundEvent(ev: SkillEvent): SkillPhaseEvent {
+/** Translates a `CardEvent` from the skill engine into the resolver's `RoundEvent` union. */
+function toRoundEvent(ev: CardEvent): CardPhaseEvent {
     switch (ev.kind) {
         case 'damage':
             return { phase: 'skill', kind: 'damage', skillId: ev.skillId, target: ev.target,

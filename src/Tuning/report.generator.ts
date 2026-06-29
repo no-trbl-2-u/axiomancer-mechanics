@@ -99,7 +99,7 @@ function engagementTable(tick: TuningTickResult): string {
         + ' (the objective term). A big Activity→Leverage drop means status play is'
         + ' present but inert (spam into timeouts)._',
         '',
-        '| Playstyle | Skill uses / run | Activity (raw) | Leverage (objective) | vs floor |',
+        '| Playstyle | Card uses / run | Activity (raw) | Leverage (objective) | vs floor |',
         '| --- | --- | --- | --- | --- |',
         ...rows.map(r => `| ${r.key} | ${round(r.skillPerRun, 1)} | ${Number.isFinite(r.activity) ? pct(r.activity) : 'n/a'} | ${Number.isFinite(r.leverage) ? pct(r.leverage) : 'n/a'} | ${Number.isFinite(r.leverage) ? (r.leverage >= floor ? 'ok' : 'BELOW') : '—'} |`),
     ].join('\n');

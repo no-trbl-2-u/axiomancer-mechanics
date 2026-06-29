@@ -13,7 +13,7 @@
 import type { Character } from '../Character/types';
 import type { Equipment, EquipmentSlot } from './types';
 import type { ItemSet, SetBonus } from './set.types';
-import type { CombatResources } from '../Skills/types';
+import type { CombatResources } from '../Cards/types';
 import { itemSetLibrary } from './set.library';
 import { getEquippedItems } from '../Character/equipment.reducer';
 import type { EquipmentBonusOutcome } from './equipment.engine';

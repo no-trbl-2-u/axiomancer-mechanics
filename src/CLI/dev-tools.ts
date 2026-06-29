@@ -5,7 +5,7 @@ import type { ItemRarity } from '../Items/types';
 import { dropItem } from '../Items/item.factory';
 import { equipmentTemplates } from '../Items/equipment.templates';
 import { consumableLibrary } from '../Items/consumable.library';
-import { skillLibrary } from '../Skills/skill.library';
+import { cardLibrary } from '../Cards/cards.library';
 import { ENEMY_REGISTRY, EnemySlug } from '../Enemy/enemy.library';
 import type { PhilosophicalAlignment } from '../Philosophy/types';
 import type { createGameStore } from '../Game/store';
@@ -65,7 +65,7 @@ export function devSetStats(store: Store, stats: Partial<BaseStats>): DevResult 
 
 export function devLearnSkills(store: Store, skillIds: string[] | 'all'): DevResult {
     const ids = skillIds === 'all'
-        ? skillLibrary.map(s => s.id)
+        ? cardLibrary.map(s => s.id)
         : skillIds;
 
     const state = store.getState();
@@ -85,7 +85,7 @@ export function devLearnSkills(store: Store, skillIds: string[] | 'all'): DevRes
  */
 export function devUnlockSkills(store: Store, skillIds: string[] | 'all'): DevResult {
     const ids = skillIds === 'all'
-        ? skillLibrary.map(s => s.id)
+        ? cardLibrary.map(s => s.id)
         : skillIds;
     const state = store.getState();
     const known = new Set(state.player.knownSkills);
@@ -174,7 +174,7 @@ export function getEnemySlugs(): EnemySlug[] {
 }
 
 export function getSkillIds(): string[] {
-    return skillLibrary.map(s => s.id);
+    return cardLibrary.map(s => s.id);
 }
 
 export function getEquipmentTemplateIds(): string[] {

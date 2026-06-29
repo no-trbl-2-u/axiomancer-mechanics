@@ -1,6 +1,6 @@
 import type { CombatAction, CombatState, Stance } from '../Combat';
 import type { PlaytestPolicy, PolicyContext } from './types';
-import { canUseSkill, getSkillById } from '../Skills';
+import { canUseSkill, getCardById } from '../Cards';
 import { getRng } from '../Utils/rng';
 
 const STANCES: Stance[] = ['heart', 'body', 'mind'];
@@ -11,13 +11,13 @@ function pickStance(round: number): Stance {
 
 function affordableSkills(combat: CombatState): string[] {
     return combat.player.knownSkills.filter(id => {
-        const skill = getSkillById(id);
+        const skill = getCardById(id);
         return skill !== undefined && canUseSkill(combat.combatResources, skill);
     });
 }
 
 function strategicSkillPriority(combat: CombatState, skillId: string): number {
-    const skill = getSkillById(skillId);
+    const skill = getCardById(skillId);
     if (!skill) return 0;
 
     let score = skill.tier * 6;
@@ -74,7 +74,7 @@ function bestStrategistSkill(combat: CombatState): string | undefined {
 function bestPressureSkill(combat: CombatState): string | undefined {
     return affordableSkills(combat)
         .map(skillId => ({ skillId, score: strategicSkillPriority(combat, skillId) }))
-        .filter(({ skillId }) => getSkillById(skillId)?.targetType === 'enemy')
+        .filter(({ skillId }) => getCardById(skillId)?.targetType === 'enemy')
         .sort((a, b) => b.score - a.score || a.skillId.localeCompare(b.skillId))[0]?.skillId;
 }
 
@@ -128,7 +128,7 @@ export function selectPolicyAction(
             return { stance: 'body', action: 'attack' };
         }
         
-        const befriend = getSkillById('befriend');
+        const befriend = getCardById('befriend');
         if (befriend && combat.player.knownSkills.includes('befriend') && canUseSkill(combat.combatResources, befriend)) {
             return { stance: 'heart', action: 'skill', skillId: 'befriend' };
         }
@@ -143,7 +143,7 @@ export function selectPolicyAction(
         if (itemId) return { stance: 'body', action: 'item', itemId };
         const pressureSkill = hpFraction > 0.55 ? bestPressureSkill(combat) : undefined;
         if (pressureSkill) {
-            return { stance: getSkillById(pressureSkill)?.philosophicalAspect ?? 'body', action: 'skill', skillId: pressureSkill };
+            return { stance: getCardById(pressureSkill)?.philosophicalAspect ?? 'body', action: 'skill', skillId: pressureSkill };
         }
         return hpFraction < 0.55
             ? { stance: 'heart', action: 'defend' }
@@ -154,7 +154,7 @@ export function selectPolicyAction(
         const enemyHpPct = combat.enemy.health / combat.enemy.maxHealth;
         const playerHpPct = combat.player.health / combat.player.maxHealth;
         const hpGate = combat.enemy.befriendabilityConfig?.hpGate?.belowPct;
-        const befriend = getSkillById('befriend');
+        const befriend = getCardById('befriend');
         
         // Prioritize befriend when mercy opportunity is available
         if (befriend
@@ -176,7 +176,7 @@ export function selectPolicyAction(
         const learnedSkillId = ctx?.strategist?.recommendSkill(advisorKey);
         if (learnedSkillId
             && combat.player.knownSkills.includes(learnedSkillId)) {
-            const learned = getSkillById(learnedSkillId);
+            const learned = getCardById(learnedSkillId);
             if (learned && canUseSkill(combat.combatResources, learned)
                 && strategicSkillPriority(combat, learnedSkillId) > 0) {
                 return { stance: learned.philosophicalAspect, action: 'skill', skillId: learnedSkillId };
@@ -186,7 +186,7 @@ export function selectPolicyAction(
         // Use best strategic skill if available and worthwhile
         const skillId = bestStrategistSkill(combat);
         if (skillId) {
-            const skill = getSkillById(skillId);
+            const skill = getCardById(skillId);
             const skillScore = strategicSkillPriority(combat, skillId);
 
             // The strategist is the skill/status witness: spend resources on
@@ -236,7 +236,7 @@ export function selectPolicyAction(
 
     const pressureSkill = bestPressureSkill(combat);
     if (pressureSkill) {
-        return { stance: getSkillById(pressureSkill)?.philosophicalAspect ?? 'body', action: 'skill', skillId: pressureSkill };
+        return { stance: getCardById(pressureSkill)?.philosophicalAspect ?? 'body', action: 'skill', skillId: pressureSkill };
     }
     return { stance: 'body', action: 'attack' };
 }

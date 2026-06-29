@@ -12,7 +12,7 @@
 
 import { Stance, Action, CombatAction, CombatState } from '../Combat/types';
 import { Enemy, EnemyLogic } from './types';
-import type { Skill } from '../Skills/types';
+import type { Card } from '../Cards/types';
 import { getRng } from '../Utils/rng';
 import { bucketAxis } from '../Philosophy';
 
@@ -213,7 +213,7 @@ function applyOutlookBias(
  * intentionally aligned ("heart-attack while casting a heart-aspect skill").
  */
 function pickEnemySkill(enemy: Enemy | undefined): CombatAction | null {
-    const rotation: readonly Skill[] = enemy?.skills ?? [];
+    const rotation: readonly Card[] = enemy?.skills ?? [];
     if (rotation.length === 0) return null;
     if (getRng().random() >= ENEMY_SKILL_PICK_CHANCE) return null;
     const skill = rotation[0];

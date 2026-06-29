@@ -16,7 +16,7 @@ import type { Enemy } from '../../Enemy/types';
 import { TidepoolCrab } from '../../Enemy/enemy.library';
 import { deepClone } from '../../Utils';
 import { mockSequentialRng } from '../../test-utils/rng';
-import { getSkillById } from '../../Skills/skill.library';
+import { getCardById } from '../../Cards/cards.library';
 import { lookupEffect } from '../../Effects';
 import type { ActiveEffect } from '../../Effects/types';
 import {
@@ -338,7 +338,7 @@ describe('EXECUTE — a finisher when the foe is low or heavily DoT-stacked', ()
         const state = openAndDraft(makePlayer([PYR]), makeEnemy(100, 'mind'), [PYR, PYR, PYR], 'mind');
         const lowHp = { ...state, enemy: { ...state.enemy, health: 25 } }; // 25% <= 30%
         expect(isExecuteReady(lowHp, 0.3, 3)).toBe(true);
-        const proj = projectExecute(lowHp, toCombatCard(PYR, getSkillById, lookupEffect)!);
+        const proj = projectExecute(lowHp, toCombatCard(PYR, getCardById, lookupEffect)!);
         expect(proj.ready).toBe(true);
         const res = playCombatCard(lowHp, { uid: lowHp.hand.find(h => h.cardId === PYR)!.uid }, true);
         expect(res.events.some(e => e.kind === 'execute-fired')).toBe(true);
@@ -382,7 +382,7 @@ describe('SIPHON — heal for part of the HP eroded', () => {
         expect(heal).toBeDefined();
         expect(heal!.amount).toBeLessThan(0);           // negative amount == heal
         expect(res.state.player.health).toBeGreaterThan(100);
-        expect(projectSiphonHeal(state, toCombatCard(SIP, getSkillById, lookupEffect)!)).toBeGreaterThan(0);
+        expect(projectSiphonHeal(state, toCombatCard(SIP, getCardById, lookupEffect)!)).toBeGreaterThan(0);
     });
 });
 
@@ -428,12 +428,12 @@ describe('card projection — the new payoff cards classify + advertise sensibly
 
     for (const [id, verbClass, track] of cases) {
         it(`${id} → ${verbClass}/${track} and is reachable via COMBAT_REWARD_POOL`, () => {
-            const skill = getSkillById(id);
+            const skill = getCardById(id);
             expect(skill, `${id} must be a real skill`).toBeDefined();
             const c = classifyVerbClass(skill!, lookupEffect);
             expect(c.verbClass, id).toBe(verbClass);
             expect(c.track, id).toBe(track);
-            const card = toCombatCard(id, getSkillById, lookupEffect)!;
+            const card = toCombatCard(id, getCardById, lookupEffect)!;
             expect(card.bottomDamagePreview).toBeGreaterThanOrEqual(0);
             expect(COMBAT_REWARD_POOL, id).toContain(id);
         });
@@ -441,7 +441,7 @@ describe('card projection — the new payoff cards classify + advertise sensibly
 
     it('rupture/compound cards advertise a non-zero preview floor', () => {
         for (const id of ['resonance-rupture', 'mounting-contradictions']) {
-            expect(toCombatCard(id, getSkillById, lookupEffect)!.bottomDamagePreview).toBeGreaterThan(0);
+            expect(toCombatCard(id, getCardById, lookupEffect)!.bottomDamagePreview).toBeGreaterThan(0);
         }
     });
 });

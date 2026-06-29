@@ -1,4 +1,4 @@
-import { Skill } from '../Skills/types';
+import { Card } from '../Cards/types';
 import { MapName } from '../World/map.library';
 import { Stance } from '../Combat/types';
 import { BaseStats, DerivedStats } from '../Character/types';
@@ -262,7 +262,7 @@ export interface Enemy {
      * elite / basic enemies receive map-themed overrides (Q7).
      */
     procOverrides?: ProcOverrides;
-    skills?: Skill[];
+    skills?: Card[];
     /** Weighted drop table — see {@link LootTableEntry}. */
     loot?: LootTableEntry[];
     /** Flat experience-point award on kill. Defaults computed by difficulty. */

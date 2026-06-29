@@ -102,7 +102,7 @@ export { resolveCombatRound } from './Combat';
 export type {
     RoundResolution, RoundEvent, CombatActor,
     RoundStartEvent, ActionRestrictionEvent, AdvantageEvent,
-    StanceEffectEvent, ScenarioEvent, SkillPhaseEvent, ResourceEvent,
+    StanceEffectEvent, ScenarioEvent, CardPhaseEvent, ResourceEvent,
     ItemPhaseEvent, RoundEndEvent,
 } from './Combat';
 
@@ -219,24 +219,32 @@ export type {
 
 // ─── Skills ───────────────────────────────────────────────────────────────────
 export type {
-    Skill, SkillCategory, SkillsStatType, SkillTier, SkillTarget,
+    Card, CardCategory, StatType, CardTier, CardTarget,
     ResourceCost, CombatResources,
-    SkillLearningRequirement, SkillCombatEffects,
-    BasicActionOutcome, SkillEvent, SkillResolution, SkillLookup,
-    SkillSynergy, SynergyPredicate,
+    CardLearningRequirement, CardCombatEffects,
+    BasicActionOutcome, CardEvent, CardResolution, CardLookup,
+    CardSynergy, SynergyPredicate,
     // Phase 142 — Extended synergy predicates
     ExtendedSynergyPredicate,
-} from './Skills';
+} from './Cards';
 export {
     generateBasicActionResources, generatePhilosophicalResource,
     carryPhilosophicalResources,
     canUseSkill, spendResources, calculateSkillDamage, executeSkill,
     meetsLearningRequirement, getAvailableSkills, learnSkill,
-    skillLibrary, getSkillById,
+    cardLibrary, getCardById,
     // Phase 142 — Extended synergy predicate functionality
     evaluateExtendedSynergyPredicate, checkSinglePredicate, checkAnyCountPredicate,
     checkAllRequiredPredicate, checkBuffDebuffCombo, checkTotalIntensityPredicate,
-} from './Skills';
+} from './Cards';
+// ─── Deprecated card aliases (legacy "skill" public names) ────────────────────
+// Kept so external consumers (axiomancer-mobile) keep working until they migrate.
+/** @deprecated renamed to cardLibrary */
+export { cardLibrary as skillLibrary } from './Cards';
+/** @deprecated renamed to getCardById */
+export { getCardById as getSkillById } from './Cards';
+/** @deprecated renamed to Card */
+export type { Card as Skill } from './Cards';
 
 // ─── Game (state, store, persistence, constants) ──────────────────────────────
 export {

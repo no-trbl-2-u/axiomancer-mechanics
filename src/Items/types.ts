@@ -19,7 +19,7 @@
 
 import { Effect, EffectTier, StatModifier } from '../Effects/types';
 import { Stance } from '../Combat/types';
-import { CombatResources } from '../Skills/types';
+import { CombatResources } from '../Cards/types';
 
 /** Item categories */
 export type ItemCategory = 'equipment' | 'consumable' | 'material' | 'quest-item';

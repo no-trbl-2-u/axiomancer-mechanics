@@ -21,7 +21,7 @@
 import type { Character } from '../Character/types';
 import type { Enemy } from '../Enemy/types';
 import type { Effect, ActiveEffect } from '../Effects/types';
-import type { CombatResources } from '../Skills/types';
+import type { CombatResources } from '../Cards/types';
 import type { Stance } from './types';
 
 // ---------------------------------------------------------------------------
@@ -54,7 +54,7 @@ export interface CombatManaDie {
 }
 
 // ---------------------------------------------------------------------------
-// Cards — combat card projected from a learned Skill (Spec 25 §4.3, §6)
+// Cards — combat card projected from a learned Card (Spec 25 §4.3, §6)
 // ---------------------------------------------------------------------------
 
 /**
@@ -75,7 +75,7 @@ export type CombatVerbClass =
 export type CardEffectKind = 'dot' | 'control' | 'none';
 
 /**
- * A combat card — an adapter VIEW over a learned `Skill` (or a synthetic card
+ * A combat card — an adapter VIEW over a learned `Card` (or a synthetic card
  * like Retreat). Pure projection: never mutated, recomputed from the skill +
  * effect libraries. The `skillId` is the learned-skill id the card executes.
  */
@@ -398,7 +398,7 @@ export interface CombatEncounterState {
     seed?: number;                         // seed used to drive the encounter (sim/tests)
 }
 
-/** Return shape of every engine transition (mirrors `SkillResolution`). */
+/** Return shape of every engine transition (mirrors `CardResolution`). */
 export interface CombatTransition {
     state: CombatEncounterState;
     events: CombatEvent[];

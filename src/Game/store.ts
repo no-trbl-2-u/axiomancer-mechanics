@@ -53,7 +53,7 @@ import { GameEventEmitter, GameEvent, GameEventType } from './events';
 import { PersistenceAdapter } from './persistence/types';
 import { rollEncounterLoot, totalEncounterXp } from './combat-grants';
 import { getRng } from '../Utils/rng';
-import { getAvailableSkills } from '../Skills';
+import { getAvailableSkills } from '../Cards';
 import {
     addItem as addItemReducer,
     removeItem as removeItemReducer,

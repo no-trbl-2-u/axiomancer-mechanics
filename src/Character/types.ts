@@ -1,7 +1,7 @@
 import { Item, Equipment, EquipmentSlot } from '../Items/types';
 import { ActiveEffect } from '../Effects/types';
 import { ProcUnlocks } from '../Combat/combat-effects';
-import type { CombatResources } from '../Skills/types';
+import type { CombatResources } from '../Cards/types';
 
 /**
  * The three core attributes from which all other character/enemy stats derive.
@@ -18,7 +18,7 @@ export interface BaseStats {
 
 /**
  * Combat stats derived from BaseStats. Each stance contributes three values:
- * `*Attack` (used in attack rolls), `*Skill` (used by skills/philosophy),
+ * `*Attack` (used in attack rolls), `*Card` (used by skills/philosophy),
  * and `*Defense` (used as damage reduction).
  *
  * `luck` is the average of the three base stats and gates random outcomes.

@@ -43,7 +43,7 @@ import { mockAlternatingRng, mockSequentialRng } from '../../test-utils/rng';
 import { isCombatOngoing, determineCombatEnd } from '../index';
 import { initializeCombat } from '../combat.reducer';
 import { resolveCombatRound } from '../combat.resolver';
-import { getSkillById } from '../../Skills/skill.library';
+import { getCardById } from '../../Cards/cards.library';
 
 // ─── Tests ───────────────────────────────────────────────────────────────────
 
@@ -251,10 +251,10 @@ describe('Enemy skill caster path (Phase 49)', () => {
     it('routes an enemy skill action through executeSkill and lands damage on the player', () => {
         mockSequentialRng(0.5);
 
-        const skillLookup = (id: string) => getSkillById(id);
+        const skillLookup = (id: string) => getCardById(id);
 
         // Coastal Tyrant carries achilles-gambit (Phase 49 unit 2).
-        const enemy = { ...Disatree_01, skills: [getSkillById('achilles-gambit')!] };
+        const enemy = { ...Disatree_01, skills: [getCardById('achilles-gambit')!] };
         const state = initializeCombat(Player, enemy);
         const playerHpBefore = state.player.health;
 
@@ -265,7 +265,7 @@ describe('Enemy skill caster path (Phase 49)', () => {
             skillLookup,
         );
 
-        // Skill phase event fired for the enemy's damaging skill.
+        // Card phase event fired for the enemy's damaging skill.
         const skillEvents = combatEvents.filter(e => e.phase === 'skill');
         const damageEvent = skillEvents.find(
             (e): e is Extract<typeof e, { kind: 'damage' }> => e.kind === 'damage',
@@ -279,8 +279,8 @@ describe('Enemy skill caster path (Phase 49)', () => {
     it("does NOT touch the player's combatResources when the enemy casts a skill (D2 bypass)", () => {
         mockSequentialRng(0.5);
 
-        const skillLookup = (id: string) => getSkillById(id);
-        const enemy = { ...Disatree_01, skills: [getSkillById('achilles-gambit')!] };
+        const skillLookup = (id: string) => getCardById(id);
+        const enemy = { ...Disatree_01, skills: [getCardById('achilles-gambit')!] };
         const state = initializeCombat(Player, enemy);
         const resourcesBefore = { ...state.combatResources };
 
@@ -303,7 +303,7 @@ describe('Enemy skill caster path (Phase 49)', () => {
     it("blocks an enemy skill not in the enemy's rotation and emits a skill-blocked event", () => {
         mockSequentialRng(0.5);
 
-        const skillLookup = (id: string) => getSkillById(id);
+        const skillLookup = (id: string) => getCardById(id);
         // Enemy has NO skills rotation — the dispatched skill should be rejected.
         const enemy = { ...Disatree_01, skills: [] };
         const state = initializeCombat(Player, enemy);

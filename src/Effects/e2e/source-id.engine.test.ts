@@ -16,18 +16,18 @@ import { mockSequentialRng } from '../../test-utils/rng';
 import { createCharacter } from '../../Character';
 import { createEnemy } from '../../Enemy';
 import { initializeCombat } from '../../Combat/combat.reducer';
-import { executeSkill } from '../../Skills/skill.engine';
-import type { Skill } from '../../Skills/types';
+import { executeSkill } from '../../Cards/skill.engine';
+import type { Card } from '../../Cards/types';
 import { applyProcOutcome } from '../../Combat/combat-effects';
 import type { ProcRollOutcome } from '../../Combat/combat-effects';
 import type { Effect } from '../types';
 
 afterEach(() => vi.restoreAllMocks());
 
-const lookup = (skill: Skill) => (id: string): Skill | undefined =>
+const lookup = (skill: Card) => (id: string): Card | undefined =>
     id === skill.id ? skill : undefined;
 
-const debuffSkill: Skill = {
+const debuffSkill: Card = {
     id: 'sk_doubt',
     name: 'Sow Doubt',
     category: 'fallacy',
@@ -41,7 +41,7 @@ const debuffSkill: Skill = {
     combatEffects: [{ effectId: 'debuff_poison', appliedTo: 'opponent' }],
 };
 
-const buffSkill: Skill = {
+const buffSkill: Card = {
     id: 'sk_resolve',
     name: 'Self-Resolve',
     category: 'paradox',

@@ -1,6 +1,6 @@
 import { Character } from '../Character/types';
 import { Enemy } from '../Enemy/types';
-import { CombatResources } from '../Skills/types';
+import { CombatResources } from '../Cards/types';
 
 /**
  * The three stances. Combat works as rock-paper-scissors:
@@ -39,7 +39,7 @@ export type CritStyle = 'double' | 'pierce';
  *
  * @property stance  - heart/body/mind.
  * @property action  - attack/defend/skill/item/flee.
- * @property skillId - Skill ID, required when `action === 'skill'`.
+ * @property skillId - Card ID, required when `action === 'skill'`.
  * @property itemId  - Inventory item ID, required when `action === 'item'`.
  *                    Per Spec 05 only consumables are usable in combat — the
  *                    resolver emits an `item-blocked` event for anything else.

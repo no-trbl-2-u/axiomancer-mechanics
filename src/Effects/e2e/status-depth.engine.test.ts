@@ -11,11 +11,11 @@ import { mockFixedRng, restoreOriginalRng } from '../../test-utils/rng';
 
 // Import the modules we're testing
 import { evaluateInteractions, checkInteractionTrigger } from '../interactions';
-import { evaluateExtendedSynergyPredicate } from '../../Skills/synergy-predicates';
+import { evaluateExtendedSynergyPredicate } from '../../Cards/synergy-predicates';
 import { EFFECT_INTERACTIONS, validateInteractions } from '../amplification.registry';
 import { effectsLibrary } from '../effects.library';
 import type { ActiveEffect } from '../types';
-import type { ExtendedSynergyPredicate } from '../../Skills/synergy-predicates';
+import type { ExtendedSynergyPredicate } from '../../Cards/synergy-predicates';
 
 describe('Status Effect Depth Engine', () => {
     afterEach(() => {

@@ -40,7 +40,7 @@ import {
 } from '../equipment.engine';
 import { initializeCombat } from '../../Combat/combat.reducer';
 import { resolveCombatRound } from '../../Combat/combat.resolver';
-import { generateBasicActionResources } from '../../Skills/skill.engine';
+import { generateBasicActionResources } from '../../Cards/skill.engine';
 import { mockSequentialRng, mockAlternatingRng } from '../../test-utils/rng';
 import { Consumable, Equipment } from '../types';
 

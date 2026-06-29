@@ -84,7 +84,7 @@ export { resolveCombatRound } from './combat.resolver';
 export type {
     RoundResolution, RoundEvent, CombatActor,
     RoundStartEvent, ActionRestrictionEvent, AdvantageEvent,
-    StanceEffectEvent, ScenarioEvent, SkillPhaseEvent, ResourceEvent,
+    StanceEffectEvent, ScenarioEvent, CardPhaseEvent, ResourceEvent,
     ItemPhaseEvent, RoundEndEvent,
 } from './combat.resolver';
 

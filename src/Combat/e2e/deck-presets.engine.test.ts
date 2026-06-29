@@ -13,7 +13,7 @@ import {
     listDeckPresets, getDeckPreset, buildPresetDeck,
 } from '../combat.deck-presets';
 import { SYNTHETIC_CARD_IDS, classifyVerbClass } from '../combat.cards';
-import { getSkillById } from '../../Skills/skill.library';
+import { getCardById } from '../../Cards/cards.library';
 import { lookupEffect } from '../../Effects';
 import { initializeCombatEncounter, rollEncounterDice } from '../combat.engine';
 import { Player } from '../../Character/characters.mock';
@@ -30,7 +30,7 @@ const FOCUS_CLASSES: Record<string, CombatVerbClass[]> = {
 };
 
 function verbClassOf(cardId: string): CombatVerbClass | null {
-    const skill = getSkillById(cardId);
+    const skill = getCardById(cardId);
     return skill ? classifyVerbClass(skill, lookupEffect).verbClass : null;
 }
 
@@ -44,7 +44,7 @@ describe('preset combat decks', () => {
     it('every card id in every preset resolves to a real skill', () => {
         for (const preset of listDeckPresets()) {
             for (const id of preset.cardIds) {
-                expect(getSkillById(id), `${preset.id} → ${id}`).toBeDefined();
+                expect(getCardById(id), `${preset.id} → ${id}`).toBeDefined();
             }
         }
     });

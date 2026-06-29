@@ -184,7 +184,7 @@ export interface CellSnapshot {
         topStances: string;
         /** Top skill ids by use count (status-effect engagement signal). */
         topSkills: string[];
-        /** Skill actions per run — proxy for status-effect engagement. */
+        /** Card actions per run — proxy for status-effect engagement. */
         skillUsePerRun: number;
         /** Share of player actions that were skills (vs attack/defend/item). */
         skillActionShare: number;

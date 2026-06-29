@@ -8,6 +8,7 @@ const config: Config[] = defineConfig([
     ignores: [
       "dist/**",
       "node_modules/**",
+      "editor-web/**",
       ".claude/**",
       "docs/**",
       "src/CLI/**",

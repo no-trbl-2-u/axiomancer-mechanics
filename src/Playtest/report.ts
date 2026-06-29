@@ -41,7 +41,7 @@ export function renderPlaytestMarkdown(report: PlaytestReport): string {
         '',
         ...renderCounts(report.metrics.stanceUse),
         '',
-        '## Skill Use',
+        '## Card Use',
         '',
         ...renderCounts(report.metrics.skillUse),
         '',

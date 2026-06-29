@@ -13,8 +13,8 @@ import { describe, it, expect, afterEach, vi } from 'vitest';
 import { createGameStore } from '../store';
 import { nullAdapter } from '../persistence/null.adapter';
 import { RESOURCE_CARRY } from '../game-mechanics.constants';
-import { carryPhilosophicalResources } from '../../Skills';
-import type { CombatResources } from '../../Skills/types';
+import { carryPhilosophicalResources } from '../../Cards';
+import type { CombatResources } from '../../Cards/types';
 import { Player } from '../../Character/characters.mock';
 import { TidepoolCrab } from '../../Enemy/enemy.library';
 

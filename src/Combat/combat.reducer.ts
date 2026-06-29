@@ -9,7 +9,7 @@ import { aggregateCombatStartTokens } from '../Items/equipment.engine';
 import { aggregateSetStartTokens, getActiveSetPassiveEffectIds } from '../Items/set.engine';
 import { lookupEffect } from '../Effects';
 import type { ActiveEffect } from '../Effects/types';
-import type { CombatResources } from '../Skills/types';
+import type { CombatResources } from '../Cards/types';
 import {
     Stance, Action, CombatPhase, CombatState, BattleLogEntry,
 } from './types';

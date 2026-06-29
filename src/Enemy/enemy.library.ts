@@ -25,14 +25,14 @@ import { LootTableEntry } from './types';
 import { consumableLibrary, getConsumableById } from '../Items/consumable.library';
 import { dropItem } from '../Items/item.factory';
 import { Consumable } from '../Items/types';
-import { getSkillById } from '../Skills/skill.library';
-import type { Skill } from '../Skills/types';
+import { getCardById } from '../Cards/cards.library';
+import type { Card } from '../Cards/types';
 
-// ─── Skill rotation helpers (Phase 49) ────────────────────────────────────────
+// ─── Card rotation helpers (Phase 49) ────────────────────────────────────────
 
 /** Returns a fresh copy of the named skill from the library. */
-function skill(id: string): Skill {
-    const found = getSkillById(id);
+function skill(id: string): Card {
+    const found = getCardById(id);
     if (!found) {
         throw new Error(`enemy.library: unknown skill id '${id}'.`);
     }

@@ -16,7 +16,7 @@
  */
 
 import type { PlaytestReport } from '../Playtest/types';
-import type { CombatResources } from '../Skills/types';
+import type { CombatResources } from '../Cards/types';
 
 /** Snapshot of resource state at a point in combat */
 export interface ResourceFlowSnapshot {

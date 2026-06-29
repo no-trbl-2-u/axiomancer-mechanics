@@ -20,7 +20,7 @@ import { initializeCombat, selectMercyChoice } from '../Combat/combat.reducer';
 import { determineEnemyAction, determineCombatEnd } from '../Combat';
 import { applyMoralMeterScaling } from '../Combat/difficulty';
 import { resolveCombatRound } from '../Combat/combat.resolver';
-import { getSkillById } from '../Skills/skill.library';
+import { getCardById } from '../Cards/cards.library';
 import {
     useConsumable as useConsumableItem,
 } from '../Items/item.reducer';
@@ -32,7 +32,7 @@ import {
     unequipItem as unequipItemReducer,
 } from '../Character/equipment.reducer';
 import { createCharacter, allocateStatPoint } from '../Character';
-import { learnSkill, carryPhilosophicalResources } from '../Skills';
+import { learnSkill, carryPhilosophicalResources } from '../Cards';
 import { createStartingWorld, emptyQuestLog } from '../World';
 import { moveToNode as moveWorld } from '../World/world.reducer';
 import { resolveMapEvent } from '../World';
@@ -118,7 +118,7 @@ function applyLevelUps(player: Character): Character {
     return next;
 }
 
-const skillLookup = (id: string) => getSkillById(id);
+const skillLookup = (id: string) => getCardById(id);
 
 /**
  * Shifts the moral meter by the specified delta, clamping to [-100, +100].

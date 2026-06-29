@@ -114,11 +114,11 @@ describe('Phase 46 — alignment-gated content (live authored gates)', () => {
     });
 
     it('nirvana-fallacy is learnable only when outlook ≤ -34', async () => {
-        const { getSkillById } = await import('../../Skills/skill.library');
-        const { meetsLearningRequirement } = await import('../../Skills/skill.engine');
+        const { getCardById } = await import('../../Cards/cards.library');
+        const { meetsLearningRequirement } = await import('../../Cards/skill.engine');
         const { createCharacter } = await import('../../Character');
 
-        const skill = getSkillById('nirvana-fallacy')!;
+        const skill = getCardById('nirvana-fallacy')!;
         const ch = createCharacter({
             name: 'Tester', level: 10,
             baseStats: { heart: 6, body: 6, mind: 6 },
@@ -132,11 +132,11 @@ describe('Phase 46 — alignment-gated content (live authored gates)', () => {
     });
 
     it('appeal-to-fear is learnable only when scope ≥ 34', async () => {
-        const { getSkillById } = await import('../../Skills/skill.library');
-        const { meetsLearningRequirement } = await import('../../Skills/skill.engine');
+        const { getCardById } = await import('../../Cards/cards.library');
+        const { meetsLearningRequirement } = await import('../../Cards/skill.engine');
         const { createCharacter } = await import('../../Character');
 
-        const skill = getSkillById('appeal-to-fear')!;
+        const skill = getCardById('appeal-to-fear')!;
         const ch = createCharacter({
             name: 'Tester', level: 10,
             baseStats: { heart: 6, body: 6, mind: 6 },

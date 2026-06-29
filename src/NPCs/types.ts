@@ -4,7 +4,7 @@ import { PhilosophicalAlignment } from '../Philosophy/types';
 
 /**
  * Single-clause alignment predicate used by `DialogueChoice.requires` and
- * `SkillLearningRequirement` to gate content behind a position on the
+ * `CardLearningRequirement` to gate content behind a position on the
  * Phase 42 alignment cube.
  *
  * `gte` matches when the player's axis value is greater than or equal to

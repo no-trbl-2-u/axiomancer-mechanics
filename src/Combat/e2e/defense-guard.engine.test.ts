@@ -26,7 +26,7 @@ import type { Enemy } from '../../Enemy/types';
 import { TidepoolCrab } from '../../Enemy/enemy.library';
 import { deepClone } from '../../Utils';
 import { mockSequentialRng } from '../../test-utils/rng';
-import { getSkillById } from '../../Skills/skill.library';
+import { getCardById } from '../../Cards/cards.library';
 import { lookupEffect } from '../../Effects';
 import {
     initializeCombatEncounter, resolveCombatPhase, rollEncounterDice,
@@ -80,7 +80,7 @@ function setDice(state: CombatEncounterState, colors: CombatDieColor[]): CombatE
 describe('Spec 26b — defense cards classify as `defend`', () => {
     it('a `guard` skill is the defend verb class on the NO-pressure track', () => {
         for (const id of DEFENSE_IDS) {
-            const skill = getSkillById(id);
+            const skill = getCardById(id);
             expect(skill, `${id} must be a real skill`).toBeDefined();
             const { verbClass, track } = classifyVerbClass(skill!, lookupEffect);
             expect(verbClass, id).toBe('defend');
@@ -89,7 +89,7 @@ describe('Spec 26b — defense cards classify as `defend`', () => {
     });
 
     it('the projected card advertises GUARD in its action text + 0 pressure', () => {
-        const card = toCombatCard(BRACE, getSkillById, lookupEffect);
+        const card = toCombatCard(BRACE, getCardById, lookupEffect);
         expect(card).not.toBeNull();
         expect(card!.verbClass).toBe('defend');
         expect(card!.bottomDamagePreview).toBe(0);

@@ -36,9 +36,9 @@ import { ActiveEffect, Effect, EffectApplicationResult, EffectTier } from '../Ef
 import { runRoundEndPhase } from './phases/round-end';
 import { CombatAction, CombatState, Stance, Action, Advantage, BattleLogEntry } from './types';
 import {
-    ResourceCost, SkillCategory, CombatResources,
-} from '../Skills/types';
-import type { BasicActionOutcome, SkillLookup } from '../Skills/skill.engine';
+    ResourceCost, CardCategory, CombatResources,
+} from '../Cards/types';
+import type { BasicActionOutcome, CardLookup } from '../Cards/skill.engine';
 import { dumpEffectState } from './debug';
 import { getRng } from '../Utils/rng';
 import { runRoundStartPhase } from './phases/round-start';
@@ -138,12 +138,12 @@ export type RoundEndEvent =
     | { phase: 'round-end'; kind: 'expired'; actor: CombatActor; expired: ActiveEffect[] };
 
 /**
- * Skill-execution and resource-economy events. Emitted when the player
+ * Card-execution and resource-economy events. Emitted when the player
  * picks `action: 'skill'` (Spec 04 — only player skills today; enemy skills
  * arrive in Spec 07) and after every basic-action contest that generates
  * stance tokens.
  */
-export type SkillPhaseEvent =
+export type CardPhaseEvent =
     | { phase: 'skill'; kind: 'damage';
         skillId: string; target: 'self' | 'enemy';
         amount: number; hpBefore: number; hpAfter: number }
@@ -164,7 +164,7 @@ export type SkillPhaseEvent =
     | { phase: 'skill'; kind: 'resources-spent';
         skillId: string; cost: ResourceCost }
     | { phase: 'skill'; kind: 'philosophical-generated';
-        skillId: string; category: SkillCategory }
+        skillId: string; category: CardCategory }
     | { phase: 'skill'; kind: 'synergy-fired';
         skillId: string;
         bonusDamage: number;
@@ -226,7 +226,7 @@ export type RoundEvent =
     | AdvantageEvent
     | StanceEffectEvent
     | ScenarioEvent
-    | SkillPhaseEvent
+    | CardPhaseEvent
     | ResourceEvent
     | ItemPhaseEvent
     | RoundEndEvent;
@@ -326,14 +326,14 @@ function buildBattleLogEntry(
  *   6. `processRoundEndEffects` — end-phase DoT → tick & expire.
  *   7. Increment the round counter.
  *
- * @param skillLookup - Resolves a `skillId` to a Skill definition. Required
+ * @param skillLookup - Resolves a `skillId` to a Card definition. Required
  *   when the player chooses `action: 'skill'`; otherwise unused.
  */
 export function resolveCombatRound(
     state: CombatState,
     playerAction: CombatAction,
     enemyAction: CombatAction,
-    skillLookup?: SkillLookup,
+    skillLookup?: CardLookup,
     exploitedRegions?: string[],
 ): RoundResolution {
     // Early validation to catch contract violations (GitHub issue #74)

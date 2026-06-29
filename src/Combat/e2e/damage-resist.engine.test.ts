@@ -10,8 +10,8 @@ import { describe, it, expect } from 'vitest';
 import { calculateDamageResistance, getSkillDamageType } from '../damage-resist';
 import { Player } from '../../Character/characters.mock';
 import { Disatree_01 } from '../../Enemy/enemy.library';
-import { getSkillById } from '../../Skills/skill.library';
-import { calculateSkillDamage } from '../../Skills/skill.engine';
+import { getCardById } from '../../Cards/cards.library';
+import { calculateSkillDamage } from '../../Cards/skill.engine';
 
 describe('Phase 93 — Damage-resist primitive', () => {
     it('reduces damage by target resistance stats', () => {
@@ -54,7 +54,7 @@ describe('Phase 93 — Damage-resist primitive', () => {
         defender.baseStats.body = 5; // Some resistance
 
         // Get a body-scaling skill
-        const bodySkill = getSkillById('ad-hominem-strike')!;
+        const bodySkill = getCardById('ad-hominem-strike')!;
         expect(bodySkill.scalingStat).toBe('body');
 
         // Calculate damage with resistance applied
@@ -70,7 +70,7 @@ describe('Phase 93 — Damage-resist primitive', () => {
 
     it('maintains backward compatibility when target not provided', () => {
         const attacker = Player;
-        const skill = getSkillById('ad-hominem-strike')!;
+        const skill = getCardById('ad-hominem-strike')!;
 
         // Without target should work as before (no resistance applied)
         const damageWithoutTarget = calculateSkillDamage(attacker, skill);

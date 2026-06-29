@@ -4,7 +4,7 @@ import { createCharacter } from '../../Character';
 import { createGameStore } from '../../Game/store';
 import { createEventEmitter } from '../../Game/events';
 import { nullAdapter } from '../../Game/persistence/null.adapter';
-import { skillLibrary } from '../../Skills/skill.library';
+import { cardLibrary } from '../../Cards/cards.library';
 import { consumableLibrary } from '../../Items/consumable.library';
 import {
     devSetLevel, devSetStats, devLearnSkills,
@@ -74,7 +74,7 @@ describe('devLearnSkills', () => {
         const r = devLearnSkills(store, 'all');
         expect(r.ok).toBe(true);
         const known = store.getState().player.knownSkills;
-        for (const skill of skillLibrary) {
+        for (const skill of cardLibrary) {
             expect(known).toContain(skill.id);
         }
     });
@@ -191,7 +191,7 @@ describe('devMaxOut', () => {
         const { player, } = store.getState();
         expect(player.level).toBe(20);
         expect(player.baseStats.heart).toBe(20);
-        expect(player.knownSkills.length).toBe(skillLibrary.length);
+        expect(player.knownSkills.length).toBe(cardLibrary.length);
         expect(player.inventory.length).toBeGreaterThan(0);
         expect(player.currency).toBeGreaterThanOrEqual(999);
     });

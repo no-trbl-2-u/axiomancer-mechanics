@@ -11,7 +11,7 @@ import type { CombatAction, CombatState } from '../types';
 import { createEnemy } from '../../Enemy';
 import type { Enemy } from '../../Enemy/types';
 import { buildCharacterFromPreset, apprenticePreset } from '../../Character/presets';
-import { getSkillById } from '../../Skills';
+import { getCardById } from '../../Cards';
 import { FRIENDSHIP_COUNTER_MAX } from '../../Game/game-mechanics.constants';
 
 function player() {
@@ -64,7 +64,7 @@ describe('Phase 112 — Befriend authority and HP gate', () => {
 
         const action: CombatAction = { stance: 'heart', action: 'skill', skillId: 'befriend' };
         const enemyAction: CombatAction = { stance: 'body', action: 'defend' };
-        const result = resolveCombatRound(state, action, enemyAction, getSkillById);
+        const result = resolveCombatRound(state, action, enemyAction, getCardById);
 
         expect(result.state.phase).not.toBe('mercy_choice');
         expect(result.combatEvents).toContainEqual(expect.objectContaining({
@@ -82,7 +82,7 @@ describe('Phase 112 — Befriend authority and HP gate', () => {
 
         const action: CombatAction = { stance: 'heart', action: 'skill', skillId: 'befriend' };
         const enemyAction: CombatAction = { stance: 'body', action: 'defend' };
-        const result = resolveCombatRound(state, action, enemyAction, getSkillById);
+        const result = resolveCombatRound(state, action, enemyAction, getCardById);
 
         expect(result.state.phase).toBe('mercy_choice');
         expect(result.state.mercyChoiceActive).toBe(true);

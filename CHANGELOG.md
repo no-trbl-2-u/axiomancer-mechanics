@@ -12,6 +12,35 @@ deep imports are part of the supported surface.
 
 ## [Unreleased]
 
+## [0.35.0] — 2026-06-29
+
+Finalizes the 0.35.0 line (combat depth, previously `0.35.0-beta.0`) and lands a
+cards-vs-skills naming de-conflation. Non-breaking: legacy public names remain as
+`@deprecated` aliases.
+
+### Changed
+
+- **De-conflation — the card (combat action) data layer is renamed off the legacy
+  "skill" naming.** Cards (the actions played in combat) were historically stored
+  under a "skill" name; genuine Skills are the token-activated abilities (Second
+  Wind, signatures) and are a separate concept. Renamed: `src/Skills/` →
+  `src/Cards/`, `skill.library.ts` → `cards.library.ts`; type `Skill` → `Card`
+  (and the `Skill*` type family → `Card*`: `CardCategory`, `CardTier`,
+  `CardTarget`, `CardCombatEffects`, `CardSpecialMechanic`, `CardLearningRequirement`,
+  `CardSynergy`, `CardLookup`, `CardEvent`, `CardResolution`); `skillLibrary` →
+  `cardLibrary`; `getSkillById` → `getCardById`; `SkillsStatType` → `StatType`.
+  The `SignatureSkill` family (genuine token abilities), `CombatResources`, and
+  `ResourceCost` are intentionally unchanged.
+
+### Deprecated
+
+- `skillLibrary`, `getSkillById`, and the `Skill` type remain exported as
+  `@deprecated` aliases of `cardLibrary` / `getCardById` / `Card` for backward
+  compatibility. Migrate to the `card*` names; the aliases will be removed in a
+  future minor.
+
+(Combat-depth additions from `0.35.0-beta.0`, below, are carried forward into 0.35.0.)
+
 ## [0.35.0-beta.0] — 2026-06-29
 
 Combat depth (prerelease, `combat-depth-epic`). Two on-vision levers that make the marquee decisions matter and combat genuinely loseable, without de-centering status (status engagement is unchanged in simulation).

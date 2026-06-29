@@ -37,7 +37,7 @@ export interface CharacterPreset {
     baseStats: BaseStats;
     /** Equipment to drop and equip. Each slot is filled at 'common' rarity. */
     equipment: CharacterPresetEquipmentEntry[];
-    /** Skill IDs the character knows. The full known set is the combat
+    /** Card IDs the character knows. The full known set is the combat
      *  catalogue (ADR-0002); there is no equipped-skill rotation. */
     knownSkills: string[];
     /** Consumable IDs (and quantities) to seed the inventory. */

@@ -7,7 +7,7 @@ import { ENEMY_REGISTRY, type EnemySlug } from '../Enemy/enemy.library';
 import type { Enemy } from '../Enemy/types';
 import { createGameStore } from '../Game/store';
 import { nullAdapter } from '../Game/persistence/null.adapter';
-import { getSkillById, skillLibrary } from '../Skills';
+import { getCardById, cardLibrary } from '../Cards';
 import { setSeed } from '../Utils/rng';
 import { equipmentTemplates } from '../Items/equipment.templates';
 import { dropItem } from '../Items/item.factory';
@@ -67,7 +67,7 @@ function createMaxOutCharacter() {
             hands: equipment.find(item => item.slot === 'hands'),
             feet: equipment.find(item => item.slot === 'feet'),
         },
-        knownSkills: skillLibrary.map(skill => skill.id),
+        knownSkills: cardLibrary.map(skill => skill.id),
     });
 }
 
@@ -266,7 +266,7 @@ function runCombatTrial(
             combat,
             playerAction,
             enemyAction,
-            getSkillById,
+            getCardById,
             store.getState().regionConsequences.exploitedRegions,
         );
         store.getState().updateCombat(nextCombat, combatEvents);

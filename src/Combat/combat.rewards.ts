@@ -15,7 +15,7 @@
  */
 
 import type { Character } from '../Character/types';
-import { getSkillById } from '../Skills/skill.library';
+import { getCardById } from '../Cards/cards.library';
 import { isGoldCard } from './combat.cards';
 import { playerArchetype } from './combat.signature';
 import type { PlayerArchetype } from './combat.encounter.types';
@@ -62,11 +62,11 @@ export const STARTING_SKILL_ID = 'slippery-slope';
 
 /** A valid reward-pool entry must resolve to a real skill. */
 function validPool(): string[] {
-    return COMBAT_REWARD_POOL.filter(id => !!getSkillById(id));
+    return COMBAT_REWARD_POOL.filter(id => !!getCardById(id));
 }
 
 const ASPECT_OF = (id: string): PlayerArchetype | null => {
-    const s = getSkillById(id);
+    const s = getCardById(id);
     return s ? (s.philosophicalAspect as PlayerArchetype) : null;
 };
 
@@ -118,6 +118,6 @@ export function addRewardCard(player: Character, cardId: string): Character {
  */
 export function unlockSkillViaDilemma(player: Character, skillId: string): Character {
     if (player.knownSkills.includes(skillId)) return player;
-    if (!getSkillById(skillId)) return player;
+    if (!getCardById(skillId)) return player;
     return { ...player, knownSkills: [...player.knownSkills, skillId] };
 }

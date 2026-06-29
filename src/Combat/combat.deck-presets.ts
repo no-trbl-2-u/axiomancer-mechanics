@@ -21,7 +21,7 @@
  * edit as the library evolves.
  */
 
-import { getSkillById } from '../Skills/skill.library';
+import { getCardById } from '../Cards/cards.library';
 import { SYNTHETIC_CARD_IDS } from './combat.cards';
 
 /** The design lever a preset leans on (mirrors the card effect-kinds). */
@@ -140,7 +140,7 @@ export function getDeckPreset(id: string): CombatDeckPreset | undefined {
 
 /** True when a card id resolves to a real skill (presets carry only skill-sourced cards). */
 function isValidPresetCard(id: string): boolean {
-    return !!getSkillById(id);
+    return !!getCardById(id);
 }
 
 /**
