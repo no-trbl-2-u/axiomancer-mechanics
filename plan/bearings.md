@@ -171,6 +171,14 @@ Combat:     determineAdvantage, getBaseStat, getAttackStat, getDefenseStat, getS
             turn is fully denied); THREAT_WEAKEN_FLOOR (number, default 0.4 — minimum damage
             multiplier when weakened but not denied). Used by resolveThreatPhase; consumers
             can read these to display soft-control thresholds in the UI.)
+            (+ Phase 169 curated loadout codec — COMBAT_LOADOUT_FLAG_PREFIX,
+            COMBAT_LOADOUT_MAX (20), getCombatLoadout(flags), decodeCombatLoadout(flags),
+            addToLoadout(flags, cardId), removeFromLoadout(flags, cardId). Loadout persisted
+            in GameState.flags; buildCombatDeck(player, flags?) prefers loadout when present,
+            falls back to knownSkills. createNewGameState() seeds STARTING_SKILL_IDS.
+            isCombatSynergySatisfied(card, enemyEffects) — pure combo-live helper for mobile
+            UI; true when card's target-side CardSynergy.predicate is satisfied by enemy
+            ActiveEffect[]; false for caster-side predicates and synthetic cards.)
 Combat reducer: initializeCombat, setPhase, setPlayerStance, setPlayerAction,
                 appendLog, incrementFriendship, endCombat
 Effects:    applyEffect, applyTier1CombatEffect, clearTier1EffectsForStance,

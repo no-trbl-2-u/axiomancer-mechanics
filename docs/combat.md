@@ -630,6 +630,32 @@ progression levers, keeping status effects the win path.
 | `CardDieCost` | Die-cost helper type — `{ cost: number; advantage: boolean }` returned by `resolveCardDieCost` and `cardDieCostPreview`. Importable as `import type { CardDieCost } from 'axiomancer-mechanics'`. |
 | `CombatIntentType`, `CombatReadResult`, `SignatureSkill`, `SignatureSkillId`, `SignatureSkillKind`, `PlayerArchetype` | The depth-layer type family. |
 
+### Phase 169 — Curated Combat Loadout
+
+Replaces `buildCombatDeck = knownSkills + Retreat` with a **player-shaped curated loadout**
+persisted on `GameState.flags` via a `combat-loadout-card:` prefix codec (mirroring the
+Hazard deck-flags pattern). When no loadout flags are present the engine falls back to
+`knownSkills` for full backwards compatibility with pre-169 saves.
+
+`createNewGameState()` seeds the loadout with `STARTING_SKILL_IDS` so a fresh character
+always has a valid curated loadout from first boot.
+
+`isCombatSynergySatisfied` is a pure read-only helper for mobile: pass a `CombatCard` in
+hand and the enemy's current `ActiveEffect[]` — it returns `true` when the card's backing
+skill has a `CardSynergy.predicate` that is currently satisfied (target-side only; caster-
+side predicates return `false` here and are resolved at execution time inside `executeSkill`).
+
+| Function / Constant | Description |
+|---------------------|-------------|
+| `getCombatLoadout(flags)` | Decodes the ordered loadout (card ids) from `GameState.flags`. Returns `[]` when no loadout flags are present (caller falls back to `knownSkills`). Alias of `decodeCombatLoadout`. |
+| `addToLoadout(flags, cardId)` | Returns a new flags array with `cardId` appended to the loadout. No-ops when the loadout is at `COMBAT_LOADOUT_MAX` (20) capacity. |
+| `removeFromLoadout(flags, cardId)` | Returns a new flags array with the first occurrence of `cardId` removed. No-ops when the card is not in the loadout. |
+| `decodeCombatLoadout(flags)` | The low-level decode function (same as `getCombatLoadout`). Prefer the alias. |
+| `COMBAT_LOADOUT_FLAG_PREFIX` | The flag prefix used for loadout entries: `'combat-loadout-card:'`. |
+| `COMBAT_LOADOUT_MAX` | Maximum loadout size: `20`. |
+| `buildCombatDeck(player, flags?)` | Extended signature (Phase 169). When `flags` contains loadout entries the curated list is used; otherwise falls back to `player.knownSkills`. Reward cards and the synthetic baseline are always appended. |
+| `isCombatSynergySatisfied(card, enemyEffects)` | Pure read-only combo-live helper. Returns `true` when the card's `CardSynergy.predicate` (target-side) is satisfied by the enemy's current `ActiveEffect[]`. Use this to decide whether to render a combo glow on a card in hand. |
+
 The whole roster is now authored for this system: `combat.threat-sequences.ts`
 ships a deterministic, fully-telegraphed threat pattern for all 61 library
 enemies (each phase declares a hidden stance, a damage weight, and optional
