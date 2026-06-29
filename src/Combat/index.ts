@@ -288,7 +288,7 @@ export {
 export { simulateHazardPatternCombat } from './combat.encounter.sim';
 export type { CombatSimStats, CombatSimPolicyId } from './combat.encounter.sim';
 // Spec 26b tuning §B/§C/§D — archetype signatures, deckbuilder rewards, unlock hook
-export { SIGNATURE_KITS, signaturesForArchetype, playerArchetype } from './combat.signature';
+export { SIGNATURE_KITS, signaturesForArchetype, playerArchetype, CONCLUDE_DMG_PER_STACK } from './combat.signature';
 export {
     COMBAT_REWARD_POOL, STARTING_SKILL_ID, STARTING_SKILL_IDS, rollCombatCardRewards, addRewardCard,
     unlockSkillViaDilemma,

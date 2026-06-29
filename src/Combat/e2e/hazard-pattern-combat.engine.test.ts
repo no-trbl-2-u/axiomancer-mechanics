@@ -32,7 +32,7 @@ import {
     draftStanceDie, getDraftedDie, isPhaseStanceRevealed,
     playSignatureSkill, discardCombatCard, projectCardImpact, startTurn, endTurn,
 } from '../combat.engine';
-import { SIGNATURE_KITS, playerArchetype } from '../combat.signature';
+import { SIGNATURE_KITS, playerArchetype, CONCLUDE_DMG_PER_STACK } from '../combat.signature';
 import { rollCombatCardRewards, addRewardCard, unlockSkillViaDilemma, COMBAT_REWARD_POOL } from '../combat.rewards';
 import { buildCombatDeck, COMBAT_HAND_SIZE } from '../combat.deck';
 import { getCardById } from '../../Cards/cards.library';
@@ -40,6 +40,7 @@ import { simulateHazardPatternCombat } from '../combat.encounter.sim';
 import { getThreatSequence, deriveIntentType } from '../combat.threat';
 import type { CombatDieColor, CombatEncounterState } from '../combat.encounter.types';
 import type { ActiveEffect } from '../../Effects/types';
+import { lookupEffect, applyEffect } from '../../Effects';
 
 afterEach(() => {
     vi.restoreAllMocks();
@@ -480,17 +481,35 @@ describe('Spec 26b §B/§C/§D — archetype kit, rewards, unlock, difficulty fl
         expect(s.signatures).toContain('sig-rallying-blow'); // body exclusive
     });
 
-    it('Rallying Blow (body strike) refreshes the drafted die for a chain', () => {
+    it('Conclusion (body finisher) deals per-stack damage and refreshes the drafted die', () => {
         mockSequentialRng(0.5);
-        let state = initializeCombatEncounter(makePlayer([DOT_BODY]), makeEnemy(120, 'mind'), [DOT_BODY], 1);
+        let state = initializeCombatEncounter(makePlayer([DOT_BODY]), makeEnemy(200, 'mind'), [DOT_BODY], 1);
         state = rollEncounterDice(state).state;
         state = setDice(state, ['body', 'heart']);
         state = draftStanceDie(state, state.dice[0].id).state;
-        // spend the die on a non-landing play would set it spent; instead just force spent.
-        state = { ...state, conviction: 8, dice: state.dice.map(d => d.id === state.draftedDieId ? { ...d, state: 'spent' as const } : d) };
+        // Seed the enemy with two effects: 3 stacks of bleed + 5 stacks of poison = 8 total stacks.
+        const bleedDef = lookupEffect('debuff_bleed')!;
+        const poisonDef = lookupEffect('debuff_poison')!;
+        const { activeEffects: withBleed } = applyEffect([], bleedDef, 1, { intensityDelta: 3, sourceId: 'test' });
+        const { activeEffects: withBoth } = applyEffect(withBleed, poisonDef, 1, { intensityDelta: 5, sourceId: 'test' });
+        state = { ...state, conviction: 8, enemy: { ...state.enemy, effects: withBoth },
+            dice: state.dice.map(d => d.id === state.draftedDieId ? { ...d, state: 'spent' as const } : d) };
+        const hpBefore = state.enemy.health;
         const r = playSignatureSkill(state, 'sig-rallying-blow');
-        expect(getDraftedDie(r.state)?.state).toBe('available'); // refreshed
-        expect(r.state.enemy.effects.some(e => e.effectId === 'debuff_bleed')).toBe(true);
+        // 8 total stacks × CONCLUDE_DMG_PER_STACK(2) = 16 damage
+        expect(hpBefore - r.state.enemy.health).toBe(8 * CONCLUDE_DMG_PER_STACK);
+        expect(getDraftedDie(r.state)?.state).toBe('available'); // drafted die refreshed
+        expect(r.events.some(e => e.kind === 'conclude-hit')).toBe(true);
+    });
+
+    it('Conclusion deals 1 damage (floor) when enemy has no active effects', () => {
+        mockSequentialRng(0.5);
+        let state = initializeCombatEncounter(makePlayer([DOT_BODY]), makeEnemy(80, 'mind'), [DOT_BODY], 1);
+        state = rollEncounterDice(state).state;
+        state = { ...state, conviction: 8, enemy: { ...state.enemy, effects: [] } };
+        const hpBefore = state.enemy.health;
+        const r = playSignatureSkill(state, 'sig-rallying-blow');
+        expect(hpBefore - r.state.enemy.health).toBe(1); // floor(max(1, 0 stacks))
     });
 
     it('Disarming Plea (heart mercy) charms the enemy and strikes its HP', () => {

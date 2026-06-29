@@ -59,9 +59,9 @@ export const SIGNATURE_SKILLS: Record<SignatureSkillId, SignatureSkill> = {
         description: 'HEART — charm the foe (it falters) and strike, softening it toward mercy.',
     },
     'sig-rallying-blow': {
-        id: 'sig-rallying-blow', name: 'Rallying Blow', kind: 'strike', cost: 6,
-        magnitude: 4, effectKind: 'dot', effectId: 'debuff_bleed',
-        description: 'BODY — a heavy bleeding strike that refreshes your stance die so you keep swinging.',
+        id: 'sig-rallying-blow', name: 'Conclusion', kind: 'conclude', cost: 6,
+        magnitude: 0,
+        description: 'BODY — a finisher: deals damage for every stack of every effect on the enemy, then refreshes your stance die. Build the board, then conclude.',
     },
     'sig-clever-gambit': {
         id: 'sig-clever-gambit', name: 'Clever Gambit', kind: 'draw', cost: 4,
@@ -102,6 +102,9 @@ const SECOND_WIND_HEAL_FRAC = 0.12;
 
 /** Direct HP a strike-class signature deals on top of its DoT (× magnitude). */
 const STRIKE_DAMAGE_MULT = 3;
+
+/** Damage dealt per stack of any active effect on the enemy (Conclusion finisher). */
+export const CONCLUDE_DMG_PER_STACK = 2;
 
 /**
  * Applies a signature skill's effect to the encounter (HP model). Pure: returns
@@ -155,6 +158,19 @@ export function applySignatureSkill(
             const healed = heal(state.player, Math.max(1, Math.round(state.player.maxHealth * SECOND_WIND_HEAL_FRAC))) as Character;
             next = { ...state, hand: newHand, drawPile: draw.drawPile, discard: draw.discard, player: healed };
             events.push({ kind: 'hand-drawn', cards: draw.drawn });
+            break;
+        }
+        case 'conclude': {
+            // Finisher — reads the enemy's current effect board and deals
+            // CONCLUDE_DMG_PER_STACK × total stacks (sum of all effect intensities).
+            // Then refreshes the drafted die so the BODY archetype keeps swinging.
+            const totalStacks = state.enemy.effects.reduce((sum, ae) => sum + ae.intensity, 0);
+            const dmg = Math.max(1, Math.round(CONCLUDE_DMG_PER_STACK * totalStacks));
+            const enemy = applyDamage(state.enemy, dmg) as Enemy;
+            const attribution = recordAttribution(state.attribution, skill.id, skill.name, null, dmg);
+            events.push({ kind: 'conclude-hit', amount: dmg, totalStacks });
+            events.push({ kind: 'damage-dealt', cardId: skill.id, target: 'enemy', amount: dmg });
+            next = refreshDraftedDie({ ...state, enemy, attribution });
             break;
         }
         case 'control':

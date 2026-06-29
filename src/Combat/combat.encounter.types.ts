@@ -145,6 +145,7 @@ export type SignatureSkillKind =
     | 'dot'            // guaranteed DoT application at boosted intensity
     | 'mercy'          // disarming hit that softens a low-HP foe toward mercy (heart)
     | 'strike'         // big DoT + refreshes the drafted die for a chain (body)
+    | 'conclude'       // finisher: damage = sum of (intensity × per-stack weight) across all enemy effects (body)
     | 'draw';          // draw cards + refund Conviction (mind economy)
 
 export type SignatureSkillId =
@@ -321,6 +322,7 @@ export type CombatEvent =
     | { kind: 'barrier-absorbed'; amount: number }
     | { kind: 'riposte-fired'; amount: number }
     | { kind: 'execute-fired'; amount: number; recoil: number }
+    | { kind: 'conclude-hit'; amount: number; totalStacks: number }
     | { kind: 'phase-resolved'; phaseIndex: number; mark: 'clear' | 'overwhelmed' }
     | { kind: 'threat-fired'; phaseIndex: number; description: string; effects: CombatThreatEffect[] }
     | { kind: 'hand-drawn'; cards: string[] }
