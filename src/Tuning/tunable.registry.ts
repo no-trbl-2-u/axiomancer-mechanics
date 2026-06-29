@@ -455,6 +455,30 @@ export const TUNABLE_REGISTRY: TunableParam[] = [
         rationale: 'Fraction of the foe max HP a ready EXECUTE finisher deals (clamped to remaining HP).',
         effect: { difficulty: 'lowers', engagement: 'raises' },
     },
+    {
+        id: 'combat.amplifyMultiplier',
+        kind: 'multiplier',
+        category: 'effect',
+        file: COMBAT_EFFECTS_FILE,
+        locator: { exportName: 'AMPLIFY_DEFAULT_MULTIPLIER' },
+        min: 0.5, max: 3, step: 0.25,
+        magnitudeCapPct: 0.5,
+        tags: ['effect', 'damage', 'status-effect', 'amplify', 'dot', 'engagement'],
+        rationale: 'Multiplier applied to the foe pending DoT total for an AMPLIFY burst. Higher = bigger payoff for a built-up DoT board.',
+        effect: { difficulty: 'lowers', engagement: 'raises' },
+    },
+    {
+        id: 'combat.amplifyBurstCap',
+        kind: 'constant',
+        category: 'effect',
+        file: COMBAT_EFFECTS_FILE,
+        locator: { exportName: 'AMPLIFY_BURST_CAP' },
+        min: 20, max: 150, step: 5,
+        magnitudeCapPct: 0.5,
+        tags: ['effect', 'damage', 'status-effect', 'amplify', 'dot', 'engagement'],
+        rationale: 'Hard cap on a single AMPLIFY detonation — keeps the burst meaningful without one-shotting bosses (AMPLIFY does not consume DoT, so the cap is lower than RUPTURE).',
+        effect: { difficulty: 'lowers', engagement: 'raises' },
+    },
 ];
 
 const REGISTRY_BY_ID = new Map(TUNABLE_REGISTRY.map(p => [p.id, p]));

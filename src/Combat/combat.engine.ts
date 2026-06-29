@@ -36,6 +36,7 @@ import {
     getThornsReflect, getDamageTakenMultiplier, getPendingDotTotal, consumeDotEffects,
     getDistinctDebuffCount, getDistinctControlCount,
     RUPTURE_BURST_CAP, COMPOUND_COUNT_CAP, DISRUPT_DENY_AT, EXECUTE_DAMAGE_FRACTION,
+    AMPLIFY_BURST_CAP,
 } from './effects';
 import {
     TURN_DICE_COUNT, rollTurnDice, dieHasStance,
@@ -704,6 +705,21 @@ function playBottomAction(
             attribution = recordAttribution(attribution, card.id, card.name, null, burst);
         }
         events.push({ kind: 'rupture-detonated', amount: burst, consumed: consumedRes.consumed });
+    }
+    const amplifyMech = mechs.find(m => m.kind === 'amplify') as { kind: 'amplify'; multiplier: number } | undefined;
+    if (amplifyMech) {
+        const pending = getPendingDotTotal(state.enemy).total;
+        const amplifyBurst = Math.min(
+            AMPLIFY_BURST_CAP,
+            Math.round(pending * amplifyMech.multiplier * mult * vulnMult),
+        );
+        if (amplifyBurst > 0) {
+            enemy = applyDamage(enemy, amplifyBurst);
+            mechanicDamage += amplifyBurst;
+            directDamage += amplifyBurst;
+            attribution = recordAttribution(attribution, card.id, card.name, null, amplifyBurst);
+        }
+        events.push({ kind: 'amplify-detonated', amount: amplifyBurst, pendingDot: pending });
     }
     const compoundMech = mechs.find(m => m.kind === 'compound') as { kind: 'compound'; perDebuff: number } | undefined;
     if (compoundMech) {

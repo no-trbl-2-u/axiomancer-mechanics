@@ -69,6 +69,14 @@ export const DISRUPT_DENY_AT = 3;
 /** EXECUTE — fraction of the foe's MAX HP a ready finisher deals (clamped to the
  *  foe's remaining HP, so it is typically lethal at/below the HP gate). Tunable. */
 export const EXECUTE_DAMAGE_FRACTION = 0.75;
+/** AMPLIFY — default multiplier applied to the foe's pending DoT total for an
+ *  AMPLIFY burst. The per-card `multiplier` field may override this; the tunable
+ *  tunes the default that card authors use. */
+export const AMPLIFY_DEFAULT_MULTIPLIER = 1.5;
+/** AMPLIFY — hard cap on a single AMPLIFY detonation's burst HP. Weaker than
+ *  RUPTURE_BURST_CAP by design — AMPLIFY does NOT consume the DoT (it keeps
+ *  ticking), so the burst is a bonus on top of ongoing damage. Tunable. */
+export const AMPLIFY_BURST_CAP = 60;
 
 /**
  * VULNERABLE multiplier — the outgoing-damage multiplier the HP engine applies to

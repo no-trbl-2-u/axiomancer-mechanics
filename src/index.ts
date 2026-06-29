@@ -69,6 +69,7 @@ export {
     getDistinctDebuffCount, getDistinctControlCount,
     VULNERABLE_MAX_MULT, RUPTURE_BURST_CAP, COMPOUND_COUNT_CAP,
     DISRUPT_DENY_AT, EXECUTE_DAMAGE_FRACTION,
+    AMPLIFY_DEFAULT_MULTIPLIER, AMPLIFY_BURST_CAP,
     getDotAmplificationByEffect, getActiveDotTotal, getActiveDotAmplifications,
     resolveEffectApplication,
     calculateDamageResistance, getSkillDamageType,

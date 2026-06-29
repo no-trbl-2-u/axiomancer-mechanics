@@ -92,6 +92,9 @@ function bestCard(s: CombatEncounterState, notUids?: Set<string>) {
         // RUPTURE — detonate once a worthwhile DoT stack has accrued.
         const rupture = cards.find(c => cardMechKinds(c.card).has('rupture'));
         if (rupture && pendingDot >= 12) return rupture;
+        // AMPLIFY — burst (non-consuming) once a moderate DoT stack is present.
+        const amplify = cards.find(c => cardMechKinds(c.card).has('amplify'));
+        if (amplify && pendingDot >= 8) return amplify;
         // COMPOUND — cash in once the foe carries a variety of debuffs.
         const compound = cards.find(c => cardMechKinds(c.card).has('compound'));
         if (compound && distinctDebuffs >= 2) return compound;
@@ -266,6 +269,7 @@ export function runOneEncounter(
     for (const ev of state.log) {
         if (ev.kind === 'dot-tick' && ev.target === 'enemy') dotHpDamage += ev.amount;
         if (ev.kind === 'rupture-detonated') mechanicBurstDamage += ev.amount;
+        if (ev.kind === 'amplify-detonated') mechanicBurstDamage += ev.amount;
         if (ev.kind === 'execute-fired') mechanicBurstDamage += ev.amount;
         if (ev.kind === 'compound-hit') mechanicBurstDamage += ev.amount;
         if (ev.kind === 'conclude-hit') mechanicBurstDamage += ev.amount;

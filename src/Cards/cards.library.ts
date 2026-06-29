@@ -1470,6 +1470,54 @@ const leechingSyllogism: Card = {
     tags: ['siphon', 'sustain', 'mid-game'],
 };
 
+// ─── Phase 168 — HP-model DoT amplifier cards ────────────────────────────────
+// AMPLIFY reads the foe's pending DoT total × multiplier and fires as a HP burst
+// WITHOUT consuming the effects — DoT keeps ticking (distinct from RUPTURE).
+
+/** AMPLIFY (entry) — Tier 2 Heart card. Lower cost + multiplier, accessible at
+ *  level 6. The "build a DoT board, then cash in without losing the tick." */
+const crescendoOfSuffering: Card = {
+    id: 'crescendo-of-suffering',
+    name: 'Crescendo of Suffering',
+    category: 'fallacy',
+    philosophicalAspect: 'heart',
+    description:
+        'You do not interrupt the accumulation — you let it reach its peak, ' +
+        'then conduct it. Every wound keeps bleeding, every poison keeps ' +
+        'spreading. You simply turned the volume up.',
+    tier: 2,
+    resourceCost: { heart: 2 },
+    targetType: 'enemy',
+    basePower: 3,
+    scalingStat: 'heart',
+    specialMechanics: [{ kind: 'amplify', multiplier: 1.5 }],
+    learningRequirement: { level: 6 },
+    addedIn: '2026-06-29',
+    tags: ['status-effect', 'amplify', 'dot', 'mid-game'],
+};
+
+/** AMPLIFY (payoff) — Tier 2 Mind card. Higher cost + multiplier, accessible at
+ *  level 10. The "patience rewards itself" amplifier. */
+const theInevitable: Card = {
+    id: 'the-inevitable',
+    name: 'The Inevitable',
+    category: 'paradox',
+    philosophicalAspect: 'mind',
+    description:
+        'Conclusion is not inflicted — it is observed. You have read every ' +
+        'effect to its endpoint, added them together, and delivered the sum ' +
+        'as a single moment of clarity.',
+    tier: 2,
+    resourceCost: { mind: 2, body: 1 },
+    targetType: 'enemy',
+    basePower: 2,
+    scalingStat: 'mind',
+    specialMechanics: [{ kind: 'amplify', multiplier: 2.0 }],
+    learningRequirement: { level: 10 },
+    addedIn: '2026-06-29',
+    tags: ['status-effect', 'amplify', 'dot', 'mid-game'],
+};
+
 // ─── Library Export ──────────────────────────────────────────────────────────
 
 /**
@@ -1555,6 +1603,9 @@ export const cardLibrary: Card[] = [
     gabrielsBulwark,    // BARRIER  (HEART) — stacking, persistent soak
     briarRiposte,       // RIPOSTE  (BODY) — parry + counter
     leechingSyllogism,  // SIPHON   (HEART) — offense-scaled sustain
+    // Phase 168 — HP-model DoT amplifier cards
+    crescendoOfSuffering, // AMPLIFY (HEART) — pending DoT × 1.5, non-consuming
+    theInevitable,        // AMPLIFY (MIND)  — pending DoT × 2.0, non-consuming
 ];
 
 const skillRegistry: ReadonlyMap<string, Card> = new Map(

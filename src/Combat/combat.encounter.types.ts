@@ -316,6 +316,7 @@ export type CombatEvent =
     | { kind: 'dot-tick'; effectId: string; label: string; amount: number; target: 'self' | 'enemy' }
     // ── 0.34.0 status-depth epic — new card-mechanic events ──────────────────
     | { kind: 'rupture-detonated'; amount: number; consumed: string[] }
+    | { kind: 'amplify-detonated'; amount: number; pendingDot: number }
     | { kind: 'compound-hit'; amount: number; debuffs: number }
     | { kind: 'disrupt-denied'; pips: number }
     | { kind: 'thorns-reflected'; amount: number; target: 'enemy' }

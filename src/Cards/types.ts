@@ -169,7 +169,12 @@ export type CardSpecialMechanic =
      *  at least `dotStacks` distinct DoT effects, deal a large (typically lethal)
      *  hit with optional `recoilPct` self-damage; otherwise fall back to the
      *  normal small strike. Combat-engine owned. */
-    | { kind: 'execute'; hpPct: number; dotStacks: number; recoilPct?: number };
+    | { kind: 'execute'; hpPct: number; dotStacks: number; recoilPct?: number }
+    /** AMPLIFY — read the foe's pending DoT total (getPendingDotTotal) ×
+     *  `multiplier` and fire as a one-time HP burst. DoT effects are NOT consumed —
+     *  they keep ticking (distinct from RUPTURE which consumes them). Capped at
+     *  AMPLIFY_BURST_CAP. Combat-engine owned; skill engine no-ops it. */
+    | { kind: 'amplify'; multiplier: number };
 
 /**
  * Phase 66 — synergy predicate. The matched ActiveEffect on `on`

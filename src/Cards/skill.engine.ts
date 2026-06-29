@@ -862,6 +862,7 @@ function applySpecialMechanic(
         case 'barrier':
         case 'riposte':
         case 'execute':
+        case 'amplify':
             return { caster, target, events };
     }
 }
