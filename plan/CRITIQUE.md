@@ -81,6 +81,15 @@
   - suggested_fix: [user has not specified — iterate to determine]. Likely: rename the sig + give it a `conclude`/`concludeMultiplier` special-mechanic that sums (stacks × per-effect-kind multiplier) across the foe's active effects (a sibling to COMPOUND, which scales with the COUNT of distinct debuffs; Conclusion would scale with STACKS × per-kind weight). On-vision: another payoff that rewards a built-up status board.
   - source: user
 
+- [ ] **[MED] general — enemy difficulty should escalate over fight duration**
+  - pass: user-jot (commit 2998af14431b8bad07378d2c6b9612714a1de82d)
+  - file: unspecified
+  - category: design
+  - observation: Similar to Aeon's End the board game, enemies should become more difficult the longer the fight goes on. This curve should be steeper for bosses. They don't need to get smarter, they just have to have do "more", maybe an extra action, maybe higher numbers on the actions they do take
+  - evidence: user-spotted at 2026-06-29
+  - suggested_fix: [user has not specified — iterate to determine]
+  - source: user
+
 - [x] **[LOW] docs — `GOLD_CARD_IDS`, `isGoldCard`, `CardEffectKind` absent from bearings.md and docs/combat.md** — resolved at `3bd4b27` (iterate, 2026-06-27). Added gold (rare) cards / GUARD mechanic block to bearings.md Combat locked-contract group; added `GOLD_CARD_IDS / isGoldCard / CardEffectKind` row to docs/combat.md Hazard-Pattern Combat API table. Doc-only; 2121 tests + type-check + lint + build green. Score: 3 × 9 / 10 = 2.7. Source: critique-97 (commit 9e28e11).
 
 - [x] **[LOW] docs — Skills resource helpers absent from spec.md + bearings.md** — resolved at `4b6d50d` (iterate, 2026-06-27). Added `generateBasicActionResources`, `generatePhilosophicalResource`, `spendResources`, `calculateSkillDamage` to spec.md Contracts Skills row (resource helpers description) and a matching annotation block to bearings.md Skills group. Doc-only; 2121 tests + type-check + lint + build green. Score: 3 × 9 / 10 = 2.7. Source: critique-97 (commit 9e28e11).
