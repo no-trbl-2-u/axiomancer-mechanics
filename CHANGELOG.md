@@ -12,6 +12,19 @@ deep imports are part of the supported surface.
 
 ## [Unreleased]
 
+## [0.35.1] — 2026-06-29
+
+### Deprecated
+
+- Completed the `@deprecated` backward-compat alias set for the cards/skills
+  de-conflation. In addition to `skillLibrary`/`getSkillById`/`Skill`, the full
+  renamed public type family is now re-exported under its legacy names:
+  `SkillCategory`, `SkillsStatType`, `SkillTier`, `SkillTarget`,
+  `SkillLearningRequirement`, `SkillCombatEffects`, `SkillSpecialMechanic`,
+  `SkillSynergy`, `SkillLookup`, `SkillEvent`, `SkillResolution` (aliases of the
+  `Card*` / `StatType` names). Restores the pre-0.35.0 public surface so
+  consumers (axiomancer-mobile) compile unchanged. Migrate to the `Card*` names.
+
 ## [0.35.0] — 2026-06-29
 
 Finalizes the 0.35.0 line (combat depth, previously `0.35.0-beta.0`) and lands a

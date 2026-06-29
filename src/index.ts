@@ -243,8 +243,27 @@ export {
 export { cardLibrary as skillLibrary } from './Cards';
 /** @deprecated renamed to getCardById */
 export { getCardById as getSkillById } from './Cards';
-/** @deprecated renamed to Card */
-export type { Card as Skill } from './Cards';
+/**
+ * @deprecated The card type family was renamed off the legacy "skill" naming.
+ * Use `Card`, `CardCategory`, `StatType`, `CardTier`, `CardTarget`,
+ * `CardLearningRequirement`, `CardCombatEffects`, `CardSpecialMechanic`,
+ * `CardSynergy`, `CardLookup`, `CardEvent`, `CardResolution`. These aliases
+ * will be removed in a future minor.
+ */
+export type {
+    Card as Skill,
+    CardCategory as SkillCategory,
+    StatType as SkillsStatType,
+    CardTier as SkillTier,
+    CardTarget as SkillTarget,
+    CardLearningRequirement as SkillLearningRequirement,
+    CardCombatEffects as SkillCombatEffects,
+    CardSpecialMechanic as SkillSpecialMechanic,
+    CardSynergy as SkillSynergy,
+    CardLookup as SkillLookup,
+    CardEvent as SkillEvent,
+    CardResolution as SkillResolution,
+} from './Cards';
 
 // ─── Game (state, store, persistence, constants) ──────────────────────────────
 export {
