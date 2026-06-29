@@ -47,6 +47,19 @@ export interface CombatSimStats {
     statusEngagement: number;
     /** Average Conviction spent on Signature Skills per run. */
     avgConvictionSpent: number;
+    /** Fraction of total enemy HP loss delivered by DoT ticks (0–1).
+     *  Doctrine witness: DoT should be the primary damage source in status builds. */
+    dotHpFraction: number;
+    /** Fraction of total enemy HP loss from direct strikes (excl. mechanic bursts) (0–1). */
+    strikeFraction: number;
+    /** Fraction of total enemy HP loss from mechanic bursts (rupture/execute/compound/conclude) (0–1). */
+    mechanicBurstFraction: number;
+    /** Guard availability ratio: total guard present when an enemy threat fired /
+     *  (that guard + total player HP damage taken). A proxy for how often GUARD was relevant. */
+    guardMitigatedFraction: number;
+    /** Mean count of active effects on the enemy at the start of each threat phase.
+     *  Doctrine witness: a loaded status board = the engine working as intended. */
+    avgActiveEffectsPerPhase: number;
 }
 
 const currentPhase = (s: CombatEncounterState) =>
@@ -109,7 +122,7 @@ function bestSignature(s: CombatEncounterState): string | null {
     for (const id of s.signatures) {
         const sig = getSignatureSkill(id);
         if (!sig || s.conviction < sig.cost) continue;
-        if (['dot', 'strike', 'control', 'mercy'].includes(sig.kind)) return id;
+        if (['dot', 'strike', 'control', 'mercy', 'conclude'].includes(sig.kind)) return id;
     }
     return null;
 }
@@ -197,17 +210,25 @@ export function runOneEncounter(
     enemy: Enemy,
     seed: number,
     policy: CombatSimPolicyId = 'greedy',
-): { outcome: CombatOutcome; rounds: number; plays: number; statusPlays: number; convictionSpent: number } {
+): {
+    outcome: CombatOutcome; rounds: number; plays: number; statusPlays: number; convictionSpent: number;
+    dotHpDamage: number; mechanicBurstDamage: number; directHpDamage: number;
+    guardOnAttack: number; playerHpTaken: number;
+    activeEffectSamples: number[];
+} {
     const blind = policy === 'blind';
     let state = initializeCombatEncounter(player, enemy, undefined, seed);
     state = rollEncounterDice(state).state;
 
     let plays = 0;
     let statusPlays = 0;
-    let guard = 0;
-    while (state.phase !== 'complete' && guard < 200) {
-        guard++;
-        // A Befriend success opens the spare/exploit choice — take mercy (spare).
+    let loopGuard = 0;
+    let guardOnAttack = 0;
+    let playerHpTaken = 0;
+    const activeEffectSamples: number[] = [];
+
+    while (state.phase !== 'complete' && loopGuard < 200) {
+        loopGuard++;
         if (state.mercyChoiceActive) {
             state = selectMercyChoice(state, 'spare').state;
             break;
@@ -219,7 +240,19 @@ export function runOneEncounter(
             statusPlays += r.statusPlays;
             if (state.finalOutcome) break;
             if (state.mercyChoiceActive) { state = selectMercyChoice(state, 'spare').state; break; }
-            if (state.phase === 'phase-play') state = resolveThreatPhase(state).state;
+            if (state.phase === 'phase-play') {
+                // Sample active effects and guard BEFORE the threat resolves.
+                activeEffectSamples.push(state.enemy.effects.length);
+                const guardBefore = state.guard ?? 0;
+                const playerHpBefore = state.player.health;
+                const result = resolveThreatPhase(state);
+                state = result.state;
+                // If the threat actually fired, attribute guard availability + HP taken.
+                if (result.events.some(e => e.kind === 'threat-fired')) {
+                    guardOnAttack += guardBefore;
+                    playerHpTaken += Math.max(0, playerHpBefore - state.player.health);
+                }
+            }
         } else {
             break;
         }
@@ -227,12 +260,31 @@ export function runOneEncounter(
 
     const convictionSpent = Math.max(0, state.turn - state.conviction);
 
+    // Derive HP-damage breakdown from the accumulated event log.
+    let dotHpDamage = 0;
+    let mechanicBurstDamage = 0;
+    for (const ev of state.log) {
+        if (ev.kind === 'dot-tick' && ev.target === 'enemy') dotHpDamage += ev.amount;
+        if (ev.kind === 'rupture-detonated') mechanicBurstDamage += ev.amount;
+        if (ev.kind === 'execute-fired') mechanicBurstDamage += ev.amount;
+        if (ev.kind === 'compound-hit') mechanicBurstDamage += ev.amount;
+        if (ev.kind === 'conclude-hit') mechanicBurstDamage += ev.amount;
+    }
+    // directDamageDealt includes mechanic bursts; subtract them to get pure strikes.
+    const directHpDamage = Math.max(0, state.directDamageDealt - mechanicBurstDamage);
+
     return {
         outcome: state.finalOutcome ?? 'defeat',
         rounds: state.round,
         plays,
         statusPlays,
         convictionSpent,
+        dotHpDamage,
+        mechanicBurstDamage,
+        directHpDamage,
+        guardOnAttack,
+        playerHpTaken,
+        activeEffectSamples,
     };
 }
 
@@ -249,6 +301,9 @@ export function simulateHazardPatternCombat(
 ): CombatSimStats {
     let victories = 0, mercies = 0, defeats = 0, retreats = 0;
     let totalRounds = 0, totalPlays = 0, totalStatusPlays = 0, totalConviction = 0;
+    let totalDotHp = 0, totalMechanicBurst = 0, totalDirectHp = 0;
+    let totalGuardOnAttack = 0, totalPlayerHpTaken = 0;
+    let totalActiveEffectSamples = 0, totalPhaseSamples = 0;
 
     for (let i = 0; i < count; i++) {
         const r = runOneEncounter(player, enemy, startSeed + i, policy);
@@ -260,7 +315,17 @@ export function simulateHazardPatternCombat(
         totalPlays += r.plays;
         totalStatusPlays += r.statusPlays;
         totalConviction += r.convictionSpent;
+        totalDotHp += r.dotHpDamage;
+        totalMechanicBurst += r.mechanicBurstDamage;
+        totalDirectHp += r.directHpDamage;
+        totalGuardOnAttack += r.guardOnAttack;
+        totalPlayerHpTaken += r.playerHpTaken;
+        for (const s of r.activeEffectSamples) totalActiveEffectSamples += s;
+        totalPhaseSamples += r.activeEffectSamples.length;
     }
+
+    const totalEnemyHpLost = Math.max(1, totalDotHp + totalMechanicBurst + totalDirectHp);
+    const guardDenom = Math.max(1, totalGuardOnAttack + totalPlayerHpTaken);
 
     return {
         runs: count,
@@ -272,5 +337,10 @@ export function simulateHazardPatternCombat(
         avgRounds: totalRounds / count,
         statusEngagement: totalPlays > 0 ? totalStatusPlays / totalPlays : 0,
         avgConvictionSpent: totalConviction / count,
+        dotHpFraction: totalDotHp / totalEnemyHpLost,
+        strikeFraction: totalDirectHp / totalEnemyHpLost,
+        mechanicBurstFraction: totalMechanicBurst / totalEnemyHpLost,
+        guardMitigatedFraction: totalGuardOnAttack / guardDenom,
+        avgActiveEffectsPerPhase: totalPhaseSamples > 0 ? totalActiveEffectSamples / totalPhaseSamples : 0,
     };
 }
