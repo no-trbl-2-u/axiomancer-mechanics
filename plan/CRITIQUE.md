@@ -89,7 +89,7 @@
   - suggested_fix: Add a "0.35.0 depth epic" annotation block to spec.md Contracts Combat row + bearings.md Combat group covering the 4 new constants; add a matching row to docs/combat.md API table.
   - source: critique
 
-- [ ] **[MED] design — 'rallying blow' → 'Conclusion': damage scales with enemy effect stacks**
+- [x] **[MED] design — 'rallying blow' → 'Conclusion': damage scales with enemy effect stacks** — resolved at `fb4adfb` (iterate, 2026-06-29). Renamed sig-rallying-blow to 'Conclusion'; kind changed from 'strike' → 'conclude'; damage = sum(intensity per active enemy effect) × CONCLUDE_DMG_PER_STACK (2, exported tunable), floor 1. Drafted die still refreshed (BODY identity). New CombatEvent conclude-hit. 2 hermetic cases. Type-check + lint + build + deploy:check green. Score: 6 × 6 / 10 + 0.5 = 4.1. Source: user-jot (a15bee7).
   - pass: user-jot (commit a15bee7)
   - file: src/Combat/combat.signature.ts
   - category: design
