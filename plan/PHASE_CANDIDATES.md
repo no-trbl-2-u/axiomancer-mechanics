@@ -112,93 +112,27 @@
 - score: 3 × 9 / 10 = 2.7
 - recommended-slot: next iterate tick (autonomous, multi-file but all automation/plan/test-comment scope)
 
-### Candidate: PR #190 Press Fate + Deck Presets — e2e convention gap
-- signal: **Recent commits** — PR #190 (commit 3337d32) shipped 8 new public exports: the partial Press Fate re-roll helpers (`rerollSpentDice`/`hasRerollableDice`/`dieIsRerollable` in `combat.dice.ts`) and the preset combat deck surface (`COMBAT_DECK_PRESETS`/`COMBAT_DECK_PRESET_ORDER`/`listDeckPresets`/`getDeckPreset`/`buildPresetDeck` in `combat.deck-presets.ts`). Front-door docs were added at 887e023 (AUDIT pass-111). However, the three re-roll helpers have **zero dedicated test coverage** — they are exercised only indirectly via `playSignatureSkill('sig-press-the-point')` at `hazard-pattern-combat.engine.test.ts:347`; no test directly asserts the helpers' semantics (which dice are rerollable, what `dieIsRerollable` returns per state, that `hasRerollableDice` returns false when all dice are available). The deck preset surface sits at a module-root `src/Combat/combat.deck-presets.test.ts` (off the `e2e/*.engine.test.ts` hermetic convention that every sibling Combat module follows). This is structurally identical to critique-77 LOW (equip-delta off-convention, drained at b2488a3).
-- scope: Add `src/Combat/e2e/press-fate-deck-presets.engine.test.ts` covering: (a) `dieIsRerollable` — true for spent/exhausted/x-locked dice, false for available dice; (b) `hasRerollableDice` — false for an all-available pool, true when any spent/exhausted/x die is present; (c) `rerollSpentDice` — only targeted dice change, at-least-one-usable guard fires, empty-reroll case; (d) `buildPresetDeck`/`listDeckPresets` — each preset produces a non-empty deck containing Retreat, `getDeckPreset` round-trips, unknown id returns empty. Retire or absorb `src/Combat/combat.deck-presets.test.ts` into the new e2e file to restore single-location convention.
-- unblocks: Restores the `e2e/*.engine.test.ts` hermetic convention for the PR #190 surface; makes the three re-roll helper semantics directly verifiable as public contract rather than inferred from signature-skill behaviour; adds a guard against future regressions in the deck-preset system.
-- blocked-by: None — all target functions shipped and barrel-exported at 3337d32.
-- score: 4 × 8 / 10 = 3.2
-- recommended-slot: next iterate or dedicated test-cleanup phase; pairs naturally with any /combat-tuning tick that uses deck presets
+<!-- PR #190 Press Fate + Deck Presets — e2e convention gap — RETIRED via oversight 2026-06-29 (T: retire all three resolved stale candidates). All 3 issues drained: re-roll helper tests (35013a6), deck-presets e2e (35cd2bc), barrel fix (ba19c41). See ## Rejected. -->
 
-### Candidate: Stale Spec 26-30 pool reassessment (OVERSIGHT-ATTENDED)
-- signal: **Architectural staleness** — all five pass-75 Pending candidates (Specs 26–30, scores 5.6/3.6/4.2/4.2/4.0) were filed against the **two-Pressure-Track win model** (DoT Erosion + Control Saturation), which was **REMOVED at cb67ad3** (HP-only model, 2026-06-22). Spec 26 explicitly depends on `combat.pressure.ts` (deleted at cb67ad3), Spec 27 on pressure-track die minting, Spec 28 on track-fill mechanics, Spec 29 on "harden the raced track" intents, Spec 30 on `dotErosionReached` projection. Additionally, the "Public-surface guard follows `export *` re-exports" candidate (pass 74, 4.2) was flagged STALE/RESOLVED in pass 75 (fix shipped at e66c2d4) — still in Pending. **Six stale candidates need /oversight disposition before more combat-depth work is filed**.
-- scope: At the next /oversight, T reviews the six stale Pending rows and decides per row: retire (move to Rejected with a note), replace with an HP-model-native successor spec filed as a new Pending candidate, or defer. The three HP-model-native candidates filed in this pass (candidates 2/3/4 below) are the suggested replacements for the highest-value Spec 26-30 ideas — but T must approve the pivot from the pressure-track framing. No code changes; plan files only.
-- unblocks: Clears queue ambiguity so /march knows which combat-depth work is actually in scope. Without this, any attempt to autonomously ship Spec 26-30 would break against the deleted `combat.pressure.ts` / renamed constants.
-- blocked-by: None for the housekeeping; requires T to attend the oversight.
-- score: 8 × 9 / 10 = 7.2
-- recommended-slot: immediate — needed before any combat-depth phase can be promoted
+<!-- Stale Spec 26-30 pool reassessment (OVERSIGHT-ATTENDED) — RETIRED via oversight 2026-06-29 (T: retire Specs 26-30, promote HP-model successors). Resolved by retiring the five stale specs and promoting Phases 167/168/169. See ## Rejected. -->
 
-### Candidate: HP-model combat sim status-engagement metrics
-- signal: **Recent commits** + **CRITIQUE.md Pending** (MED-1 through MED-3 all reference the HP-only model as a doc-fold gap) + **AUDIT.md** (audit pass 110 filed 0 findings but the sim harness has no status-engagement reporting). Phase 162 (combat audit) + Phase 163 (boss threat tuning) confirm `/combat-tuning` is active and producing balance decisions — but the sim's `buildCombatSummary` output doesn't surface how much of the damage came from DoT vs GUARD mitigation vs basic strike vs gold cards. The CLAUDE.md doctrine explicitly says "treat low status-effect engagement as a balance failure" — without a metric, `/combat-tuning` cannot enforce that. **DOCTRINE-CRITICAL gap.**
-- scope: Extend `simulateHazardPatternCombat` / `buildCombatSummary` to track and report: (a) fraction of total HP-damage dealt via DoT (tick events) vs basic-strike vs gold-card burst vs other; (b) GUARD-mitigated-damage ratio; (c) mean status effects active on enemy at end of each phase. Add these to the `CombatBalanceReport` type + the combat-sim CLI `--report` output. Extend `hazard-pattern-combat.balance.sim.test.ts` to assert the new fields are non-zero in representative sim runs.
-- unblocks: Makes the doctrine's "low status-effect engagement = balance failure" quantifiable and mechanically enforceable by `/combat-tuning`. Without this, balance passes tune HP totals and threat numbers but cannot distinguish a "status-heavy win" from a "basic-attack-only win".
-- blocked-by: None — depends only on the shipped HP-only combat engine (`simulateHazardPatternCombat`, `hazard-pattern-combat.balance.sim.test.ts`).
-- score: 7 × 7 / 10 = 4.9
-- recommended-slot: next combat-depth phase; pairs with any /combat-tuning run
+<!-- HP-model combat sim status-engagement metrics — PROMOTED to Phase 167 via oversight 2026-06-29 (T: promote HP-model successors). See ## Promoted + build plan. -->
 
-### Candidate: HP-model DoT amplifier (Catalyst successor for HP-only win model)
-- signal: **specs/** — Spec 26 Catalyst (pass-75 candidate, score 5.6) is stale against the HP-only model, but its core engagement insight is sound and doctrine-central: **the "build-then-detonate" moment is the highest-leverage engagement mechanic missing from HP-model combat.** The new architecture makes this simpler — no pressure-track abstraction needed. DoT ticks now deal direct HP damage; amplifying `pendingDotDamage` against the enemy's HP is a natural extension of the existing `analyzeDotErosion` / `pendingDotDamage` computation in `effect-resolution.ts`. **DOCTRINE-CENTRAL.**
-- scope: Add an `amplify` verb class to `CombatVerbClass` and a `{ kind: 'amplify', multiplier }` card mechanic in `combat.cards.ts`: a card that reads the enemy's `pendingDotDamage` (from `analyzeDotErosion`), multiplies it by N (e.g. 2.0), and fires the multiplied burst as a one-time HP-damage event (distinct from ongoing DoT ticks). Author 1–2 Amplifier skill cards (base + gold variant). Emit an `amplify-detonated` `CombatEvent`, credit the burst in `buildCombatSummary`'s new status-engagement metrics (pairs with candidate 2 above). Add the multiplier + amplifier card count to `/combat-tuning`'s tunable surface.
-- unblocks: The "watch the number explode" payoff moment from StS Catalyst — the decisive, legible spike that makes DoT-stack building feel rewarding and confirms the doctrine that status-effect play is the efficient path. Without this, DoT damage is linear and imperceptible; with it, the player has a skill-expression moment.
-- blocked-by: None — depends only on shipped HP-only combat (`combat.cards.ts`, `effect-resolution.ts`, `analyzeDotErosion`). Simpler than Spec 26 (no pressure track abstraction). Should be re-specified in a new spec file (e.g. `specs/26b-hp-model-amplifier.md`) before ship.
-- score: 7 × 7 / 10 = 4.9
-- recommended-slot: after status-engagement metrics (candidate 2) so the metric can validate amplifier impact
+<!-- HP-model DoT amplifier (Catalyst successor) — PROMOTED to Phase 168 via oversight 2026-06-29 (T: promote HP-model successors). See ## Promoted + build plan. -->
 
-### Candidate: Minor dependency patch bumps
-- signal: **AUDIT.md Pending** — 3 safe minor/patch bumps: `@typescript-eslint/eslint-plugin` 8.61.1→8.62.0, `typescript-eslint` 8.61.1→8.62.0, `globals` 17.6.0→17.7.0. Filed per the ≥2.5 aggressive threshold. **Note: iterate-eligible** (a single `npm install --save-dev` + `npm run verify` commit); only filed as a candidate because iterate hasn't picked it up and the AUDIT row is live.
-- scope: Run `npm install --save-dev @typescript-eslint/eslint-plugin@^8.62.0 typescript-eslint@^8.62.0 globals@^17.7.0`, verify `npm run verify` green, commit `chore(deps): patch bumps — @typescript-eslint 8.62.0 / globals 17.7.0`. `@types/node` 25.9.4→26.0.0 is a major bump — skip. Drain the AUDIT.md Pending dep row.
-- unblocks: Keeps lint toolchain on latest patch; eliminates the AUDIT.md noise.
-- blocked-by: None.
-- score: 3 × 9 / 10 = 2.7
-- recommended-slot: any iterate tick (autonomous)
+<!-- Minor dependency patch bumps — RETIRED via oversight 2026-06-29 (T: retire all three resolved stale candidates). Three targets shipped at 725d28f; @types/node 25→26 major bump deferred pending T approval. See ## Rejected. -->
 
-### Candidate: Spec 26 — Catalyst (multiplicative status scaling)
-- signal: `specs/26-catalyst-multiplicative-scaling.md` (drafted 1226517, UNSTARTED) — expand §4 signal 4 (unstarted spec) + signal 5 (the 2026-06-21 hazard-pattern-combat braindump "build-then-detonate" open question). **DOCTRINE-CENTRAL.**
-- scope: Add an `amplifier` verb class + a `{ kind: 'catalyst', multiplier, consumesStacks? }` skill mechanic to Hazard-Pattern Combat: a card that reads the enemy's Phase 125 `pendingDotDamage`, multiplies it by N, and dumps the result onto the DoT track as a single legible spike (sidestepping the `MAX_EFFECT_INTENSITY` cap). Author 1–2 Catalyst skills (base + `r_` upgrade), emit a `catalyst-detonated` CombatEvent, credit the spike in `buildCombatSummary`, and add the multiplier to `/combat-tuning`'s tunable surface.
-- unblocks: The single biggest engagement gap Spec 25 named — the new combat's pressure is strictly *linear*, so there is no build-then-detonate decision and no exponential "watch the number explode" payoff. Highest-leverage status-depth addition.
-- blocked-by: None — depends only on shipped Spec 25 (`combat.pressure.ts` / `combat.cards.ts`) + Phase 125 DoT projection. Spec §4 has unanswered `> Your answer:` rows but ships with a recommended default (Option B detonation).
-- score: 7 × 8 / 10 = 5.6
-- recommended-slot: first of the Spec 26-30 combat-depth cluster
+<!-- Spec 26 — Catalyst — RETIRED via oversight 2026-06-29 (T: retire all five). Superseded by Phase 168 (HP-model DoT amplifier). See ## Rejected. -->
 
-### Candidate: Spec 27 — Card Salvage (cards used multiple ways)
-- signal: `specs/27-card-salvage-sideways-play.md` (drafted 1226517, UNSTARTED) — expand §4 signal 4. **DOCTRINE-CENTRAL** (deepens the per-phase hand puzzle + die economy that powers status play).
-- scope: Add `salvageCombatCard(state, { uid }, rng?)` to `combat.engine.ts` — spend any eligible hand card sideways (no die spent, card to discard) to mint a temporary stance-colour die (mirroring Hazard's `discardHazardCard`/`HazardSalvage`), capped per-phase (≈2), tracked as `salvagesThisPhase` reset in `processBetweenPhases`. Expose salvage eligibility/preview on the card view; add the cap + benefit magnitude to `/combat-tuning`.
-- unblocks: The "near-dead card" problem — a wrong-stance/unaffordable card becomes a usable die instead of dead weight, smoothing the die economy and making the hand a Mage-Knight-style puzzle rather than a draw lottery.
-- blocked-by: None — depends only on shipped Spec 25 (hand/dice/pressure). Hazard salvage is the reference pattern. Spec §4 ships with recommended defaults (temp die, consumes card, cap 2/phase).
-- score: 6 × 6 / 10 = 3.6
-- recommended-slot: after Spec 26 (independent; can ship in any order within the cluster)
+<!-- Spec 27 — Card Salvage — RETIRED via oversight 2026-06-29 (T: retire all five). Sideways-play mechanic is HP-model-compatible; re-spec as a follow-on combat-depth phase when deck curations land. See ## Rejected. -->
 
-### Candidate: Spec 28 — Curated Combat Deck + Synergy
-- signal: `specs/28-curated-combat-deck-and-synergy.md` (drafted 1226517, UNSTARTED) — expand §4 signal 4. **DOCTRINE-CENTRAL** (deck-as-engine is how a DoT build is made to feel different from a control build).
-- scope: Replace `buildCombatDeck(player) = knownSkills + Retreat` with a curated loadout (Spec 25 §12 Q3's 8–10 → 15–20 cards), persisted via the Hazard deck-flags codec pattern (`HAZARD_CARD_FLAG_PREFIX`/`decodeAcquiredCards`), plus explicit synergy payoffs that surface the already-authored `SkillSynergy`/`SynergyPredicate` combos (e.g. `resonance-burst`) on the combat board. A deck-builder selection surface + per-encounter loadout.
-- unblocks: The deck-building meta-game both reference titles are built on — today the deck only *dilutes* as you learn more skills (the opposite of building an engine). Turns skill-learning into a build decision.
-- blocked-by: None for the engine half; the deck-builder UI is mobile-side. Larger surface than 26/27 (persistence + a selection screen). Spec §4 leans Option A (explicit loadout).
-- score: 6 × 7 / 10 = 4.2
-- recommended-slot: after Spec 26/27 (the curation layer they reference)
+<!-- Spec 28 — Curated Combat Deck + Synergy — RETIRED via oversight 2026-06-29 (T: retire all five). Deck-curation concept is HP-model-compatible; re-promoted as Phase 169. See ## Promoted + ## Rejected. -->
 
-### Candidate: Spec 29 — Reactive Enemies + Telegraphed Intent
-- signal: `specs/29-reactive-enemies-telegraphed-intent.md` (drafted 1226517, UNSTARTED) — expand §4 signal 4. **DOCTRINE-CENTRAL** + the primary answer to the reconciliation-gaps §5 "too similar to Hazard?" identity question (a reactive opponent is what Hazard *cannot* have).
-- scope: Turn the static `CombatThreatPhase` sequence into a reactive opponent — telegraphed intents that cleanse stacked DoT, harden the raced track, or enrage near threshold, all shown in the full-information timeline so the player must adapt (switch tracks / race the cleanse / spend before the harden). Reuse the effects engine's existing `applyCleanse`/`applyDispel` primitives; surface intent on `resolveThreatPhase`.
-- unblocks: The "static puzzle" risk — Spec 25 fights resolve in ~2 flat phases with no adaptation demanded; reactive intents add the Slay-the-Spire/Into-the-Breach counterplay loop and give combat an identity distinct from Hazard.
-- blocked-by: None — depends only on shipped Spec 25 (`combat.threat.ts`) + the effects engine. Spec §4 ships a recommended first ability set (Cleanse/Harden/Enrage).
-- score: 6 × 7 / 10 = 4.2
-- recommended-slot: after the deck cluster; pairs with the §5 identity decision (attended)
+<!-- Spec 29 — Reactive Enemies + Telegraphed Intent — RETIRED via oversight 2026-06-29 (T: retire all five). Reactive-intent concept references deleted pressure-track mechanics; re-spec in HP-model terms as future phase. See ## Rejected. -->
 
-### Candidate: Spec 30 — Projected Lethality Readout (the foreseeable kill)
-- signal: `specs/30-projected-lethality-readout.md` (drafted 1226517, UNSTARTED) — expand §4 signal 4. **DOCTRINE-CENTRAL** (the presentation gap that makes status wins *feel* satisfying — the load-bearing fun is "exploiting status effects").
-- scope: Surface the already-computed Phase 125 `analyzeDotErosion` projection (`pendingDotDamage`, `roundsToKill`) onto `CombatEncounterState` + the event stream as a live "lethal in N phases / X pending" readout, plus a Detonate/Finish affordance once the enemy is lethal-in-flight. Smallest engine surface of the five (the math already exists internally; the work is exposing it + a presenter).
-- unblocks: The legibility gap Spec 25's own e2e flagged — the DoT track "doesn't visibly advance" mid-phase, so the player can't feel the erosion winning. Makes erosion a telegraphed, decisive conclusion (Into-the-Breach "you've already won" foresight).
-- blocked-by: None — projection exists in `effect-resolution.ts`; depends only on shipped Spec 25 + Phase 125. Lowest-risk, highest-legibility-per-effort of the cluster.
-- score: 5 × 8 / 10 = 4.0
-- recommended-slot: can ship early — small engine surface, immediate doctrine payoff
+<!-- Spec 30 — Projected Lethality Readout — RETIRED via oversight 2026-06-29 (T: retire all five). analyzeDotErosion still exists; re-spec in HP-model terms (pendingDotDamage / HP rundown, not dotErosionReached) as future phase. See ## Rejected. -->
 
-### Candidate: Public-surface guard follows `export *` re-exports
-- signal: CRITIQUE.md Pending **[HIGH] structure** (critique-78, commit 9cc1437) — `scripts/snapshot-public-surface.mjs` `EXPORT_LINE_RE` (line 36) only matches `export { … } from '…'` lines and silently ignores all five `export * from './World/<sub>'` barrels (Hazard/Gathering/QuestBoard/Rest/LootCache; src/index.ts:238-239, dist/index.d.ts:21-25). Phase 160's ~13 sim value/type exports (`simulateRest`/`runRestSim`/`generateRestBalanceReport`/`simulateLootCache`/`runLootCacheSim`/`generateLootCacheBalanceReport`/`DEFAULT_CACHE_ITEMS`/`DEFAULT_CACHE_CURRENCY`/`LOOT_CACHE_BITE_PENALTY` + Rest/LootCache sim types) are LIVE at the package root yet absent from the fixture, and `npm run deploy:check` still exits 0. Any add/rename/remove behind those five barrels evades the contract guard entirely. Per expand §4 signal 2 (HIGH findings iterate can't drain in one tick → refactor phase): this is the guard-integrity class, not a docs drain.
-- scope: Extend `snapshotPublicSurface` to resolve each `export * from './sub'` line by reading the corresponding `dist/<sub>/index.d.ts` (one level for the five known World submodules) and folding its named exports into the values/types sets, then refresh `scripts/public-surface.expected.json` with `--write` so the 13 Phase-160 sim exports become guarded. Add a hermetic guard test asserting the live snapshot covers a known `export *`-only export (e.g. `simulateRest`/`LOOT_CACHE_BITE_PENALTY`). Alternatively (if the sims are intentionally NOT public contract): convert src/index.ts:238-239 from `export *` to explicit named re-exports so snapshot and intent agree. Decide which submodule barrels are contract surface during the brief.
-- unblocks: Restores end-to-end integrity of the publish/deploy contract guard — future submodule-barrel changes (Rest/LootCache/Hazard/Gathering/QuestBoard) regain add/rename/remove drift detection instead of silently shipping. Removes a latent blind spot before more `export *` barrels accrete.
-- blocked-by: None — snapshot script + deploy:check + fixture all present.
-- score: 7 × 6 / 10 = 4.2
-- recommended-slot: next, ahead of further content/minigame work (guard-integrity is foundational)
+<!-- Public-surface guard follows export * re-exports — RETIRED via oversight 2026-06-29 (T: retire all three resolved stale candidates). Fix shipped at e66c2d4 (recursive collectExports walker). See ## Rejected. -->
 
 ### Candidate: Northern Forest Region Content Extension
 - signal: Phase 117 expanded fishing-village from 10→25 nodes; northern-forest remains at baseline size but is a major progression gate. Natural follow-up to successful fishing-village expansion pattern.
@@ -221,6 +155,27 @@
 <!-- Game Module Documentation Coverage — promoted to Phase 132 via oversight 2026-06-09 (Q3 T pick). See ## Promoted. -->
 
 ## Promoted
+
+### Phase 169 — Curated Combat Deck + Synergy (HP-model re-spec of Spec 28)
+- promoted: 2026-06-29 via oversight (T: promote HP-model successors — curated deck + synergy, score 4.2).
+- source: Spec 28 candidate retired (pressure-track language); concept is HP-model-compatible. Deck-building meta-game and synergy payoffs are DOCTRINE-CENTRAL. Replaces the Spec 28 row under the HP-only win model.
+- scope: Replace `buildCombatDeck(player) = knownSkills + Retreat` with an explicit curated loadout (15–20 cards vs current exhaustive skill-dump), persisted via the Hazard deck-flags codec pattern; surface the already-authored `SkillSynergy`/`SynergyPredicate` combos (e.g. `resonance-burst`) on the combat board; add a deck-builder selection surface. Engine + e2e + docs. No pressure-track dependencies — depends only on shipped Hazard deck codec + the `SkillSynergy` registry (Phase 142).
+- build-plan row: `plan/steps/01_build_plan.md` (Phase 169, `[ ]` pending).
+- note: re-spec via `/plan-a-phase` before ship — the original Spec 28 Q/A rows assumed Option A (explicit loadout) which is still recommended under the HP model.
+
+### Phase 168 — HP-model DoT amplifier (the "build-then-detonate" moment)
+- promoted: 2026-06-29 via oversight (T: promote HP-model successors — DoT amplifier/Catalyst, score 4.9).
+- source: HP-model DoT amplifier candidate (filed expand pass 76). Replaces the retired Spec 26 Catalyst. DOCTRINE-CENTRAL.
+- scope: Add an `amplify` verb class to `CombatVerbClass` and a `{ kind: 'amplify', multiplier }` card mechanic in `combat.cards.ts`: reads the enemy's `pendingDotDamage` (from `analyzeDotErosion`), multiplies by N (e.g. 2.0), fires the result as a one-time HP-damage burst. Author 1–2 Amplifier cards (base + gold variant). Emit an `amplify-detonated` `CombatEvent`; credit in `buildCombatSummary`; add multiplier + card count to `/combat-tuning` tunables. E2e + docs. **Recommended after Phase 167** (status-engagement metrics confirm amplifier impact).
+- build-plan row: `plan/steps/01_build_plan.md` (Phase 168, `[ ]` pending).
+- note: re-spec in `specs/26b-hp-model-amplifier.md` before ship — no existing spec covers the HP-model formulation.
+
+### Phase 167 — HP-model combat sim status-engagement metrics
+- promoted: 2026-06-29 via oversight (T: promote HP-model successors — status-engagement metrics, score 4.9).
+- source: HP-model combat sim status-engagement metrics candidate (filed expand pass 76). DOCTRINE-CRITICAL gap: CLAUDE.md doctrine says "treat low status-effect engagement as a balance failure" but the sim cannot currently enforce this.
+- scope: Extend `simulateHazardPatternCombat` / `buildCombatSummary` to track and report: (a) fraction of total HP-damage dealt via DoT (tick events) vs basic-strike vs gold-card burst vs other; (b) GUARD-mitigated-damage ratio; (c) mean status effects active on enemy at end of each phase. Add to `CombatBalanceReport` type + combat-sim CLI `--report` output. Extend `hazard-pattern-combat.balance.sim.test.ts` to assert non-zero values in representative runs. E2e + docs.
+- build-plan row: `plan/steps/01_build_plan.md` (Phase 167, `[ ]` pending).
+- note: first combat-depth phase in the HP-model successor cluster; should ship before Phase 168 so the metric can validate amplifier impact.
 
 ### Phase 166 — Skills ≠ Cards terminology boundary
 - promoted: 2026-06-27 via T direct steering.
@@ -1331,6 +1286,21 @@
 - reason: Base mechanics stabilization remains higher priority. Do not auto-promote under `/march` or `/expand`; revisit only when T explicitly reopens the Phase 100/second-continent direction.
 
 ## Rejected
+
+### Candidate: Specs 26-30 (pressure-track combat-depth cluster)
+- rejected: 2026-06-29 (oversight, T: "Retire Specs 26-30, promote HP-model successors"). All five specs assumed the two-Pressure-Track win model (DoT Erosion + Control Saturation), which was removed at cb67ad3 (HP-only model, 2026-06-22). Spec 26 depended on `combat.pressure.ts` (deleted), Spec 27 on pressure-track die minting, Spec 28 on track-fill mechanics, Spec 29 on "harden the raced track", Spec 30 on `dotErosionReached` projection. Superseded by HP-model successors: Phase 167 (status-engagement metrics), Phase 168 (DoT amplifier / Catalyst successor), Phase 169 (curated deck + synergy). Specs 27/29/30 can be re-spec'd in HP-model terms as future phases; the core engagement ideas remain sound under the HP-only win condition.
+
+### Candidate: PR #190 Press Fate + Deck Presets — e2e convention gap
+- rejected: 2026-06-29 (oversight, T: "retire all three resolved stale candidates"). All 3 issues confirmed drained: re-roll helper tests (35013a6), deck-presets e2e (35cd2bc), barrel fix (ba19c41). No remaining work. /expand flagged this STALE/RESOLVED for 10 consecutive passes.
+
+### Candidate: Minor dependency patch bumps
+- rejected: 2026-06-29 (oversight, T: "retire all three resolved stale candidates"). The three targets (`@typescript-eslint/eslint-plugin` 8.62.0, `typescript-eslint` 8.62.0, `globals` 17.7.0) all shipped at 725d28f. Only `@types/node` 25→26 major bump remains; that requires T approval and is a separate future iterate/phase item. /expand flagged this STALE/RESOLVED for 10 consecutive passes.
+
+### Candidate: Public-surface guard follows `export *` re-exports
+- rejected: 2026-06-29 (oversight, T: "retire all three resolved stale candidates"). Fix shipped at e66c2d4 (recursive `collectExports` walker resolves all `export * from './sub'` barrels; AUDIT Done confirms). No remaining work. /expand flagged this STALE/RESOLVED for 10 consecutive passes.
+
+### Candidate: Stale Spec 26-30 pool reassessment (OVERSIGHT-ATTENDED)
+- rejected: 2026-06-29 (oversight, T: "Retire Specs 26-30, promote HP-model successors"). This meta-oversight-task was itself the item that resolved the staleness; its scope is now complete (all five specs retired, Phases 167/168/169 promoted).
 
 ### Candidate: Combat Scaling Mechanics Investigation
 - rejected: 2026-06-06 (oversight, attended; Q1 user pick "Reject all 3, file real thread"). Premise contradicted by evidence. The candidate (expand-33, score 4.0) claimed "level 15+ enemies uncalibrateable — 0% win rates persist even with body=1, fundamental combat formula limitations." Phase 121's OWN closeout ledger (`automation/playtest/BALANCE_LEDGER.md` tail) reports the opposite: Normal L15 anchor 23/25 wins, Difficult L18 anchor 8/25 wins (in 25-50% band), aggregate 56/75 = 74.7%, verdict "mechanics sound for this gate", and explicitly "No core mechanics changes made." Re-verified by a live re-run at this oversight (`npm run playtest` against `sage-anchor-normal.json` → 23/25 wins / 92% / enemy final HP ~12; `sage-anchor-difficult.json` → 8/25 wins / 32% / 0 timeouts). The "~2300 HP / 50-round timeout / 0% win" state describes an intermediate exploration during Phase 121, not the landed scaffold. No core-mechanics investigation warranted. The real remaining thread (friendship/nonlethal expressiveness on lethal anchors) was filed as a fresh Pending candidate at this oversight.
