@@ -45,6 +45,8 @@ import { getRng } from '../Utils/rng';
 import { applyAlignmentDelta, defaultAlignment } from '../Philosophy';
 import { applyFactionReputationDeltas, createDefaultFactionReputations } from '../Faction';
 import { generateRunId } from './run-loop';
+import { addToLoadout } from '../Combat/combat.loadout';
+import { STARTING_SKILL_IDS } from '../Combat/combat.rewards';
 
 /**
  * Increment when GameState's shape changes. Save loaders branch on this so
@@ -61,6 +63,8 @@ export const GAME_STATE_VERSION = 10;
 
 /** Builds a brand-new GameState with default player and world. */
 export function createNewGameState(): GameState {
+    let flags: string[] = [];
+    for (const id of STARTING_SKILL_IDS) flags = addToLoadout(flags, id);
     return {
         version: GAME_STATE_VERSION,
         runId: generateRunId(() => getRng().random()),
@@ -76,7 +80,7 @@ export function createNewGameState(): GameState {
         world: createStartingWorld(),
         combat: null,
         quests: emptyQuestLog(),
-        flags: [],
+        flags,
         moralMeter: 0,
         rngState: getRng().getState(),
         philosophicalAlignment: defaultAlignment(),

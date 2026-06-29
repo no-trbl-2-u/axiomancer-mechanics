@@ -16,6 +16,7 @@
 import { getRng } from '../Utils/rng';
 import type { Character } from '../Character/types';
 import { SYNTHETIC_CARD_IDS } from './combat.cards';
+import { getCombatLoadout } from './combat.loadout';
 
 /** Cards drawn at the start of every threat phase. Spec 26b hazard-combat tuning:
  *  raised 5→6 so a phase (fought with ONE hand) can assemble a genuine multi-card
@@ -36,14 +37,21 @@ export function shuffleCombatDeck<T>(items: readonly T[], rng: () => number = de
 }
 
 /**
- * Builds the player's combat deck from their learned skills plus the synthetic
- * baseline (Retreat). Card ids are skill ids (kebab-case) — the deck grows as
- * skills are learned, exactly as §4.3 describes.
+ * Builds the player's combat deck from the curated loadout (Phase 169) when
+ * `flags` contains loadout entries, or falls back to the full `knownSkills`
+ * list for backwards compatibility with saves that pre-date Phase 169.
+ *
+ * Card ids are skill ids (kebab-case). Reward cards and the synthetic baseline
+ * (Retreat) are always appended after the skill base.
+ *
+ * @param player - Character whose `knownSkills` / `combatRewardCards` supply the base.
+ * @param flags  - `GameState.flags` — when non-empty loadout flags are present
+ *                 the curated list is used instead of all `knownSkills`.
  */
-export function buildCombatDeck(player: Character): string[] {
-    const known = player.knownSkills ?? [];
-    // De-dup the learned-skill baseline; preserve learn order so opening hands
-    // feel authored.
+export function buildCombatDeck(player: Character, flags?: readonly string[]): string[] {
+    const loadout = flags && flags.length > 0 ? getCombatLoadout(flags) : [];
+    const known = loadout.length > 0 ? loadout : (player.knownSkills ?? []);
+    // De-dup the skill base; preserve order so opening hands feel authored.
     const seen = new Set<string>();
     const deck: string[] = [];
     for (const id of known) {

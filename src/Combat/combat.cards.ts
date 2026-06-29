@@ -17,11 +17,12 @@
  */
 
 import { MAX_EFFECT_INTENSITY } from '../Game/game-mechanics.constants';
-import type { Effect } from '../Effects/types';
+import type { Effect, ActiveEffect } from '../Effects/types';
 import type { Card, CardCombatEffects } from '../Cards/types';
 import type {
     CombatCard, CombatDieColor, CombatVerbClass, CardEffectKind,
 } from './combat.encounter.types';
+import { getCardById } from '../Cards/cards.library';
 
 export type EffectLookup = (effectId: string) => Effect | undefined;
 export type CardLookup = (skillId: string) => Card | undefined;
@@ -288,4 +289,37 @@ export function projectDeck(
     return cardIds
         .map(id => toCombatCard(id, lookupSkill, lookupEffect))
         .filter((c): c is CombatCard => c !== null);
+}
+
+/**
+ * Phase 169 — Returns `true` when the card's backing skill has a
+ * `CardSynergy.predicate` whose target-side (`on === 'target'`) condition is
+ * currently satisfied by `enemyActiveEffects`.
+ *
+ * This is a **pure read-only preview helper for mobile** — it tells the board
+ * whether to render a combo glow on a card in hand. It does NOT change any
+ * state; synergy execution still happens inside `executeSkill`.
+ *
+ * Returns `false` when:
+ * - The card is synthetic (no backing skill).
+ * - The backing skill has no `synergy` or no `predicate`.
+ * - `predicate.on === 'caster'` — caster-side synergies are execution-time
+ *   checks; this preview context has no player-effect input.
+ * - No enemy effect matches the predicate.
+ */
+export function isCombatSynergySatisfied(
+    card: CombatCard,
+    enemyActiveEffects: readonly ActiveEffect[],
+): boolean {
+    if (!card.skillId) return false;
+    const skill = getCardById(card.skillId);
+    if (!skill?.synergy?.predicate) return false;
+    const { predicate } = skill.synergy;
+    if (predicate.on !== 'target') return false;
+    return enemyActiveEffects.some((ae) => {
+        if (ae.effectId !== predicate.effectId) return false;
+        if (predicate.intensityMin !== undefined && ae.intensity < predicate.intensityMin) return false;
+        if (predicate.durationMin !== undefined && ae.remainingDuration < predicate.durationMin) return false;
+        return true;
+    });
 }

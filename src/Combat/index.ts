@@ -279,6 +279,7 @@ export {
     toCombatCard, projectDeck, classifyVerbClass,
     isSyntheticCard, SYNTHETIC_CARD_IDS,
     GOLD_CARD_IDS, isGoldCard,
+    isCombatSynergySatisfied,
 } from './combat.cards';
 export {
     getThreatSequence, generateDefaultThreatSequence,
@@ -293,3 +294,7 @@ export {
     unlockSkillViaDilemma,
 } from './combat.rewards';
 export type { PlayerArchetype } from './combat.encounter.types';
+export {
+    COMBAT_LOADOUT_FLAG_PREFIX, COMBAT_LOADOUT_MAX,
+    decodeCombatLoadout, getCombatLoadout, addToLoadout, removeFromLoadout,
+} from './combat.loadout';
