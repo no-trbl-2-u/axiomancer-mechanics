@@ -81,7 +81,7 @@ export const COLOR_MATCH_DAMAGE_BONUS = 3;
 /** An enemy threat action's damage is scaled by this so a fight stays threatening
  *  over its full length (the enemy attacks every phase in the HP model). HARD:
  *  bosses/elites can drop a careless player. */
-export const THREAT_DAMAGE_SCALE = 1.6;
+export const THREAT_DAMAGE_SCALE = 1.7;
 /**
  * Soft control "weakens" the enemy's telegraphed attack. Each point of NEGATIVE
  * roll modifier on the enemy — the universal marker of the soft-control /
@@ -112,6 +112,41 @@ export const CONVICTION_CAP = 12;
  * read (advantage/disadvantage) and a color-match bonus, so the read still matters.
  */
 export const DIRECT_DAMAGE_WEIGHT = 0.25;
+
+// ── Depth epic (combat-depth-epic) ───────────────────────────────────────────
+
+/**
+ * THE CLOCK. The enemy's telegraphed hit ESCALATES the longer a fight runs: each
+ * round past THREAT_ESCALATION_GRACE multiplies the incoming threat damage by
+ * (1 + THREAT_ESCALATION_PER_ROUND × roundsPastGrace). A drawn-out fight turns
+ * lethal — so a careless or over-cautious line loses where before combat was
+ * unloseable. The counters are on-vision: race the foe down (DoT) before the ramp
+ * bites, OR deny its turns (control) to skip the escalated hits. This is also what
+ * finally gives the threat ledger teeth — every round the clock advances is a round
+ * the 'overwhelmed' marks were paid for. Tuned by /combat-tuning.
+ */
+export const THREAT_ESCALATION_PER_ROUND = 0.22;
+/** Rounds of grace before the clock starts — a fast clean kill is unpunished. */
+export const THREAT_ESCALATION_GRACE = 1;
+/** Cap on the escalation multiplier so a long grind ramps but never runs away into a
+ *  one-shot — keeps the clock tense, not a hard wall. Calibrated conservatively: the
+ *  optimal witness bot still wins (combat stays fair, not broken) while human-paced
+ *  play feels real pressure. Sharpening the bands further is a /combat-tuning job that
+ *  hinges on the denial/kill-speed economy (the optimal bot kills in ~2-4 rounds and
+ *  barely feels the clock). */
+export const THREAT_ESCALATION_MAX = 2.0;
+/**
+ * The stance-read also scales a landed STATUS's magnitude (DoT / control / debuff
+ * intensity), not only the weak strike chip — so "read the stance, draft the right
+ * color" matters for the STATUS play that is the heart of the game, not just the
+ * vestigial strike. Gentler than the strike's READ_DAMAGE_MULT (1.5/0.5) so it adds
+ * texture without swinging fights wildly: winning the read makes a status BITE,
+ * losing it softens the bite. neutral/none = 1.0 → an un-read play is byte-identical.
+ * Tuned by /combat-tuning.
+ */
+export const READ_STATUS_MULT: Record<CombatReadResult, number> = {
+    advantage: 1.34, neutral: 1.0, disadvantage: 0.75, none: 1.0,
+};
 
 const EMPTY_RESOURCES: CombatResources = { heart: 0, body: 0, mind: 0, fallacy: 0, paradox: 0 };
 const defaultRng = (): number => getRng().random();
@@ -618,6 +653,26 @@ function playBottomAction(
         ? Math.max(1, Math.round(rawStrike * DIRECT_DAMAGE_WEIGHT * mult * vulnMult) + (colorMatch ? COLOR_MATCH_DAMAGE_BONUS : 0))
         : 0;
     let enemy = { ...(res.state.enemy as Enemy), health: Math.max(0, state.enemy.health - scaledStrike) };
+    // THE READ NOW BITES STATUS (depth epic): scale THIS card's status contribution
+    // (the delta over the pre-card intensity) by the read, so winning the read makes
+    // a landed DoT/control/debuff hit harder and losing it softens — the marquee
+    // "read the stance, draft the right color" decision finally matters for the status
+    // play that IS the game, not just the vestigial strike. neutral/none = 1.0 → an
+    // un-read play leaves intensities byte-identical. Only this card's delta is scaled,
+    // so prior stacks are preserved.
+    const statusMult = READ_STATUS_MULT[read];
+    if (statusMult !== 1) {
+        enemy = {
+            ...enemy,
+            effects: enemy.effects.map(a => {
+                const prior = before[a.effectId] ?? 0;
+                const delta = a.intensity - prior;
+                if (delta <= 0) return a;
+                const scaled = Math.max(1, Math.round(prior + delta * statusMult));
+                return scaled === a.intensity ? a : { ...a, intensity: scaled };
+            }),
+        };
+    }
     const combatResources = res.state.combatResources;
     let attribution = state.attribution;
     let directDamage = state.directDamageDealt + scaledStrike;
@@ -823,6 +878,13 @@ export function resolveThreatPhase(state: CombatEncounterState, rng: () => numbe
     const disruptDenied = controlPips >= DISRUPT_DENY_AT;
     const denied = rollPenalty >= THREAT_DENY_AT || disruptDenied;
     const weakenMult = Math.max(THREAT_WEAKEN_FLOOR, Math.min(1, 1 - rollPenalty * THREAT_WEAKEN_PER_ROLL));
+    // THE CLOCK (depth epic): the telegraphed hit escalates each round past the grace
+    // window, so a drawn-out fight turns lethal. 1.0 on round ≤ grace (a fast kill is
+    // unpunished → those fights are byte-identical to pre-epic).
+    const escalation = Math.min(
+        THREAT_ESCALATION_MAX,
+        1 + THREAT_ESCALATION_PER_ROUND * Math.max(0, state.round - THREAT_ESCALATION_GRACE),
+    );
     const hindered = !act.canAct || denied;
     if (disruptDenied) events.push({ kind: 'disrupt-denied', pips: controlPips });
 
@@ -843,7 +905,7 @@ export function resolveThreatPhase(state: CombatEncounterState, rng: () => numbe
             if (eff.damage && eff.damage > 0) {
                 // weakenMult (<1) is the soft-control reduction; 1 when the enemy
                 // carries no roll penalty (every pre-0.33.0 case → byte-identical).
-                let dmg = Math.round(eff.damage * THREAT_DAMAGE_SCALE * weakenMult);
+                let dmg = Math.round(eff.damage * THREAT_DAMAGE_SCALE * weakenMult * escalation);
                 // RIPOSTE reduces the incoming hit once this phase.
                 if (riposte && !riposteFired) { dmg = Math.max(0, dmg - riposte.reduce); riposteFired = true; }
                 // GUARD soaks first (one-shot, clamped), then BARRIER (persistent).

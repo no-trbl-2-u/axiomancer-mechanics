@@ -12,6 +12,18 @@ deep imports are part of the supported surface.
 
 ## [Unreleased]
 
+## [0.35.0-beta.0] — 2026-06-29
+
+Combat depth (prerelease, `combat-depth-epic`). Two on-vision levers that make the marquee decisions matter and combat genuinely loseable, without de-centering status (status engagement is unchanged in simulation).
+
+### Added
+
+- **THE READ NOW BITES STATUS.** The stance-read scales a landed DoT / control / debuff's magnitude (`READ_STATUS_MULT`, gentler than the strike's read at 1.34 / 1.0 / 0.75), so "read the stance, draft the right color" finally matters for the *status* play that is the heart of the game — not just the vestigial strike chip. Only the card's own contribution is scaled; prior stacks are preserved, and a neutral/none read is byte-identical.
+- **THE CLOCK.** The enemy's telegraphed hit escalates each round past a grace window, capped (`THREAT_ESCALATION_PER_ROUND` 0.22 / `THREAT_ESCALATION_GRACE` 1 / `THREAT_ESCALATION_MAX` 2.0), so a drawn-out or over-cautious fight turns lethal — racing the foe down (DoT) or denying its turns (control) are the on-vision counters, and the threat ledger finally has teeth. Round ≤ grace is byte-identical (a fast clean kill is unpunished).
+- Four new public exports (`READ_STATUS_MULT`, `THREAT_ESCALATION_PER_ROUND`, `THREAT_ESCALATION_GRACE`, `THREAT_ESCALATION_MAX`) so mobile can read the read-scaled status honestly and surface the clock.
+
+Calibrated conservatively: the optimal witness bot still wins every tier (combat stays *fair*, not broken) while human-paced play feels real pressure. Sharpening the per-tier win bands to spec (boss 30–55%) is a `/combat-tuning` follow-up that hinges on the denial / kill-speed economy — the optimal bot kills in ~2–4 rounds and barely feels the clock. Additive-only; +4 tests; full suite (2197) green.
+
 ## [0.34.0] — 2026-06-28
 
 Status-Depth: makes the status board the payoff, not just the setup. Ten keywords are now mechanically live in the HP combat engine and honestly readable by mobile — VULNERABLE (Breach marks a foe to take +50% from your hits), AMPLIFICATION (DoT Hemorrhage/Dissolution/Corrosive-Fire now report the HP that actually lands), RUPTURE (consume a foe's DoT and detonate the remaining total at once), COMPOUND (damage scaling with the number of distinct debuffs), DISRUPT (an additive control-deny path), plus THORNS, SIPHON, stacking BARRIER, one-shot RIPOSTE, and an EXECUTE finisher. Ships seven new build-around cards (Resonance Rupture, Mounting Contradictions, Breach, Brazen Rebuttal, Gabriel's Bulwark, Briar Riposte, Leeching Syllogism) and re-points Pyrrhic Victory as an execute, all draftable from the reward pool. Adds 24 additive public exports (HP-model selectors, projection helpers, five tunable scalars, three result types) for mobile to read combat honestly, widens the CombatEvent union with seven new variants, and lands 49 new tests. Status engagement stays central or rises in simulation (Breach drives it to ~70 percent); the pure-DoT doctrine baseline is byte-unchanged. Additive-only; no pressure vocabulary.

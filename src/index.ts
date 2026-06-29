@@ -141,6 +141,8 @@ export {
     dieIsRerollable, hasRerollableDice, rerollSpentDice,
     // soft-control + stat-debuff threat tunables
     THREAT_WEAKEN_PER_ROLL, THREAT_DENY_AT, THREAT_WEAKEN_FLOOR,
+    // depth epic — read-scales-status + the escalation clock
+    READ_STATUS_MULT, THREAT_ESCALATION_PER_ROUND, THREAT_ESCALATION_GRACE, THREAT_ESCALATION_MAX,
 } from './Combat';
 export type {
     CombatEncounterState, CombatEncounterPhase, CombatTransition,
