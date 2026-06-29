@@ -171,6 +171,12 @@ Combat:     determineAdvantage, getBaseStat, getAttackStat, getDefenseStat, getS
             turn is fully denied); THREAT_WEAKEN_FLOOR (number, default 0.4 — minimum damage
             multiplier when weakened but not denied). Used by resolveThreatPhase; consumers
             can read these to display soft-control thresholds in the UI.)
+            (+ Phase 168 AMPLIFY card mechanic — reads enemy pending DoT × multiplier,
+            fires as HP burst WITHOUT consuming effects (DoT keeps ticking; distinct from
+            RUPTURE which consumes). AMPLIFY_DEFAULT_MULTIPLIER=1.5, AMPLIFY_BURST_CAP=60.
+            amplify-detonated event credited in mechanicBurstFraction. combat.amplifyMultiplier
+            + combat.amplifyBurstCap tunables. Cards: crescendo-of-suffering (heart, ×1.5, lv6),
+            the-inevitable (mind, ×2.0, lv10).)
             (+ Phase 169 curated loadout codec — COMBAT_LOADOUT_FLAG_PREFIX,
             COMBAT_LOADOUT_MAX (20), getCombatLoadout(flags), decodeCombatLoadout(flags),
             addToLoadout(flags, cardId), removeFromLoadout(flags, cardId). Loadout persisted
