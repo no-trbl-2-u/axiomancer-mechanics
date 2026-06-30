@@ -259,6 +259,7 @@ export {
     THREAT_WEAKEN_PER_ROLL, THREAT_DENY_AT, THREAT_WEAKEN_FLOOR,
     // depth epic — the read now scales status; the clock escalates threat
     READ_STATUS_MULT, THREAT_ESCALATION_PER_ROUND, THREAT_ESCALATION_GRACE, THREAT_ESCALATION_MAX,
+    THREAT_ESCALATION_BOSS_MULT,
     // 0.34.0 status-depth epic — honesty selectors
     getEnemyIncomingDamageMultiplier, getDisruptMeter,
     projectRupture, isExecuteReady, projectExecute, projectSiphonHeal,

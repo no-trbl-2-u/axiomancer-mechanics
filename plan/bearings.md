@@ -203,7 +203,10 @@ Combat:     determineAdvantage, getBaseStat, getAttackStat, getDefenseStat, getS
             status magnitude, gentler than READ_DAMAGE_MULT; tuned by /combat-tuning),
             THREAT_ESCALATION_PER_ROUND (default 0.22 — per-round escalation step after grace),
             THREAT_ESCALATION_GRACE (default 1 — grace rounds before clock starts),
-            THREAT_ESCALATION_MAX (default 2.0 — cap on escalation multiplier). Used by
+            THREAT_ESCALATION_MAX (default 2.0 — cap on escalation multiplier),
+            THREAT_ESCALATION_BOSS_MULT (default 1.6 — boss/unique enemies escalate at
+            THREAT_ESCALATION_PER_ROUND × this factor; makes long boss fights qualitatively
+            more lethal to incentivise finishing fast via DoT/control). Used by
             resolveCombatPhase; consumers can read to surface the escalation clock in the UI.)
 Combat reducer: initializeCombat, setPhase, setPlayerStance, setPlayerAction,
                 appendLog, incrementFriendship, endCombat

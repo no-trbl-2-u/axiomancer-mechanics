@@ -21,6 +21,7 @@ import {
     initializeCombatEncounter, rollEncounterDice, playCombatCard,
     resolveThreatPhase, draftStanceDie,
     READ_STATUS_MULT, THREAT_ESCALATION_PER_ROUND, THREAT_ESCALATION_GRACE, THREAT_ESCALATION_MAX,
+    THREAT_ESCALATION_BOSS_MULT,
 } from '../combat.engine';
 import type { CombatDieColor, CombatEncounterState } from '../combat.encounter.types';
 
@@ -106,5 +107,52 @@ describe('combat depth epic — H3: the escalation clock', () => {
         // capped: round-20 escalation must not exceed THREAT_ESCALATION_MAX × the base
         expect(r20).toBeLessThanOrEqual(Math.ceil(r1 * THREAT_ESCALATION_MAX) + 1);
         expect(THREAT_ESCALATION_PER_ROUND).toBeGreaterThan(0);
+    });
+});
+
+function makeBossEnemy(hp: number, stance: 'heart' | 'body' | 'mind'): Enemy {
+    const e = makeEnemy(hp, stance);
+    e.difficulty = 'boss';
+    return e;
+}
+
+describe('combat depth epic — H4: bosses escalate faster', () => {
+    function threatDamageAtRoundFor(enemy: Enemy, round: number): number {
+        const p = makePlayer([DOT_BODY]);
+        let s = initializeCombatEncounter(p, enemy, [DOT_BODY], 1);
+        s = rollEncounterDice(s).state;
+        s = { ...s, round };
+        const before = s.player.health;
+        const after = resolveThreatPhase(s).state;
+        return before - after.player.health;
+    }
+
+    it('THREAT_ESCALATION_BOSS_MULT is greater than 1', () => {
+        expect(THREAT_ESCALATION_BOSS_MULT).toBeGreaterThan(1);
+    });
+
+    it('a boss escalates faster than a normal enemy at the same round', () => {
+        const round = 4; // past grace — escalation active
+        const normal = makeEnemy(300, 'body');
+        const boss = makeBossEnemy(300, 'body');
+        const normalDmg = threatDamageAtRoundFor(normal, round);
+        const bossDmg = threatDamageAtRoundFor(boss, round);
+        expect(bossDmg).toBeGreaterThan(normalDmg);
+    });
+
+    it('within the grace window the boss escalation clock is inactive (no clock bonus)', () => {
+        const boss = makeBossEnemy(300, 'body');
+        const atGrace = threatDamageAtRoundFor(boss, THREAT_ESCALATION_GRACE);
+        const atEarlier = threatDamageAtRoundFor(boss, 0);
+        expect(atGrace).toBe(atEarlier);
+    });
+
+    it('boss escalation is still capped by THREAT_ESCALATION_MAX', () => {
+        const boss = makeBossEnemy(300, 'body');
+        const r4 = threatDamageAtRoundFor(boss, 4);
+        const r1 = threatDamageAtRoundFor(boss, 1);
+        const r20 = threatDamageAtRoundFor(boss, 20); // far past cap
+        expect(r4).toBeGreaterThan(r1);
+        expect(r20).toBeLessThanOrEqual(Math.ceil(r1 * THREAT_ESCALATION_MAX) + 1);
     });
 });

@@ -137,6 +137,15 @@ export const THREAT_ESCALATION_GRACE = 1;
  *  barely feels the clock). */
 export const THREAT_ESCALATION_MAX = 2.0;
 /**
+ * Boss/unique enemies escalate FASTER than normal foes — the per-round rate is
+ * multiplied by this factor for `difficulty === 'boss' | 'unique'`. Implements
+ * the "steeper curve for bosses" doctrine: a boss fight that drags becomes
+ * qualitatively more lethal than a normal fight dragging just as long. The
+ * counters (finish fast via DoT, deny turns via control) are unchanged — they
+ * are simply more urgent facing a boss. Tuned by /combat-tuning.
+ */
+export const THREAT_ESCALATION_BOSS_MULT = 1.6;
+/**
  * The stance-read also scales a landed STATUS's magnitude (DoT / control / debuff
  * intensity), not only the weak strike chip — so "read the stance, draft the right
  * color" matters for the STATUS play that is the heart of the game, not just the
@@ -897,9 +906,15 @@ export function resolveThreatPhase(state: CombatEncounterState, rng: () => numbe
     // THE CLOCK (depth epic): the telegraphed hit escalates each round past the grace
     // window, so a drawn-out fight turns lethal. 1.0 on round ≤ grace (a fast kill is
     // unpunished → those fights are byte-identical to pre-epic).
+    // Boss/unique enemies escalate FASTER: their per-round rate is multiplied by
+    // THREAT_ESCALATION_BOSS_MULT so a dragging boss fight becomes more lethal than a
+    // dragging normal fight — makes finishing bosses quickly (DoT/control) the clear
+    // efficient path.
+    const isBossTier = state.enemy.difficulty === 'boss' || state.enemy.difficulty === 'unique';
+    const escalationRate = THREAT_ESCALATION_PER_ROUND * (isBossTier ? THREAT_ESCALATION_BOSS_MULT : 1);
     const escalation = Math.min(
         THREAT_ESCALATION_MAX,
-        1 + THREAT_ESCALATION_PER_ROUND * Math.max(0, state.round - THREAT_ESCALATION_GRACE),
+        1 + escalationRate * Math.max(0, state.round - THREAT_ESCALATION_GRACE),
     );
     const hindered = !act.canAct || denied;
     if (disruptDenied) events.push({ kind: 'disrupt-denied', pips: controlPips });

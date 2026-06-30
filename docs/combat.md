@@ -702,13 +702,15 @@ escalation clock their consumer-facing surface.
 | Constant | Description |
 |----------|-------------|
 | `READ_STATUS_MULT` | `Record<CombatReadResult, number>` — stance-read scales the magnitude of a landed status effect (DoT damage, control intensity, debuff intensity). Values: `advantage` 1.34 / `neutral` 1.0 / `none` 1.0 / `disadvantage` 0.75. Gentler than `READ_DAMAGE_MULT` (1.5/0.5) so reading adds texture without swinging fights wildly. Tuned by `/combat-tuning`. |
-| `THREAT_ESCALATION_PER_ROUND` | Per-round escalation step added to the incoming-threat damage multiplier for each round past the grace window (default 0.22). The escalation formula is `min(THREAT_ESCALATION_MAX, 1 + THREAT_ESCALATION_PER_ROUND × roundsPastGrace)`. |
+| `THREAT_ESCALATION_PER_ROUND` | Per-round escalation step added to the incoming-threat damage multiplier for each round past the grace window (default 0.22). The escalation formula is `min(THREAT_ESCALATION_MAX, 1 + escalationRate × roundsPastGrace)` where `escalationRate = THREAT_ESCALATION_PER_ROUND × (isBoss ? THREAT_ESCALATION_BOSS_MULT : 1)`. |
 | `THREAT_ESCALATION_GRACE` | Rounds of grace before the clock starts — a fast clean kill is unpunished (default 1). |
 | `THREAT_ESCALATION_MAX` | Cap on the escalation multiplier so a long grind ramps but never runs away into a one-shot (default 2.0). The counters are on-vision: race the foe down (DoT) or deny its turns (control) to skip escalated hits. |
+| `THREAT_ESCALATION_BOSS_MULT` | Boss/unique enemies escalate at `THREAT_ESCALATION_PER_ROUND × THREAT_ESCALATION_BOSS_MULT` per round (default 1.6). Makes long boss fights qualitatively more lethal than equivalently long normal fights — incentivises finishing bosses quickly via DoT or denying their turns via control. Normal/elite enemies use the base rate (multiplier 1.0). |
 
-All four are exported from `src/Combat/combat.engine.ts` and re-exported via
+All five are exported from `src/Combat/combat.engine.ts` and re-exported via
 the root barrel. Used by `resolveCombatPhase`; consumers read them to render
-the escalation clock UI (e.g. showing current multiplier vs. cap).
+the escalation clock UI (e.g. showing current multiplier vs. cap, and surfacing
+the boss-tier escalation warning).
 
 ### Phase 167/168 — Sim status-engagement metrics + AMPLIFY mechanic + Conclusion sig
 
