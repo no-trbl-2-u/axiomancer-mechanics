@@ -694,6 +694,22 @@ EXECUTE, VULNERABLE, SIPHON) and by mobile for hit-preview rendering.
 | `ActiveDotEntry` | Type: one ticking DoT entry — `{ effectId, dotPerRound }`. |
 | `ActiveDotAmplification` | Type: one amplification entry — `{ effectId, amplificationFactor }`. |
 
+### 0.35.0 — Depth-epic tunables: read-scales-status + escalation clock
+
+The 0.35.0 release adds four public tunables that give the stance-read and the
+escalation clock their consumer-facing surface.
+
+| Constant | Description |
+|----------|-------------|
+| `READ_STATUS_MULT` | `Record<CombatReadResult, number>` — stance-read scales the magnitude of a landed status effect (DoT damage, control intensity, debuff intensity). Values: `advantage` 1.34 / `neutral` 1.0 / `none` 1.0 / `disadvantage` 0.75. Gentler than `READ_DAMAGE_MULT` (1.5/0.5) so reading adds texture without swinging fights wildly. Tuned by `/combat-tuning`. |
+| `THREAT_ESCALATION_PER_ROUND` | Per-round escalation step added to the incoming-threat damage multiplier for each round past the grace window (default 0.22). The escalation formula is `min(THREAT_ESCALATION_MAX, 1 + THREAT_ESCALATION_PER_ROUND × roundsPastGrace)`. |
+| `THREAT_ESCALATION_GRACE` | Rounds of grace before the clock starts — a fast clean kill is unpunished (default 1). |
+| `THREAT_ESCALATION_MAX` | Cap on the escalation multiplier so a long grind ramps but never runs away into a one-shot (default 2.0). The counters are on-vision: race the foe down (DoT) or deny its turns (control) to skip escalated hits. |
+
+All four are exported from `src/Combat/combat.engine.ts` and re-exported via
+the root barrel. Used by `resolveCombatPhase`; consumers read them to render
+the escalation clock UI (e.g. showing current multiplier vs. cap).
+
 ## Pending
 
 The Spec 02 / 03 / 04 / 05 work this section used to track has

@@ -198,6 +198,13 @@ Combat:     determineAdvantage, getBaseStat, getAttackStat, getDefenseStat, getS
             isCombatSynergySatisfied(card, enemyEffects) — pure combo-live helper for mobile
             UI; true when card's target-side CardSynergy.predicate is satisfied by enemy
             ActiveEffect[]; false for caster-side predicates and synthetic cards.)
+            (+ 0.35.0 depth-epic tunables — READ_STATUS_MULT (Record<CombatReadResult,number>:
+            advantage 1.34, neutral/none 1.0, disadvantage 0.75 — stance-read scales landed
+            status magnitude, gentler than READ_DAMAGE_MULT; tuned by /combat-tuning),
+            THREAT_ESCALATION_PER_ROUND (default 0.22 — per-round escalation step after grace),
+            THREAT_ESCALATION_GRACE (default 1 — grace rounds before clock starts),
+            THREAT_ESCALATION_MAX (default 2.0 — cap on escalation multiplier). Used by
+            resolveCombatPhase; consumers can read to surface the escalation clock in the UI.)
 Combat reducer: initializeCombat, setPhase, setPlayerStance, setPlayerAction,
                 appendLog, incrementFriendship, endCombat
 Effects:    applyEffect, applyTier1CombatEffect, clearTier1EffectsForStance,
