@@ -33,7 +33,6 @@ const adHominemStrike: Card = {
         'where their composure was, scattering whatever fragile certainty they ' +
         'had built. Their stance crumbles before their muscles do.',
     tier: 1,
-    resourceCost: { body: 3 },
     targetType: 'enemy',
     basePower: 8,
     scalingStat: 'body',
@@ -50,7 +49,6 @@ const falseDilemma: Card = {
         'every option is a door. The enemy hesitates between phantoms while you ' +
         'walk straight through.',
     tier: 1,
-    resourceCost: { mind: 3 },
     targetType: 'enemy',
     basePower: 4,
     scalingStat: 'mind',
@@ -69,7 +67,6 @@ const appealToPity: Card = {
         'is. Even your own body listens, and softens, and bends a little of ' +
         'itself back together.',
     tier: 1,
-    resourceCost: { heart: 3 },
     targetType: 'self',
     basePower: 0,
     scalingStat: 'heart',
@@ -87,7 +84,6 @@ const achillesGambit: Card = {
         'never catch the tortoise, the heel that must be exposed. Paradox ' +
         'collapses into a single, unanswerable blow.',
     tier: 1,
-    resourceCost: { body: 3 },
     targetType: 'enemy',
     basePower: 12,
     scalingStat: 'body',
@@ -103,7 +99,6 @@ const liarsEcho: Card = {
         'doubles back, and arrives more exposed than when it left. You read ' +
         'every tell twice.',
     tier: 1,
-    resourceCost: { mind: 3 },
     targetType: 'enemy',
     basePower: 3,
     scalingStat: 'mind',
@@ -122,7 +117,6 @@ const shipOfTheseus: Card = {
         'themselves, technically; you are still yourself, technically. The ' +
         'borrowed buff settles around your shoulders.',
     tier: 1,
-    resourceCost: { heart: 3 },
     targetType: 'enemy',
     basePower: 0,
     scalingStat: 'heart',
@@ -141,7 +135,6 @@ const mobAppeal: Card = {
         'convincing. A simultaneous blow and a small, dishonest reassurance — ' +
         'and both work.',
     tier: 2,
-    resourceCost: { body: 2, heart: 2 },
     targetType: 'enemy',
     basePower: 10,
     scalingStat: 'body',
@@ -159,7 +152,6 @@ const undistributedMiddle: Card = {
         'philosopher — and your enemy is illegible. You watch them try to ' +
         'follow the syllogism into a corner they cannot leave.',
     tier: 2,
-    resourceCost: { body: 2, mind: 2 },
     targetType: 'enemy',
     basePower: 8,
     scalingStat: 'mind',
@@ -179,7 +171,6 @@ const eternalRegress: Card = {
         'answer demands one more. You watch their certainty unspool itself — ' +
         'and lay two distinct binds on the wreckage.',
     tier: 2,
-    resourceCost: { heart: 2, mind: 2 },
     targetType: 'enemy',
     basePower: 6,
     scalingStat: 'heart',
@@ -202,7 +193,6 @@ const soritesCascade: Card = {
         'become a mortal one? They cannot say. The bleeding stacks faster than ' +
         'their definition of "alive."',
     tier: 3,
-    resourceCost: { mind: 2, paradox: 1 },
     targetType: 'enemy',
     basePower: 5,
     scalingStat: 'mind',
@@ -223,13 +213,9 @@ const strawGiant: Card = {
         'the audience believes what they see fall. Their actual stance crumbles ' +
         'in sympathy with its hollow twin.',
     tier: 3,
-    resourceCost: { body: 3, fallacy: 1 },
     targetType: 'enemy',
     basePower: 18,
     scalingStat: 'body',
-    // Marker today; the engine already produces flat skill damage that does
-    // not route through defence. Preserved so a future damage path can branch.
-    specialMechanics: [{ kind: 'bypass_defense' }],
     learningRequirement: { level: 10 },
 };
 
@@ -243,7 +229,6 @@ const bootstrapParadox: Card = {
         'of you that survived came from this healing. The loop is whole; the ' +
         'wound, less so.',
     tier: 3,
-    resourceCost: { heart: 2, paradox: 1 },
     targetType: 'self',
     basePower: 0,
     scalingStat: 'heart',
@@ -255,9 +240,8 @@ const bootstrapParadox: Card = {
 
 // ─── Tier 3 — Phase 44 fallacies-as-spells (4 skills) ────────────────────────
 //
-// Each draws from a named fallacy on the Phase 42 27-cell library. The cell
-// id round-trips via `sourcedFromCell` so consumers can trace the skill back
-// to its philosophical origin via `philosophicalAlignmentLibrary`.
+// Each draws from a named fallacy on the Phase 42 27-cell library, tracing the
+// skill back to its philosophical origin via `philosophicalAlignmentLibrary`.
 
 const appealToConsequences: Card = {
     id: 'appeal-to-consequences',
@@ -270,7 +254,6 @@ const appealToConsequences: Card = {
         'happen, happening. They fall not to your force, but to the logic that ' +
         'made the force necessary.',
     tier: 3,
-    resourceCost: { body: 3, fallacy: 1 },
     targetType: 'enemy',
     basePower: 16,
     scalingStat: 'body',
@@ -278,7 +261,6 @@ const appealToConsequences: Card = {
         { effectId: 'tier1_body_attack', appliedTo: 'self', intensity: 2, duration: 3 },
     ],
     learningRequirement: { level: 10 },
-    sourcedFromCell: 'logic-optimistic-individual',
 };
 
 const nirvanaFallacy: Card = {
@@ -292,7 +274,6 @@ const nirvanaFallacy: Card = {
         'The gap between what is and what could be opens like a wound, and they ' +
         'fall through their own inadequacy.',
     tier: 3,
-    resourceCost: { mind: 2, fallacy: 1 },
     targetType: 'enemy',
     basePower: 14,
     scalingStat: 'mind',
@@ -306,7 +287,6 @@ const nirvanaFallacy: Card = {
         level: 10,
         requiresAlignment: { axis: 'outlook', op: 'lte', value: -34 },
     },
-    sourcedFromCell: 'logic-pessimistic-individual',
 };
 
 const pascalsWager: Card = {
@@ -319,14 +299,12 @@ const pascalsWager: Card = {
         'you if you are right. The certainty is its own balm; the wound closes ' +
         'around the wager.',
     tier: 3,
-    resourceCost: { heart: 2, paradox: 1 },
     targetType: 'self',
     basePower: 0,
     scalingStat: 'heart',
     // Mirrors `bootstrap-paradox`: heart × 0.5 × 3 → heart × 1.5 healed.
     scalingMultiplier: 3,
     learningRequirement: { level: 10 },
-    sourcedFromCell: 'mid-optimistic-transcendent',
 };
 
 const appealToFear: Card = {
@@ -340,7 +318,6 @@ const appealToFear: Card = {
         'The fear arrives first; your strike simply confirms what they already ' +
         'knew was inevitable.',
     tier: 3,
-    resourceCost: { heart: 2, fallacy: 1 },
     targetType: 'enemy',
     basePower: 12,
     scalingStat: 'heart',
@@ -354,7 +331,6 @@ const appealToFear: Card = {
         level: 10,
         requiresAlignment: { axis: 'scope', op: 'gte', value: 34 },
     },
-    sourcedFromCell: 'mid-pessimistic-transcendent',
 };
 
 // ─── Tier 2 synergy (Phase 66) — 5 skills rewarding stance-switching ────────
@@ -374,7 +350,6 @@ const resonanceBleed: Card = {
         'finds the lyric and the lyric finds your enemy, and the two ' +
         'agree that it has further to go.',
     tier: 2,
-    resourceCost: { heart: 2, mind: 2 },
     targetType: 'enemy',
     basePower: 4,
     scalingStat: 'heart',
@@ -395,7 +370,6 @@ const intensityFeedback: Card = {
         'You take the certainty you have been holding and let it ring back ' +
         'into them. The louder it was for you, the louder it lands for them.',
     tier: 2,
-    resourceCost: { mind: 2, heart: 2 },
     targetType: 'enemy',
     basePower: 5,
     scalingStat: 'mind',
@@ -417,7 +391,6 @@ const batSwarmThoughtform: Card = {
         'become a swarm of small attentive things. They feed on the ' +
         'distance they remember as your edge.',
     tier: 2,
-    resourceCost: { heart: 2, body: 2 },
     targetType: 'self',
     basePower: 0,
     scalingStat: 'heart',
@@ -446,7 +419,6 @@ const resonanceBurst: Card = {
         'in them and the collapse itself is the strike — proportional to ' +
         'how long they have already been losing their footing.',
     tier: 2,
-    resourceCost: { mind: 2, heart: 1 },
     targetType: 'enemy',
     basePower: 3,
     scalingStat: 'mind',
@@ -472,7 +444,6 @@ const resonanceDetonation: Card = {
         'on the field. Resetting the fight back to its first round in ' +
         'exchange for one apex truth.',
     tier: 2,
-    resourceCost: { heart: 3, body: 3, mind: 3 },
     targetType: 'enemy',
     basePower: 0,
     scalingStat: 'heart',
@@ -495,7 +466,6 @@ const soothingWords: Card = {
     philosophicalAspect: 'heart',
     description: 'Gentle words that calm tensions without requiring defensive posture.',
     tier: 1,
-    resourceCost: { heart: 2 },
     targetType: 'self',
     basePower: 0,
     scalingStat: 'heart',
@@ -509,7 +479,6 @@ const peacefulGesture: Card = {
     philosophicalAspect: 'body',
     description: 'A calming physical gesture that builds trust through non-threatening movement.',
     tier: 1,
-    resourceCost: { body: 2 },
     targetType: 'self',
     basePower: 0,
     scalingStat: 'body',
@@ -523,7 +492,6 @@ const empatheticUnderstanding: Card = {
     philosophicalAspect: 'mind',
     description: 'Deep understanding that transcends conflict, building stronger bonds.',
     tier: 2,
-    resourceCost: { mind: 3, heart: 1 },
     targetType: 'self', 
     basePower: 0,
     scalingStat: 'mind',
@@ -542,7 +510,6 @@ const befriend: Card = {
         'over victory. When successful, you must choose between mercy and exploitation ' +
         'of the vulnerable moment you have created.',
     tier: 1,
-    resourceCost: { heart: 5 },
     targetType: 'enemy',
     basePower: 0,
     scalingStat: 'heart',
@@ -565,7 +532,6 @@ const paradoxConvergence: Card = {
         'a single impossible instant. The logic breaks; the body follows ' +
         'the argument down into the mathematical void.',
     tier: 3,
-    resourceCost: { mind: 3, paradox: 2 },
     targetType: 'enemy',
     basePower: 15,
     scalingStat: 'mind',
@@ -589,7 +555,6 @@ const metaphysicalDrain: Card = {
         'they built in themselves and weave it into your own flesh. What ' +
         'made them invulnerable makes you whole.',
     tier: 3,
-    resourceCost: { heart: 3, paradox: 2 },
     targetType: 'self',
     basePower: 0,
     scalingStat: 'heart',
@@ -614,7 +579,6 @@ const logicalRecursion: Card = {
         'of self-reference. When the recursion finally collapses, only one mind ' +
         'remains intact enough to remember which thoughts belonged to whom.',
     tier: 3,
-    resourceCost: { mind: 2, fallacy: 2 },
     targetType: 'enemy',
     basePower: 12,
     scalingStat: 'mind',
@@ -644,7 +608,6 @@ const existentialCollapse: Card = {
         'reason to resist. In the resulting void where meaning used to be, only ' +
         'your will finds purchase.',
     tier: 3,
-    resourceCost: { body: 4, fallacy: 2 },
     targetType: 'enemy',
     basePower: 18,
     scalingStat: 'body',
@@ -668,7 +631,6 @@ const transcendentSynthesis: Card = {
         'pattern that transcends its components. The synthesis heals what ' +
         'the analysis wounded; the whole exceeds its parts.',
     tier: 3,
-    resourceCost: { heart: 3, mind: 2, paradox: 1 },
     targetType: 'self',
     basePower: 0,
     scalingStat: 'heart',
@@ -711,7 +673,6 @@ const hastyGeneralization: Card = {
         'the flinch as proof of everything — and so it becomes proof, the ' +
         'sample of one swelling to a verdict their whole body must answer for.',
     tier: 1,
-    resourceCost: { body: 3 },
     targetType: 'enemy',
     basePower: 11,
     scalingStat: 'body',
@@ -730,7 +691,6 @@ const redHerring: Card = {
         'reasoning. By the time they remember what they were chasing, the ' +
         'scent is gone and so is their footing.',
     tier: 1,
-    resourceCost: { mind: 3 },
     targetType: 'enemy',
     basePower: 4,
     scalingStat: 'mind',
@@ -752,7 +712,6 @@ const wishfulThinking: Card = {
         'the feeling is sincere enough to do a little of the work itself. ' +
         'Believing it does not make it true, but it makes it truer.',
     tier: 1,
-    resourceCost: { heart: 3 },
     targetType: 'self',
     basePower: 0,
     scalingStat: 'heart',
@@ -772,7 +731,6 @@ const arrowParadox: Card = {
         'yet here it is, lodged in them. You let the contradiction carry the ' +
         'shot that logic insists never travelled.',
     tier: 1,
-    resourceCost: { body: 3 },
     targetType: 'enemy',
     basePower: 13,
     scalingStat: 'body',
@@ -791,7 +749,6 @@ const heapOfDoubt: Card = {
         'single grain do they become lost — and yet, grain by grain, they are. ' +
         'You watch the heap of their conviction quietly stop being a heap.',
     tier: 1,
-    resourceCost: { mind: 3 },
     targetType: 'enemy',
     basePower: 5,
     scalingStat: 'mind',
@@ -815,7 +772,6 @@ const slipperySlope: Card = {
         'inevitable. You name the catastrophe at the bottom of the hill until ' +
         'the ground itself seems to tilt, and they slide the whole way down.',
     tier: 2,
-    resourceCost: { body: 3, mind: 1 },
     targetType: 'enemy',
     basePower: 16,
     scalingStat: 'body',
@@ -837,7 +793,6 @@ const appealToAuthority: Card = {
         'over the exchange, and their own thoughts begin to defer to a ' +
         'borrowed certainty that was never yours to lend.',
     tier: 2,
-    resourceCost: { mind: 3, heart: 1 },
     targetType: 'enemy',
     basePower: 9,
     scalingStat: 'mind',
@@ -860,7 +815,6 @@ const tuQuoque: Card = {
         'turning their guard turns with it. The mirror you raise reflects ' +
         'just enough of their own blow to mend the place it landed on you.',
     tier: 2,
-    resourceCost: { heart: 3, body: 1 },
     targetType: 'enemy',
     basePower: 10,
     scalingStat: 'heart',
@@ -880,7 +834,6 @@ const baradoxsBarber: Card = {
         'himself? You hand them the question that has no consistent answer and ' +
         'watch the recursion eat the floor out from under their attention.',
     tier: 2,
-    resourceCost: { mind: 3, paradox: 1 },
     targetType: 'enemy',
     basePower: 11,
     scalingStat: 'mind',
@@ -903,7 +856,6 @@ const ravenParadox: Card = {
         'with the absurd abundance of evidence the world keeps handing you, and ' +
         'each irrelevant proof sharpens the inevitability of the next strike.',
     tier: 2,
-    resourceCost: { body: 3, mind: 2 },
     targetType: 'enemy',
     basePower: 18,
     scalingStat: 'body',
@@ -925,7 +877,6 @@ const stoicBulwark: Card = {
         'is not, and the deciding becomes a wall. The blows still come; they ' +
         'simply arrive at a self that has agreed not to be there for them.',
     tier: 2,
-    resourceCost: { heart: 3, body: 1 },
     targetType: 'self',
     basePower: 0,
     scalingStat: 'heart',
@@ -948,7 +899,6 @@ const equivocationCascade: Card = {
         'gives. By the time they notice the term has changed under them, the ' +
         'whole argument has reorganised itself around your conclusion.',
     tier: 2,
-    resourceCost: { mind: 3, fallacy: 1 },
     targetType: 'enemy',
     basePower: 7,
     scalingStat: 'mind',
@@ -974,7 +924,6 @@ const sunkCostMomentum: Card = {
         'and the giving becomes its own argument. Every token you have spent ' +
         'demands that the next blow justify them all at once.',
     tier: 2,
-    resourceCost: { body: 3, heart: 2 },
     targetType: 'enemy',
     basePower: 8,
     scalingStat: 'body',
@@ -1001,12 +950,10 @@ const omnipotenceParadox: Card = {
         'stone and the lifting both, and the contradiction discharges into ' +
         'them as a blow that no defence was designed to be able to answer.',
     tier: 3,
-    resourceCost: { body: 4, paradox: 2 },
     targetType: 'enemy',
     basePower: 30,
     scalingStat: 'body',
     scalingMultiplier: 1.5,
-    specialMechanics: [{ kind: 'bypass_defense' }],
     combatEffects: [
         { effectId: 'debuff_defense_down', appliedTo: 'opponent', intensity: 3, duration: 3 },
     ],
@@ -1025,7 +972,6 @@ const gamblersRuin: Card = {
         'that did not. You press the fallacy onto them until they stake what ' +
         'remains on a turn that the arithmetic has already lost.',
     tier: 3,
-    resourceCost: { mind: 4, fallacy: 2 },
     targetType: 'enemy',
     basePower: 22,
     scalingStat: 'mind',
@@ -1049,7 +995,6 @@ const gamblersFallacy: Card = {
         'You convince their reasoning that the pattern owes a correction, and ' +
         'they overcommit to a turn that chance never promised.',
     tier: 3,
-    resourceCost: { mind: 3, fallacy: 1 },
     targetType: 'enemy',
     basePower: 17,
     scalingStat: 'mind',
@@ -1071,7 +1016,6 @@ const buridansImpasse: Card = {
         'meals, starves on the symmetry. You make every option perfectly ' +
         'equal, and they freeze in the exact centre of their own indecision.',
     tier: 3,
-    resourceCost: { mind: 4, paradox: 2 },
     targetType: 'enemy',
     basePower: 14,
     scalingStat: 'mind',
@@ -1094,7 +1038,6 @@ const eternalRecurrence: Card = {
         'You take the wound as something you have already chosen a thousand ' +
         'times, and the choosing knits it shut with the weight of all those lives.',
     tier: 3,
-    resourceCost: { heart: 4, paradox: 2 },
     targetType: 'self',
     basePower: 0,
     scalingStat: 'heart',
@@ -1118,7 +1061,6 @@ const grandfatherParadox: Card = {
         'condition that let them be standing here at all. The blow lands before ' +
         'the parry could have been born, and consumes the certainty they leaned on.',
     tier: 3,
-    resourceCost: { body: 4, paradox: 2 },
     targetType: 'enemy',
     basePower: 20,
     scalingStat: 'body',
@@ -1145,7 +1087,6 @@ const apophaticAegis: Card = {
         'guard, not a refusal — until the via negativa leaves nothing for the ' +
         'blow to find. What cannot be named cannot be struck.',
     tier: 3,
-    resourceCost: { heart: 4, mind: 1, paradox: 1 },
     targetType: 'self',
     basePower: 0,
     scalingStat: 'heart',
@@ -1176,7 +1117,6 @@ const braceForImpact: Card = {
         'braced for cannot break you. The strike still comes; it simply finds ' +
         'a body that has already decided not to fall.',
     tier: 1,
-    resourceCost: { body: 2 },
     targetType: 'self',
     basePower: 0,
     scalingStat: 'body',
@@ -1196,7 +1136,6 @@ const suspendJudgment: Card = {
         'it must land, and the conclusion loses its grip. The skeptic\'s shield ' +
         'is built from everything left unconceded.',
     tier: 1,
-    resourceCost: { mind: 2 },
     targetType: 'self',
     basePower: 0,
     scalingStat: 'mind',
@@ -1216,7 +1155,6 @@ const stoicReserve: Card = {
         'You hold a reserve of stillness against the blow — it spends its force ' +
         'on a self that has agreed, in advance, to remain unmoved.',
     tier: 2,
-    resourceCost: { heart: 3 },
     targetType: 'self',
     basePower: 0,
     scalingStat: 'heart',
@@ -1243,7 +1181,6 @@ const pyrrhicVictory: Card = {
         'make them pay the same ruinous price. The wound you open in them will ' +
         'go on bleeding long after the field is yours.',
     tier: 3,
-    resourceCost: { body: 2, paradox: 1 },
     targetType: 'enemy',
     basePower: 16,
     scalingStat: 'body',
@@ -1273,7 +1210,6 @@ const theFinalWord: Card = {
         'who heard it. Doubt is a slow poison; once the premise is conceded, the ' +
         'conclusion finishes them on its own schedule.',
     tier: 3,
-    resourceCost: { mind: 2, paradox: 1 },
     targetType: 'enemy',
     basePower: 14,
     scalingStat: 'mind',
@@ -1295,7 +1231,6 @@ const unmovedMover: Card = {
         'moved. They lose the thread of their own intent, turning in confusion ' +
         'around a center that will not turn.',
     tier: 3,
-    resourceCost: { heart: 2, paradox: 1 },
     targetType: 'enemy',
     basePower: 12,
     scalingStat: 'heart',
@@ -1326,7 +1261,6 @@ const resonanceRupture: Card = {
         'every patient bleed, called home at once. What was going to take ten ' +
         'rounds arrives in one.',
     tier: 2,
-    resourceCost: { heart: 2, mind: 1 },
     targetType: 'enemy',
     basePower: 4,
     scalingStat: 'heart',
@@ -1346,7 +1280,6 @@ const mountingContradictions: Card = {
         'You name every inconsistency at once and let them collide. The more ' +
         'ways they are already coming apart, the harder the whole edifice falls.',
     tier: 2,
-    resourceCost: { mind: 2 },
     targetType: 'enemy',
     basePower: 3,
     scalingStat: 'mind',
@@ -1368,7 +1301,6 @@ const breach: Card = {
         'not fall — it simply opens, and stays open, and everything after lands ' +
         'where it hurts.',
     tier: 2,
-    resourceCost: { mind: 2 },
     targetType: 'enemy',
     basePower: 0,
     scalingStat: 'mind',
@@ -1392,7 +1324,6 @@ const brazenRebuttal: Card = {
         'is to be cut by the strike — the harder the push, the deeper the ' +
         'rebuttal bites back.',
     tier: 1,
-    resourceCost: { body: 2 },
     targetType: 'self',
     basePower: 0,
     scalingStat: 'body',
@@ -1414,7 +1345,6 @@ const gabrielsBulwark: Card = {
         'across its endless expanse and is diluted to almost nothing. What it ' +
         'does not spend, it keeps.',
     tier: 2,
-    resourceCost: { heart: 2 },
     targetType: 'self',
     basePower: 0,
     scalingStat: 'heart',
@@ -1436,7 +1366,6 @@ const briarRiposte: Card = {
         'comes you turn it aside and let the briar answer — measured, exact, ' +
         'and theirs to regret.',
     tier: 2,
-    resourceCost: { body: 2 },
     targetType: 'self',
     basePower: 0,
     scalingStat: 'body',
@@ -1460,7 +1389,6 @@ const leechingSyllogism: Card = {
         'you. By the time the conclusion lands, their strength is already ' +
         'yours.',
     tier: 2,
-    resourceCost: { heart: 2 },
     targetType: 'enemy',
     basePower: 12,
     scalingStat: 'heart',
@@ -1486,7 +1414,6 @@ const crescendoOfSuffering: Card = {
         'then conduct it. Every wound keeps bleeding, every poison keeps ' +
         'spreading. You simply turned the volume up.',
     tier: 2,
-    resourceCost: { heart: 2 },
     targetType: 'enemy',
     basePower: 3,
     scalingStat: 'heart',
@@ -1508,7 +1435,6 @@ const theInevitable: Card = {
         'effect to its endpoint, added them together, and delivered the sum ' +
         'as a single moment of clarity.',
     tier: 2,
-    resourceCost: { mind: 2, body: 1 },
     targetType: 'enemy',
     basePower: 2,
     scalingStat: 'mind',

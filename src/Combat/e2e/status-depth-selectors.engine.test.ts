@@ -158,7 +158,7 @@ describe('skill engine — every new mechanic kind is a NO-OP through executeSki
             const skill: Card = {
                 id: 'test-mech-skill', name: 'Test Mechanic', category: 'fallacy',
                 philosophicalAspect: 'body', description: 'x', tier: 1,
-                resourceCost: { body: 1 }, targetType: 'enemy',
+                targetType: 'enemy',
                 basePower: 0, scalingStat: 'body',
                 specialMechanics: [mech],
             };

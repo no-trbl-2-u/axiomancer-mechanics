@@ -1,7 +1,6 @@
 import { Item, Equipment, EquipmentSlot } from '../Items/types';
 import { ActiveEffect } from '../Effects/types';
 import { ProcUnlocks } from '../Combat/combat-effects';
-import type { CombatResources } from '../Cards/types';
 
 /**
  * The three core attributes from which all other character/enemy stats derive.
@@ -110,14 +109,6 @@ export interface Character {
      * progression in Spec 04 / 06 raise the cap to unlock T2 / T3 entries.
      */
     procUnlocks?: ProcUnlocks;
-    /**
-     * Unspent philosophical resources (fallacy / paradox) carried from a won
-     * combat into the next combat's seed (see `carryPhilosophicalResources`
-     * and `RESOURCE_CARRY`). Set on victory, folded into the seed and cleared
-     * at the next combat start. Optional + sparse — absent means no carry, so
-     * no save migration is required.
-     */
-    carriedResources?: Partial<CombatResources>;
     /**
      * Spec 26b deckbuilder — extra combat cards earned as play rewards (skill
      * ids, duplicates allowed), MERGED into the combat deck on top of the cards

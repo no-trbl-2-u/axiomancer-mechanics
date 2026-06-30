@@ -47,8 +47,9 @@ export function aggregateCombatStartTokens(
     return totals;
 }
 
-/** Outcome of a basic action — kept aligned with `BasicActionOutcome` from
- *  the skills module to avoid an awkward import cycle. */
+/** Outcome of a basic action — kept aligned with the `outcome` argument of
+ *  `generateBasicActionResources` in the skills module to avoid an awkward
+ *  import cycle. */
 export type EquipmentBonusOutcome = 'hit' | 'miss' | 'defend';
 
 /**

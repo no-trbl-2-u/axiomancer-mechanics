@@ -97,8 +97,6 @@ describe('hermeticity guard: isolation (no disk / network / subprocess)', () => 
      *  - CLI harnesses drive readline/TTY seams (CLI is excluded from
      *    the build; its tests exercise the IO boundary on purpose);
      *  - the node persistence adapter IS a disk feature;
-     *  - Tuning artifact tests write reports to a tmpdir (that is the
-     *    feature under test);
      *  - the vitest-reporter test exercises the reporter's file output;
      *  - this guard reads committed sources.
      * Add to this list only when the FEATURE under test is the
@@ -114,9 +112,6 @@ describe('hermeticity guard: isolation (no disk / network / subprocess)', () => 
         'CLI/e2e/quest-board.cli.engine.test.ts',
         'CLI/e2e/combat.cli.engine.test.ts',
         'Game/persistence/node.adapter.test.ts',
-        'Tuning/e2e/strategist-health-experiment.engine.test.ts',
-        'Tuning/e2e/tuning-improvements.engine.test.ts',
-        'Tuning/e2e/registry-applier.engine.test.ts',
         'test-utils/e2e/agent-vitest-reporter.engine.test.ts',
         'test-utils/e2e/hermeticity.audit.test.ts',
         'Combat/e2e/terminology-boundary.engine.test.ts',

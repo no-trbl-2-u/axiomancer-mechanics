@@ -89,10 +89,6 @@ function applyKeyword(S: DummyState, kwId: string, val: number): LogLine[] {
             dealDummy(val);
             push(`Dealt ${val} damage.`, 'dmg');
             break;
-        case 'bypass_defense':
-            dealDummy(val);
-            push(`Dealt ${val} damage — ignored defense.`, 'dmg');
-            break;
         case 'compound': {
             const d = distinct();
             const bonus = d * 2;

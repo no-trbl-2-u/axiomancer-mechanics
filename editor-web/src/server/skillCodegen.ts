@@ -78,16 +78,6 @@ export function identFromId(id: string): string {
 // Field emitters
 // ─────────────────────────────────────────────────────────────────────────────
 
-function resourceCost(rc: CardDraft['resourceCost']): string {
-    const order: Array<keyof CardDraft['resourceCost']> = [
-        'heart', 'body', 'mind', 'fallacy', 'paradox',
-    ];
-    const parts = order
-        .filter((k) => rc[k] != null)
-        .map((k) => `${k}: ${num(rc[k] as number)}`);
-    return parts.length === 0 ? '{}' : `{ ${parts.join(', ')} }`;
-}
-
 /** Inline effect-payload object: `{ effectId: '…', appliedTo: '…', … }`. */
 function effectObj(e: CardDraft['combatEffects'][number]): string {
     const parts = [`effectId: ${str(e.effectId)}`, `appliedTo: ${str(e.appliedTo)}`];
@@ -238,7 +228,6 @@ export function serialize(draft: CardDraft, identOverride?: string): string {
     lines.push(`${IND}philosophicalAspect: ${str(draft.philosophicalAspect)},`);
     lines.push(...descriptionLines(draft.description));
     lines.push(`${IND}tier: ${num(draft.tier)},`);
-    lines.push(`${IND}resourceCost: ${resourceCost(draft.resourceCost)},`);
     lines.push(`${IND}targetType: ${str(draft.targetType)},`);
     lines.push(`${IND}basePower: ${num(draft.basePower)},`);
     lines.push(`${IND}scalingStat: ${str(draft.scalingStat)},`);
@@ -251,9 +240,6 @@ export function serialize(draft: CardDraft, identOverride?: string): string {
     }
     if (draft.learningRequirement != null) {
         lines.push(...learningReqLines(draft.learningRequirement));
-    }
-    if (notBlank(draft.sourcedFromCell)) {
-        lines.push(`${IND}sourcedFromCell: ${str(draft.sourcedFromCell!.trim())},`);
     }
     if (draft.synergy != null) lines.push(...synergyLines(draft.synergy));
     if (draft.incrementsFriendship != null) {

@@ -1,6 +1,6 @@
 {
   "name": "axiomancer-mechanics",
-  "version": "0.35.1",
+  "version": "0.36.0",
   "description": "Turn-based RPG combat mechanics with philosophical themes",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -26,10 +26,7 @@
     "rest": "ts-node src/CLI/game.cli.ts rest",
     "loot-cache": "ts-node src/CLI/game.cli.ts loot-cache",
     "quest-board": "ts-node src/CLI/game.cli.ts quest-board",
-    "playtest": "ts-node src/Playtest/cli.ts",
-    "tune": "ts-node src/Tuning/cli.ts",
     "combat": "ts-node src/CLI/game.cli.ts combat",
-    "legacy-combat": "ts-node src/CLI/game.cli.ts legacy-combat",
     "combat-sim": "ts-node src/CLI/combat-sim.cli.ts",
     "agent-e2e": "node automation/agent-e2e.mjs",
     "dev": "echo Please use check 'package.json' or README.md for available commands...\n ",

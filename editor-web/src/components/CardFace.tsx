@@ -81,8 +81,6 @@ function primaryKeyword(card: CardDraft): { kw: KeywordId; val: number } {
                 return { kw: 'siphon', val: sm.pct };
             case 'execute':
                 return { kw: 'execute', val: 0 };
-            case 'bypass_defense':
-                return { kw: 'bypass_defense', val: card.basePower };
             case 'strip_random_buff':
             case 'convert_enemy_buff_to_self':
                 return { kw: 'strip_buff', val: 0 };
@@ -223,7 +221,6 @@ export function KwGlyph({
                 </svg>
             );
         case 'damage':
-        case 'bypass_defense':
         default:
             if (fam === 'direct')
                 return (

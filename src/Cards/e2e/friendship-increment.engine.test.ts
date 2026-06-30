@@ -63,21 +63,6 @@ describe('Friendship increment skills', () => {
                 }),
             );
         });
-
-        it('costs 2 heart resources', () => {
-            const result = executeSkill(state, 'soothing-words', getCardById);
-
-            expect(result.state.combatResources.heart).toBe(
-                state.combatResources.heart - 2,
-            );
-            expect(result.events).toContainEqual(
-                expect.objectContaining({
-                    kind: 'resources-spent',
-                    skillId: 'soothing-words',
-                    cost: { heart: 2 },
-                }),
-            );
-        });
     });
 
     describe('Peaceful Gesture', () => {
@@ -96,14 +81,6 @@ describe('Friendship increment skills', () => {
                     skillId: 'peaceful-gesture',
                     amount: 1,
                 }),
-            );
-        });
-
-        it('costs 2 body resources', () => {
-            const result = executeSkill(state, 'peaceful-gesture', getCardById);
-
-            expect(result.state.combatResources.body).toBe(
-                state.combatResources.body - 2,
             );
         });
     });
@@ -126,24 +103,6 @@ describe('Friendship increment skills', () => {
                 }),
             );
         });
-
-        it('costs 3 mind + 1 heart resources', () => {
-            const result = executeSkill(state, 'empathetic-understanding', getCardById);
-
-            expect(result.state.combatResources.mind).toBe(
-                state.combatResources.mind - 3,
-            );
-            expect(result.state.combatResources.heart).toBe(
-                state.combatResources.heart - 1,
-            );
-            expect(result.events).toContainEqual(
-                expect.objectContaining({
-                    kind: 'resources-spent',
-                    skillId: 'empathetic-understanding',
-                    cost: { mind: 3, heart: 1 },
-                }),
-            );
-        });
     });
 
     describe('Skills without incrementsFriendship', () => {
@@ -160,27 +119,16 @@ describe('Friendship increment skills', () => {
     });
 
     describe('Friendship processing order', () => {
-        it('processes friendship after effects but before resource costs', () => {
+        it('increments friendship after effects resolve', () => {
             // Start with a state that has some friendship already
             const stateWithFriendship = { ...state, friendshipCounter: 5 };
-            
+
             const result = executeSkill(stateWithFriendship, 'soothing-words', getCardById);
-            
-            // Check that friendship was incremented
+
+            // Friendship was incremented and the increment event is present.
             expect(result.state.friendshipCounter).toBe(6);
-            
-            // Check that resource costs were still applied
-            expect(result.state.combatResources.heart).toBe(
-                stateWithFriendship.combatResources.heart - 2,
-            );
-            
-            // Check event order: friendship-incremented should come before resources-spent
             const friendshipEvent = result.events.find(e => e.kind === 'friendship-incremented');
-            const resourcesEvent = result.events.find(e => e.kind === 'resources-spent');
-            const friendshipIndex = result.events.indexOf(friendshipEvent!);
-            const resourcesIndex = result.events.indexOf(resourcesEvent!);
-            
-            expect(friendshipIndex).toBeLessThan(resourcesIndex);
+            expect(friendshipEvent).toBeDefined();
         });
     });
 });

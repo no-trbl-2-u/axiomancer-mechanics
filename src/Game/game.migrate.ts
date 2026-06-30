@@ -131,8 +131,8 @@ function migrateV6toV7(v6: GameStateV6): GameStateV7 {
 /**
  * Migrate from v7 to v8 (Phase 99 — unlocked skill access): merge the legacy
  * `equippedSkills` rotation into `knownSkills` so old saves don't lose access to
- * skills. Post-migration, combat uses `knownSkills` filtered by `canUseSkill`
- * affordability (ADR-0002). Phase 159 removed `equippedSkills` from the live
+ * skills. Post-migration, combat uses `knownSkills` directly as the catalogue
+ * (ADR-0002). Phase 159 removed `equippedSkills` from the live
  * `Character` type entirely, so the legacy field is read off the v7 payload and
  * dropped — it is never written back onto the migrated player.
  */

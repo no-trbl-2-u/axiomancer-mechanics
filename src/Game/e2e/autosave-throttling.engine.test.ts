@@ -65,9 +65,7 @@ describe('Phase 51 — autosave throttling restricts adapter.save to DURABLE_ACT
         expect(adapter.saves).toBe(0);
     });
 
-    it('COMBAT_ROUND triggers adapter.save', () => {
-        mockAlternatingRng();
-
+    it('START_COMBAT alone is not a durable action — saves stays 0', () => {
         const adapter = countingAdapter();
         const store = createGameStore(adapter, { player: Player });
 
@@ -77,20 +75,6 @@ describe('Phase 51 — autosave throttling restricts adapter.save to DURABLE_ACT
             payload: { target: TidepoolCrab },
         });
         expect(adapter.saves).toBe(0);
-
-        // One COMBAT_ROUND — durable, should save exactly once.
-        store.getState().dispatch({
-            type: 'COMBAT_ROUND',
-            payload: { playerAction: 'attack', playerStance: 'body' },
-        });
-        expect(adapter.saves).toBe(1);
-
-        // Another COMBAT_ROUND — another save.
-        store.getState().dispatch({
-            type: 'COMBAT_ROUND',
-            payload: { playerAction: 'defend', playerStance: 'body' },
-        });
-        expect(adapter.saves).toBe(2);
     });
 
     it('MOVE_TO_NODE and SAVE_GAME both trigger adapter.save; LOAD_GAME does not', () => {

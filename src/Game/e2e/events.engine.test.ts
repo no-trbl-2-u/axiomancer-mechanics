@@ -106,33 +106,10 @@ describe('Events engine', () => {
     });
 
     // ────────────────────────────────────────────────────────────────────────
-    // CRITIQUE pass 7-follow-up — combat:round payload now surfaces the
-    // RoundEvent[] stream so consumers can inspect sub-events (skills, items,
-    // effect applications, resists, crits, friendship-counter ticks). Pinned
-    // through the canonical UI driver path: CLI computes events via
-    // resolveCombatRound, hands them to store.updateCombat, store emits.
+    // `updateCombat` replaces the combat snapshot and emits a `combat:round`
+    // event so subscribers can re-render from the new state.
     // ────────────────────────────────────────────────────────────────────────
-    it('combat:round payload carries the per-round RoundEvent stream', () => {
-        const store = createGameStore(nullAdapter, undefined, events);
-        store.getState().startCombat(Disatree_01);
-        capturedEvents.length = 0;
-
-        const combat = store.getState().combat!;
-        const fakeRoundEvents = [
-            { phase: 'scenario' as const, kind: 'attack-roll' as const, actor: 'player' as const,
-              rawRoll: 11, statValue: 2, advantage: 'neutral' as const, rollModifier: 0, total: 13 },
-            { phase: 'scenario' as const, kind: 'contest-outcome' as const,
-              playerTotal: 13, enemyTotal: 9, winner: 'player' as const },
-        ];
-
-        store.getState().updateCombat(combat, fakeRoundEvents);
-
-        const roundEvt = capturedEvents.find(isCombatRoundEvent);
-        expect(roundEvt).toBeDefined();
-        expect(roundEvt!.payload.combatEvents).toEqual(fakeRoundEvents);
-    });
-
-    it('combat:round payload omits combatEvents when updateCombat receives no events', () => {
+    it('updateCombat emits a combat:round event', () => {
         const store = createGameStore(nullAdapter, undefined, events);
         store.getState().startCombat(Disatree_01);
         capturedEvents.length = 0;
@@ -142,6 +119,6 @@ describe('Events engine', () => {
 
         const roundEvt = capturedEvents.find(isCombatRoundEvent);
         expect(roundEvt).toBeDefined();
-        expect(roundEvt!.payload.combatEvents).toBeUndefined();
+        expect(roundEvt!.payload.state.combat).toBeDefined();
     });
 });

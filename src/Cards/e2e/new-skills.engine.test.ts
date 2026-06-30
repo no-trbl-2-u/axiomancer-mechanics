@@ -5,12 +5,11 @@
  *   - Every new skill id resolves via `getCardById`.
  *   - Every referenced `combatEffects[].effectId` is a non-empty string.
  *   - Tiers are within the 1-3 range.
- *   - `resourceCost` keys are valid resonance-economy resources.
  *   - Counts per tier / philosophicalAspect match the intended spread.
  */
 
 import { describe, expect, it } from 'vitest';
-import type { ResourceCost, CardTier, StatType } from '../types';
+import type { CardTier, StatType } from '../types';
 import { getCardById } from '../cards.library';
 
 const NEW_SKILL_IDS = [
@@ -38,10 +37,6 @@ const NEW_SKILL_IDS = [
     'grandfather-paradox',
     'apophatic-aegis',
 ] as const;
-
-const VALID_RESOURCE_KEYS: ReadonlyArray<keyof ResourceCost> = [
-    'heart', 'body', 'mind', 'fallacy', 'paradox',
-];
 
 const VALID_TIERS: ReadonlyArray<CardTier> = [1, 2, 3];
 const VALID_ASPECTS: ReadonlyArray<StatType> = ['body', 'mind', 'heart'];
@@ -91,18 +86,6 @@ describe('2026-06-07 content drop — new skills', () => {
             const skill = getCardById(id)!;
             expect(VALID_ASPECTS).toContain(skill.philosophicalAspect);
             expect(VALID_ASPECTS).toContain(skill.scalingStat);
-        }
-    });
-
-    it('every resourceCost uses only valid keys with positive amounts', () => {
-        for (const id of NEW_SKILL_IDS) {
-            const skill = getCardById(id)!;
-            const keys = Object.keys(skill.resourceCost) as Array<keyof ResourceCost>;
-            expect(keys.length, `skill ${id} has empty resourceCost`).toBeGreaterThan(0);
-            for (const key of keys) {
-                expect(VALID_RESOURCE_KEYS, `skill ${id} has invalid cost key ${key}`).toContain(key);
-                expect(skill.resourceCost[key]!, `skill ${id} cost ${key} not positive`).toBeGreaterThan(0);
-            }
         }
     });
 

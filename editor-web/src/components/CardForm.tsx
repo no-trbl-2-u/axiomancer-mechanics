@@ -25,13 +25,11 @@ import {
     TARGET_TYPES,
     APPLIED_TO,
     SPECIAL_MECHANIC_KINDS,
-    RESOURCE_KEYS,
     EFFECTS,
     DEBUFF_EFFECTS,
     BUFF_EFFECTS,
     lookupEffectOption,
     type SpecialMechanicKind,
-    type ResourceKey,
 } from '../data/mechanics';
 import { WX, DIE, ART_STRIPES, type DieKey } from '../theme/wx';
 import { FieldLabel, TextField, Segmented, Dropdown, Stepper, Btn } from './form';
@@ -156,8 +154,6 @@ function defaultMechanic(kind: SpecialMechanicKind): CardSpecialMechanic {
             return { kind };
         case 'secondary_heal_self':
             return { kind, stat: 'heart', multiplier: 1 };
-        case 'bypass_defense':
-            return { kind };
         case 'befriend_attempt':
             return { kind };
         case 'guard':
@@ -174,8 +170,10 @@ function defaultMechanic(kind: SpecialMechanicKind): CardSpecialMechanic {
             return { kind, damage: 5, reduce: 2 };
         case 'execute':
             return { kind, hpPct: 30, dotStacks: 2 };
+        case 'amplify':
+            return { kind, multiplier: 1.5 };
         default:
-            return { kind: 'bypass_defense' };
+            return { kind: 'befriend_attempt' };
     }
 }
 
@@ -199,15 +197,6 @@ export function CardForm({ card, setCard }: { card: CardDraft; setCard: (c: Card
         reader.onload = () => set({ img: reader.result as string });
         reader.readAsDataURL(f);
     };
-
-    // ── resourceCost helpers ──
-    const setResource = (key: ResourceKey, v: number) => {
-        const next = { ...card.resourceCost };
-        if (v <= 0) delete next[key];
-        else next[key] = v;
-        set({ resourceCost: next });
-    };
-    const costCount = RESOURCE_KEYS.filter((k) => (card.resourceCost[k] ?? 0) > 0).length;
 
     // ── combatEffects helpers ──
     const effOptionsFor = (appliedTo: 'self' | 'opponent', currentId: string) => {
@@ -372,22 +361,6 @@ export function CardForm({ card, setCard }: { card: CardDraft; setCard: (c: Card
                 </div>
             </Section>
 
-            {/* ════ RESOURCE COST ════ */}
-            <Section title="RESOURCE COST" badge={costCount || undefined}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    {RESOURCE_KEYS.map((key) => (
-                        <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                            <span style={{ width: 78, fontFamily: WX.sans, fontSize: 13, letterSpacing: 1.5, color: WX.bone, textTransform: 'uppercase' }}>
-                                {key}
-                            </span>
-                            <div style={{ flex: 1 }}>
-                                <Stepper value={card.resourceCost[key] ?? 0} onChange={(v) => setResource(key, v)} min={0} max={20} />
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </Section>
-
             {/* ════ COMBAT EFFECTS ════ */}
             <Section title="COMBAT EFFECTS" badge={card.combatEffects.length || undefined}>
                 {card.combatEffects.length === 0 && (
@@ -536,10 +509,6 @@ export function CardForm({ card, setCard }: { card: CardDraft; setCard: (c: Card
                     <Stepper value={card.incrementsFriendship ?? 0} onChange={(v) => set({ incrementsFriendship: v === 0 ? undefined : v })} min={0} max={10} />
                 </div>
                 <div>
-                    <FieldLabel hint="philosophy cell id">SOURCED FROM CELL</FieldLabel>
-                    <TextField value={card.sourcedFromCell ?? ''} onChange={(v) => set({ sourcedFromCell: v })} placeholder="e.g. body-fallacy-ethos" />
-                </div>
-                <div>
                     <FieldLabel hint="ISO date / phase tag">ADDED IN</FieldLabel>
                     <TextField value={card.addedIn ?? ''} onChange={(v) => set({ addedIn: v })} placeholder="e.g. 2026-06-29" />
                 </div>
@@ -604,7 +573,8 @@ function MechanicFields({ mechanic, patch }: { mechanic: CardSpecialMechanic; pa
                     {numRow('RECOIL %', 'self-damage, optional', mechanic.recoilPct ?? 0, 'recoilPct')}
                 </>
             );
-        case 'bypass_defense':
+        case 'amplify':
+            return numRow('MULTIPLIER', '× pending DoT', mechanic.multiplier, 'multiplier', 0, 20);
         case 'befriend_attempt':
         case 'convert_enemy_buff_to_self':
         default:

@@ -96,21 +96,9 @@ export {
     appendLog, incrementFriendship, endCombat,
 } from './Combat/combat.reducer';
 
-// ─── Combat resolver ──────────────────────────────────────────────────────────
-// Single-call round resolution. UI clients consume the typed `combatEvents`
-// stream and render from it; the resolver itself never logs.
-export { resolveCombatRound } from './Combat';
-export type {
-    RoundResolution, RoundEvent, CombatActor,
-    RoundStartEvent, ActionRestrictionEvent, AdvantageEvent,
-    StanceEffectEvent, ScenarioEvent, CardPhaseEvent, ResourceEvent,
-    ItemPhaseEvent, RoundEndEvent,
-} from './Combat';
-
 // ─── Spec 25 — Hazard-Pattern Combat ──────────────────────────────────────────
 // Card-and-dice combat: HP is the sole win condition. Status effects erode HP
-// far faster than the deliberately weak basic strike. Ships alongside the
-// legacy resolver (dev-only).
+// far faster than the deliberately weak basic strike.
 export {
     initializeCombatEncounter, rollEncounterDice, playCombatCard,
     resolveCombatPhase, resolveThreatPhase, processBetweenPhases,
@@ -226,17 +214,16 @@ export type {
 // ─── Skills ───────────────────────────────────────────────────────────────────
 export type {
     Card, CardCategory, StatType, CardTier, CardTarget,
-    ResourceCost, CombatResources,
+    CombatResources,
     CardLearningRequirement, CardCombatEffects, CardSpecialMechanic,
-    BasicActionOutcome, CardEvent, CardResolution, CardLookup,
+    CardEvent, CardResolution, CardLookup,
     CardSynergy, SynergyPredicate,
     // Phase 142 — Extended synergy predicates
     ExtendedSynergyPredicate,
 } from './Cards';
 export {
     generateBasicActionResources, generatePhilosophicalResource,
-    carryPhilosophicalResources,
-    canUseSkill, spendResources, calculateSkillDamage, executeSkill,
+    calculateSkillDamage, executeSkill,
     meetsLearningRequirement, getAvailableSkills, learnSkill,
     cardLibrary, getCardById,
     // Phase 142 — Extended synergy predicate functionality
@@ -402,16 +389,6 @@ export type {
     AlignmentGate,
 } from './NPCs';
 export { getDialogueNode, visibleChoices, isLeafNode } from './NPCs';
-
-// ─── Playtest ─────────────────────────────────────────────────────────────────
-export {
-    runPlaytestScenario, aggregateMetrics, selectPolicyAction, renderPlaytestMarkdown,
-    earlyGameFixture, earlyGameWispFixture, endgameFixture, endgameDisagreementFixture,
-} from './Playtest';
-export type {
-    PlaytestScenario, PlaytestReport, PlaytestMetrics, PlaytestRunSummary,
-    PlaytestPolicy, PlaytestOutcome, PlaytestPolicySummary,
-} from './Playtest';
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 export {

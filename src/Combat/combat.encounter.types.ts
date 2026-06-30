@@ -7,11 +7,9 @@
  * control hinders the enemy's turn); a raw strike is the weak baseline — every
  * verb is a combat card (projected from a learned skill).
  *
- * This subsystem ships ALONGSIDE the legacy `resolveCombatRound` driver (Spec
- * 25 §12 Q4 recommendation (b)): the effects engine, skill engine, and the old
- * resolver are all untouched, so every existing hermetic test keeps passing.
- * The new engine *drives* the same `executeSkill` / `applyEffect` machinery
- * differently — it does not replace it.
+ * This is the sole combat driver. It reuses the shared effects engine and
+ * skill engine (Spec 25 §12 Q4 recommendation (b)): the `executeSkill` /
+ * `applyEffect` machinery is untouched — the engine *drives* it differently.
  *
  * Doctrine (CLAUDE.md): status effects are the MAIN fun. DoT erosion + control
  * make a fight something the player *assembles a solution* for rather than
@@ -310,6 +308,11 @@ export type CombatEvent =
     | { kind: 'effect-landed'; cardId: string; effectId: string; target: 'self' | 'enemy';
         effectKind: CardEffectKind; intensity: number; effect: Effect }
     | { kind: 'effect-fizzled'; cardId: string; effectId: string; message: string }
+    // A `strip_random_buff` mechanic (e.g. Ad Hominem Strike) removed one buff
+    // from a combatant. `effectId`/`effectName` are null when there was no buff
+    // to strip. Surfaced so the live combat log can show the harassment landing.
+    | { kind: 'buff-stripped'; cardId: string; target: 'self' | 'enemy';
+        effectId: string | null; effectName: string | null }
     | { kind: 'damage-dealt'; cardId: string; target: 'self' | 'enemy'; amount: number }
     | { kind: 'die-refreshed'; dieId: string; color: CombatDieColor }
     | { kind: 'die-spent'; dieId: string; color: CombatDieColor }

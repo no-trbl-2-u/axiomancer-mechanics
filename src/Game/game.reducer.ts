@@ -16,11 +16,9 @@ import { GameAction } from './actions.types';
 import { Character } from '../Character/types';
 import { Encounter, QuestLog } from '../World/types';
 import { Enemy } from '../Enemy/types';
-import { initializeCombat, selectMercyChoice } from '../Combat/combat.reducer';
-import { determineEnemyAction, determineCombatEnd } from '../Combat';
+import { initializeCombat } from '../Combat/combat.reducer';
+import { determineCombatEnd } from '../Combat';
 import { applyMoralMeterScaling } from '../Combat/difficulty';
-import { resolveCombatRound } from '../Combat/combat.resolver';
-import { getCardById } from '../Cards/cards.library';
 import {
     useConsumable as useConsumableItem,
 } from '../Items/item.reducer';
@@ -32,7 +30,7 @@ import {
     unequipItem as unequipItemReducer,
 } from '../Character/equipment.reducer';
 import { createCharacter, allocateStatPoint } from '../Character';
-import { learnSkill, carryPhilosophicalResources } from '../Cards';
+import { learnSkill } from '../Cards';
 import { createStartingWorld, emptyQuestLog } from '../World';
 import { moveToNode as moveWorld } from '../World/world.reducer';
 import { resolveMapEvent } from '../World';
@@ -122,8 +120,6 @@ function applyLevelUps(player: Character): Character {
     return next;
 }
 
-const skillLookup = (id: string) => getCardById(id);
-
 /**
  * Shifts the moral meter by the specified delta, clamping to [-100, +100].
  * Optionally gated by min/max requirements — if the current meter doesn't meet
@@ -204,69 +200,8 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
             
             return {
                 ...state,
-                // `initializeCombat` reads `state.player.carriedResources` to
-                // seed the new combat; clear it from the canonical player so the
-                // carry is consumed exactly once.
-                player: state.player.carriedResources
-                    ? { ...state.player, carriedResources: undefined }
-                    : state.player,
                 combat: initializeCombat(state.player, scaledEnemy),
                 currentEncounter: encounter,
-            };
-        }
-
-        case 'COMBAT_ROUND': {
-            if (!state.combat) return state;
-            const { playerAction, playerStance, skillId, itemId } = action.payload;
-            
-            // Phase 109 — Track mercy choices against elite/miniboss enemies for region consequences
-            let nextRegionConsequences = state.regionConsequences;
-            const enemy = state.combat.enemy;
-            const isEliteOrMiniboss = enemy.difficulty === 'elite' || enemy.difficulty === 'boss';
-            const isRegionBoss = enemy.difficulty === 'boss';
-            
-            if (isEliteOrMiniboss && !isRegionBoss && state.combat.mercyChoiceActive) {
-                const region = enemy.mapName; // Use mapName as region identifier
-                
-                if (playerAction === 'exploit') {
-                    // Player exploited the befriend opening - block friendship counters for region boss
-                    if (!nextRegionConsequences.exploitedRegions.includes(region)) {
-                        nextRegionConsequences = {
-                            ...nextRegionConsequences,
-                            exploitedRegions: [...nextRegionConsequences.exploitedRegions, region],
-                        };
-                    }
-                } else if (playerAction === 'spare') {
-                    // Player spared the enemy - region boss gets 'open-minded' status
-                    if (!nextRegionConsequences.sparedRegions.includes(region)) {
-                        nextRegionConsequences = {
-                            ...nextRegionConsequences,
-                            sparedRegions: [...nextRegionConsequences.sparedRegions, region],
-                        };
-                    }
-                }
-
-                if (playerAction === 'spare' || playerAction === 'exploit') {
-                    return {
-                        ...state,
-                        combat: selectMercyChoice(state.combat, playerAction),
-                        regionConsequences: nextRegionConsequences,
-                    };
-                }
-            }
-            
-            const enemyAction = determineEnemyAction(state.combat.enemy, state.combat);
-            const { state: nextCombat } = resolveCombatRound(
-                state.combat,
-                { stance: playerStance, action: playerAction, skillId, itemId },
-                enemyAction,
-                skillLookup,
-                nextRegionConsequences.exploitedRegions,
-            );
-            return { 
-                ...state, 
-                combat: nextCombat, 
-                regionConsequences: nextRegionConsequences 
             };
         }
 
@@ -287,17 +222,6 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
                 ? combat.player
                 : { ...combat.player, inventory: state.player.inventory };
 
-            // On a won combat, carry a capped fraction of unspent philosophical
-            // resources (fallacy / paradox) into the next combat's seed; on a
-            // loss / flee, nothing carries. Always set the field explicitly so a
-            // stale carry cloned into the combat snapshot can't linger.
-            if (outcome === 'victory' || outcome === 'friendship') {
-                const carried = carryPhilosophicalResources(combat.combatResources);
-                nextPlayer = {
-                    ...nextPlayer,
-                    carriedResources: Object.keys(carried).length > 0 ? carried : undefined,
-                };
-            }
             let nextQuests: QuestLog = state.quests;
 
             if ((outcome === 'victory' || outcome === 'friendship') && state.currentEncounter) {

@@ -6,7 +6,7 @@
  *
  *   1. createGameStore + createEventEmitter
  *   2. START_COMBAT against TidepoolCrab (low-HP enemy → cheap victory)
- *   3. COMBAT_ROUND × N until the enemy is KO'd
+ *   3. updateCombat drops the enemy to 0 HP (emits combat:round)
  *   4. END_COMBAT — outcome is 'victory', loot + XP applied
  *   5. LEVEL_UP — confirms the placeholder level-up reducer (Phase 09 brief)
  *   6. MOVE_TO_NODE to fv-2
@@ -67,14 +67,13 @@ describe('Game loop — full transcript through gameReducer', () => {
         expect(store.getState().combat).not.toBeNull();
         expect(store.getState().currentEncounter).toBeDefined();
 
-        // 2. COMBAT_ROUND × N (cap at 30 rounds; alternating RNG always lands
-        //    a strong attack so a victory is reachable).
-        for (let i = 0; i < 30 && store.getState().combat?.enemy.health! > 0; i++) {
-            store.getState().dispatch({
-                type: 'COMBAT_ROUND',
-                payload: { playerAction: 'attack', playerStance: 'body' },
-            });
-        }
+        // 2. Drive the enemy to 0 HP through the combat snapshot update path
+        //    (`updateCombat` emits the `combat:round` event the loop asserts on).
+        const combat = store.getState().combat!;
+        store.getState().updateCombat({
+            ...combat,
+            enemy: { ...combat.enemy, health: 0 },
+        });
         expect(store.getState().combat?.enemy.health).toBeLessThanOrEqual(0);
 
         // 3. END_COMBAT — victory grants enemy XP and rolls loot.

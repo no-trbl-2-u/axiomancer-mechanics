@@ -27,22 +27,18 @@ import { isBefriendAttemptEligible } from '../Combat/index';
 import { Combatant, CombatState, Stance } from '../Combat/types';
 import {
     RESOURCE_GENERATION,
-    RESOURCE_CARRY,
     SKILL_STAT_MULTIPLIER,
 } from '../Game/game-mechanics.constants';
 import { Equipment, EquipmentSlot } from '../Items/types';
 import { applyEquipmentGenerationBonus } from '../Items/equipment.engine';
 import { applySetGenerationBonus } from '../Items/set.engine';
 import {
-    CombatResources, ResourceCost, Card, CardCategory, CardCombatEffects,
+    CombatResources, Card, CardCategory, CardCombatEffects,
     CardSpecialMechanic, CardTier,
 } from './types';
 import { cardLibrary, getCardById } from './cards.library';
 
 // ─── Resource Generation ─────────────────────────────────────────────────────
-
-/** Outcome of a basic action that drives token generation. */
-export type BasicActionOutcome = 'hit' | 'miss' | 'defend';
 
 /**
  * Returns a new `CombatResources` snapshot with the actor's stance token
@@ -62,7 +58,7 @@ export type BasicActionOutcome = 'hit' | 'miss' | 'defend';
 export function generateBasicActionResources(
     resources: CombatResources,
     stance: Stance,
-    outcome: BasicActionOutcome,
+    outcome: 'hit' | 'miss' | 'defend',
     equipment?: Partial<Record<EquipmentSlot, Equipment>>,
 ): CombatResources {
     const amount =
@@ -88,66 +84,6 @@ export function generatePhilosophicalResource(
 ): CombatResources {
     const key: keyof CombatResources = category === 'fallacy' ? 'fallacy' : 'paradox';
     return { ...resources, [key]: resources[key] + 1 };
-}
-
-/**
- * Computes the philosophical resources (fallacy / paradox only) that carry
- * from a won combat into the next combat's seed: `floor(FRACTION × unspent)`
- * per resource, capped at `CAP`. Stance tokens never carry — only the
- * skill-fuel resources — so the carry rewards casting skills (and the status
- * effects they apply), not turtling or basic-attack token-banking.
- *
- * Returns a sparse `Partial<CombatResources>` carrying only the keys with a
- * positive amount, suitable for `Character.carriedResources`. Pure.
- */
-export function carryPhilosophicalResources(
-    resources: CombatResources,
-    fraction: number = RESOURCE_CARRY.FRACTION,
-    cap: number = RESOURCE_CARRY.CAP,
-): Partial<CombatResources> {
-    const carried: Partial<CombatResources> = {};
-    for (const key of ['fallacy', 'paradox'] as const) {
-        const amount = Math.min(Math.floor((resources[key] ?? 0) * fraction), cap);
-        if (amount > 0) carried[key] = amount;
-    }
-    return carried;
-}
-
-// ─── Cost Checking & Spending ────────────────────────────────────────────────
-
-const RESOURCE_KEYS: ReadonlyArray<keyof ResourceCost> =
-    ['heart', 'body', 'mind', 'fallacy', 'paradox'];
-
-/**
- * True iff every key listed in the skill's `resourceCost` has at least the
- * required amount in `resources`. Multi-key costs implicitly require
- * resonance — both pools must be funded simultaneously.
- */
-export function canUseSkill(resources: CombatResources, skill: Card): boolean {
-    return RESOURCE_KEYS.every(key => {
-        const cost = skill.resourceCost[key] ?? 0;
-        return cost <= 0 || resources[key] >= cost;
-    });
-}
-
-/**
- * Subtracts `cost` from `resources`. Throws if any key would go negative —
- * callers must guard with `canUseSkill` first.
- */
-export function spendResources(
-    resources: CombatResources,
-    cost: ResourceCost,
-): CombatResources {
-    const next: CombatResources = { ...resources };
-    for (const key of RESOURCE_KEYS) {
-        const amount = cost[key] ?? 0;
-        if (amount <= 0) continue;
-        if (next[key] < amount) {
-            throw new Error(`Insufficient ${key}: have ${next[key]}, need ${amount}`);
-        }
-        next[key] = next[key] - amount;
-    }
-    return next;
 }
 
 // ─── Damage Calculation ──────────────────────────────────────────────────────
@@ -325,9 +261,6 @@ export type CardEvent =
         skillId: string;
         effect: Effect | null;
         message: string }
-    | { kind: 'resources-spent';
-        skillId: string;
-        cost: ResourceCost }
     | { kind: 'philosophical-generated';
         skillId: string;
         category: CardCategory }
@@ -369,16 +302,13 @@ export interface CardLookup {
  * Runs a skill end-to-end against the current `CombatState`:
  *
  *   1. Validate the skill is equipped (player) or in the enemy's rotation.
- *   2. Validate `canUseSkill` (resources sufficient) — throws otherwise.
- *   3. Apply damage / heal based on `targetType`.
- *   4. Resolve each `combatEffects` payload through `resolveEffectApplication`
+ *   2. Apply damage / heal based on `targetType`.
+ *   3. Resolve each `combatEffects` payload through `resolveEffectApplication`
  *      so resist tier matches the skill's `tier`.
- *   5. Spend the resource cost.
- *   6. Generate one Fallacy or Paradox token from the skill's category.
+ *   4. Generate one Fallacy or Paradox token from the skill's category.
  *
- * The resolver — not this function — is responsible for emitting `RoundEvent`s
- * to the broader combatEvents stream; it adapts our `CardEvent[]` into that
- * shape.
+ * The caller — not this function — is responsible for surfacing the returned
+ * `CardEvent[]` to any higher-level event stream.
  *
  * Phase 49 — `casterSide` decides which side is firing the skill. Defaults
  * to `'player'` for back-compat with the pre-Phase-49 call site at
@@ -391,8 +321,7 @@ export interface CardLookup {
  * path (per D2 in plan/phases/phase_49_enemy_skill_caster.md).
  *
  * @throws if the skill is not known (player path) or not in the enemy's
- *   rotation (enemy path), not found in the lookup, or the caster cannot
- *   afford it.
+ *   rotation (enemy path), or not found in the lookup.
  */
 export function executeSkill(
     state: CombatState,
@@ -418,10 +347,6 @@ export function executeSkill(
     const skill = lookupSkill(skillId);
     if (!skill) {
         throw new Error(`Card '${skillId}' not found in library.`);
-    }
-
-    if (!canUseSkill(state.combatResources, skill)) {
-        throw new Error(`Insufficient resources for '${skill.name}'.`);
     }
 
     const events: CardEvent[] = [];
@@ -507,8 +432,8 @@ export function executeSkill(
                 events.push(...result.events);
             }
 
-            // consumeAllResources — zero out the pool. Tracked locally
-            // so the final `spendResources` skips re-charging on cost.
+            // consumeAllResources — zero out the pool. Tracked locally so the
+            // generation step below starts from an emptied pool.
             if (syn.consumeAllResources) {
                 synergyForceResources = { body: 0, mind: 0, heart: 0, fallacy: 0, paradox: 0 };
             }
@@ -578,14 +503,11 @@ export function executeSkill(
     }
 
     const genCategory = philosophicalCategoryFor(skill);
-    // Phase 66 — when synergy's `consumeAllResources` fired, the pool
-    // is zeroed (no `spendResources` subtract needed). The philosophical-
-    // category generation still fires per the existing skill-cost
-    // economy.
-    const baseAfterCost = synergyForceResources
-        ?? spendResources(workingState.combatResources, skill.resourceCost);
+    // Cards carry no resource cost (de-tokenized): the working pool passes
+    // through unchanged, except when synergy's `consumeAllResources` zeroed it.
+    // The philosophical-category generation still fires (+1 fallacy/paradox).
+    const baseAfterCost = synergyForceResources ?? workingState.combatResources;
     const nextResources = generatePhilosophicalResource(baseAfterCost, genCategory);
-    events.push({ kind: 'resources-spent', skillId, cost: skill.resourceCost });
     events.push({ kind: 'philosophical-generated', skillId, category: genCategory });
 
     const nextPlayer = (isPlayerCaster ? workingCaster : workingTarget) as Character;
@@ -751,9 +673,6 @@ function applySpecialMechanic(
     const events: CardEvent[] = [];
 
     switch (mechanic.kind) {
-        case 'bypass_defense':
-            return { caster, target, events };
-
         case 'strip_random_buff': {
             if (mechanic.appliedTo === 'enemy') {
                 const { target: nextTarget, removed } = removeRandomBuff(target);

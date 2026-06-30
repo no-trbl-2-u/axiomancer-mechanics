@@ -4,11 +4,10 @@
  * Phase 165 Unit 5 DoD: deterministic `--auto` walkthrough fixture.
  *
  * Tests cover:
- *   - Flag parsing (parseCombatArgv / parseLegacyCombatArgv)
+ *   - Flag parsing (parseCombatArgv)
  *   - Deterministic `--auto` run (same seed → identical outcome)
  *   - State-log JSONL contains expected records (start + end + phase records)
  *   - All four auto policies complete without throwing
- *   - Legacy CLI flag parsing
  */
 
 import { describe, it, expect, afterEach } from 'vitest';
@@ -19,7 +18,6 @@ import { randomUUID } from 'crypto';
 
 import {
     parseCombatArgv,
-    parseLegacyCombatArgv,
     runCombatCli,
 } from '../combat.cli';
 import { setStateLogPath } from '../io';
@@ -88,25 +86,6 @@ describe('Combat CLI — flag parsing', () => {
 
     it('rejects non-numeric --seed', () => {
         expect(() => parseCombatArgv(['--seed', 'abc'])).toThrow(/--seed/);
-    });
-
-    it('parses legacy-combat flags', () => {
-        const flags = parseLegacyCombatArgv([
-            '--enemy', 'mournful-gull',
-            '--preset', 'wanderer',
-            '--seed', '99',
-            '--json-events',
-        ]);
-        expect(flags).toMatchObject({
-            enemySlug: 'mournful-gull',
-            presetId: 'wanderer',
-            seed: 99,
-            jsonEvents: true,
-        });
-    });
-
-    it('rejects unknown legacy-combat flags', () => {
-        expect(() => parseLegacyCombatArgv(['--auto'])).toThrow(/Unknown legacy-combat CLI flag/);
     });
 });
 

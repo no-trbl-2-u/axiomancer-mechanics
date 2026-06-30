@@ -10,10 +10,9 @@
  * differently.
  *
  * Card bottom actions execute through the unchanged `executeSkill`: the drafted
- * stance die is the card's whole cost — combat cards are NOT token-gated
- * (`grantStanceCost` covers the full cost just-in-time). Landed `effect-applied`
- * events drive the post-combat attribution and the self-reinforcing die loop
- * (§4.7).
+ * stance die is the card's whole cost — combat cards carry no resource cost.
+ * Landed `effect-applied` events drive the post-combat attribution and the
+ * self-reinforcing die loop (§4.7).
  *
  * Randomness flows through the seedable global RNG singleton; pass `seed` to
  * `initializeCombatEncounter` for a reproducible encounter (hermetic tests +
@@ -235,22 +234,6 @@ function skillShim(enc: CombatEncounterState): CombatState {
     };
 }
 
-/** Grants a skill's FULL resource cost just-in-time, authorized by the drafted
- *  die (§4.3). Combat CARDS are NOT token-gated: Fallacy/Paradox are granted here
- *  too, so any learned card plays without a pre-banked token (only out-of-combat
- *  SKILLS pay tokens). The drafted die is the sole cost a card pays. */
-function grantStanceCost(resources: CombatResources, skill: Card): CombatResources {
-    const c = skill.resourceCost;
-    return {
-        ...resources,
-        heart: resources.heart + (c.heart ?? 0),
-        body: resources.body + (c.body ?? 0),
-        mind: resources.mind + (c.mind ?? 0),
-        fallacy: resources.fallacy + (c.fallacy ?? 0),
-        paradox: resources.paradox + (c.paradox ?? 0),
-    };
-}
-
 /** Snapshot of enemy effect intensities (for the meaningful-land / refresh check). */
 function intensityMap(effects: readonly ActiveEffect[]): Record<string, number> {
     const m: Record<string, number> = {};
@@ -313,7 +296,7 @@ export function initializeCombatEncounter(
         threatMarks: threatPhases.map(() => 'pending'),
         currentPhaseIndex: 0,
         phaseResults: [],
-        combatResources: { ...EMPTY_RESOURCES, ...seededResources(clonedPlayer) },
+        combatResources: { ...EMPTY_RESOURCES },
         round: 1,
         attribution: {},
         chainEffectIds: [],
@@ -324,13 +307,6 @@ export function initializeCombatEncounter(
         finalOutcome: null,
         seed,
     };
-}
-
-/** Seeds the Fallacy/Paradox bank from equipment carry, mirroring the legacy
- *  `initializeCombat` (so banked tokens from a prior won combat carry in). */
-function seededResources(player: Character): Partial<CombatResources> {
-    const carry = player.carriedResources ?? {};
-    return { fallacy: carry.fallacy ?? 0, paradox: carry.paradox ?? 0 };
 }
 
 /**
@@ -626,11 +602,7 @@ function playBottomAction(
         return { state: withLog(state, events), events };
     }
 
-    // 2. Resources — granted just-in-time by the drafted die. Combat cards are
-    //    NOT token-gated: grantStanceCost covers the full cost, so any card plays.
-    const granted = grantStanceCost(state.combatResources, skill);
-
-    // 3. The read (drafted die vs hidden enemy stance) + color-match bonus (§1, §3).
+    // 2. The read (drafted die vs hidden enemy stance) + color-match bonus (§1, §3).
     //    A WILD die has no stance of its own, so it ADOPTS the powered card's
     //    stance for the read (contesting the enemy like a colored die); on a GOLD
     //    (rare) card the wild die always reads advantage.
@@ -644,9 +616,9 @@ function playBottomAction(
 
     const events: CombatEvent[] = [{ kind: 'card-played', cardId: card.id, useBottom: true, dieId: drafted.id, advantage, colorMatch }];
 
-    // 4. Execute the skill (unchanged engine) against a shim.
+    // 3. Execute the skill (unchanged engine) against a shim.
     const before = intensityMap(state.enemy.effects);
-    const shim: CombatState = { ...skillShim(state), combatResources: granted };
+    const shim: CombatState = skillShim(state);
     const res = executeSkill(shim, skill.id, lookupSkill, 'player');
 
     let player = res.state.player as Character;
@@ -774,7 +746,7 @@ function playBottomAction(
     // VARIETY (a status new to this chain refreshes the die; a repeat spends it).
     const landedOffensiveIds: string[] = [];
 
-    // 5. Fold the skill's effect-applications: DoT + control LAND on the enemy.
+    // 4. Fold the skill's effect-applications: DoT + control LAND on the enemy.
     //    DoT will tick real HP each phase (the status damage engine); control gates
     //    the enemy's turn via `canAct`. Attribute projected DoT for the summary.
     for (const ev of res.events) {
@@ -796,12 +768,21 @@ function playBottomAction(
             }
         } else if (ev.kind === 'buff-fumbled') {
             events.push({ kind: 'effect-fizzled', cardId: card.id, effectId: ev.effect.id, message: ev.message });
+        } else if (ev.kind === 'buff-stripped') {
+            // strip_random_buff (e.g. Ad Hominem Strike): the skill engine already
+            // removed the buff from the live snapshot (folded via res.state); surface
+            // the event so the hazard combat log/UI can show it. `effect` is null
+            // when there was no buff to strip.
+            events.push({
+                kind: 'buff-stripped', cardId: card.id, target: ev.target,
+                effectId: ev.effect?.id ?? null, effectName: ev.effect?.name ?? null,
+            });
         } else if (ev.kind === 'befriend-attempted' && ev.successful) {
             mercyOpened = true;
         }
     }
 
-    // 6. Status-combo loop: the drafted die REFRESHES (chain another card) ONLY
+    // 5. Status-combo loop: the drafted die REFRESHES (chain another card) ONLY
     //    when this card landed a status NEW to the current chain — a long "big
     //    turn" comes from playing DIFFERENT statuses. Re-applying one (or landing
     //    nothing) spends the die and ends the turn.

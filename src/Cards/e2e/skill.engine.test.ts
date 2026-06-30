@@ -3,12 +3,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createCharacter } from '../../Character';
 import { createEnemy } from '../../Enemy';
 import { initializeCombat } from '../../Combat/combat.reducer';
-import { resolveCombatRound } from '../../Combat/combat.resolver';
 import { mockSequentialRng } from '../../test-utils';
 import { restoreOriginalRng } from '../../test-utils/rng';
 import {
-    canUseSkill,
-    spendResources,
     calculateSkillDamage,
     executeSkill,
     generateBasicActionResources,
@@ -31,7 +28,6 @@ const damagingSkill: Card = {
     philosophicalAspect: 'body',
     description: 'A direct refutation.',
     tier: 1,
-    resourceCost: { body: 3 },
     targetType: 'enemy',
     basePower: 5,
     scalingStat: 'body',
@@ -44,7 +40,6 @@ const buffSkill: Card = {
     philosophicalAspect: 'heart',
     description: 'A heartening certainty.',
     tier: 1,
-    resourceCost: { heart: 3 },
     targetType: 'self',
     basePower: 4,
     scalingStat: 'heart',
@@ -57,7 +52,6 @@ const debuffSkill: Card = {
     philosophicalAspect: 'mind',
     description: 'Plants a seed of doubt.',
     tier: 1,
-    resourceCost: { mind: 2, fallacy: 1 },
     targetType: 'enemy',
     basePower: 0,
     scalingStat: 'mind',
@@ -121,40 +115,6 @@ describe('generatePhilosophicalResource', () => {
     });
 });
 
-describe('canUseSkill', () => {
-    it('returns true when every cost key is funded', () => {
-        const r = { ...zero, body: 3 };
-        expect(canUseSkill(r, damagingSkill)).toBe(true);
-    });
-
-    it('returns false when any cost key is short', () => {
-        const r = { ...zero, body: 2 };
-        expect(canUseSkill(r, damagingSkill)).toBe(false);
-    });
-
-    it('multi-key cost requires resonance — both pools at once', () => {
-        expect(canUseSkill({ ...zero, mind: 5 }, debuffSkill)).toBe(false);
-        expect(canUseSkill({ ...zero, mind: 2, fallacy: 1 }, debuffSkill)).toBe(true);
-    });
-});
-
-describe('spendResources', () => {
-    it('subtracts each cost key', () => {
-        const r = { ...zero, body: 5 };
-        expect(spendResources(r, { body: 3 })).toEqual({ ...zero, body: 2 });
-    });
-
-    it('throws when insufficient', () => {
-        expect(() => spendResources({ ...zero, body: 1 }, { body: 3 })).toThrow();
-    });
-
-    it('does not mutate the input', () => {
-        const r = { ...zero, body: 5 };
-        spendResources(r, { body: 3 });
-        expect(r.body).toBe(5);
-    });
-});
-
 describe('calculateSkillDamage', () => {
     it('basePower + baseStats[scalingStat] × 0.5, rounded', () => {
         const player = fixturePlayer();          // body 6
@@ -172,13 +132,14 @@ describe('calculateSkillDamage', () => {
 });
 
 describe('executeSkill — damaging', () => {
-    it('spends cost, applies damage, and grants 1 fallacy token', () => {
+    it('applies damage and grants 1 fallacy token (no cost spent)', () => {
         const state = fixtureState({ body: 3 });
         const enemyHpBefore = state.enemy.health;
         const { state: next, events } = executeSkill(state, damagingSkill.id, lookup);
 
         expect(next.enemy.health).toBe(enemyHpBefore - 5); // 8 base damage - 3 body resistance
-        expect(next.combatResources).toEqual({ ...zero, fallacy: 1 });
+        // Cards carry no resource cost — the pool passes through, +1 fallacy generated.
+        expect(next.combatResources).toEqual({ ...zero, body: 3, fallacy: 1 });
         expect(events.find(e => e.kind === 'damage')).toMatchObject({
             target: 'enemy', amount: 5, hpBefore: enemyHpBefore, hpAfter: next.enemy.health,
         });
@@ -200,7 +161,7 @@ describe('executeSkill — buff (self-target)', () => {
 
         // 4 + 4 × 0.5 = 6
         expect(next.player.health).toBe(hpBefore + 6);
-        expect(next.combatResources).toEqual({ ...zero, paradox: 1 });
+        expect(next.combatResources).toEqual({ ...zero, heart: 3, paradox: 1 });
     });
 });
 
@@ -212,7 +173,7 @@ describe('executeSkill — debuff (effect application)', () => {
         const { state: next, events } = executeSkill(state, debuffSkill.id, lookup);
 
         expect(next.enemy.effects.some(e => e.effectId === 'debuff_poison')).toBe(true);
-        expect(next.combatResources).toEqual({ ...zero, fallacy: 1 });
+        expect(next.combatResources).toEqual({ ...zero, mind: 2, fallacy: 2 });
         expect(events.find(e => e.kind === 'effect-applied')).toBeDefined();
     });
 });
@@ -230,12 +191,6 @@ describe('executeSkill — guards', () => {
         const player = { ...state.player, knownSkills: ['sk_unknown'] };
         expect(() => executeSkill({ ...state, player }, 'sk_unknown', () => undefined))
             .toThrow(/not found/);
-    });
-
-    it('throws when resources are insufficient', () => {
-        const state = fixtureState({ body: 1 });
-        expect(() => executeSkill(state, damagingSkill.id, lookup))
-            .toThrow(/Insufficient/);
     });
 });
 
@@ -300,72 +255,8 @@ describe('executeSkill — Phase 49 casterSide=enemy', () => {
         const { state: next } = executeSkill(state, damagingSkill.id, lookup);
 
         expect(next.enemy.health).toBe(enemyHpBefore - 5); // 8 base damage - 3 body resistance
-        // Player's resource pool spent + token granted (the canonical pre-49 contract).
-        expect(next.combatResources).toEqual({ ...zero, fallacy: 1 });
-    });
-});
-
-describe('resolveCombatRound — skill action integration', () => {
-    it('routes player skill through executeSkill, deducts cost, generates token', () => {
-        const state = fixtureState({ body: 3 });
-        const enemyHpBefore = state.enemy.health;
-        // Stub RNG so the enemy's basic action damage is deterministic; we only
-        // care that the skill effects landed and resources updated.
-        mockSequentialRng(0.5);
-
-        const { state: next, combatEvents } = resolveCombatRound(
-            state,
-            { stance: 'body', action: 'skill', skillId: damagingSkill.id },
-            { stance: 'mind', action: 'defend' },
-            lookup,
-        );
-
-        // Player skill damage applied to enemy (5 after resistance: 8 base - 3 body).
-        expect(next.enemy.health).toBeLessThanOrEqual(enemyHpBefore - 5);
-        // Spent body, gained 1 fallacy.
-        expect(next.combatResources.body).toBe(0);
-        expect(next.combatResources.fallacy).toBe(1);
-
-        // Events include the skill phase.
-        const skillEvents = combatEvents.filter(e => e.phase === 'skill');
-        expect(skillEvents.find(e => e.kind === 'damage')).toBeDefined();
-        expect(skillEvents.find(e => e.kind === 'resources-spent')).toBeDefined();
-        expect(skillEvents.find(e => e.kind === 'philosophical-generated')).toBeDefined();
-    });
-
-    it('basic actions generate stance tokens on combatResources', () => {
-        const state = fixtureState();
-        // Force a deterministic outcome: low rolls so the contest is decided
-        // by stat values. Player body=6 vs enemy mind=3, so player wins.
-        mockSequentialRng(0.5);
-
-        const { state: next, combatEvents } = resolveCombatRound(
-            state,
-            { stance: 'body', action: 'attack' },
-            { stance: 'mind', action: 'attack' },
-            lookup,
-        );
-
-        // Player won → +3 body tokens.
-        expect(next.combatResources.body).toBe(3);
-        const resEvent = combatEvents.find(e => e.phase === 'resources');
-        expect(resEvent).toMatchObject({
-            kind: 'generated', stance: 'body', outcome: 'hit',
-        });
-    });
-
-    it('player defend grants +5 of stance colour', () => {
-        const state = fixtureState();
-        mockSequentialRng(0.5);
-
-        const { state: next } = resolveCombatRound(
-            state,
-            { stance: 'heart', action: 'defend' },
-            { stance: 'body',  action: 'defend' },
-            lookup,
-        );
-
-        expect(next.combatResources.heart).toBe(5);
+        // Player's pool passes through (no cost) + 1 fallacy token generated.
+        expect(next.combatResources).toEqual({ ...zero, body: 3, fallacy: 1 });
     });
 });
 

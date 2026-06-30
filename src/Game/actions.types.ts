@@ -13,14 +13,12 @@
 
 import { Enemy } from '../Enemy/types';
 import { Encounter } from '../World/types';
-import { Action, Stance } from '../Combat/types';
 import { Equipment, EquipmentSlot, Item } from '../Items/types';
 import { DialogueTree, DialogueChoice } from '../NPCs/types';
 import { PhilosophicalAlignment } from '../Philosophy/types';
 
 export type GameAction =
     | { type: 'START_COMBAT';   payload: { target: Enemy | Encounter } }
-    | { type: 'COMBAT_ROUND';   payload: { playerAction: Action; playerStance: Stance; skillId?: string; itemId?: string } }
     | { type: 'END_COMBAT';     payload?: { grantedLoot?: Item[]; grantedXp?: number } }
     | { type: 'MOVE_TO_NODE';   payload: { nodeId: string } }
     | { type: 'PROCESS_NODE';   payload?: undefined }

@@ -29,18 +29,13 @@ export function initializeCombat(player: Character, enemy: Enemy): CombatState {
     const equipment = player.equipment ?? {};
     const itemTokens = aggregateCombatStartTokens(equipment);
     const setTokens = aggregateSetStartTokens(equipment);
-    // Sum per-item + per-set start tokens additively (Spec 05e Q2 — no cap),
-    // then fold in any philosophical resources carried from a prior won combat
-    // (fallacy / paradox only; see `carryPhilosophicalResources`). The carry is
-    // cleared from the canonical player at combat start by the game reducer, so
-    // it is consumed exactly once.
-    const carry = player.carriedResources ?? {};
+    // Sum per-item + per-set start tokens additively (Spec 05e Q2 — no cap).
     const seeded: CombatResources = {
         heart:    itemTokens.heart    + setTokens.heart,
         body:     itemTokens.body     + setTokens.body,
         mind:     itemTokens.mind     + setTokens.mind,
-        fallacy:  itemTokens.fallacy  + setTokens.fallacy  + (carry.fallacy ?? 0),
-        paradox:  itemTokens.paradox  + setTokens.paradox  + (carry.paradox ?? 0),
+        fallacy:  itemTokens.fallacy  + setTokens.fallacy,
+        paradox:  itemTokens.paradox  + setTokens.paradox,
     };
 
     // Apply set-bonus passive effects as combat-LIFETIME ActiveEffects

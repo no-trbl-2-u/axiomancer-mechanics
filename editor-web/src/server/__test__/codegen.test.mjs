@@ -44,7 +44,6 @@ const newDraft = {
         'across multiple quoted continuation lines, exactly the way the real ' +
         'hand-authored entries in the library are formatted for readability.',
     tier: 2,
-    resourceCost: { mind: 2, heart: 1 },
     targetType: 'enemy',
     basePower: 7,
     scalingStat: 'mind',

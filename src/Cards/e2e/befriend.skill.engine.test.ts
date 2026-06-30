@@ -12,7 +12,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { mockSequentialRng } from '../../test-utils/rng';
 import { createCharacter } from '../../Character';
-import { executeSkill, canUseSkill } from '../skill.engine';
+import { executeSkill } from '../skill.engine';
 import { getCardById } from '../cards.library';
 import { initializeCombat, selectMercyChoice } from '../../Combat';
 import { createEnemy } from '../../Enemy';
@@ -46,55 +46,6 @@ describe('Befriend skill (Phase 108)', () => {
             });
 
             expect(character.knownSkills).toContain('befriend');
-        });
-    });
-
-    describe('Heart token requirements', () => {
-        it('blocks Befriend when insufficient heart tokens', () => {
-            const character = createCharacter({
-                name: 'Test Character',
-                level: 1,
-                baseStats: { heart: 5, body: 5, mind: 5 },
-                knownSkills: ['befriend']
-            });
-
-            const enemy = createEnemy({
-                id: 'test-enemy-2',
-                name: 'Test Enemy',
-                description: 'Simple test enemy',
-                level: 1,
-                baseStats: { heart: 5, body: 5, mind: 5 },
-                mapName: 'fishing-village',
-                logic: 'random'
-            });
-
-            const combatState = initializeCombat(character, enemy);
-            // State should have 0 heart tokens initially
-            expect(combatState.combatResources.heart).toBe(0);
-
-            const befriendSkill = getCardById('befriend')!;
-            const canUse = canUseSkill(combatState.combatResources, befriendSkill);
-            expect(canUse).toBe(false);
-        });
-
-        it('allows Befriend when sufficient heart tokens', () => {
-            const character = createCharacter({
-                name: 'Test Character',
-                level: 1,
-                baseStats: { heart: 5, body: 5, mind: 5 },
-                knownSkills: ['befriend']
-            });
-
-            const enemy = { ...befriendableEnemy, health: 20 }; // Below 50% HP
-            
-            const combatState = {
-                ...initializeCombat(character, enemy),
-                combatResources: { heart: 5, body: 0, mind: 0, fallacy: 0, paradox: 0 }
-            };
-
-            const befriendSkill = getCardById('befriend')!;
-            const canUse = canUseSkill(combatState.combatResources, befriendSkill);
-            expect(canUse).toBe(true);
         });
     });
 

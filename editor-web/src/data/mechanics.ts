@@ -128,7 +128,6 @@ export const SPECIAL_MECHANIC_KINDS = [
     'strip_random_buff',
     'convert_enemy_buff_to_self',
     'secondary_heal_self',
-    'bypass_defense',
     'befriend_attempt',
     'guard',
     'rupture',
@@ -137,6 +136,7 @@ export const SPECIAL_MECHANIC_KINDS = [
     'barrier',
     'riposte',
     'execute',
+    'amplify',
 ] as const;
 export type SpecialMechanicKind = (typeof SPECIAL_MECHANIC_KINDS)[number];
 

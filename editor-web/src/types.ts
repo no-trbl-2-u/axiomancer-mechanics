@@ -17,7 +17,6 @@ import type {
     StatType,
     CardTier,
     CardTarget,
-    ResourceCost,
     CardCombatEffects,
     CardSpecialMechanic,
     CardLearningRequirement,
@@ -36,7 +35,6 @@ export interface CardDraft {
     philosophicalAspect: StatType;
     description: string;
     tier: CardTier;
-    resourceCost: ResourceCost;
     targetType: CardTarget;
     basePower: number;
     scalingStat: StatType;
@@ -48,7 +46,6 @@ export interface CardDraft {
     learningRequirement?: CardLearningRequirement;
     synergy?: CardSynergy;
     incrementsFriendship?: number;
-    sourcedFromCell?: string;
     addedIn?: string;
     /** Always an array in the draft (default `[]`). */
     tags: string[];
@@ -63,7 +60,6 @@ export function blankCard(): CardDraft {
         philosophicalAspect: 'body',
         description: '',
         tier: 1,
-        resourceCost: { body: 3 },
         targetType: 'enemy',
         basePower: 0,
         scalingStat: 'body',
@@ -73,7 +69,6 @@ export function blankCard(): CardDraft {
         learningRequirement: undefined,
         synergy: undefined,
         incrementsFriendship: undefined,
-        sourcedFromCell: undefined,
         addedIn: undefined,
         tags: [],
     };
@@ -88,8 +83,6 @@ export function toDraft(skill: Card): CardDraft {
         philosophicalAspect: skill.philosophicalAspect,
         description: skill.description,
         tier: skill.tier,
-        // shallow-clone so edits don't mutate the live library object
-        resourceCost: { ...skill.resourceCost },
         targetType: skill.targetType,
         basePower: skill.basePower,
         scalingStat: skill.scalingStat,
@@ -101,7 +94,6 @@ export function toDraft(skill: Card): CardDraft {
             : undefined,
         synergy: skill.synergy ? { ...skill.synergy } : undefined,
         incrementsFriendship: skill.incrementsFriendship,
-        sourcedFromCell: skill.sourcedFromCell,
         addedIn: skill.addedIn,
         tags: skill.tags ? [...skill.tags] : [],
     };
@@ -118,7 +110,6 @@ export function fromDraft(draft: CardDraft): Card {
         philosophicalAspect: draft.philosophicalAspect,
         description: draft.description,
         tier: draft.tier,
-        resourceCost: { ...draft.resourceCost },
         targetType: draft.targetType,
         basePower: draft.basePower,
         scalingStat: draft.scalingStat,
@@ -138,7 +129,6 @@ export function fromDraft(draft: CardDraft): Card {
     if (draft.incrementsFriendship != null) {
         skill.incrementsFriendship = draft.incrementsFriendship;
     }
-    if (!isBlank(draft.sourcedFromCell)) skill.sourcedFromCell = draft.sourcedFromCell!.trim();
     if (!isBlank(draft.addedIn)) skill.addedIn = draft.addedIn!.trim();
     if (draft.tags.length > 0) skill.tags = [...draft.tags];
 

@@ -63,7 +63,10 @@ export interface RarityMeta {
 export const RARITY: Record<RarityKey, RarityMeta> = {
     common: { label: 'COMMON', color: '#8a8273', glow: 0, border: 1.5 },
     rare: { label: 'RARE', color: '#9a6ad6', glow: 13, border: 2 },
-    gold: { label: 'GOLD', color: '#d9b44a', glow: 18, border: 2, star: true },
+    // GOLD no longer gets a special frame: it renders with the NORMAL (common)
+    // grey border, no glow, no ★. The rarity DATA/plumbing (isGold, 'gold' key,
+    // label) is kept intact — only the gold-border visual treatment is removed.
+    gold: { label: 'GOLD', color: '#8a8273', glow: 0, border: 1.5 },
 };
 export const RARITY_ORDER: RarityKey[] = ['common', 'rare', 'gold'];
 
@@ -104,7 +107,6 @@ export const KEYWORDS = {
     silence: { label: 'SILENCE', family: 'control', unit: 't', blurb: 'Prevent the enemy from using special abilities for N turns.' },
     strip_buff: { label: 'STRIP BUFF', family: 'special', unit: '', blurb: 'Remove one random buff from the enemy.' },
     heal_self: { label: 'HEAL SELF', family: 'recovery', unit: '', blurb: 'Heal yourself for a flat amount after damage resolves.' },
-    bypass_defense: { label: 'BYPASS DEF', family: 'direct', unit: '', blurb: "This card's damage ignores defense calculations." },
 } satisfies Record<string, KeywordMeta>;
 
 export type KeywordId = keyof typeof KEYWORDS;

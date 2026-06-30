@@ -15,15 +15,6 @@ import { createRestSession } from '../Rest/rest.engine';
 import { createLootCacheSession } from '../LootCache/lootcache.engine';
 import { createQuestBoardSession } from '../QuestBoard/quest-board.engine';
 import { minigameRunSeed, seedInputToUint32, type SeedInput } from '../seed';
-import { runPlaytestScenario } from '../../Playtest/playtest.runner';
-import type { PlaytestScenario } from '../../Playtest/types';
-import { setRng, type Rng } from '../../Utils/rng';
-
-const mathBackedRng: Rng = {
-    random: () => Math.random(),
-    getState: () => 0,
-    setState: () => {},
-};
 
 function scrubSeed<T>(value: T): unknown {
     return JSON.parse(JSON.stringify(value, (key, val) => (key === 'seed' ? '<seed>' : val)));
@@ -72,27 +63,5 @@ describe('minigame engine seed contract', () => {
 
     it('QuestBoard sessions accept string seeds and replay dealt charms/vows', () => {
         expectReplayable('QuestBoard', seed => createQuestBoardSession(seed, 'build-the-boat'));
-    });
-});
-
-describe('playtest runner seed contract', () => {
-    it('replays the same scenario report from the same scenario seed', () => {
-        const scenario: PlaytestScenario = {
-            id: 'seed-contract-playtest',
-            description: 'Short deterministic playtest seed-contract witness.',
-            preset: 'sage',
-            enemy: 'coastal-tyrant',
-            runs: 2,
-            maxRounds: 4,
-            seed: 'seed-contract-playtest',
-            policies: ['aggressive', 'defensive'],
-        };
-
-        const first = runPlaytestScenario(scenario);
-        const replay = runPlaytestScenario(scenario);
-
-        expect(first).toEqual(replay);
-        expect(first.runs.map(run => run.seed)).toEqual(['seed-contract-playtest:1', 'seed-contract-playtest:2']);
-        setRng(mathBackedRng);
     });
 });

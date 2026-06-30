@@ -7,15 +7,12 @@
  *
  *   npm run game -- combat [flags]
  *   npm run combat -- [flags]          (convenience alias, new combat)
- *   npm run game -- legacy-combat [flags]
- *   npm run legacy-combat -- [flags]   (convenience alias, old path)
  *
- * COMBAT ROUTES (Phase 165):
- *   `npm run combat`        → this CLI, new Hazard-style card/dice engine
- *   `legacy-combat` route   → old `resolveCombatRound` stance/action loop
+ * COMBAT ROUTES:
+ *   `npm run combat`        → this CLI, Hazard-style card/dice engine
  *   `npm run combat-sim`    → Monte-Carlo balance witness (not player-facing)
  *
- * New-combat flags:
+ * Combat flags:
  *   --enemy <slug>       enemy from the registry (default mournful-gull)
  *   --preset <id>        character preset id (default apprentice)
  *   --seed <n>           deterministic RNG seed
@@ -25,15 +22,6 @@
  *   --max-turns <n>      stop auto play after this many phases (default 8)
  *   --script <path>      JSON answer array (shared io.ts layer)
  *   --stdin              JSONL answers (shared io.ts layer)
- *   --json-events        machine-clean stdout event stream
- *   --state-log <path>   JSONL state mutation log
- *
- * Legacy-combat flags:
- *   --enemy <slug>       enemy to spawn (default mournful-gull)
- *   --preset <id>        character preset id (default wanderer)
- *   --seed <n>           RNG seed
- *   --script <path>      JSON answer array
- *   --stdin              JSONL answers
  *   --json-events        machine-clean stdout event stream
  *   --state-log <path>   JSONL state mutation log
  *
@@ -70,15 +58,6 @@ import type {
 import { ENEMY_REGISTRY } from '../Enemy/enemy.library';
 import type { EnemySlug } from '../Enemy/enemy.library';
 import { getPresetById, buildCharacterFromPreset } from '../Character';
-import {
-    isCombatOngoing,
-    determineEnemyAction,
-    resolveCombatRound,
-} from '../Combat';
-import type { Stance, CombatAction, Action } from '../Combat/types';
-import { getCardById } from '../Cards/cards.library';
-import { canUseSkill } from '../Cards/skill.engine';
-import { setSeed } from '../Utils/rng';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -97,16 +76,6 @@ export interface CombatCliFlags {
     stateLogPath?: string;
 }
 
-export interface LegacyCombatCliFlags {
-    enemySlug: string;
-    presetId: string;
-    seed?: number;
-    scriptPath?: string;
-    stdin: boolean;
-    jsonEvents: boolean;
-    stateLogPath?: string;
-}
-
 // ── Argv parsers ─────────────────────────────────────────────────────────────
 
 const AUTO_POLICIES: readonly CombatAutoPolicyId[] = ['naive', 'safe', 'aggressive', 'status'];
@@ -115,11 +84,6 @@ const COMBAT_USAGE =
     'Usage: npm run combat -- ' +
     '[--enemy <slug>] [--preset <id>] [--seed <n>] ' +
     '[--auto] [--policy naive|safe|aggressive|status] [--max-turns <n>] ' +
-    '[--script <path>] [--stdin] [--json-events] [--state-log <path>]';
-
-const LEGACY_USAGE =
-    'Usage: npm run legacy-combat -- ' +
-    '[--enemy <slug>] [--preset <id>] [--seed <n>] ' +
     '[--script <path>] [--stdin] [--json-events] [--state-log <path>]';
 
 function takeValue(args: string[], i: number, flag: string): [string, number] {
@@ -175,38 +139,6 @@ export function parseCombatArgv(args: string[]): CombatCliFlags {
             const [v, ni] = takeValue(args, i, '--state-log'); flags.stateLogPath = v; i = ni;
         } else {
             throw new Error(`Unknown combat CLI flag: '${arg}'.\n${COMBAT_USAGE}`);
-        }
-    }
-    return flags;
-}
-
-export function parseLegacyCombatArgv(args: string[]): LegacyCombatCliFlags {
-    const flags: LegacyCombatCliFlags = {
-        enemySlug: 'mournful-gull',
-        presetId: 'wanderer',
-        stdin: false,
-        jsonEvents: false,
-    };
-    let i = 0;
-    while (i < args.length) {
-        const arg = args[i]!;
-        if (arg === '--json-events') { flags.jsonEvents = true; i++; }
-        else if (arg === '--stdin') { flags.stdin = true; i++; }
-        else if (arg.startsWith('--enemy')) {
-            const [v, ni] = takeValue(args, i, '--enemy'); flags.enemySlug = v; i = ni;
-        } else if (arg.startsWith('--preset')) {
-            const [v, ni] = takeValue(args, i, '--preset'); flags.presetId = v; i = ni;
-        } else if (arg.startsWith('--seed')) {
-            const [v, ni] = takeValue(args, i, '--seed');
-            const n = Number(v);
-            if (isNaN(n)) throw new Error(`--seed must be a number.\n${LEGACY_USAGE}`);
-            flags.seed = n; i = ni;
-        } else if (arg.startsWith('--script')) {
-            const [v, ni] = takeValue(args, i, '--script'); flags.scriptPath = v; i = ni;
-        } else if (arg.startsWith('--state-log')) {
-            const [v, ni] = takeValue(args, i, '--state-log'); flags.stateLogPath = v; i = ni;
-        } else {
-            throw new Error(`Unknown legacy-combat CLI flag: '${arg}'.\n${LEGACY_USAGE}`);
         }
     }
     return flags;
@@ -584,84 +516,4 @@ export async function runCombatCli(rawArgs: string[]): Promise<void> {
             log(`    ${row.name}: ${row.damageDealt} dmg (${row.dotDamage} DoT) over ${row.phases} phases`);
         }
     }
-}
-
-/** Run the old legacy-combat CLI (wraps the resolveCombatRound loop). */
-export async function runLegacyCombatCli(rawArgs: string[]): Promise<void> {
-    const flags = parseLegacyCombatArgv(rawArgs);
-
-    if (flags.jsonEvents) setOutputMode('json');
-    if (flags.scriptPath) {
-        const fs = await import('fs');
-        const raw = fs.readFileSync(flags.scriptPath, 'utf-8');
-        const answers = JSON.parse(raw);
-        if (!Array.isArray(answers)) throw new Error('--script JSON must be a top-level array.');
-        setIoMode({ kind: 'script', answers });
-    } else if (flags.stdin) {
-        setIoMode({ kind: 'stdin' });
-    }
-    if (flags.stateLogPath) setStateLogPath(flags.stateLogPath);
-
-    const enemyDef = ENEMY_REGISTRY[flags.enemySlug as EnemySlug];
-    if (!enemyDef) {
-        const valid = Object.keys(ENEMY_REGISTRY).join(', ');
-        throw new Error(`Unknown enemy slug: '${flags.enemySlug}'. Valid: ${valid}`);
-    }
-
-    const preset = getPresetById(flags.presetId);
-    if (!preset) {
-        throw new Error(`Unknown preset: '${flags.presetId}'. Try: apprentice, wanderer, sage`);
-    }
-    if (flags.seed !== undefined) setSeed(flags.seed);
-    const player = buildCharacterFromPreset(preset);
-
-    log(`\n[Legacy Combat] Using old resolveCombatRound engine.`);
-    log(`For the new Hazard-style combat, use: npm run combat`);
-    log(`Player: ${player.name} (${flags.presetId})  HP ${player.health}/${player.maxHealth}`);
-    log(`Enemy:  ${enemyDef.name}  HP ${enemyDef.maxHealth}\n`);
-
-    const { initializeCombat } = await import('../Combat');
-    let combat = initializeCombat(player, enemyDef);
-
-    const skillLookup = (id: string) => getCardById(id);
-
-    while (isCombatOngoing(combat)) {
-        const playerStance = await prompt<{ stance: Stance }>([{
-            type: 'rawlist', name: 'stance', message: 'Stance?',
-            choices: ['heart', 'body', 'mind'],
-        }]);
-
-        const affordableSkills = player.knownSkills.filter(id => {
-            const def = skillLookup(id);
-            return def !== undefined && canUseSkill(combat.combatResources, def);
-        });
-        const actionChoices: Action[] = ['attack', 'defend'];
-        if (affordableSkills.length > 0) actionChoices.push('skill');
-
-        const { action } = await prompt<{ action: Action }>([{
-            type: 'rawlist', name: 'action', message: 'Action?',
-            choices: actionChoices,
-        }]);
-
-        let playerAction: CombatAction = { stance: playerStance.stance, action };
-        if (action === 'skill') {
-            const { skillId } = await prompt<{ skillId: string }>([{
-                type: 'rawlist', name: 'skillId', message: 'Card?',
-                choices: affordableSkills.map(id => ({ name: id, value: id })),
-            }]);
-            playerAction = { stance: playerStance.stance, action: 'skill', skillId };
-        }
-
-        const enemyAction = determineEnemyAction(combat.enemy, combat);
-        const before = combat;
-        const { state: next, combatEvents } = resolveCombatRound(combat, playerAction, enemyAction, skillLookup);
-        combat = next;
-        logState('legacyCombatRound', before, combat, { playerAction, enemyAction, combatEvents });
-        emit({ type: 'legacyCombat:round', payload: { playerAction, enemyAction } });
-        log(`  Player HP ${combat.player.health}/${combat.player.maxHealth}  ·  Enemy HP ${combat.enemy.health}/${combat.enemy.maxHealth}`);
-    }
-
-    logState('legacyCombat:end', null, combat, { outcome: combat.phase });
-    emit({ type: 'legacyCombat:end', payload: { phase: combat.phase } });
-    log(`\nLegacy combat ended: ${combat.phase}`);
 }

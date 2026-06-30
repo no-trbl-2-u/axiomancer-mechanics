@@ -15,15 +15,9 @@
  *     across every equipped slot.
  *   • `generateBasicActionResources` folds `generationBonus` entries on top
  *     of the base table.
- *   • `resolveCombatRound` routes `action: 'item'` through the consumable
- *     engine — healAmount applied, stack decremented, enemy still resolves.
- *   • Equipment `onHitEffects` ride on the Spec 03 proc roll (`baseChance: 1`
- *     with no fumble → guaranteed proc when the wearer lands a hit).
+ *   • `getEquipmentProcTriggers` surfaces onHit/onDefend entries per slot.
  *   • Game-store lifecycle for equipItem / unequipItem / useConsumable via
  *     `nullAdapter` with a `vi.spyOn(nullAdapter, 'save')` assertion.
- *
- * Reference test (canonical structure to copy):
- *   `src/Combat/e2e/combat.resolver.engine.test.ts`.
  */
 
 import { afterEach, describe, it, expect, vi } from 'vitest';
@@ -39,9 +33,8 @@ import {
     getEquipmentProcTriggers,
 } from '../equipment.engine';
 import { initializeCombat } from '../../Combat/combat.reducer';
-import { resolveCombatRound } from '../../Combat/combat.resolver';
 import { generateBasicActionResources } from '../../Cards/skill.engine';
-import { mockSequentialRng, mockAlternatingRng } from '../../test-utils/rng';
+import { mockSequentialRng } from '../../test-utils/rng';
 import { Consumable, Equipment } from '../types';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
@@ -120,15 +113,6 @@ const healingPotion: Consumable = {
     category: 'consumable',
     healAmount: 10,
     quantity: 3,
-};
-
-const regenPotion: Consumable = {
-    id: 'csl_regen',
-    name: 'Tristram\'s Tincture',
-    description: 'Applies Tristram\'s Recovery.',
-    category: 'consumable',
-    effectId: 'buff_regeneration',
-    quantity: 1,
 };
 
 // ─── Tests ───────────────────────────────────────────────────────────────────
@@ -308,153 +292,6 @@ describe('Equipment proc triggers', () => {
         const equipment = { weapon: guaranteedHitProc };
         expect(getEquipmentProcTriggers(equipment, 'attack')).toHaveLength(1);
         expect(getEquipmentProcTriggers(equipment, 'defend')).toHaveLength(0);
-    });
-
-    it('onHitEffects with baseChance 1 land a mark on the enemy when the player wins the contest', () => {
-        mockAlternatingRng();
-
-        const player = createCharacter({
-            name:      'Marker',
-            level:     1,
-            baseStats: { heart: 4, body: 3, mind: 2 },
-            equipment: { weapon: guaranteedHitProc },
-        });
-
-        // Player picks mind/attack vs enemy heart/attack → player has advantage,
-        // mirrors the canonical combat e2e suite where the player KOs Disatree
-        // in a single round. We assert the proc landed BEFORE the enemy KO is
-        // checked — the proc event is emitted while damage resolves.
-        let state = initializeCombat(player, Disatree_01);
-        const result = resolveCombatRound(
-            state,
-            { stance: 'mind', action: 'attack' },
-            { stance: 'heart', action: 'attack' },
-        );
-        state = result.state;
-
-        const procApplied = result.combatEvents.find(
-            ev => ev.phase === 'scenario' && ev.kind === 'proc-applied'
-              && ev.appliedTo === 'opponent'
-              && ev.effect.id === 'tier1_mind_mark',
-        );
-        expect(procApplied).toBeDefined();
-    });
-});
-
-// ────────────────────────────────────────────────────────────────────────────
-// Consumable: item action through the resolver
-// ────────────────────────────────────────────────────────────────────────────
-
-describe('resolveCombatRound: action: \'item\' (consumables)', () => {
-    it('healAmount restores HP and decrements the inventory stack; enemy still acts', () => {
-        mockAlternatingRng();
-
-        const player = createCharacter({
-            name:      'Drinker',
-            level:     1,
-            baseStats: { heart: 4, body: 3, mind: 2 },
-            inventory: [{ ...healingPotion, quantity: 3 }],
-        });
-
-        // Pre-damage the player so the heal is observable.
-        const damaged = { ...player, health: player.maxHealth - 8 };
-        let state = initializeCombat(damaged, Disatree_01);
-        // Snapshot HP after the deep-clone so we compare against the right base.
-        const hpBeforeItem = state.player.health;
-
-        const result = resolveCombatRound(
-            state,
-            { stance: 'body', action: 'item', itemId: healingPotion.id },
-            { stance: 'body', action: 'attack' },
-        );
-        state = result.state;
-
-        const used = result.combatEvents.find(
-            ev => ev.phase === 'item' && ev.kind === 'used',
-        );
-        expect(used).toBeDefined();
-        expect(used && used.phase === 'item' && used.kind === 'used' && used.healed).toBe(8);
-
-        // Inventory decremented from 3 → 2; HP went up by 8 then the enemy hit
-        // at passive defense, so HP is somewhere between (hpBeforeItem) and
-        // (hpBeforeItem + 8). The hermetic check we care about is "enemy did
-        // attack", which surfaces as a damage-applied event.
-        const consumableLeft = state.player.inventory.find(i => i.id === healingPotion.id) as Consumable;
-        expect(consumableLeft.quantity).toBe(2);
-
-        // The item action mirrors the existing skip-vs-attack semantics: the
-        // enemy enters an attack contest at passive defense. The player still
-        // rolls a "phantom" d20 for the contest (this matches how skip-vs-
-        // attack already works pre-Spec 05), so the contest may or may not
-        // produce a damage-applied event depending on the RNG. We assert the
-        // contest happened (an attack-roll exists) and the round advanced.
-        const enemyAttackRoll = result.combatEvents.find(
-            ev => ev.phase === 'scenario'
-              && ev.kind === 'attack-roll'
-              && ev.actor === 'enemy',
-        );
-        expect(enemyAttackRoll).toBeDefined();
-        expect(state.round).toBe(2);
-        expect(state.player.health).toBeGreaterThan(0);
-        expect(hpBeforeItem).toBeGreaterThanOrEqual(0);
-    });
-
-    it('effect-based consumable applies the referenced library effect to the player', () => {
-        mockAlternatingRng();
-
-        const player = createCharacter({
-            name:      'Drinker',
-            level:     1,
-            baseStats: { heart: 4, body: 3, mind: 2 },
-            inventory: [{ ...regenPotion }],
-        });
-        let state = initializeCombat(player, Disatree_01);
-
-        const result = resolveCombatRound(
-            state,
-            { stance: 'body', action: 'item', itemId: regenPotion.id },
-            { stance: 'body', action: 'defend' },
-        );
-        state = result.state;
-
-        const hasRegen = state.player.effects.some(e => e.effectId === 'buff_regeneration');
-        expect(hasRegen).toBe(true);
-
-        const used = result.combatEvents.find(
-            ev => ev.phase === 'item' && ev.kind === 'used'
-                && ev.appliedEffectId === 'buff_regeneration',
-        );
-        expect(used).toBeDefined();
-
-        // Stack of 1 → removed.
-        const left = state.player.inventory.find(i => i.id === regenPotion.id);
-        expect(left).toBeUndefined();
-    });
-
-    it('item action with an unknown itemId emits a blocked event and leaves inventory unchanged', () => {
-        mockAlternatingRng();
-
-        const player = createCharacter({
-            name:      'Bumbler',
-            level:     1,
-            baseStats: { heart: 4, body: 3, mind: 2 },
-            inventory: [{ ...healingPotion }],
-        });
-        let state = initializeCombat(player, Disatree_01);
-
-        const result = resolveCombatRound(
-            state,
-            { stance: 'body', action: 'item', itemId: 'csl_does_not_exist' },
-            { stance: 'body', action: 'defend' },
-        );
-        state = result.state;
-
-        const blocked = result.combatEvents.find(
-            ev => ev.phase === 'item' && ev.kind === 'blocked',
-        );
-        expect(blocked).toBeDefined();
-        const stillThere = state.player.inventory.find(i => i.id === healingPotion.id) as Consumable;
-        expect(stillThere.quantity).toBe(healingPotion.quantity);
     });
 });
 

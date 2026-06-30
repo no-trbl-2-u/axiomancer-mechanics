@@ -37,7 +37,6 @@ import { Character } from '../Character/types';
 import { Enemy } from '../Enemy/types';
 import { CombatState } from '../Combat/types';
 import { isFriendshipEligible, getEffectsResolutionOutcome } from '../Combat';
-import type { RoundEvent } from '../Combat/combat.resolver';
 import { Encounter } from '../World/types';
 import {
     Item, Equipment, EquipmentSlot,
@@ -71,7 +70,6 @@ import {
  * `SAVE_GAME` / `save()` call.
  */
 const DURABLE_ACTIONS: ReadonlySet<GameAction['type']> = new Set<GameAction['type']>([
-    'COMBAT_ROUND',
     'LEVEL_UP',
     'END_COMBAT',
     'MOVE_TO_NODE',
@@ -154,14 +152,10 @@ export interface GameActions {
     // ── Combat ───────────────────────────────────────────────────────────────
     startCombat: (target: Enemy | Encounter) => void;
     /**
-     * Replaces the in-progress combat snapshot (UI driver path). Pass the
-     * `RoundEvent[]` from `resolveCombatRound` as the second argument to
-     * surface the per-round sub-event stream on the emitted `combat:round`
-     * event — the agent-e2e grader and any RN consumer needs it to inspect
-     * what skills / items / effects actually did. Omit if the caller is
-     * only mutating combat state for non-round reasons.
+     * Replaces the in-progress combat snapshot (UI driver path). Emits a
+     * `combat:round` event so subscribers can re-render from the new snapshot.
      */
-    updateCombat: (combat: CombatState, combatEvents?: readonly RoundEvent[]) => void;
+    updateCombat: (combat: CombatState) => void;
     endCombat: () => CombatEndReport;
 
     // ── World / dialogue ─────────────────────────────────────────────────────
@@ -249,7 +243,6 @@ function eventForAction(
 ): GameEvent | null {
     const map: Partial<Record<GameAction['type'], GameEventType>> = {
         START_COMBAT:   'combat:started',
-        COMBAT_ROUND:   'combat:round',
         END_COMBAT:     'combat:ended',
         MOVE_TO_NODE:   'world:moved',
         PROCESS_NODE:   'world:processed',
@@ -329,17 +322,15 @@ export function createGameStore(
                 dispatch({ type: 'START_COMBAT', payload: { target } });
             },
 
-            updateCombat(combat, combatEvents) {
-                // Direct state edit — the existing combat CLI loop relies on
-                // mutating the snapshot between rounds (it calls
-                // resolveCombatRound itself). Run autosave + event for parity.
+            updateCombat(combat) {
+                // Direct state edit — callers mutate the combat snapshot between
+                // rounds. Run autosave + event for parity.
                 set({ combat });
                 const next = get();
                 if (emitter) emitter.emit({
                     type: 'combat:round',
                     payload: {
                         state: next,
-                        ...(combatEvents !== undefined ? { combatEvents } : {}),
                     },
                 });
                 const {

@@ -163,15 +163,6 @@ describe('eternal-regress — Tier 2 heart + two-effect compound (debuff_confusi
         expect(next.enemy.effects.some(e => e.effectId === 'debuff_confusion')).toBe(true);
         expect(next.enemy.effects.some(e => e.effectId === 'debuff_slow')).toBe(true);
     });
-
-    it('debits the correct cost (heart 2 + mind 2)', () => {
-        mockSequentialRng(0.99);
-        const state = fixtureState('eternal-regress', { heart: 2, mind: 2 });
-        const { state: next } = executeSkill(state, 'eternal-regress', getCardById);
-
-        expect(next.combatResources.heart).toBe(0);
-        expect(next.combatResources.mind).toBe(0);
-    });
 });
 
 describe('bootstrap-paradox — Tier 3 self-heal heart x 2', () => {

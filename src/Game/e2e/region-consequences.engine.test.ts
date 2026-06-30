@@ -1,10 +1,8 @@
 /**
  * Phase 109 — Region-level consequences for befriend exploit/spare choices.
- * 
- * Tests that:
- * 1. Exploiting an elite/miniboss befriend opening blocks region boss friendship counters
- * 2. Sparing an elite/miniboss grants 'open-minded' status to region boss
- * 3. Region consequences persist across save/load cycles
+ *
+ * Tests that sparing an elite/miniboss grants 'open-minded' status to the
+ * region boss when combat starts (applied in the START_COMBAT path).
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
@@ -13,33 +11,6 @@ import { createGameStore } from '../store';
 import { nullAdapter } from '../persistence/null.adapter';
 import { mockSequentialRng } from '../../test-utils/rng';
 import { Enemy } from '../../Enemy/types';
-import { resolveCombatRound, isBefriendAttemptEligible } from '../../Combat';
-
-// Test fixtures - elite enemy and region boss
-const testEliteEnemy: Enemy = {
-    id: 'test-elite',
-    name: 'Test Elite',
-    description: 'A test elite enemy',
-    level: 4,
-    health: 50,
-    maxHealth: 50,
-    baseStats: { body: 3, mind: 2, heart: 3 },
-    derivedStats: {
-        physicalAttack: 6, physicalDefense: 6, physicalSkill: 6,
-        mentalAttack: 4, mentalDefense: 4, mentalSkill: 4,
-        emotionalAttack: 6, emotionalDefense: 6, emotionalSkill: 6,
-        luck: 3
-    },
-    mapName: 'fishing-village',
-    difficulty: 'elite',
-    logic: 'aggressive',
-    effects: [],
-    // Make easily befriendable for testing
-    befriendabilityConfig: {
-        roundsThreshold: 1,
-        hpGate: { belowPct: 1.0 }, // Always eligible when HP > 0
-    },
-};
 
 const testRegionBoss: Enemy = {
     id: 'test-region-boss',
@@ -73,99 +44,13 @@ describe('Phase 109 — Region consequences for befriend choices', () => {
         });
     });
 
-    describe('Exploit consequences', () => {
-        it('blocks friendship counter accumulation for region boss after elite exploit', async () => {
-            const store = createGameStore(nullAdapter, { player });
-
-            // First, fight the elite and exploit the befriend opening
-            store.getState().startCombat({ enemies: [testEliteEnemy] });
-            
-            // Trigger befriend opening by using Befriend skill (need it to be successful)
-            let combat = store.getState().combat!;
-            
-            // Make the elite vulnerable to befriend by reducing health if needed
-            // and ensuring befriend eligibility
-            while (combat && !isBefriendAttemptEligible(combat)) {
-                // Both defend to build friendship counter
-                const { state: nextCombat } = resolveCombatRound(
-                    combat,
-                    { stance: 'heart', action: 'defend' },
-                    { stance: 'heart', action: 'defend' }
-                );
-                store.getState().updateCombat(nextCombat);
-                combat = store.getState().combat!;
-            }
-
-            // Simulate successful befriend attempt that opens mercy choice
-            // This would normally be triggered by the Befriend skill
-            combat = { ...combat, mercyChoiceActive: true, phase: 'mercy_choice' as const };
-            store.getState().updateCombat(combat);
-
-            // Choose exploit option through store dispatch
-            store.getState().dispatch({
-                type: 'COMBAT_ROUND',
-                payload: {
-                    playerAction: 'exploit',
-                    playerStance: 'heart'
-                }
-            });
-            store.getState().endCombat();
-
-            // Verify the region is now marked as exploited
-            expect(store.getState().regionConsequences.exploitedRegions).toContain('fishing-village');
-
-            // Now fight the region boss and verify friendship counters are blocked
-            store.getState().startCombat({ enemies: [testRegionBoss] });
-            let bossCombat = store.getState().combat!;
-
-            // Try to build friendship counter through both-defend rounds
-            const initialCounter = bossCombat.friendshipCounter;
-            const { state: afterDefend } = resolveCombatRound(
-                bossCombat,
-                { stance: 'heart', action: 'defend' },
-                { stance: 'heart', action: 'defend' },
-                undefined,
-                store.getState().regionConsequences.exploitedRegions
-            );
-
-            // Friendship counter should remain unchanged due to exploitation
-            expect(afterDefend.friendshipCounter).toBe(initialCounter);
-        });
-
-        it('persists exploit consequences across save/load', async () => {
-            const store = createGameStore(nullAdapter, { 
-                player,
-                regionConsequences: { 
-                    exploitedRegions: ['fishing-village'], 
-                    sparedRegions: [] 
-                }
-            });
-
-            // Start combat with region boss
-            store.getState().startCombat({ enemies: [testRegionBoss] });
-            const combat = store.getState().combat!;
-
-            // Attempt to build friendship counter
-            const { state: afterDefend } = resolveCombatRound(
-                combat,
-                { stance: 'heart', action: 'defend' },
-                { stance: 'heart', action: 'defend' },
-                undefined,
-                store.getState().regionConsequences.exploitedRegions
-            );
-
-            // Should be blocked
-            expect(afterDefend.friendshipCounter).toBe(0);
-        });
-    });
-
     describe('Spare consequences', () => {
         it('grants open-minded status to region boss after elite spare', async () => {
-            const store = createGameStore(nullAdapter, { 
+            const store = createGameStore(nullAdapter, {
                 player,
-                regionConsequences: { 
-                    exploitedRegions: [], 
-                    sparedRegions: ['fishing-village'] 
+                regionConsequences: {
+                    exploitedRegions: [],
+                    sparedRegions: ['fishing-village']
                 }
             });
 
@@ -179,51 +64,15 @@ describe('Phase 109 — Region consequences for befriend choices', () => {
             );
             expect(hasOpenMinded).toBe(true);
         });
-
-        it('tracks spare consequence when player chooses mercy', async () => {
-            const store = createGameStore(nullAdapter, { player });
-
-            // Fight elite and spare it
-            store.getState().startCombat({ enemies: [testEliteEnemy] });
-            let combat = store.getState().combat!;
-
-            // Build to befriend eligibility
-            while (combat && !isBefriendAttemptEligible(combat)) {
-                const { state: nextCombat } = resolveCombatRound(
-                    combat,
-                    { stance: 'heart', action: 'defend' },
-                    { stance: 'heart', action: 'defend' }
-                );
-                store.getState().updateCombat(nextCombat);
-                combat = store.getState().combat!;
-            }
-
-            // Open mercy choice
-            combat = { ...combat, mercyChoiceActive: true, phase: 'mercy_choice' as const };
-            store.getState().updateCombat(combat);
-
-            // Choose spare option through store dispatch
-            store.getState().dispatch({
-                type: 'COMBAT_ROUND',
-                payload: {
-                    playerAction: 'spare',
-                    playerStance: 'heart'
-                }
-            });
-            store.getState().endCombat();
-
-            // Verify region is marked as spared
-            expect(store.getState().regionConsequences.sparedRegions).toContain('fishing-village');
-        });
     });
 
     describe('Open-minded status and befriend qualification', () => {
         it('open-minded status qualifies boss for befriend paths', async () => {
-            const store = createGameStore(nullAdapter, { 
+            const store = createGameStore(nullAdapter, {
                 player,
-                regionConsequences: { 
-                    exploitedRegions: [], 
-                    sparedRegions: ['fishing-village'] 
+                regionConsequences: {
+                    exploitedRegions: [],
+                    sparedRegions: ['fishing-village']
                 }
             });
 

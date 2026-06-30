@@ -12,6 +12,44 @@ deep imports are part of the supported surface.
 
 ## [Unreleased]
 
+## [0.36.0] — 2026-06-30
+
+Removes the legacy turn-based combat system and its balance tooling, de-tokenizes
+the card resource model, and cuts the cross-combat resource carry. Pre-1.0 minor
+bump carrying breaking public-API removals (the `Skill*` deprecation aliases from
+0.35.x remain).
+
+### Removed
+
+- **Legacy turn-based combat** — `resolveCombatRound`, `src/Combat/phases/`, the
+  `RoundEvent` union and `BasicActionOutcome` type, the `COMBAT_ROUND` reducer
+  path, and the CLI legacy-combat routes. Hazard-Pattern combat is now the sole
+  combat system.
+- **Legacy balance harness** — the entire `src/Tuning/` and `src/Playtest/`
+  modules (the `/legacy-combat-tuning` STRATEGIST harness) and the `tune` script.
+  The live hazard `/combat-tuning` (`simulateHazardPatternCombat` / `combat-sim`)
+  is unaffected.
+- **De-tokenized cards** — the per-card `resourceCost` gate was a net-zero,
+  non-gating ritual in hazard combat. Removed the `resourceCost` field, the
+  `ResourceCost` type, `grantStanceCost`, `canUseSkill`, `spendResources`, and the
+  `resources-spent` event. The live economy is untouched: unpicked dice →
+  Conviction, card execute → +1 philosophical (`generatePhilosophicalResource`),
+  Signatures spend Conviction.
+- **Cross-combat resource carry** — removed `carryPhilosophicalResources`, the
+  `Character.carriedResources` field, and the `END_COMBAT` carry writer
+  (deliberate design choice). Within-combat resource banking is unchanged.
+- `bypass_defense` (a no-op special mechanic) and the card-level `sourcedFromCell`
+  authoring field (the identically-named `Effect` field is retained).
+
+### Changed
+
+- `strip_random_buff` now surfaces a `buff-stripped` `CombatEvent` on the live
+  hazard path so the strip is visible to clients (previously dropped silently).
+
+Removed public exports: `ResourceCost`, `canUseSkill`, `spendResources`,
+`carryPhilosophicalResources`, `RoundEvent`, `BasicActionOutcome`, and the entire
+`Tuning` / `Playtest` surface.
+
 ## [0.35.1] — 2026-06-29
 
 ### Deprecated
