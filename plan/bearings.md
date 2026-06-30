@@ -204,8 +204,13 @@ Effects:    applyEffect, applyTier1CombatEffect, clearTier1EffectsForStance,
             STATUS_RESOLUTION_DEBUFF_THRESHOLD, STATUS_RESOLUTION_DOT_THRESHOLD,
             STATUS_RESOLUTION_DOT_MAX_ROUNDS, STATUS_ENGAGEMENT_FLOOR_PERCENT)
 Skills:     executeSkill, canUseSkill, learnSkill, getAvailableSkills,
-            skillLibrary, getSkillById, Skill, SkillEvent
-            (+ SkillSynergy, SynergyPredicate types + Skill.synergy?
+            cardLibrary, getCardById, Card, CardEvent, CardCategory,
+            CardTier, CardTarget, CardSynergy, CardLookup, CardResolution,
+            StatType (canonical names since 0.35.0 de-conflation —
+            skillLibrary / getSkillById / Skill / SkillEvent / SkillCategory
+            are @deprecated aliases kept for axiomancer-mobile migration;
+            prefer Card-prefixed names for new consumers)
+            (+ CardSynergy, SynergyPredicate types + Card.synergy?
             field driving 5 authored Tier 2 synergy skills — Phase 66)
             (+ carryPhilosophicalResources — cross-combat carry of unspent
             fallacy/paradox into the next combat's seed (floor(FRACTION ×
