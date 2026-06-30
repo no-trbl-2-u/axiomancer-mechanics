@@ -673,6 +673,7 @@
     "CardPlay",
     "CardResolution",
     "CardResolution as SkillResolution",
+    "CardSpecialMechanic",
     "CardSpecialMechanic as SkillSpecialMechanic",
     "CardSynergy",
     "CardSynergy as SkillSynergy",

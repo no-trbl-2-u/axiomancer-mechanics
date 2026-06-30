@@ -229,10 +229,12 @@ Effects:    applyEffect, applyTier1CombatEffect, clearTier1EffectsForStance,
 Skills:     executeSkill, canUseSkill, learnSkill, getAvailableSkills,
             cardLibrary, getCardById, Card, CardEvent, CardCategory,
             CardTier, CardTarget, CardSynergy, CardLookup, CardResolution,
-            StatType (canonical names since 0.35.0 de-conflation —
-            skillLibrary / getSkillById / Skill / SkillEvent / SkillCategory
-            are @deprecated aliases kept for axiomancer-mobile migration;
-            prefer Card-prefixed names for new consumers)
+            StatType, CardSpecialMechanic (union: 'amplify'|'rupture'|
+            'compound'|'siphon'|'barrier'|'riposte'|'execute')
+            (canonical names since 0.35.0 de-conflation —
+            skillLibrary / getSkillById / Skill / SkillEvent / SkillCategory /
+            SkillSpecialMechanic are @deprecated aliases kept for
+            axiomancer-mobile migration; prefer Card-prefixed names)
             (+ CardSynergy, SynergyPredicate types + Card.synergy?
             field driving 5 authored Tier 2 synergy skills — Phase 66)
             (+ carryPhilosophicalResources — cross-combat carry of unspent

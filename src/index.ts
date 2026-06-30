@@ -227,7 +227,7 @@ export type {
 export type {
     Card, CardCategory, StatType, CardTier, CardTarget,
     ResourceCost, CombatResources,
-    CardLearningRequirement, CardCombatEffects,
+    CardLearningRequirement, CardCombatEffects, CardSpecialMechanic,
     BasicActionOutcome, CardEvent, CardResolution, CardLookup,
     CardSynergy, SynergyPredicate,
     // Phase 142 — Extended synergy predicates
