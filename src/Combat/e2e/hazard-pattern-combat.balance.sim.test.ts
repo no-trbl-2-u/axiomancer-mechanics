@@ -40,6 +40,7 @@ const DOT = ['slippery-slope'];                          // DoT — erodes enemy
 const DAMAGE_ONLY = ['achilles-gambit'];                 // pure strike, no status (the weak baseline)
 const MERCY = ['eternal-regress', 'befriend'];           // control + befriend → the spare path
 const CONTROL = ['false-dilemma', 'red-herring'];        // soft-control — roll-penalty debuffs (confusion −5, accuracy_down −3)
+const CONCLUDE = ['slippery-slope'];                     // BODY finisher: stack DoT intensity, then Conclusion Sig detonates
 
 describe('HP combat — authored enemies are winnable with status play', () => {
     for (const [name, enemy] of [['MournfulGull', MournfulGull], ['HollowEyedBeggar', HollowEyedBeggar]] as const) {
@@ -157,5 +158,32 @@ describe('HP combat — Phase 167 status-engagement metrics are valid and doctri
         // The three-way HP split must not exceed 100% — the remainder is other sources.
         const s = simulateHazardPatternCombat(loadout(DOT), MournfulGull, RUNS, SEED);
         expect(s.dotHpFraction + s.strikeFraction + s.mechanicBurstFraction).toBeLessThanOrEqual(1.01);
+    });
+});
+
+describe('HP combat — BODY/Conclusion archetype is a viable status-board finisher (doctrine witness)', () => {
+    it('a CONCLUDE loadout wins reliably on a normal enemy — status stacking into Conclusion is viable', () => {
+        // Doctrine witness: the BODY archetype's Conclusion Signature (sig-rallying-blow) rewards
+        // building a loaded status board — damage = CONCLUDE_DMG_PER_STACK × sum(effect.intensity).
+        // A DoT-stacking loadout with the BODY sig kit (all-10 stats → body tiebreak) must produce
+        // a winning run rate: stacks build via slippery-slope DoT, Conviction banks, Conclusion fires.
+        const s = simulateHazardPatternCombat(loadout(CONCLUDE), MournfulGull, RUNS, SEED);
+        expect(s.winRate).toBeGreaterThanOrEqual(0.5);
+        expect(s.statusEngagement).toBeGreaterThan(0);
+    });
+
+    it('a CONCLUDE loadout lands status on the board — avgActiveEffectsPerPhase > 0', () => {
+        // Doctrine: status is central to the CONCLUDE kill-path; Conclusion damage scales with
+        // board depth. The sim must confirm effects are actually loaded on the enemy board.
+        const s = simulateHazardPatternCombat(loadout(CONCLUDE), MournfulGull, RUNS, SEED);
+        expect(s.avgActiveEffectsPerPhase).toBeGreaterThan(0);
+    });
+
+    it('a CONCLUDE loadout fires mechanic burst damage on the boss — Conclusion Sig detonates', () => {
+        // Conclusion fires as a mechanic burst (conclude-hit credited to mechanicBurstFraction).
+        // Against the boss (CoastalTyrant) the Conclusion Sig must fire in at least some runs,
+        // confirming the BODY kill-path is active (not just DoT ticks) at the hardest target.
+        const s = simulateHazardPatternCombat(loadout(CONCLUDE), CoastalTyrant, RUNS, SEED);
+        expect(s.mechanicBurstFraction).toBeGreaterThan(0);
     });
 });
