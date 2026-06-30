@@ -663,6 +663,37 @@ threat debuffs). `combat.threat.ts` scales threat damage by level + difficulty
 (`DIFFICULTY_MULT`), and status DoT erodes the enemy's sole HP bar far faster
 than the weak basic strike — status is the efficient win path.
 
+### 0.34.0 — Status-depth epic: HP-model selectors + tunable scalars
+
+The 0.34.0 release adds a set of HP-model read-only selectors and tunable
+scalars used by the status-depth card mechanics (RUPTURE, COMPOUND, DISRUPT,
+EXECUTE, VULNERABLE, SIPHON) and by mobile for hit-preview rendering.
+
+| Function / Constant | Description |
+|---------------------|-------------|
+| `getDamageTakenMultiplier(target)` | Incoming-damage multiplier for a combatant, given active Vulnerable or similar effects. |
+| `getPendingDotTotal(target)` | Sums pending DoT damage across all active DoT effects — the raw value used by AMPLIFY burst. |
+| `consumeDotEffects(target)` | Removes all active DoT effects and returns the total damage consumed. Used by RUPTURE to convert stacked DoT into a single burst. |
+| `getDistinctDebuffCount(target)` | Counts the number of distinct active debuff effect types on the target. Drives COMPOUND damage scaling (capped at `COMPOUND_COUNT_CAP`). |
+| `getDistinctControlCount(target)` | Counts the number of distinct active control effects. Drives DISRUPT — when ≥ `DISRUPT_DENY_AT` the target's next action is denied. |
+| `VULNERABLE_MAX_MULT` | Maximum incoming-damage multiplier cap when Vulnerable is active. |
+| `RUPTURE_BURST_CAP` | Maximum HP burst from a single RUPTURE consume. |
+| `COMPOUND_COUNT_CAP` | Maximum distinct debuff count credited by COMPOUND. |
+| `DISRUPT_DENY_AT` | Distinct-control-effect threshold at which DISRUPT denies the next enemy action. |
+| `EXECUTE_DAMAGE_FRACTION` | Fraction of enemy max HP dealt by EXECUTE when the threshold is met. |
+| `getEnemyIncomingDamageMultiplier(target)` | Combined incoming-damage multiplier for mobile hit-preview rendering (Vulnerable × any other modifiers). |
+| `getDisruptMeter(target)` | Returns `{ current, threshold }` — current distinct control count vs. `DISRUPT_DENY_AT`, for a UI progress bar. |
+| `projectRupture(target)` | Preview burst HP damage from consuming current DoT effects (does not consume). |
+| `isExecuteReady(target)` | Whether the target's current HP is at or below the Execute HP threshold. |
+| `projectExecute(target)` | Preview Execute damage (`EXECUTE_DAMAGE_FRACTION × maxHp`). |
+| `projectSiphonHeal(caster, roll)` | Preview Siphon heal amount given the caster's current state and the roll result. |
+| `getDotAmplificationByEffect(effectId, target)` | Per-effect amplification factor from active Phase 142 combos (used for detailed UI attribution). |
+| `getActiveDotTotal(target)` | Total active DoT damage per round (sum of all ticking effects' `dotEnd` values). |
+| `getActiveDotAmplifications(target)` | List of active `ActiveDotAmplification` entries for per-effect UI breakdown. |
+| `PendingDotEntry` | Type: one entry from `getPendingDotTotal` breakdown — `{ effectId, damage }`. |
+| `ActiveDotEntry` | Type: one ticking DoT entry — `{ effectId, dotPerRound }`. |
+| `ActiveDotAmplification` | Type: one amplification entry — `{ effectId, amplificationFactor }`. |
+
 ## Pending
 
 The Spec 02 / 03 / 04 / 05 work this section used to track has

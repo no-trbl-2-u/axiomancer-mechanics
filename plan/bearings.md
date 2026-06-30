@@ -171,6 +171,19 @@ Combat:     determineAdvantage, getBaseStat, getAttackStat, getDefenseStat, getS
             turn is fully denied); THREAT_WEAKEN_FLOOR (number, default 0.4 — minimum damage
             multiplier when weakened but not denied). Used by resolveThreatPhase; consumers
             can read these to display soft-control thresholds in the UI.)
+            (+ 0.34.0 status-depth epic — HP-model selectors + tunable scalars:
+            getDamageTakenMultiplier (incoming-damage multiplier for a combatant given
+            active vulnerability effects); getPendingDotTotal (sums pending DoT across all
+            active effects — basis for AMPLIFY burst); consumeDotEffects (removes DoT effects
+            and returns total consumed — used by RUPTURE); getDistinctDebuffCount (counts
+            distinct active debuff types — drives COMPOUND); getDistinctControlCount (counts
+            distinct active control effects — drives DISRUPT); VULNERABLE_MAX_MULT,
+            RUPTURE_BURST_CAP, COMPOUND_COUNT_CAP, DISRUPT_DENY_AT, EXECUTE_DAMAGE_FRACTION
+            (tunable scalars capping each status mechanic); honesty-preview helpers:
+            getEnemyIncomingDamageMultiplier, getDisruptMeter, projectRupture, isExecuteReady,
+            projectExecute, projectSiphonHeal; DoT amplification helpers: getDotAmplificationByEffect,
+            getActiveDotTotal, getActiveDotAmplifications; types: PendingDotEntry, ActiveDotEntry,
+            ActiveDotAmplification.)
             (+ Phase 168 AMPLIFY card mechanic — reads enemy pending DoT × multiplier,
             fires as HP burst WITHOUT consuming effects (DoT keeps ticking; distinct from
             RUPTURE which consumes). AMPLIFY_DEFAULT_MULTIPLIER=1.5, AMPLIFY_BURST_CAP=60.
