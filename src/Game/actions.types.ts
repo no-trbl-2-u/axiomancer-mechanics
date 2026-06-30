@@ -13,13 +13,35 @@
 
 import { Enemy } from '../Enemy/types';
 import { Encounter } from '../World/types';
+import { Character } from '../Character/types';
 import { Equipment, EquipmentSlot, Item } from '../Items/types';
 import { DialogueTree, DialogueChoice } from '../NPCs/types';
 import { PhilosophicalAlignment } from '../Philosophy/types';
 
 export type GameAction =
     | { type: 'START_COMBAT';   payload: { target: Enemy | Encounter } }
-    | { type: 'END_COMBAT';     payload?: { grantedLoot?: Item[]; grantedXp?: number } }
+    | {
+          type: 'END_COMBAT';
+          payload?: {
+              /**
+               * Outcome reported by the Hazard-Pattern combat driver. Defaults
+               * to `'flee'` when omitted. `'victory'` / `'friendship'` grant
+               * loot, XP, quest progress, and per-foe friendship rewards;
+               * `'defeat'` / `'flee'` grant nothing.
+               */
+              outcome?: 'victory' | 'defeat' | 'friendship' | 'flee';
+              /**
+               * Final player snapshot from the combat driver (post-fight HP /
+               * effects). Promoted to the root player on `'victory'` /
+               * `'friendship'`; on `'defeat'` / `'flee'` the root inventory is
+               * preserved so combat-side inventory mutations don't leak. When
+               * omitted, the root player is left untouched.
+               */
+              finalPlayer?: Character;
+              grantedLoot?: Item[];
+              grantedXp?: number;
+          };
+      }
     | { type: 'MOVE_TO_NODE';   payload: { nodeId: string } }
     | { type: 'PROCESS_NODE';   payload?: undefined }
     | { type: 'APPLY_DIALOGUE'; payload: { tree: DialogueTree; choice: DialogueChoice } }

@@ -25,16 +25,10 @@ describe('Phase 73 — codex / journal-entry surface', () => {
 
     it('befriending MournfulGull unlocks codex entry + surfaces { id, title } on report', () => {
         const store = createGameStore(nullAdapter);
-        // Drive a synthetic friendship outcome: cap friendshipCounter and
-        // explicitly authorize the spare/mercy resolution, then endCombat.
+        // Drive a friendship outcome directly — combat resolution lives outside
+        // the store now, so endCombat takes the resolved outcome.
         store.getState().startCombat(MournfulGull);
-        const combat = store.getState().combat!;
-        store.getState().updateCombat({
-            ...combat,
-            friendshipCounter: 10,
-            friendshipResolutionAuthorized: true,
-        });
-        const report = store.getState().endCombat();
+        const report = store.getState().endCombat('friendship');
         expect(report.outcome).toBe('friendship');
         expect(store.getState().codex.unlockedEntries).toContain('codex-mournful-gull');
         expect(report.friendshipReward?.codexEntryUnlocked).toEqual({
@@ -53,13 +47,7 @@ describe('Phase 73 — codex / journal-entry surface', () => {
     it('TidepoolCrab (no journalEntry) friendship leaves codex empty + no report field', () => {
         const store = createGameStore(nullAdapter);
         store.getState().startCombat(TidepoolCrab);
-        const combat = store.getState().combat!;
-        store.getState().updateCombat({
-            ...combat,
-            friendshipCounter: 10,
-            friendshipResolutionAuthorized: true,
-        });
-        const report = store.getState().endCombat();
+        const report = store.getState().endCombat('friendship');
         expect(report.outcome).toBe('friendship');
         expect(store.getState().codex.unlockedEntries).toEqual([]);
         expect(report.friendshipReward?.codexEntryUnlocked).toBeUndefined();
@@ -68,13 +56,7 @@ describe('Phase 73 — codex / journal-entry surface', () => {
     it('victory outcome against MournfulGull does NOT unlock the codex entry', () => {
         const store = createGameStore(nullAdapter);
         store.getState().startCombat(MournfulGull);
-        const combat = store.getState().combat!;
-        // Drop enemy HP to 0 so endCombat resolves as victory.
-        store.getState().updateCombat({
-            ...combat,
-            enemy: { ...combat.enemy, health: 0 },
-        });
-        const report = store.getState().endCombat();
+        const report = store.getState().endCombat('victory');
         expect(report.outcome).toBe('victory');
         expect(store.getState().codex.unlockedEntries).toEqual([]);
         expect(report.friendshipReward).toBeUndefined();

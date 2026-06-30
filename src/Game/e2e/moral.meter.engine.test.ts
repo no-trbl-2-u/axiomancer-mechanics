@@ -15,8 +15,6 @@ import { TidepoolCrab } from '../../Enemy/enemy.library';
 import { createGameStore, selectMoralMeter } from '../store';
 import { createNewGameState } from '../game.reducer';
 import { nullAdapter } from '../persistence/null.adapter';
-import { determineCombatEnd } from '../../Combat';
-import { FRIENDSHIP_COUNTER_MAX } from '../game-mechanics.constants';
 import { getMapDefinition } from '../../World/map.registry';
 import { applyDialogueChoice } from '../../World/dialogue.runtime';
 
@@ -73,27 +71,16 @@ describe('Moral meter system — complete pipeline', () => {
         const store = createGameStore(nullAdapter);
 
         store.getState().startCombat(TidepoolCrab);
-        expect(store.getState().combat).toBeTruthy();
+        expect(store.getState().currentEncounter).toBeTruthy();
 
         const initialMeter = selectMoralMeter(store.getState());
 
-        // Drive directly to a friendship outcome — the enemy AI for
-        // `TidepoolCrab` is aggressive, so we seed the friendship counter at
-        // its cap and explicitly authorize the spare/mercy resolution rather
-        // than depend on both combatants choosing defend.
-        const combat = store.getState().combat!;
-        store.getState().updateCombat({
-            ...combat,
-            friendshipCounter: FRIENDSHIP_COUNTER_MAX,
-            friendshipResolutionAuthorized: true,
-        });
-
-        expect(determineCombatEnd(store.getState().combat!)).toBe('friendship');
-
-        store.getState().endCombat();
+        // Drive directly to a friendship outcome — combat resolution lives
+        // outside the store now, so endCombat takes the resolved outcome.
+        store.getState().endCombat('friendship');
 
         expect(selectMoralMeter(store.getState())).toBe(initialMeter + 1);
-        expect(store.getState().combat).toBeNull();
+        expect(store.getState().currentEncounter).toBeUndefined();
     });
 
     it('beggar dialogue choices trigger correct moral shifts', () => {

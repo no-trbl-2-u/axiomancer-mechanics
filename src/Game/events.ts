@@ -10,7 +10,6 @@
 
 export type GameEventType =
     | 'combat:started'
-    | 'combat:round'
     | 'combat:ended'
     | 'world:moved'
     | 'world:processed'

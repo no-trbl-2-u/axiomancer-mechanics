@@ -379,9 +379,9 @@ describe('Game store lifecycle: equipment & consumables with nullAdapter', () =>
             baseStats: { heart: 4, body: 3, mind: 2 },
             equipment: { accessory: berserkerBand },
         });
-        const store = createGameStore(nullAdapter, { player });
-        store.getState().startCombat(Disatree_01);
-        const combat = store.getState().combat!;
+        // Combat is decoupled from the store now; build the CombatState
+        // directly to inspect the combat-start token seeding.
+        const combat = initializeCombat(player, Disatree_01);
         expect(combat.combatResources.body).toBe(3);
     });
 });

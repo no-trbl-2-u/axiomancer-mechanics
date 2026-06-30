@@ -14,7 +14,7 @@ import { mockSequentialRng } from '../../test-utils/rng';
 import { createCharacter } from '../../Character';
 import { executeSkill } from '../skill.engine';
 import { getCardById } from '../cards.library';
-import { initializeCombat, selectMercyChoice } from '../../Combat';
+import { initializeCombat } from '../../Combat';
 import { createEnemy } from '../../Enemy';
 
 // Test enemy with befriendability config for HP gate testing
@@ -129,47 +129,9 @@ describe('Befriend skill (Phase 108)', () => {
         });
     });
 
-    describe('Mercy choice resolution', () => {
-        it('selects spare choice correctly', () => {
-            const character = createCharacter({
-                name: 'Test Character',
-                level: 1,
-                baseStats: { heart: 5, body: 5, mind: 5 }
-            });
-
-            const combatState = {
-                ...initializeCombat(character, befriendableEnemy),
-                mercyChoiceActive: true,
-                phase: 'mercy_choice' as const
-            };
-
-            const result = selectMercyChoice(combatState, 'spare');
-
-            expect(result.playerChoice.action).toBe('spare');
-            expect(result.playerChoice.stance).toBe('heart');
-            expect(result.mercyChoiceActive).toBe(false);
-            expect(result.phase).toBe('resolving');
-        });
-
-        it('selects exploit choice correctly', () => {
-            const character = createCharacter({
-                name: 'Test Character',
-                level: 1,
-                baseStats: { heart: 5, body: 5, mind: 5 }
-            });
-
-            const combatState = {
-                ...initializeCombat(character, befriendableEnemy),
-                mercyChoiceActive: true,
-                phase: 'mercy_choice' as const
-            };
-
-            const result = selectMercyChoice(combatState, 'exploit');
-
-            expect(result.playerChoice.action).toBe('exploit');
-            expect(result.playerChoice.stance).toBe('heart');
-            expect(result.mercyChoiceActive).toBe(false);
-            expect(result.phase).toBe('resolving');
-        });
-    });
+    // The legacy `selectMercyChoice` reducer (which wrote the spare/exploit
+    // choice onto a turn-based `CombatState`) was removed with the legacy
+    // combat driver. The Hazard-Pattern engine owns mercy resolution now
+    // (`selectEncounterMercyChoice`); the befriend SKILL still surfaces
+    // `activateMercyChoice` via `executeSkill`, covered above.
 });

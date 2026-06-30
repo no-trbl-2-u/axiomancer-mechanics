@@ -47,7 +47,6 @@ export interface TypedGameEvent<T extends GameEventType = GameEventType> extends
 }
 
 export type TypedCombatStartedEvent     = TypedGameEvent<'combat:started'>;
-export type TypedCombatRoundEvent       = TypedGameEvent<'combat:round'>;
 export type TypedCombatEndedEvent       = TypedGameEvent<'combat:ended'>;
 export type TypedWorldMovedEvent        = TypedGameEvent<'world:moved'>;
 export type TypedWorldProcessedEvent    = TypedGameEvent<'world:processed'>;

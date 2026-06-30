@@ -20,19 +20,18 @@ import { mockSequentialRng } from '../test-utils/rng';
 afterEach(() => vi.restoreAllMocks());
 
 describe('store.startCombat — accepts Enemy or Encounter', () => {
-    it('back-compat: bare Enemy initialises a combat snapshot', () => {
+    it('back-compat: bare Enemy stages an encounter', () => {
         const store = createGameStore(nullAdapter, { player: Player });
         store.getState().startCombat(TidepoolCrab);
-        const combat = store.getState().combat!;
-        expect(combat.enemy.id).toBe(TidepoolCrab.id);
-        expect(combat.player.name).toBe(Player.name);
+        const encounter = store.getState().currentEncounter!;
+        expect(encounter.enemies[0]!.id).toBe(TidepoolCrab.id);
     });
 
-    it('Encounter: consumes the first enemy of the list', () => {
+    it('Encounter: stages the first enemy of the list', () => {
         const enc: Encounter = { enemies: [CoastalTyrant], origin: 'test:fv-1' };
         const store = createGameStore(nullAdapter, { player: Player });
         store.getState().startCombat(enc);
-        expect(store.getState().combat!.enemy.id).toBe(CoastalTyrant.id);
+        expect(store.getState().currentEncounter!.enemies[0]!.id).toBe(CoastalTyrant.id);
     });
 
     it('throws for an empty encounter', () => {
@@ -51,14 +50,8 @@ describe('store.endCombat — grants XP + loot on victory', () => {
         const store = createGameStore(nullAdapter, { player: Player });
         store.getState().startCombat(TidepoolCrab);
 
-        // Simulate a kill: zero the enemy HP on the combat snapshot.
-        const combat = store.getState().combat!;
-        store.getState().updateCombat({
-            ...combat,
-            enemy: { ...combat.enemy, health: 0 },
-        });
-
-        const report = store.getState().endCombat();
+        // Combat resolution lives outside the store; report the victory outcome.
+        const report = store.getState().endCombat('victory');
         expect(report.outcome).toBe('victory');
         expect(report.xpGained).toBe(TidepoolCrab.xpReward);
         expect(report.loot.length).toBeGreaterThan(0);
@@ -74,13 +67,7 @@ describe('store.endCombat — grants XP + loot on victory', () => {
         const store = createGameStore(nullAdapter, { player: Player });
         store.getState().startCombat(TidepoolCrab);
 
-        const combat = store.getState().combat!;
-        store.getState().updateCombat({
-            ...combat,
-            player: { ...combat.player, health: 0 },
-        });
-
-        const report = store.getState().endCombat();
+        const report = store.getState().endCombat('defeat');
         expect(report.outcome).toBe('defeat');
         expect(report.xpGained).toBe(0);
         expect(report.loot).toEqual([]);
@@ -90,8 +77,8 @@ describe('store.endCombat — grants XP + loot on victory', () => {
         const store = createGameStore(nullAdapter, { player: Player });
         store.getState().startCombat(TidepoolCrab);
 
-        // Both still alive — the friendship-counter exit hits this path.
-        const report = store.getState().endCombat();
+        // Walking away from a live encounter resolves as flee.
+        const report = store.getState().endCombat('flee');
         expect(report.outcome).toBe('flee');
         expect(report.xpGained).toBe(0);
     });
@@ -109,9 +96,7 @@ describe('store.endCombat — grants XP + loot on victory', () => {
         });
 
         store.getState().startCombat(TidepoolCrab);
-        const combat = store.getState().combat!;
-        store.getState().updateCombat({ ...combat, enemy: { ...combat.enemy, health: 0 } });
-        store.getState().endCombat();
+        store.getState().endCombat('victory');
 
         const stack = store.getState().player.inventory.find(i => i.id === 'minor-healing-potion');
         expect(stack && 'quantity' in stack ? stack.quantity : 0).toBe(3);

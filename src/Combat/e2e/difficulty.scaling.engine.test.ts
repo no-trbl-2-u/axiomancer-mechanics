@@ -97,8 +97,8 @@ describe('Phase 92 — Difficulty scaling engine', () => {
                 payload: { target: testEnemy },
             });
 
-            expect(ruthlessResult.combat).toBeTruthy();
-            expect(ruthlessResult.combat!.enemy.baseStats).toEqual({
+            expect(ruthlessResult.currentEncounter).toBeTruthy();
+            expect(ruthlessResult.currentEncounter!.enemies[0]!.baseStats).toEqual({
                 heart: 20, // 10 * 2.0
                 body: 20,  // 10 * 2.0
                 mind: 20,  // 10 * 2.0
@@ -113,8 +113,8 @@ describe('Phase 92 — Difficulty scaling engine', () => {
                 payload: { target: testEnemy },
             });
 
-            expect(compassionateResult.combat).toBeTruthy();
-            expect(compassionateResult.combat!.enemy.baseStats).toEqual({
+            expect(compassionateResult.currentEncounter).toBeTruthy();
+            expect(compassionateResult.currentEncounter!.enemies[0]!.baseStats).toEqual({
                 heart: 5,  // 10 * 0.5
                 body: 5,   // 10 * 0.5
                 mind: 5,   // 10 * 0.5
@@ -129,8 +129,8 @@ describe('Phase 92 — Difficulty scaling engine', () => {
                 payload: { target: testEnemy },
             });
 
-            expect(neutralResult.combat).toBeTruthy();
-            expect(neutralResult.combat!.enemy.baseStats).toEqual({
+            expect(neutralResult.currentEncounter).toBeTruthy();
+            expect(neutralResult.currentEncounter!.enemies[0]!.baseStats).toEqual({
                 heart: 10, // 10 * 1.0
                 body: 10,  // 10 * 1.0
                 mind: 10,  // 10 * 1.0
@@ -157,17 +157,18 @@ describe('Phase 92 — Difficulty scaling engine', () => {
                 payload: { target: testEnemy },
             });
 
-            expect(combatStarted.combat).toBeTruthy();
-            expect(combatStarted.combat!.enemy.baseStats).toEqual({
+            expect(combatStarted.currentEncounter).toBeTruthy();
+            const stagedEnemy = combatStarted.currentEncounter!.enemies[0]!;
+            expect(stagedEnemy.baseStats).toEqual({
                 heart: 3, // 2 * 1.5
                 body: 3,  // 2 * 1.5
                 mind: 3,  // 2 * 1.5
             });
 
-            // Verify combat state is properly initialized
-            expect(combatStarted.combat!.phase).toBe('choosing_stance');
-            expect(combatStarted.combat!.player.health).toBeGreaterThan(0);
-            expect(combatStarted.combat!.enemy.health).toBeGreaterThan(0);
+            // Verify the staged enemy is combat-ready (positive HP) so the
+            // Hazard-Pattern engine can resolve against the scaled enemy.
+            expect(stagedEnemy.health).toBeGreaterThan(0);
+            expect(stagedEnemy.maxHealth).toBeGreaterThan(0);
         });
     });
 });

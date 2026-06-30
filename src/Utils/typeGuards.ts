@@ -4,7 +4,7 @@
 
 import { Character } from '../Character/types';
 import { Enemy } from '../Enemy/types';
-import { CombatState } from '../Combat/types';
+import { Encounter } from '../World/types';
 import { GameState } from '../Game/types';
 
 /** True if `entity` is a Character (has `nonCombatStats`). */
@@ -17,7 +17,7 @@ export function isEnemy(entity: Character | Enemy): entity is Enemy {
     return 'logic' in entity;
 }
 
-/** Narrow GameState to one with an active combat encounter. */
-export function isCombatActive(state: GameState): state is GameState & { combat: CombatState } {
-    return state.combat !== null;
+/** Narrow GameState to one with a staged encounter (combat runs outside the store). */
+export function isCombatActive(state: GameState): state is GameState & { currentEncounter: Encounter } {
+    return state.currentEncounter != null;
 }

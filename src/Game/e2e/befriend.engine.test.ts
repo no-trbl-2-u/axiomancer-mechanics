@@ -10,6 +10,11 @@
  *   - narrative surfaces on `report.friendshipReward.narrative` (D7)
  *
  * Phase 36 mechanics (half-XP base, +1 moralMeter) are preserved.
+ *
+ * Combat is now decoupled from the store: `endCombat(outcome)` takes the
+ * resolved outcome directly (the Hazard-Pattern engine decides eligibility
+ * outside the store), so the reward-threading assertions are driven by
+ * calling `endCombat('friendship')` / `endCombat('victory')` directly.
  */
 
 import { describe, it, expect } from 'vitest';
@@ -19,56 +24,14 @@ import {
 } from '../../Enemy/enemy.library';
 import { createGameStore, selectMoralMeter } from '../store';
 import { nullAdapter } from '../persistence/null.adapter';
-import { FRIENDSHIP_COUNTER_MAX } from '../game-mechanics.constants';
-import type { BattleLogEntry, Stance } from '../../Combat/types';
-
-function logEntry(round: number, stance: Stance, skillId?: string): BattleLogEntry {
-    return {
-        round,
-        playerAction: {
-            stance,
-            action: skillId ? 'skill' : 'attack',
-            ...(skillId ? { skillId } : {}),
-        },
-        enemyAction: { stance: 'body', action: 'defend' },
-        advantage: 'neutral',
-        playerRoll: 10,
-        playerRollDetails: '',
-        enemyRoll: 10,
-        enemyRollDetails: '',
-        damageToPlayer: 0,
-        damageToEnemy: 0,
-        playerHPAfter: 50,
-        enemyHPAfter: 50,
-        result: '',
-    };
-}
-
-function authorizeFriendship(store: ReturnType<typeof createGameStore>) {
-    const combat = store.getState().combat!;
-    store.getState().updateCombat({
-        ...combat,
-        friendshipResolutionAuthorized: true,
-    });
-}
-
-function driveToFriendship(store: ReturnType<typeof createGameStore>) {
-    const combat = store.getState().combat!;
-    store.getState().updateCombat({
-        ...combat,
-        friendshipCounter: FRIENDSHIP_COUNTER_MAX,
-        friendshipResolutionAuthorized: true,
-    });
-}
 
 describe('Phase 60 — befriendable-enemy content arc', () => {
     it('MournfulGull friendship report carries the per-enemy items + xpBonus + narrative', () => {
         const store = createGameStore(nullAdapter);
         store.getState().startCombat(MournfulGull);
-        driveToFriendship(store);
 
         const initialMeter = selectMoralMeter(store.getState());
-        const report = store.getState().endCombat();
+        const report = store.getState().endCombat('friendship');
 
         expect(report.outcome).toBe('friendship');
         // Items — the friendship grant guarantees a heart-draught regardless
@@ -86,9 +49,8 @@ describe('Phase 60 — befriendable-enemy content arc', () => {
     it('HollowEyedBeggar friendship grants 2 phials + xpBonus 15 + reversal narrative', () => {
         const store = createGameStore(nullAdapter);
         store.getState().startCombat(HollowEyedBeggar);
-        driveToFriendship(store);
 
-        const report = store.getState().endCombat();
+        const report = store.getState().endCombat('friendship');
 
         expect(report.outcome).toBe('friendship');
         // Two guaranteed phials (healing-potion + antidote) on top of any
@@ -107,9 +69,8 @@ describe('Phase 60 — befriendable-enemy content arc', () => {
         // friendshipReward field is undefined for enemies without authoring.
         const store = createGameStore(nullAdapter);
         store.getState().startCombat(TidepoolCrab);
-        driveToFriendship(store);
 
-        const report = store.getState().endCombat();
+        const report = store.getState().endCombat('friendship');
 
         expect(report.outcome).toBe('friendship');
         expect(report.friendshipReward).toBeUndefined();
@@ -123,13 +84,7 @@ describe('Phase 60 — befriendable-enemy content arc', () => {
         // outcome === 'friendship'. Defeat / victory / flee paths skip it.
         const store = createGameStore(nullAdapter);
         store.getState().startCombat(MournfulGull);
-        // Drive to victory: zero the enemy's HP directly.
-        const combat = store.getState().combat!;
-        store.getState().updateCombat({
-            ...combat,
-            enemy: { ...combat.enemy, health: 0 },
-        });
-        const report = store.getState().endCombat();
+        const report = store.getState().endCombat('victory');
 
         expect(report.outcome).toBe('victory');
         expect(report.friendshipReward).toBeUndefined();
@@ -140,15 +95,13 @@ describe('Phase 62 — quest-branch wire-in on outcome === friendship', () => {
     it('friendship outcome appends FriendshipReward.flagSet to state.flags (de-duped)', () => {
         const store = createGameStore(nullAdapter);
         store.getState().startCombat(MournfulGull);
-        driveToFriendship(store);
-        store.getState().endCombat();
+        store.getState().endCombat('friendship');
         // First friendship sets the flag.
         expect(store.getState().flags).toContain('befriended-mournful-gull');
 
         // Drive a second friendship encounter (same flag would be a no-op).
         store.getState().startCombat(MournfulGull);
-        driveToFriendship(store);
-        store.getState().endCombat();
+        store.getState().endCombat('friendship');
         // De-duped: still exactly one occurrence per Phase 62 D3.
         const matches = store.getState().flags.filter(f => f === 'befriended-mournful-gull');
         expect(matches.length).toBe(1);
@@ -157,12 +110,7 @@ describe('Phase 62 — quest-branch wire-in on outcome === friendship', () => {
     it('victory outcome does NOT set the friendship flag (only fires for outcome === friendship)', () => {
         const store = createGameStore(nullAdapter);
         store.getState().startCombat(MournfulGull);
-        const combat = store.getState().combat!;
-        store.getState().updateCombat({
-            ...combat,
-            enemy: { ...combat.enemy, health: 0 },
-        });
-        store.getState().endCombat();
+        store.getState().endCombat('victory');
         expect(store.getState().flags).not.toContain('befriended-mournful-gull');
     });
 
@@ -201,8 +149,7 @@ describe('Phase 62 — quest-branch wire-in on outcome === friendship', () => {
         // assert state.flags carries the flag the dialogue engine will read.
         const store = createGameStore(nullAdapter);
         store.getState().startCombat(MournfulGull);
-        driveToFriendship(store);
-        store.getState().endCombat();
+        store.getState().endCombat('friendship');
         expect(store.getState().flags).toContain('befriended-mournful-gull');
         // The dialogue runtime reads ctx.flags = state.flags downstream;
         // the visibleChoices behaviour is pinned by the test above.
@@ -210,83 +157,11 @@ describe('Phase 62 — quest-branch wire-in on outcome === friendship', () => {
 });
 
 describe('Phase 68 — Coastal Tyrant BefriendabilityConfig integration', () => {
-    it('befriend succeeds only when hpGate, requiredStances, and roundsThreshold all pass', () => {
+    it('befriend grants the boss-tier friendshipReward on the friendship outcome', () => {
         const store = createGameStore(nullAdapter);
         store.getState().startCombat(CoastalTyrant);
-        const combat = store.getState().combat!;
-        // Drive the predicate axes: 5 both-defend rounds; enemy at 30% HP;
-        // at least one heart-stance round in the log.
-        store.getState().updateCombat({
-            ...combat,
-            friendshipCounter: 5,
-            log: [logEntry(1, 'heart'), logEntry(2, 'body'), logEntry(3, 'mind')],
-            enemy: {
-                ...combat.enemy,
-                health: Math.floor(combat.enemy.maxHealth * 0.3),
-            },
-        });
-
-        authorizeFriendship(store);
-        const report = store.getState().endCombat();
+        const report = store.getState().endCombat('friendship');
         expect(report.outcome).toBe('friendship');
-    });
-
-    it('does NOT befriend when enemy is at full HP (hpGate fails) even at the rounds threshold', () => {
-        const store = createGameStore(nullAdapter);
-        store.getState().startCombat(CoastalTyrant);
-        const combat = store.getState().combat!;
-        store.getState().updateCombat({
-            ...combat,
-            friendshipCounter: 5,
-            log: [logEntry(1, 'heart')],
-            // health stays at maxHealth — hpGate (40%) blocks eligibility.
-        });
-
-        const report = store.getState().endCombat();
-        expect(report.outcome).not.toBe('friendship');
-        // Falls through to 'flee' per store.endCombat's fall-through branch
-        // (player alive, enemy alive, friendship ineligible).
-        expect(report.outcome).toBe('flee');
-    });
-
-    it('does NOT befriend when the player never used the heart stance', () => {
-        const store = createGameStore(nullAdapter);
-        store.getState().startCombat(CoastalTyrant);
-        const combat = store.getState().combat!;
-        store.getState().updateCombat({
-            ...combat,
-            friendshipCounter: 5,
-            // body / mind only — no heart stance in the log.
-            log: [logEntry(1, 'body'), logEntry(2, 'mind')],
-            enemy: {
-                ...combat.enemy,
-                health: Math.floor(combat.enemy.maxHealth * 0.3),
-            },
-        });
-
-        const report = store.getState().endCombat();
-        expect(report.outcome).not.toBe('friendship');
-    });
-
-    it('does NOT befriend when counter is short of the per-enemy roundsThreshold (3)', () => {
-        const store = createGameStore(nullAdapter);
-        store.getState().startCombat(CoastalTyrant);
-        const combat = store.getState().combat!;
-        // Default FRIENDSHIP_COUNTER_MAX is 3 — but Coastal Tyrant overrides
-        // to 3 (Phase 101 reduced from 5). At counter = 2 friendship should not trigger.
-        store.getState().updateCombat({
-            ...combat,
-            friendshipCounter: 2,
-            log: [logEntry(1, 'heart')],
-            enemy: {
-                ...combat.enemy,
-                health: Math.floor(combat.enemy.maxHealth * 0.3),
-            },
-        });
-
-        const report = store.getState().endCombat();
-        expect(report.outcome).not.toBe('friendship');
-        // Phase 101: Coastal Tyrant now uses same threshold as base (3)
     });
 });
 
@@ -295,8 +170,7 @@ describe('Phase 69 — FriendshipReward.alignmentDelta', () => {
         const store = createGameStore(nullAdapter);
         store.getState().startCombat(MournfulGull);
         const before = store.getState().philosophicalAlignment;
-        driveToFriendship(store);
-        const report = store.getState().endCombat();
+        const report = store.getState().endCombat('friendship');
 
         expect(report.outcome).toBe('friendship');
         const mournfulDelta = MournfulGull.friendshipReward?.alignmentDelta;
@@ -316,9 +190,7 @@ describe('Phase 69 — FriendshipReward.alignmentDelta', () => {
         const store = createGameStore(nullAdapter);
         store.getState().startCombat(MournfulGull);
         const before = store.getState().philosophicalAlignment;
-        const combat = store.getState().combat!;
-        store.getState().updateCombat({ ...combat, enemy: { ...combat.enemy, health: 0 } });
-        const report = store.getState().endCombat();
+        const report = store.getState().endCombat('victory');
 
         expect(report.outcome).toBe('victory');
         expect(store.getState().philosophicalAlignment).toEqual(before);
@@ -334,8 +206,7 @@ describe('Phase 69 — FriendshipReward.alignmentDelta', () => {
         expect(cap).toBe(100);
 
         store.getState().startCombat(MournfulGull);
-        driveToFriendship(store);
-        const report = store.getState().endCombat();
+        const report = store.getState().endCombat('friendship');
 
         expect(report.outcome).toBe('friendship');
         // outlook would have overshot 100 + positive delta; clamp pins it at 100.
@@ -346,8 +217,7 @@ describe('Phase 69 — FriendshipReward.alignmentDelta', () => {
     it('omits friendshipReward.alignmentShift when the enemy has no alignmentDelta', () => {
         const store = createGameStore(nullAdapter);
         store.getState().startCombat(TidepoolCrab);
-        driveToFriendship(store);
-        const report = store.getState().endCombat();
+        const report = store.getState().endCombat('friendship');
 
         expect(report.outcome).toBe('friendship');
         // TidepoolCrab carries no friendshipReward at all; alignmentShift should
@@ -357,28 +227,13 @@ describe('Phase 69 — FriendshipReward.alignmentDelta', () => {
 });
 
 describe('Phase 70 — Coastal Tyrant boss-tier friendshipReward (full Phase 60+62+68+69 stack)', () => {
-    function driveCoastalTyrantToFriendship(store: ReturnType<typeof createGameStore>) {
-        const combat = store.getState().combat!;
-        store.getState().updateCombat({
-            ...combat,
-            friendshipCounter: 5,
-            log: [logEntry(1, 'heart'), logEntry(2, 'heart'), logEntry(3, 'body')],
-            enemy: {
-                ...combat.enemy,
-                health: Math.floor(combat.enemy.maxHealth * 0.3),
-            },
-        });
-    }
-
     it('threads items + xpBonus + narrative + alignmentShift + flagSet on the friendship path', () => {
         const store = createGameStore(nullAdapter);
         store.getState().startCombat(CoastalTyrant);
         const beforeAlignment = store.getState().philosophicalAlignment;
         const initialMeter = selectMoralMeter(store.getState());
-        driveCoastalTyrantToFriendship(store);
 
-        authorizeFriendship(store);
-        const report = store.getState().endCombat();
+        const report = store.getState().endCombat('friendship');
         expect(report.outcome).toBe('friendship');
 
         // Items thread — boss-tier reward includes the Paradox Loop unique
@@ -412,15 +267,10 @@ describe('Phase 70 — Coastal Tyrant boss-tier friendshipReward (full Phase 60+
         expect(selectMoralMeter(store.getState())).toBe(initialMeter + 1);
     });
 
-    it('does NOT thread the friendshipReward content on victory outcome (drives enemy to 0 HP)', () => {
+    it('does NOT thread the friendshipReward content on victory outcome', () => {
         const store = createGameStore(nullAdapter);
         store.getState().startCombat(CoastalTyrant);
-        const combat = store.getState().combat!;
-        store.getState().updateCombat({
-            ...combat,
-            enemy: { ...combat.enemy, health: 0 },
-        });
-        const report = store.getState().endCombat();
+        const report = store.getState().endCombat('victory');
         expect(report.outcome).toBe('victory');
         expect(report.friendshipReward).toBeUndefined();
         expect(store.getState().flags).not.toContain('befriended-coastal-tyrant');
@@ -428,26 +278,11 @@ describe('Phase 70 — Coastal Tyrant boss-tier friendshipReward (full Phase 60+
 });
 
 describe('Phase 102 — Befriendable-enemy Tier-2 expansion', () => {
-    it('TideflukeReaver friendship with heart stance meets elite-tier predicate', () => {
+    it('TideflukeReaver friendship threads elite-tier reward', () => {
         const store = createGameStore(nullAdapter);
         store.getState().startCombat(TideflukeReaver);
-        const combat = store.getState().combat!;
-        
-        store.getState().updateCombat({
-            ...combat,
-            friendshipCounter: 4, // meets roundsThreshold
-            log: [
-                logEntry(1, 'heart'), // required empathy
-                logEntry(2, 'body'), logEntry(3, 'mind'), logEntry(4, 'heart')
-            ],
-            enemy: {
-                ...combat.enemy,
-                health: Math.floor(combat.enemy.maxHealth * 0.25), // below 30% hpGate
-            },
-        });
 
-        authorizeFriendship(store);
-        const report = store.getState().endCombat();
+        const report = store.getState().endCombat('friendship');
         expect(report.outcome).toBe('friendship');
         expect(report.loot.some(item => item.id === 'body-elixir')).toBe(true);
         expect(report.loot.some(item => item.id === 'healing-potion')).toBe(true);
@@ -456,46 +291,11 @@ describe('Phase 102 — Befriendable-enemy Tier-2 expansion', () => {
         expect(store.getState().flags).toContain('befriended-tidefluke-reaver');
     });
 
-    it('TideflukeReaver does NOT befriend without heart stance', () => {
-        const store = createGameStore(nullAdapter);
-        store.getState().startCombat(TideflukeReaver);
-        const combat = store.getState().combat!;
-        
-        store.getState().updateCombat({
-            ...combat,
-            friendshipCounter: 4,
-            log: [logEntry(1, 'body'), logEntry(2, 'mind')], // missing heart
-            enemy: {
-                ...combat.enemy,
-                health: Math.floor(combat.enemy.maxHealth * 0.25),
-            },
-        });
-
-        const report = store.getState().endCombat();
-        expect(report.outcome).not.toBe('friendship');
-    });
-
-    it('HushWraith friendship with patience (6 rounds) and heart stance', () => {
+    it('HushWraith friendship threads elite-tier reward', () => {
         const store = createGameStore(nullAdapter);
         store.getState().startCombat(HushWraith);
-        const combat = store.getState().combat!;
-        
-        store.getState().updateCombat({
-            ...combat,
-            friendshipCounter: 6, // transcendent silence patience
-            log: [
-                logEntry(1, 'heart'), logEntry(2, 'body'), 
-                logEntry(3, 'mind'), logEntry(4, 'heart'),
-                logEntry(5, 'heart'), logEntry(6, 'body')
-            ],
-            enemy: {
-                ...combat.enemy,
-                health: Math.floor(combat.enemy.maxHealth * 0.2), // below 25% hpGate
-            },
-        });
 
-        authorizeFriendship(store);
-        const report = store.getState().endCombat();
+        const report = store.getState().endCombat('friendship');
         expect(report.outcome).toBe('friendship');
         expect(report.loot.some(item => item.id === 'clarity-serum')).toBe(true);
         expect(report.loot.some(item => item.id === 'antidote')).toBe(true);
@@ -504,46 +304,11 @@ describe('Phase 102 — Befriendable-enemy Tier-2 expansion', () => {
         expect(store.getState().flags).toContain('befriended-hush-wraith');
     });
 
-    it('HushWraith does NOT befriend with insufficient patience (5 rounds < 6 threshold)', () => {
-        const store = createGameStore(nullAdapter);
-        store.getState().startCombat(HushWraith);
-        const combat = store.getState().combat!;
-        
-        store.getState().updateCombat({
-            ...combat,
-            friendshipCounter: 5, // below roundsThreshold of 6
-            log: [logEntry(1, 'heart')],
-            enemy: {
-                ...combat.enemy,
-                health: Math.floor(combat.enemy.maxHealth * 0.2),
-            },
-        });
-
-        const report = store.getState().endCombat();
-        expect(report.outcome).not.toBe('friendship');
-    });
-
-    it('HollowSaint friendship with prayer skill requirement (if available)', () => {
+    it('HollowSaint friendship threads elite-tier reward', () => {
         const store = createGameStore(nullAdapter);
         store.getState().startCombat(HollowSaint);
-        const combat = store.getState().combat!;
-        
-        store.getState().updateCombat({
-            ...combat,
-            friendshipCounter: 3,
-            log: [
-                logEntry(1, 'heart'), 
-                logEntry(2, 'heart', 'prayer'), // prayer skill if player has it
-                logEntry(3, 'body')
-            ],
-            enemy: {
-                ...combat.enemy,
-                health: Math.floor(combat.enemy.maxHealth * 0.35), // below 40% hpGate
-            },
-        });
 
-        authorizeFriendship(store);
-        const report = store.getState().endCombat();
+        const report = store.getState().endCombat('friendship');
         expect(report.outcome).toBe('friendship');
         expect(report.loot.some(item => item.id === 'resonance-crystal')).toBe(true);
         expect(report.loot.some(item => item.id === 'heart-draught')).toBe(true);
@@ -553,27 +318,11 @@ describe('Phase 102 — Befriendable-enemy Tier-2 expansion', () => {
         expect(store.getState().flags).toContain('befriended-hollow-saint');
     });
 
-    it('TheDisagreement boss-tier friendship requires mind stance and boss patience', () => {
+    it('TheDisagreement boss-tier friendship threads boss-tier reward', () => {
         const store = createGameStore(nullAdapter);
         store.getState().startCombat(TheDisagreement);
-        const combat = store.getState().combat!;
-        
-        store.getState().updateCombat({
-            ...combat,
-            friendshipCounter: 8, // boss-tier patience
-            log: [
-                logEntry(1, 'mind'), logEntry(2, 'heart'), logEntry(3, 'body'),
-                logEntry(4, 'mind'), logEntry(5, 'heart'), logEntry(6, 'body'),
-                logEntry(7, 'mind'), logEntry(8, 'heart')
-            ],
-            enemy: {
-                ...combat.enemy,
-                health: Math.floor(combat.enemy.maxHealth * 0.15), // below 20% hpGate
-            },
-        });
 
-        authorizeFriendship(store);
-        const report = store.getState().endCombat();
+        const report = store.getState().endCombat('friendship');
         expect(report.outcome).toBe('friendship');
         expect(report.loot.some(item => item.id === 'philosopher-tea')).toBe(true);
         expect(report.loot.some(item => item.id === 'focus-vial')).toBe(true);
@@ -582,28 +331,6 @@ describe('Phase 102 — Befriendable-enemy Tier-2 expansion', () => {
         expect(report.xpGained).toBe(Math.floor(8 * 200 * 0.5) + 80); // boss half-XP + 80 bonus
         expect(report.friendshipReward?.narrative).toMatch(/disagreement resolves into dialogue/);
         expect(store.getState().flags).toContain('befriended-the-disagreement');
-    });
-
-    it('TheDisagreement does NOT befriend without mind stance', () => {
-        const store = createGameStore(nullAdapter);
-        store.getState().startCombat(TheDisagreement);
-        const combat = store.getState().combat!;
-        
-        store.getState().updateCombat({
-            ...combat,
-            friendshipCounter: 8,
-            log: [
-                logEntry(1, 'heart'), logEntry(2, 'body'), // missing mind stance
-                logEntry(3, 'heart'), logEntry(4, 'body'),
-            ],
-            enemy: {
-                ...combat.enemy,
-                health: Math.floor(combat.enemy.maxHealth * 0.15),
-            },
-        });
-
-        const report = store.getState().endCombat();
-        expect(report.outcome).not.toBe('friendship');
     });
 });
 

@@ -59,28 +59,19 @@ describe('Game loop — full transcript through gameReducer', () => {
         };
         const store = createGameStore(adapter, { player: seededPlayer }, emitter);
 
-        // 1. START_COMBAT
+        // 1. START_COMBAT — stages the encounter in the store.
         store.getState().dispatch({
             type: 'START_COMBAT',
             payload: { target: TidepoolCrab },
         });
-        expect(store.getState().combat).not.toBeNull();
         expect(store.getState().currentEncounter).toBeDefined();
+        expect(store.getState().currentEncounter!.enemies[0]!.id).toBe(TidepoolCrab.id);
 
-        // 2. Drive the enemy to 0 HP through the combat snapshot update path
-        //    (`updateCombat` emits the `combat:round` event the loop asserts on).
-        const combat = store.getState().combat!;
-        store.getState().updateCombat({
-            ...combat,
-            enemy: { ...combat.enemy, health: 0 },
-        });
-        expect(store.getState().combat?.enemy.health).toBeLessThanOrEqual(0);
-
-        // 3. END_COMBAT — victory grants enemy XP and rolls loot.
-        const report = store.getState().endCombat();
+        // 2. END_COMBAT — combat resolution lives outside the store, so we
+        //    report the victory outcome; it grants enemy XP and rolls loot.
+        const report = store.getState().endCombat('victory');
         expect(report.outcome).toBe('victory');
         expect(report.xpGained).toBe(TidepoolCrab.xpReward);
-        expect(store.getState().combat).toBeNull();
         expect(store.getState().currentEncounter).toBeUndefined();
 
         // 4. LEVEL_UP — the seeded XP + enemy reward should clear the threshold.
@@ -107,7 +98,6 @@ describe('Game loop — full transcript through gameReducer', () => {
             runId:      store.getState().runId,
             player:     store.getState().player,
             world:      store.getState().world,
-            combat:     store.getState().combat,
             quests:     store.getState().quests,
             flags:      store.getState().flags,
             moralMeter: store.getState().moralMeter,
@@ -129,7 +119,6 @@ describe('Game loop — full transcript through gameReducer', () => {
 
         // 9. Event surface fired the expected verbs (order-independent).
         expect(seenEvents).toContain('combat:started');
-        expect(seenEvents).toContain('combat:round');
         expect(seenEvents).toContain('combat:ended');
         expect(seenEvents).toContain('character:levelup');
         expect(seenEvents).toContain('world:moved');
@@ -182,7 +171,7 @@ describe('createEventEmitter — subscription surface', () => {
         const seen: GameEvent[] = [];
         const off = e.on('combat:started', ev => seen.push(ev));
         e.emit({ type: 'combat:started', payload: 'a' });
-        e.emit({ type: 'combat:round',   payload: 'b' });
+        e.emit({ type: 'combat:ended',   payload: 'b' });
         off();
         e.emit({ type: 'combat:started', payload: 'c' });
         expect(seen).toEqual([{ type: 'combat:started', payload: 'a' }]);

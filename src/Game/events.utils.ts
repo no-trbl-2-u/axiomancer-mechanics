@@ -11,7 +11,7 @@
 
 import type { GameEvent } from './events';
 import type {
-    TypedCombatStartedEvent, TypedCombatRoundEvent, TypedCombatEndedEvent,
+    TypedCombatStartedEvent, TypedCombatEndedEvent,
     TypedWorldMovedEvent, TypedWorldProcessedEvent,
     TypedLevelUpEvent, TypedInventoryChangedEvent,
     TypedDialogueAppliedEvent, TypedGameSavedEvent, TypedGameLoadedEvent,
@@ -19,9 +19,6 @@ import type {
 
 export function isCombatStartedEvent(e: GameEvent): e is TypedCombatStartedEvent {
     return e.type === 'combat:started';
-}
-export function isCombatRoundEvent(e: GameEvent): e is TypedCombatRoundEvent {
-    return e.type === 'combat:round';
 }
 export function isCombatEndedEvent(e: GameEvent): e is TypedCombatEndedEvent {
     return e.type === 'combat:ended';

@@ -4,7 +4,7 @@
 
 export {
     createGameStore,
-    selectPlayer, selectCombat, selectCombatState, selectIsInCombat,
+    selectPlayer, selectIsInCombat,
     selectInventory, selectVersion, selectMoralMeter,
 } from './store';
 export type { GameStore, GameActions, StoreApi, CombatEndReport } from './store';

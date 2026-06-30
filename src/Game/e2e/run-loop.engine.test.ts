@@ -59,9 +59,8 @@ describe('Phase 72 — run-loop semantics', () => {
             lastSeenAlignmentCells: { 'old-marrow': 'mid-mid-mid' },
         });
         store.getState().startCombat(TidepoolCrab);
-        expect(store.getState().combat).not.toBeNull();
+        expect(store.getState().currentEncounter).toBeDefined();
         const next = store.getState().resetRun({ keepCharacter: true });
-        expect(next.combat).toBeNull();
         expect(next.currentEncounter).toBeUndefined();
         expect(next.flags).toEqual([]);
         expect(next.quests.active).toEqual([]);

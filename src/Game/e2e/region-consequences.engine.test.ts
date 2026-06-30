@@ -11,6 +11,7 @@ import { createGameStore } from '../store';
 import { nullAdapter } from '../persistence/null.adapter';
 import { mockSequentialRng } from '../../test-utils/rng';
 import { Enemy } from '../../Enemy/types';
+import { ActiveEffect } from '../../Effects/types';
 
 const testRegionBoss: Enemy = {
     id: 'test-region-boss',
@@ -56,11 +57,11 @@ describe('Phase 109 — Region consequences for befriend choices', () => {
 
             // Start combat with region boss
             store.getState().startCombat({ enemies: [testRegionBoss] });
-            const combat = store.getState().combat!;
+            const boss = store.getState().currentEncounter!.enemies[0]!;
 
             // Verify boss has open-minded effect
-            const hasOpenMinded = combat.enemy.effects.some(
-                effect => effect.effectId === 'buff_open_minded'
+            const hasOpenMinded = boss.effects.some(
+                (effect: ActiveEffect) => effect.effectId === 'buff_open_minded'
             );
             expect(hasOpenMinded).toBe(true);
         });
@@ -78,11 +79,11 @@ describe('Phase 109 — Region consequences for befriend choices', () => {
 
             // Start combat with region boss (should have open-minded)
             store.getState().startCombat({ enemies: [testRegionBoss] });
-            const combat = store.getState().combat!;
+            const boss = store.getState().currentEncounter!.enemies[0]!;
 
             // Verify boss has open-minded effect
-            const openMindedEffect = combat.enemy.effects.find(
-                effect => effect.effectId === 'buff_open_minded'
+            const openMindedEffect = boss.effects.find(
+                (effect: ActiveEffect) => effect.effectId === 'buff_open_minded'
             );
             expect(openMindedEffect).toBeTruthy();
             expect(openMindedEffect?.intensity).toBe(1);
