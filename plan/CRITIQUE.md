@@ -82,7 +82,7 @@
   - suggested_fix: Add a "0.34.0 status-depth epic" annotation block to spec.md Contracts Combat row + bearings.md Combat group covering all 22 new exports (19 values + 3 types); add a matching API table section to docs/combat.md.
   - source: critique
 
-- [ ] **[LOW] docs — 0.35.0 depth-epic constants absent from spec.md + bearings.md + docs/combat.md**
+- [x] **[LOW] docs — 0.35.0 depth-epic constants absent from spec.md + bearings.md + docs/combat.md** — resolved at `7e73538` (iterate, 2026-06-30). Added 0.35.0 depth-epic tunables block to spec.md Contracts Combat row (READ_STATUS_MULT with values, THREAT_ESCALATION_PER_ROUND, THREAT_ESCALATION_GRACE, THREAT_ESCALATION_MAX with defaults); added matching annotation block to bearings.md Combat locked-contract group; added '### 0.35.0 — Depth-epic tunables' API table section to docs/combat.md. Doc-only; 2229 tests + type-check + lint + build green. Score: 3 × 9 / 10 = 2.7. Source: critique-98/99 (commits 5b15079/5e526a1).
   - pass: critique-98 (commit 5b15079)
   - area: docs
   - observation: `READ_STATUS_MULT`, `THREAT_ESCALATION_PER_ROUND`, `THREAT_ESCALATION_GRACE`, `THREAT_ESCALATION_MAX` are in `src/index.ts:145`, on the public fixture, and described in CHANGELOG ("Four new public exports … so mobile can read the read-scaled status honestly and surface the clock") but absent from `spec.md` Contracts Combat row, `bearings.md` Combat locked-contract group, and `docs/combat.md`. Mobile consumers who scan front-door reference readers to discover the escalation-clock surface will miss these tunables.
