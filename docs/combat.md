@@ -710,6 +710,46 @@ All four are exported from `src/Combat/combat.engine.ts` and re-exported via
 the root barrel. Used by `resolveCombatPhase`; consumers read them to render
 the escalation clock UI (e.g. showing current multiplier vs. cap).
 
+### Phase 167/168 — Sim status-engagement metrics + AMPLIFY mechanic + Conclusion sig
+
+Phase 167 extends `CombatSimStats` (returned by `simulateHazardPatternCombat`)
+with five doctrine-critical fields that make "low status-engagement = balance
+failure" mechanically enforceable by `/combat-tuning`. Phase 168 adds the AMPLIFY
+burst mechanic (reads pending DoT × multiplier without consuming effects). The
+Conclusion sig-skill redesign adds `CONCLUDE_DMG_PER_STACK` for the BODY
+archetype's stack-based finisher.
+
+#### CombatSimStats extensions (Phase 167)
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `dotHpFraction` | `number` | Fraction of total enemy HP loss delivered by DoT ticks (0–1). Doctrine witness: DoT should be the primary damage source in status builds. |
+| `strikeFraction` | `number` | Fraction of total enemy HP loss from direct strikes (excluding mechanic bursts) (0–1). |
+| `mechanicBurstFraction` | `number` | Fraction of total enemy HP loss from mechanic bursts (rupture/execute/compound/conclude) (0–1). |
+| `guardMitigatedFraction` | `number` | Guard availability ratio: guard present when enemy threat fired / (guard + player HP damage taken). Proxy for how often GUARD was relevant. |
+| `avgActiveEffectsPerPhase` | `number` | Mean count of active effects on the enemy at the start of each threat phase. Doctrine witness: a loaded status board = the engine working as intended. |
+
+`CombatSimPolicyId` (`'greedy' | 'blind'`) is the policy discriminator passed to
+`simulateHazardPatternCombat`; export it as a named type when you need to annotate
+a policy variable: `import type { CombatSimPolicyId } from 'axiomancer-mechanics'`.
+
+#### AMPLIFY mechanic constants (Phase 168)
+
+| Constant | Default | Description |
+|----------|---------|-------------|
+| `AMPLIFY_DEFAULT_MULTIPLIER` | `1.5` | Default multiplier for the AMPLIFY card mechanic — reads pending DoT × multiplier and fires as an HP burst WITHOUT consuming the DoT effects (DoT keeps ticking). |
+| `AMPLIFY_BURST_CAP` | `60` | Maximum HP burst from a single AMPLIFY play. |
+
+Cards that carry AMPLIFY: `crescendo-of-suffering` (heart, ×1.5, lv6) and
+`the-inevitable` (mind, ×2.0, lv10). The mechanic is distinct from RUPTURE which
+consumes DoTs; AMPLIFY is the build-then-detonate path.
+
+#### Conclusion sig constant (Conclusion rework)
+
+| Constant | Default | Description |
+|----------|---------|-------------|
+| `CONCLUDE_DMG_PER_STACK` | `2` | Damage dealt per stack of any active effect on the enemy when the Conclusion Signature Skill fires. `sig-conclusion` (BODY archetype capstone, cost 6) deals `CONCLUDE_DMG_PER_STACK × Σ(effect.intensity)` damage — the more intensely status-loaded the enemy, the harder Conclusion hits. |
+
 ## Pending
 
 The Spec 02 / 03 / 04 / 05 work this section used to track has
