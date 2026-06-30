@@ -90,7 +90,7 @@
   - suggested_fix: Add a "0.35.0 depth epic" annotation block to spec.md Contracts Combat row + bearings.md Combat group covering the 4 new constants; add a matching row to docs/combat.md API table.
   - source: critique
 
-- [ ] **[LOW] docs — Phase 167/168/Conclusion public exports absent from spec.md + docs/combat.md**
+- [x] **[LOW] docs — Phase 167/168/Conclusion public exports absent from spec.md + docs/combat.md** — resolved at `2605c8b` (iterate, 2026-06-30). Added Phase 167/168 sim metrics + AMPLIFY + Conclusion clause to spec.md Contracts Combat row; added '### Phase 167/168 — Sim status-engagement metrics + AMPLIFY mechanic + Conclusion sig' section to docs/combat.md with field tables for CombatSimStats extensions, AMPLIFY constants, and Conclusion constant. Doc-only; 2229 tests + type-check + lint + build green. Score: 3 × 9 / 10 = 2.7. Source: critique-99 (commit 5e526a1).
   - pass: critique-99 (commit 5e526a1)
   - area: docs
   - observation: `AMPLIFY_DEFAULT_MULTIPLIER`, `AMPLIFY_BURST_CAP` (Phase 168 amplify card mechanic, `src/index.ts:72`), `CONCLUDE_DMG_PER_STACK` (Conclusion sig-skill, `src/index.ts:138`), `CombatSimPolicyId` (type, `src/index.ts:159`), and the five extended `CombatSimStats` fields (`dotHpFraction`, `strikeFraction`, `mechanicBurstFraction`, `guardMitigatedFraction`, `avgActiveEffectsPerPhase` — Phase 167 status-engagement metrics, `src/Combat/combat.encounter.sim.ts:37–62`) are on the root barrel, on the public fixture (586 values / 396 types), and documented in `plan/bearings.md` Combat locked-contract group (Phase 168 AMPLIFY block at line 174) and CHANGELOG, but absent from `spec.md` Contracts Combat row and `docs/combat.md` API table. Same silent-accumulation pattern as passes 83–98.
