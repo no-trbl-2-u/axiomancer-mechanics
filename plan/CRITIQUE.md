@@ -115,7 +115,7 @@
   - suggested_fix: [user has not specified — iterate to determine]. Likely: rename the sig + give it a `conclude`/`concludeMultiplier` special-mechanic that sums (stacks × per-effect-kind multiplier) across the foe's active effects (a sibling to COMPOUND, which scales with the COUNT of distinct debuffs; Conclusion would scale with STACKS × per-kind weight). On-vision: another payoff that rewards a built-up status board.
   - source: user
 
-- [ ] **[MED] general — enemy difficulty should escalate over fight duration**
+- [x] **[MED] general — enemy difficulty should escalate over fight duration** — resolved at `c4ed36b` (iterate, 2026-06-30). Added `THREAT_ESCALATION_BOSS_MULT = 1.6` (exported tunable): boss/unique enemies' per-round escalation rate = `THREAT_ESCALATION_PER_ROUND × THREAT_ESCALATION_BOSS_MULT`, making dragging boss fights qualitatively more lethal. Normal/elite are byte-identical (rate × 1.0). 4 hermetic H4 cases in `combat.depth-epic.engine.test.ts`. Exported from root barrel; documented in spec.md + bearings.md + docs/combat.md. 2236 tests + type-check + lint + build green. Score: 6 × 5 / 10 + 0.5 = 3.5. Source: user-jot (2998af1).
   - pass: user-jot (commit 2998af14431b8bad07378d2c6b9612714a1de82d)
   - file: unspecified
   - category: design
