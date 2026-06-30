@@ -75,7 +75,7 @@
 
 ## Pending
 
-- [ ] **[MED] api — `CardSpecialMechanic` not exported under canonical name; only as deprecated `SkillSpecialMechanic`**
+- [x] **[MED] api — `CardSpecialMechanic` not exported under canonical name; only as deprecated `SkillSpecialMechanic`** — resolved at `c178043` (iterate, 2026-06-30). Added `CardSpecialMechanic` to canonical Skills `export type` block in `src/index.ts`; refreshed fixture (587 values / 397 types); added to spec.md Skills row + bearings.md Skills group. 2236 tests + type-check + lint + build + deploy:check green. Score: 8 × 9 / 10 = 7.2.
   - pass: critique-100 (commit 68eb750)
   - area: api
   - observation: `src/index.ts:255` `@deprecated` JSDoc block tells consumers "Use `Card`, `CardCategory`, …, `CardSpecialMechanic`" but `CardSpecialMechanic` is NOT exported under that name from the root barrel. Only `CardSpecialMechanic as SkillSpecialMechanic` appears (line 267) under the deprecated alias form. `src/Cards/index.ts:14` exports it correctly; the gap is in the root barrel. Consumers following migration guidance (`import type { CardSpecialMechanic } from 'axiomancer-mechanics'`) will get an undefined import — a silent migration breakage. Not listed in `spec.md` Contracts Skills row or `bearings.md` Skills group under the canonical name.
@@ -107,7 +107,7 @@
   - suggested_fix: Add two rows to the `docs/combat.md` API table under the Combat Utilities section: `isValidCombatAction(action)` (type-guard returning `action is CombatAction`) and `getEffectsResolutionOutcome(state)` (returns `{ outcome, details } | null` when status effects force combat resolution).
   - source: critique
 
-- [ ] **[LOW] docs — `CardSpecialMechanic` absent from spec.md + bearings.md under canonical name**
+- [x] **[LOW] docs — `CardSpecialMechanic` absent from spec.md + bearings.md under canonical name** — resolved at `c178043` (iterate, 2026-06-30). Added `CardSpecialMechanic` with union values to spec.md Skills row + bearings.md Skills group (bundled with MED api fix). Doc-only; 2236 tests + type-check + lint + build green. Score: 3 × 9 / 10 = 2.7.
   - pass: critique-100 (commit 68eb750)
   - area: docs
   - observation: `CardSpecialMechanic` (union type for card special mechanics — `'amplify' | 'rupture' | 'compound' | 'siphon' | 'barrier' | 'riposte' | 'execute'`; `src/Cards/types.ts:139`) is exported under the canonical name from `src/Cards/index.ts` (line 14) but absent from `spec.md` Contracts Skills row and `bearings.md` Skills group. The front-door docs only list `SkillSpecialMechanic` (the deprecated alias). New consumers reading spec.md or bearings.md will not find the canonical name. Consistent with the API barrel gap above (both findings share root cause: the de-conflation rename was not propagated to docs or the root barrel for this specific type).
