@@ -16,8 +16,6 @@ import { GameAction } from './actions.types';
 import { Character } from '../Character/types';
 import { Encounter, QuestLog } from '../World/types';
 import { Enemy } from '../Enemy/types';
-import { initializeCombat } from '../Combat/combat.reducer';
-import { determineCombatEnd } from '../Combat';
 import { applyMoralMeterScaling } from '../Combat/difficulty';
 import {
     useConsumable as useConsumableItem,
@@ -76,7 +74,6 @@ export function createNewGameState(): GameState {
             baseStats: { heart: 5, body: 5, mind: 5 },
         }),
         world: createStartingWorld(),
-        combat: null,
         quests: emptyQuestLog(),
         flags,
         moralMeter: 0,
@@ -198,37 +195,50 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
                 }
             }
             
+            // The store no longer drives combat — it only stages the (scaled)
+            // encounter. The Hazard-Pattern engine runs the fight outside the
+            // store; `END_COMBAT` consumes `currentEncounter` to grant rewards.
+            const scaledEncounter: Encounter = {
+                ...encounter,
+                enemies: [scaledEnemy, ...encounter.enemies.slice(1)],
+            };
             return {
                 ...state,
-                combat: initializeCombat(state.player, scaledEnemy),
-                currentEncounter: encounter,
+                currentEncounter: scaledEncounter,
             };
         }
 
         case 'END_COMBAT': {
-            const { combat } = state;
-            if (!combat) return state;
+            const encounter = state.currentEncounter;
+            if (!encounter) return state;
 
-            const combatEnd = determineCombatEnd(combat);
+            // The Hazard-Pattern combat driver reports the outcome; the store
+            // no longer derives it from a legacy combat snapshot. Default to
+            // `'flee'` (no grants) when the caller omits it.
             const outcome: 'victory' | 'defeat' | 'flee' | 'friendship' =
-                combatEnd === 'player' ? 'victory'
-                : combatEnd === 'ko' ? 'defeat'
-                : combatEnd === 'friendship' ? 'friendship'
-                : 'flee';
+                action.payload?.outcome ?? 'flee';
 
-            // Promote the combat-snapshot player back to root, restoring the
-            // root inventory for defeat / flee so combat mutations don't leak.
-            let nextPlayer: Character = (outcome === 'victory' || outcome === 'friendship')
-                ? combat.player
-                : { ...combat.player, inventory: state.player.inventory };
+            // The befriended / defeated foe is the encounter's lead enemy.
+            const foe: Enemy = encounter.enemies[0]!;
+
+            // Promote the driver's final player snapshot (post-fight HP /
+            // effects) when provided; restore the root inventory on defeat /
+            // flee so combat-side inventory mutations don't leak. When the
+            // caller omits `finalPlayer`, the root player is left untouched.
+            const finalPlayer = action.payload?.finalPlayer;
+            let nextPlayer: Character = finalPlayer
+                ? ((outcome === 'victory' || outcome === 'friendship')
+                    ? finalPlayer
+                    : { ...finalPlayer, inventory: state.player.inventory })
+                : state.player;
 
             let nextQuests: QuestLog = state.quests;
 
-            if ((outcome === 'victory' || outcome === 'friendship') && state.currentEncounter) {
+            if (outcome === 'victory' || outcome === 'friendship') {
                 const grantedLoot = action.payload?.grantedLoot
-                    ?? rollEncounterLoot(state.currentEncounter, () => getRng().random());
+                    ?? rollEncounterLoot(encounter, () => getRng().random());
                 const grantedXp = action.payload?.grantedXp
-                    ?? totalEncounterXp(state.currentEncounter);
+                    ?? totalEncounterXp(encounter);
 
                 let nextInventory = nextPlayer.inventory;
                 for (const drop of grantedLoot) {
@@ -240,7 +250,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
                     inventory: nextInventory,
                 };
                 // Advance any active `kill` objectives whose target matches.
-                for (const enemy of state.currentEncounter.enemies) {
+                for (const enemy of encounter.enemies) {
                     const kills = killObjectives(nextQuests, enemy.name);
                     for (const k of kills) {
                         const res = progressQuest(nextQuests, k.questName, k.objectiveId, 1);
@@ -265,7 +275,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
             // content can gate on the flag without engine work.
             let nextFlags = state.flags;
             if (outcome === 'friendship') {
-                const flag = combat.enemy.friendshipReward?.flagSet;
+                const flag = foe.friendshipReward?.flagSet;
                 if (flag && !nextFlags.includes(flag)) {
                     nextFlags = [...nextFlags, flag];
                 }
@@ -280,7 +290,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
             // shifts independently.
             let nextAlignment = state.philosophicalAlignment;
             if (outcome === 'friendship') {
-                const delta = combat.enemy.friendshipReward?.alignmentDelta;
+                const delta = foe.friendshipReward?.alignmentDelta;
                 if (delta) {
                     nextAlignment = applyAlignmentDelta(nextAlignment, delta);
                 }
@@ -293,7 +303,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
             // tradeoffs.
             let nextFactionReputations = state.factionReputations;
             if (outcome === 'friendship') {
-                const factionDeltas = combat.enemy.friendshipReward?.factionDeltas;
+                const factionDeltas = foe.friendshipReward?.factionDeltas;
                 if (factionDeltas) {
                     nextFactionReputations = applyFactionReputationDeltas(
                         nextFactionReputations,
@@ -310,7 +320,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
             // GH#65 ask 3.
             let nextCodex = state.codex;
             if (outcome === 'friendship') {
-                const entry = combat.enemy.journalEntry;
+                const entry = foe.journalEntry;
                 if (entry && !nextCodex.unlockedEntries.includes(entry.id)) {
                     nextCodex = {
                         ...nextCodex,
@@ -328,7 +338,6 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
                 philosophicalAlignment: nextAlignment,
                 factionReputations: nextFactionReputations,
                 codex: nextCodex,
-                combat: null,
                 currentEncounter: undefined,
             };
 
@@ -441,7 +450,6 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
                     effects: [],
                 },
                 world: createStartingWorld(),
-                combat: null,
                 quests: emptyQuestLog(),
                 flags: [],
                 moralMeter: state.moralMeter,

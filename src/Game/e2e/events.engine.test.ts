@@ -6,7 +6,6 @@ import type { GameEvent } from '../events';
 import { Disatree_01, TidepoolCrab } from '../../Enemy/enemy.library';
 import {
     isCombatStartedEvent,
-    isCombatRoundEvent,
     isCombatEndedEvent,
 } from '../events.utils';
 
@@ -38,7 +37,7 @@ describe('Events engine', () => {
         capturedEvents.length = 0; // Clear events
 
         // End combat
-        store.getState().endCombat();
+        store.getState().endCombat('victory');
 
         // Should emit combat:ended event
         expect(capturedEvents.length).toBeGreaterThan(0);
@@ -101,24 +100,7 @@ describe('Events engine', () => {
 
         expect(() => {
             store.getState().startCombat(Disatree_01);
-            store.getState().endCombat();
+            store.getState().endCombat('victory');
         }).not.toThrow();
-    });
-
-    // ────────────────────────────────────────────────────────────────────────
-    // `updateCombat` replaces the combat snapshot and emits a `combat:round`
-    // event so subscribers can re-render from the new state.
-    // ────────────────────────────────────────────────────────────────────────
-    it('updateCombat emits a combat:round event', () => {
-        const store = createGameStore(nullAdapter, undefined, events);
-        store.getState().startCombat(Disatree_01);
-        capturedEvents.length = 0;
-
-        const combat = store.getState().combat!;
-        store.getState().updateCombat(combat);
-
-        const roundEvt = capturedEvents.find(isCombatRoundEvent);
-        expect(roundEvt).toBeDefined();
-        expect(roundEvt!.payload.state.combat).toBeDefined();
     });
 });

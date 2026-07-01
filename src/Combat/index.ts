@@ -14,11 +14,9 @@
  * Round-resolution pure helpers also live here.
  */
 
-import { decideEnemyAction } from '../Enemy/enemy.logic';
-import { Enemy, BefriendabilityConfig } from '../Enemy/types';
+import { BefriendabilityConfig } from '../Enemy/types';
 import { FRIENDSHIP_COUNTER_MAX } from '../Game/game-mechanics.constants';
-import { CombatAction, CombatState, Stance } from './types';
-import { analyzeEffectsForResolution } from './effect-resolution';
+import { CombatState, Stance } from './types';
 
 export type {
     Stance, Action, Advantage, CritStyle, CombatAction, PlayerCombatAction,
@@ -67,28 +65,10 @@ export type {
 } from './combat-effects';
 export { calculateEnemyStatMultiplier, applyMoralMeterScaling } from './difficulty';
 
-// Phase 108 — Mercy choice functions and combat state management
-export {
-    initializeCombat, setPhase, setPlayerStance, setPlayerAction, 
-    appendLog, incrementFriendship, selectMercyChoice, endCombat
-} from './combat.reducer';
-
-/**
- * Determines an enemy's action for the round. Pure wrapper over
- * `decideEnemyAction(enemy, state?)` so the Combat module owns enemy-action
- * APIs.
- *
- * Spec 07 Q2: when a `CombatState` is supplied the enemy's strategy can
- * react to the player's HP / effects / last stance. Older callers that only
- * have the enemy in hand still work (strategies fall back to stateless
- * heuristics).
- */
-export function determineEnemyAction(
-    enemy: Enemy,
-    state?: CombatState,
-): CombatAction {
-    return decideEnemyAction(enemy, state);
-}
+// `CombatState` constructor — shared by the skill / effects / equipment engines
+// (and the Hazard-Pattern shim builds the same shape inline). The legacy
+// turn-based driver verbs that lived alongside it were removed.
+export { initializeCombat } from './combat.reducer';
 
 /**
  * Phase 68 — friendship-eligibility predicate. Returns true when the
@@ -98,9 +78,10 @@ export function determineEnemyAction(
  * Phase 36 mechanic (`friendshipCounter >= FRIENDSHIP_COUNTER_MAX`).
  *
  * Not exported from the public barrel — internal helper for
- * `determineCombatEnd` + `isCombatOngoing` so the two predicates stay in
- * lockstep. Callers outside the engine read combat-end state through
- * `determineCombatEnd`.
+ * `isBefriendAttemptEligible`, the explicit Befriend-attempt check the shared
+ * skill engine consults via `executeSkill`. (The legacy combat-end predicates
+ * that also consumed it — `determineCombatEnd` / `isCombatOngoing` /
+ * `isFriendshipEligible` — were removed with the legacy turn-based driver.)
  *
  * D5: `requiredStances` / `requiredSkillUse` derive from `state.log` rather
  * than separate tracking state on `CombatState`. The log already captures
@@ -156,64 +137,12 @@ export function isBefriendAttemptEligible(state: CombatState): boolean {
     return befriendabilityPredicatesPass(state, { requirePassiveCounter: false });
 }
 
-export function isFriendshipEligible(state: CombatState): boolean {
-    return state.friendshipResolutionAuthorized === true;
-}
-
-/**
- * Phase 125 — checks if status effects should force a combat resolution.
- * 
- * Returns the type of resolution effects should trigger:
- * - 'victory': DoT effects can finish the enemy 
- * - 'friendship': Enemy is saturated with control/debuff effects
- * - null: Effects insufficient for resolution
- */
-export function getEffectsResolutionOutcome(state: CombatState): 'victory' | 'friendship' | null {
-    const analysis = analyzeEffectsForResolution(state);
-    return analysis.shouldResolve ? analysis.outcomeType : null;
-}
-
-/** True while combat should continue (both alive and friendship not yet eligible). */
-export function isCombatOngoing(state: CombatState): boolean {
-    return state.active
-        && state.player.health > 0
-        && state.enemy.health > 0
-        && !isFriendshipEligible(state)
-        && getEffectsResolutionOutcome(state) === null;
-}
-
-/** Outcome of the encounter. `'ongoing'` while combat is still active. */
-export function determineCombatEnd(state: CombatState): 'player' | 'ko' | 'friendship' | 'ongoing' {
-    if (state.enemy.health <= 0) return 'player';
-    if (state.player.health <= 0) return 'ko';
-    if (isFriendshipEligible(state)) return 'friendship';
-    
-    // Phase 125 — check if effects should force resolution
-    const effectsOutcome = getEffectsResolutionOutcome(state);
-    if (effectsOutcome === 'victory') return 'player';
-    if (effectsOutcome === 'friendship') return 'friendship';
-    
-    return 'ongoing';
-}
-
-/** Returns true once a partial CombatAction has both stance and action filled in. */
-export function isValidCombatAction(action: Partial<CombatAction>): action is CombatAction {
-    return action.stance !== undefined && action.action !== undefined;
-}
-
 // Legacy export name retained for backward compatibility with any older code
 // that imported `applyDamage` and `healCharacter` separately.
 export { heal as healCharacter } from './health';
 
-// Phase 142 — Status effect resolution constants and interaction support
-export {
-    STATUS_RESOLUTION_DEBUFF_THRESHOLD,
-    STATUS_RESOLUTION_DOT_THRESHOLD,
-    STATUS_RESOLUTION_DOT_MAX_ROUNDS,
-    STATUS_ENGAGEMENT_FLOOR_PERCENT,
-    INTERACTION_AMPLIFICATION,
-    INTERACTION_PRIORITY
-} from './resolution.constants';
+// Phase 142 — effect-interaction amplification bounds (shared infrastructure).
+export { INTERACTION_AMPLIFICATION } from './resolution.constants';
 
 // ─── Spec 25 — Hazard-Pattern Combat ──────────────────────────────────────────
 // The card-and-dice combat driver. Ships alongside `resolveCombatRound`; the

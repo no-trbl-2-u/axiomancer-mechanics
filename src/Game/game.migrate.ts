@@ -260,7 +260,6 @@ function assertGameState(raw: unknown): GameState {
         || typeof r.runId !== 'string'
         || r.player == null
         || r.world == null
-        || !('combat' in r)
         || r.quests == null
         || !Array.isArray(r.flags)
         || typeof r.moralMeter !== 'number'

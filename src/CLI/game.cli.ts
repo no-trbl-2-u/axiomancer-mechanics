@@ -97,7 +97,7 @@ async function bootstrapStore(adapter: PersistenceAdapter): Promise<GameStoreHan
     return store;
 }
 
-async function pickTab(canFight: boolean): Promise<Tab> {
+async function pickTab(): Promise<Tab> {
     const tabs: Array<{ name: string; value: Tab }> = [
         { name: 'Map             — travel + resolve node events', value: 'map' },
         { name: 'Journal    — quests + alignment', value: 'journal' },
@@ -529,7 +529,6 @@ function loadTab(store: GameStoreHandle, snapshotAdapter: PersistenceAdapter | n
         version:    saved.version,
         player:     saved.player,
         world:      saved.world,
-        combat:     saved.combat,
         quests:     saved.quests,
         flags:      saved.flags,
         moralMeter: saved.moralMeter,
@@ -770,7 +769,7 @@ async function main(): Promise<void> {
 
     try {
         while (true) {
-            const tab = await pickTab(store.getState().combat !== null);
+            const tab = await pickTab();
             switch (tab) {
                 case 'map':       await mapTab(store);                       break;
                 case 'journal':   journalTab(store);                         break;

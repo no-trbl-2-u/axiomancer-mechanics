@@ -184,11 +184,6 @@ export function createEnemy(options: CreateEnemyOptions): Enemy {
     };
 }
 
-export {
-    randomLogic, decideEnemyAction,
-    aggressiveLogic, defensiveLogic, balancedLogic, strategicLogic, bossLogic,
-    counterStanceOf, weakestStanceOf,
-} from './enemy.logic';
 export { rollLoot, rollLootMany } from './loot';
 export type { LootRng } from './loot';
 export type {

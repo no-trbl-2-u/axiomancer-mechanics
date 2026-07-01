@@ -35,8 +35,6 @@
 import { createStore, StoreApi } from 'zustand/vanilla';
 import { Character } from '../Character/types';
 import { Enemy } from '../Enemy/types';
-import { CombatState } from '../Combat/types';
-import { isFriendshipEligible, getEffectsResolutionOutcome } from '../Combat';
 import { Encounter } from '../World/types';
 import {
     Item, Equipment, EquipmentSlot,
@@ -150,13 +148,23 @@ export interface GameActions {
     dispatch: (action: GameAction) => void;
 
     // ── Combat ───────────────────────────────────────────────────────────────
+    /**
+     * Stages an encounter for combat. Applies moral-meter / region-mercy
+     * scaling to the lead enemy and writes the result to `currentEncounter`.
+     * The fight itself is driven by the Hazard-Pattern engine outside the
+     * store; call `endCombat` with the reported outcome to grant rewards.
+     */
     startCombat: (target: Enemy | Encounter) => void;
     /**
-     * Replaces the in-progress combat snapshot (UI driver path). Emits a
-     * `combat:round` event so subscribers can re-render from the new snapshot.
+     * Resolves the staged encounter. The Hazard-Pattern combat driver reports
+     * the `outcome` and (optionally) the post-fight `finalPlayer` snapshot.
+     * Grants loot / XP / quest progress / friendship rewards accordingly and
+     * returns the after-action `CombatEndReport`.
      */
-    updateCombat: (combat: CombatState) => void;
-    endCombat: () => CombatEndReport;
+    endCombat: (
+        outcome: CombatEndReport['outcome'],
+        finalPlayer?: Character,
+    ) => CombatEndReport;
 
     // ── World / dialogue ─────────────────────────────────────────────────────
     moveToNode: (nodeId: string) => void;
@@ -286,8 +294,7 @@ export function createGameStore(
         // Core dispatch: run reducer → set → emit → autosave (gated).
         // Phase 51 (Spec 09 Q4): autosave only fires for the curated
         // DURABLE_ACTIONS set; UI-tier actions never write through. The
-        // direct `save()` verb below + `updateCombat()` keep their own
-        // unconditional writes.
+        // direct `save()` verb below keeps its own unconditional write.
         function dispatch(action: GameAction, extra?: { report?: CombatEndReport }): GameState {
             const prev = get();
             const next = gameReducer(prev, action);
@@ -299,12 +306,12 @@ export function createGameStore(
             // load (Spec 07).
             if (DURABLE_ACTIONS.has(action.type)) {
                 const {
-                    currentEncounter: _drop, version, runId, player, world, combat, quests, flags,
+                    currentEncounter: _drop, version, runId, player, world, quests, flags,
                     moralMeter, rngState, philosophicalAlignment,
                     lastSeenAlignmentCells, codex, regionConsequences, factionReputations,
                 } = next;
                 adapter.save({
-                    version, runId, player, world, combat, quests, flags,
+                    version, runId, player, world, quests, flags,
                     moralMeter, rngState, philosophicalAlignment,
                     lastSeenAlignmentCells, codex, regionConsequences, factionReputations,
                 });
@@ -322,59 +329,29 @@ export function createGameStore(
                 dispatch({ type: 'START_COMBAT', payload: { target } });
             },
 
-            updateCombat(combat) {
-                // Direct state edit — callers mutate the combat snapshot between
-                // rounds. Run autosave + event for parity.
-                set({ combat });
-                const next = get();
-                if (emitter) emitter.emit({
-                    type: 'combat:round',
-                    payload: {
-                        state: next,
-                    },
-                });
-                const {
-                    currentEncounter: _drop, version, runId, player, world, combat: cb, quests, flags,
-                    moralMeter, rngState, philosophicalAlignment,
-                    lastSeenAlignmentCells, codex, regionConsequences, factionReputations,
-                } = next;
-                adapter.save({
-                    version, runId, player, world, combat: cb, quests, flags,
-                    moralMeter, rngState, philosophicalAlignment,
-                    lastSeenAlignmentCells, codex, regionConsequences, factionReputations,
-                });
-            },
-
-            endCombat() {
+            endCombat(outcome, finalPlayer) {
                 const pre = get();
-                if (!pre.combat) {
+                const encounter = pre.currentEncounter;
+                if (!encounter) {
                     return { outcome: 'flee', xpGained: 0, loot: [] };
                 }
-                // Phase 125 — check for effects-based resolution first
-                const effectsOutcome = getEffectsResolutionOutcome(pre.combat);
-                const outcome: CombatEndReport['outcome'] =
-                    pre.combat.enemy.health <= 0 ? 'victory'
-                    : pre.combat.player.health <= 0 ? 'defeat'
-                    : effectsOutcome === 'victory' ? 'victory'
-                    : effectsOutcome === 'friendship' ? 'friendship'
-                    : isFriendshipEligible(pre.combat) ? 'friendship'
-                    : 'flee';
+                const foe = encounter.enemies[0]!;
 
                 let xpGained = 0;
                 let loot: Item[] = [];
-                if (outcome === 'victory' && pre.currentEncounter) {
-                    xpGained = totalEncounterXp(pre.currentEncounter);
-                    loot = rollEncounterLoot(pre.currentEncounter, () => getRng().random());
-                } else if (outcome === 'friendship' && pre.currentEncounter) {
+                if (outcome === 'victory') {
+                    xpGained = totalEncounterXp(encounter);
+                    loot = rollEncounterLoot(encounter, () => getRng().random());
+                } else if (outcome === 'friendship') {
                     // Phase 36 — friendship grants half the kill-win XP and the
                     // full loot table (consistent with the reducer treating
                     // friendship as a peaceful resolution rather than a flee).
-                    xpGained = Math.floor(totalEncounterXp(pre.currentEncounter) * 0.5);
-                    loot = rollEncounterLoot(pre.currentEncounter, () => getRng().random());
+                    xpGained = Math.floor(totalEncounterXp(encounter) * 0.5);
+                    loot = rollEncounterLoot(encounter, () => getRng().random());
                     // Phase 60 — per-enemy friendshipReward supplement. Items
                     // append to the weighted-loot roll; xpBonus adds on top of
                     // the half-XP base.
-                    const fr = pre.combat.enemy.friendshipReward;
+                    const fr = foe.friendshipReward;
                     if (fr) {
                         if (fr.items) loot = [...loot, ...fr.items];
                         if (fr.xpBonus) xpGained += fr.xpBonus;
@@ -390,8 +367,8 @@ export function createGameStore(
                 // delta to state.philosophicalAlignment under the dispatch
                 // below.
                 if (outcome === 'friendship') {
-                    const fr = pre.combat.enemy.friendshipReward;
-                    const entry = pre.combat.enemy.journalEntry;
+                    const fr = foe.friendshipReward;
+                    const entry = foe.journalEntry;
                     const codexAlreadyKnown = entry
                         ? pre.codex.unlockedEntries.includes(entry.id)
                         : true;
@@ -438,7 +415,10 @@ export function createGameStore(
                     }
                 }
                 dispatch(
-                    { type: 'END_COMBAT', payload: { grantedLoot: loot, grantedXp: xpGained } },
+                    {
+                        type: 'END_COMBAT',
+                        payload: { outcome, finalPlayer, grantedLoot: loot, grantedXp: xpGained },
+                    },
                     { report },
                 );
                 return report;
@@ -508,12 +488,12 @@ export function createGameStore(
             save() {
                 const next = get();
                 const {
-                    currentEncounter: _drop, version, runId, player, world, combat, quests, flags,
+                    currentEncounter: _drop, version, runId, player, world, quests, flags,
                     moralMeter, rngState, philosophicalAlignment,
                     lastSeenAlignmentCells, codex, regionConsequences, factionReputations,
                 } = next;
                 adapter.save({
-                    version, runId, player, world, combat, quests, flags,
+                    version, runId, player, world, quests, flags,
                     moralMeter, rngState, philosophicalAlignment,
                     lastSeenAlignmentCells, codex, regionConsequences, factionReputations,
                 });
@@ -548,11 +528,8 @@ export function createGameStore(
 export type { StoreApi };
 
 export const selectPlayer      = (s: GameStore): Character          => s.player;
-export const selectCombat      = (s: GameStore): CombatState | null => s.combat;
-export const selectIsInCombat  = (s: GameStore): boolean            => s.combat !== null;
+/** True while an encounter is staged (combat is driven outside the store). */
+export const selectIsInCombat  = (s: GameStore): boolean            => s.currentEncounter != null;
 export const selectInventory   = (s: GameStore): Item[]             => s.player.inventory;
 export const selectVersion     = (s: GameStore): number             => s.version;
 export const selectMoralMeter  = (s: GameStore): number             => s.moralMeter;
-
-// Backwards-compat alias.
-export const selectCombatState = selectCombat;

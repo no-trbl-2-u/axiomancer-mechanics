@@ -30,9 +30,7 @@ export type {
 
 // ─── Enemy ────────────────────────────────────────────────────────────────────
 export {
-    createEnemy, enemyStatBudget, randomLogic, decideEnemyAction,
-    aggressiveLogic, defensiveLogic, balancedLogic, strategicLogic, bossLogic,
-    counterStanceOf, weakestStanceOf,
+    createEnemy, enemyStatBudget,
     rollLoot, rollLootMany,
     DEFAULT_XP_BY_DIFFICULTY,
 } from './Enemy';
@@ -73,14 +71,13 @@ export {
     getDotAmplificationByEffect, getActiveDotTotal, getActiveDotAmplifications,
     resolveEffectApplication,
     calculateDamageResistance, getSkillDamageType,
-    determineEnemyAction, isCombatOngoing, determineCombatEnd,
-    getEffectsResolutionOutcome,
     healCharacter,
     calculateEnemyStatMultiplier, applyMoralMeterScaling,
-    // Phase 142 — Status effect resolution constants
-    STATUS_RESOLUTION_DEBUFF_THRESHOLD, STATUS_RESOLUTION_DOT_THRESHOLD,
-    STATUS_RESOLUTION_DOT_MAX_ROUNDS, STATUS_ENGAGEMENT_FLOOR_PERCENT,
-    INTERACTION_AMPLIFICATION, INTERACTION_PRIORITY,
+    // `CombatState` constructor — shared infrastructure for the skill / effects
+    // / equipment engines (the Hazard-Pattern shim builds the same shape).
+    initializeCombat,
+    // Phase 142 — effect-interaction amplification bounds (shared infrastructure).
+    INTERACTION_AMPLIFICATION,
 } from './Combat';
 export type {
     Stance, Action, Advantage, CritStyle, CombatAction, CombatPhase,
@@ -89,12 +86,6 @@ export type {
     // 0.34.0 status-depth epic — selector result types
     PendingDotEntry, ActiveDotEntry, ActiveDotAmplification,
 } from './Combat';
-
-// ─── Combat reducer ───────────────────────────────────────────────────────────
-export {
-    initializeCombat, setPhase, setPlayerStance, setPlayerAction,
-    appendLog, incrementFriendship, endCombat,
-} from './Combat/combat.reducer';
 
 // ─── Spec 25 — Hazard-Pattern Combat ──────────────────────────────────────────
 // Card-and-dice combat: HP is the sole win condition. Status effects erode HP
@@ -262,7 +253,7 @@ export type {
 export {
     createGameStore, createNewGameState, GAME_STATE_VERSION,
     gameReducer, migrate, createEventEmitter,
-    selectPlayer, selectCombat, selectCombatState, selectIsInCombat,
+    selectPlayer, selectIsInCombat,
     selectInventory, selectVersion, selectMoralMeter,
     nullAdapter,
     STAT_MULTIPLIERS, RESOURCE_MULTIPLIERS, EXPERIENCE_PER_LEVEL,
@@ -405,14 +396,14 @@ export type { Image } from './Utils/types';
 // ── Events ─────────────────────────────────────────────────────────────────
 export type {
     EnginePayload, TypedGameEvent,
-    TypedCombatStartedEvent, TypedCombatRoundEvent, TypedCombatEndedEvent,
+    TypedCombatStartedEvent, TypedCombatEndedEvent,
     TypedWorldMovedEvent, TypedWorldProcessedEvent,
     TypedLevelUpEvent, TypedInventoryChangedEvent,
     TypedDialogueAppliedEvent, TypedGameSavedEvent, TypedGameLoadedEvent,
 } from './Game/events.types';
 
 export {
-    isCombatStartedEvent, isCombatRoundEvent, isCombatEndedEvent,
+    isCombatStartedEvent, isCombatEndedEvent,
     isWorldMovedEvent, isWorldProcessedEvent,
     isLevelUpEvent, isInventoryChangedEvent,
     isDialogueAppliedEvent, isGameSavedEvent, isGameLoadedEvent,

@@ -12,6 +12,62 @@ deep imports are part of the supported surface.
 
 ## [Unreleased]
 
+## [0.37.0] — 2026-06-30
+
+Finishes the legacy turn-based combat removal that 0.36.0 began: decouples the
+game store / `GameState` from combat, prunes the remaining legacy scaffolding
+(the Pressure-Track resolution, the combat-end predicates, the turn-based enemy
+AI), and rips the last legacy references out of the CLI. Hazard-Pattern combat
+is the only combat system, and it now owns the encounter end-to-end — the store
+merely stages the encounter and grants rewards on the reported outcome. Pre-1.0
+minor bump carrying breaking public-API removals.
+
+### Changed
+
+- **Combat decoupled from the store** — `GameState` no longer carries a
+  `combat` field. The Hazard-Pattern engine drives the fight outside the store;
+  `START_COMBAT` only stages `currentEncounter` (still applying moral-meter and
+  region-mercy "open-minded" scaling to the lead enemy), and `END_COMBAT`
+  consumes `currentEncounter` to grant loot / XP / quest progress / friendship
+  rewards.
+- **`store.endCombat(outcome, finalPlayer?)`** — now takes the outcome
+  (`'victory' | 'defeat' | 'friendship' | 'flee'`) reported by the combat
+  driver and an optional post-fight player snapshot, instead of deriving the
+  outcome from a legacy combat snapshot. The returned `CombatEndReport` and all
+  reward semantics are unchanged.
+- **`selectIsInCombat` / `isCombatActive`** now narrow on `currentEncounter`.
+
+### Removed
+
+- **Store combat wiring** — the `GameState.combat` field, `store.updateCombat`,
+  the `combat:round` event (`TypedCombatRoundEvent`, `isCombatRoundEvent`), and
+  the `selectCombat` / `selectCombatState` selectors.
+- **Legacy combat-end model** — `determineCombatEnd`, `isCombatOngoing`,
+  `isFriendshipEligible`, `getEffectsResolutionOutcome`, `isValidCombatAction`,
+  the `effect-resolution` module (the removed two-Pressure-Track resolution),
+  and the now-dead `STATUS_RESOLUTION_*` / `STATUS_ENGAGEMENT_FLOOR_PERCENT` /
+  `INTERACTION_PRIORITY` constants.
+- **Legacy turn-based enemy AI** — `decideEnemyAction` / `determineEnemyAction`
+  and the `randomLogic` / `aggressiveLogic` / `defensiveLogic` / `balancedLogic`
+  / `strategicLogic` / `bossLogic` / `counterStanceOf` / `weakestStanceOf`
+  strategy exports (`src/Enemy/enemy.logic.ts`). Enemies still declare a
+  `logic` / `EnemyLogic` tag as data; the Hazard engine drives them via authored
+  threat sequences.
+- **Legacy combat-reducer driver verbs** — `setPhase`, `setPlayerStance`,
+  `setPlayerAction`, `appendLog`, the legacy `endCombat`, and the legacy
+  `selectMercyChoice`. The Hazard `selectEncounterMercyChoice` is unaffected.
+- **CLI** — the residual legacy-combat references in `game.cli.ts` (the staged
+  `combat` save field, the unused `canFight` tab gate). `combat.cli.ts` was
+  already solely the Hazard-Pattern driver.
+
+### Retained (shared infrastructure, not legacy)
+
+- `CombatState` and its member types stay — the Hazard-Pattern engine builds a
+  `CombatState` shim to drive the unchanged `executeSkill`. `initializeCombat`
+  remains as the shared `CombatState` constructor and `incrementFriendship` as
+  the Befriend bump the skill engine applies. The effects / skill / equipment
+  engines and `INTERACTION_AMPLIFICATION` are untouched.
+
 ## [0.36.0] — 2026-06-30
 
 Removes the legacy turn-based combat system and its balance tooling, de-tokenizes

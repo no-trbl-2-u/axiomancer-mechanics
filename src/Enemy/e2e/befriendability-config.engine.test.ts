@@ -1,19 +1,22 @@
 /**
  * Phase 68 — `BefriendabilityConfig` predicate hermetic coverage.
  *
- * Drives `isFriendshipEligible`, `determineCombatEnd`, and `isCombatOngoing`
- * (all in `src/Combat/index.ts`) through synthetic CombatState fixtures so
- * each predicate axis (rounds threshold, hpGate, requiredStances,
+ * Drives `isBefriendAttemptEligible` (in `src/Combat/index.ts`) through
+ * synthetic CombatState fixtures so each config axis (hpGate, requiredStances,
  * requiredSkillUse) is pinned in isolation, then in AND-composition.
  *
+ * The legacy combat-end predicates (`isFriendshipEligible`,
+ * `determineCombatEnd`, `isCombatOngoing`) and the passive both-defend counter
+ * threshold were removed with the legacy turn-based combat driver. The
+ * surviving surface is the explicit Befriend-attempt eligibility check, which
+ * the shared skill engine still consults via `executeSkill`.
+ *
  * Cases mirror the brief at `plan/phases/phase_68_befriendability_config.md`
- * D2 (semantics) + Unit 1's case list (8 cases).
+ * D2 (semantics) + Unit 1's case list.
  */
 
 import { describe, it, expect } from 'vitest';
-import {
-    isBefriendAttemptEligible, isFriendshipEligible, determineCombatEnd, isCombatOngoing,
-} from '../../Combat';
+import { isBefriendAttemptEligible } from '../../Combat';
 import { CombatState, BattleLogEntry, Stance } from '../../Combat/types';
 import { Enemy, BefriendabilityConfig } from '../types';
 import { createEnemy } from '../index';
@@ -96,27 +99,20 @@ function makeState(enemy: Enemy, overrides: Partial<CombatState> = {}): CombatSt
     };
 }
 
-describe('Phase 68 — BefriendabilityConfig predicate', () => {
+describe('Phase 68 — BefriendabilityConfig predicate (isBefriendAttemptEligible)', () => {
     describe('Case 1 — field absent', () => {
-        it('falls through to the Phase 36 mechanic exactly', () => {
+        it('is always attempt-eligible regardless of the passive counter', () => {
             const enemy = makeEnemy(undefined);
             const stateAtCap = makeState(enemy, { friendshipCounter: FRIENDSHIP_COUNTER_MAX });
             const stateBelow = makeState(enemy, { friendshipCounter: FRIENDSHIP_COUNTER_MAX - 1 });
 
             expect(isBefriendAttemptEligible(stateAtCap)).toBe(true);
-            expect(isFriendshipEligible(stateAtCap)).toBe(false);
-            expect(determineCombatEnd(stateAtCap)).toBe('ongoing');
-            expect(isCombatOngoing(stateAtCap)).toBe(true);
-
             expect(isBefriendAttemptEligible(stateBelow)).toBe(true);
-            expect(isFriendshipEligible(stateBelow)).toBe(false);
-            expect(determineCombatEnd(stateBelow)).toBe('ongoing');
-            expect(isCombatOngoing(stateBelow)).toBe(true);
         });
     });
 
     describe('Case 2 — defaultFallback escape hatch', () => {
-        it('treats other fields as no-ops and uses the Phase 36 cap', () => {
+        it('treats other fields as no-ops', () => {
             const enemy = makeEnemy({
                 defaultFallback: 'both-defend-cap',
                 hpGate: { belowPct: 0.1 },
@@ -126,34 +122,24 @@ describe('Phase 68 — BefriendabilityConfig predicate', () => {
             });
             expect(state.enemy.health).toBeGreaterThan(state.enemy.maxHealth * 0.1);
             expect(isBefriendAttemptEligible(state)).toBe(true);
-            expect(isFriendshipEligible(state)).toBe(false);
-            expect(determineCombatEnd(state)).toBe('ongoing');
         });
     });
 
     describe('Case 3 — hpGate', () => {
         it('blocks eligibility when enemy HP is above the threshold', () => {
             const enemy = makeEnemy({ hpGate: { belowPct: 0.4 } });
-            const state = makeState(enemy, {
-                friendshipCounter: FRIENDSHIP_COUNTER_MAX,
-            });
+            const state = makeState(enemy);
             const maxHp = state.enemy.maxHealth;
             state.enemy.health = Math.floor(maxHp * 0.5);
-            expect(isFriendshipEligible(state)).toBe(false);
-            expect(determineCombatEnd(state)).toBe('ongoing');
-            expect(isCombatOngoing(state)).toBe(true);
+            expect(isBefriendAttemptEligible(state)).toBe(false);
         });
 
         it('allows eligibility when enemy HP is at or below the threshold', () => {
             const enemy = makeEnemy({ hpGate: { belowPct: 0.4 } });
-            const state = makeState(enemy, {
-                friendshipCounter: FRIENDSHIP_COUNTER_MAX,
-            });
+            const state = makeState(enemy);
             const maxHp = state.enemy.maxHealth;
             state.enemy.health = Math.floor(maxHp * 0.3);
             expect(isBefriendAttemptEligible(state)).toBe(true);
-            expect(isFriendshipEligible(state)).toBe(false);
-            expect(determineCombatEnd(state)).toBe('ongoing');
         });
     });
 
@@ -161,30 +147,23 @@ describe('Phase 68 — BefriendabilityConfig predicate', () => {
         it('blocks eligibility when none of the named stances appear in the log', () => {
             const enemy = makeEnemy({ requiredStances: ['heart'] });
             const state = makeState(enemy, {
-                friendshipCounter: FRIENDSHIP_COUNTER_MAX,
                 log: [logEntry(1, 'body'), logEntry(2, 'mind')],
             });
-            expect(isFriendshipEligible(state)).toBe(false);
+            expect(isBefriendAttemptEligible(state)).toBe(false);
         });
 
         it('allows eligibility when at least one named stance appears in the log', () => {
             const enemy = makeEnemy({ requiredStances: ['heart'] });
             const state = makeState(enemy, {
-                friendshipCounter: FRIENDSHIP_COUNTER_MAX,
                 log: [logEntry(1, 'body'), logEntry(2, 'heart')],
             });
             expect(isBefriendAttemptEligible(state)).toBe(true);
-            expect(isFriendshipEligible(state)).toBe(false);
         });
 
         it('treats an empty list as no requirement', () => {
             const enemy = makeEnemy({ requiredStances: [] });
-            const state = makeState(enemy, {
-                friendshipCounter: FRIENDSHIP_COUNTER_MAX,
-                log: [],
-            });
+            const state = makeState(enemy, { log: [] });
             expect(isBefriendAttemptEligible(state)).toBe(true);
-            expect(isFriendshipEligible(state)).toBe(false);
         });
     });
 
@@ -192,32 +171,28 @@ describe('Phase 68 — BefriendabilityConfig predicate', () => {
         it('blocks eligibility when no listed skill ID was cast', () => {
             const enemy = makeEnemy({ requiredSkillUse: ['palm-strike'] });
             const state = makeState(enemy, {
-                friendshipCounter: FRIENDSHIP_COUNTER_MAX,
                 log: [logEntry(1, 'body', 'jab')],
             });
-            expect(isFriendshipEligible(state)).toBe(false);
+            expect(isBefriendAttemptEligible(state)).toBe(false);
         });
 
         it('allows eligibility when at least one listed skill ID was cast', () => {
             const enemy = makeEnemy({ requiredSkillUse: ['palm-strike'] });
             const state = makeState(enemy, {
-                friendshipCounter: FRIENDSHIP_COUNTER_MAX,
                 log: [logEntry(1, 'body'), logEntry(2, 'heart', 'palm-strike')],
             });
             expect(isBefriendAttemptEligible(state)).toBe(true);
-            expect(isFriendshipEligible(state)).toBe(false);
         });
 
         it('ignores log entries whose action is not "skill"', () => {
             const enemy = makeEnemy({ requiredSkillUse: ['palm-strike'] });
             const state = makeState(enemy, {
-                friendshipCounter: FRIENDSHIP_COUNTER_MAX,
                 log: [{
                     ...logEntry(1, 'heart'),
                     playerAction: { stance: 'heart', action: 'attack', skillId: 'palm-strike' },
                 }],
             });
-            expect(isFriendshipEligible(state)).toBe(false);
+            expect(isBefriendAttemptEligible(state)).toBe(false);
         });
     });
 
@@ -232,69 +207,32 @@ describe('Phase 68 — BefriendabilityConfig predicate', () => {
         function passingState(): CombatState {
             const enemy = makeEnemy(fullConfig);
             const state = makeState(enemy, {
-                friendshipCounter: 5,
                 log: [logEntry(1, 'heart', 'palm-strike')],
             });
             state.enemy.health = Math.floor(state.enemy.maxHealth * 0.3);
             return state;
         }
 
-        it('eligibility passes when all predicates pass', () => {
+        it('eligibility passes when all attempt predicates pass', () => {
             expect(isBefriendAttemptEligible(passingState())).toBe(true);
-            expect(isFriendshipEligible(passingState())).toBe(false);
-        });
-
-        it('fails when roundsThreshold not yet reached', () => {
-            const state = passingState();
-            state.friendshipCounter = 4;
-            expect(isFriendshipEligible(state)).toBe(false);
         });
 
         it('fails when hpGate not reached', () => {
             const state = passingState();
             state.enemy.health = state.enemy.maxHealth;
-            expect(isFriendshipEligible(state)).toBe(false);
+            expect(isBefriendAttemptEligible(state)).toBe(false);
         });
 
         it('fails when requiredStances not satisfied', () => {
             const state = passingState();
             state.log = [logEntry(1, 'body', 'palm-strike')];
-            expect(isFriendshipEligible(state)).toBe(false);
+            expect(isBefriendAttemptEligible(state)).toBe(false);
         });
 
         it('fails when requiredSkillUse not satisfied', () => {
             const state = passingState();
             state.log = [logEntry(1, 'heart')];
-            expect(isFriendshipEligible(state)).toBe(false);
-        });
-    });
-
-    describe('Case 7 — roundsThreshold override', () => {
-        it('lowers the threshold from the global default', () => {
-            const enemy = makeEnemy({ roundsThreshold: 2 });
-            const stateAtThreshold = makeState(enemy, { friendshipCounter: 2 });
-            const stateBelow = makeState(enemy, { friendshipCounter: 1 });
-            expect(isBefriendAttemptEligible(stateAtThreshold)).toBe(true);
-            expect(isBefriendAttemptEligible(stateBelow)).toBe(true);
-            expect(isFriendshipEligible(stateAtThreshold)).toBe(false);
-            expect(isFriendshipEligible(stateBelow)).toBe(false);
-        });
-    });
-
-    describe('Case 8 — isCombatOngoing and determineCombatEnd agree', () => {
-        it('stays in lockstep when config gates friendship past the global cap', () => {
-            const enemy = makeEnemy({ hpGate: { belowPct: 0.4 } });
-            const state = makeState(enemy, {
-                friendshipCounter: FRIENDSHIP_COUNTER_MAX,
-            });
-            state.enemy.health = state.enemy.maxHealth;
-            expect(isCombatOngoing(state)).toBe(true);
-            expect(determineCombatEnd(state)).toBe('ongoing');
-
-            state.enemy.health = Math.floor(state.enemy.maxHealth * 0.2);
-            expect(isBefriendAttemptEligible(state)).toBe(true);
-            expect(isCombatOngoing(state)).toBe(true);
-            expect(determineCombatEnd(state)).toBe('ongoing');
+            expect(isBefriendAttemptEligible(state)).toBe(false);
         });
     });
 });

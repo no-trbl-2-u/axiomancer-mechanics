@@ -76,9 +76,7 @@ describe('Spec 08 e2e — fishing-village exploration loop', () => {
         expect(bossRes.event.encounter.enemies[0].name).toBe('The Coastal Tyrant');
         const xpBefore = store.getState().player.experience;
         store.getState().startCombat(bossRes.event.encounter);
-        const bossCombat = store.getState().combat!;
-        store.setState({ combat: { ...bossCombat, enemy: { ...bossCombat.enemy, health: 0 } } });
-        const bossReport = store.getState().endCombat();
+        const bossReport = store.getState().endCombat('victory');
         expect(bossReport.outcome).toBe('victory');
         expect(store.getState().player.experience).toBeGreaterThan(xpBefore);
 

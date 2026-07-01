@@ -270,11 +270,9 @@ export interface Enemy {
     effects: ActiveEffect[];
     /**
      * Phase 45 — per-enemy pin on the 3-axis philosophical alignment cube.
-     * Optional; legacy enemies without a pin behave exactly as before.
-     * When set, `decideEnemyAction` applies an outlook-driven bias on top of
-     * the per-strategy decision (pessimistic enemies sometimes defend when
-     * they would attack; optimistic enemies sometimes attack when they would
-     * defend). See `docs/enemy.md` "Alignment-driven AI tuning".
+     * Optional; enemies without a pin behave exactly as before. Consumed by
+     * dialogue / alignment surfaces and (historically) by the legacy
+     * turn-based AI's outlook bias, which was removed with that combat driver.
      */
     philosophicalAlignment?: PhilosophicalAlignment;
     /**

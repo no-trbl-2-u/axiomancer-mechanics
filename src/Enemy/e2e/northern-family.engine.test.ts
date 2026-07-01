@@ -6,32 +6,15 @@
  * comprehensive journal/aftermath content.
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
-import { createCharacter } from '../../Character';
-import { initializeCombat } from '../../Combat/combat.reducer';
-import { decideEnemyAction } from '../enemy.logic';
+import { describe, it, expect } from 'vitest';
 import { bucketAxis } from '../../Philosophy';
-import { mockSequentialRng, mockAlternatingRng } from '../../test-utils/rng';
 import {
     ThornedSentinel, PackleaderWolf, WhisperingOak,
     FrostboundHunter, MistwalkerShade, VerdantProtector,
     NightmareStag, TheForestMind, EternalAutumn, ShadowOfTheFirst
 } from '../enemy.library';
-import type { CombatState } from '../../Combat/types';
 
 describe('Phase 114: Northern-forest enemy family', () => {
-    let player: ReturnType<typeof createCharacter>;
-    let combatState: CombatState;
-
-    beforeEach(() => {
-        player = createCharacter({
-            name: 'Test Player',
-            level: 5,
-            baseStats: { body: 5, mind: 5, heart: 5 },
-        });
-        combatState = initializeCombat(player, ThornedSentinel);
-    });
-
     describe('Enemy definitions and distribution', () => {
         it('creates 10 enemies with correct difficulty distribution', () => {
             const normalEnemies = [ThornedSentinel, PackleaderWolf, WhisperingOak];
@@ -122,39 +105,10 @@ describe('Phase 114: Northern-forest enemy family', () => {
         });
     });
 
-    describe('AI behavior diversity', () => {
-        beforeEach(() => {
-            mockSequentialRng(0.5);
-        });
-
-        it('demonstrates strategic behavior patterns', () => {
-            // Test strategic enemies like WhisperingOak and FrostboundHunter
-            const strategicAction = decideEnemyAction(WhisperingOak, combatState);
-            expect(['attack', 'defend', 'skill']).toContain(strategicAction.action);
-            expect(['heart', 'body', 'mind']).toContain(strategicAction.stance);
-        });
-
-        it('shows defensive territorial behavior from ThornedSentinel', () => {
-            mockAlternatingRng();
-            // ThornedSentinel uses defensive logic
-            const action = decideEnemyAction(ThornedSentinel, combatState);
-            
-            // Defensive enemies defend by default unless HP is very low
-            expect(['attack', 'defend']).toContain(action.action);
-            expect(['heart', 'body', 'mind']).toContain(action.stance);
-        });
-
-        it('demonstrates boss AI patterns for high-tier enemies', () => {
-            const bossAction = decideEnemyAction(NightmareStag, combatState);
-            expect(['attack', 'defend', 'skill']).toContain(bossAction.action);
-            
-            // Boss logic should be deterministic based on round
-            const round2State = { ...combatState, round: 2 };
-            const bossAction2 = decideEnemyAction(TheForestMind, round2State);
-            expect(bossAction2).toBeDefined();
-            expect(['attack', 'defend', 'skill']).toContain(bossAction2.action);
-        });
-    });
+    // The Spec 07 turn-based AI behavior tests (decideEnemyAction over
+    // defensive/strategic/boss strategies) were removed with the legacy combat
+    // driver. Each enemy still declares a `logic` tag (asserted as data above);
+    // the Hazard-Pattern engine drives behavior via authored threat sequences.
 
     describe('Befriendability configurations', () => {
         it('applies enhanced configs for elite and boss tiers', () => {

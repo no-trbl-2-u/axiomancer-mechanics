@@ -1,5 +1,16 @@
 /**
- * Combat reducer — pure state transitions over CombatState.
+ * Combat state factory + the one reducer the shared skill engine still uses.
+ *
+ * The legacy turn-based combat *driver* (round resolution, stance/action
+ * progression, the battle log, the Pressure-Track win model) was removed.
+ * What remains is `CombatState` — the state shape the Hazard-Pattern engine
+ * builds as a shim to drive the shared `executeSkill` (see `combat.engine.ts`)
+ * — plus:
+ *   - `initializeCombat`: the canonical `CombatState` constructor. Used by the
+ *     skill / effects / equipment engines (and their tests) to build a fresh
+ *     combat state with deep-cloned combatants and equipment-seeded resources.
+ *   - `incrementFriendship`: the friendship-counter bump `executeSkill` applies
+ *     on a successful Befriend.
  */
 
 import { Character } from '../Character/types';
@@ -10,9 +21,7 @@ import { aggregateSetStartTokens, getActiveSetPassiveEffectIds } from '../Items/
 import { lookupEffect } from '../Effects';
 import type { ActiveEffect } from '../Effects/types';
 import type { CombatResources } from '../Cards/types';
-import {
-    Stance, Action, CombatPhase, CombatState, BattleLogEntry,
-} from './types';
+import { CombatState } from './types';
 
 /**
  * Builds a fresh CombatState. Combatants are deep-cloned so combat
@@ -86,68 +95,13 @@ export function initializeCombat(player: Character, enemy: Enemy): CombatState {
     };
 }
 
-export function setPhase(state: CombatState, phase: CombatPhase): CombatState {
-    return { ...state, phase };
-}
-
-export function setPlayerStance(state: CombatState, stance: Stance): CombatState {
-    return { ...state, playerChoice: { ...state.playerChoice, stance } };
-}
-
-export function setPlayerAction(state: CombatState, action: Action): CombatState {
-    return { ...state, playerChoice: { ...state.playerChoice, action } };
-}
-
-/** Phase 108 — Handle mercy choice selection from Befriend success */
-export function selectMercyChoice(state: CombatState, choice: 'spare' | 'exploit'): CombatState {
-    return {
-        ...state,
-        playerChoice: { stance: 'heart', action: choice },
-        mercyChoiceActive: false,
-        ...(choice === 'spare' ? { friendshipResolutionAuthorized: true } : {}),
-        phase: 'resolving',
-    };
-}
-
-export function appendLog(state: CombatState, entry: BattleLogEntry): CombatState {
-    return { ...state, log: [...state.log, entry] };
-}
-
 /**
  * Increments the friendship counter on a `CombatState`.
  *
- * **Two paths to the same state mutation, by design.** This reducer is the
- * canonical public-API entry point for external consumers (UIs, alternate
- * drivers) that want to drive a friendship-counter shift through the
- * standard `state → state` reducer surface. **The engine's own combat
- * resolver does NOT call this** — `src/Combat/phases/scenario.ts`
- * (`runScenarioPhase`) increments a local `friendshipCounter` variable
- * inline alongside an events.push emission during the both-defend branch.
- * The local-increment pattern is appropriate inside the resolver because
- * it operates on per-round intermediates (player / enemy / friendshipCounter /
- * combatResources) that are folded into the returned `CombatState` at the
- * round's end; constructing + tearing down a full state for the reducer
- * would add overhead for what's a single integer bump.
- *
- * If you're integrating outside the resolver — driving the counter from
- * a UI dispatch, building a tooling shim, or testing the state-shape
- * invariant — use this reducer. If you're modifying the round-resolution
- * pipeline, follow the inline pattern in `scenario.ts:264-270`.
+ * Used by the shared skill engine (`executeSkill`) when a Befriend attempt
+ * lands — the Hazard-Pattern engine drives `executeSkill` against a
+ * `CombatState` shim, so this bump still fires inside the new combat system.
  */
 export function incrementFriendship(state: CombatState): CombatState {
     return { ...state, friendshipCounter: state.friendshipCounter + 1 };
 }
-
-/** Marks combat as ended. The reason is encoded in `determineCombatEnd(state)`. */
-export function endCombat(state: CombatState): CombatState {
-    return { ...state, active: false, phase: 'ended' };
-}
-
-// Legacy aliases retained on the barrel (`src/index.ts`) for backwards
-// compatibility with external consumers. The three end-variants all dispatch
-// to `endCombat` — the actual outcome is computed by `determineCombatEnd(state)`,
-// so calling `endCombatPlayerDefeat(state)` does NOT mark a defeat; treat the
-// names as historical noise and prefer `endCombat` in new code. The two
-// non-barrel aliases (`updateCombatPhase`, `addBattleLogEntry`) had zero
-// in-repo callers and were dropped at the Phase 35 follow-up iterate pass.
-
