@@ -24,7 +24,7 @@
  */
 
 import fs from 'fs';
-import { parseArgv, prompt, emit, log, logState, setIoMode, setOutputMode, setStateLogPath } from './io';
+import { parseArgv, prompt, emit, log, logState, setIoMode, setOutputMode, setStateLogPath, type CliFlags } from './io';
 
 import { createCharacter } from '../Character';
 import { ENEMY_REGISTRY, EnemyLibrary, type EnemySlug } from '../Enemy/enemy.library';
@@ -52,6 +52,7 @@ import { isConsumable } from '../Items/types';
 import { buyItem, sellItem, defaultSellPrice } from '../Items/shop.reducer';
 import { getConsumableById } from '../Items/consumable.library';
 import { bucketAxis, getAlignmentCell } from '../Philosophy';
+import { runHazardCombatCliEncounter, type CombatAutoPolicyId } from './combat.cli';
 
 type Tab = 'map' | 'journal' | 'skills' | 'codex' | 'inventory' | 'character' | 'dev' | 'reset' | 'save' | 'load' | 'quit';
 
@@ -117,7 +118,58 @@ async function pickTab(): Promise<Tab> {
     return tab;
 }
 
-async function mapTab(store: GameStoreHandle): Promise<void> {
+
+function asCombatPolicy(value: string | undefined): CombatAutoPolicyId {
+    if (value === 'naive' || value === 'safe' || value === 'aggressive' || value === 'status') return value;
+    if (value !== undefined) throw new Error(`Unknown --combat-policy '${value}'. Use naive|safe|aggressive|status.`);
+    return 'status';
+}
+
+async function moveAndResolveMapNode(store: GameStoreHandle, target: string, flags: CliFlags): Promise<void> {
+    const state = store.getState();
+    const current = state.world.currentMap.currentNode;
+    const def = getMapDefinition(state.world.currentMap.continent, state.world.currentMap.name);
+    const node = def.nodes.find(n => n.id === current);
+    const reachable = (node?.connectedNodes ?? []).filter(id => state.world.currentMap.availableNodes.includes(id));
+    if (!reachable.includes(target)) {
+        throw new Error(`Route target '${target}' is not reachable from '${current}'. Reachable: ${reachable.join(', ') || '(none)'}`);
+    }
+
+    const beforeMove = store.getState();
+    store.getState().moveToNode(target);
+    log(`Moved to ${target}.`);
+    logState('moveToNode', beforeMove, store.getState(), { target });
+
+    const before = store.getState();
+    const result = resolveMapEvent(before);
+    store.setState({
+        player: result.state.player,
+        world:  result.state.world,
+        quests: result.state.quests,
+        flags:  result.state.flags,
+    });
+    logState('resolveMapEvent', before, store.getState(), result.event);
+    log(describeResolvedEvent(result.event));
+
+    if (result.event.kind === 'encounter') {
+        const enemy = result.event.encounter.enemies[0];
+        if (!enemy) throw new Error(`Encounter at '${target}' had no enemy.`);
+        await runHazardCombatCliEncounter({
+            enemy,
+            presetId: 'apprentice',
+            seed: flags.combatSeed,
+            auto: flags.autoCombat || flags.route !== undefined || flags.scriptPath !== undefined || flags.stdin,
+            policy: asCombatPolicy(flags.combatPolicy),
+            maxTurns: flags.combatMaxTurns ?? 20,
+        });
+    }
+
+    if (result.event.kind === 'village' && result.event.shop && result.event.shop.wares.length > 0) {
+        await shopLoop(store, result.event.shop);
+    }
+}
+
+async function mapTab(store: GameStoreHandle, flags: CliFlags): Promise<void> {
     const state   = store.getState();
     const current = state.world.currentMap.currentNode;
     const def     = getMapDefinition(state.world.currentMap.continent, state.world.currentMap.name);
@@ -148,36 +200,7 @@ async function mapTab(store: GameStoreHandle): Promise<void> {
     ]);
     if (!target) return;
 
-    const beforeMove = store.getState();
-    store.getState().moveToNode(target);
-    log(`Moved to ${target}.`);
-    logState('moveToNode', beforeMove, store.getState(), { target });
-
-    // Spec 23 — resolve the node's MapEvent from the registered pools.
-    const before = store.getState();
-    const result = resolveMapEvent(before);
-    store.setState({
-        player: result.state.player,
-        world:  result.state.world,
-        quests: result.state.quests,
-        flags:  result.state.flags,
-    });
-    logState('resolveMapEvent', before, store.getState(), result.event);
-    log(describeResolvedEvent(result.event));
-
-    if (result.event.kind === 'encounter') {
-        // The map loop only stages the encounter into combat state. The
-        // Hazard-Pattern combat driver runs standalone via `npm run combat`.
-        store.getState().startCombat(result.event.encounter);
-        log('Encounter staged. Run the Hazard-Pattern combat CLI: npm run combat');
-    }
-
-    // Phase 37 — village with a shop opens a buy/sell loop. Logic stays in
-    // the reducers (`buyItem` / `sellItem`); this block only prompts and
-    // dispatches.
-    if (result.event.kind === 'village' && result.event.shop && result.event.shop.wares.length > 0) {
-        await shopLoop(store, result.event.shop);
-    }
+    await moveAndResolveMapNode(store, target, flags);
 }
 
 function describeResolvedEvent(event: ResolvedEvent): string {
@@ -687,9 +710,7 @@ async function devTab(store: GameStoreHandle): Promise<void> {
     }
 }
 
-async function main(): Promise<void> {
-    const rawArgs = process.argv.slice(2);
-
+export async function runGameCli(rawArgs = process.argv.slice(2)): Promise<void> {
     // Subcommand: `npm run game -- combat [flags]` (Phase 165) hands off to
     // the new Hazard-style combat agentic driver. This is the NEW combat path.
     if (rawArgs[0] === 'combat') {
@@ -767,11 +788,19 @@ async function main(): Promise<void> {
 
     const store = await bootstrapStore(nullAdapter);
 
+    if (flags.route && flags.route.length > 0) {
+        for (const target of flags.route) {
+            await moveAndResolveMapNode(store, target, flags);
+        }
+        emit({ type: 'cli:exit', payload: { reason: 'route-complete', route: flags.route } });
+        return;
+    }
+
     try {
         while (true) {
             const tab = await pickTab();
             switch (tab) {
-                case 'map':       await mapTab(store);                       break;
+                case 'map':       await mapTab(store, flags);                  break;
                 case 'journal':   journalTab(store);                         break;
                 case 'skills':    skillsTab(store);                          break;
                 case 'codex':     codexTab(store);                           break;
@@ -793,4 +822,10 @@ async function main(): Promise<void> {
     }
 }
 
-main();
+if (require.main === module) {
+    runGameCli().catch(err => {
+        // eslint-disable-next-line no-console
+        console.error(err);
+        process.exitCode = 1;
+    });
+}

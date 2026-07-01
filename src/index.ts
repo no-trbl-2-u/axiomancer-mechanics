@@ -101,7 +101,7 @@ export {
     COMBAT_DECK_PRESETS, COMBAT_DECK_PRESET_ORDER, listDeckPresets, getDeckPreset, buildPresetDeck,
     getThreatSequence, generateDefaultThreatSequence,
     AUTHORED_THREAT_ENEMY_IDS,
-    simulateHazardPatternCombat,
+    simulateHazardPatternCombat, runHazardCombatAutoEncounter,
     SYNTHETIC_CARD_IDS, isSyntheticCard, GOLD_CARD_IDS, isGoldCard,
     // Spec 26 / 26b — stance draft, hidden read, Conviction, Signature Skills
     TURN_DICE_COUNT, rollTurnDice, dieHasStance,
@@ -137,6 +137,7 @@ export type {
     CombatThreatMark, CombatPhaseResult, CombatOutcome, CombatEvent,
     CombatSummary, CombatAttributionRow, LandedEffect,
     CombatSimStats, CombatSimPolicyId,
+    HazardAutoPolicyId, HazardCombatAutoOptions, HazardCombatAutoResult,
     CombatIntentType, CombatReadResult,
     SignatureSkill, SignatureSkillId, SignatureSkillKind, PlayerArchetype,
     CombatDeckPreset, CombatDeckFocus,

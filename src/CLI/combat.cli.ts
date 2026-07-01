@@ -58,6 +58,8 @@ import type {
 import { ENEMY_REGISTRY } from '../Enemy/enemy.library';
 import type { EnemySlug } from '../Enemy/enemy.library';
 import { getPresetById, buildCharacterFromPreset } from '../Character';
+import type { Character } from '../Character/types';
+import type { Enemy } from '../Enemy/types';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -74,6 +76,23 @@ export interface CombatCliFlags {
     stdin: boolean;
     jsonEvents: boolean;
     stateLogPath?: string;
+}
+
+
+export interface RunHazardCombatCliOptions {
+    enemy: Enemy;
+    player?: Character;
+    presetId?: string;
+    seed?: number;
+    auto?: boolean;
+    policy?: CombatAutoPolicyId;
+    maxTurns?: number;
+}
+
+export interface RunHazardCombatCliResult {
+    state: CombatEncounterState;
+    outcome: CombatOutcome | null;
+    summary: ReturnType<typeof buildCombatSummary>;
 }
 
 // ── Argv parsers ─────────────────────────────────────────────────────────────
@@ -442,54 +461,41 @@ async function autoHazardCombatLoop(
 
 // ── Main entry points ─────────────────────────────────────────────────────────
 
-/** Run the new Hazard-style combat CLI. */
-export async function runCombatCli(rawArgs: string[]): Promise<void> {
-    const flags = parseCombatArgv(rawArgs);
-
-    if (flags.jsonEvents) setOutputMode('json');
-    if (flags.scriptPath) {
-        const fs = await import('fs');
-        const raw = fs.readFileSync(flags.scriptPath, 'utf-8');
-        const answers = JSON.parse(raw);
-        if (!Array.isArray(answers)) throw new Error('--script JSON must be a top-level array.');
-        setIoMode({ kind: 'script', answers });
-    } else if (flags.stdin) {
-        setIoMode({ kind: 'stdin' });
+/**
+ * Run a Hazard-Pattern combat encounter from an already-resolved enemy.
+ * This is the reusable map/mobile handoff surface; `runCombatCli` is only an
+ * argv wrapper around it.
+ */
+export async function runHazardCombatCliEncounter(
+    options: RunHazardCombatCliOptions,
+): Promise<RunHazardCombatCliResult> {
+    const presetId = options.presetId ?? 'apprentice';
+    const preset = getPresetById(presetId);
+    if (!preset && !options.player) {
+        throw new Error(`Unknown preset: '${presetId}'. Try: apprentice, wanderer, sage`);
     }
-    if (flags.stateLogPath) setStateLogPath(flags.stateLogPath);
-
-    const enemyDef = ENEMY_REGISTRY[flags.enemySlug as EnemySlug];
-    if (!enemyDef) {
-        const valid = Object.keys(ENEMY_REGISTRY).join(', ');
-        throw new Error(`Unknown enemy slug: '${flags.enemySlug}'. Valid: ${valid}`);
-    }
-
-    const preset = getPresetById(flags.presetId);
-    if (!preset) {
-        throw new Error(`Unknown preset: '${flags.presetId}'. Try: apprentice, wanderer, sage`);
-    }
-    const player = buildCharacterFromPreset(preset);
+    const player = options.player ?? buildCharacterFromPreset(preset!);
+    const flags: CombatCliFlags = {
+        enemySlug: '',
+        presetId,
+        seed: options.seed,
+        auto: options.auto ?? false,
+        policy: options.policy ?? 'status',
+        maxTurns: options.maxTurns ?? 8,
+        stdin: false,
+        jsonEvents: false,
+    };
 
     log(`\nHazard-style Combat — new engine (Phase 165)`);
-    log(`Player: ${player.name} (${flags.presetId})  HP ${player.health}/${player.maxHealth}`);
-    log(`Enemy:  ${enemyDef.name}  HP ${enemyDef.maxHealth}`);
+    log(`Player: ${player.name} (${presetId})  HP ${player.health}/${player.maxHealth}`);
+    log(`Enemy:  ${options.enemy.name}  HP ${options.enemy.maxHealth}`);
     log(`Policy: ${flags.auto ? flags.policy : 'interactive'}  Seed: ${flags.seed ?? 'random'}\n`);
 
-    const enc = initializeCombatEncounter(player, enemyDef, undefined, flags.seed);
+    const enc = initializeCombatEncounter(player, options.enemy, undefined, flags.seed);
+    const final = flags.auto
+        ? await autoHazardCombatLoop(enc, flags)
+        : await interactiveHazardCombatLoop(enc, flags);
 
-    let final: CombatEncounterState;
-    if (flags.auto || flags.scriptPath || flags.stdin) {
-        if (!flags.auto && (flags.scriptPath || flags.stdin)) {
-            // Script/stdin mode: interactive prompts satisfied by injected answers.
-            final = await interactiveHazardCombatLoop(enc, flags);
-        } else {
-            final = await autoHazardCombatLoop(enc, flags);
-        }
-    } else {
-        final = await interactiveHazardCombatLoop(enc, flags);
-    }
-
-    // Outcome + summary.
     const summary = buildCombatSummary(final);
     const outcomeLabel: Record<CombatOutcome, string> = {
         victory: 'Victory',
@@ -516,4 +522,38 @@ export async function runCombatCli(rawArgs: string[]): Promise<void> {
             log(`    ${row.name}: ${row.damageDealt} dmg (${row.dotDamage} DoT) over ${row.phases} phases`);
         }
     }
+
+    return { state: final, outcome: final.finalOutcome ?? null, summary };
+}
+
+/** Run the new Hazard-style combat CLI. */
+export async function runCombatCli(rawArgs: string[]): Promise<void> {
+    const flags = parseCombatArgv(rawArgs);
+
+    if (flags.jsonEvents) setOutputMode('json');
+    if (flags.scriptPath) {
+        const fs = await import('fs');
+        const raw = fs.readFileSync(flags.scriptPath, 'utf-8');
+        const answers = JSON.parse(raw);
+        if (!Array.isArray(answers)) throw new Error('--script JSON must be a top-level array.');
+        setIoMode({ kind: 'script', answers });
+    } else if (flags.stdin) {
+        setIoMode({ kind: 'stdin' });
+    }
+    if (flags.stateLogPath) setStateLogPath(flags.stateLogPath);
+
+    const enemyDef = ENEMY_REGISTRY[flags.enemySlug as EnemySlug];
+    if (!enemyDef) {
+        const valid = Object.keys(ENEMY_REGISTRY).join(', ');
+        throw new Error(`Unknown enemy slug: '${flags.enemySlug}'. Valid: ${valid}`);
+    }
+
+    await runHazardCombatCliEncounter({
+        enemy: enemyDef,
+        presetId: flags.presetId,
+        seed: flags.seed,
+        auto: flags.auto || flags.scriptPath !== undefined || flags.stdin,
+        policy: flags.policy,
+        maxTurns: flags.maxTurns,
+    });
 }
