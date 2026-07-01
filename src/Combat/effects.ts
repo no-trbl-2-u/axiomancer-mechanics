@@ -50,9 +50,8 @@ export function getThornsReflect(bearer: Combatant): number {
 // ─── 0.34.0 status-depth epic — HP-model selectors + tunable scalars ──────────
 // These power the new card mechanics (VULNERABLE / RUPTURE / COMPOUND / DISRUPT)
 // and the mobile honesty layer. Pure reads over a combatant's `effects`; the HP
-// behavior itself is owned by `combat.engine.ts`. Registered in the tuning
-// registry (`src/Tuning/tunable.registry.ts`) so `/combat-tuning` can rebalance
-// them by simulation; `effects.ts` is a writable (non-engine) home for them.
+// behavior itself is owned by `combat.engine.ts`. Rebalanced by `/combat-tuning`
+// via simulation; `effects.ts` is a writable (non-engine) home for them.
 
 /** VULNERABLE — hard ceiling on the outgoing-damage multiplier against a marked
  *  target. Conservative for burst (a marked foe takes at most ×2.0). Tunable. */

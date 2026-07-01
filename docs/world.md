@@ -285,9 +285,10 @@ defeating the boss auto-completes the quest and grants the
 - fv-24 keeper's cottage (rest, full heal).
 - fv-25 gull's nest (hazard — fledglings; **dead-end** via fv-24).
 
-All 8 `MapEventKind` values are represented multiple times across the
-25 nodes (5 cutscene / 2 village / 2 interaction / 3 gathering / 4
-encounter / 3 loot-cache / 4 rest / 2 hazard).
+Eight of the ten `MapEventKind` values are represented multiple times
+across the 25 nodes (5 cutscene / 2 village / 2 interaction / 3
+gathering / 4 encounter / 3 loot-cache / 4 rest / 2 hazard); the full
+taxonomy is ten kinds (adding `quest` and `narration`).
 
 `northern-forest` expanded from a 10-node branching pattern to a
 25-node multi-area layout in **Phase 117**. The original fork-and-rejoin
@@ -295,6 +296,10 @@ structure (nf-1 splits to nf-2/nf-3, rejoins at nf-6) is preserved,
 with three new sub-areas: Glen Path (forest floor), Bone Hollow
 (ancient themes), and Mist Ridge (elevated mystical). Features 2
 dead-ends (nf-17, nf-21) and 1 small loop (nf-24 ↔ nf-25).
+
+Both maps are now reachable from the game CLI: the `travel` tab crosses
+to another map on the current continent (e.g. `fishing-village` →
+`northern-forest`) via `store.travelToMap`.
 
 ## Bootstrap
 
@@ -311,9 +316,10 @@ Phase 23 introduced the **MapEvents** node-event surface. Phase 25
 removed the bespoke `processNode` predecessor; MapEvents is now the
 only node-event dispatcher.
 
-- **Taxonomy.** Eight kinds: `encounter`, `interaction`, `gathering`,
-  `rest`, `village`, `cutscene`, `hazard`, `loot-cache`. The old
-  `npc`/`shop` kinds are folded into `interaction` and `village`.
+- **Taxonomy.** Ten kinds: `encounter`, `interaction`, `gathering`,
+  `rest`, `village`, `cutscene`, `hazard`, `loot-cache`, `quest`,
+  `narration`. The old `npc`/`shop` kinds are folded into `interaction`
+  and `village`.
 - **Pool authoring.** Events are not authored per node; they're rolled
   from a **weighted pool** at the moment a node is entered. Pools live
   in `MapEventPool` records registered via `registerMapEventPool` and

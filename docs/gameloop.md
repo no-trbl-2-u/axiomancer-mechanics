@@ -4,13 +4,13 @@
 > Zustand store delegates every mutation to it, and a `GameEvent` emitter
 > broadcasts transitions to UI consumers. Save / load round-trips through a
 > versioned `migrate()`. `game.cli.ts` demos the full loop end-to-end:
-> Map → Combat → Journal → Skills → Inventory.
+> Map → Travel → Journal → Skills → Codex → Inventory → Character.
 
 ## State Shape
 
 ```ts
 interface GameState {
-  version: number;                   // GAME_STATE_VERSION (current: 7)
+  version: number;                   // GAME_STATE_VERSION (current: 10)
   runId: string;                     // Phase 72 — UUID per run; bumped by resetRun
   player: Character;
   world: WorldState;
@@ -45,8 +45,6 @@ on load (Spec 11). Every top-level transition is expressed as a `GameAction`:
 ```ts
 type GameAction =
   | { type: 'START_COMBAT';        payload: { target: Enemy | Encounter } }
-  | { type: 'COMBAT_ROUND';        payload: { playerAction: Action; playerStance: Stance;
-                                              skillId?: string; itemId?: string } }
   | { type: 'END_COMBAT';          payload?: { grantedLoot?: Item[]; grantedXp?: number } }
   | { type: 'MOVE_TO_NODE';        payload: { nodeId: string } }
   | { type: 'PROCESS_NODE'  }
@@ -103,8 +101,10 @@ Q4 path B, shipped at Phase 51 `4972f9a`). The allowlist lives in
 
 ```ts
 const DURABLE_ACTIONS: ReadonlySet<GameAction['type']> = new Set([
-    'COMBAT_ROUND', 'LEVEL_UP', 'END_COMBAT',
-    'MOVE_TO_NODE', 'APPLY_DIALOGUE', 'SAVE_GAME',
+    'LEVEL_UP', 'END_COMBAT', 'MOVE_TO_NODE',
+    'APPLY_DIALOGUE', 'SAVE_GAME',
+    'RESET_RUN',           // Phase 72 — persist new runId + reset world
+    'UNLOCK_CODEX_ENTRY',  // Phase 73 — persist codex unlock immediately
 ]);
 ```
 
@@ -122,7 +122,7 @@ at `src/Game/e2e/autosave-throttling.engine.test.ts`.
 
 ```ts
 type GameEventType =
-  | 'combat:started' | 'combat:round' | 'combat:ended'
+  | 'combat:started' | 'combat:ended'
   | 'world:moved'   | 'world:processed' | 'dialogue:applied'
   | 'character:levelup'
   | 'inventory:changed'
@@ -156,9 +156,9 @@ than casting `payload` by hand. The package exports one per topic:
 
 ```ts
 import {
-  TypedLevelUpEvent, TypedCombatRoundEvent, TypedCombatEndedEvent,
-  // ... full set covers all 10 GameEventTypes
-  isLevelUpEvent, isCombatRoundEvent, isCombatEndedEvent,
+  TypedLevelUpEvent, TypedCombatStartedEvent, TypedCombatEndedEvent,
+  // ... full set covers every GameEventType
+  isLevelUpEvent, isCombatStartedEvent, isCombatEndedEvent,
   // ... matching is*Event guards exported from events.utils
 } from 'axiomancer-mechanics';
 
@@ -237,19 +237,20 @@ to `migrate()`, which:
 
 - Returns it as-is when versions match.
 - Refuses payloads newer than the runtime.
-- Funnels older payloads through stepwise upgrades. The ladder today:
+- Funnels older payloads through stepwise upgrades. The ladder today runs
   `migrateV2toV3` (adds `moralMeter`, Spec 10) → `migrateV3toV4` (adds
   `rngState`, Spec 11) → `migrateV4toV5` (adds `philosophicalAlignment`
-  defaulting to `{ epistemology: 0, outlook: 0, scope: 0 }`, Phase 42).
+  defaulting to `{ epistemology: 0, outlook: 0, scope: 0 }`, Phase 42) →
+  `migrateV5toV6` (defaults `runId`, Phase 72) → `migrateV6toV7` (defaults
+  `codex`, Phase 73) → `migrateV7toV8` → `migrateV8toV9` → `migrateV9toV10`.
 - Validates the top-level shape before handing back a `GameState`.
 
-When `GAME_STATE_VERSION` next bumps, add a `migrateV5toV6` step and call it
-from `migrate()` for `fromVersion < 6`. Each step is a pure
+When `GAME_STATE_VERSION` next bumps, add a `migrateV10toV11` step and call it
+from `migrate()` for `fromVersion < 11`. Each step is a pure
 `(prev) => next` function — no I/O, no defaults pulled at call time.
 
-**Phase 72 update:** `GAME_STATE_VERSION` is now `6`. The ladder gained
-`migrateV5toV6` which defaults the required `runId: string` field on
-legacy v5 saves via `generateRunId(() => getRng().random())`.
+`GAME_STATE_VERSION` is `10`. Each ladder step lives in
+`src/Game/game.migrate.ts`.
 
 ## Run-loop reset (Phase 72)
 
@@ -327,8 +328,8 @@ all math lives in the resolvers/reducers. Tabs:
 
 | Tab        | What it does                                                     |
 |------------|------------------------------------------------------------------|
-| Map        | Lists reachable adjacents, dispatches `MOVE_TO_NODE`, then resolves the destination node's `MapEvent` via `resolveMapEvent` (Spec 23). Auto-pivots into Combat when the resolved event is an `encounter`. |
-| Combat     | Resumes any active fight. Drives `resolveCombatRound` round by round; offers `attack` / `defend` / `skill` / `item` actions when affordable. |
+| Map        | Lists reachable adjacents, dispatches `MOVE_TO_NODE`, then resolves the destination node's `MapEvent` via `resolveMapEvent` (Spec 23). When the resolved event is an `encounter` it **stages** combat and prints "Run the Hazard-Pattern combat CLI: `npm run combat`" — combat is not a tab. |
+| Travel     | Crosses to another map on the current continent (e.g. `fishing-village` → `northern-forest`) via `store.travelToMap`. |
 | Journal    | Read-only: active / completed quests + flags + alignment stub.   |
 | Skills     | Read-only: learned/unlocked skills; legacy equipped view is removed by Phase 99. |
 | Codex      | **(Phase 82)** Read-only render of `state.codex.unlockedEntries` (Phase 73). Looks up each entry id via a one-time `EnemyLibrary` walk (`codexLookup` at module load); renders title + body per entry. Empty-state copy: "Your codex is empty — befriend a foe with a journal entry to start filling it." |

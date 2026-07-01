@@ -311,8 +311,8 @@ export interface CardLookup {
  * `CardEvent[]` to any higher-level event stream.
  *
  * Phase 49 — `casterSide` decides which side is firing the skill. Defaults
- * to `'player'` for back-compat with the pre-Phase-49 call site at
- * `src/Combat/phases/scenario.ts`. When `'enemy'`, the enemy is the caster
+ * to `'player'` for back-compat with the pre-Phase-49 combat call
+ * site. When `'enemy'`, the enemy is the caster
  * and the player is the target; `skill.targetType` is interpreted relative
  * to the caster (`'self'` → caster's effects; `'enemy'` → opposing side).
  * Enemy-cast skills are validated against `Enemy.skills?` rather than

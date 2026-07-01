@@ -143,8 +143,8 @@ export interface Effect {
      */
     sourcedFromCell?: string;
     /**
-     * Content-provenance metadata used by the tuning `--focus` filter
-     * (`src/Tuning/focus.parser.ts`). `addedIn` is an ISO date (`YYYY-MM-DD`)
+     * Content-provenance metadata used by the tuning `--focus` filter.
+     * `addedIn` is an ISO date (`YYYY-MM-DD`)
      * or phase tag marking when the effect was authored; `tags` are freeform
      * labels. Both optional and ignored by the effects engine. Present in the
      * JSON library entries as plain fields.

@@ -196,8 +196,8 @@ Core balance values are defined in `game-mechanics.constants.ts`:
 | `STAT_MULTIPLIERS.DEFENSE` | `3` | Base stat to defense conversion |
 | `STAT_MULTIPLIERS.SKILL` | `1` | Base stat to skill power conversion |
 | `RESOURCE_MULTIPLIERS.HP` | `10` | Base (body + heart) to HP conversion |
-| `EXPERIENCE_PER_LEVEL` | `100` | XP required per level |
-| `STAT_POINTS_PER_LEVEL` | `2` | Stat points gained per level |
+| `EXPERIENCE_PER_LEVEL` | `1000` | XP required per level |
+| `STAT_POINTS_PER_LEVEL` | `3` | Stat points gained per level |
 | `DEFENSE_MULTIPLIERS` | `{ advantage: 3, neutral: 2, disadvantage: 1.5 }` | Active defense stance bonuses |
 | `PASSIVE_DEFENSE_MULTIPLIER` | `1` | Defense multiplier when not in active defense stance |
 | `MAX_EFFECT_INTENSITY` | `10` | Maximum effect stack intensity |
@@ -215,7 +215,7 @@ import { generateRunId, STARTING_REGION } from 'axiomancer-mechanics';
 
 const newGameState = createNewGameState({
   runId: generateRunId(), // Timestamp-based ID
-  startingRegion: STARTING_REGION // 'coastal-village'
+  startingRegion: STARTING_REGION // 'fishing-village'
 });
 ```
 
@@ -226,7 +226,7 @@ import { createNewGameState } from 'axiomancer-mechanics';
 
 const initialState = createNewGameState({
   character: customCharacter, // Optional
-  startingRegion: 'coastal-village', // Optional
+  startingRegion: 'fishing-village', // Optional
   runId: 'custom-run-id' // Optional
 });
 ```
@@ -249,7 +249,7 @@ events.on('combat:started', ({ enemy }) => {
 
 events.on('combat:ended', ({ outcome, report }) => {
   if (outcome === 'victory') {
-    console.log(`Victory! Gained ${report.expGained} XP`);
+    console.log(`Victory! Gained ${report.xpGained} XP`);
   }
 });
 
@@ -276,7 +276,7 @@ function PlayerStatus() {
   return (
     <View>
       <Text>Level {player.level}</Text>
-      <Text>HP: {player.currentHP}/{player.maxHP}</Text>
+      <Text>HP: {player.health}/{player.maxHealth}</Text>
       {isInCombat && <Text>In Combat!</Text>}
     </View>
   );

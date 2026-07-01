@@ -43,9 +43,10 @@ import { nullAdapter } from '../Game/persistence/null.adapter';
 import { createNodeAdapter } from '../Game/persistence/node.adapter';
 import type { PersistenceAdapter } from '../Game/persistence/types';
 import type { TypedLevelUpEvent } from '../Game/events.types';
-import { getMapDefinition } from '../World/map.registry';
+import { getMapDefinition, MAP_REGISTRY } from '../World/map.registry';
 import { resolveMapEvent } from '../World';
 import type { ResolvedEvent } from '../World';
+import type { MapName } from '../World/map.library';
 import { getCardById } from '../Cards/cards.library';
 import { getAvailableSkills } from '../Cards/skill.engine';
 import { isConsumable } from '../Items/types';
@@ -53,7 +54,7 @@ import { buyItem, sellItem, defaultSellPrice } from '../Items/shop.reducer';
 import { getConsumableById } from '../Items/consumable.library';
 import { bucketAxis, getAlignmentCell } from '../Philosophy';
 
-type Tab = 'map' | 'journal' | 'skills' | 'codex' | 'inventory' | 'character' | 'dev' | 'reset' | 'save' | 'load' | 'quit';
+type Tab = 'map' | 'travel' | 'journal' | 'skills' | 'codex' | 'inventory' | 'character' | 'dev' | 'reset' | 'save' | 'load' | 'quit';
 
 type GameStoreHandle = ReturnType<typeof createGameStore>;
 
@@ -100,6 +101,7 @@ async function bootstrapStore(adapter: PersistenceAdapter): Promise<GameStoreHan
 async function pickTab(): Promise<Tab> {
     const tabs: Array<{ name: string; value: Tab }> = [
         { name: 'Map             — travel + resolve node events', value: 'map' },
+        { name: 'Travel     — cross to another map on this continent', value: 'travel' },
         { name: 'Journal    — quests + alignment', value: 'journal' },
         { name: 'Skills     — known/unlocked', value: 'skills' },
         { name: 'Codex      — unlocked journal entries from befriended foes (Phase 73)', value: 'codex' },
@@ -178,6 +180,45 @@ async function mapTab(store: GameStoreHandle): Promise<void> {
     if (result.event.kind === 'village' && result.event.shop && result.event.shop.wares.length > 0) {
         await shopLoop(store, result.event.shop);
     }
+}
+
+async function travelTab(store: GameStoreHandle): Promise<void> {
+    const state = store.getState();
+    const continent = state.world.currentContinent;
+    const currentMapName = state.world.currentMap.name;
+    const registered = MAP_REGISTRY[continent.name] ?? {};
+    const destinations = (Object.keys(registered) as MapName[]).filter(m => m !== currentMapName);
+
+    log(`\n— Travel: ${continent.name} —`);
+    log(`Current map: ${currentMapName}`);
+    if (destinations.length === 0) {
+        log('No other maps on this continent to travel to.');
+        return;
+    }
+
+    const { target } = await prompt<{ target: string }>([
+        {
+            type: 'rawlist',
+            name: 'target',
+            message: 'Travel to which map?',
+            choices: [
+                ...destinations.map(m => {
+                    const status = continent.completedMaps.includes(m) ? ' (revisit)'
+                        : continent.availableMaps.includes(m) ? ''
+                        : ' (new)';
+                    return { name: `${m}${status}`, value: m };
+                }),
+                { name: 'Stay on the current map', value: '' },
+            ],
+        },
+    ]);
+    if (!target) return;
+
+    const before = store.getState();
+    store.getState().travelToMap(target as MapName);
+    const after = store.getState();
+    log(`Traveled to ${after.world.currentMap.name}. You are at ${after.world.currentMap.currentNode}.`);
+    logState('travelToMap', before, after, { mapName: target });
 }
 
 function describeResolvedEvent(event: ResolvedEvent): string {
@@ -772,6 +813,7 @@ async function main(): Promise<void> {
             const tab = await pickTab();
             switch (tab) {
                 case 'map':       await mapTab(store);                       break;
+                case 'travel':    await travelTab(store);                     break;
                 case 'journal':   journalTab(store);                         break;
                 case 'skills':    skillsTab(store);                          break;
                 case 'codex':     codexTab(store);                           break;

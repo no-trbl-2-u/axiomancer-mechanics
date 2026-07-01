@@ -24,7 +24,7 @@ What's actually live as of 2026-05-15:
 | Payload field          | Live? | Wired via                                                                    |
 |------------------------|-------|------------------------------------------------------------------------------|
 | `statModifiers`        | LIVE  | `getEffectiveStats` aggregates and folds into `getAttackStat` / `getDefenseStat` / `getSaveStat` (`src/Combat/stats.ts` + `src/Combat/effect-modifiers.ts`). |
-| `defenseModifier`      | LIVE  | `getEffectiveStats().defenseDelta` plus the scenario-phase passive-defense path (`src/Combat/phases/scenario.ts`).                                                            |
+| `defenseModifier`      | LIVE  | `getEffectiveStats().defenseDelta` plus the scenario-phase passive-defense path (`src/Combat/combat.engine.ts`).                                                            |
 | `rollModifier` / `rollModifierPerIntensity` | LIVE | `getActiveRollModifier` (`src/Combat/effects.ts`); applied to attack and damage rolls in the scenario phase.                                                                  |
 | `reflectDamage`        | LIVE  | `getThornsReflect` (`src/Combat/effects.ts`); paid out after damage application in the scenario phase.                                                                       |
 | `regeneration.healthPerRound` (positive) | LIVE | `applyRegen` (`src/Combat/effects.ts`); fires at round-start.                                                                                                                |
@@ -48,7 +48,7 @@ What recently moved from PENDING to LIVE:
 
 - `critStyle` auto-selection (`double` vs `pierce` "whichever deals
   more") — Phase 32 wired this in `src/Combat/damage.ts`
-  (`selectCritDamage` helper) and `src/Combat/phases/scenario.ts`
+  (`selectCritDamage` helper) and `src/Combat/combat.engine.ts`
   (the scenario phase now fires `isCriticalHit(rawAttackRoll)` on
   the attack roll and emits `isCritical` + `critStyle` fields on the
   `damage-applied` event when a crit lands).

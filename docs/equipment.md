@@ -737,24 +737,27 @@ The Zustand store (`Game/store.ts`) wraps these alongside `equipItem` /
 `unequipItem` / `useConsumable`, which additionally applies the
 consumable's effect via `useConsumableEffect`.
 
-## Combat resolver integration
+## Combat integration
 
-- `initializeCombat` calls `aggregateCombatStartTokens(player.equipment)`
-  instead of zero-seeding `combatResources`.
+> **Updated (0.37.0):** the legacy turn-based combat resolver that wired these
+> helpers in per round was removed. `aggregateCombatStartTokens` remains live
+> (via `combat.reducer.ts`); the proc helpers below survive as exported engine
+> utilities (Spec 05 Q6) consumed by the combat UI and e2e tests. Paths below
+> point at their current homes.
+
+- Combat setup (`src/Combat/combat.reducer.ts`) calls
+  `aggregateCombatStartTokens(equipment)` (`src/Items/equipment.engine.ts`) to
+  seed `combatResources` from each slot's `combatStartTokens` instead of
+  starting at zero.
 - `generateBasicActionResources(resources, stance, outcome, equipment?)`
-  appends `applyEquipmentGenerationBonus(...)` onto the base-table token
-  whenever an `equipment` map is passed (the combat resolver passes
-  `player.equipment`).
-- `runActionProcs` in `combat.resolver.ts` calls `getEquipmentProcTriggers`
-  for the actor and forwards them as `equipmentTriggers` to
-  `rollForCombatEffects`. Per Spec 05 Q6 these triggers participate in the
-  same chance / crit / fumble math as the JSON-defined Stance × action
-  table.
-- A new `action: 'item'` branch in `resolveCombatRound` looks up
-  `playerAction.itemId` in `player.inventory`, applies the consumable via
-  `useConsumableEffect`, decrements the stack, and emits an
-  `ItemPhaseEvent` (`used` or `blocked`) on the combat event stream. The
-  enemy's basic action still resolves at passive defense.
+  (`src/Cards/skill.engine.ts`) appends `applyEquipmentGenerationBonus(...)`
+  onto the base-table token whenever an `equipment` map is passed.
+- `getEquipmentProcTriggers(equipment, action)`
+  (`src/Items/equipment.engine.ts`) assembles the actor's onHit / onDefend
+  `EquipmentProcTrigger[]`, which `rollForCombatEffects(...)`
+  (`src/Combat/combat-effects.ts`) accepts as its optional `equipmentTriggers`
+  argument. Per Spec 05 Q6 those triggers share the same chance / crit /
+  fumble math as the JSON-defined Stance × action table.
 
 ## Library
 

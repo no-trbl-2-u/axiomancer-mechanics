@@ -31,6 +31,8 @@ import { createCharacter, allocateStatPoint } from '../Character';
 import { learnSkill } from '../Cards';
 import { createStartingWorld, emptyQuestLog } from '../World';
 import { moveToNode as moveWorld } from '../World/world.reducer';
+import { changeMap, completeMap, unlockMap } from '../World/world.reducer';
+import { getMapDefinition, createMapState } from '../World/map.registry';
 import { resolveMapEvent } from '../World';
 import { applyDialogueChoice as applyDialogueRuntime } from '../World/dialogue.runtime';
 import { killObjectives, progressQuest, findQuest } from '../World/quest.engine';
@@ -351,6 +353,21 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
                 ...state,
                 world: moveWorld(state.world, action.payload.nodeId),
             };
+        }
+
+        case 'TRAVEL_TO_MAP': {
+            // Continent-level travel: complete the current map, unlock the
+            // target, and switch to a fresh MapState of it. Reuses the pure
+            // world reducers (completeMap / unlockMap / changeMap). Throws via
+            // getMapDefinition when the target isn't registered on the current
+            // continent — callers should only offer registered maps.
+            const { mapName } = action.payload;
+            const world = state.world;
+            const def = getMapDefinition(world.currentContinent.name, mapName);
+            let next = completeMap(world, world.currentMap.name);
+            next = unlockMap(next, mapName);
+            next = changeMap(next, createMapState(def));
+            return { ...state, world: next };
         }
 
         case 'PROCESS_NODE': {

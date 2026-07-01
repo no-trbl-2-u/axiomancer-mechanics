@@ -23,7 +23,7 @@ All commands are in `package.json`:
 | Test | `npm test` (vitest) |
 | Lint | `npm run lint` |
 | Lint + type-check | `npm run check` |
-| Demo CLI | `npm run game` (tabbed map / combat / journal / skills / inventory / debug loop) |
+| Demo CLI | `npm run game` (tabbed map / travel / journal / skills / codex / inventory / character / dev loop; combat is not a tab — map encounters stage combat, run via `npm run combat`) |
 | Verify gate | `npm run verify` (type-check + lint + test + build) |
 | Deploy gate | `npm run deploy:check` (`npm pack --dry-run`) |
 
@@ -45,8 +45,8 @@ changes into a single commit at the end. A natural commit cadence is:
    `npm run type-check` are clean for that increment. Never commit a broken
    intermediate state.
 3. **Commit message format** — `<type>(<scope>): <short description>`, e.g.
-   `feat(combat): promote resolveCombatRound to first-class export` or
-   `refactor(cli): delegate runCombatTurn to resolver — no inline math`.
+   `feat(combat): add GUARD defense card to playCombatCard` or
+   `refactor(cli): delegate combat handoff to combat.cli — no inline math`.
    Keep the body concise; reference the spec number when relevant.
 4. **Spec update commit** — the final commit for any spec implementation must
    include the updated spec file (acceptance checklist ticked + implementation
@@ -82,7 +82,7 @@ If you cannot, extract logic until you can — or document the
 (`vi.restoreAllMocks` in `afterEach`).
 
 - **Standard:** [`docs/testing.md`](./docs/testing.md) (canonical).
-- **Reference test:** [`src/Combat/e2e/combat.resolver.engine.test.ts`](./src/Combat/e2e/combat.resolver.engine.test.ts) (copy its structure).
+- **Reference test:** [`src/Combat/e2e/hazard-pattern-combat.engine.test.ts`](./src/Combat/e2e/hazard-pattern-combat.engine.test.ts) (copy its structure).
 - **Location:** `src/<Module>/e2e/<feature>.engine.test.ts` (the `.engine.test.ts`
   suffix is a fixed marker meaning "hermetic e2e suite"). The engine code
   itself lives next to the module as `<feature>.resolver.ts` (composite

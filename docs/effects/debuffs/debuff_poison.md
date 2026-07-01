@@ -43,7 +43,7 @@ Deals 3 damage per round, classified as `body` type. Intended to scale with inte
 in the full DoT implementation.
 
 > **PENDING (Phase 2):** `damageOverTime` is not yet consumed in the combat engine.
-> There is no DoT processing loop in `src/Combat/phases/scenario.ts` or `Combat/index.ts`. When
+> There is no DoT processing loop in `src/Combat/combat.engine.ts` or `Combat/index.ts`. When
 > implemented, `processDamageOverTime` should:
 > ```typescript
 > const dotDamage = damagePerRound * (ae.intensity ?? 1);

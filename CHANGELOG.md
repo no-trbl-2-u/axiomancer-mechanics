@@ -12,6 +12,42 @@ deep imports are part of the supported surface.
 
 ## [Unreleased]
 
+## [0.38.0] — 2026-07-01
+
+Makes the whole first continent playable through the game CLI, and finishes the
+documentation side of the legacy turn-based combat removal. Pre-1.0 minor bump
+carrying one breaking public-API removal (`RESOURCE_CARRY`).
+
+### Added
+
+- **Continent map travel.** New `TRAVEL_TO_MAP` action + `store.travelToMap(mapName)`
+  and a `travel` tab in the game CLI (`npm run game`). A run can now cross
+  between the maps of the current continent (fishing-village ↔ northern-forest),
+  so every map's authored events are reachable — including the `village` and
+  `cutscene` map-event kinds that only northern-forest authors. Previously
+  `northern-forest` was permanently locked with no code path calling
+  `unlockMap` / `completeMap` / `changeMap`, leaving those two kinds
+  unreachable in play despite the "all kinds covered" content invariant.
+
+### Removed
+
+- **`RESOURCE_CARRY`** (breaking) — the between-encounter resource-carry constant
+  cut with the de-tokenized combat in 0.36.0. It had zero consumers in the
+  engine, its tests, or the mobile app; dropped from the public barrel.
+- **`src/Combat/debug.ts`** (`dumpEffectState` / `EffectStateDump`) — an orphaned
+  legacy debug helper with no importers.
+
+### Docs
+
+- Purged the pervasive stale references to the removed legacy turn-based combat
+  system (`resolveCombatRound`, `combat.resolver.ts`, `Combat/phases/`,
+  `RoundEvent` / `RoundResolution`, the removed reducer verbs, the `Skills`→`Cards`
+  rename, `resourceCost`) across `README.md`, `spec.md`, `CLAUDE.md`, `AGENTS.md`,
+  `agents.md`, and ~20 files under `docs/`. The docs now describe only the
+  Hazard-Pattern engine and the new CLI `travel` tab. Deleted the dead
+  `legacy-combat-tuning` skill. Removed a stale barrel comment and a dead
+  commented-out import.
+
 ## [0.37.0] — 2026-06-30
 
 Finishes the legacy turn-based combat removal that 0.36.0 began: decouples the

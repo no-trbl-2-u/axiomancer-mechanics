@@ -40,16 +40,31 @@ unchanged, but the absolute semver guarantee starts at 1.0.
   fixtures or `ActiveEffect.sourceId` attribution. Closes
   Knowledge-Gaps Q12.
 
-### Combat
+### Combat (Hazard-Pattern)
 
-- `resolveCombatRound()` — Stable. The orchestrator delegates to per-phase
-  helpers under `src/Combat/phases/` (round-start / action-restriction /
-  advantage / stance-effects / scenario / round-end). Public contract
-  unchanged from Phase 02; internal split landed in Phase 15.
+- `initializeCombatEncounter()` — Stable. Builds a `CombatEncounterState`
+  for a Hazard-Pattern fight (card / dice / hidden-read / Conviction /
+  Signature). The enemy has a single bar = HP.
+- `rollEncounterDice()`, `startTurn()`, `draftStanceDie()` — Stable. Roll
+  the colored mana dice and draft the hidden stance die at turn start.
+- `playCombatCard()` — Stable. Plays a combat card (projected from a
+  learned skill) against the enemy's telegraphed threat.
+- `resolveCombatPhase()` / `resolveThreatPhase()` / `processBetweenPhases()`
+  — Stable. Resolve the enemy threat phase (Clear / Overwhelmed) and step
+  between phases.
+- `buildCombatSummary()` — Stable. End-of-fight `CombatSummary` with
+  per-effect attribution rows.
+- `selectMercyChoice()` — Stable. Opens the Befriend mercy path on a
+  low-HP foe.
+- `simulateHazardPatternCombat()` — Stable. Monte-Carlo greedy bot used by
+  `/combat-tuning`.
 - `determineAdvantage()`, advantage and damage / healing functions — Stable.
-- Combat state management (`initializeCombat`, `endCombat`, etc.) — Stable.
-- Combat types (`CombatState`, `Action`, `Stance`, `RoundEvent`,
-  `RoundResolution`, etc.) — Stable.
+- Combat state management (`initializeCombat`, `incrementFriendship`) —
+  Stable. `combat.reducer.ts` is now a thin `CombatState` shim over the
+  shared `executeSkill` card engine.
+- Combat types (`CombatEncounterState`, `CombatCard`, `CombatOutcome`,
+  `CombatSummary`, `CombatThreatPhase`, etc.) — Stable. `CombatOutcome`
+  is `'victory' | 'mercy' | 'defeat' | 'retreat'`.
 - **Phase 80 always-land contract:** `resolveEffectApplication` rewritten —
   Tier 2 debuffs + Tier 3 always land (no target-resist roll); only Tier 2
   buff caster fumble/crit survives. `EffectApplicationResult.rebounded`
@@ -157,7 +172,6 @@ interface EnginePayload {
     state: GameState;                    // the post-reducer state
     report?: CombatEndReport;            // only on combat:ended
     unlockedSkills?: string[];           // only on character:levelup (Phase 30)
-    combatEvents?: readonly RoundEvent[]; // only on combat:round (iterate 5ac6caa)
 }
 ```
 
@@ -166,16 +180,12 @@ learn after a level promotion crossed a tier-eligibility threshold. An
 empty array means the levelup didn't unlock anything new; the field is
 absent on every other topic.
 
-`combatEvents` (iterate `5ac6caa`) carries the full `RoundEvent[]` stream
-that `resolveCombatRound` produced (attack-roll, damage-applied,
-effect-application, skill phases, item-used, friendship-counter ticks,
-etc.). Populated only on `combat:round` when the CLI / driver threads
-the array through `store.updateCombat(combat, combatEvents)`; absent
-otherwise.
-
 `CombatEndReport.outcome` is `'victory' | 'defeat' | 'friendship' |
-'flee'`. Phase 36 added `'friendship'` for the friendship-counter exit
-— half XP grant + full loot + `+1` moral meter.
+'flee'`. This is the `GameStore` XP/loot lifecycle bridge (`store.endCombat`),
+distinct from the encounter engine's `CombatOutcome` union
+(`'victory' | 'mercy' | 'defeat' | 'retreat'`). Phase 36 added
+`'friendship'` for the befriend exit — half XP grant + full loot + `+1`
+moral meter.
 
 **Befriendable-enemy content (Phase 60 + Phase 62 + Phase 69) — Beta.**
 Phase 60 added `CombatEndReport.friendshipReward?: { narrative?: string }`
@@ -235,14 +245,13 @@ predicates AND-compose:
 - `defaultFallback?: 'both-defend-cap'` — explicit escape hatch that
   treats other fields as no-ops and uses the global counter cap.
 
-Counter still increments freely on both-defend rounds (Phase 36
-unchanged); friendship triggers only when all predicates pass
-together — late-resolution semantics. The new internal helper
-`isFriendshipEligible(state)` is the single decision point;
-`determineCombatEnd` and `isCombatOngoing` both call it so the two
-predicates stay in lockstep. Helper is **not** on the public barrel
-per Phase 68 D11 — engine consumers read combat-end state through
-`determineCombatEnd`. First boss-tier authored config:
+Befriend eligibility still keys off `BefriendabilityConfig` and the
+both-defend `friendshipCounter` on the `CombatState` shim; friendship
+triggers only when all predicates pass together — late-resolution
+semantics. (The legacy turn-based decision helpers
+`isFriendshipEligible` / `determineCombatEnd` / `isCombatOngoing` were
+removed in 0.37.0 along with the round-resolution driver; there is no
+longer a public combat-end predicate.) First boss-tier authored config:
 `CoastalTyrant` ships `{ hpGate: { belowPct: 0.4 }, requiredStances:
 ['heart'], roundsThreshold: 5 }`. See `docs/combat.md` § "Per-enemy
 predicate (Phase 68 — `BefriendabilityConfig`)" for the full schema
@@ -294,19 +303,18 @@ cell has shifted. See `docs/npcs.md` § "Reactive NPCs — alignment
 observers (Phase 63)" for the consumer-side API.
 
 `TypedGameEvent<T>` narrows the event by topic; `payload` is always
-the engine envelope above. Per-topic aliases ship for all 10
+the engine envelope above. Per-topic aliases ship for all 9
 `GameEventType` values:
 
-- `TypedCombatStartedEvent`, `TypedCombatRoundEvent`,
-  `TypedCombatEndedEvent`
+- `TypedCombatStartedEvent`, `TypedCombatEndedEvent`
 - `TypedWorldMovedEvent`, `TypedWorldProcessedEvent`
 - `TypedLevelUpEvent`, `TypedInventoryChangedEvent`
 - `TypedDialogueAppliedEvent`, `TypedGameSavedEvent`,
   `TypedGameLoadedEvent`
 
-And 10 type guards for filter / find style narrowing:
+And 9 type guards for filter / find style narrowing:
 
-- `isCombatStartedEvent`, `isCombatRoundEvent`, `isCombatEndedEvent`
+- `isCombatStartedEvent`, `isCombatEndedEvent`
 - `isWorldMovedEvent`, `isWorldProcessedEvent`
 - `isLevelUpEvent`, `isInventoryChangedEvent`
 - `isDialogueAppliedEvent`, `isGameSavedEvent`, `isGameLoadedEvent`

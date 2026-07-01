@@ -10,13 +10,23 @@ The CLI module provides a complete command-line interface for playing and testin
 
 ### `game.cli.ts` - Main Game Interface
 
-The primary CLI driver that provides a tabbed inquirer interface for playing the game. Includes five main tabs:
+The primary CLI driver that provides a tabbed inquirer interface for playing the game. The main menu tabs are:
 
-- **Map** - Navigate between nodes and trigger map events
-- **Legacy Combat** - Resolve combat rounds via the old `resolveCombatRound` stance/action loop (dev-only). The new Hazard-style combat is reached via `npm run combat`.
+- **Map** - Travel between nodes and resolve node events on the current map
+- **Travel** - Cross to another map on the current continent (e.g. `fishing-village` ↔ `northern-forest`) via `store.travelToMap`, so the whole continent and every map-event kind are reachable
 - **Journal** - View active/completed quests and philosophical alignment
-- **Skills** - View learned/unlocked skills; combat should show only currently affordable skills
-- **Inventory** - View carried items and equipment
+- **Skills** - View known/unlocked skills
+- **Codex** - Unlocked journal entries from befriended foes
+- **Inventory** - Items carried in the pack
+- **Character** - Full stats, equipment, and effects sheet
+- **DEV** - Manipulate character, grant items/skills, spawn enemies
+- **Begin again** - Reset to the starting hearth (full reset, or keep-character)
+- **Save** - Write the current state to the save file
+- **Load** - Restore state from the save file
+- **Quit**
+
+There is **no combat tab** — a Map `encounter` node only *stages* combat and prints
+an instruction to run the Hazard-Pattern combat CLI (`npm run combat`).
 
 **Usage:**
 ```bash
@@ -25,31 +35,28 @@ npm run game
 
 **Features:**
 - Full game loop interaction through store actions
-- Real-time combat resolution
+- Cross-map travel across the current continent
 - Save/load functionality
 - Development cheats and debugging
 
 ### `combat.cli.ts` - New Hazard-style Combat CLI (Phase 165)
 
-A standalone driver for the **new Spec 25/26b Hazard-style combat engine**, reachable as a subcommand of the game CLI. Drives the card-and-dice HP-model combat (the primary system — status effects are the efficient path, raw strikes are the weak baseline). Supports interactive TTY play, `--auto` bot policies, and scripted/stdin agentic modes. The **old** `resolveCombatRound` loop is `legacy-combat`.
+A standalone driver for the **Spec 25/26b Hazard-style combat engine**, reachable as a subcommand of the game CLI. Drives the card-and-dice HP-model combat (the primary system — status effects are the efficient path, raw strikes are the weak baseline). Supports interactive TTY play, `--auto` bot policies, and scripted/stdin agentic modes.
 
 **Usage:**
 ```bash
 npm run game -- combat [flags]
 npm run combat -- [flags]             # convenience alias
-npm run game -- legacy-combat [flags]
-npm run legacy-combat -- [flags]      # old stance/action loop
 ```
 
-**Combat routing (Phase 165):**
+**Combat routing:**
 
 | Command | Engine |
 | --- | --- |
-| `npm run combat` | New Hazard-style card/dice engine (`combat.cli.ts`) |
-| `npm run legacy-combat` | Old `resolveCombatRound` stance/action loop |
+| `npm run combat` | Hazard-style card/dice engine (`combat.cli.ts`) |
 | `npm run combat-sim` | Monte-Carlo balance witness (not player-facing) |
 
-**New-combat flags:**
+**Combat flags:**
 
 | Flag | Effect |
 | --- | --- |
@@ -72,9 +79,6 @@ npm run combat -- --auto --policy status --enemy mournful-gull --seed 42 \
 
 # Interactive TTY play
 npm run combat -- --enemy wet-hound --preset wanderer
-
-# Legacy engine (old stance/action loop)
-npm run legacy-combat -- --enemy mournful-gull --preset wanderer
 ```
 
 **State-log records** (for agentic consumers):

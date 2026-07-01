@@ -16,7 +16,7 @@ Commit: f6b5bb3
 ### DIV-MECH-001 — Game CLI combat tab drives legacy `resolveCombatRound`, not Hazard-Pattern Combat
 - Severity: High
 - Owner: mechanics
-- Status: **resolved** — Phase 165 shipped `src/CLI/combat.cli.ts` (`feat(cli): Phase 165 — agentic Hazard-style combat CLI`, commit `3ed4755`, 2026-06-23). The new CLI drives `initializeCombatEncounter` / `playCombatCard` / `resolveCombatPhase` / `processBetweenPhases` from the Hazard-Pattern Combat engine; reachable via `npm run combat` (also `npm run game -- combat`). The legacy Combat tab in `game.cli.ts` remains as a dev-only option. Confirmed: `src/CLI/combat.cli.ts` exists; `npm run combat` alias in `package.json`.
+- Status: **resolved** — Phase 165 shipped `src/CLI/combat.cli.ts` (`feat(cli): Phase 165 — agentic Hazard-style combat CLI`, commit `3ed4755`, 2026-06-23). The new CLI drives `initializeCombatEncounter` / `playCombatCard` / `resolveCombatPhase` / `processBetweenPhases` from the Hazard-Pattern Combat engine; reachable via `npm run combat` (also `npm run game -- combat`). **Superseded by 0.37.0:** the legacy `resolveCombatRound` resolver and its dev-only Combat tab were removed entirely — Hazard-Pattern is now the ONLY combat path. `game.cli.ts` no longer has a combat tab; map encounters stage combat and hand off to `npm run combat`. Confirmed: `src/CLI/combat.cli.ts` exists; `npm run combat` alias in `package.json`; `resolveCombatRound` gone from `src`.
 - Evidence:
   - `src/CLI/game.cli.ts:7-15` (header comment): "Combat — drives `resolveCombatRound` against the active encounter."
   - `src/CLI/game.cli.ts` (import line ~52): `import { isCombatOngoing, determineEnemyAction, resolveCombatRound, ... } from '../Combat';`
@@ -83,7 +83,7 @@ Commit: f6b5bb3
 ### DIV-MECH-005 — First-level CLI walkthrough uses legacy `resolveCombatRound` for encounter combat
 - Severity: Medium
 - Owner: mechanics
-- Status: open — **DIV-MECH-001 block lifted** (Phase 165 shipped 2026-06-23; see above). The fishing-village walkthrough can now be updated to enter Hazard-Pattern Combat. No dedicated phase filed yet; candidate for next `/oversight` or `/expand` pass.
+- Status: **resolved by 0.37.0** — the legacy `resolveCombatRound` resolver was removed entirely, so there is no longer a legacy combat surface for the walkthrough to drop into. Map encounters now stage combat and hand off to the Hazard-Pattern CLI (`npm run combat`, `src/CLI/combat.cli.ts`). The evidence below is historical (pre-0.37.0). Any remaining walkthrough that still issues `defend` round actions should be re-authored against the Hazard-Pattern handoff.
 - Evidence:
   - `automation/scripts/walkthroughs/fishing-village-exploration.json` and `.goal.md`: walkthrough drives the Map tab to fv-15, triggers an encounter (MournfulGull), then issues 2-3 `defend` round actions via the legacy Combat tab.
   - `automation/scripts/walkthroughs/fishing-village-exploration.goal.md:16-18`: "The combat that fires at fv-15 is **not** graded on outcome — the script issues 2-3 defend rounds then quits."
@@ -119,15 +119,14 @@ Commit: f6b5bb3
 
 ## CLI first-level capability classification
 
-**Verdict: partial.**
+**Verdict (updated post-0.37.0): Hazard-Pattern is the sole combat path.**
 
 - Map traversal (fv-1 → fv-11 → fv-14 → fv-15) works correctly via the game CLI Map tab and is proven by `spec08.engine.test.ts` and the fishing-village walkthrough.
 - Encounter triggers fire at fv-15 (MournfulGull, MapEventKind `encounter`) — confirmed by test coverage.
-- The combat surface that fires from the encounter is the **legacy** `resolveCombatRound` resolver (attack/defend stance actions), not Hazard-Pattern Combat.
-- No CLI path exists to exercise Hazard-Pattern Combat (card-and-dice, `initializeCombatEncounter`, Conviction, Signature Skills) interactively from a map encounter.
-- Hazard-Pattern Combat is tested in isolation (31 engine tests + balance sim pass, all green) but never from the live game-store / map-encounter entry point.
+- The game CLI Map loop only STAGES the encounter into combat state; the Hazard-Pattern combat driver runs via `npm run combat` (`src/CLI/combat.cli.ts`, Phase 165). The legacy `resolveCombatRound` resolver and its dev-only combat tab were removed in 0.37.0, so there is no longer any legacy combat surface.
+- Hazard-Pattern Combat (card-and-dice, `initializeCombatEncounter`, Conviction, Signature Skills) is the only combat model and is driven interactively via the combat CLI.
 
-**Gap:** A Hazard-Pattern Combat CLI harness is missing (DIV-MECH-001 / Phase 165 candidate).
+**Note:** The remaining gap is wiring the staged map encounter directly into an interactive Hazard-Pattern session end-to-end in a single walkthrough (currently the handoff is a `npm run combat` step).
 
 ---
 

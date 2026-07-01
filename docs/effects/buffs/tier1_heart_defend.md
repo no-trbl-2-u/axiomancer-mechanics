@@ -64,7 +64,7 @@ healed += amount;
 updated = healCharacter(updated, amount);  // clamped to maxHealth
 ```
 
-Called at the **start of each round** in `src/Combat/phases/scenario.ts`, before the player's action.
+Called at the **start of each round** in `src/Combat/combat.engine.ts`, before the player's action.
 
 **Status: LIVE** — fully implemented.
 

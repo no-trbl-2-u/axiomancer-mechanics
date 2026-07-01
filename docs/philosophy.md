@@ -235,7 +235,7 @@ range form if real content authoring needs it.
 
 ### Phase 46 first-pass authoring
 
-Authored gates (`src/Skills/skill.library.ts` +
+Authored gates (`src/Cards/cards.library.ts` +
 `src/World/Continents/Coastal-Village/maps.ts`):
 
 | Surface | Author | Gate | Rationale |

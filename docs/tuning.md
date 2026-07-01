@@ -1,5 +1,7 @@
 # Tuning
 
+> **Superseded (0.37.0):** the `src/Tuning/` module and its bespoke tuning CLI documented here were removed along with the legacy turn-based combat resolver they optimized. Balance is now witnessed by `simulateHazardPatternCombat` (`src/Combat/combat.encounter.sim.ts`) via `npm run combat-sim` (`src/CLI/combat-sim.cli.ts`), driven by the `/combat-tuning` skill (`skills/combat-tuning.md`). See `docs/combat.md`. Retained as a historical record.
+
 ## Overview
 
 The Tuning module provides automated game balance testing and optimization. It runs statistical experiments on game mechanics, measures health across difficulty levels and playstyles, and automatically applies improvements that make the game more balanced and engaging.

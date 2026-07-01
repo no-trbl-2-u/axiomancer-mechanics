@@ -145,8 +145,9 @@ export { heal as healCharacter } from './health';
 export { INTERACTION_AMPLIFICATION } from './resolution.constants';
 
 // ─── Spec 25 — Hazard-Pattern Combat ──────────────────────────────────────────
-// The card-and-dice combat driver. Ships alongside `resolveCombatRound`; the
-// effects + skill engines are unchanged (Spec 25 §12 Q4 recommendation (b)).
+// The card-and-dice combat driver — the sole combat system since the legacy
+// turn-based driver was removed (0.37.0). The effects + skill engines are
+// unchanged (Spec 25 §12 Q4 recommendation (b)).
 export type {
     CombatEncounterState, CombatEncounterPhase, CombatTransition,
     CombatManaDie, CombatDieColor, CombatDieState,

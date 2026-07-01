@@ -70,15 +70,15 @@ intensity 5 (+5), the net roll modifier is 0.
 
 ---
 
-## On-Hit Specials (Not in payload — driven by src/Combat/phases/scenario.ts)
+## On-Hit Specials (Not in payload — driven by src/Combat/combat.engine.ts)
 
-The two Heart/Attack on-hit effects are implemented directly in `src/Combat/phases/scenario.ts`, not
+The two Heart/Attack on-hit effects are implemented directly in `src/Combat/combat.engine.ts`, not
 via payload fields. They fire only when the Heart/Attack **hits** (attack resolves
 successfully):
 
 ### 1. `removeRandomBuff(enemy)` — Strip enemy buff
 
-Called from `src/Combat/phases/scenario.ts` after a successful Heart/Attack hit on the enemy.
+Called from `src/Combat/combat.engine.ts` after a successful Heart/Attack hit on the enemy.
 
 ```typescript
 // src/Combat/index.ts
@@ -98,7 +98,7 @@ If the enemy has no buffs, the call returns `{ removed: null }` gracefully.
 
 ### 2. `extendRandomBuffDuration(player, 1)` — Extend player buff
 
-Called from `src/Combat/phases/scenario.ts` after a successful Heart/Attack hit.
+Called from `src/Combat/combat.engine.ts` after a successful Heart/Attack hit.
 
 ```typescript
 // src/Combat/index.ts

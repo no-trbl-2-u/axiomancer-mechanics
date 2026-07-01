@@ -161,7 +161,6 @@ an open question in a spec.
 | `oversight` | `skills/oversight.md` | **User-in-the-loop.** The only skill that asks anything. |
 | `jot` | `skills/jot.md` | Drop a quick observation into CRITIQUE.md. |
 | `combat-tuning` | `skills/combat-tuning.md` | **Hazard-Pattern Combat** balance loop — drive the Monte-Carlo sim (`simulateHazardPatternCombat`, greedy + blind) for the card-and-dice driver where the enemy's sole bar is HP and status effects are the efficient win path; numeric changes to the HP/threat/Conviction economy + report via PR. |
-| `legacy-combat-tuning` | `skills/legacy-combat-tuning.md` | **Legacy** turn-based combat (`resolveCombatRound`) balance loop — run the playstyle matrix, A/B-test numeric changes; data report → `main`, suggestions + winners → PR. Remains until live encounters migrate off the legacy engine. |
 | `hazard-tuning` | `skills/hazard-tuning.md` | Hazard minigame balance loop — use hazard CLI evidence to analyse card ratios, thresholds, mana economy against CDR-0006 targets; numeric changes + report via PR. |
 | `gathering-tuning` | `skills/gathering-tuning.md` | Gathering minigame (The Gleaning) balance loop — policy-sim + CLI evidence against the greed<restraint<skill doctrine; numeric changes + report via PR. |
 | `quest-board-tuning` | `skills/quest-board-tuning.md` | Quest Board (The Boy's Almanac) balance loop — seeded policy probes against the naive-finishes / deliberate-finishes-well doctrine; numeric changes + report via PR. |

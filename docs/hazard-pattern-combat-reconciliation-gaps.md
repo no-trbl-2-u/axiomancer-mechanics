@@ -1,5 +1,7 @@
 # Hazard-Pattern Combat — System Reconciliation Gaps
 
+> **SUPERSEDED (0.37.0):** the legacy turn-based `resolveCombatRound` referenced throughout was REMOVED — Hazard-Pattern is now the only combat system. This doc is retained as a historical record of the transition.
+
 > **Status:** Open design questions — handoff. 2026-06-21.
 > **Context:** Spec 25 shipped the Hazard-Pattern Combat engine (`resolveCombatPhase`)
 > as a card-and-dice driver where status effects fill two Pressure Tracks (DoT

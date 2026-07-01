@@ -62,7 +62,7 @@ return bearer.effects.reduce((total, ae) => {
 }, 0);
 ```
 
-This is called in `src/Combat/phases/scenario.ts` after every successful hit on the bearer. The returned
+This is called in `src/Combat/combat.engine.ts` after every successful hit on the bearer. The returned
 value is dealt as damage to the attacker.
 
 **Status: LIVE** — fully implemented in the combat engine.
@@ -94,7 +94,7 @@ Default `intensityDelta: 1`, `durationMode: 'reset'`.
 
 ### When reflect triggers
 
-The thorns check occurs in `src/Combat/phases/scenario.ts` after a successful attack resolution.
+The thorns check occurs in `src/Combat/combat.engine.ts` after a successful attack resolution.
 It fires regardless of the **attacker's** stance. Any enemy hit that lands on a Briar
 Stance bearer triggers the reflect.
 

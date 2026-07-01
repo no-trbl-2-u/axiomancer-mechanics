@@ -8,20 +8,32 @@
 ```typescript
 import { executeSkill, getSkillById, initializeCombat } from 'axiomancer-mechanics';
 
-const combat = initializeCombat(player, enemy);
-// Fund the resource pool (skills cost resources)
-const state = { ...combat, combatResources: { heart: 0, body: 3, mind: 0, fallacy: 0, paradox: 0 } };
+const state = initializeCombat(player, enemy);
 
+// executeSkill(state, cardId, lookupCard, casterSide? = 'player') -> CardResolution
 const { state: next, events } = executeSkill(state, 'achilles-gambit', getSkillById);
-// next.enemy.health reduced by basePower + body × 0.5
-// events includes { kind: 'damage', ... } + { kind: 'resources-spent', ... }
+// next.enemy.health reduced by basePower + body × SKILL_STAT_MULTIPLIER
+// events includes { kind: 'damage', ... }; a Fallacy/Paradox card also
+// emits { kind: 'philosophical-generated', ... }
 ```
 
-## Resource generation
+> Cards no longer cost a `resourceCost` pool — that field was removed when
+> combat was de-tokenized. Card power comes from the caster's stats (and,
+> in a live encounter, the drafted stance die + Conviction); casting does
+> not spend heart/body/mind tokens.
 
-The player’s castable resource pool lives on `CombatState.combatResources`.
-It is seeded by `initializeCombat` from equipped item/set token grants, then
-builds via player basic actions each round:
+## Resource economy
+
+In the Hazard-Pattern engine, card power comes from the **drafted stance
+die** and **Conviction** each turn — not from a spent token pool. The
+`combatResources` counters on `CombatState` still exist as an accumulator
+(seeded from equipped item/set token grants, incremented by
+`generatePhilosophicalResource` when a Fallacy/Paradox card resolves), but
+cards are no longer gated on a `resourceCost`.
+
+`generateBasicActionResources` is a standalone helper that mints stance
+tokens for a hit / miss / defend outcome; equipment and set bonuses layer
+extra tokens on top:
 
 ```typescript
 import { generateBasicActionResources } from 'axiomancer-mechanics';
@@ -33,27 +45,20 @@ const after = generateBasicActionResources(pool, 'body', 'hit');
 
 | Outcome | Tokens generated |
 |---------|------------------|
-| Attack hit | +3 of the player action's stance |
-| Attack miss | +1 of the player action's stance |
-| Defend | +5 of the player action's stance |
+| Hit | +3 of the given stance |
+| Miss | +1 of the given stance |
+| Defend | +5 of the given stance |
 
-There is no separate off-stance award in the base table. Items and set bonuses
-may add extra tokens through `resourceInteraction.generationBonus` / set
-`generationBonus`; consumables may add tokens through `resourceGrant` when used
-with the combat `item` action.
-
-Skills read and spend this same `combatResources` pool. If `canUseSkill` fails,
-the resolver emits `phase: 'skill', kind: 'blocked'` and the skill does not
-resolve. On successful player casts, the engine spends `resourceCost` and mints
-one Fallacy/Paradox token according to skill category/tier.
+When a Fallacy/Paradox card resolves, the engine mints one matching
+philosophical token and emits `{ kind: 'philosophical-generated', ... }`.
 
 ## Skill tiers
 
-| Tier | Cost shape | Example |
-|------|-----------|---------|
-| 1 | Single resource (e.g. `{ mind: 3 }`) | `false-dilemma` — 4 mind damage + `debuff_confusion` |
-| 2 | Dual resource (e.g. `{ body: 2, heart: 2 }`) | `mob-appeal` — 10 body damage + secondary self-heal |
-| 3 | Resource + philosophical token (e.g. `{ heart: 2, paradox: 1 }`) | `bootstrap-paradox` — heart × 2 self-heal |
+| Tier | Characteristics | Example |
+|------|-----------------|---------|
+| 1 | Single effect; auto-lands | `false-dilemma` — 4 mind damage + `debuff_confusion` |
+| 2 | May carry a `synergy` clause; buffs roll on the caster's d20 | `mob-appeal` — 10 body damage + secondary self-heal |
+| 3 | Signature-tier; effects always land (inescapable) | `bootstrap-paradox` — heart × 2 self-heal |
 
 ## Synergy-fired events
 

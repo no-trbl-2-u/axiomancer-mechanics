@@ -40,7 +40,7 @@ Examples of e2e entry points by module:
 
 | Module           | Hermetic e2e entry point                                                             |
 | ---------------- | ------------------------------------------------------------------------------------- |
-| `Combat`         | `resolveCombatRound` (in `Combat/combat.resolver.ts`) + the `createGameStore` lifecycle |
+| `Combat`         | `playCombatCard` / `resolveThreatPhase` (in `Combat/combat.engine.ts`) + the `createGameStore` lifecycle |
 | `Effects`        | `applyEffect` / `applyTier1CombatEffect` / `tickAllEffects` driving an effect to expiry; Phase 88 coverage sweep: `stat-band-effects.engine.test.ts`, `advantage-effects.engine.test.ts`, `control-effects.engine.test.ts`, `damage-variants.engine.test.ts` |
 | `Enemy`          | `createEnemy` + AI / strategy assertions in `enemy.engine.test.ts`; per-enemy content pins in `alignment.engine.test.ts` (Phase 45), `befriendability-config.engine.test.ts` (Phase 68), `aftermath-lines.engine.test.ts` (Phase 71) |
 | `Game`           | `createGameStore(nullAdapter, …)` driven through `startCombat` / `updateCombat` / `endCombat`; run-loop semantics in `run-loop.engine.test.ts` (Phase 72); codex unlocks in `codex.engine.test.ts` (Phase 73) |
@@ -68,7 +68,7 @@ the hermetic-e2e requirement on their own.
   Use a `nullAdapter`, fake clock, or extract the dependency.
 
 If your change touches the CLI layer, the hermetic e2e test must target the
-underlying engine function (e.g. `resolveCombatRound`) and the CLI must
+underlying engine function (e.g. `playCombatCard`) and the CLI must
 delegate to that function. Inline math in a CLI file is a code-smell that
 blocks hermetic testing — extract it.
 
@@ -259,7 +259,8 @@ For every non-trivial implementation, the e2e file should cover at minimum:
 
 1. **Happy path** — the typical success scenario, end-to-end.
 2. **Boundary / win conditions** — every terminal state the change can reach
-   (e.g. `combat.resolver.engine.test.ts` covers all three: `friendship`, `player`, `ko`).
+   (e.g. `hazard-pattern-combat.engine.test.ts` drives combat to its terminal
+   `CombatOutcome`s: `victory`, `mercy`, `defeat`).
 3. **Invariants** — properties that must hold throughout (HP ≥ 0, round
    counter monotonic, fixtures unmutated).
 4. **Lifecycle integration** — at least one test that drives the change
@@ -268,9 +269,9 @@ For every non-trivial implementation, the e2e file should cover at minimum:
 
 ## Canonical example
 
-[`src/Combat/e2e/combat.resolver.engine.test.ts`](../src/Combat/e2e/combat.resolver.engine.test.ts)
+[`src/Combat/e2e/hazard-pattern-combat.engine.test.ts`](../src/Combat/e2e/hazard-pattern-combat.engine.test.ts)
 is the reference implementation. Read it before writing a new e2e test —
-its top-of-file comment, its alternating-RNG helper, its three win-condition
+its top-of-file comment, its alternating-RNG helper, its win-condition
 suites, and its store-lifecycle suite together demonstrate every property
 above. Copy the structure.
 

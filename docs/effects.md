@@ -91,9 +91,11 @@ in-memory `Map` by `effect.id` via `src/Effects/effects.library.ts`.
 
 All effect application logic lives in `src/Effects/index.ts`. All combat-time helpers
 (resist resolution, tick, regen, roll modifiers, thorns, mark, Heart specials) live in
-`src/Combat/index.ts`. The round resolver (`src/Combat/combat.resolver.ts` and the
-per-phase files under `src/Combat/phases/`) wires them together; the interactive demo
-CLI (`src/CLI/game.cli.ts`) drives the resolver from a tabbed prompt.
+`src/Combat/index.ts`. The Hazard-Pattern combat engine
+(`src/Combat/combat.engine.ts`, via `playCombatCard` / `resolveThreatPhase`) wires
+them together, and the shared card resolver (`executeSkill` in
+`src/Cards/skill.engine.ts`) applies card effects; the standalone combat CLI
+(`npm run combat`) drives the engine.
 
 ---
 
@@ -238,7 +240,7 @@ applyEffect (rolls intensity / duration / resist)
                     → { baseStats, derivedStats, nonCombatStats, defenseDelta }
                         → getAttackStat / getDefenseStat / getSaveStat
                           getBaseStat / getSaveStat                    // src/Combat/stats.ts
-                            → resolveCombatRound (every stat read)
+                            → playCombatCard / resolveThreatPhase (every stat read)
 ```
 
 Aggregation rules:
@@ -274,7 +276,7 @@ library effects (`buff_body_attack_up`, `buff_max_hp_up`,
 | `reflectDamage`           | **LIVE** | `getThornsReflect()` — `src/Combat/effects.ts` |
 | `regeneration.healthPerRound` | **LIVE** | `applyRegen()` (positive) / `applyDrain()` (negative) — `src/Combat/effects.ts` |
 | `statModifiers`           | **LIVE** | `getEffectiveStats()` re-derives stats; consumed by `getAttackStat` / `getDefenseStat` / `getSaveStat` — `src/Combat/stats.ts` |
-| `defenseModifier`         | **LIVE** | `getEffectiveStats().defenseDelta`; folded into defending paths via `getDefenseStat` and into passive damage paths via the scenario phase — `src/Combat/stats.ts`, `src/Combat/phases/scenario.ts` |
+| `defenseModifier`         | **LIVE** | `getEffectiveStats().defenseDelta`; folded into defending paths via `getDefenseStat` and into passive damage paths via the combat engine — `src/Combat/stats.ts`, `src/Combat/combat.engine.ts` |
 | `damageOverTime`          | **LIVE** | `processDamageOverTime()` — `src/Combat/effects.ts`, split by `tickPhase` (`'start'` / `'end'`) |
 | `advantageModifier`       | **LIVE** | `resolveEffectiveAdvantage()` — `src/Combat/advantage.ts` (grants override matchup per Q8) |
 | `actionRestriction`       | **LIVE** | `canAct()` — `src/Combat/effect-modifiers.ts` (skipTurn / forcedStance / blockedStances per Q7) |
@@ -307,10 +309,10 @@ this?" without inferring from context. The convention:
 
 | Surface | sourceId | Set by |
 |---|---|---|
-| Skill engine (skill caster on opponent or self) | `player.id` | `src/Skills/skill.engine.ts` |
+| Skill engine (skill caster on opponent or self) | `player.id` | `src/Cards/skill.engine.ts` |
 | Combat proc (primary application) | `actor.id` | `src/Combat/combat-effects.ts` |
 | Combat proc (rebound onto attacker) | `actor.id` (original attacker) | `src/Combat/combat-effects.ts` |
-| Combat fumble (self-application) | `actor.id` | `src/Combat/phases/scenario.ts` (passes `actor.id` to `applyFumbleOutcome`) |
+| Combat fumble (self-application) | `actor.id` | `src/Combat/combat-effects.ts` (passes `actor.id` to `applyFumbleOutcome`) |
 | Equipment passive | `item.id` | `src/Character/equipment.reducer.ts` |
 | Environmental hazard (MapEvents) | _undefined_ | `src/World/MapEvents/handlers.ts` (no combatant source — deliberate) |
 
@@ -350,7 +352,7 @@ total = Σ (def.payload.rollModifier + def.payload.rollModifierPerIntensity × a
         for each ae in target.effects
 ```
 
-Called from the scenario phase (`src/Combat/phases/scenario.ts`) to adjust attack and
+Called from the combat engine (`src/Combat/combat.engine.ts`) to adjust attack and
 damage rolls before they are applied. Both fields are summed across **all** active
 effects simultaneously.
 
@@ -363,7 +365,7 @@ total = Σ (def.payload.reflectDamage × ae.intensity)
         for each ae in bearer.effects
 ```
 
-Called from the scenario phase (`src/Combat/phases/scenario.ts`) after a successful
+Called from the combat engine (`src/Combat/combat.engine.ts`) after a successful
 hit on the bearer. The total is dealt as reflect damage back to the attacker. Scales
 with `intensity` — higher stacks deal more thorns.
 
@@ -393,7 +395,7 @@ intensity = target.effects
               ?.intensity ?? 0
 ```
 
-Called from the scenario phase (`src/Combat/phases/scenario.ts`) during Mind/Attack
+Called from the combat engine (`src/Combat/combat.engine.ts`) during Mind/Attack
 resolution. The mark's intensity is added as a flat damage bonus to the attack roll.
 
 ### Buff stripping and extension (Heart/Attack special)
@@ -406,7 +408,7 @@ resolution. The mark's intensity is added as a flat damage bonus to the attack r
 - `extendRandomBuffDuration`: picks a random `buff`-typed active effect from the
   **player** and adds rounds (capped at `MAX_EFFECT_DURATION`).
 
-Both are called from the scenario phase (`src/Combat/phases/scenario.ts`) when the
+Both are called from the combat engine (`src/Combat/combat.engine.ts`) when the
 player's Heart/Attack hits.
 
 ### Duration ticking

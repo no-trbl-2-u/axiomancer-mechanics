@@ -67,7 +67,7 @@ Adds `+1` to `physicalAttack`. This is a **flat** additive bonus to the derived 
 > **Implementation status — LIVE (since Spec 01):** `statModifiers` are folded into the
 > combat math via `getEffectiveStats()` (`src/Combat/effect-modifiers.ts`), which feeds
 > `getAttackStat` / `getDefenseStat` / `getSaveStat`
-> (`src/Combat/stats.ts`) and the scenario phase (`src/Combat/phases/scenario.ts`).
+> (`src/Combat/stats.ts`) and the scenario phase (`src/Combat/combat.engine.ts`).
 > The "Phase 2" framing in older buff/debuff docs predates the engine wiring — see
 > `docs/effects/README.md` for the full live-vs-pending table.
 
@@ -83,7 +83,7 @@ const perIntensity = (def?.payload.rollModifierPerIntensity ?? 0) * (ae.intensit
 return total + flat + perIntensity;
 ```
 
-This total is added to attack and damage rolls in `src/Combat/phases/scenario.ts`.
+This total is added to attack and damage rolls in `src/Combat/combat.engine.ts`.
 
 ---
 

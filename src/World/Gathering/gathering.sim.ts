@@ -31,7 +31,6 @@ import {
     withdrawFromGathering,
 } from './gathering.engine';
 import type { GatherOutcome, GatherOutcomeTier, GatherPlotEntry, GatheringSessionState } from './gathering.types';
-// import { GATHERING_TUNING } from './gathering.tuning';
 
 export type GatherPolicyId = 'timid' | 'balanced' | 'greedy' | 'wrath-pusher' | 'communion-chaser';
 

@@ -36,6 +36,7 @@ import { createStore, StoreApi } from 'zustand/vanilla';
 import { Character } from '../Character/types';
 import { Enemy } from '../Enemy/types';
 import { Encounter } from '../World/types';
+import { MapName } from '../World/map.library';
 import {
     Item, Equipment, EquipmentSlot,
 } from '../Items/types';
@@ -168,6 +169,13 @@ export interface GameActions {
 
     // ── World / dialogue ─────────────────────────────────────────────────────
     moveToNode: (nodeId: string) => void;
+    /**
+     * Continent-level travel: completes the current map, unlocks `mapName`
+     * on the current continent, and switches to a fresh `MapState` for it.
+     * Lets a run progress across the whole continent (e.g. fishing-village →
+     * northern-forest) so every map's authored events become reachable.
+     */
+    travelToMap: (mapName: MapName) => void;
     processNode: () => void;
     applyDialogue: (tree: DialogueTree, choice: DialogueChoice) => void;
 
@@ -427,6 +435,10 @@ export function createGameStore(
             // ── World / dialogue ─────────────────────────────────────────────
             moveToNode(nodeId) {
                 dispatch({ type: 'MOVE_TO_NODE', payload: { nodeId } });
+            },
+
+            travelToMap(mapName) {
+                dispatch({ type: 'TRAVEL_TO_MAP', payload: { mapName } });
             },
 
             processNode() {

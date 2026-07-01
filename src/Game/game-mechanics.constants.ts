@@ -97,20 +97,6 @@ export const RESOURCE_GENERATION = {
 // ============================================================================
 // COMBAT — RESOURCE CARRY (between encounters)
 // ============================================================================
-// A fraction of UNSPENT philosophical resources (fallacy / paradox — the skill
-// fuel) carries from a won combat into the next combat's seed. This rewards
-// casting skills (which apply status effects) and planning across encounters —
-// the STRATEGIST path the VISION.md doctrine optimises for. Stance tokens
-// (heart/body/mind) are NOT carried, so turtling or basic-attack token-banking
-// earns no cross-combat momentum. Conservative defaults; the tuning loop owns
-// the numbers.
-export const RESOURCE_CARRY = {
-    /** Fraction of unspent fallacy / paradox carried forward (floored). */
-    FRACTION: 0.5,
-    /** Hard cap on the amount carried per resource, so carry cannot snowball. */
-    CAP: 3,
-} as const;
-
 // ============================================================================
 // COMBAT — FRIENDSHIP MECHANIC
 // ============================================================================
@@ -195,5 +181,5 @@ export const ENEMY_STAT_PER_LEVEL = 3;
 // to enemy defensive stats (HP/defense/resists), weighted away from attack to
 // avoid defeat spikes. The curve is ≈0 at level 1 (early game untouched) and
 // grows with level to balance late-game trivialization. Magnitude is tuned by
-// the mechanics loop via the tunable registry.
+// the `/combat-tuning` balance loop.
 export const ENEMY_GEAR_TIER_PER_LEVEL = 0.02;

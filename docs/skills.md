@@ -100,9 +100,9 @@ many Body tokens they hold.
 
 ## Skill Tiers
 
-A skill's tier is determined by the shape of its `resourceCost`, not a
-separate field. The tier field is explicit on the type for library lookups and
-effect resist rules, but the cost object fully encodes the tier semantics.
+A skill's tier is an explicit `tier` field on the type, used for library
+lookups and effect-resist rules. The cost shapes below still track tier by
+convention.
 
 | Tier | Cost shape | Resonance required | Fires when |
 |------|-----------|-------------------|-----------|
@@ -114,31 +114,28 @@ effect resist rules, but the cost object fully encodes the tier semantics.
 
 ## Skill Type Shape
 
-Defined in `src/Skills/types.ts`. The `manaCost` and `level` fields from the
-earlier type stub are removed.
+Defined in `src/Cards/types.ts` as the `Card` interface. The `manaCost` and
+`level` fields from the earlier type stub are removed, and the per-card
+`resourceCost` / `ResourceCost` type was removed in 0.36.0 (de-tokenized) —
+card cost is now paid from the drafted stance die, not a token-cost object.
 
 ```ts
-interface Skill {
+interface Card {
   id: string;
   name: string;
   description: string;
   category: 'fallacy' | 'paradox';
   philosophicalAspect: 'body' | 'mind' | 'heart';
   tier: 1 | 2 | 3;
-  resourceCost: ResourceCost;
   targetType: 'self' | 'enemy';
   basePower: number;
   scalingStat: 'body' | 'mind' | 'heart';
-  learningRequirement?: SkillLearningRequirement;
-  combatEffects?: SkillCombatEffects[];
-}
-
-interface ResourceCost {
-  heart?: number;
-  body?: number;
-  mind?: number;
-  fallacy?: number;
-  paradox?: number;
+  scalingMultiplier?: number;
+  combatEffects?: CardCombatEffects[];
+  specialMechanics?: CardSpecialMechanic[];
+  learningRequirement?: CardLearningRequirement;
+  synergy?: CardSynergy;
+  incrementsFriendship?: number;
 }
 
 interface CombatResources {
@@ -181,36 +178,17 @@ Moral alignment gating is deferred to Spec 10.
 
 ## Engine API
 
-Defined in `src/Skills/skill.engine.ts`.
+Defined in `src/Cards/skill.engine.ts`.
 
 | Function | Signature | Description |
 |---|---|---|
 | `generateBasicActionResources` | `(resources, stance, outcome) → CombatResources` | Adds stance tokens per the generation table. `outcome: 'hit' \| 'miss' \| 'defend'` |
 | `generatePhilosophicalResource` | `(resources, category) → CombatResources` | Adds 1 Fallacy or Paradox token after skill use |
-| `canUseSkill` | `(resources, skill) → boolean` | Returns `true` if every key in `resourceCost` is satisfied. Resonance check is implicit |
-| `spendResources` | `(resources, cost) → CombatResources` | Deducts cost; throws if insufficient (guard with `canUseSkill` first) |
 | `calculateSkillDamage` | `(character, skill, advantage) → number` | Applies the damage formula above |
-| `executeSkill` | `(state, skillId) → RoundResolution` | Full execution: validate → spend → resolve damage/effects → generate philosophical resource → emit events |
-| `carryPhilosophicalResources` | `(resources, fraction?, cap?) → Partial<CombatResources>` | Cross-combat carry: returns the unspent fallacy / paradox to seed the next combat. `floor(fraction × unspent)` per resource, clamped to `cap`. Stance tokens never carry. Sparse result (positive keys only); pure |
+| `executeSkill` | `(state, skillId, lookupSkill, casterSide?) → CardResolution` | Full execution: validate → resolve damage/effects → generate philosophical resource → emit events. Returns `{ state, events: CardEvent[] }` |
 
-`executeSkill` emits `RoundEvent`s in the same stream as basic combat actions,
-so the CLI renderer requires no special cases.
-
-### Cross-combat resource carry
-
-A fraction of the **unspent** philosophical resources (fallacy / paradox — the
-skill fuel) carries from a won combat into the next combat's seed:
-`carryPhilosophicalResources` returns `floor(fraction × unspent)` per resource,
-hard-capped so carry cannot snowball. The defaults live in the
-`RESOURCE_CARRY` constant (`src/Game/game-mechanics.constants.ts`,
-re-exported from the package root): `FRACTION = 0.5`, `CAP = 3`.
-
-Stance tokens (heart / body / mind) are **never** carried — only the
-skill-fuel resources — so the carry rewards casting skills (and the status
-effects they apply), not turtling or basic-attack token-banking. This is the
-STRATEGIST cross-encounter path the combat vision optimises for (`VISION.md`).
-The sparse `Partial<CombatResources>` result is suitable for
-`Character.carriedResources`, which seeds the next `initializeCombat`.
+`executeSkill` emits `CardEvent`s in the same stream as basic combat actions,
+so the combat renderer requires no special cases.
 
 ### Phase 142 — Extended Synergy Predicates
 
@@ -226,7 +204,7 @@ The sparse `Partial<CombatResources>` result is suitable for
 | `checkTotalIntensityPredicate(predicate, effects, effectLibrary)` | `total_intensity` mode: the sum of intensity across all `predicate.effectType` effects reaches `predicate.minimumTotalIntensity`. |
 | `ExtendedSynergyPredicate` | Union type discriminated by `mode` covering the five check variants above. Importable as `import type { ExtendedSynergyPredicate } from 'axiomancer-mechanics'`. |
 
-Source: `src/Skills/synergy-predicates.ts`.
+Source: `src/Cards/synergy-predicates.ts`.
 
 ### Character skill access
 
@@ -241,20 +219,20 @@ interface Character {
 }
 ```
 
-`knownSkills` is the combat-accessible skill catalogue. The combat layer should
-filter this catalogue by `canUseSkill(combatResources, skill)` and present only
-affordable skills at the moment of choice.
+`knownSkills` is the combat-accessible skill catalogue. The combat layer
+projects these entries into cards (`toCombatCard`) and presents the ones the
+current hand/deck and drafted stance die can pay for at the moment of choice.
 
 Implementation status: Phase 99 + Phase 159 complete. The legacy
 `equippedSkills` field was removed entirely (ADR-0002). All skill access uses
-`knownSkills` filtered by `canUseSkill(combatResources, skill)`. Legacy v7 saves
-fold their old rotation into `knownSkills` via the v7→v8 save migration.
+the `knownSkills` catalogue. Legacy v7 saves fold their old rotation into
+`knownSkills` via the v7→v8 save migration.
 
 ---
 
 ## Early-Game Skill Library
 
-Defined in `src/Skills/skill.library.ts`.
+Defined in `src/Cards/cards.library.ts`.
 Minimum 12 skills covering all `philosophicalAspect × category` cells.
 
 ### Tier 1 — Single Stance Cost
@@ -297,21 +275,17 @@ Minimum 12 skills covering all `philosophicalAspect × category` cells.
 
 ## Combat Integration
 
-Resources are generated inside `resolveCombatRound` immediately after the
-roll contest is resolved — before effects tick at round end. The resolver
-calls `generateBasicActionResources` with the player's stance and the
-contest outcome (`'hit'`, `'miss'`, or `'defend'`).
+A card's bottom action executes through the unchanged `executeSkill`. The
+Hazard-Pattern engine's `playCombatCard` (`src/Combat/combat.engine.ts`) drives
+`executeSkill` (`src/Cards/skill.engine.ts`) for the drafted card, then folds
+the returned `CardEvent`s into the combat event stream — skill events share the
+same `actor` shape as basic action events, so the renderer needs no special
+cases.
 
-When `playerAction.action === 'skill'`, the resolver routes to `executeSkill`
-instead of the attack/defend path. The `CombatEvents` stream is unchanged —
-skill events use the same `phase` and `actor` shape as basic action events.
-
-The combat CLI should present a Skills sub-prompt after the player selects
-`action: skill`, listing learned/unlocked skills that are currently affordable
-under `canUseSkill(combatResources, skill)`. The chosen `skillId` is threaded
-into `resolveCombatRound` as `playerAction.skillId`. Selection is over the
-`knownSkills` catalogue (ADR-0002 / Phase 99); the legacy `equippedSkills` gate
-was removed in Phase 159.
+Card selection is over the `knownSkills` catalogue (ADR-0002 / Phase 99); the
+legacy `equippedSkills` gate was removed in Phase 159. Cards are projected from
+skill-library entries via `toCombatCard` and paid for with the drafted stance
+die (see `docs/combat.md` → Hazard-Pattern), not a per-skill token cost.
 
 ---
 

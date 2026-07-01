@@ -1,5 +1,7 @@
 # Playtest Module
 
+> **Superseded (0.37.0):** the legacy turn-based combat resolver this harness drove was removed, and the `src/Playtest/` module documented here no longer exists. The current balance witness is `simulateHazardPatternCombat` (`src/Combat/combat.encounter.sim.ts`), run via `npm run combat-sim` (`src/CLI/combat-sim.cli.ts`). See `docs/combat.md` and the `/combat-tuning` skill (`skills/combat-tuning.md`). Retained as a historical record.
+
 > Automated combat simulation and balance testing framework for Axiomancer Mechanics
 
 ## Overview

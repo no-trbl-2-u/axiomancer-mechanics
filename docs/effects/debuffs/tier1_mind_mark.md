@@ -91,7 +91,7 @@ The mark expires naturally via `tickAllEffects` on the opponent.
 
 ### Damage bonus formula
 
-Called in `src/Combat/phases/scenario.ts` during Mind/Attack resolution:
+Called in `src/Combat/combat.engine.ts` during Mind/Attack resolution:
 
 ```typescript
 // src/Combat/index.ts
@@ -105,7 +105,7 @@ The returned intensity is added as a flat `damageBonus` parameter to
 `calculateFinalDamage`:
 
 ```typescript
-// src/Combat/phases/scenario.ts (during Mind/Attack resolution)
+// src/Combat/combat.engine.ts (during Mind/Attack resolution)
 const markBonus = getStudyMarkIntensity(enemy);
 const finalDamage = calculateFinalDamage(baseDamage, reduction, isCritical, markBonus);
 ```
