@@ -82,6 +82,40 @@ const temperedDoubt: Card = {
     tags: ['sandbox', 'experimental', 'defense', 'guard', 'mid-game'],
 };
 
+// ─── early-dot-pilot — plugging the tier-1 DoT gap ───────────────────────────
+
+/**
+ * `/deck-tuning --focus="Early"` finding: `stageEligibleCardIds(early)` has
+ * ZERO `direct-dot` verb-class cards — every DoT effect in the library
+ * (`debuff_bleed`, `debuff_poison`, `debuff_burn`, ...) is tier >= 2, so the
+ * tier-1-gated early pool cannot draft or draw a single DoT line. Measured:
+ * `dotFrac` = 0% across every early cell/policy (baseline matrix,
+ * `npm run combat-playtest -- --stage=early --policy=all --runs=60 --seed=1
+ * --cards`, 2026-07-02). This composes the EXISTING `debuff_bleed` effect
+ * (already used by `slippery-slope`) at a deliberately weak intensity/
+ * duration onto a new tier-1 card — a light early-game DoT opener, not a
+ * tier-2 card in early's clothing.
+ */
+const paperCutArgument: Card = {
+    id: 'sandbox-paper-cut-argument',
+    name: 'Paper Cut Argument',
+    category: 'fallacy',
+    philosophicalAspect: 'body',
+    description:
+        'A nick, not a wound — you barely felt it land. But the argument '
+        + 'keeps reopening the same thin line, and thin lines add up.',
+    tier: 1,
+    targetType: 'enemy',
+    basePower: 3,
+    scalingStat: 'body',
+    combatEffects: [
+        { effectId: 'debuff_bleed', appliedTo: 'opponent', intensity: 1, duration: 2 },
+    ],
+    learningRequirement: { level: 1 },
+    addedIn: '2026-07-02',
+    tags: ['sandbox', 'experimental', 'dot', 'early-game'],
+};
+
 export const SANDBOX_CARD_SETS: Record<string, SandboxCardSet> = {
     'forge-example': {
         id: 'forge-example',
@@ -97,6 +131,16 @@ export const SANDBOX_CARD_SETS: Record<string, SandboxCardSet> = {
             // stay the efficient path.)
             { cardId: 'ad-hominem-strike', patch: { basePower: 9 } },
         ],
+    },
+    'early-dot-pilot': {
+        id: 'early-dot-pilot',
+        name: 'Early DoT Pilot',
+        description:
+            'Plugs the tier-1 DoT gap: a single weak-bleed opener '
+            + '(`sandbox-paper-cut-argument`) so the early stage has a live DoT '
+            + 'line instead of zero. A/B against the early-stage baseline '
+            + '(dotFrac 0% everywhere) across blind/dot-weaver/greedy.',
+        cards: [paperCutArgument],
     },
 };
 
