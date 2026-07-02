@@ -90,7 +90,7 @@ export const AUTHORED_THREAT_SEQUENCES: Record<string, AuthoredThreatPhase[]> = 
     // Cerebral arguer — control-resistant + dot-weak early, flips to dot-vulnerable when its certainty finally cracks.
     'enemy-contrarian-revenant': [
         { enemyStance: 'mind', actionText: "The Revenant rebuts your position before you finish forming it", stanceHint: "Whatever you assert, it has already prepared the opposite, coolly, in advance." },
-        { enemyStance: 'mind', damageWeight: 0.85, threatEffectId: 'debuff_silence', threatIntensity: 2, actionText: "The Revenant talks over you until your own argument dissolves", stanceHint: "It will not let a single one of your words stand uncontested." },
+        { enemyStance: 'mind', damageWeight: 0.21, threatEffectId: 'debuff_silence', threatIntensity: 2, actionText: "The Revenant talks over you until your own argument dissolves", stanceHint: "It will not let a single one of your words stand uncontested." },
         { enemyStance: 'heart', damageWeight: 1.35, threatEffectId: 'debuff_hex', threatIntensity: 3, actionText: "The Revenant, finally cornered, refuses to die out of sheer spite and curses your certainty", stanceHint: "It would rather rot in place forever than grant you the last word." },
     ],
     // A wordless arguing tree — you cannot reason with timber.
@@ -171,7 +171,7 @@ export const AUTHORED_THREAT_SEQUENCES: Record<string, AuthoredThreatPhase[]> = 
     ],
     // Befriendable silence — control-weak (answer it), but cerebral and dot-resistant; mind-stance trap.
     'enemy-hush-wraith': [
-        { enemyStance: 'mind', damageWeight: 0.85, threatEffectId: 'debuff_silence', actionText: "The Wraith lets the quiet press against your throat", stanceHint: "It waits with the patience of a held breath, weighing whether you will speak." },
+        { enemyStance: 'mind', damageWeight: 0.21, threatEffectId: 'debuff_silence', actionText: "The Wraith lets the quiet press against your throat", stanceHint: "It waits with the patience of a held breath, weighing whether you will speak." },
         { enemyStance: 'mind', threatEffectId: 'debuff_confusion', threatIntensity: 2, actionText: "The Wraith returns your own unanswered question", stanceHint: "It listens past your words, cataloguing each thing you cannot prove." },
         { enemyStance: 'heart', damageWeight: 1.25, actionText: "The Wraith fills the silence with everything you feared was there", stanceHint: "Cornered, the cold listener finally lets its own old grief show through." },
     ],
@@ -243,7 +243,7 @@ export const AUTHORED_THREAT_SEQUENCES: Record<string, AuthoredThreatPhase[]> = 
     ],
     // Cold litigator of unreality (elite, mind-dom) — Control-resistant + DoT-weak; ruled by evidence, undone by erosion.
     'enemy-prosecutor-of-the-real': [
-        { enemyStance: 'mind', damageWeight: 0.85, threatEffectId: 'debuff_silence', threatIntensity: 2, actionText: "The Prosecutor strikes your testimony from the record mid-breath", stanceHint: "It needs no anger; the exhibits are damning enough on their own." },
+        { enemyStance: 'mind', damageWeight: 0.21, threatEffectId: 'debuff_silence', threatIntensity: 2, actionText: "The Prosecutor strikes your testimony from the record mid-breath", stanceHint: "It needs no anger; the exhibits are damning enough on their own." },
         { enemyStance: 'mind', threatEffectId: 'debuff_vulnerability_mind', threatIntensity: 2, actionText: "The Prosecutor admits the proof that you were never real to begin with", stanceHint: "Each question is laid like a trap that has already sprung." },
         { enemyStance: 'body', damageWeight: 1.35, threatEffectId: 'debuff_hex', threatIntensity: 3, actionText: "The Prosecutor rests its case, and the verdict erases your defense", stanceHint: "The argument finished, it closes the folder and lets the conclusion fall like a gavel-blow." },
     ],
@@ -286,6 +286,22 @@ export const AUTHORED_THREAT_SEQUENCES: Record<string, AuthoredThreatPhase[]> = 
         { enemyStance: 'mind', damageWeight: 0.9, actionText: "The Forest Mind tightens a slow lattice of roots around your footing", stanceHint: "It answers in growth rings — no hurry, having thought this through across a hundred winters." },
         { enemyStance: 'body', threatEffectId: 'debuff_root', threatIntensity: 2, actionText: "The Forest Mind heaves the living wood upward to seize you", stanceHint: "For one season it forgets thought entirely and simply pushes, vast and unstoppable as a thaw." },
         { enemyStance: 'heart', damageWeight: 1.2, threatEffectId: 'debuff_sleep', threatIntensity: 2, actionText: "The Forest Mind sings the long green lullaby of every autumn it has outlived", stanceHint: "Beneath the calculus is grief — a thousand years of letting things fall, and the ache of it shows." },
+    ],
+    // The impossible playtest ceiling (unique, level 55) — the skill-ceiling
+    // benchmark: calibrated so the BEST policy line scrapes a 1-5% win rate
+    // (near-impossible, not scripted-unwinnable). Erosion-stubborn AND
+    // control-shrugging: almost nothing you bring is complete enough to hold it.
+    // PLAYTEST-CALIBRATION — weights 0.21 / 0.232 / 0.271 / 0.326, phase-3 self-knit (8).
+    // The L55 unique threat budget is enormous, so these look tiny: at x1.7 fire
+    // scale and the boss escalation clock they still land ~60-180 HP per phase.
+    // Empirically (200 seeds, seed 1): greedy/blind 1.5%, every other scripted
+    // policy 0%. The Incompleteness does not hit hard — it simply cannot be
+    // finished (1375 HP; most losses are the round cap, which is the theme).
+    'enemy-the-incompleteness': [
+        { enemyStance: 'mind', damageWeight: 0.21, threatEffectId: 'debuff_silence', threatIntensity: 2, actionText: "The Incompleteness states a truth your system cannot express, and your reply dies unprovable", stanceHint: "It begins from outside every axiom you brought; you cannot see the floor it stands on." },
+        { enemyStance: 'heart', damageWeight: 0.232, threatEffectId: 'debuff_fear', threatIntensity: 2, actionText: "The Incompleteness shows you the true sentence about yourself that you will never be able to prove", stanceHint: "For a moment it grieves for you, the way one grieves for a house that believes it is finished." },
+        { enemyStance: 'mind', damageWeight: 0.271, threatEffectId: 'debuff_lethe_fog', threatIntensity: 3, enemyHeal: 8, actionText: "The Incompleteness incorporates your strongest argument as a new axiom and grows truer", stanceHint: "Whatever you add to it, it contains; whatever wounds it becomes another thing it survives." },
+        { enemyStance: 'mind', damageWeight: 0.326, threatEffectId: 'debuff_all_stats_down', threatIntensity: 3, isFinalPhase: true, actionText: "The Incompleteness proves, within you, the statement that you cannot go on — and you cannot refute it", stanceHint: "There is no triumph in it; the proof was never finishable, it only needed you to stop." },
     ],
     // Befriendable peace-by-force (boss, even stats) — Control-weak (it can still be talked out of agreement); erosion-stubborn.
     'enemy-the-last-consensus': [

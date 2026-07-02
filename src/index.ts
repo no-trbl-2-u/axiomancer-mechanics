@@ -144,6 +144,40 @@ export type {
     CardDieCost,
 } from './Combat';
 
+// ─── Playtest supercharge — stage matrix, policy roster, deck drafting ────────
+// Doctrine witnesses at every campaign stage: status play must stay the
+// efficient path to dropping enemy HP.
+export {
+    simulateHazardPatternCombatDetailed, runOneEncounter,
+    COMBAT_STAGE_ORDER, COMBAT_STAGE_PROFILES,
+    getStageProfile, isCombatStageId, stageEligibleCardIds, buildStagePlayer,
+    draftCombatDeck, resolveDeckSelection,
+    COMBAT_SIM_POLICIES, COMBAT_SIM_POLICY_ORDER, getSimPolicy, listSimPolicies,
+    runPlaytestCell, runPlaytestMatrix, formatPlaytestReport,
+} from './Combat';
+export type {
+    CombatSimRunOptions, CombatSimDetailedOptions, CombatCardUsage,
+    CombatStageId, CombatStageProfile,
+    DeckDraftOptions, CombatDeckSelection,
+    CombatSimPolicy,
+    PlaytestCellSpec, PlaytestCellResult, PlaytestMatrixOptions,
+    PlaytestStageSummary, PlaytestReport,
+} from './Combat';
+
+// ─── Sandbox cards — the deck-forge experimentation surface ───────────────────
+// New experimental cards + numeric overrides of library cards, live everywhere
+// `getCardById` is consulted; the `/deck-tuning` loop A/Bs them here before a
+// literal is promoted into the library.
+export {
+    bindSandboxLibraryGuard, registerSandboxCards, registerSandboxOverride,
+    clearSandboxCards, getSandboxCard, listSandboxCards, hasSandboxContent,
+} from './Cards/cards.sandbox';
+export type { SandboxCardPatch } from './Cards/cards.sandbox';
+export {
+    SANDBOX_CARD_SETS, listSandboxSets, applySandboxSet,
+} from './Cards/cards.sandbox-sets';
+export type { SandboxCardSet } from './Cards/cards.sandbox-sets';
+
 // ─── Effects ──────────────────────────────────────────────────────────────────
 export {
     applyEffect, applyTier1CombatEffect,

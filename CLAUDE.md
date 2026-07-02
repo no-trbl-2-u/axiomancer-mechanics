@@ -26,6 +26,10 @@ basic-attack trading is the weak baseline rather than absent. Tuned by
 `simulateHazardPatternCombat`). The new combat is LIVE in mobile map encounters;
 the legacy turn-based `resolveCombatRound` now backs only the dev-only legacy
 combat tab and is tuned by **`/legacy-combat-tuning`** (STRATEGIST witness).
+Alongside `/combat-tuning`: **`/deck-tuning`** forges the card pool
+(sandbox-first card/deck A/Bs, promotion into the library) and
+**`/combat-playtest`** runs the stage matrix plus qualitative `playtester`
+agents (report only; see `docs/playtest.md`).
 
 Canonical: `VISION.md` → Combat vision. Echoed in `plan/bearings.md`, `agents.md`
 (standing rule 10), `AGENTS.md`, the `combat-tuning` + `legacy-combat-tuning`

@@ -20,6 +20,7 @@
  */
 
 import { Card } from './types';
+import { bindSandboxLibraryGuard, getSandboxCard } from './cards.sandbox';
 
 // ─── Tier 1 — Single Stance Cost (6 skills) ──────────────────────────────────
 
@@ -1538,11 +1539,19 @@ const skillRegistry: ReadonlyMap<string, Card> = new Map(
     cardLibrary.map(skill => [skill.id, skill]),
 );
 
+// Sandbox wiring — gives the (import-cycle-free) sandbox registry a base-card
+// lookup for collision checks and override merging.
+bindSandboxLibraryGuard(id => skillRegistry.get(id));
+
 /**
  * O(1) lookup by skill ID. Returns `undefined` if no skill matches — callers
  * must handle that (the combat resolver emits a `skill-blocked` event with
  * `reason: 'unknown-skill'` rather than throwing).
+ *
+ * Sandbox-aware: experimental cards / overrides registered via
+ * `cards.sandbox.ts` take precedence (a no-op O(1) check when the sandbox is
+ * empty, i.e. in all normal play).
  */
 export function getCardById(id: string): Card | undefined {
-    return skillRegistry.get(id);
+    return getSandboxCard(id) ?? skillRegistry.get(id);
 }

@@ -384,8 +384,8 @@ describe('Spec 25 — constants', () => {
 // ── AUTHORED_THREAT_ENEMY_IDS ─────────────────────────────────────────────────
 
 describe('Spec 25 — AUTHORED_THREAT_ENEMY_IDS', () => {
-    it('contains exactly 61 authored-threat enemy slugs', () => {
-        expect(AUTHORED_THREAT_ENEMY_IDS.length).toBe(61);
+    it('contains exactly 62 authored-threat enemy slugs', () => {
+        expect(AUTHORED_THREAT_ENEMY_IDS.length).toBe(62);
     });
 
     it('every entry follows the "enemy-<slug>" naming convention', () => {

@@ -183,7 +183,7 @@ automation/                # standalone walkthrough script + replay fixtures
 - [`Knowledge-Gaps.md`](./Knowledge-Gaps.md) — open design and intent questions
 - [`braindump/BRAINDUMP.md`](./braindump/BRAINDUMP.md) — unorganised idea backlog
 - [`docs/testing.md`](./docs/testing.md) — **hermetic e2e testing standard (required for every implementation)**
-- [`docs/playtest.md`](./docs/playtest.md) — automated playtest module and Phase 107 fix/playthrough difficulty-tuning loop
+- [`docs/playtest.md`](./docs/playtest.md) — Hazard-Pattern Combat playtest reference: stage profiles, sim-policy roster, deck-selection grammar, sandbox card workflow, CLI cookbook (legacy playtest module: [`docs/playtest-legacy.md`](./docs/playtest-legacy.md))
 - [`docs/hazard-minigame.md`](./docs/hazard-minigame.md) — accepted v0 doctrine for the Mage Knight-like Hazard minigame: route choice, 4 dice, 5-card hand, card/enchantment lifecycle, `O - X` scoring, 30 action cards (Common/Uncommon/Rare), and 15 hazard cards
 - [`docs/hazard-minigame-api.md`](./docs/hazard-minigame-api.md) — Hazard minigame package-consumer guide: public exports, legal state-machine sequence, mobile presenter boundary, and v0 caveats
 - [`docs/hazard-minigame-prd.md`](./docs/hazard-minigame-prd.md) — Hazard minigame PRD: user stories, functional requirements, and success metrics

@@ -1,17 +1,20 @@
 /**
  * Hazard-Pattern Combat — balance simulator (HP model).
  *
- * Drives full encounters through the pure engine with a competent scripted policy
- * so balance can be asserted in hermetic tests and tuned with evidence. The win
- * condition is enemy HP → 0; status effects do the heavy lifting (DoT erodes HP;
- * control hinders the enemy's turn), strikes are the weak baseline. Every run is
- * reproducible from its seed.
+ * Drives full encounters through the pure engine with scripted policies so
+ * balance can be asserted in hermetic tests and tuned with evidence. The win
+ * condition is enemy HP → 0; status effects do the heavy lifting (DoT erodes
+ * HP; control hinders the enemy's turn), strikes are the weak baseline. Every
+ * run is reproducible from its seed.
  *
- * The policy models a read-playing human: each turn it rolls 2 dice, drafts the
- * one that wins the hidden-stance read (preferring a color-match), powers the best
- * STATUS card (favouring a NEW distinct status for the combo refresh), rides the
- * combo loop, banks Conviction and spends it on damaging Signatures, and Befriends
- * a low-HP foe to take the mercy/spare path.
+ * The default `greedy` policy models a read-playing human: each turn it rolls
+ * 2 dice, drafts the one that wins the hidden-stance read (preferring a
+ * color-match), powers the best STATUS card (favouring a NEW distinct status
+ * for the combo refresh), rides the combo loop, banks Conviction and spends it
+ * on damaging Signatures, and Befriends a low-HP foe to take the mercy/spare
+ * path. The full roster (dot-weaver, control-lock, aggro-brute, turtle, chaos,
+ * mercy-seeker) lives in `combat.sim-policies.ts`; `greedy`/`blind` keep
+ * bit-identical behavior to the pre-roster sim.
  */
 
 import type { Character } from '../Character/types';
@@ -21,18 +24,21 @@ import {
     resolveThreatPhase, startTurn, draftStanceDie, endTurn, chooseDraft, revealedCurrentStance,
     playSignatureSkill, getDraftedDie, handCards, selectMercyChoice, getSignatureSkill,
 } from './combat.engine';
-import { getPendingDotTotal, getDistinctDebuffCount } from './effects';
-import { getCardById } from '../Cards/cards.library';
+import { getRng } from '../Utils/rng';
 import type { CombatCard, CombatEncounterState, CombatOutcome } from './combat.encounter.types';
+import { COMBAT_SIM_POLICIES, type CombatSimPolicy, type CombatSimPolicyId } from './combat.sim-policies';
 
 /**
  * `greedy` — a competent omniscient witness: drafts using the enemy's hidden
  * stance for the sharpest balance signal. `blind` — a realistic-player witness:
  * drafts using ONLY player-visible info (the stance is unknown until revealed via
  * the read or a Scout), so it can't pre-seek advantage. Tune player-facing
- * difficulty against `blind`; tune ceilings against `greedy`.
+ * difficulty against `blind`; tune ceilings against `greedy`. The wider roster
+ * (dot-weaver, control-lock, aggro-brute, turtle, chaos, mercy-seeker) is
+ * defined in `combat.sim-policies.ts`; the id type is re-exported here so
+ * existing importers keep working.
  */
-export type CombatSimPolicyId = 'greedy' | 'blind';
+export type { CombatSimPolicyId } from './combat.sim-policies';
 
 export interface CombatSimStats {
     runs: number;
@@ -62,76 +68,103 @@ export interface CombatSimStats {
     avgActiveEffectsPerPhase: number;
 }
 
+/** Per-card telemetry for one run (or aggregated over many), keyed by the
+ *  card/skill id — NOT the hand-entry uid. `statusLands` counts powered plays
+ *  that landed at least one status on the enemy (the doctrine witness). */
+export interface CombatCardUsage {
+    cardId: string;
+    plays: number;
+    bottomPlays: number;
+    topPlays: number;
+    statusLands: number;
+    discards: number;
+}
+
+/** Optional per-run knobs threaded through `runOneEncounter`. */
+export interface CombatSimRunOptions {
+    /** Explicit deck (card ids) passed to `initializeCombatEncounter`; omitted →
+     *  the engine builds the deck from the player's known skills. */
+    deck?: readonly string[];
+    /** Card ids boosted to the FRONT of every policy's ranking — used by the
+     *  card-coverage e2e to guarantee a specific card gets exercised. */
+    focusCardIds?: readonly string[];
+}
+
 const currentPhase = (s: CombatEncounterState) =>
     s.threatPhases[Math.min(s.currentPhaseIndex, s.threatPhases.length - 1)];
 
-/**
- * The best card in hand to POWER now: Befriend a low-HP foe (to open mercy);
- * else prefer a status NEW to the board (combo refresh + fresh DoT), then any
- * status card over a pure strike, then the highest preview. Token-gated cards
- * that fizzle are skipped via `notUids`.
- */
-/** The special-mechanic kinds a card's backing skill carries (0.34.0 payoffs). */
-function cardMechKinds(card: CombatCard): Set<string> {
-    const skill = card.skillId ? getCardById(card.skillId) : undefined;
-    return new Set((skill?.specialMechanics ?? []).map(m => m.kind));
-}
+/** Dominates every policy score band so a focused card always ranks first. */
+const FOCUS_CARD_BOOST = 1e18;
 
-function bestCard(s: CombatEncounterState, notUids?: Set<string>) {
-    const activeIds = new Set(s.enemy.effects.map(e => e.effectId));
-    const lowHp = s.enemy.health <= s.enemy.maxHealth * 0.30;
+/**
+ * The best card in hand to POWER now, per the active policy's `rankCard`
+ * (highest score wins; ties resolve to the earliest card in hand order, which
+ * matches the legacy stable sort). Token-gated cards that fizzle are skipped
+ * via `notUids`; `focusIds` (card-coverage harness) trump every band.
+ */
+function selectCard(
+    s: CombatEncounterState,
+    policy: CombatSimPolicy,
+    rng: () => number,
+    notUids?: Set<string>,
+    focusIds?: ReadonlySet<string>,
+): { uid: string; card: CombatCard } | null {
     const cards = handCards(s)
         .filter(c => c.card.verbClass !== 'retreat' && !(notUids && notUids.has(c.uid)));
-
-    // 0.34.0 payoff cards — cash in a built-up board before the generic sort.
-    // Only fires when these cards are actually in hand (existing balance loadouts
-    // carry none, so their bands are unaffected). Never steals a low-HP mercy turn.
-    if (!lowHp) {
-        const pendingDot = getPendingDotTotal(s.enemy).total;
-        const distinctDebuffs = getDistinctDebuffCount(s.enemy);
-        // RUPTURE — detonate once a worthwhile DoT stack has accrued.
-        const rupture = cards.find(c => cardMechKinds(c.card).has('rupture'));
-        if (rupture && pendingDot >= 12) return rupture;
-        // AMPLIFY — burst (non-consuming) once a moderate DoT stack is present.
-        const amplify = cards.find(c => cardMechKinds(c.card).has('amplify'));
-        if (amplify && pendingDot >= 8) return amplify;
-        // COMPOUND — cash in once the foe carries a variety of debuffs.
-        const compound = cards.find(c => cardMechKinds(c.card).has('compound'));
-        if (compound && distinctDebuffs >= 2) return compound;
+    let best: { uid: string; card: CombatCard } | null = null;
+    let bestScore = -Infinity;
+    for (const c of cards) {
+        let score = policy.rankCard(s, c.card, rng);
+        if (focusIds && (focusIds.has(c.card.id) || (c.card.skillId !== null && focusIds.has(c.card.skillId)))) {
+            score += FOCUS_CARD_BOOST;
+        }
+        if (score > bestScore) { bestScore = score; best = c; }
     }
-
-    cards
-        .sort((a, b) => {
-            if (lowHp) {
-                const ab = a.card.verbClass === 'befriend' ? 0 : 1;
-                const bb = b.card.verbClass === 'befriend' ? 0 : 1;
-                if (ab !== bb) return ab - bb;
-            }
-            // Variety: a status the enemy doesn't yet carry refreshes the die.
-            const af = a.card.primaryEffectId && !activeIds.has(a.card.primaryEffectId) ? 0 : 1;
-            const bf = b.card.primaryEffectId && !activeIds.has(b.card.primaryEffectId) ? 0 : 1;
-            if (af !== bf) return af - bf;
-            // Status (DoT/control) beats a pure strike (status is the efficient damage).
-            const at = a.card.effectKind !== 'none' ? 0 : 1;
-            const bt = b.card.effectKind !== 'none' ? 0 : 1;
-            if (at !== bt) return at - bt;
-            return b.card.bottomDamagePreview - a.card.bottomDamagePreview;
-        });
-    return cards[0] ?? null;
+    return best;
 }
 
-/** An affordable damaging/control Signature to spend banked Conviction on. */
-function bestSignature(s: CombatEncounterState): string | null {
+/** An affordable Signature (kind allowed by the policy) to spend banked
+ *  Conviction on. Without a policy `rankSignature`, the FIRST affordable match
+ *  in `state.signatures` order wins — the legacy `greedy`/`blind` behavior. */
+function bestSignature(s: CombatEncounterState, policy: CombatSimPolicy, rng: () => number): string | null {
+    let best: string | null = null;
+    let bestScore = -Infinity;
     for (const id of s.signatures) {
         const sig = getSignatureSkill(id);
         if (!sig || s.conviction < sig.cost) continue;
-        if (['dot', 'strike', 'control', 'mercy', 'conclude'].includes(sig.kind)) return id;
+        if (!policy.signatureKinds.includes(sig.kind)) continue;
+        if (!policy.rankSignature) return id;
+        const score = policy.rankSignature(s, sig, rng);
+        if (score > bestScore) { bestScore = score; best = id; }
     }
-    return null;
+    return best;
+}
+
+/** Records one play against the card's usage row (keyed by skill/card id). */
+function bumpUsage(
+    usage: Record<string, CombatCardUsage>,
+    card: CombatCard,
+    kind: 'top' | 'bottom',
+    landedStatus = false,
+): void {
+    const key = card.skillId ?? card.id;
+    const row = usage[key] ?? (usage[key] = {
+        cardId: key, plays: 0, bottomPlays: 0, topPlays: 0, statusLands: 0, discards: 0,
+    });
+    row.plays++;
+    if (kind === 'top') row.topPlays++;
+    else row.bottomPlays++;
+    if (landedStatus) row.statusLands++;
 }
 
 /** Plays a single threat phase to a stop (enemy dead, mercy opened, or hand/dice out). */
-function greedyPlayPhase(state: CombatEncounterState, blind: boolean): { state: CombatEncounterState; plays: number; statusPlays: number } {
+function policyPlayPhase(
+    state: CombatEncounterState,
+    policy: CombatSimPolicy,
+    rng: () => number,
+    usage: Record<string, CombatCardUsage>,
+    focusIds?: ReadonlySet<string>,
+): { state: CombatEncounterState; plays: number; statusPlays: number } {
     let working = state;
     let plays = 0;
     let statusPlays = 0;
@@ -143,8 +176,8 @@ function greedyPlayPhase(state: CombatEncounterState, blind: boolean): { state: 
         if (working.finalOutcome || working.mercyChoiceActive) break;
 
         // Spend banked Conviction on a damaging Signature when flush.
-        if (working.conviction >= 7) {
-            const sigId = bestSignature(working);
+        if (working.conviction >= policy.convictionThreshold) {
+            const sigId = bestSignature(working, policy, rng);
             if (sigId) {
                 const cast = playSignatureSkill(working, sigId);
                 if (cast.state !== working) { working = cast.state; if (working.finalOutcome) break; continue; }
@@ -159,11 +192,11 @@ function greedyPlayPhase(state: CombatEncounterState, blind: boolean): { state: 
                 working = startTurn(working).state;
                 if (working.phase !== 'phase-play') break;
             }
-            const want = bestCard(working, fizzledUids);
+            const want = selectCard(working, policy, rng, fizzledUids, focusIds);
             // Blind play drafts off only what the player can see: the stance is
             // `null` until revealed (via the read or a Scout), so chooseDraft can't
             // pre-seek advantage — it color-matches like a real player on turn one.
-            const enemyStance = blind ? revealedCurrentStance(working) : currentPhase(working).enemyStance;
+            const enemyStance = policy.blind ? revealedCurrentStance(working) : currentPhase(working).enemyStance;
             const pick = chooseDraft(working.dice, want?.card.stance ?? 'wild', enemyStance);
             if (!pick) break;
             working = draftStanceDie(working, pick).state;
@@ -171,17 +204,25 @@ function greedyPlayPhase(state: CombatEncounterState, blind: boolean): { state: 
             if (!drafted || drafted.state !== 'available' || drafted.color === 'x') {
                 // Forced X — chip with a free top, then end the turn.
                 const top = handCards(working)[0];
-                if (top) { working = playCombatCard(working, { uid: top.uid }, false).state; plays++; }
+                if (top) {
+                    working = playCombatCard(working, { uid: top.uid }, false).state;
+                    plays++;
+                    bumpUsage(usage, top.card, 'top');
+                }
                 working = endTurn(working).state;
                 if (handCards(working).length === 0 && working.dice.length === 0) break;
                 continue;
             }
         }
 
-        const want = bestCard(working, fizzledUids);
+        const want = selectCard(working, policy, rng, fizzledUids, focusIds);
         if (!want) {
             const top = handCards(working)[0];
-            if (top) { working = playCombatCard(working, { uid: top.uid }, false).state; plays++; }
+            if (top) {
+                working = playCombatCard(working, { uid: top.uid }, false).state;
+                plays++;
+                bumpUsage(usage, top.card, 'top');
+            }
             working = endTurn(working).state;
             if (handCards(working).length === 0 && working.dice.length === 0) break;
             continue;
@@ -193,11 +234,14 @@ function greedyPlayPhase(state: CombatEncounterState, blind: boolean): { state: 
             fizzledUids.add(want.uid);
             working = playCombatCard(working, { uid: want.uid }, false).state;
             plays++;
+            bumpUsage(usage, want.card, 'top');
             continue;
         }
         working = res.state;
         plays++;
-        if (res.events.some(e => e.kind === 'effect-landed' && e.target === 'enemy')) statusPlays++;
+        const landed = res.events.some(e => e.kind === 'effect-landed' && e.target === 'enemy');
+        if (landed) statusPlays++;
+        bumpUsage(usage, want.card, 'bottom', landed);
         if (working.finalOutcome || working.mercyChoiceActive) break;
 
         const after = getDraftedDie(working);
@@ -207,21 +251,31 @@ function greedyPlayPhase(state: CombatEncounterState, blind: boolean): { state: 
     return { state: working, plays, statusPlays };
 }
 
-/** Runs a single seeded encounter and returns its outcome. */
+/** Runs a single seeded encounter and returns its outcome (+ per-card telemetry). */
 export function runOneEncounter(
     player: Character,
     enemy: Enemy,
     seed: number,
     policy: CombatSimPolicyId = 'greedy',
+    options?: CombatSimRunOptions,
 ): {
     outcome: CombatOutcome; rounds: number; plays: number; statusPlays: number; convictionSpent: number;
     dotHpDamage: number; mechanicBurstDamage: number; directHpDamage: number;
     guardOnAttack: number; playerHpTaken: number;
     activeEffectSamples: number[];
+    cardUsage: Record<string, CombatCardUsage>;
 } {
-    const blind = policy === 'blind';
-    let state = initializeCombatEncounter(player, enemy, undefined, seed);
+    const policyObj = COMBAT_SIM_POLICIES[policy];
+    if (!policyObj) throw new Error(`Unknown combat sim policy '${String(policy)}'`);
+    const focusIds = options?.focusCardIds ? new Set(options.focusCardIds) : undefined;
+    const deck = options?.deck ? [...options.deck] : undefined;
+    let state = initializeCombatEncounter(player, enemy, deck, seed);
     state = rollEncounterDice(state).state;
+    // Policy randomness (chaos ranking) rides the same seeded global stream the
+    // engine uses — never Math.random. greedy/blind never consume it, keeping
+    // their engine stream (and therefore behavior) bit-identical to the
+    // pre-roster sim.
+    const rng = (): number => getRng().random();
 
     let plays = 0;
     let statusPlays = 0;
@@ -229,20 +283,26 @@ export function runOneEncounter(
     let guardOnAttack = 0;
     let playerHpTaken = 0;
     const activeEffectSamples: number[] = [];
+    const cardUsage: Record<string, CombatCardUsage> = {};
 
     while (state.phase !== 'complete' && loopGuard < 200) {
         loopGuard++;
         if (state.mercyChoiceActive) {
-            state = selectMercyChoice(state, 'spare').state;
-            break;
+            state = selectMercyChoice(state, policyObj.mercyChoice).state;
+            if (state.phase === 'complete' || state.finalOutcome) break;
+            continue;
         }
         if (state.phase === 'phase-play') {
-            const r = greedyPlayPhase(state, blind);
+            const r = policyPlayPhase(state, policyObj, rng, cardUsage, focusIds);
             state = r.state;
             plays += r.plays;
             statusPlays += r.statusPlays;
             if (state.finalOutcome) break;
-            if (state.mercyChoiceActive) { state = selectMercyChoice(state, 'spare').state; break; }
+            if (state.mercyChoiceActive) {
+                state = selectMercyChoice(state, policyObj.mercyChoice).state;
+                if (state.phase === 'complete' || state.finalOutcome) break;
+                continue;
+            }
             if (state.phase === 'phase-play') {
                 // Sample active effects and guard BEFORE the threat resolves.
                 activeEffectSamples.push(state.enemy.effects.length);
@@ -289,28 +349,50 @@ export function runOneEncounter(
         guardOnAttack,
         playerHpTaken,
         activeEffectSamples,
+        cardUsage,
     };
 }
 
+/** Options for `simulateHazardPatternCombatDetailed`. */
+export interface CombatSimDetailedOptions {
+    player: Character;
+    enemy: Enemy;
+    /** Number of seeded runs (default 300). */
+    runs?: number;
+    /** Per-run seed = startSeed + runIndex (default 1). */
+    startSeed?: number;
+    /** Scripted witness (default 'greedy'). */
+    policy?: CombatSimPolicyId;
+    /** Explicit deck threaded to every run. */
+    deck?: readonly string[];
+    /** Cards boosted to the front of ranking in every run (coverage harness). */
+    focusCardIds?: readonly string[];
+}
+
 /**
- * Monte-Carlo simulation: runs `count` seeded encounters and reports the
- * win/mercy/defeat distribution + engagement witnesses.
+ * Monte-Carlo simulation with per-card telemetry: runs `runs` seeded
+ * encounters and reports the win/mercy/defeat distribution + engagement
+ * witnesses, plus a per-card usage table aggregated over all runs.
  */
-export function simulateHazardPatternCombat(
-    player: Character,
-    enemy: Enemy,
-    count = 300,
-    startSeed = 1,
-    policy: CombatSimPolicyId = 'greedy',
-): CombatSimStats {
+export function simulateHazardPatternCombatDetailed(
+    options: CombatSimDetailedOptions,
+): { stats: CombatSimStats; cardUsage: Record<string, CombatCardUsage> } {
+    const count = options.runs ?? 300;
+    const startSeed = options.startSeed ?? 1;
+    const policy = options.policy ?? 'greedy';
+
     let victories = 0, mercies = 0, defeats = 0, retreats = 0;
     let totalRounds = 0, totalPlays = 0, totalStatusPlays = 0, totalConviction = 0;
     let totalDotHp = 0, totalMechanicBurst = 0, totalDirectHp = 0;
     let totalGuardOnAttack = 0, totalPlayerHpTaken = 0;
     let totalActiveEffectSamples = 0, totalPhaseSamples = 0;
+    const cardUsage: Record<string, CombatCardUsage> = {};
 
     for (let i = 0; i < count; i++) {
-        const r = runOneEncounter(player, enemy, startSeed + i, policy);
+        const r = runOneEncounter(options.player, options.enemy, startSeed + i, policy, {
+            deck: options.deck,
+            focusCardIds: options.focusCardIds,
+        });
         if (r.outcome === 'victory') victories++;
         else if (r.outcome === 'mercy') mercies++;
         else if (r.outcome === 'retreat') retreats++;
@@ -326,12 +408,22 @@ export function simulateHazardPatternCombat(
         totalPlayerHpTaken += r.playerHpTaken;
         for (const s of r.activeEffectSamples) totalActiveEffectSamples += s;
         totalPhaseSamples += r.activeEffectSamples.length;
+        for (const row of Object.values(r.cardUsage)) {
+            const agg = cardUsage[row.cardId] ?? (cardUsage[row.cardId] = {
+                cardId: row.cardId, plays: 0, bottomPlays: 0, topPlays: 0, statusLands: 0, discards: 0,
+            });
+            agg.plays += row.plays;
+            agg.bottomPlays += row.bottomPlays;
+            agg.topPlays += row.topPlays;
+            agg.statusLands += row.statusLands;
+            agg.discards += row.discards;
+        }
     }
 
     const totalEnemyHpLost = Math.max(1, totalDotHp + totalMechanicBurst + totalDirectHp);
     const guardDenom = Math.max(1, totalGuardOnAttack + totalPlayerHpTaken);
 
-    return {
+    const stats: CombatSimStats = {
         runs: count,
         victories,
         mercies,
@@ -347,4 +439,19 @@ export function simulateHazardPatternCombat(
         guardMitigatedFraction: totalGuardOnAttack / guardDenom,
         avgActiveEffectsPerPhase: totalPhaseSamples > 0 ? totalActiveEffectSamples / totalPhaseSamples : 0,
     };
+    return { stats, cardUsage };
+}
+
+/**
+ * Monte-Carlo simulation: runs `count` seeded encounters and reports the
+ * win/mercy/defeat distribution + engagement witnesses.
+ */
+export function simulateHazardPatternCombat(
+    player: Character,
+    enemy: Enemy,
+    count = 300,
+    startSeed = 1,
+    policy: CombatSimPolicyId = 'greedy',
+): CombatSimStats {
+    return simulateHazardPatternCombatDetailed({ player, enemy, runs: count, startSeed, policy }).stats;
 }

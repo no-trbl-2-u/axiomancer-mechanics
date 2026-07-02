@@ -20,6 +20,13 @@
  *   --policy naive|safe|aggressive|status
  *                        bot policy for --auto (default status)
  *   --max-turns <n>      stop auto play after this many phases (default 8)
+ *   --stage <id>         playtest stage profile (early|mid|late|impossible);
+ *                        builds the stage player when no explicit --preset is
+ *                        given, and scopes --deck drafting to the stage pool
+ *   --deck <selection>   preset:<id> | draft:<focus> | cards:a,b,c | policy-pick
+ *                        (policy-pick drafts with the --policy's natural focus;
+ *                        status → dot, because status play is the efficient path)
+ *   --sandbox <setId>    apply a sandbox card set (cards.sandbox-sets) first
  *   --script <path>      JSON answer array (shared io.ts layer)
  *   --stdin              JSONL answers (shared io.ts layer)
  *   --json-events        machine-clean stdout event stream
@@ -60,6 +67,15 @@ import type { EnemySlug } from '../Enemy/enemy.library';
 import { getPresetById, buildCharacterFromPreset } from '../Character';
 import type { Character } from '../Character/types';
 import type { Enemy } from '../Enemy/types';
+import {
+    COMBAT_STAGE_ORDER, buildStagePlayer, getStageProfile, isCombatStageId,
+} from '../Combat/combat.stage-profiles';
+import type { CombatStageId } from '../Combat/combat.stage-profiles';
+import { resolveDeckSelection } from '../Combat/combat.deck-draft';
+import type { CombatDeckSelection } from '../Combat/combat.deck-draft';
+import type { CombatDeckFocus } from '../Combat/combat.deck-presets';
+import { createDeckSelectionRng, grantDeckKnowledge, parseDeckSelectionArg } from '../Combat/combat.playtest';
+import { applySandboxSet, listSandboxSets } from '../Cards/cards.sandbox-sets';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -68,10 +84,19 @@ export type CombatAutoPolicyId = 'naive' | 'safe' | 'aggressive' | 'status';
 export interface CombatCliFlags {
     enemySlug: string;
     presetId: string;
+    /** True when --preset was passed explicitly (a --stage player only
+     *  replaces the preset player when the preset was NOT asked for). */
+    presetExplicit: boolean;
     seed?: number;
     auto: boolean;
     policy: CombatAutoPolicyId;
     maxTurns: number;
+    /** Playtest stage profile id (--stage). */
+    stage?: CombatStageId;
+    /** Raw --deck selection string (parsed by `parseDeckSelectionArg`). */
+    deck?: string;
+    /** Sandbox card-set id (--sandbox), applied before the encounter. */
+    sandbox?: string;
     scriptPath?: string;
     stdin: boolean;
     jsonEvents: boolean;
@@ -87,6 +112,11 @@ export interface RunHazardCombatCliOptions {
     auto?: boolean;
     policy?: CombatAutoPolicyId;
     maxTurns?: number;
+    /** Explicit deck (card ids) threaded into `initializeCombatEncounter`;
+     *  default: the engine builds one from the player's known skills. */
+    deck?: readonly string[];
+    /** Playtest stage: builds the stage player when no `player` is given. */
+    stage?: CombatStageId;
 }
 
 export interface RunHazardCombatCliResult {
@@ -99,10 +129,23 @@ export interface RunHazardCombatCliResult {
 
 const AUTO_POLICIES: readonly CombatAutoPolicyId[] = ['naive', 'safe', 'aggressive', 'status'];
 
+/** `--deck policy-pick` drafts with the auto policy's natural focus. The
+ *  default (status → dot) leans into the doctrine: status effects are the
+ *  MAIN fun and the EFFICIENT way to drop HP to 0. */
+const AUTO_POLICY_DECK_FOCUS: Record<CombatAutoPolicyId, CombatDeckFocus> = {
+    status: 'dot',
+    aggressive: 'damage',
+    safe: 'utility',
+    naive: 'balanced',
+};
+
 const COMBAT_USAGE =
     'Usage: npm run combat -- ' +
     '[--enemy <slug>] [--preset <id>] [--seed <n>] ' +
     '[--auto] [--policy naive|safe|aggressive|status] [--max-turns <n>] ' +
+    '[--stage early|mid|late|impossible] ' +
+    '[--deck preset:<id>|draft:<focus>|cards:a,b,c|policy-pick] ' +
+    '[--sandbox <setId>] ' +
     '[--script <path>] [--stdin] [--json-events] [--state-log <path>]';
 
 function takeValue(args: string[], i: number, flag: string): [string, number] {
@@ -120,6 +163,7 @@ export function parseCombatArgv(args: string[]): CombatCliFlags {
     const flags: CombatCliFlags = {
         enemySlug: 'mournful-gull',
         presetId: 'apprentice',
+        presetExplicit: false,
         auto: false,
         policy: 'status',
         maxTurns: 8,
@@ -135,7 +179,8 @@ export function parseCombatArgv(args: string[]): CombatCliFlags {
         else if (arg.startsWith('--enemy')) {
             const [v, ni] = takeValue(args, i, '--enemy'); flags.enemySlug = v; i = ni;
         } else if (arg.startsWith('--preset')) {
-            const [v, ni] = takeValue(args, i, '--preset'); flags.presetId = v; i = ni;
+            const [v, ni] = takeValue(args, i, '--preset');
+            flags.presetId = v; flags.presetExplicit = true; i = ni;
         } else if (arg.startsWith('--seed')) {
             const [v, ni] = takeValue(args, i, '--seed');
             const n = Number(v);
@@ -156,6 +201,16 @@ export function parseCombatArgv(args: string[]): CombatCliFlags {
             const [v, ni] = takeValue(args, i, '--script'); flags.scriptPath = v; i = ni;
         } else if (arg.startsWith('--state-log')) {
             const [v, ni] = takeValue(args, i, '--state-log'); flags.stateLogPath = v; i = ni;
+        } else if (arg.startsWith('--stage')) {
+            const [v, ni] = takeValue(args, i, '--stage');
+            if (!isCombatStageId(v)) {
+                throw new Error(`--stage must be one of: ${COMBAT_STAGE_ORDER.join('|')}.\n${COMBAT_USAGE}`);
+            }
+            flags.stage = v; i = ni;
+        } else if (arg.startsWith('--deck')) {
+            const [v, ni] = takeValue(args, i, '--deck'); flags.deck = v; i = ni;
+        } else if (arg.startsWith('--sandbox')) {
+            const [v, ni] = takeValue(args, i, '--sandbox'); flags.sandbox = v; i = ni;
         } else {
             throw new Error(`Unknown combat CLI flag: '${arg}'.\n${COMBAT_USAGE}`);
         }
@@ -471,27 +526,49 @@ export async function runHazardCombatCliEncounter(
 ): Promise<RunHazardCombatCliResult> {
     const presetId = options.presetId ?? 'apprentice';
     const preset = getPresetById(presetId);
-    if (!preset && !options.player) {
+    const stageProfile = options.stage !== undefined ? getStageProfile(options.stage) : undefined;
+    if (options.stage !== undefined && !stageProfile) {
+        throw new Error(`Unknown combat stage: '${options.stage}'. Valid: ${COMBAT_STAGE_ORDER.join(', ')}`);
+    }
+    if (!preset && !options.player && !stageProfile) {
         throw new Error(`Unknown preset: '${presetId}'. Try: apprentice, wanderer, sage`);
     }
-    const player = options.player ?? buildCharacterFromPreset(preset!);
+    // Player precedence: explicit player > stage player > preset player.
+    let player = options.player
+        ?? (stageProfile ? buildStagePlayer(stageProfile) : buildCharacterFromPreset(preset!));
+    if (options.deck && options.deck.length > 0) {
+        // The engine refuses to fire cards outside knownSkills; an explicit
+        // deck may reach beyond the player's learned pool. Grant on a copy so
+        // a caller-supplied player is never mutated.
+        player = { ...player, knownSkills: [...player.knownSkills] };
+        grantDeckKnowledge(player, options.deck);
+    }
+    const playerLabel = options.player ? presetId
+        : stageProfile ? `stage:${stageProfile.id}` : presetId;
     const flags: CombatCliFlags = {
         enemySlug: '',
         presetId,
-        seed: options.seed,
+        presetExplicit: options.presetId !== undefined,
         auto: options.auto ?? false,
+        seed: options.seed,
         policy: options.policy ?? 'status',
         maxTurns: options.maxTurns ?? 8,
+        stage: options.stage,
         stdin: false,
         jsonEvents: false,
     };
 
     log(`\nHazard-style Combat — new engine (Phase 165)`);
-    log(`Player: ${player.name} (${presetId})  HP ${player.health}/${player.maxHealth}`);
+    log(`Player: ${player.name} (${playerLabel})  HP ${player.health}/${player.maxHealth}`);
     log(`Enemy:  ${options.enemy.name}  HP ${options.enemy.maxHealth}`);
+    if (options.deck) log(`Deck:   ${options.deck.length} cards (explicit --deck)`);
     log(`Policy: ${flags.auto ? flags.policy : 'interactive'}  Seed: ${flags.seed ?? 'random'}\n`);
 
-    const enc = initializeCombatEncounter(player, options.enemy, undefined, flags.seed);
+    const enc = initializeCombatEncounter(
+        player, options.enemy,
+        options.deck && options.deck.length > 0 ? [...options.deck] : undefined,
+        flags.seed,
+    );
     const final = flags.auto
         ? await autoHazardCombatLoop(enc, flags)
         : await interactiveHazardCombatLoop(enc, flags);
@@ -548,6 +625,31 @@ export async function runCombatCli(rawArgs: string[]): Promise<void> {
         throw new Error(`Unknown enemy slug: '${flags.enemySlug}'. Valid: ${valid}`);
     }
 
+    // Sandbox set (if any) goes live BEFORE deck resolution so drafted /
+    // preset decks see the experimental cards and overrides.
+    if (flags.sandbox !== undefined) {
+        const set = applySandboxSet(flags.sandbox);
+        if (!set) {
+            const valid = listSandboxSets().map(s => s.id).join(', ');
+            throw new Error(`Unknown sandbox set: '${flags.sandbox}'. Valid: ${valid}`);
+        }
+    }
+
+    // Deck selection: --stage scopes drafting to the stage's eligible pool;
+    // 'policy-pick' drafts with the auto policy's natural focus. Seeded runs
+    // resolve the deck from a LOCAL seeded rng so the deck is a pure function
+    // of --seed and the encounter's own RNG stream stays untouched.
+    let deck: string[] | undefined;
+    if (flags.deck !== undefined) {
+        const selection = parseDeckSelectionArg(flags.deck);
+        const effective: CombatDeckSelection = selection.kind === 'policy-pick'
+            ? { kind: 'draft', focus: AUTO_POLICY_DECK_FOCUS[flags.policy] }
+            : selection;
+        const stageProfile = flags.stage !== undefined ? getStageProfile(flags.stage) : undefined;
+        const rng = flags.seed !== undefined ? createDeckSelectionRng(flags.seed) : undefined;
+        deck = resolveDeckSelection(effective, stageProfile, rng);
+    }
+
     await runHazardCombatCliEncounter({
         enemy: enemyDef,
         presetId: flags.presetId,
@@ -555,5 +657,9 @@ export async function runCombatCli(rawArgs: string[]): Promise<void> {
         auto: flags.auto || flags.scriptPath !== undefined || flags.stdin,
         policy: flags.policy,
         maxTurns: flags.maxTurns,
+        deck,
+        // A stage player only replaces the preset player when --preset was not
+        // asked for explicitly (the stage still scoped drafting above).
+        stage: flags.presetExplicit ? undefined : flags.stage,
     });
 }

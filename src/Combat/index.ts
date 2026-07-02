@@ -200,8 +200,30 @@ export {
     getThreatSequence, generateDefaultThreatSequence,
     deriveIntentType, AUTHORED_THREAT_ENEMY_IDS,
 } from './combat.threat';
-export { simulateHazardPatternCombat } from './combat.encounter.sim';
-export type { CombatSimStats, CombatSimPolicyId } from './combat.encounter.sim';
+export {
+    simulateHazardPatternCombat, simulateHazardPatternCombatDetailed, runOneEncounter,
+} from './combat.encounter.sim';
+export type {
+    CombatSimStats, CombatSimPolicyId,
+    CombatSimRunOptions, CombatSimDetailedOptions, CombatCardUsage,
+} from './combat.encounter.sim';
+// ─── Playtest supercharge — stage profiles, deck drafting, policy roster, matrix ──
+export {
+    COMBAT_STAGE_ORDER, COMBAT_STAGE_PROFILES,
+    getStageProfile, isCombatStageId, stageEligibleCardIds, buildStagePlayer,
+} from './combat.stage-profiles';
+export type { CombatStageId, CombatStageProfile } from './combat.stage-profiles';
+export { draftCombatDeck, resolveDeckSelection } from './combat.deck-draft';
+export type { DeckDraftOptions, CombatDeckSelection } from './combat.deck-draft';
+export {
+    COMBAT_SIM_POLICIES, COMBAT_SIM_POLICY_ORDER, getSimPolicy, listSimPolicies,
+} from './combat.sim-policies';
+export type { CombatSimPolicy } from './combat.sim-policies';
+export { runPlaytestCell, runPlaytestMatrix, formatPlaytestReport } from './combat.playtest';
+export type {
+    PlaytestCellSpec, PlaytestCellResult, PlaytestMatrixOptions,
+    PlaytestStageSummary, PlaytestReport,
+} from './combat.playtest';
 export { runHazardCombatAutoEncounter } from './combat.autoplay';
 export type { HazardAutoPolicyId, HazardCombatAutoOptions, HazardCombatAutoResult } from './combat.autoplay';
 // Spec 26b tuning §B/§C/§D — archetype signatures, deckbuilder rewards, unlock hook
