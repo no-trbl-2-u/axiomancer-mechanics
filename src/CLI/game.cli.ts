@@ -7,14 +7,33 @@
  * so the engine can be exercised by hand. Five tabs:
  *
  *   • Map             — list adjacent nodes, dispatch MOVE_TO_NODE, then
- *                       PROCESS_NODE to trigger the node's authored event.
- *                       Encounters are staged into combat state; the
- *                       Hazard-Pattern combat driver runs via `npm run combat`.
+ *                       resolve the node's authored event. Encounters run the
+ *                       Hazard-Pattern combat driver inline and fold the
+ *                       result back through startCombat/endCombat (XP, loot,
+ *                       kill objectives, friendship, boss progression). Once
+ *                       the current map is completed, a `travel:<map>` choice
+ *                       appears for each other available map on the continent.
  *   • Journal         — read-only: active / completed quests + alignment stub.
  *   • Skills          — read-only: known/unlocked skills.
  *   • Inventory       — read-only listing of carried items.
  *
- * Logic stays in the store / reducer. This file only formats and dispatches.
+ * Map-node minigames (2026-07): `hazard` / `gathering` / `rest` / `loot-cache`
+ * events resolve with `deferMinigames: true` and launch the REAL minigame
+ * session (hazard crossing / Gleaning / Night Watch / Reliquary); `quest`
+ * events launch the Boy's Almanac board. Outcomes fold back onto the player
+ * via the `apply*Outcome` engine appliers; a session that ends without an
+ * outcome (player quit) falls back to the authored flat baseline carried on
+ * the deferred event. Sessions are seeded deterministically from
+ * `--seed` + the node id. `--auto-minigames` (forced by `--route`) drives
+ * the sessions with policy bots; `--minigame-policy <id>` overrides the
+ * per-kind default where the kind's sim knows the id.
+ *
+ * Dialogue (2026-07): `interaction` events with a dialogue tree and the
+ * village shop's new `talk` action run `runDialogueLoop`; `narration` events
+ * page through their monologue via `runNarrationPlayback`.
+ *
+ * Logic stays in the store / reducer / engine appliers. This file only
+ * formats, prompts, and dispatches.
  *
  * Run with: `npm run game` (which invokes `ts-node src/CLI/game.cli.ts`).
  *
@@ -44,15 +63,39 @@ import { createNodeAdapter } from '../Game/persistence/node.adapter';
 import type { PersistenceAdapter } from '../Game/persistence/types';
 import type { TypedLevelUpEvent } from '../Game/events.types';
 import { getMapDefinition } from '../World/map.registry';
-import { resolveMapEvent } from '../World';
-import type { ResolvedEvent } from '../World';
+import {
+    resolveMapEvent,
+    applyHazardOutcome, applyGatheringOutcome, applyRestOutcome,
+    applyLootCacheOutcome, applyQuestBoardOutcome, cacheItemRefsFromItems,
+} from '../World';
+import type { ResolvedEvent, MapName } from '../World';
+import type { HazardPolicyId } from '../World/Hazard';
+import type { GatherPolicyId } from '../World/Gathering';
+import type { RestPolicyId } from '../World/Rest';
+import type { LootCachePolicyId } from '../World/LootCache';
+import type { QuestBoardPolicyId } from '../World/QuestBoard';
+import type { Character } from '../Character/types';
+import type { Item } from '../Items/types';
+import { applyEffect } from '../Effects';
+import { lookupEffect } from '../Effects/effects.library';
+import { applyDamage } from '../Combat/health';
+import { clamp } from '../Utils';
 import { getCardById } from '../Cards/cards.library';
 import { getAvailableSkills } from '../Cards/skill.engine';
 import { isConsumable } from '../Items/types';
 import { buyItem, sellItem, defaultSellPrice } from '../Items/shop.reducer';
 import { getConsumableById } from '../Items/consumable.library';
 import { bucketAxis, getAlignmentCell } from '../Philosophy';
-import { runHazardCombatCliEncounter, type CombatAutoPolicyId } from './combat.cli';
+import {
+    runHazardCombatCliEncounter, isCombatCliPolicyId, COMBAT_CLI_POLICY_IDS,
+    type CombatCliPolicyId,
+} from './combat.cli';
+import { runHazardCliSession } from './hazard.cli';
+import { runGatheringCliSession } from './gathering.cli';
+import { runRestCliSession } from './rest.cli';
+import { runLootCacheCliSession } from './lootcache.cli';
+import { runQuestBoardCliSession } from './quest-board.cli';
+import { runDialogueLoop, runNarrationPlayback } from './dialogue.loop';
 
 type Tab = 'map' | 'journal' | 'skills' | 'codex' | 'inventory' | 'character' | 'dev' | 'reset' | 'save' | 'load' | 'quit';
 
@@ -119,10 +162,283 @@ async function pickTab(): Promise<Tab> {
 }
 
 
-function asCombatPolicy(value: string | undefined): CombatAutoPolicyId {
-    if (value === 'naive' || value === 'safe' || value === 'aggressive' || value === 'status') return value;
-    if (value !== undefined) throw new Error(`Unknown --combat-policy '${value}'. Use naive|safe|aggressive|status.`);
-    return 'status';
+function asCombatPolicy(value: string | undefined): CombatCliPolicyId {
+    if (value === undefined) return 'status';
+    if (isCombatCliPolicyId(value)) return value;
+    throw new Error(`Unknown --combat-policy '${value}'. Use ${COMBAT_CLI_POLICY_IDS.join('|')}.`);
+}
+
+// ─── Deferred minigames (2026-07) ────────────────────────────────────────────
+//
+// Map-node minigame events resolve with `deferMinigames: true`; the CLI then
+// runs the REAL minigame session and folds the outcome back via the engine
+// appliers (`src/World/MapEvents/minigame-outcomes.ts`). A session that ends
+// without an outcome (interactive quit) falls back to the flat authored
+// baseline carried on the deferred event, mirroring `MapEvents/handlers.ts`.
+
+/**
+ * Deterministic per-node minigame seed: FNV-1a 32-bit over `"<seed>:<nodeId>"`.
+ * The world `--seed` (default 0) replays identical sessions at each node while
+ * distinct nodes get independent streams. No `Math.random` anywhere.
+ */
+function minigameSeed(worldSeed: number | undefined, nodeId: string): number {
+    const key = `${worldSeed ?? 0}:${nodeId}`;
+    let h = 0x811c9dc5;
+    for (let i = 0; i < key.length; i++) {
+        h ^= key.charCodeAt(i);
+        h = Math.imul(h, 0x01000193);
+    }
+    return h >>> 0;
+}
+
+/** `--minigame-policy` applies only where the kind's sim knows the id;
+ *  unknown-for-this-kind ids fall back to the kind's default. */
+function pickPolicy<T extends string>(
+    requested: string | undefined,
+    valid: readonly T[],
+    fallback: T,
+): T {
+    return requested !== undefined && (valid as readonly string[]).includes(requested)
+        ? (requested as T)
+        : fallback;
+}
+
+const HAZARD_POLICIES: readonly HazardPolicyId[] = ['greedy', 'conservative', 'opportunist'];
+const GATHER_POLICIES: readonly GatherPolicyId[] = ['timid', 'balanced', 'greedy', 'wrath-pusher', 'communion-chaser'];
+const REST_POLICIES: readonly RestPolicyId[] = ['deep-sleeper', 'watcher', 'fire-tender'];
+const LOOT_CACHE_POLICIES: readonly LootCachePolicyId[] = ['greedy', 'prudent', 'prober'];
+const QUEST_BOARD_POLICIES: readonly QuestBoardPolicyId[] = ['safe', 'gambler', 'economist'];
+
+// Flat-baseline fallbacks. Each mirrors the corresponding non-deferred
+// handler in `src/World/MapEvents/handlers.ts` exactly (same clamps, same
+// stacking behaviour) so a quit session degrades to the historical event.
+
+function baselineGathering(player: Character, items: readonly Item[]): Character {
+    return { ...player, inventory: [...player.inventory, ...items] };
+}
+
+function baselineRest(player: Character, healFraction: number): Character {
+    const newHp = Math.min(
+        player.maxHealth,
+        player.health + Math.round(player.maxHealth * healFraction),
+    );
+    return { ...player, health: newHp };
+}
+
+function baselineHazard(player: Character, effectIds: readonly string[], damage: number): Character {
+    let effects = player.effects;
+    for (const id of effectIds) {
+        const def = lookupEffect(id);
+        if (!def) continue;
+        effects = applyEffect(effects, def, 0).activeEffects;
+    }
+    let next: Character = { ...player, effects };
+    if (damage > 0) next = applyDamage(next, damage);
+    return next;
+}
+
+function baselineLootCache(player: Character, items: readonly Item[], currency: number): Character {
+    return {
+        ...player,
+        inventory: [...player.inventory, ...items],
+        currency: player.currency + currency,
+    };
+}
+
+/**
+ * Launches the minigame session for a deferred map event (or a `quest`
+ * board), folds the claimed outcome back onto the store player via the
+ * engine appliers, logs a one-line summary, and emits `minigame:end`.
+ */
+async function runDeferredMinigame(
+    store: GameStoreHandle,
+    event: ResolvedEvent,
+    nodeId: string,
+    flags: CliFlags,
+): Promise<void> {
+    const seed = minigameSeed(flags.seed, nodeId);
+    // `--route` forces auto-minigames the same way it forces auto-combat.
+    // Scripted/stdin runs WITHOUT --auto-minigames stay interactive: the
+    // session prompts flow through the shared io answers.
+    const auto = flags.autoMinigames || flags.route !== undefined;
+    const beforeState = store.getState();
+    const before = beforeState.player;
+
+    let minigame: string;
+    let tier: string | null = null;
+    let next: Character;
+
+    switch (event.kind) {
+        case 'hazard': {
+            minigame = 'hazard';
+            const outcome = await runHazardCliSession({
+                seed, auto,
+                policy: pickPolicy(flags.minigamePolicy, HAZARD_POLICIES, 'greedy'),
+            });
+            tier = outcome?.tier ?? null;
+            next = outcome
+                ? applyHazardOutcome(before, outcome)
+                : baselineHazard(before, event.effectIds ?? [], event.damage);
+            break;
+        }
+        case 'gathering': {
+            minigame = 'gathering';
+            const outcome = await runGatheringCliSession({
+                seed, auto,
+                policy: pickPolicy(flags.minigamePolicy, GATHER_POLICIES, 'balanced'),
+            });
+            tier = outcome?.tier ?? null;
+            next = outcome
+                ? applyGatheringOutcome(before, outcome)
+                : baselineGathering(before, event.items);
+            break;
+        }
+        case 'rest': {
+            minigame = 'rest';
+            const outcome = await runRestCliSession({
+                seed, auto,
+                policy: pickPolicy(flags.minigamePolicy, REST_POLICIES, 'fire-tender'),
+                baseHealFraction: event.healFraction,
+            });
+            tier = outcome?.tier ?? null;
+            next = outcome
+                ? applyRestOutcome(before, outcome)
+                : baselineRest(before, event.healFraction);
+            break;
+        }
+        case 'loot-cache': {
+            minigame = 'loot-cache';
+            const outcome = await runLootCacheCliSession({
+                seed, auto,
+                policy: pickPolicy(flags.minigamePolicy, LOOT_CACHE_POLICIES, 'prudent'),
+                items: cacheItemRefsFromItems(event.items),
+                currency: event.currency,
+            });
+            tier = outcome?.tier ?? null;
+            next = outcome
+                ? applyLootCacheOutcome(before, outcome, event.items)
+                : baselineLootCache(before, event.items, event.currency);
+            break;
+        }
+        case 'quest': {
+            minigame = 'quest-board';
+            const outcome = await runQuestBoardCliSession({
+                seed, auto,
+                policy: pickPolicy(flags.minigamePolicy, QUEST_BOARD_POLICIES, 'safe'),
+                boardId: event.boardId,
+            });
+            tier = outcome?.tier ?? null;
+            // The board is fully sandboxed; the applier returns an untouched
+            // clone and a quit grants nothing (mirrors the no-op handler).
+            next = outcome ? applyQuestBoardOutcome(before, outcome) : before;
+            break;
+        }
+        default:
+            return;
+    }
+
+    store.setState({ player: next });
+    const after = store.getState().player;
+    const summary = {
+        tier,
+        baselineFallback: tier === null,
+        hpDelta: after.health - before.health,
+        currencyDelta: after.currency - before.currency,
+        itemsDelta: after.inventory.length - before.inventory.length,
+    };
+    logState('minigame', beforeState, store.getState(), { minigame, node: nodeId, summary });
+    log(
+        `Minigame (${minigame}) at ${nodeId}: ${tier ?? 'no outcome — flat baseline applied'}` +
+        ` — HP ${after.health}/${after.maxHealth}, currency ${after.currency}` +
+        (summary.itemsDelta !== 0 ? `, items ${summary.itemsDelta > 0 ? '+' : ''}${summary.itemsDelta}` : '') + '.',
+    );
+    emit({ type: 'minigame:end', payload: { minigame, node: nodeId, summary } });
+}
+
+// ─── Combat fold-back (2026-07 D5) ───────────────────────────────────────────
+
+/** CombatOutcome → the store `endCombat` verb. Mercy is the befriend/spare
+ *  path ('friendship' — a first-class ending per VISION.md); retreat maps to
+ *  the store's 'flee' (no grants). */
+const COMBAT_OUTCOME_TO_END_COMBAT = {
+    victory: 'victory',
+    mercy: 'friendship',
+    defeat: 'defeat',
+    retreat: 'flee',
+} as const;
+
+/**
+ * Runs the Hazard-Pattern combat driver for an encounter event, then folds
+ * the result back through the store's `startCombat` + `endCombat` so XP,
+ * loot, kill objectives, friendship rewards, and boss map-progression all
+ * fire. Surfaces progression: when the current map lands in
+ * `completedMaps`, logs the road-is-open line and emits `map:completed`.
+ */
+async function runEncounterAndFoldBack(
+    store: GameStoreHandle,
+    event: Extract<ResolvedEvent, { kind: 'encounter' }>,
+    nodeId: string,
+    flags: CliFlags,
+): Promise<void> {
+    const enemy = event.encounter.enemies[0];
+    if (!enemy) throw new Error(`Encounter at '${nodeId}' had no enemy.`);
+    const combat = await runHazardCombatCliEncounter({
+        enemy,
+        presetId: 'apprentice',
+        seed: flags.combatSeed,
+        auto: flags.autoCombat || flags.route !== undefined || flags.scriptPath !== undefined || flags.stdin,
+        policy: asCombatPolicy(flags.combatPolicy),
+        maxTurns: flags.combatMaxTurns ?? 20,
+    });
+
+    if (!combat.outcome) {
+        log('Combat ended without an outcome (turn cap) — nothing folds back.');
+        return;
+    }
+
+    const beforeState = store.getState();
+    const mapName = beforeState.world.currentMap.name;
+    const completedBefore = beforeState.world.currentContinent.completedMaps;
+    const availableBefore = beforeState.world.currentContinent.availableMaps;
+
+    // Sync HP from the combat result onto the store player before endCombat.
+    // Mirrors the END_COMBAT reducer's finalPlayer semantics: defeat leaves
+    // the player at 0 HP (no floor-to-1 mercy clamp). The absolute post-fight
+    // HP is clamped into the store player's [0, maxHealth] band because the
+    // combat driver runs a preset-built player whose health scale may differ.
+    const finalPlayer: Character = {
+        ...beforeState.player,
+        health: clamp(combat.state.player.health, 0, beforeState.player.maxHealth),
+    };
+
+    const mapped = COMBAT_OUTCOME_TO_END_COMBAT[combat.outcome];
+    store.getState().startCombat(event.encounter);
+    const report = store.getState().endCombat(mapped, finalPlayer);
+    logState('endCombat', beforeState, store.getState(), {
+        outcome: mapped,
+        xpGained: report.xpGained,
+        loot: report.loot.map(l => l.name),
+    });
+    log(
+        `Combat folded back: ${mapped}` +
+        (report.xpGained > 0 ? ` (+${report.xpGained} XP)` : '') +
+        (report.loot.length > 0 ? `, loot: ${report.loot.map(l => l.name).join(', ')}` : '') + '.',
+    );
+    if (report.friendshipReward?.narrative) log(report.friendshipReward.narrative);
+
+    // Boss progression surfacing — endCombat auto-fires completeMap/unlockMap
+    // for the current map's MAP_PROGRESSION entry on victory/friendship.
+    const afterState = store.getState();
+    if (!completedBefore.includes(mapName)
+        && afterState.world.currentContinent.completedMaps.includes(mapName)) {
+        const unlocked = afterState.world.currentContinent.availableMaps
+            .filter(m => !availableBefore.includes(m));
+        const road = unlocked.length > 0
+            ? ` The road to the ${unlocked.map(m => m.replace(/-/g, ' ')).join(' and the ')} is open.`
+            : '';
+        log(`${enemy.name} is dealt with.${road}`);
+        emit({ type: 'map:completed', payload: { map: mapName, unlocked } });
+    }
 }
 
 async function moveAndResolveMapNode(store: GameStoreHandle, target: string, flags: CliFlags): Promise<void> {
@@ -141,7 +457,9 @@ async function moveAndResolveMapNode(store: GameStoreHandle, target: string, fla
     logState('moveToNode', beforeMove, store.getState(), { target });
 
     const before = store.getState();
-    const result = resolveMapEvent(before);
+    // Defer the minigame-backed kinds so the REAL minigame runs and its
+    // outcome (not the flat baseline) is what lands on the player.
+    const result = resolveMapEvent(before, { deferMinigames: true });
     store.setState({
         player: result.state.player,
         world:  result.state.world,
@@ -149,23 +467,45 @@ async function moveAndResolveMapNode(store: GameStoreHandle, target: string, fla
         flags:  result.state.flags,
     });
     logState('resolveMapEvent', before, store.getState(), result.event);
-    log(describeResolvedEvent(result.event));
-
-    if (result.event.kind === 'encounter') {
-        const enemy = result.event.encounter.enemies[0];
-        if (!enemy) throw new Error(`Encounter at '${target}' had no enemy.`);
-        await runHazardCombatCliEncounter({
-            enemy,
-            presetId: 'apprentice',
-            seed: flags.combatSeed,
-            auto: flags.autoCombat || flags.route !== undefined || flags.scriptPath !== undefined || flags.stdin,
-            policy: asCombatPolicy(flags.combatPolicy),
-            maxTurns: flags.combatMaxTurns ?? 20,
-        });
+    if (result.event.kind === 'narration') {
+        // Choiceless monologue — page through every node, no prompt.
+        runNarrationPlayback(result.event.dialogue);
+    } else {
+        log(describeResolvedEvent(result.event));
     }
 
-    if (result.event.kind === 'village' && result.event.shop && result.event.shop.wares.length > 0) {
-        await shopLoop(store, result.event.shop);
+    switch (result.event.kind) {
+        case 'encounter':
+            await runEncounterAndFoldBack(store, result.event, target, flags);
+            break;
+        case 'hazard':
+        case 'gathering':
+        case 'rest':
+        case 'loot-cache':
+            // Only deferred events launch a session; a non-deferred event
+            // already applied its baseline inside the handler.
+            if (result.event.deferred) {
+                await runDeferredMinigame(store, result.event, target, flags);
+            }
+            break;
+        case 'quest':
+            await runDeferredMinigame(store, result.event, target, flags);
+            break;
+        case 'interaction':
+            if (result.event.dialogue) {
+                await runDialogueLoop(store, result.event.dialogue, result.event.npcName);
+            }
+            break;
+        case 'village':
+            // `--route` mode is promptless traversal — the shop loop is an
+            // interactive sub-prompt with no answer source there, so the
+            // village is described (above) and the walk continues.
+            if (flags.route === undefined && result.event.shop && result.event.shop.wares.length > 0) {
+                await shopLoop(store, result.event.shop);
+            }
+            break;
+        default:
+            break;
     }
 }
 
@@ -180,7 +520,16 @@ async function mapTab(store: GameStoreHandle, flags: CliFlags): Promise<void> {
 
     const available = state.world.currentMap.availableNodes;
     const reachable = (node?.connectedNodes ?? []).filter(id => available.includes(id));
-    if (reachable.length === 0) {
+
+    // D5 (2026-07) — once the current map is completed, each other available
+    // map on the continent becomes a `travel:<map>` choice (boss progression
+    // via endCombat is what unlocks new maps into `availableMaps`).
+    const continent = state.world.currentContinent;
+    const travelTargets: MapName[] = continent.completedMaps.includes(state.world.currentMap.name)
+        ? continent.availableMaps.filter(m => m !== state.world.currentMap.name)
+        : [];
+
+    if (reachable.length === 0 && travelTargets.length === 0) {
         log('No adjacent nodes are open right now.');
         return;
     }
@@ -192,13 +541,25 @@ async function mapTab(store: GameStoreHandle, flags: CliFlags): Promise<void> {
             name: 'target',
             message: 'Move to which node?',
             choices: [
-                { name: `Auto-advance: next node (${autoTarget})`, value: autoTarget },
+                ...(autoTarget !== undefined
+                    ? [{ name: `Auto-advance: next node (${autoTarget})`, value: autoTarget }]
+                    : []),
                 ...reachable.map(id => ({ name: id, value: id })),
+                ...travelTargets.map(m => ({ name: `Travel to ${m}`, value: `travel:${m}` })),
                 { name: 'Stay put', value: '' },
             ],
         },
     ]);
     if (!target) return;
+
+    if (target.startsWith('travel:')) {
+        const dest = target.slice('travel:'.length) as MapName;
+        const beforeTravel = store.getState();
+        store.getState().travelToMap(dest);
+        log(`You travel to ${dest}. You arrive at ${store.getState().world.currentMap.currentNode}.`);
+        logState('travelToMap', beforeTravel, store.getState(), { map: dest });
+        return;
+    }
 
     await moveAndResolveMapNode(store, target, flags);
 }
@@ -207,16 +568,28 @@ function describeResolvedEvent(event: ResolvedEvent): string {
     switch (event.kind) {
         case 'encounter':   return `Encounter! ${event.isBoss ? '(boss) ' : ''}${event.encounter.enemies.map(e => e.name).join(', ')}`;
         case 'interaction': return `You meet ${event.npcName}.`;
-        case 'gathering':   return `You gather ${event.items.map(i => i.name).join(', ')}.`;
-        case 'rest':        return `You rest. (+${event.healed} HP)`;
+        case 'gathering':
+            return event.deferred
+                ? `A gathering site: ${event.items.map(i => i.name).join(', ')} for the taking.`
+                : `You gather ${event.items.map(i => i.name).join(', ')}.`;
+        case 'rest':
+            return event.deferred
+                ? `A place to rest (base heal ${Math.round(event.healFraction * 100)}%).`
+                : `You rest. (+${event.healed} HP)`;
         case 'village': {
             const wareCount = event.shop?.wares.length ?? 0;
             const shopSuffix = wareCount > 0 ? ` — ${wareCount} ware${wareCount === 1 ? '' : 's'} for sale` : '';
             return `Village: ${event.villageName} (${event.merchants.length} merchant${event.merchants.length === 1 ? '' : 's'})${shopSuffix}.`;
         }
         case 'cutscene':    return event.lines.join(' ');
-        case 'hazard':      return `Hazard! (-${event.damage} HP${event.effects.length > 0 ? `, ${event.effects.length} effect${event.effects.length === 1 ? '' : 's'}` : ''})`;
-        case 'loot-cache':  return `Loot cache: ${event.items.length} item${event.items.length === 1 ? '' : 's'}, ${event.currency} currency.`;
+        case 'hazard':
+            return event.deferred
+                ? `Hazard ahead!${event.damage > 0 ? ` (${event.damage} damage threatened)` : ''}`
+                : `Hazard! (-${event.damage} HP${event.effects.length > 0 ? `, ${event.effects.length} effect${event.effects.length === 1 ? '' : 's'}` : ''})`;
+        case 'loot-cache':
+            return event.deferred
+                ? `A loot cache: ${event.items.length} item${event.items.length === 1 ? '' : 's'}, ${event.currency} currency waiting.`
+                : `Loot cache: ${event.items.length} item${event.items.length === 1 ? '' : 's'}, ${event.currency} currency.`;
         case 'quest':       return `Quest board: ${event.boardId}.`;
         case 'narration': {
             const root = event.dialogue.nodes[event.dialogue.rootId];
@@ -230,15 +603,50 @@ async function shopLoop(store: GameStoreHandle, shop: { wares: ReadonlyArray<{ i
     while (true) {
         const player = store.getState().player;
         log(`\n— Shop — currency: ${player.currency}`);
-        const { action } = await prompt<{ action: 'buy' | 'sell' | 'leave' }>([{
+        const { action } = await prompt<{ action: 'buy' | 'sell' | 'talk' | 'leave' }>([{
             type: 'rawlist', name: 'action', message: 'Shop:',
             choices: [
                 { name: 'buy   — browse wares', value: 'buy' },
                 { name: 'sell  — list inventory', value: 'sell' },
+                { name: 'talk  — speak with a villager', value: 'talk' },
                 { name: 'leave — close the shop', value: 'leave' },
             ],
         }]);
         if (action === 'leave') return;
+
+        // D6 (2026-07) — village talk. Lists the CURRENT map's authored NPCs
+        // (only those with dialogue trees) and runs the shared dialogue loop.
+        // Answer shapes: {"action":"talk"} then {"npc":"<NPC name>"} (or ""
+        // for back), then the dialogue loop's {"choice": n} answers.
+        if (action === 'talk') {
+            const st = store.getState();
+            const def = getMapDefinition(st.world.currentMap.continent, st.world.currentMap.name);
+            const npcs = (def.npcs ?? []).filter(n => n.dialogueTree);
+            if (npcs.length === 0) {
+                log('No one here has time to talk.');
+                continue;
+            }
+            const { npc } = await prompt<{ npc: string }>([{
+                type: 'rawlist', name: 'npc', message: 'Talk to whom?',
+                choices: [
+                    ...npcs.map(n => ({
+                        name: n.description ? `${n.name} — ${n.description}` : n.name,
+                        value: n.name,
+                    })),
+                    { name: 'back', value: '' },
+                ],
+            }]);
+            if (!npc) continue;
+            const chosen = npcs.find(n => n.name === npc);
+            if (!chosen || !chosen.dialogueTree) {
+                log(`No villager named '${npc}' is around.`);
+                continue;
+            }
+            const beforeTalk = store.getState();
+            await runDialogueLoop(store, chosen.dialogueTree, chosen.name);
+            logState('villageTalk', beforeTalk, store.getState(), { npc: chosen.name });
+            continue;
+        }
 
         if (action === 'buy') {
             const choices = shop.wares.map(w => {
@@ -824,7 +1232,6 @@ export async function runGameCli(rawArgs = process.argv.slice(2)): Promise<void>
 
 if (require.main === module) {
     runGameCli().catch(err => {
-        // eslint-disable-next-line no-console
         console.error(err);
         process.exitCode = 1;
     });

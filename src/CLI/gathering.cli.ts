@@ -51,11 +51,14 @@ import {
     getGatherOfferingDef,
     getGatherToolDef,
     getGatherSiteDef,
+    simulateGathering,
     GATHERING_SITES,
     GATHERING_REPRISALS,
 } from '../World/Gathering';
 import type {
     GatherApproachKey,
+    GatherOutcome,
+    GatherPolicyId,
     GatherSiteDef,
     GatherToolId,
     GatheringSessionState,
@@ -286,7 +289,7 @@ interface SiteResult {
     grace: number;
 }
 
-async function pickSite(flags: GatheringCliFlags): Promise<GatherSiteDef> {
+async function pickSite(flags: Pick<GatheringCliFlags, 'siteId'>): Promise<GatherSiteDef> {
     if (flags.siteId) {
         const def = GATHERING_SITES.find((s) => s.id === flags.siteId);
         if (!def) {
@@ -302,7 +305,7 @@ async function pickSite(flags: GatheringCliFlags): Promise<GatherSiteDef> {
     return getGatherSiteDef(id);
 }
 
-async function pickApproach(flags: GatheringCliFlags): Promise<GatherApproachKey> {
+async function pickApproach(flags: Pick<GatheringCliFlags, 'approach'>): Promise<GatherApproachKey> {
     if (flags.approach) return flags.approach;
     const { approach } = await prompt<{ approach: GatherApproachKey }>([{
         type: 'rawlist', name: 'approach', message: 'How much will you take?',
@@ -314,14 +317,18 @@ async function pickApproach(flags: GatheringCliFlags): Promise<GatherApproachKey
     return approach;
 }
 
-async function playSite(flags: GatheringCliFlags, runIndex: number): Promise<SiteResult> {
-    const site = await pickSite(flags);
-    const approach = await pickApproach(flags);
-    const seed = seedToNumber(flags.seed, runIndex);
-
-    log(`\n═══ Run ${runIndex} — ${site.id}: ${site.title} (${approach}) ═══`);
-    log(`  ${site.scenario}`);
-
+/**
+ * Drives ONE gathering session end-to-end (create → approach → foraging →
+ * claim), logging and emitting exactly as the standalone subcommand always
+ * has. `runIndex` only rides along in the creation log metadata.
+ */
+async function driveGatheringSite(
+    site: GatherSiteDef,
+    approach: GatherApproachKey,
+    seed: number,
+    auto: boolean,
+    runIndex?: number,
+): Promise<{ outcome: GatherOutcome | null; result: SiteResult }> {
     let state = createGatheringSession(seed, site.id);
     logState('createGatheringSession', null, state, { siteId: site.id, seed, runIndex });
 
@@ -331,7 +338,7 @@ async function playSite(flags: GatheringCliFlags, runIndex: number): Promise<Sit
     const ctx: AutoCtx = { harvestsAtDepth: 0 };
     let guard = 0;
     while (state.phase === 'foraging' && guard++ < 200) {
-        if (flags.auto) {
+        if (auto) {
             const action = autoAction(state, ctx);
             if (action.type === 'harvest') {
                 const before = state.metrics.harvests;
@@ -363,8 +370,10 @@ async function playSite(flags: GatheringCliFlags, runIndex: number): Promise<Sit
     let tier = 'incomplete';
     let keptPieces = 0;
     let keptRichness = 0;
+    let claimedOutcome: GatherOutcome | null = null;
     if (state.phase === 'outcome' && state.outcome) {
         const o = state.outcome;
+        claimedOutcome = o;
         tier = o.tier;
         keptPieces = o.kept.length;
         keptRichness = o.kept.reduce((sum, p) => sum + p.richness, 0);
@@ -385,7 +394,70 @@ async function playSite(flags: GatheringCliFlags, runIndex: number): Promise<Sit
         wrath: state.wrath, grace: state.grace,
     };
     emit({ type: 'gathering:complete', payload: result });
+    return { outcome: claimedOutcome, result };
+}
+
+async function playSite(flags: GatheringCliFlags, runIndex: number): Promise<SiteResult> {
+    const site = await pickSite(flags);
+    const approach = await pickApproach(flags);
+    const seed = seedToNumber(flags.seed, runIndex);
+
+    log(`\n═══ Run ${runIndex} — ${site.id}: ${site.title} (${approach}) ═══`);
+    log(`  ${site.scenario}`);
+
+    const { result } = await driveGatheringSite(site, approach, seed, flags.auto, runIndex);
     return result;
+}
+
+// ─── Session launcher (embedded-host surface) ─────────────────────────────────
+
+export interface RunGatheringCliSessionOptions {
+    /** Engine seed (already derived — NOT re-run through `minigameRunSeed`). */
+    seed: number;
+    /** Policy-driven run (no prompts). Default false (interactive). */
+    auto?: boolean;
+    /**
+     * Policy bot for `auto` runs (`gathering.sim.ts` ids). Default
+     * `'balanced'` — the restrained bot whose approach is `glean` (the
+     * tender hand), matching the deferred map event's gentle baseline.
+     */
+    policy?: GatherPolicyId;
+    /** Site to glean; prompts from the library when omitted (interactive)
+     *  and defaults to the first library site in `auto` mode. */
+    siteId?: string;
+    /** Approach override (interactive; prompts when omitted). `auto` runs
+     *  take the approach from the policy instead. */
+    approach?: GatherApproachKey;
+}
+
+/**
+ * Runs ONE gathering minigame session for an embedding host (e.g. a
+ * deferred `gathering` map event in game.cli.ts) and returns the claimed
+ * `GatherOutcome`, or null when the session ended without one. Interactive
+ * mode reuses the exact standalone-subcommand loop; `auto` drives the pure
+ * engine with the balance sim's single-run policy driver
+ * (`simulateGathering`).
+ */
+export async function runGatheringCliSession(
+    options: RunGatheringCliSessionOptions,
+): Promise<GatherOutcome | null> {
+    if (options.auto) {
+        const policy = options.policy ?? 'balanced';
+        const site = await pickSite({ siteId: options.siteId ?? GATHERING_SITES[0]!.id });
+        const run = simulateGathering(options.seed, site.id, policy);
+        log(
+            `  The Gleaning (${site.id}, ${policy}): ${run.outcome.tier} — ` +
+            `kept ${run.outcome.kept.length} pieces (${run.keptRichness} richness)`,
+        );
+        return run.outcome;
+    }
+
+    const site = await pickSite({ siteId: options.siteId });
+    const approach = await pickApproach({ approach: options.approach });
+    log(`\n═══ ${site.id}: ${site.title} (${approach}) ═══`);
+    log(`  ${site.scenario}`);
+    const { outcome } = await driveGatheringSite(site, approach, options.seed, false);
+    return outcome;
 }
 
 // ─── Entry point ────────────────────────────────────────────────────────────────

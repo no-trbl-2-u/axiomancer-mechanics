@@ -1,19 +1,9 @@
 [
-  { "presetId": "wanderer" },
-  { "tab": "debug" },
-  { "slug": "wet-hound" },
-  { "stance": "body" },
-  { "action": "attack" },
-  { "stance": "body" },
-  { "action": "skill" },
-  { "skillId": "ad-hominem-strike" },
-  { "stance": "body" },
-  { "action": "attack" },
-  { "stance": "body" },
-  { "action": "attack" },
-  { "stance": "body" },
-  { "action": "attack" },
-  { "stance": "body" },
-  { "action": "attack" },
-  { "tab": "quit" }
+    { "tab": "map" },
+    { "target": "fv-2" },
+    { "pick": "delve" },
+    { "pick": "seal" },
+    { "tab": "map" },
+    { "target": "fv-12" },
+    { "tab": "quit" }
 ]

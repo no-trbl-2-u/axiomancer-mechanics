@@ -42,11 +42,13 @@ afterEach(() => {
 
 describe('fishing-village content — new-player map', () => {
     // The starting map is combat-focused but varied: a real spread of kinds
-    // (rest / gathering / hazard / loot-cache / narration / interaction) for
-    // recovery + texture, with encounters kept a slight plurality, exactly ONE
-    // quest node (fv-15), and ONE boss node (fv-6, an `encounter` with isBoss).
-    // See the new-player override block in `content.ts`.
-    it('is a balanced spread with encounters a slight plurality and one quest + one boss', () => {
+    // (rest / gathering / hazard / loot-cache / village / narration /
+    // interaction) for recovery + texture, with encounters kept a slight
+    // plurality, exactly ONE village node (fv-4, Wharfside Market — the
+    // doorway to Old Marrow), ONE quest node (fv-15), and ONE boss node
+    // (fv-6, an `encounter` with isBoss). See the new-player override block
+    // in `content.ts`.
+    it('is a balanced spread with encounters a slight plurality and one village + one quest + one boss', () => {
         mockSequentialRng(0.5);
         let state = freshWorldAt('fishing-village');
 
@@ -57,12 +59,13 @@ describe('fishing-village content — new-player map', () => {
             state = r.state;
         }
 
-        // 8 encounter-kind nodes (7 regular + the fv-6 boss) — a slight plurality.
-        expect(counts.encounter).toBe(8);
+        // 7 encounter-kind nodes (6 regular + the fv-6 boss) — a slight plurality.
+        expect(counts.encounter).toBe(7);
         expect(counts.rest).toBe(4);
         expect(counts.gathering).toBe(4);
         expect(counts.hazard).toBe(3);
         expect(counts['loot-cache']).toBe(3);
+        expect(counts.village).toBe(1);
         expect(counts.narration).toBe(1);
         expect(counts.interaction).toBe(1);
         expect(counts.quest).toBe(1);
@@ -151,16 +154,17 @@ describe('northern-forest content (Phase 24)', () => {
 });
 
 describe('Phase 37 shop content', () => {
-    // The starting map (fishing-village) is now a combat gauntlet with no
-    // village/shop node — the surviving authored shop lives on
-    // northern-forest (nf-8, Glen Market).
+    // Each map carries an authored village shop: fishing-village at fv-4
+    // (Wharfside Market, 2026-07 — the doorway to Old Marrow) and
+    // northern-forest at nf-8 (Glen Market).
+    const VILLAGE_NODES = { 'fishing-village': 'fv-4', 'northern-forest': 'nf-8' } as const;
     it('the authored village payload carries a shop inventory with consumable IDs that resolve', async () => {
         mockSequentialRng(0.5);
         const { getConsumableById } = await import('../../../Items/consumable.library');
-        for (const map of ['northern-forest'] as const) {
+        for (const map of ['fishing-village', 'northern-forest'] as const) {
             const state = freshWorldAt(map);
             const def = getMapDefinition('coastal-continent', map);
-            const villageNode = def.nodes.find(n => n.id === 'nf-8');
+            const villageNode = def.nodes.find(n => n.id === VILLAGE_NODES[map]);
             expect(villageNode, `${map} must have an authored village node`).toBeDefined();
             const r = visit(state, villageNode!.id);
             expect(r.kind).toBe('village');

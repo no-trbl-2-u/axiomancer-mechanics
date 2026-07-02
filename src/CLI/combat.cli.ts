@@ -17,8 +17,12 @@
  *   --preset <id>        character preset id (default apprentice)
  *   --seed <n>           deterministic RNG seed
  *   --auto               run a bot policy (no TTY required)
- *   --policy naive|safe|aggressive|status
- *                        bot policy for --auto (default status)
+ *   --policy <id>        bot policy for --auto (default status). Accepts the
+ *                        four CLI heuristics (naive|safe|aggressive|status)
+ *                        AND the full sim roster (greedy|blind|dot-weaver|
+ *                        control-lock|aggro-brute|turtle|chaos|mercy-seeker) —
+ *                        a sim id drives the encounter with the proven policy
+ *                        machinery from combat.encounter.sim.ts
  *   --max-turns <n>      stop auto play after this many phases (default 8)
  *   --stage <id>         playtest stage profile (early|mid|late|impossible);
  *                        builds the stage player when no explicit --preset is
@@ -76,10 +80,23 @@ import type { CombatDeckSelection } from '../Combat/combat.deck-draft';
 import type { CombatDeckFocus } from '../Combat/combat.deck-presets';
 import { createDeckSelectionRng, grantDeckKnowledge, parseDeckSelectionArg } from '../Combat/combat.playtest';
 import { applySandboxSet, listSandboxSets } from '../Cards/cards.sandbox-sets';
+import { policyPlayPhase } from '../Combat/combat.encounter.sim';
+import type { CombatCardUsage } from '../Combat/combat.encounter.sim';
+import { COMBAT_SIM_POLICY_ORDER, getSimPolicy } from '../Combat/combat.sim-policies';
+import type { CombatSimPolicy, CombatSimPolicyId } from '../Combat/combat.sim-policies';
+import { getRng } from '../Utils/rng';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
 export type CombatAutoPolicyId = 'naive' | 'safe' | 'aggressive' | 'status';
+
+/**
+ * Every id `--policy` accepts: the four legacy CLI heuristics plus the full
+ * sim roster (`combat.sim-policies.ts`). The two id spaces are disjoint; a
+ * sim id routes the auto loop through the sim's decision machinery
+ * (`policyPlayPhase`), the legacy ids keep their historical behavior.
+ */
+export type CombatCliPolicyId = CombatAutoPolicyId | CombatSimPolicyId;
 
 export interface CombatCliFlags {
     enemySlug: string;
@@ -89,7 +106,7 @@ export interface CombatCliFlags {
     presetExplicit: boolean;
     seed?: number;
     auto: boolean;
-    policy: CombatAutoPolicyId;
+    policy: CombatCliPolicyId;
     maxTurns: number;
     /** Playtest stage profile id (--stage). */
     stage?: CombatStageId;
@@ -110,7 +127,7 @@ export interface RunHazardCombatCliOptions {
     presetId?: string;
     seed?: number;
     auto?: boolean;
-    policy?: CombatAutoPolicyId;
+    policy?: CombatCliPolicyId;
     maxTurns?: number;
     /** Explicit deck (card ids) threaded into `initializeCombatEncounter`;
      *  default: the engine builds one from the player's known skills. */
@@ -129,6 +146,15 @@ export interface RunHazardCombatCliResult {
 
 const AUTO_POLICIES: readonly CombatAutoPolicyId[] = ['naive', 'safe', 'aggressive', 'status'];
 
+/** All valid `--policy` ids: legacy CLI heuristics first, then the sim roster. */
+export const COMBAT_CLI_POLICY_IDS: readonly CombatCliPolicyId[] =
+    Object.freeze([...AUTO_POLICIES, ...COMBAT_SIM_POLICY_ORDER]);
+
+/** True when `value` is a valid `--policy` id (legacy heuristic OR sim roster). */
+export function isCombatCliPolicyId(value: string): value is CombatCliPolicyId {
+    return (COMBAT_CLI_POLICY_IDS as readonly string[]).includes(value);
+}
+
 /** `--deck policy-pick` drafts with the auto policy's natural focus. The
  *  default (status → dot) leans into the doctrine: status effects are the
  *  MAIN fun and the EFFICIENT way to drop HP to 0. */
@@ -139,10 +165,17 @@ const AUTO_POLICY_DECK_FOCUS: Record<CombatAutoPolicyId, CombatDeckFocus> = {
     naive: 'balanced',
 };
 
+/** Natural deck focus for any `--policy` id: sim policies declare their own
+ *  `preferredFocus`; the legacy heuristics keep their historical mapping. */
+function policyDeckFocus(policy: CombatCliPolicyId): CombatDeckFocus {
+    const sim = getSimPolicy(policy);
+    return sim ? sim.preferredFocus : AUTO_POLICY_DECK_FOCUS[policy as CombatAutoPolicyId];
+}
+
 const COMBAT_USAGE =
     'Usage: npm run combat -- ' +
     '[--enemy <slug>] [--preset <id>] [--seed <n>] ' +
-    '[--auto] [--policy naive|safe|aggressive|status] [--max-turns <n>] ' +
+    '[--auto] [--policy naive|safe|aggressive|status|greedy|blind|dot-weaver|control-lock|aggro-brute|turtle|chaos|mercy-seeker] [--max-turns <n>] ' +
     '[--stage early|mid|late|impossible] ' +
     '[--deck preset:<id>|draft:<focus>|cards:a,b,c|policy-pick] ' +
     '[--sandbox <setId>] ' +
@@ -188,10 +221,10 @@ export function parseCombatArgv(args: string[]): CombatCliFlags {
             flags.seed = n; i = ni;
         } else if (arg.startsWith('--policy')) {
             const [v, ni] = takeValue(args, i, '--policy');
-            if (!(AUTO_POLICIES as readonly string[]).includes(v)) {
-                throw new Error(`--policy must be one of: ${AUTO_POLICIES.join('|')}.\n${COMBAT_USAGE}`);
+            if (!isCombatCliPolicyId(v)) {
+                throw new Error(`--policy must be one of: ${COMBAT_CLI_POLICY_IDS.join('|')}.\n${COMBAT_USAGE}`);
             }
-            flags.policy = v as CombatAutoPolicyId; i = ni;
+            flags.policy = v; i = ni;
         } else if (arg.startsWith('--max-turns')) {
             const [v, ni] = takeValue(args, i, '--max-turns');
             const n = Number(v);
@@ -219,9 +252,6 @@ export function parseCombatArgv(args: string[]): CombatCliFlags {
 }
 
 // ── Auto-policy helper (reuses combat.encounter.sim logic + extends for CLI) ─
-
-const currentPhaseStance = (s: CombatEncounterState) =>
-    s.threatPhases[Math.min(s.currentPhaseIndex, s.threatPhases.length - 1)]?.enemyStance ?? 'heart';
 
 function bestAutoCard(s: CombatEncounterState, policy: CombatAutoPolicyId) {
     const cards = handCards(s).filter(c => c.card.verbClass !== 'retreat');
@@ -486,6 +516,13 @@ async function autoHazardCombatLoop(
     initial: CombatEncounterState,
     flags: CombatCliFlags,
 ): Promise<CombatEncounterState> {
+    // Sim-roster policies drive the encounter with the PROVEN decision
+    // machinery from combat.encounter.sim.ts; the four legacy CLI heuristics
+    // keep their historical loop below, bit-for-bit.
+    const simPolicy = getSimPolicy(flags.policy);
+    if (simPolicy) return autoSimPolicyCombatLoop(initial, flags, simPolicy);
+    const legacyPolicy = flags.policy as CombatAutoPolicyId;
+
     let s = rollEncounterDice(initial).state;
     logState('hazardCombat:start', null, s, { auto: true, policy: flags.policy, seed: flags.seed });
     emit({ type: 'hazardCombat:start', payload: { enemy: s.enemy.name, preset: flags.presetId, policy: flags.policy } });
@@ -495,7 +532,7 @@ async function autoHazardCombatLoop(
         phaseCount++;
         const before = s;
 
-        s = autoPlayPhase(s, flags.policy, flags.maxTurns);
+        s = autoPlayPhase(s, legacyPolicy, flags.maxTurns);
         logState('hazardCombat:autoPhase', before, s, { phaseCount, policy: flags.policy });
 
         if (s.finalOutcome) break;
@@ -504,6 +541,61 @@ async function autoHazardCombatLoop(
             s = selectMercyChoice(s, 'spare').state;
             logState('hazardCombat:mercy', beforeMercy, s, { choice: 'spare' });
             break;
+        }
+        if (s.phase === 'phase-play') {
+            const beforeResolve = s;
+            s = resolveThreatPhase(s).state;
+            logState('hazardCombat:resolveThreat', beforeResolve, s, { phaseCount });
+        }
+    }
+    return s;
+}
+
+/**
+ * Auto loop for sim-roster policies (`--policy greedy|blind|dot-weaver|...`):
+ * mirrors `runOneEncounter`'s loop shape (phase play → mercy choice → threat
+ * resolution) but through the CLI's `logState`/`emit` surface, so the same
+ * `hazardCombat:*` records/events flow as the legacy auto loop. Decisions —
+ * card ranking, signature funding, blind vs omniscient drafting, mercy
+ * resolution — come from the policy object via `policyPlayPhase`.
+ */
+async function autoSimPolicyCombatLoop(
+    initial: CombatEncounterState,
+    flags: CombatCliFlags,
+    policy: CombatSimPolicy,
+): Promise<CombatEncounterState> {
+    let s = rollEncounterDice(initial).state;
+    logState('hazardCombat:start', null, s, { auto: true, policy: flags.policy, seed: flags.seed });
+    emit({ type: 'hazardCombat:start', payload: { enemy: s.enemy.name, preset: flags.presetId, policy: flags.policy } });
+
+    // Policy randomness (only `chaos` consumes it) rides the same seeded
+    // global stream the engine uses — exactly like the sim; never Math.random.
+    const rng = (): number => getRng().random();
+    const usage: Record<string, CombatCardUsage> = {};
+
+    let phaseCount = 0;
+    while (s.phase !== 'complete' && !s.finalOutcome && phaseCount < flags.maxTurns) {
+        phaseCount++;
+
+        if (s.mercyChoiceActive) {
+            const beforeMercy = s;
+            s = selectMercyChoice(s, policy.mercyChoice).state;
+            logState('hazardCombat:mercy', beforeMercy, s, { choice: policy.mercyChoice });
+            continue;
+        }
+        if (s.phase !== 'phase-play') break;
+
+        const before = s;
+        s = policyPlayPhase(s, policy, rng, usage).state;
+        logState('hazardCombat:autoPhase', before, s, { phaseCount, policy: flags.policy });
+
+        if (s.finalOutcome) break;
+        if (s.mercyChoiceActive) {
+            const beforeMercy = s;
+            s = selectMercyChoice(s, policy.mercyChoice).state;
+            logState('hazardCombat:mercy', beforeMercy, s, { choice: policy.mercyChoice });
+            if (s.finalOutcome || s.phase === 'complete') break;
+            continue;
         }
         if (s.phase === 'phase-play') {
             const beforeResolve = s;
@@ -643,7 +735,7 @@ export async function runCombatCli(rawArgs: string[]): Promise<void> {
     if (flags.deck !== undefined) {
         const selection = parseDeckSelectionArg(flags.deck);
         const effective: CombatDeckSelection = selection.kind === 'policy-pick'
-            ? { kind: 'draft', focus: AUTO_POLICY_DECK_FOCUS[flags.policy] }
+            ? { kind: 'draft', focus: policyDeckFocus(flags.policy) }
             : selection;
         const stageProfile = flags.stage !== undefined ? getStageProfile(flags.stage) : undefined;
         const rng = flags.seed !== undefined ? createDeckSelectionRng(flags.seed) : undefined;

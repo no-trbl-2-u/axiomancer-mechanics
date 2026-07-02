@@ -317,6 +317,26 @@ export {
     seedInputToUint32, minigameRunSeed, branchMinigameSeed,
 } from './World';
 
+// ─── World progression (2026-07 D4) — boss-driven map completion + travel ─────
+// Dealing with a map's authored boss (kill OR mercy — mercy is a first-class
+// ending per VISION.md) completes the map and unlocks the next region; the
+// store's `endCombat` folds `applyBossProgression` in automatically and the
+// `travelToMap` store verb / World reducer moves between unlocked maps.
+export {
+    MAP_PROGRESSION, applyBossProgression, travelToMap, IllegalTravelError,
+} from './World';
+export type { MapProgressionEntry } from './World';
+
+// ─── Minigame outcome appliers (2026-07) ──────────────────────────────────────
+// Counterpart of `resolveMapEvent`'s `deferMinigames` option: the host runs
+// the REAL minigame session and folds its claimed outcome back onto the
+// player with these pure appliers (`ResolveMapEventOptions` carries the flag).
+export {
+    applyHazardOutcome, applyGatheringOutcome, applyRestOutcome,
+    applyLootCacheOutcome, applyQuestBoardOutcome, cacheItemRefsFromItems,
+} from './World';
+export type { ResolveMapEventOptions } from './World';
+
 // Hazard Minigame (v2 — faithful port of the mobile living rules source).
 // The full public surface (engine transitions, content, tuning, deck-flag
 // codec, seeded RNG, and types) is exported directly from the Hazard module

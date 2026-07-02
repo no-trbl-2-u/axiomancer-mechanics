@@ -187,13 +187,15 @@ describe('resolveMapEvent dispatch', () => {
     });
 
     it('returns kind=encounter on encounter nodes', () => {
+        // fv-4 became the Wharfside Market village (2026-07); fv-16 (inland
+        // streets, off fv-3) is the nearest regular encounter node.
         mockSequentialRng(0.5);
         let state = startingState();
         state = { ...state, world: moveToNode(state.world, 'fv-2') };
         state = { ...state, world: completeCurrentNode(state.world) };
         state = { ...state, world: moveToNode(state.world, 'fv-3') };
         state = { ...state, world: completeCurrentNode(state.world) };
-        state = { ...state, world: moveToNode(state.world, 'fv-4') };
+        state = { ...state, world: moveToNode(state.world, 'fv-16') };
         const result = resolveMapEvent(state);
         expect(result.event.kind).toBe('encounter');
         if (result.event.kind === 'encounter') {

@@ -36,10 +36,27 @@ export interface CliFlags {
     combatPolicy?: string;
     combatMaxTurns?: number;
     combatSeed?: number;
+    /**
+     * World seed for deterministic per-node minigame sessions. Each deferred
+     * minigame derives its engine seed from `hash("<seed>:<nodeId>")` so the
+     * same `--seed` replays the same crossings/gleanings/nights. Default 0.
+     */
+    seed?: number;
+    /** Auto-run deferred map-node minigames with policy bots (no prompts).
+     *  `--route` mode forces this on, mirroring `--auto-combat`. */
+    autoMinigames: boolean;
+    /**
+     * Policy bot id for `--auto-minigames`. Applied to every minigame KIND
+     * whose sim knows the id (e.g. `greedy` is valid for hazard, gathering
+     * and loot-cache); kinds that don't know it fall back to their default
+     * (hazard `greedy`, gathering `balanced`, rest `fire-tender`,
+     * loot-cache `prudent`, quest-board `safe`).
+     */
+    minigamePolicy?: string;
 }
 
 export function parseArgv(args: string[]): CliFlags {
-    const flags: CliFlags = { stdin: false, jsonEvents: false, autoCombat: false };
+    const flags: CliFlags = { stdin: false, jsonEvents: false, autoCombat: false, autoMinigames: false };
     let i = 0;
     while (i < args.length) {
         const arg = args[i]!;
@@ -116,10 +133,29 @@ export function parseArgv(args: string[]): CliFlags {
             if (!next || next.startsWith('--')) throw new Error('--combat-seed requires a number.');
             flags.combatSeed = Number(next);
             i += 2;
+        } else if (arg.startsWith('--seed=')) {
+            flags.seed = Number(arg.slice('--seed='.length));
+            i++;
+        } else if (arg === '--seed') {
+            const next = args[i + 1];
+            if (!next || next.startsWith('--')) throw new Error('--seed requires a number.');
+            flags.seed = Number(next);
+            i += 2;
+        } else if (arg === '--auto-minigames') {
+            flags.autoMinigames = true;
+            i++;
+        } else if (arg.startsWith('--minigame-policy=')) {
+            flags.minigamePolicy = arg.slice('--minigame-policy='.length);
+            i++;
+        } else if (arg === '--minigame-policy') {
+            const next = args[i + 1];
+            if (!next || next.startsWith('--')) throw new Error('--minigame-policy requires a value.');
+            flags.minigamePolicy = next;
+            i += 2;
         } else {
             throw new Error(
                 `Unknown CLI flag: '${arg}'.\n` +
-                `Usage: npm run game -- [--script <path>] [--stdin] [--json-events] [--state-log <path>] [--save-file <path>] [--route <nodes>] [--auto-combat] [--combat-policy <policy>] [--combat-max-turns <n>] [--combat-seed <n>]`,
+                `Usage: npm run game -- [--script <path>] [--stdin] [--json-events] [--state-log <path>] [--save-file <path>] [--route <nodes>] [--auto-combat] [--combat-policy <policy>] [--combat-max-turns <n>] [--combat-seed <n>] [--seed <n>] [--auto-minigames] [--minigame-policy <id>]`,
             );
         }
     }

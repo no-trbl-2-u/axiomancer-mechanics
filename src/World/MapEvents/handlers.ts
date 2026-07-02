@@ -90,8 +90,14 @@ export function resolveInteraction(
 export function resolveGathering(
     state: GameState,
     payload: GatheringPayload,
+    defer = false,
 ): ResolveMapEventResult {
     const items = payload.items.map(deepClone) as Item[];
+    if (defer) {
+        // Deferred: the host runs the Gleaning minigame and applies its
+        // outcome; the authored items ride along untouched as the config.
+        return { state, event: { kind: 'gathering', items, deferred: true } };
+    }
     const player: Character = {
         ...state.player,
         inventory: [...state.player.inventory, ...items],
@@ -107,8 +113,17 @@ export function resolveGathering(
 export function resolveRest(
     state: GameState,
     payload: RestPayload,
+    defer = false,
 ): ResolveMapEventResult {
     const fraction = payload.healFraction ?? 1.0;
+    if (defer) {
+        // Deferred: the host runs the Night Watch minigame (seeded with the
+        // authored baseline fraction) and applies its dawn outcome itself.
+        return {
+            state,
+            event: { kind: 'rest', healed: 0, healFraction: fraction, deferred: true },
+        };
+    }
     const before = state.player.health;
     const newHp = Math.min(
         state.player.maxHealth,
@@ -160,7 +175,22 @@ export function resolveHazard(
     state: GameState,
     payload: HazardPayload,
     _rng: () => number,
+    defer = false,
 ): ResolveMapEventResult {
+    if (defer) {
+        // Deferred: the host runs the hazard minigame and applies its outcome;
+        // the authored effect/damage config rides along untouched.
+        return {
+            state,
+            event: {
+                kind: 'hazard',
+                effects: [],
+                damage: payload.damage ?? 0,
+                effectIds: [...(payload.effectIds ?? [])],
+                deferred: true,
+            },
+        };
+    }
     const round = 0; // node-event hazards apply outside combat; round 0 is fine.
     const applied: ActiveEffect[] = [];
     let effects = state.player.effects;
@@ -195,9 +225,15 @@ export function resolveHazard(
 export function resolveLootCache(
     state: GameState,
     payload: LootCachePayload,
+    defer = false,
 ): ResolveMapEventResult {
     const items = (payload.items ?? []).map(deepClone) as Item[];
     const currency = payload.currency ?? 0;
+    if (defer) {
+        // Deferred: the host seeds a Reliquary session from the authored
+        // items + currency and applies its claimed outcome itself.
+        return { state, event: { kind: 'loot-cache', items, currency, deferred: true } };
+    }
     const player: Character = {
         ...state.player,
         inventory: [...state.player.inventory, ...items],
@@ -255,16 +291,17 @@ export function applyPayload(
     state: GameState,
     payload: MapEventPayload,
     rng: () => number,
+    deferMinigames = false,
 ): ResolveMapEventResult {
     switch (payload.kind) {
         case 'encounter':   return resolveEncounter(state, payload);
         case 'interaction': return resolveInteraction(state, payload);
-        case 'gathering':   return resolveGathering(state, payload);
-        case 'rest':        return resolveRest(state, payload);
+        case 'gathering':   return resolveGathering(state, payload, deferMinigames);
+        case 'rest':        return resolveRest(state, payload, deferMinigames);
         case 'village':     return resolveVillage(state, payload);
         case 'cutscene':    return resolveCutscene(state, payload);
-        case 'hazard':      return resolveHazard(state, payload, rng);
-        case 'loot-cache':  return resolveLootCache(state, payload);
+        case 'hazard':      return resolveHazard(state, payload, rng, deferMinigames);
+        case 'loot-cache':  return resolveLootCache(state, payload, deferMinigames);
         case 'quest':       return resolveQuest(state, payload);
         case 'narration':   return resolveNarration(state, payload);
     }

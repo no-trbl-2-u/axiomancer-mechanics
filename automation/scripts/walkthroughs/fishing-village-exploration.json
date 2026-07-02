@@ -1,7 +1,9 @@
 [
-  { "tab": "map" },
-  { "target": "fv-2" },
-  { "tab": "map" },
-  { "target": "fv-12" },
-  { "tab": "quit" }
+    { "tab": "map" },
+    { "target": "fv-2" },
+    { "pick": "delve" },
+    { "pick": "seal" },
+    { "tab": "map" },
+    { "target": "fv-12" },
+    { "tab": "quit" }
 ]

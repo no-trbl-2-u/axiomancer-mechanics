@@ -1,23 +1,7 @@
 [
-  { "presetId": "sage" },
-  { "tab": "debug" },
-  { "slug": "coastal-tyrant" },
-  { "stance": "heart" },
-  { "action": "skill" },
-  { "skillId": "bootstrap-paradox" },
-  { "stance": "body" },
-  { "action": "attack" },
-  { "stance": "body" },
-  { "action": "attack" },
-  { "stance": "body" },
-  { "action": "attack" },
-  { "stance": "mind" },
-  { "action": "defend" },
-  { "stance": "body" },
-  { "action": "attack" },
-  { "stance": "body" },
-  { "action": "attack" },
-  { "stance": "body" },
-  { "action": "attack" },
-  { "tab": "quit" }
+    { "tab": "dev" },
+    { "action": "max-out" },
+    { "tab": "character" },
+    { "tab": "inventory" },
+    { "tab": "quit" }
 ]

@@ -2,68 +2,60 @@
 
 **Surface under test:** the Phase 37 shop economy — `buyItem` /
 `sellItem` reducers in `src/Items/shop.reducer.ts`, the
-`defaultSellPrice(ware): number` engine-tier helper (added at iterate
-`3ba5319` to foreclose the Phase 37 sell-price exploit), and the CLI
-`shopLoop` affordance that opens automatically when a `village`
-MapEvent resolves with a `shop` payload (`src/CLI/game.cli.ts`).
+`defaultSellPrice(ware)` strictly-less-than-buy invariant, and the CLI
+`shopLoop` that opens automatically when a `village` MapEvent resolves
+with a `shop` payload.
 
-The walkthrough boots the Wanderer preset (starting currency 25;
-chosen because Apprentice starts at 0 and can't afford anything,
-while Sage at 75 has more than the round-trip needs), moves through
-fv-1 → fv-2 (Old Marrow interaction) → fv-3 (Fishing Village Stalls
-— the shop village authored at `src/World/MapEvents/content.ts:55`),
-buys the `minor-healing-potion` ware (price 12), then immediately
-sells it back at the engine-default half price (6), then leaves the
-shop and quits.
+Post-Phase-161 map truth: the village is **fv-4 "Wharfside Market"**
+(`fv-4.village` pool; wares `minor-healing-potion` 10 / `antidote` 12 /
+`healing-potion` 30). The CLI bootstraps a blank level-1 character with
+**0 currency**, so the script first grants 100 via the DEV tab, then
+walks the spine fv-1 → fv-2 (loot-cache, `{"pick":"seal"}`) → fv-3
+(rest — The Night Watch, answers
+`{"posture":"deep"}` / `{"ack":"continue"}` / `{"pick":"option:hold"}` /
+`{"pick":"option:feed"}` for the seed-0 night) → fv-4 (village), buys the
+`minor-healing-potion`, sells it straight back, leaves, checks Inventory,
+quits.
 
-The point of the round-trip is to pin the buy/sell ledger: 25 →
-buy 12 → 13 → sell 6 → 19. Net 6 currency burned by the round-trip
-(consistent with `defaultSellPrice`'s "always strictly less than buy
-price" guarantee), and the `minor-healing-potion` is in inventory
-between the two reducer calls but gone after the sell.
+The ledger to pin: 100 → buy 10 → 90 → sell 5 → 95. Net 5 burned by the
+round-trip, consistent with `defaultSellPrice` = floor(price/2) always
+strictly below the buy price.
 
 **Pass conditions (the agent should verify against the state log +
 event stream):**
 
-1. Bootstrap records the Wanderer preset (level 1, starting at `fv-1`,
-   `player.currency === 25`).
-2. A `moveToNode` record fires with `event.target === 'fv-2'`,
-   followed by a `resolveMapEvent` whose event kind is `interaction`
-   (Old Marrow). `world.currentMap.currentNode` is `'fv-2'` after
-   this step.
-3. A second `moveToNode` record fires with `event.target === 'fv-3'`,
-   followed by a `resolveMapEvent` with kind `village` whose
-   `event.shop.wares` lists 4 entries (`healing-potion`,
-   `minor-healing-potion`, `antidote`, `heart-draught`).
-4. A `buyItem` state-log record fires with
-   `event.itemId === 'minor-healing-potion'` and
-   `event.price === 12`. After the record:
-   - `player.currency === 13` (was 25, minus 12).
-   - `player.inventory` contains exactly one item whose `id` is
-     `minor-healing-potion`.
-5. A `sellItem` state-log record fires with
-   `event.itemId === 'minor-healing-potion'` and
-   `event.price === 6` (the engine-default half-price). After the
-   record:
-   - `player.currency === 19` (was 13, plus 6).
-   - `player.inventory` is empty again.
-   - The sell price is **strictly less** than the buy price — the
-     `defaultSellPrice` invariant the iterate `3ba5319` regression
-     tests pin.
-6. The shop closes via the `leave` action (no further `buyItem` /
-   `sellItem` records before the quit).
-7. The run terminates cleanly via the `quit` tab; the JSON event
-   stream's final entry is a `game:saved`-or-quit-equivalent.
+1. Bootstrap records the blank character; a dev `grant-currency` step
+   raises `player.currency` to 100.
+2. `moveToNode fv-2` → `resolveMapEvent` kind `'loot-cache'`
+   (`deferred: true`) + a `minigame:end` event for fv-2.
+3. `moveToNode fv-3` → `resolveMapEvent` kind `'rest'`
+   (`deferred: true`) + a `minigame:end` event for fv-3 (the Night Watch
+   really ran — `summary.tier` non-null).
+4. `moveToNode fv-4` → `resolveMapEvent` kind `'village'` with
+   `event.villageName === 'Wharfside Market'` and 3 wares.
+5. A `buyItem` state-log record with `event.itemId ===
+   'minor-healing-potion'` and `event.price === 10`; after it
+   `player.currency === 90` and the potion is in inventory.
+6. A `sellItem` state-log record with `event.itemId ===
+   'minor-healing-potion'` and `event.price === 5`; after it
+   `player.currency === 95` and the potion is gone. Sell price is
+   strictly less than buy price.
+7. The shop closes via `leave`; the session exits via `quit`
+   (`cli:exit` reason `'quit'`).
 
 **Negative conditions (the agent should NOT see):**
 
-- No `buyItem` / `sellItem` record with `event.price` ≤ 0.
-- No round-trip where the player ends with currency strictly greater
-  than the starting 25 (the exploit closed at iterate `3ba5319`).
-- No `combat:started` event — this is a non-combat walkthrough.
+- Any `buyItem` / `sellItem` record with `event.price <= 0`.
+- The player ending with more currency than the granted 100 (the
+  round-trip exploit closed at iterate `3ba5319`).
+- `hazardCombat:start` — this route (fv-2, fv-3, fv-4) has no encounter
+  node.
 
-**Mirrors:** `stat-allocation.{json,goal.md}` (Phase 29) for the
-buy → mutate → assert pattern; `save-load.{json,goal.md}` for the
-fv-2 → fv-3 traversal that this walkthrough piggybacks on. The shop
-walkthrough is the eighth in the post-Phase-26 agent-graded set and
-closes the gap critique-15 flagged.
+**Diagnostic notes for the agent:**
+
+- Every path from fv-1 to the fv-4 village passes a loot-cache and
+  either the fv-3 rest or the fv-13 gathering node, so the script
+  answers those interactive minigame prompts inline (deterministic for
+  the default `--seed` 0).
+- The rest keepsake does not map to an inventory item, so the potion
+  sits at inventory index 0 when it is sold (`sellChoice: "0:5"`).

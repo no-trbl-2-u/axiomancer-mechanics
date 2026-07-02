@@ -128,6 +128,37 @@ The `combat-playtest` CLI (`src/CLI/combat-playtest.cli.ts`) accepts
 `--sandbox=<setId>`, `--cards`, `--json`. The interactive `combat` CLI's
 answer protocol (script/stdin JSONL) lives in `src/CLI/io.ts`.
 
+## Map walkthroughs (game CLI)
+
+Combat playtests fight in a vacuum; the **walkthrough catalog**
+(`automation/scripts/walkthroughs/README.md`, mirrored in
+`docs/quickstart.md` §3) plays the layer above — map routes, minigame
+nodes, the village, quests, and boss progression — through
+`npm run game`. The `game-walker` agent (`.claude/agents/game-walker.md`)
+drives these routes and returns a structured map-health report; spawn it
+when a map, quest, or progression gate needs a hands-on witness.
+
+| Surface | Reference walkthrough | Notes |
+|---|---|---|
+| Whole first level (all 25 nodes, quest, boss, travel) | `first-map-full` | requires the flags below; boss victory pinned |
+| Map → live combat integration | `fishing-village-exploration`, `skills-in-combat` | encounters auto-run in scripted mode |
+| Boss route + progression fold-back | `boss-encounter`, `coastal-tyrant-befriend` | any outcome without `--combat-seed` |
+| Deferred minigames / shop / save-load | `map-events`, `shop`, `save-load` | minigames prompt unless `--auto-minigames` |
+
+```bash
+# The complete first level, deterministically (boss falls to greedy @ seed 1)
+npm run game -- --script automation/scripts/walkthroughs/first-map-full.json \
+  --auto-combat --combat-policy greedy --combat-seed 1 --auto-minigames --seed 7 --json-events
+
+# Promptless route sweep (forces auto-minigames, skips the village shop loop)
+npm run game -- --route fv-2,fv-3,fv-4,fv-5,fv-6 --auto-combat --combat-policy greedy \
+  --combat-seed 1 --seed 7 --json-events
+
+# Agent-graded replay of any catalog pair (needs ANTHROPIC_API_KEY)
+node automation/agent-e2e.mjs automation/scripts/walkthroughs/<name>.json \
+  automation/scripts/walkthroughs/<name>.goal.md
+```
+
 ## The e2e bands are the balance contract
 
 `src/Combat/e2e/combat-playtest.balance-bands.sim.test.ts` pins per-stage

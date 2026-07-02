@@ -1,5 +1,5 @@
 [
-  { "presetId": "apprentice" },
-  { "tab": "character" },
-  { "tab": "quit" }
+    { "tab": "character" },
+    { "skillId": "skip" },
+    { "tab": "quit" }
 ]

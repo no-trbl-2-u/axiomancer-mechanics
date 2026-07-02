@@ -48,11 +48,14 @@ import {
     getHazardCardDef,
     getHazardDef,
     hazardStarterBag,
+    simulateHazardEncounter,
     HAZARD_DECK,
     HAZARD_LIBRARY,
 } from '../World/Hazard';
 import type {
     HazardDef,
+    HazardOutcome,
+    HazardPolicyId,
     HazardRouteKey,
     HazardSessionState,
 } from '../World/Hazard';
@@ -369,7 +372,7 @@ interface EncounterResult {
     wins: number;
 }
 
-async function pickHazard(flags: HazardCliFlags): Promise<HazardDef> {
+async function pickHazard(flags: Pick<HazardCliFlags, 'hazardId'>): Promise<HazardDef> {
     if (flags.hazardId) {
         const def = HAZARD_LIBRARY.find((h) => h.id === flags.hazardId);
         if (!def) {
@@ -385,7 +388,7 @@ async function pickHazard(flags: HazardCliFlags): Promise<HazardDef> {
     return getHazardDef(id);
 }
 
-async function pickRoute(def: HazardDef, flags: HazardCliFlags): Promise<HazardRouteKey> {
+async function pickRoute(def: HazardDef, flags: Pick<HazardCliFlags, 'route'>): Promise<HazardRouteKey> {
     if (flags.route) return flags.route === 'bottom' ? 'risk' : 'safe';
     const { route } = await prompt<{ route: 'top' | 'bottom' }>([{
         type: 'rawlist', name: 'route', message: 'Choose a route:',
@@ -397,14 +400,19 @@ async function pickRoute(def: HazardDef, flags: HazardCliFlags): Promise<HazardR
     return route === 'bottom' ? 'risk' : 'safe';
 }
 
-async function playEncounter(flags: HazardCliFlags, bag: readonly string[], runIndex: number): Promise<EncounterResult> {
-    const def = await pickHazard(flags);
-    const route = await pickRoute(def, flags);
-    const seed = seedToNumber(flags.seed, runIndex);
-
-    log(`\n═══ Run ${runIndex} — ${def.id}: ${def.title} (${def.rounds} rounds, ${route}) ═══`);
-    log(`  ${def.scenario}`);
-
+/**
+ * Drives ONE hazard session end-to-end (create → route → rounds → claim),
+ * logging and emitting exactly as the standalone subcommand always has.
+ * `runIndex` only rides along in the creation log metadata.
+ */
+async function driveHazardEncounter(
+    def: HazardDef,
+    route: HazardRouteKey,
+    seed: number,
+    bag: readonly string[],
+    auto: boolean,
+    runIndex?: number,
+): Promise<{ outcome: HazardOutcome | null; result: EncounterResult }> {
     let state = createHazardSession(seed, bag, def.id);
     logState('createHazardSession', null, state, { hazardId: def.id, seed, runIndex });
 
@@ -414,7 +422,7 @@ async function playEncounter(flags: HazardCliFlags, bag: readonly string[], runI
 
     while (state.phase === 'playing') {
         const before = state;
-        state = flags.auto ? autoPlayRound(state, bag) : await manualPlayRound(state, bag);
+        state = auto ? autoPlayRound(state, bag) : await manualPlayRound(state, bag);
         const resolved = resolveHazardRound(state, bag);
         if (resolved === state) {
             // Nothing was staged (and none could be) — bail to avoid a stall.
@@ -429,8 +437,10 @@ async function playEncounter(flags: HazardCliFlags, bag: readonly string[], runI
 
     let wins = state.marks.filter((m) => m === 'O').length;
     let tier = 'incomplete';
+    let claimedOutcome: HazardOutcome | null = null;
     if (state.phase === 'outcome' && state.outcome) {
         const outcome = state.outcome;
+        claimedOutcome = outcome;
         tier = outcome.tier;
         wins = outcome.wins;
         state = acknowledgeHazardOutcome(state);
@@ -444,7 +454,77 @@ async function playEncounter(flags: HazardCliFlags, bag: readonly string[], runI
     const result: EncounterResult = { hazardId: def.id, route, marks, tier, wins };
     log(`  Result: [${marks}]  tier ${tier}  wins ${wins}  (route: ${route})`);
     emit({ type: 'hazard:complete', payload: result });
+    return { outcome: claimedOutcome, result };
+}
+
+async function playEncounter(flags: HazardCliFlags, bag: readonly string[], runIndex: number): Promise<EncounterResult> {
+    const def = await pickHazard(flags);
+    const route = await pickRoute(def, flags);
+    const seed = seedToNumber(flags.seed, runIndex);
+
+    log(`\n═══ Run ${runIndex} — ${def.id}: ${def.title} (${def.rounds} rounds, ${route}) ═══`);
+    log(`  ${def.scenario}`);
+
+    const { result } = await driveHazardEncounter(def, route, seed, bag, flags.auto, runIndex);
     return result;
+}
+
+// ─── Session launcher (embedded-host surface) ─────────────────────────────────
+
+export interface RunHazardCliSessionOptions {
+    /** Engine seed (already derived — NOT re-run through `minigameRunSeed`). */
+    seed: number;
+    /** Policy-driven run (no prompts). Default false (interactive). */
+    auto?: boolean;
+    /**
+     * Policy bot for `auto` runs (`hazard.sim.ts` ids). Default `'greedy'`
+     * — the sim's default. When `route` is omitted the policy also picks
+     * its default route (greedy/conservative → safe, opportunist → risk).
+     */
+    policy?: HazardPolicyId;
+    /** Hazard to cross; prompts from the library when omitted (interactive)
+     *  and defaults to the first library hazard in `auto` mode. */
+    hazardId?: string;
+    /** Route override; prompts when omitted (interactive). */
+    route?: 'top' | 'bottom';
+    /** Card ids appended to the starter bag (the "acquired" deck). */
+    deck?: readonly string[];
+}
+
+/**
+ * Runs ONE hazard minigame session for an embedding host (e.g. a deferred
+ * `hazard` map event in game.cli.ts) and returns the claimed
+ * `HazardOutcome`, or null when the session ended without an outcome
+ * (stalled with an empty hand). Interactive mode reuses the exact
+ * standalone-subcommand loop; `auto` drives the pure engine with the
+ * balance sim's single-run policy driver (`simulateHazardEncounter`).
+ */
+export async function runHazardCliSession(
+    options: RunHazardCliSessionOptions,
+): Promise<HazardOutcome | null> {
+    if (options.deck) validateCardIds(options.deck, 'session deck');
+    const bag = composeHazardBag(options.deck);
+
+    if (options.auto) {
+        const policy = options.policy ?? 'greedy';
+        const def = await pickHazard({ hazardId: options.hazardId ?? HAZARD_LIBRARY[0]!.id });
+        const route = options.route
+            ? (options.route === 'bottom' ? 'risk' : 'safe') as HazardRouteKey
+            : undefined;
+        const run = simulateHazardEncounter(options.seed, bag, def.id, policy, route);
+        log(
+            `  Hazard crossing (${def.id}, ${policy}/${run.route}): ` +
+            (run.outcome ? `${run.outcome.tier} — ${run.outcome.wins} wins` : 'incomplete'),
+        );
+        return run.outcome;
+    }
+
+    const def = await pickHazard({ hazardId: options.hazardId });
+    const route = await pickRoute(def, { route: options.route });
+    log(`\n═══ ${def.id}: ${def.title} (${def.rounds} rounds, ${route}) ═══`);
+    log(`  ${def.scenario}`);
+    const { outcome } = await driveHazardEncounter(def, route, options.seed, bag, false);
+    return outcome;
 }
 
 // ─── Entry point ────────────────────────────────────────────────────────────────

@@ -430,9 +430,10 @@ const nfMistPools: MapEventPool = {
 // (overrides are last-write-wins), so they could never fire even via the CLI.
 // They were removed; the new-player block is the authored fishing-village map.
 // northern-forest is unshadowed and remains the live source for its nodes — and
-// carries the only `village` and `cutscene` kinds (fishing-village authors the
-// other kinds, including the new `narration` shell). Together the two maps cover
-// every MapEventKind, preserving the all-kinds invariant.
+// carries the only `cutscene` kind (fishing-village authors the other kinds,
+// including the new `narration` shell and — since 2026-07 — its own `village`
+// node at fv-4, Wharfside Market). Together the two maps cover every
+// MapEventKind, preserving the all-kinds invariant.
 
 const NORTHERN_FOREST_POOLS: ReadonlyArray<{ nodeId: string; pool: MapEventPool }> = [
     // Existing pools (preserved)
@@ -470,12 +471,14 @@ const NORTHERN_FOREST_POOLS: ReadonlyArray<{ nodeId: string; pool: MapEventPool 
 // battle" — a flat wall of identical encounters with no recovery was both
 // monotonous and unwinnable in playtests. The map now spreads 25 nodes across
 // a real mix, with encounters kept a slight plurality:
-//   - 8 ENCOUNTER nodes  (7 regular + the fv-6 boss — the spine),
+//   - 7 ENCOUNTER nodes  (6 regular + the fv-6 boss — the spine),
 //   - 4 REST nodes       (recover HP — "The Night Watch"), one on the spine
 //                         just before the boss,
 //   - 4 GATHERING nodes  (low-risk materials — "The Gleaning"),
 //   - 3 HAZARD nodes     (light risk — the hazard minigame),
 //   - 3 LOOT-CACHE nodes (a few coins the tide left behind),
+//   - 1 VILLAGE node     (fv-4, Wharfside Market — the town's shop and the
+//                         `talk` doorway to Old Marrow's starting quest),
 //   - 1 NARRATION node   (fv-14, the dialogue-backed monologue shell),
 //   - 1 INTERACTION node (fv-19, a coastal NPC),
 //   - 1 QUEST node       (fv-15, the story hook), and
@@ -590,6 +593,32 @@ const fvNarrationPlaceholder: MapEventPool = {
     }],
 };
 
+// The village node — fv-4, mid-spine, one step before the pre-boss stretch.
+// This is the town itself: the working quay where the fishing village's
+// authored NPCs (Old Marrow the starting-quest giver, the Tide-Shopkeeper,
+// the Coastal Beggar, and the rest of `fishingVillage.npcs`) become reachable
+// through the village shop's `talk` action. Payload shape mirrors the
+// northern-forest villages (nf-8 Glen Market / nf-18 Hidden Camp).
+const fvWharfsideMarket: MapEventPool = {
+    id: 'fv-4.village',
+    entries: [{
+        kind: 'village', weight: 1,
+        payload: {
+            kind: 'village',
+            villageName: 'Wharfside Market',
+            merchants: [{ name: 'Tide-Shopkeeper', isShopkeeper: true }],
+            shop: {
+                wares: [
+                    { itemId: 'minor-healing-potion', price: 10 },
+                    { itemId: 'antidote',             price: 12 },
+                    { itemId: 'healing-potion',       price: 30 },
+                ],
+            },
+            description: 'The village proper: drying racks, salt-stiff rope, and the Tide-Shopkeeper\'s stall doing thin trade between tides. Old Marrow weighs his nets by the quay.',
+        },
+    }],
+};
+
 const fvBuildTheBoatQuest: MapEventPool = {
     id: 'fv-15.quest',
     entries: [{
@@ -620,10 +649,12 @@ const fvGauntletBoss: MapEventPool = {
 };
 
 // Per-node kind assignment. Rest sits at fv-3 (spine, before the fv-6 boss) so
-// the player can heal before the climax; the rest of the kinds salt the map for
-// variety. Every node fv-1..fv-25 is assigned exactly once; anything not named
-// in these maps (and not the boss/quest/narration/interaction nodes below)
-// falls through to a regular ENCOUNTER, keeping encounters a slight plurality.
+// the player can heal before the climax; the village sits at fv-4 (spine, one
+// step further) so the town — and Old Marrow's starting quest — is on the
+// road to the boss; the rest of the kinds salt the map for variety. Every node
+// fv-1..fv-25 is assigned exactly once; anything not named in these maps (and
+// not the boss/village/quest/narration/interaction nodes below) falls through
+// to a regular ENCOUNTER, keeping encounters a slight plurality.
 const FV_REST_NODES: Record<string, string> = {
     'fv-3':  'A fisher’s lean-to, the embers still warm. You stop to bind your wounds.',
     'fv-9':  'A roofless cottage out of the wind. Enough shelter to catch your breath.',
@@ -652,6 +683,8 @@ const FISHING_VILLAGE_NEW_PLAYER_POOLS: ReadonlyArray<{ nodeId: string; pool: Ma
             const nodeId = `fv-${i}`;
             if (nodeId === 'fv-6') {
                 out.push({ nodeId, pool: fvGauntletBoss });
+            } else if (nodeId === 'fv-4') {
+                out.push({ nodeId, pool: fvWharfsideMarket });
             } else if (nodeId === 'fv-15') {
                 out.push({ nodeId, pool: fvBuildTheBoatQuest });
             } else if (nodeId === 'fv-14') {

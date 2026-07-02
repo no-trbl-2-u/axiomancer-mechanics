@@ -1,0 +1,233 @@
+[
+    {
+        "tab": "map"
+    },
+    {
+        "target": "fv-2"
+    },
+    {
+        "tab": "map"
+    },
+    {
+        "target": "fv-3"
+    },
+    {
+        "tab": "map"
+    },
+    {
+        "target": "fv-4"
+    },
+    {
+        "action": "talk"
+    },
+    {
+        "npc": "Old Marrow"
+    },
+    {
+        "choice": 0
+    },
+    {
+        "choice": 0
+    },
+    {
+        "action": "leave"
+    },
+    {
+        "tab": "map"
+    },
+    {
+        "target": "fv-17"
+    },
+    {
+        "tab": "map"
+    },
+    {
+        "target": "fv-16"
+    },
+    {
+        "tab": "map"
+    },
+    {
+        "target": "fv-3"
+    },
+    {
+        "tab": "map"
+    },
+    {
+        "target": "fv-13"
+    },
+    {
+        "tab": "map"
+    },
+    {
+        "target": "fv-12"
+    },
+    {
+        "tab": "map"
+    },
+    {
+        "target": "fv-11"
+    },
+    {
+        "tab": "map"
+    },
+    {
+        "target": "fv-14"
+    },
+    {
+        "tab": "map"
+    },
+    {
+        "target": "fv-15"
+    },
+    {
+        "tab": "map"
+    },
+    {
+        "target": "fv-14"
+    },
+    {
+        "tab": "map"
+    },
+    {
+        "target": "fv-11"
+    },
+    {
+        "tab": "map"
+    },
+    {
+        "target": "fv-1"
+    },
+    {
+        "tab": "map"
+    },
+    {
+        "target": "fv-2"
+    },
+    {
+        "tab": "map"
+    },
+    {
+        "target": "fv-3"
+    },
+    {
+        "tab": "map"
+    },
+    {
+        "target": "fv-16"
+    },
+    {
+        "tab": "map"
+    },
+    {
+        "target": "fv-17"
+    },
+    {
+        "tab": "map"
+    },
+    {
+        "target": "fv-19"
+    },
+    {
+        "tab": "map"
+    },
+    {
+        "target": "fv-20"
+    },
+    {
+        "tab": "map"
+    },
+    {
+        "target": "fv-19"
+    },
+    {
+        "tab": "map"
+    },
+    {
+        "target": "fv-18"
+    },
+    {
+        "tab": "map"
+    },
+    {
+        "target": "fv-5"
+    },
+    {
+        "tab": "map"
+    },
+    {
+        "target": "fv-6"
+    },
+    {
+        "tab": "map"
+    },
+    {
+        "target": "fv-7"
+    },
+    {
+        "tab": "map"
+    },
+    {
+        "target": "fv-21"
+    },
+    {
+        "tab": "map"
+    },
+    {
+        "target": "fv-24"
+    },
+    {
+        "tab": "map"
+    },
+    {
+        "target": "fv-25"
+    },
+    {
+        "tab": "map"
+    },
+    {
+        "target": "fv-24"
+    },
+    {
+        "tab": "map"
+    },
+    {
+        "target": "fv-23"
+    },
+    {
+        "tab": "map"
+    },
+    {
+        "target": "fv-22"
+    },
+    {
+        "tab": "map"
+    },
+    {
+        "target": "fv-8"
+    },
+    {
+        "tab": "map"
+    },
+    {
+        "target": "fv-9"
+    },
+    {
+        "tab": "map"
+    },
+    {
+        "target": "fv-10"
+    },
+    {
+        "tab": "journal"
+    },
+    {
+        "tab": "map"
+    },
+    {
+        "target": "travel:northern-forest"
+    },
+    {
+        "tab": "quit"
+    }
+]

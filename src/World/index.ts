@@ -59,6 +59,12 @@ export {
     validateMoveToNode, findAlternativePaths, getBlockedRoutesFromNode, getReachableNodes,
 } from './map.dispatcher';
 
+// D4 (2026-07) — boss-driven map completion + map travel.
+export {
+    MAP_PROGRESSION, applyBossProgression, travelToMap, IllegalTravelError,
+} from './world.progression';
+export type { MapProgressionEntry } from './world.progression';
+
 // Spec 23 — MapEvents engine.
 // Importing `./MapEvents/content` for its side effect registers the
 // Phase 24 pools (fishing-village + northern-forest) on module load.
@@ -79,7 +85,19 @@ export type {
     EncounterPayload, InteractionPayload, GatheringPayload, RestPayload,
     VillagePayload, CutscenePayload, HazardPayload, LootCachePayload,
     QuestEventPayload, NarrationPayload, ResolvedEvent, ResolveMapEventResult,
+    ResolveMapEventOptions,
 } from './MapEvents/types';
+
+// Minigame outcome appliers (2026-07) — fold a deferred minigame's claimed
+// outcome back onto the player (counterpart of `deferMinigames`).
+export {
+    applyHazardOutcome,
+    applyGatheringOutcome,
+    applyRestOutcome,
+    applyLootCacheOutcome,
+    applyQuestBoardOutcome,
+    cacheItemRefsFromItems,
+} from './MapEvents/minigame-outcomes';
 
 export {
     applyDialogueChoice,

@@ -1,5 +1,6 @@
 [
-  { "presetId": "wanderer" },
-  { "tab": "character" },
-  { "tab": "quit" }
+    { "tab": "character" },
+    { "skillId": "ad-hominem-strike" },
+    { "skillId": "skip" },
+    { "tab": "quit" }
 ]

@@ -41,10 +41,13 @@ import {
     sealLootCache,
     continueLootCacheCard,
     claimLootCacheOutcome,
+    simulateLootCache,
     DEFAULT_CACHE_ITEMS,
     DEFAULT_CACHE_CURRENCY,
 } from '../World/LootCache';
 import type {
+    CacheItemRef,
+    LootCacheOutcome,
     LootCachePolicyId,
     LootCacheSession,
 } from '../World/LootCache';
@@ -222,13 +225,22 @@ interface CacheResult {
     layersOpened: number;
 }
 
-async function playCache(flags: LootCacheCliFlags, runIndex: number): Promise<CacheResult> {
-    const seed = seedToNumber(flags.seed, runIndex);
-
-    log(`\n═══ Cache ${runIndex} — The Reliquary (purse ${flags.currency}${flags.auto ? `, ${flags.policy}` : ''}) ═══`);
-
-    let state = createLootCacheSession(seed, DEFAULT_CACHE_ITEMS, flags.currency);
-    logState('createLootCacheSession', null, state, { seed, currency: flags.currency, runIndex });
+/**
+ * Drives ONE loot-cache session end-to-end (create → delving → claim),
+ * logging and emitting exactly as the standalone subcommand always has.
+ * `runIndex` only rides along in the creation log metadata; `policy`
+ * drives `auto` verbs and labels the result either way.
+ */
+async function driveLootCache(
+    items: readonly CacheItemRef[],
+    currency: number,
+    policy: LootCachePolicyId,
+    seed: number,
+    auto: boolean,
+    runIndex?: number,
+): Promise<{ outcome: LootCacheOutcome | null; result: CacheResult }> {
+    let state = createLootCacheSession(seed, items, currency);
+    logState('createLootCacheSession', null, state, { seed, currency, runIndex });
 
     state = step('beginLootCache', state, beginLootCache(state), {});
 
@@ -245,21 +257,23 @@ async function playCache(flags: LootCacheCliFlags, runIndex: number): Promise<Ca
         }
         if (state.phase === 'outcome') break;
         // phase === 'delving'
-        if (flags.auto) {
-            state = applyVerb(state, autoVerb(state, flags.policy));
+        if (auto) {
+            state = applyVerb(state, autoVerb(state, policy));
         } else {
             state = await manualDelve(state);
         }
     }
 
     let result: CacheResult = {
-        policy: flags.policy, tier: 'incomplete', itemsKept: 0, currencyKept: 0,
+        policy, tier: 'incomplete', itemsKept: 0, currencyKept: 0,
         bittenVitae: state.bittenVitae, layersOpened: state.layers.filter(l => l.opened).length,
     };
+    let claimedOutcome: LootCacheOutcome | null = null;
     if (state.phase === 'outcome' && state.outcome) {
         const o = state.outcome;
+        claimedOutcome = o;
         result = {
-            policy: flags.policy,
+            policy,
             tier: o.tier,
             itemsKept: o.itemsKept.length,
             currencyKept: o.currencyKept,
@@ -278,7 +292,73 @@ async function playCache(flags: LootCacheCliFlags, runIndex: number): Promise<Ca
     }
 
     emit({ type: 'loot-cache:complete', payload: result });
+    return { outcome: claimedOutcome, result };
+}
+
+async function playCache(flags: LootCacheCliFlags, runIndex: number): Promise<CacheResult> {
+    const seed = seedToNumber(flags.seed, runIndex);
+
+    log(`\n═══ Cache ${runIndex} — The Reliquary (purse ${flags.currency}${flags.auto ? `, ${flags.policy}` : ''}) ═══`);
+
+    const { result } = await driveLootCache(
+        DEFAULT_CACHE_ITEMS, flags.currency, flags.policy, seed, flags.auto, runIndex,
+    );
     return result;
+}
+
+// ─── Session launcher (embedded-host surface) ─────────────────────────────────
+
+export interface RunLootCacheCliSessionOptions {
+    /** Engine seed (already derived — NOT re-run through `minigameRunSeed`). */
+    seed: number;
+    /** Policy-driven run (no prompts). Default false (interactive). */
+    auto?: boolean;
+    /**
+     * Policy bot for `auto` runs (`lootcache.sim.ts` ids). Default
+     * `'prudent'` — lifts the always-safe lid and seals, so a deferred
+     * loot-cache event never under-delivers the authored baseline by much
+     * without the player choosing the risk.
+     */
+    policy?: LootCachePolicyId;
+    /**
+     * Item refs seeding the lid layer. Hosts with REAL items build refs via
+     * `cacheItemRefsFromItems` (World/MapEvents/minigame-outcomes) so
+     * `applyLootCacheOutcome` can map kept refs back. Defaults to
+     * `DEFAULT_CACHE_ITEMS`.
+     */
+    items?: readonly CacheItemRef[];
+    /** Lid purse (deeper layers scale off it). Default `DEFAULT_CACHE_CURRENCY`. */
+    currency?: number;
+}
+
+/**
+ * Runs ONE Reliquary session for an embedding host (e.g. a deferred
+ * `loot-cache` map event in game.cli.ts) and returns the claimed
+ * `LootCacheOutcome`, or null when the session ended without one.
+ * Interactive mode reuses the exact standalone-subcommand loop; `auto`
+ * drives the pure engine with the balance sim's single-run policy driver
+ * (`simulateLootCache`).
+ */
+export async function runLootCacheCliSession(
+    options: RunLootCacheCliSessionOptions,
+): Promise<LootCacheOutcome | null> {
+    const items = options.items ?? DEFAULT_CACHE_ITEMS;
+    const currency = options.currency ?? DEFAULT_CACHE_CURRENCY;
+    const policy = options.policy ?? 'prudent';
+
+    if (options.auto) {
+        const run = simulateLootCache(options.seed, policy, items, currency);
+        log(
+            `  The Reliquary (${policy}): ${run.outcome.tier} — kept ${run.outcome.itemsKept.length} ` +
+            `items / ${run.outcome.currencyKept} shillings` +
+            (run.outcome.bittenVitae ? `, -${run.outcome.bittenVitae} vitae bitten` : ''),
+        );
+        return run.outcome;
+    }
+
+    log(`\n═══ The Reliquary (purse ${currency}) ═══`);
+    const { outcome } = await driveLootCache(items, currency, policy, options.seed, false);
+    return outcome;
 }
 
 // ─── Entry point ──────────────────────────────────────────────────────────────

@@ -5,10 +5,19 @@
 This walkthrough no longer uses the stale Harbor District combat assumption (`fv-11 → fv-14 → fv-15`). Current map truth routes the first reliable encounter through:
 
 ```txt
-fv-1 Hovel → fv-2 Crossing/cache → fv-12 Market/encounter
+fv-1 start → fv-2 loot-cache (Reliquary) → fv-12 encounter (Salt-Gnaw Rat)
 ```
 
-`fv-12` resolves an encounter with **Driftwood Husk**. The CLI must not stage the encounter into the removed legacy combat shell. It must enter the Hazard-Pattern combat driver and emit `hazardCombat:*` events.
+`fv-12` resolves an encounter with **Salt-Gnaw Rat** (the Phase 161 foe
+cycle assigns the encounter nodes in id order — fv-1 tidepool-crab,
+fv-7 sea-mist-wisp, fv-12 salt-gnaw-rat, fv-16 driftwood-husk, fv-21
+wet-hound, fv-24 mournful-gull). The CLI must not stage the encounter
+into the removed legacy combat shell. It must enter the Hazard-Pattern
+combat driver and emit `hazardCombat:*` events.
+
+`fv-2` is a loot-cache node whose Reliquary session runs interactively
+in scripted mode: the script carries `{"pick":"delve"}` +
+`{"pick":"seal"}` for it before the fv-12 hop.
 
 ## Recommended command
 
@@ -46,9 +55,10 @@ npx ts-node src/CLI/game.cli.ts \
 
 3. **Map events resolve**:
 
-   - `fv-2` may resolve a cache/loot event.
+   - `fv-2` resolves a loot-cache event (`deferred: true`) and a
+     `minigame:end` event follows for node fv-2.
    - `fv-12` must resolve `event.kind === 'encounter'`.
-   - The encounter enemy must be `Driftwood Husk` unless the authored map/event pool has intentionally changed.
+   - The encounter enemy must be `Salt-Gnaw Rat` unless the authored map/event pool has intentionally changed.
 
 4. **Hazard-Pattern combat starts from the route**:
 

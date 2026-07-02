@@ -1,56 +1,57 @@
 # Goal — boss-encounter walkthrough
 
-**Surface under test:** the Debug tab's `debugSpawn` action driving a
-full boss combat loop through `resolveCombatRound` until
-`combat:ended` fires. The walkthrough boots the Sage preset (level 15,
-mid-tier kit, all skills known), debug-spawns the Coastal Tyrant
-(level 7 boss, body-leaning), and runs body-stance attacks until the
-fight resolves.
+**Surface under test:** the organic boss route — map traversal to the
+`fv-6` gauntlet boss (`fv-6.encounter-boss` pool: Coastal Tyrant pinned
+to level 3) and the Hazard-Pattern combat driver firing from
+`resolveMapEvent`, with the fold-back path (`startCombat` / `endCombat`)
+granting XP/loot and, on victory or mercy, boss map-progression.
+
+The legacy `debugSpawn` + stance/attack loop this walkthrough used to
+drive was removed with the legacy combat shell; the DEV tab's
+Spawn-enemy action now only STAGES an encounter. The current script
+walks the spine instead: fv-1 → fv-2 (loot-cache, `{"pick":"seal"}`) →
+fv-3 (rest; `{"posture":"deep"}`, `{"ack":"continue"}`,
+`{"pick":"option:hold"}`, `{"pick":"option:feed"}`) → fv-4 (Wharfside
+Market; `{"action":"leave"}`) → fv-5 (gathering; `{"id":"mire-mint"}`,
+`{"approach":"glean"}`, `{"pick":"withdraw"}`) → **fv-6 (boss)** → quit.
+Scripted mode forces auto-combat, so the boss fight itself consumes NO
+script answers.
 
 **Pass conditions (the agent should verify against the state log +
 event stream):**
 
-1. Bootstrap records the Sage preset (level 15, base stats `7/6/6`,
-   equipment includes `steel-blade` + `chain-mail`).
-2. `debugSpawn` enters a Coastal Tyrant encounter (state log
-   `debugSpawn` action with `event.slug === 'coastal-tyrant'` and
-   `event.enemyName === 'The Coastal Tyrant'`).
-3. At least one `combatRound` state-log record exists with
-   `event.playerAction.action === 'attack'` and
-   `event.playerAction.stance === 'body'` — confirms the player
-   actually drove rounds through the resolver.
-4. **Either** combat completes via a `combat:ended` event whose
-   `outcome` is `'victory'` or `'defeat'` (the test verifies the
-   loop *closes*, not that the player wins), **or** the script
-   exhausts mid-combat with `cli:exit { reason: 'error',
-   message: /script exhausted/ }`. Both are acceptable as long as
-   the boss spawn and at least one round resolved.
-5. The state log contains an `endCombat` record (only fires after
-   the loop exits via `combat:ended`); if absent, the script
-   exhausted mid-fight — still a pass per the rule above.
+1. Bootstrap records the blank level-1 character (5/5/5).
+2. Five `moveToNode` records in order: fv-2, fv-3, fv-4, fv-5, fv-6.
+3. `resolveMapEvent` kinds along the way: `loot-cache`, `rest`,
+   `village` (Wharfside Market), `gathering` — each minigame-backed kind
+   `deferred: true` with a matching `minigame:end` event.
+4. At fv-6: `resolveMapEvent` kind `'encounter'` with `isBoss: true`;
+   the event stream shows `hazardCombat:start` with
+   `enemy: 'The Coastal Tyrant'` and later `hazardCombat:end` with ANY
+   outcome (the harness run is unseeded; the loop closing is the graded
+   surface, not the win).
+5. An `endCombat` state-log record follows (fold-back fired:
+   `combat:started` + `combat:ended` events, XP/loot on victory).
+6. If the outcome was `victory` or `mercy`: a `map:completed` event with
+   `{ map: 'fishing-village', unlocked: ['northern-forest'] }` and the
+   human log line "The Coastal Tyrant is dealt with." — a bonus check,
+   NOT required for a pass on defeat/retreat.
+7. The session exits cleanly via `quit` (`cli:exit` reason `'quit'`).
 
 **Fail conditions:**
 
-- No `debugSpawn` record appears (the debug-tab path didn't fire).
-- No `combatRound` record appears (combat started but no rounds
-  resolved — would indicate a regression in the combat loop driver).
-- The CLI exited with `reason: 'error'` for any reason other than
-  script exhaustion.
+- fv-6 resolves to anything but a boss encounter.
+- No `hazardCombat:start` fires (the encounter was merely described or
+  staged — the inline driver regressed).
+- Any route move is rejected as unreachable.
+- The CLI exited with `reason: 'error'`.
 
 **Diagnostic notes for the agent:**
 
-- The Coastal Tyrant is a boss-tier enemy (level 7, body 7 / heart
-  6) with `procUnlocks` favoring body and heart. Sage is level 15
-  with mid-tier weapons; the expected outcome is victory after a
-  long body-attack grind, but the walkthrough budgets 50 rounds of
-  body attacks — enough to win in most RNG paths and enough to lose
-  if the dice break poorly. Either outcome is a pass.
-- The walkthrough deliberately overshoots round count: if the fight
-  ends before round 50, the trailing `{ stance, action }` answers
-  are consumed by `pickTab` after combat closes (and either re-enter
-  the debug tab — which would prompt for a slug — or get rejected),
-  ultimately exhausting the script. Treat script-exhaustion-after-
-  combat-ended as a pass.
-- Body stance is chosen deliberately: the Tyrant's body procUnlock
-  means defense scales, but Sage's level + weapon should still
-  out-damage the boss's regen over a long fight.
+- For a DETERMINISTIC boss kill, run manually with
+  `--auto-combat --combat-policy greedy --combat-seed 1` (the
+  `first-map-full` walkthrough pins that path). The harness passes no
+  combat flags, so this walkthrough tolerates any outcome.
+- fv-6 is only enterable from fv-5, and fv-5 only from fv-4 or fv-18 —
+  the rest/gathering answers above are unavoidable on the shortest
+  route.

@@ -44,9 +44,12 @@ import {
     acknowledgeQuestDusk,
     claimQuestBoardCompletion,
     getQuestBoardDef,
+    simulateQuestBoard,
     QUEST_BOARDS,
 } from '../World/QuestBoard';
 import type {
+    QuestBoardDef,
+    QuestBoardOutcome,
     QuestBoardPolicyId,
     QuestBoardSession,
 } from '../World/QuestBoard';
@@ -274,13 +277,19 @@ interface BoardResult {
     vowsKept: number;
 }
 
-async function playBoard(flags: QuestBoardCliFlags, runIndex: number): Promise<BoardResult> {
-    const def = getQuestBoardDef(flags.boardId);
-    const seed = seedToNumber(flags.seed, runIndex);
-
-    log(`\n═══ Board ${runIndex} — ${def.title} (${def.id}) ═══`);
-    log(`  ${def.boardHeadline}`);
-
+/**
+ * Drives ONE quest-board session end-to-end (create → begin → days →
+ * claim), logging and emitting exactly as the standalone subcommand always
+ * has. `runIndex` only rides along in the creation log metadata; `policy`
+ * drives `auto` options and labels the result either way.
+ */
+async function driveQuestBoard(
+    def: QuestBoardDef,
+    policy: QuestBoardPolicyId,
+    seed: number,
+    auto: boolean,
+    runIndex?: number,
+): Promise<{ outcome: QuestBoardOutcome | null; result: BoardResult }> {
     let state = createQuestBoardSession(seed, def.id);
     logState('createQuestBoardSession', null, state, { seed, boardId: def.id, runIndex });
 
@@ -288,13 +297,13 @@ async function playBoard(flags: QuestBoardCliFlags, runIndex: number): Promise<B
 
     let guard = 0;
     while (state.phase !== 'done' && state.phase !== 'outcome' && guard++ < 5000) {
-        if (flags.auto) {
+        if (auto) {
             if (state.phase === 'dusk') {
                 state = step('acknowledgeQuestDusk', state, acknowledgeQuestDusk(state), {});
             } else if (state.phase === 'idle') {
                 state = step('rollQuestBone', state, rollQuestBone(state), {});
             } else if (state.phase === 'space') {
-                const optionId = autoOption(state, flags.policy);
+                const optionId = autoOption(state, policy);
                 if (optionId !== null) {
                     state = step('chooseQuestSpaceOption', state, chooseQuestSpaceOption(state, optionId), { optionId });
                 } else if (state.pending && state.pending.result !== null) {
@@ -310,13 +319,15 @@ async function playBoard(flags: QuestBoardCliFlags, runIndex: number): Promise<B
     }
 
     let result: BoardResult = {
-        boardId: def.id, policy: flags.policy, tier: 'incomplete',
+        boardId: def.id, policy, tier: 'incomplete',
         daysTaken: state.day, fishLeft: state.fish, vigorLeft: state.vigor, vowsKept: 0,
     };
+    let claimedOutcome: QuestBoardOutcome | null = null;
     if (state.phase === 'outcome' && state.outcome) {
         const o = state.outcome;
+        claimedOutcome = o;
         result = {
-            boardId: def.id, policy: flags.policy, tier: o.tier,
+            boardId: def.id, policy, tier: o.tier,
             daysTaken: o.daysTaken, fishLeft: o.fishLeft, vigorLeft: o.vigorLeft, vowsKept: o.vowsKept,
         };
         log(
@@ -327,7 +338,67 @@ async function playBoard(flags: QuestBoardCliFlags, runIndex: number): Promise<B
     }
 
     emit({ type: 'quest-board:complete', payload: result });
+    return { outcome: claimedOutcome, result };
+}
+
+async function playBoard(flags: QuestBoardCliFlags, runIndex: number): Promise<BoardResult> {
+    const def = getQuestBoardDef(flags.boardId);
+    const seed = seedToNumber(flags.seed, runIndex);
+
+    log(`\n═══ Board ${runIndex} — ${def.title} (${def.id}) ═══`);
+    log(`  ${def.boardHeadline}`);
+
+    const { result } = await driveQuestBoard(def, flags.policy, seed, flags.auto, runIndex);
     return result;
+}
+
+// ─── Session launcher (embedded-host surface) ─────────────────────────────────
+
+export interface RunQuestBoardCliSessionOptions {
+    /** Engine seed (already derived — NOT re-run through `minigameRunSeed`). */
+    seed: number;
+    /** Policy-driven run (no prompts). Default false (interactive). */
+    auto?: boolean;
+    /**
+     * Policy bot for `auto` runs (`quest-board.sim.ts` ids). Default
+     * `'safe'` — the efficient-but-cautious naive finisher.
+     */
+    policy?: QuestBoardPolicyId;
+    /** Board to play (`quest` map events carry this). Default `'build-the-boat'`. */
+    boardId?: string;
+}
+
+/**
+ * Runs ONE quest-board session for an embedding host (e.g. a `quest` map
+ * event in game.cli.ts) and returns the claimed `QuestBoardOutcome`, or
+ * null when the session ended without one. Interactive mode reuses the
+ * exact standalone-subcommand loop; `auto` drives the pure engine with the
+ * balance sim's single-run policy driver (`simulateQuestBoard`).
+ */
+export async function runQuestBoardCliSession(
+    options: RunQuestBoardCliSessionOptions,
+): Promise<QuestBoardOutcome | null> {
+    const boardId = options.boardId ?? 'build-the-boat';
+    if (!QUEST_BOARDS.some(b => b.id === boardId)) {
+        const ids = QUEST_BOARDS.map(b => b.id).join(', ');
+        throw new Error(`Unknown board '${boardId}'. Known boards: ${ids}.`);
+    }
+    const def = getQuestBoardDef(boardId);
+    const policy = options.policy ?? 'safe';
+
+    if (options.auto) {
+        const run = simulateQuestBoard(options.seed, def.id, policy);
+        log(
+            `  The Boy's Almanac (${def.id}, ${policy}): ${run.outcome.tier} — ` +
+            `${run.outcome.daysTaken} day(s), ${run.outcome.vowsKept}/${run.outcome.vows.length} vows kept`,
+        );
+        return run.outcome;
+    }
+
+    log(`\n═══ ${def.title} (${def.id}) ═══`);
+    log(`  ${def.boardHeadline}`);
+    const { outcome } = await driveQuestBoard(def, policy, options.seed, false);
+    return outcome;
 }
 
 // ─── Entry point ──────────────────────────────────────────────────────────────

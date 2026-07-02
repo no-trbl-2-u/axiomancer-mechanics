@@ -1,48 +1,42 @@
 # Goal — skills-in-combat walkthrough
 
-**Surface under test:** the Phase 26 unit 1 "skill" action in the
-combat tab. The walkthrough boots the Wanderer preset (which equips
-`ad-hominem-strike` among its 4 skills), debug-spawns a Wet Hound,
-and fights with body-stance attacks to generate body tokens, then
-fires `ad-hominem-strike` on round 2.
+**Surface under test:** skills/cards being played inside a live
+Hazard-Pattern combat encounter reached organically from the map. The
+old interactive `{"stance"}/{"action":"skill"}` answers drove the
+removed legacy combat loop; in scripted mode the game CLI now
+auto-resolves encounters through the combat driver (default policy
+`status`), whose whole point is playing status-effect cards — the graded
+surface is that card/skill plays appear in the combat telemetry.
+
+Script: fv-1 → fv-2 (loot-cache; `{"pick":"delve"}`, `{"pick":"seal"}`)
+→ fv-12 (encounter: Salt-Gnaw Rat — auto-combat, NO answers consumed) →
+quit.
 
 **Pass conditions (the agent should verify against the state log +
 event stream):**
 
-1. Bootstrap records the Wanderer preset (level 8, base stats
-   `5/4/4`, `knownSkills` includes `ad-hominem-strike`).
-2. `debugSpawn` enters a Wet Hound encounter.
-3. At least one `combatRound` state-log record has
-   `event.playerAction.action === 'skill'` with
-   `event.playerAction.skillId === 'ad-hominem-strike'` —
-   demonstrating that the new skill action path fires from the CLI.
-4. The combat round preceding the skill should be a body-stance
-   attack (round 1 generates the body tokens the skill spends).
-5. **Either** combat completes via a `combat:ended` event with an
-   `outcome` (`victory` / `defeat` / `friendship`), **or** the
-   script exhausts mid-combat with `cli:exit { reason: 'error',
-   message: /script exhausted/ }`. Both are acceptable — the agent
-   should grade `pass` as long as the skill action fired in any
-   form during the run.
+1. Bootstrap records the blank level-1 character.
+2. `moveToNode fv-12` → `resolveMapEvent` kind `'encounter'` with the
+   Salt-Gnaw Rat.
+3. The event stream shows `hazardCombat:start`
+   (`policy: 'status'`) and `hazardCombat:end` whose summary carries a
+   non-empty per-card attribution (`rows` with card ids/names — e.g.
+   Befriend / False Dilemma / Ad Hominem Strike), proving the driver
+   played cards rather than only basic strikes.
+4. An `endCombat` state-log record follows with the mapped outcome
+   (any of victory / friendship / defeat / flee — unseeded run).
+5. The session exits cleanly via `quit` (`cli:exit` reason `'quit'`).
 
 **Fail conditions:**
 
-- No `combatRound` record contains `playerAction.action === 'skill'`
-  (the new path didn't fire).
-- The skill action fired but resolved to a `skill-blocked` sub-event
-  (look for `SkillPhaseEvent` of kind `blocked` in the round events)
-  — would indicate the affordability gate ran wrong.
-- The CLI exited with `reason: 'error'` for any reason other than
-  script exhaustion (would indicate an unexpected throw).
+- No `hazardCombat:start` at fv-12 (encounter staged instead of run).
+- The combat summary shows zero card rows (the policy degenerated to
+  strike-trading — a doctrine smell worth flagging).
+- The CLI exited with `reason: 'error'`.
 
 **Diagnostic notes for the agent:**
 
-- `ad-hominem-strike` costs `3 body`. Wanderer round-1 body attack
-  generates 3 body on a hit and 1 on a miss. Round-2 skill should
-  fire whenever round 1 hits; if it didn't, the round-1 attack
-  missed and the test path produced a skill-blocked sub-event —
-  treat that as fail.
-- The walkthrough deliberately overshoots combat with extra body
-  attacks. If combat ends quickly, the extra answers consume tab
-  prompts and the script exhausts during pickTab. The agent should
-  not penalise script-exhaustion-after-victory.
+- For deterministic card-by-card scripting, use the combat CLI
+  subcommand directly (`npm run game -- combat --enemy wet-hound
+  --script ... --seed N`); this walkthrough pins the map-to-combat
+  integration instead.

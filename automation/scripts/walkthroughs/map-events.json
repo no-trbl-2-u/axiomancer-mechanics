@@ -1,6 +1,7 @@
 [
-  { "presetId": "apprentice" },
-  { "tab": "map" },
-  { "target": "fv-2" },
-  { "tab": "quit" }
+    { "tab": "map" },
+    { "target": "fv-2" },
+    { "pick": "delve" },
+    { "pick": "seal" },
+    { "tab": "quit" }
 ]

@@ -31,6 +31,7 @@ import { createCharacter, allocateStatPoint } from '../Character';
 import { learnSkill } from '../Cards';
 import { createStartingWorld, emptyQuestLog } from '../World';
 import { moveToNode as moveWorld } from '../World/world.reducer';
+import { travelToMap as travelWorld } from '../World/world.progression';
 import { resolveMapEvent } from '../World';
 import { applyDialogueChoice as applyDialogueRuntime } from '../World/dialogue.runtime';
 import { killObjectives, progressQuest, findQuest } from '../World/quest.engine';
@@ -350,6 +351,17 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
             return {
                 ...state,
                 world: moveWorld(state.world, action.payload.nodeId),
+            };
+        }
+
+        case 'TRAVEL_TO_MAP': {
+            // D4 (2026-07) — continent-level travel. `travelToMap` validates
+            // against `currentContinent.availableMaps` and throws
+            // `IllegalTravelError` for locked / unknown destinations (same
+            // convention as MOVE_TO_NODE's IllegalMoveError).
+            return {
+                ...state,
+                world: travelWorld(state.world, action.payload.mapName),
             };
         }
 

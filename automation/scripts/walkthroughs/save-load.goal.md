@@ -1,77 +1,58 @@
 # Goal — save-load walkthrough
 
-**Surface under test:** the Phase 27 unit 2 Save / Load CLI tabs +
-the `--save-file <path>` flag, which together expose the engine's
-persistence layer (`src/Game/persistence/node.adapter.ts`) as a
-user-facing save-slot. After Phase 31 (`711b49e`) `resolveMapEvent`
-also unlocks adjacents into `availableNodes`, so the walkthrough can
-now exercise a proper save → mutate-past-save → load → rollback
-cycle across two map nodes.
+**Surface under test:** the Save / Load CLI tabs + the `--save-file <path>`
+snapshot slot (Phase 27 unit 2), exercised as a proper
+save → mutate-past-save → load → rollback cycle across map nodes.
 
-The walkthrough boots the Apprentice preset, moves to `fv-2` (Old
-Marrow interaction), writes a snapshot at `fv-2`, moves to `fv-3`
-(village — newly reachable post-Phase-31), then loads to roll the
-position back to `fv-2`.
+Post-Phase-161 node kinds: `fv-2` is a **loot-cache** node and `fv-12` is
+an **encounter** node (Salt-Gnaw Rat). The CLI bootstraps a blank level-1
+character (no preset prompt). The script: move fv-1 → fv-2 (Reliquary
+session, two `{"pick"}` answers), Save at fv-2, move fv-2 → fv-12
+(encounter — auto-resolved by the Hazard-Pattern combat driver because
+scripted mode forces auto-combat; consumes NO script answers), Load, quit.
 
-This walkthrough requires the CLI to be invoked with `--save-file
-<path>`. The `automation/agent-e2e.mjs` harness allocates a temp
-snapshot path for every run and passes the flag through, so the test
-works end-to-end with no extra setup.
+This walkthrough requires `--save-file <path>`; the
+`automation/agent-e2e.mjs` harness allocates a temp snapshot path on every
+run.
 
 **Pass conditions (the agent should verify against the state log +
 event stream):**
 
-1. Bootstrap records the Apprentice preset (level 1, base stats from
-   `apprenticePreset`, starting at `fv-1`).
-2. A `moveToNode` record fires with `event.target === 'fv-2'`,
-   followed by a `resolveMapEvent` whose event is an `interaction`
-   (Old Marrow at fv-2). `world.currentMap.currentNode` is `'fv-2'`
-   after this step.
+1. Bootstrap records the blank character (level 1, 5/5/5, starting at
+   `fv-1`).
+2. A `moveToNode` record fires with `target: 'fv-2'`, followed by a
+   `resolveMapEvent` with kind `'loot-cache'` (`deferred: true`) and a
+   `minigame:end` event for node `fv-2`.
 3. A `save` state-log record fires next; its
-   `before.world.currentMap.currentNode` is `'fv-2'` (the snapshot
-   point). A `game:saved` event also appears on the JSON event
-   stream.
-4. A second `moveToNode` record fires with `event.target === 'fv-3'`
-   (now reachable because Phase 31's `unlockAdjacent` moved fv-3
-   from `lockedNodes` into `availableNodes` when fv-2 resolved). A
-   second `resolveMapEvent` follows, with kind `'village'` (fv-3
-   hosts fvShop).
+   `before.world.currentMap.currentNode` is `'fv-2'`. A `game:saved`
+   event appears on the JSON event stream.
+4. A second `moveToNode` fires with `target: 'fv-12'` followed by a
+   `resolveMapEvent` with kind `'encounter'` (Salt-Gnaw Rat). The event
+   stream shows `hazardCombat:start` → `hazardCombat:end` (any outcome —
+   the run is unseeded here) and an `endCombat` state-log record (the
+   fold-back path: `combat:started` / `combat:ended` events).
 5. A `load` state-log record fires next. Its
-   `before.world.currentMap.currentNode` is `'fv-3'` (the post-move
-   position), and its `after.world.currentMap.currentNode` is
-   `'fv-2'` (the snapshot position). A `game:loaded` event also
-   appears on the JSON event stream.
+   `before.world.currentMap.currentNode` is `'fv-12'` and its
+   `after.world.currentMap.currentNode` is `'fv-2'` (the snapshot
+   position). A `game:loaded` event appears on the stream.
 6. The session exits cleanly via `quit` (`cli:exit` reason `'quit'`).
 
 **Fail conditions:**
 
-- The second `moveToNode` to `fv-3` is rejected (would mean Phase
-  31's `unlockAdjacent` regressed; agent will see the CLI log "No
-  adjacent nodes are open right now" instead of the move).
-- No `save` or `load` record appears (the Phase 27 unit 2 CLI tabs
-  didn't fire).
-- The `load` record's `after.world.currentMap.currentNode` does NOT
-  match `'fv-2'` (load is broken, or the autosave path is
-  overwriting the snapshot slot).
-- A `save` record contains `event.result === 'no-slot'` (the
-  walkthrough was run without `--save-file`).
-- The CLI exited with `reason: 'error'` for any reason other than
-  script exhaustion.
+- The move to `fv-12` is rejected (`unlockAdjacent` regressed — the CLI
+  logs "not reachable" / exits with `reason: 'error'`).
+- No `save` or `load` record appears, or `save` carries
+  `event.result === 'no-slot'` (run without `--save-file`).
+- The `load` record's `after.world.currentMap.currentNode` is not
+  `'fv-2'` (rollback broken, or autosave overwrote the snapshot slot).
+- The CLI exited with `reason: 'error'`.
 
 **Diagnostic notes for the agent:**
 
-- The Save tab and Load tab use a dedicated snapshot adapter pointed
-  at `--save-file`. The store itself uses `nullAdapter` so the
-  dispatch-time autosave path does NOT overwrite the snapshot slot —
-  this is what makes the Load tab a real rollback, not a re-read of
-  the latest dispatch.
-- Phase 31 (`711b49e`) added `unlockAdjacent(map, nodeId)` next to
-  `revealAdjacent`; `resolveMapEvent` calls both so the just-resolved
-  node's adjacents enter `availableNodes` (the CLI's filter), not
-  just `discoveredNodes`. Without that fix, the apprentice would be
-  stuck at fv-2 — the legacy state of this walkthrough used to test
-  exactly that limitation by saving at fv-1 and moving to fv-2 only.
-- fv-2 (Old Marrow, interaction) and fv-3 (fvShop, village) are
-  both non-encounter, so combat never starts and the rollback
-  semantics stay clean. fv-4 hosts a wet-hound encounter — the
-  walkthrough deliberately stops before that.
+- The Save/Load tabs use a dedicated snapshot adapter pointed at
+  `--save-file`; the store itself runs on `nullAdapter`, which is what
+  makes Load a real rollback rather than a re-read of the latest
+  dispatch.
+- The fv-12 combat outcome is nondeterministic (no `--combat-seed`), so
+  do not grade on victory/defeat/mercy — only that the encounter fired,
+  folded back, and the Load rolled the position back cleanly.

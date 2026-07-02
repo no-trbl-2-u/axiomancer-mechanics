@@ -36,6 +36,8 @@ import { createStore, StoreApi } from 'zustand/vanilla';
 import { Character } from '../Character/types';
 import { Enemy } from '../Enemy/types';
 import { Encounter } from '../World/types';
+import { MapName } from '../World/map.library';
+import { applyBossProgression } from '../World/world.progression';
 import {
     Item, Equipment, EquipmentSlot,
 } from '../Items/types';
@@ -71,6 +73,7 @@ const DURABLE_ACTIONS: ReadonlySet<GameAction['type']> = new Set<GameAction['typ
     'LEVEL_UP',
     'END_COMBAT',
     'MOVE_TO_NODE',
+    'TRAVEL_TO_MAP', // D4 — map switches are durable transitions like MOVE_TO_NODE.
     'APPLY_DIALOGUE',
     'SAVE_GAME',
     'RESET_RUN', // Phase 72 — persist new runId + reset world immediately.
@@ -168,6 +171,17 @@ export interface GameActions {
 
     // ── World / dialogue ─────────────────────────────────────────────────────
     moveToNode: (nodeId: string) => void;
+    /**
+     * D4 (2026-07) — travels to another map on the current continent. Only
+     * maps in `currentContinent.availableMaps` are travellable; locked /
+     * unknown destinations throw `IllegalTravelError` (mirroring
+     * `moveToNode`'s `IllegalMoveError` convention). Switching builds a
+     * FRESH `MapState` via the `changeMap` reducer — the departed map's
+     * node progress is discarded (only `currentMap` persists in
+     * `WorldState`), so re-entering a map starts it over; continent-level
+     * `completedMaps` / `availableMaps` progress is preserved.
+     */
+    travelToMap: (mapName: MapName) => void;
     processNode: () => void;
     applyDialogue: (tree: DialogueTree, choice: DialogueChoice) => void;
 
@@ -253,6 +267,7 @@ function eventForAction(
         START_COMBAT:   'combat:started',
         END_COMBAT:     'combat:ended',
         MOVE_TO_NODE:   'world:moved',
+        TRAVEL_TO_MAP:  'world:moved',
         PROCESS_NODE:   'world:processed',
         APPLY_DIALOGUE: 'dialogue:applied',
         LEVEL_UP:       'character:levelup',
@@ -414,6 +429,22 @@ export function createGameStore(
                         report.friendshipReward = friendshipReport;
                     }
                 }
+                // D4 (2026-07) — boss progression. A boss DEALT WITH — killed
+                // ('victory') OR spared/befriended ('friendship' → 'mercy';
+                // mercy is a first-class ending per VISION.md) — completes the
+                // current map and unlocks the next region. `applyBossProgression`
+                // returns null for non-boss foes, bosses of OTHER maps,
+                // defeat/flee outcomes, and already-completed maps. Folded in
+                // BEFORE the END_COMBAT dispatch so the durable autosave and
+                // the `combat:ended` event both carry the progressed world.
+                if (outcome === 'victory' || outcome === 'friendship') {
+                    const progressed = applyBossProgression(
+                        pre.world,
+                        foe.id,
+                        outcome === 'victory' ? 'victory' : 'mercy',
+                    );
+                    if (progressed) set({ world: progressed });
+                }
                 dispatch(
                     {
                         type: 'END_COMBAT',
@@ -427,6 +458,10 @@ export function createGameStore(
             // ── World / dialogue ─────────────────────────────────────────────
             moveToNode(nodeId) {
                 dispatch({ type: 'MOVE_TO_NODE', payload: { nodeId } });
+            },
+
+            travelToMap(mapName) {
+                dispatch({ type: 'TRAVEL_TO_MAP', payload: { mapName } });
             },
 
             processNode() {

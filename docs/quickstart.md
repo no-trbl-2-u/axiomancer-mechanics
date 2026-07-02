@@ -74,32 +74,47 @@ npm run game -- --stdin
 ```
 
 The scripted mode is what the agent-graded harness drives at
-`automation/agent-e2e.mjs <name>`.
+`node automation/agent-e2e.mjs <script.json> <goal.md>`.
 
 ---
 
 ## 3. Walkthrough catalog — exercise each surface
 
-Ten authored walkthroughs at `automation/scripts/walkthroughs/`; each
-ships a `<name>.json` script + `<name>.goal.md` test spec. Run via:
+Authored walkthroughs at `automation/scripts/walkthroughs/`; each ships
+a `<name>.json` script + `<name>.goal.md` test spec. The CLI bootstraps
+a blank level-1 character (there is no preset prompt), scripted-mode
+encounters auto-run through Hazard-Pattern combat, and minigame nodes
+prompt interactively unless `--auto-minigames` is passed. Run via:
 
 ```bash
-node automation/agent-e2e.mjs <name>     # agent-graded; needs ANTHROPIC_API_KEY
-npm run game -- --script automation/scripts/walkthroughs/<name>.json  # direct replay
+# agent-graded; needs ANTHROPIC_API_KEY — pass BOTH paths
+node automation/agent-e2e.mjs \
+  automation/scripts/walkthroughs/<name>.json \
+  automation/scripts/walkthroughs/<name>.goal.md
+
+# direct replay
+npm run game -- --script automation/scripts/walkthroughs/<name>.json \
+  --json-events --save-file /tmp/wt.save.json [flags from the goal file]
 ```
 
-| Walkthrough | What it exercises | Preset | Enemy |
+| Walkthrough | What it exercises | Route / setup | Enemy |
 |---|---|---|---|
-| `boss-encounter` | Long combat loop driving a boss-tier enemy through `debugSpawn` + body attacks | sage | coastal-tyrant |
-| `character-sheet` | Character tab rendering (Phase 26 unit 3) | apprentice | — |
-| `endgame-loadout` | **Phase 64** — Tier 3 skill (`bootstrap-paradox`) + boss combat + enemy alignment bias | sage | coastal-tyrant |
-| `item-use` | In-combat `item` action consuming a `healing-potion` | wanderer | sandbag (debug) |
-| `map-events` | Map tab + `resolveMapEvent` dispatcher firing on `fv-2` | apprentice | — |
-| `save-load` | Save / Load tabs + `--save-file` slot + Phase 31 fv-1 → fv-2 → fv-3 rollback | apprentice | — |
-| `shop` | Phase 37 `buyItem` / `sellItem` round-trip + `defaultSellPrice` invariant | wanderer | — |
-| `skill-learning` | Character-tab Learn prompt (Phase 30 unit 3) | wanderer | — |
-| `skills-in-combat` | In-combat `skill` action with `ad-hominem-strike` | wanderer | wet-hound (debug) |
-| `stat-allocation` | Phase 29 stat-allocation prompt loop driven by post-combat level-ups | sage | coastal-tyrant |
+| `first-map-full` | **Complete first level** — all 25 fv nodes, every node kind, Old Marrow quest accept → boss kill → quest complete → `map:completed` → travel to northern-forest. Requires `--auto-combat --combat-policy greedy --combat-seed 1 --auto-minigames --seed 7` | 34-hop route, village talk at fv-4, boss at fv-6 | coastal-tyrant (pinned victory) + 6 trash foes |
+| `boss-encounter` | Organic boss route + combat fold-back (XP / loot / boss progression) | fv-2 → fv-3 → fv-4 → fv-5 → fv-6 | coastal-tyrant (any outcome) |
+| `coastal-tyrant-befriend` | Mercy plumbing: `mercy → 'friendship'` fold-back; mercy also completes the map | same route as `boss-encounter` | coastal-tyrant |
+| `character-sheet` | Character tab rendering on the blank bootstrap | tabs only | — |
+| `codex-unlock` | Codex tab empty-state render + Harbor traversal | fv-11 → fv-14 → codex | — |
+| `endgame-loadout` | DEV `max-out` + fully-kitted sheet / inventory render | dev → character → inventory | — |
+| `fishing-village-exploration` | Map traversal into live Hazard-Pattern combat | fv-2 → fv-12 | salt-gnaw-rat (auto) |
+| `item-use` | Consumable grant + stacked Inventory render | dev grant-consumables → inventory | — |
+| `map-events` | `resolveMapEvent` + deferred-minigame launch/fold-back on `fv-2` | fv-2 (Reliquary) | — |
+| `save-load` | Save / Load tabs + `--save-file` slot; save at fv-2, mutate at fv-12, load rolls back | fv-2 → save → fv-12 → load | salt-gnaw-rat (auto) |
+| `shop` | Phase 37 `buyItem` / `sellItem` round-trip + `defaultSellPrice` invariant at the fv-4 Wharfside Market | dev grant-currency → fv-2 → fv-3 → fv-4 | — |
+| `skill-learning` | Character-tab Learn prompt (live learn of `ad-hominem-strike`) | character tab | — |
+| `skills-in-combat` | Auto-combat plays cards — per-card attribution in the combat summary | fv-2 → fv-12 | salt-gnaw-rat (auto) |
+| `stat-allocation` | DEV set-stats + derived-stat re-render (the Allocate prompt is currently unreachable organically — no level-up wiring in the fold-back) | dev set-stats → character | — |
+| `synergy-skills-chain` | Synergy pair acquisition (`eternal-regress` + `resonance-burst`) via DEV pick | dev → skills tab | — |
+| `tier2-skill-chain` | Tier 2 acquisition (`eternal-regress`) via DEV pick | dev → skills tab | — |
 
 See [`automation/scripts/walkthroughs/README.md`](../automation/scripts/walkthroughs/README.md) for
 the full inventory + exit expectations.

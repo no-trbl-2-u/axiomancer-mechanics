@@ -27,6 +27,7 @@ import {
 } from './hazard.engine';
 import { getHazardCardDef, getHazardDef } from './hazard.content';
 import {
+    type HazardOutcome,
     type HazardOutcomeTier,
     type HazardRouteKey,
     type HazardSessionState,
@@ -293,6 +294,79 @@ const POLICY_ROUTE: Record<HazardPolicyId, HazardRouteKey> = {
     opportunist: 'risk', // Opportunist always risk
 };
 
+/**
+ * Plays ONE seeded session end-to-end with a policy bot and returns the
+ * final session state (outcome phase, pre-claim). Shared by the
+ * Monte-Carlo `simulateHazard` and the single-run `simulateHazardEncounter`.
+ */
+function playPolicySession(
+    seed: number,
+    bag: readonly string[],
+    hazardId: string,
+    policy: HazardPolicyId,
+    route: HazardRouteKey,
+): HazardSessionState {
+    let s = createHazardSession(seed, bag, hazardId);
+    s = finishHazardRolling(selectHazardRoute(s, route, bag));
+    while (s.phase === 'playing') {
+        // Use the appropriate bot policy
+        if (policy === 'conservative') {
+            s = playConservativeRound(s, bag);
+        } else if (policy === 'opportunist') {
+            s = playOpportunistRound(s, bag);
+        } else {
+            s = playGreedyRound(s, bag); // Default greedy behavior
+        }
+
+        // resolveHazardRound auto-applies any un-applied staged cards.
+        const resolved = resolveHazardRound(s, bag);
+        // A round with nothing stageable still has to resolve: stage the
+        // least-bad card so the engine can judge it.
+        if (resolved === s) {
+            if (s.hand.length > 0) {
+                s = stageHazardCard(s, s.hand[0].uid, bag);
+                s = resolveHazardRound(s, bag);
+            } else {
+                break;
+            }
+        } else {
+            s = resolved;
+        }
+        s = continueHazardAfterResolve(s, bag);
+    }
+    return s;
+}
+
+export interface HazardEncounterRunResult {
+    seed: number;
+    policy: HazardPolicyId;
+    route: HazardRouteKey;
+    /**
+     * Null when the session stalled before an outcome (an empty hand with
+     * nothing stageable) — mirrors `simulateHazard`'s skip of such runs.
+     */
+    outcome: HazardOutcome | null;
+}
+
+/**
+ * Single-run analogue of `simulateHazard` (which is a Monte-Carlo tally):
+ * plays exactly ONE seeded session with a policy bot and returns its
+ * outcome. Used by hosts (e.g. the CLI session launchers) that need a
+ * policy to drive a real, reproducible session rather than a rate report.
+ * When `route` is omitted it follows the policy's default route.
+ */
+export function simulateHazardEncounter(
+    seed: number,
+    bag: readonly string[],
+    hazardId: string,
+    policy: HazardPolicyId = 'greedy',
+    route?: HazardRouteKey,
+): HazardEncounterRunResult {
+    const chosenRoute = route ?? POLICY_ROUTE[policy];
+    const s = playPolicySession(seed, bag, hazardId, policy, chosenRoute);
+    return { seed, policy, route: chosenRoute, outcome: s.outcome ?? null };
+}
+
 export function simulateHazard(
     hazardId: string,
     route: HazardRouteKey,
@@ -323,34 +397,7 @@ export function simulateHazard(
     const tally: Record<HazardOutcomeTier, number> = { perfect: 0, complete: 0, failure: 0 };
     let totalWins = 0;
     for (let i = 0; i < runs; i++) {
-        let s = createHazardSession(seedBase + i, bag, hazardId);
-        s = finishHazardRolling(selectHazardRoute(s, route, bag));
-        while (s.phase === 'playing') {
-            // Use the appropriate bot policy
-            if (policy === 'conservative') {
-                s = playConservativeRound(s, bag);
-            } else if (policy === 'opportunist') {
-                s = playOpportunistRound(s, bag);
-            } else {
-                s = playGreedyRound(s, bag); // Default greedy behavior
-            }
-            
-            // resolveHazardRound auto-applies any un-applied staged cards.
-            const resolved = resolveHazardRound(s, bag);
-            // A round with nothing stageable still has to resolve: stage the
-            // least-bad card so the engine can judge it.
-            if (resolved === s) {
-                if (s.hand.length > 0) {
-                    s = stageHazardCard(s, s.hand[0].uid, bag);
-                    s = resolveHazardRound(s, bag);
-                } else {
-                    break;
-                }
-            } else {
-                s = resolved;
-            }
-            s = continueHazardAfterResolve(s, bag);
-        }
+        const s = playPolicySession(seedBase + i, bag, hazardId, policy, route);
         if (s.outcome) {
             tally[s.outcome.tier] += 1;
             totalWins += s.outcome.wins;

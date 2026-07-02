@@ -40,9 +40,12 @@ import {
     continueRestWatch,
     claimRestOutcome,
     getRestPostureDef,
+    simulateRest,
     REST_POSTURES,
 } from '../World/Rest';
 import type {
+    RestOutcome,
+    RestPolicyId,
     RestPosture,
     RestSession,
 } from '../World/Rest';
@@ -233,7 +236,7 @@ interface NightResult {
     keepsakes: number;
 }
 
-async function pickPosture(flags: RestCliFlags): Promise<RestPosture> {
+async function pickPosture(flags: Pick<RestCliFlags, 'posture'>): Promise<RestPosture> {
     if (flags.posture) return flags.posture;
     const { posture } = await prompt<{ posture: RestPosture }>([{
         type: 'rawlist', name: 'posture', message: 'How will you spend the night?',
@@ -242,23 +245,27 @@ async function pickPosture(flags: RestCliFlags): Promise<RestPosture> {
     return posture;
 }
 
-async function playNight(flags: RestCliFlags, runIndex: number): Promise<NightResult> {
-    const posture = await pickPosture(flags);
-    const def = getRestPostureDef(posture);
-    const seed = seedToNumber(flags.seed, runIndex);
-
-    log(`\n═══ Night ${runIndex} — ${def.name} (base-heal ${flags.baseHeal}) ═══`);
-    log(`  ${def.flavor}`);
-
-    let state = createRestSession(seed, flags.baseHeal);
-    logState('createRestSession', null, state, { seed, baseHeal: flags.baseHeal, runIndex });
+/**
+ * Drives ONE rest-night session end-to-end (create → posture → watches →
+ * claim), logging and emitting exactly as the standalone subcommand always
+ * has. `runIndex` only rides along in the creation log metadata.
+ */
+async function driveRestNight(
+    posture: RestPosture,
+    baseHeal: number,
+    seed: number,
+    auto: boolean,
+    runIndex?: number,
+): Promise<{ outcome: RestOutcome | null; result: NightResult }> {
+    let state = createRestSession(seed, baseHeal);
+    logState('createRestSession', null, state, { seed, baseHeal, runIndex });
 
     state = chooseRestPosture(state, posture);
     logState('chooseRestPosture', null, state, { posture });
 
     let guard = 0;
     while (state.phase === 'watch' && guard++ < 100) {
-        if (flags.auto) {
+        if (auto) {
             const optionId = autoOption(state, posture);
             if (optionId !== null) {
                 state = step('chooseRestOption', state, chooseRestOption(state, optionId), { optionId });
@@ -278,8 +285,10 @@ async function playNight(flags: RestCliFlags, runIndex: number): Promise<NightRe
         posture, tier: 'incomplete', healFraction: 0, cleansed: false,
         warmth: state.warmth, comfort: state.comfort, keepsakes: state.keepsakes.length,
     };
+    let claimedOutcome: RestOutcome | null = null;
     if (state.phase === 'outcome' && state.outcome) {
         const o = state.outcome;
+        claimedOutcome = o;
         result = {
             posture,
             tier: o.tier,
@@ -301,7 +310,77 @@ async function playNight(flags: RestCliFlags, runIndex: number): Promise<NightRe
     }
 
     emit({ type: 'rest:complete', payload: result });
+    return { outcome: claimedOutcome, result };
+}
+
+async function playNight(flags: RestCliFlags, runIndex: number): Promise<NightResult> {
+    const posture = await pickPosture(flags);
+    const def = getRestPostureDef(posture);
+    const seed = seedToNumber(flags.seed, runIndex);
+
+    log(`\n═══ Night ${runIndex} — ${def.name} (base-heal ${flags.baseHeal}) ═══`);
+    log(`  ${def.flavor}`);
+
+    const { result } = await driveRestNight(posture, flags.baseHeal, seed, flags.auto, runIndex);
     return result;
+}
+
+// ─── Session launcher (embedded-host surface) ─────────────────────────────────
+
+/** The sim policy each posture plays under (mirrors `rest.sim.ts`). */
+const POSTURE_POLICY: Record<RestPosture, RestPolicyId> = {
+    deep: 'deep-sleeper',
+    watch: 'watcher',
+    doze: 'fire-tender',
+};
+
+export interface RunRestCliSessionOptions {
+    /** Engine seed (already derived — NOT re-run through `minigameRunSeed`). */
+    seed: number;
+    /** Policy-driven run (no prompts). Default false (interactive). */
+    auto?: boolean;
+    /**
+     * Policy bot for `auto` runs (`rest.sim.ts` ids). Default derives from
+     * `posture` when given, else `'fire-tender'` (the doze posture — the
+     * balanced default read of the night).
+     */
+    policy?: RestPolicyId;
+    /** Posture; prompts when omitted (interactive). */
+    posture?: RestPosture;
+    /** Authored map-event baseline heal fraction the night scales. Default 1.0. */
+    baseHealFraction?: number;
+}
+
+/**
+ * Runs ONE Night Watch session for an embedding host (e.g. a deferred
+ * `rest` map event in game.cli.ts) and returns the claimed `RestOutcome`,
+ * or null when the session ended without one. Interactive mode reuses the
+ * exact standalone-subcommand loop; `auto` drives the pure engine with the
+ * balance sim's single-run policy driver (`simulateRest`).
+ */
+export async function runRestCliSession(
+    options: RunRestCliSessionOptions,
+): Promise<RestOutcome | null> {
+    const baseHeal = options.baseHealFraction ?? 1.0;
+
+    if (options.auto) {
+        const policy = options.policy
+            ?? (options.posture ? POSTURE_POLICY[options.posture] : 'fire-tender');
+        const run = simulateRest(options.seed, policy, baseHeal);
+        log(
+            `  The Night Watch (${policy}): ${run.outcome.tier} — ` +
+            `heal ${(run.outcome.healFraction * 100).toFixed(0)}%` +
+            (run.outcome.cleansed ? ', cleansed' : ''),
+        );
+        return run.outcome;
+    }
+
+    const posture = await pickPosture({ posture: options.posture });
+    const def = getRestPostureDef(posture);
+    log(`\n═══ Night — ${def.name} (base-heal ${baseHeal}) ═══`);
+    log(`  ${def.flavor}`);
+    const { outcome } = await driveRestNight(posture, baseHeal, options.seed, false);
+    return outcome;
 }
 
 // ─── Entry point ──────────────────────────────────────────────────────────────

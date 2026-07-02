@@ -13,6 +13,7 @@
 
 import { Enemy } from '../Enemy/types';
 import { Encounter } from '../World/types';
+import { MapName } from '../World/map.library';
 import { Character } from '../Character/types';
 import { Equipment, EquipmentSlot, Item } from '../Items/types';
 import { DialogueTree, DialogueChoice } from '../NPCs/types';
@@ -43,6 +44,7 @@ export type GameAction =
           };
       }
     | { type: 'MOVE_TO_NODE';   payload: { nodeId: string } }
+    | { type: 'TRAVEL_TO_MAP';  payload: { mapName: MapName } }
     | { type: 'PROCESS_NODE';   payload?: undefined }
     | { type: 'APPLY_DIALOGUE'; payload: { tree: DialogueTree; choice: DialogueChoice } }
     | { type: 'USE_ITEM';       payload: { itemId: string } }

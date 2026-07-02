@@ -46,26 +46,26 @@ afterEach(() => {
 describe('parseArgv', () => {
     it('returns sensible defaults for an empty arg list', () => {
         const flags: CliFlags = parseArgv([]);
-        expect(flags).toEqual({ stdin: false, jsonEvents: false, autoCombat: false });
+        expect(flags).toEqual({ stdin: false, jsonEvents: false, autoCombat: false, autoMinigames: false });
     });
 
     it('parses --stdin and --json-events independently', () => {
-        expect(parseArgv(['--stdin'])).toEqual({ stdin: true, jsonEvents: false, autoCombat: false });
-        expect(parseArgv(['--json-events'])).toEqual({ stdin: false, jsonEvents: true, autoCombat: false });
+        expect(parseArgv(['--stdin'])).toEqual({ stdin: true, jsonEvents: false, autoCombat: false, autoMinigames: false });
+        expect(parseArgv(['--json-events'])).toEqual({ stdin: false, jsonEvents: true, autoCombat: false, autoMinigames: false });
     });
 
     it('parses --script with separate value and = form', () => {
         expect(parseArgv(['--script', 'plan.json'])).toEqual({
-            stdin: false, jsonEvents: false, autoCombat: false, scriptPath: 'plan.json',
+            stdin: false, jsonEvents: false, autoCombat: false, autoMinigames: false, scriptPath: 'plan.json',
         });
         expect(parseArgv(['--script=plan.json'])).toEqual({
-            stdin: false, jsonEvents: false, autoCombat: false, scriptPath: 'plan.json',
+            stdin: false, jsonEvents: false, autoCombat: false, autoMinigames: false, scriptPath: 'plan.json',
         });
     });
 
     it('parses all flags combined in any order', () => {
         expect(parseArgv(['--json-events', '--stdin', '--script=replay.json'])).toEqual({
-            stdin: true, jsonEvents: true, autoCombat: false, scriptPath: 'replay.json',
+            stdin: true, jsonEvents: true, autoCombat: false, autoMinigames: false, scriptPath: 'replay.json',
         });
     });
 
@@ -80,16 +80,40 @@ describe('parseArgv', () => {
 
     it('parses --save-file with separate value and = form', () => {
         expect(parseArgv(['--save-file', 'save.json'])).toEqual({
-            stdin: false, jsonEvents: false, autoCombat: false, saveFile: 'save.json',
+            stdin: false, jsonEvents: false, autoCombat: false, autoMinigames: false, saveFile: 'save.json',
         });
         expect(parseArgv(['--save-file=save.json'])).toEqual({
-            stdin: false, jsonEvents: false, autoCombat: false, saveFile: 'save.json',
+            stdin: false, jsonEvents: false, autoCombat: false, autoMinigames: false, saveFile: 'save.json',
         });
     });
 
     it('throws when --save-file has no value', () => {
         expect(() => parseArgv(['--save-file'])).toThrow(/requires a file path/);
         expect(() => parseArgv(['--save-file', '--stdin'])).toThrow(/requires a file path/);
+    });
+
+    // 2026-07 D7 — minigame flags (--seed / --auto-minigames / --minigame-policy).
+    it('parses --seed, --auto-minigames, and --minigame-policy (both forms)', () => {
+        expect(parseArgv(['--seed', '7'])).toEqual({
+            stdin: false, jsonEvents: false, autoCombat: false, autoMinigames: false, seed: 7,
+        });
+        expect(parseArgv(['--seed=7'])).toEqual({
+            stdin: false, jsonEvents: false, autoCombat: false, autoMinigames: false, seed: 7,
+        });
+        expect(parseArgv(['--auto-minigames'])).toEqual({
+            stdin: false, jsonEvents: false, autoCombat: false, autoMinigames: true,
+        });
+        expect(parseArgv(['--minigame-policy', 'greedy'])).toEqual({
+            stdin: false, jsonEvents: false, autoCombat: false, autoMinigames: false, minigamePolicy: 'greedy',
+        });
+        expect(parseArgv(['--minigame-policy=greedy'])).toEqual({
+            stdin: false, jsonEvents: false, autoCombat: false, autoMinigames: false, minigamePolicy: 'greedy',
+        });
+    });
+
+    it('throws when --seed / --minigame-policy have no value', () => {
+        expect(() => parseArgv(['--seed'])).toThrow(/requires a number/);
+        expect(() => parseArgv(['--minigame-policy'])).toThrow(/requires a value/);
     });
 });
 

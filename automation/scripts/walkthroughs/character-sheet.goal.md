@@ -1,26 +1,32 @@
 # Goal — character-sheet walkthrough
 
-**Surface under test:** the new "Character" tab (Phase 26 unit 3).
+**Surface under test:** the "Character" tab (Phase 26 unit 3) full-sheet
+render.
+
+The CLI no longer prompts for a preset — it bootstraps a blank level-1
+character (5/5/5, empty inventory, 0 currency, no known skills). Because
+a blank character is eligible to learn the tier-1 card pool, the
+Character tab's Learn prompt DOES fire; the script answers it with
+`{"skillId":"skip"}` ("leave them unlearned") and quits.
 
 **Pass conditions (the agent should verify against the state log + event stream):**
 
-1. The session opens, the Apprentice preset is built, and the resulting
-   character is logged with the expected starting fields:
+1. The session opens and the bootstrap record shows the blank character:
    - `level: 1`
    - `baseStats: { heart: 5, body: 5, mind: 5 }`
-   - `knownSkills` length = 6 (all Tier-1 skills)
-   - `knownSkills` accessible in combat (Phase 99)
-   - `inventory` includes `minor-healing-potion ×3`
-   - `currency: 0`
-2. The Character tab is opened (visible in stderr / human-log output —
-   look for the `— Character Sheet —` header). State is not mutated by
-   the tab itself, so the state-log file should NOT have a record
-   between the `bootstrap` entry and the `cli:exit` event.
-3. The session exits cleanly via the `quit` tab with a final
-   `cli:exit` event in the JSON event stream (`reason: 'quit'`).
+   - `knownSkills: []`, `inventory: []`, `currency: 0`
+2. The Character tab renders (human log contains the
+   `— Character Sheet —` header plus the alignment block, derived
+   stats, equipment slots, and inventory summary).
+3. No state mutation between `bootstrap` and exit: the stat-allocation
+   prompt is skipped (`availableStatPoints === 0`) and the Learn prompt
+   is answered with `skip`, so the state log has no
+   `allocateStatPoint` / `learnSkill` records.
+4. The session exits cleanly via `quit` (`cli:exit` reason `'quit'`).
 
 **Fail conditions:**
 
-- The preset wasn't found (`Unknown preset: apprentice`).
-- Any unexpected state mutation between bootstrap and exit.
-- The CLI exited with `reason: 'error'`.
+- A `learnSkill` state-log record appears (the `skip` answer desynced).
+- The CLI exited with `reason: 'error'` (usually means the Learn prompt
+  consumed the `{"tab":"quit"}` answer — the script must carry the
+  `{"skillId":"skip"}` answer between the Character tab and the quit).

@@ -165,18 +165,54 @@ export interface MapEventPool {
 
 // ─── Resolved events (the engine's output) ────────────────────────────────────
 
+/**
+ * Deferred minigame kinds (2026-07): when `resolveMapEvent` runs with
+ * `deferMinigames: true`, the `gathering` / `rest` / `hazard` / `loot-cache`
+ * handlers do NOT touch `state.player`. The resolved event instead carries
+ * `deferred: true` plus the authored payload config the host needs to run the
+ * REAL minigame (Gleaning / Night Watch / hazard crossing / Reliquary) and
+ * apply its outcome itself (see `minigame-outcomes.ts`). Absent/false
+ * `deferred` means the flat baseline was already applied (bit-identical to the
+ * pre-option behaviour).
+ *
+ *  - `gathering`: `items` are the authored payload items (cloned, NOT added
+ *    to the inventory when deferred).
+ *  - `rest`: `healed` is 0 when deferred; `healFraction` is the authored
+ *    baseline the Night Watch session scales.
+ *  - `hazard`: `effects` is empty and no damage was applied when deferred;
+ *    `effectIds` echoes the authored effect config, `damage` the authored
+ *    flat damage.
+ *  - `loot-cache`: `items`/`currency` are the authored payload (cloned, NOT
+ *    granted when deferred) — the Reliquary session is seeded from them.
+ */
 export type ResolvedEvent =
     | { kind: 'encounter';   encounter: Encounter; isBoss: boolean }
     | { kind: 'interaction'; npcName: string; dialogue?: DialogueTree }
-    | { kind: 'gathering';   items: Item[] }
-    | { kind: 'rest';        healed: number; healFraction: number }
+    | { kind: 'gathering';   items: Item[]; deferred?: boolean }
+    | { kind: 'rest';        healed: number; healFraction: number; deferred?: boolean }
     | { kind: 'village';     villageName: string; merchants: NPC[]; shop?: ShopInventory }
     | { kind: 'cutscene';    lines: readonly string[] }
-    | { kind: 'hazard';      effects: ActiveEffect[]; damage: number }
-    | { kind: 'loot-cache';  items: Item[]; currency: number }
+    | { kind: 'hazard';      effects: ActiveEffect[]; damage: number; deferred?: boolean; effectIds?: readonly string[] }
+    | { kind: 'loot-cache';  items: Item[]; currency: number; deferred?: boolean }
     | { kind: 'quest';       boardId: string }
     | { kind: 'narration';   dialogue: DialogueTree }
     | { kind: 'none' };
+
+/**
+ * Options bag for `resolveMapEvent` (2026-07). Passing a bare rng function as
+ * the second argument remains supported for back-compat.
+ */
+export interface ResolveMapEventOptions {
+    /** Injected RNG (defaults to the engine's `getRng().random`). */
+    rng?: () => number;
+    /**
+     * When true, the minigame-backed kinds (`hazard` / `gathering` / `rest` /
+     * `loot-cache`) leave `state.player` untouched and mark their resolved
+     * event `deferred: true` so the host can run the real minigame and apply
+     * its outcome. Default false — bit-identical to the historical behaviour.
+     */
+    deferMinigames?: boolean;
+}
 
 export interface ResolveMapEventResult {
     state: GameState;

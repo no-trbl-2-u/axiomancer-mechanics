@@ -131,8 +131,8 @@ export {
 } from './hazard.engine';
 
 // ── Simulation / balance evidence ──────────────────────────────────────────
-export type { SimStats } from './hazard.sim';
-export { simulateHazard } from './hazard.sim';
+export type { SimStats, HazardPolicyId, HazardEncounterRunResult } from './hazard.sim';
+export { simulateHazard, simulateHazardEncounter } from './hazard.sim';
 
 // ── Divergence audit (Phase 140) ───────────────────────────────────────────
 export type {

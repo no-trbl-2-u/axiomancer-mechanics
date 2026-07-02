@@ -5,11 +5,17 @@
  * `MapState`, built via `createMapState(definition)` and stored under
  * `WorldState.currentMap`.
  *
- * The `fishing-village` chain demos the full Spec 08 exploration loop in
- * post-Phase-23 MapEventKind terms (`npc` and `shop` were folded into
- * `interaction` and `village`):
- *   fv-1 (start) → fv-2 (interaction — quest giver) → fv-3 (village — shop)
- *                → fv-4 (encounter) → fv-5 (loot-cache) → fv-6 (encounter — boss).
+ * Node EVENTS are no longer authored here — they live in the new-player
+ * override block in `src/World/MapEvents/content.ts`. The current
+ * `fishing-village` layout (25 nodes: spine fv-1..fv-10 plus harbor, inland,
+ * and cliff sub-areas):
+ *   - spine to the climax: fv-1 (encounter) → fv-2 (loot-cache) → fv-3 (rest)
+ *     → fv-4 (VILLAGE — Wharfside Market: shop wares + `talk` access to the
+ *     authored NPCs below, incl. Old Marrow's starting quest) → fv-5
+ *     (gathering) → fv-6 (encounter — boss: the Coastal Tyrant, pinned L3);
+ *   - the sub-areas salt in the remaining encounters plus rest / gathering /
+ *     hazard / loot-cache nodes, the fv-14 narration monologue, the fv-15
+ *     `build-the-boat` quest board, and the fv-19 coastal interaction.
  */
 
 import { MapDefinition, Quest } from '../../types';

@@ -1,10 +1,11 @@
 [
-  { "presetId": "apprentice" },
-  { "tab": "map" },
-  { "target": "fv-2" },
-  { "tab": "save" },
-  { "tab": "map" },
-  { "target": "fv-3" },
-  { "tab": "load" },
-  { "tab": "quit" }
+    { "tab": "map" },
+    { "target": "fv-2" },
+    { "pick": "delve" },
+    { "pick": "seal" },
+    { "tab": "save" },
+    { "tab": "map" },
+    { "target": "fv-12" },
+    { "tab": "load" },
+    { "tab": "quit" }
 ]

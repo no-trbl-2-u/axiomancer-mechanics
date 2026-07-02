@@ -50,7 +50,10 @@ describe('Game CLI route walkthrough → Hazard-Pattern combat', () => {
             .filter(r => r.action === 'resolveMapEvent')
             .map(r => r.event as { kind?: string; encounter?: { enemies?: Array<{ name?: string }> } })
             .find(event => event.kind === 'encounter');
-        expect(encounterEvent?.encounter?.enemies?.[0]?.name).toBe('Driftwood Husk');
+        // The authored foe cycle assigns fv-12 the third regular-encounter
+        // slot since fv-4 became the Wharfside Market village (2026-07):
+        // fv-1 crab, fv-7 wisp, fv-12 rat.
+        expect(encounterEvent?.encounter?.enemies?.[0]?.name).toBe('Salt-Gnaw Rat');
 
         const end = logs.find(r => r.action === 'hazardCombat:end');
         expect((end?.event as { outcome?: string })?.outcome).toMatch(/victory|defeat|mercy|retreat/);

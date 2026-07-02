@@ -157,8 +157,16 @@ function bumpUsage(
     if (landedStatus) row.statusLands++;
 }
 
-/** Plays a single threat phase to a stop (enemy dead, mercy opened, or hand/dice out). */
-function policyPlayPhase(
+/**
+ * Plays a single threat phase to a stop (enemy dead, mercy opened, or
+ * hand/dice out). Exported (additively) so hosts that own their own encounter
+ * loop — e.g. the combat CLI's `--policy greedy|blind|...` auto mode — can
+ * drive one phase with a roster policy's exact decision machinery instead of
+ * duplicating it. `usage` is the per-card telemetry sink (pass a throwaway
+ * `{}` when telemetry is not needed); `rng` should ride the same seeded
+ * global stream the engine uses (`() => getRng().random()`).
+ */
+export function policyPlayPhase(
     state: CombatEncounterState,
     policy: CombatSimPolicy,
     rng: () => number,

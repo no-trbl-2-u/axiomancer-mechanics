@@ -25,7 +25,8 @@ import { reachableObjectives, progressQuest } from '../quest.engine';
 import { applyAlignmentDelta } from '../../Philosophy';
 import type { QuestLog, NodeId } from '../types';
 import type {
-    MapEventPool, MapEventPoolEntry, MapEventKind, ResolveMapEventResult, ResolvedEvent,
+    MapEventPool, MapEventPoolEntry, MapEventKind, ResolveMapEventOptions,
+    ResolveMapEventResult, ResolvedEvent,
 } from './types';
 
 /**
@@ -194,11 +195,24 @@ function rollPool(
 
 /**
  * Resolves the MapEvent for the player's current node. See file header.
+ *
+ * The second argument accepts either a bare rng function (historical
+ * signature, kept for back-compat) or a `ResolveMapEventOptions` bag:
+ * `{ rng?, deferMinigames? }`. With `deferMinigames: true` the
+ * hazard / gathering / rest / loot-cache handlers leave `state.player`
+ * untouched and mark their event `deferred: true` (carrying the authored
+ * config) so the host can run the real minigame and apply its outcome via
+ * `minigame-outcomes.ts`. Default false — bit-identical to the historical
+ * behaviour.
  */
 export function resolveMapEvent(
     state: GameState,
-    rng: () => number = () => getRng().random(),
+    rngOrOptions?: (() => number) | ResolveMapEventOptions,
 ): ResolveMapEventResult {
+    const options: ResolveMapEventOptions =
+        typeof rngOrOptions === 'function' ? { rng: rngOrOptions } : (rngOrOptions ?? {});
+    const rng = options.rng ?? (() => getRng().random());
+    const deferMinigames = options.deferMinigames ?? false;
     const map = state.world.currentMap;
     const nodeId = map.currentNode;
 
@@ -241,7 +255,7 @@ export function resolveMapEvent(
     }
 
     // 4. Apply the matching handler.
-    const result = applyPayload(stateAfterReach, entry.payload, rng);
+    const result = applyPayload(stateAfterReach, entry.payload, rng, deferMinigames);
 
     // 4b. Apply the pool entry's authored alignment delta, if any (Phase 43).
     // Mirrors the dialogue-runtime moralDelta path — the handler computes its
