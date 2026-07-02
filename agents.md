@@ -161,6 +161,8 @@ an open question in a spec.
 | `oversight` | `skills/oversight.md` | **User-in-the-loop.** The only skill that asks anything. |
 | `jot` | `skills/jot.md` | Drop a quick observation into CRITIQUE.md. |
 | `combat-tuning` | `skills/combat-tuning.md` | **Hazard-Pattern Combat** balance loop — drive the Monte-Carlo sim (`simulateHazardPatternCombat`, greedy + blind) for the card-and-dice driver where the enemy's sole bar is HP and status effects are the efficient win path; numeric changes to the HP/threat/Conviction economy + report via PR. |
+| `deck-tuning` | `skills/deck-tuning.md` | **Card Forge** balance loop for the Hazard-Pattern Combat card pool — sandbox-first: A/B experimental cards/overrides (`cards.sandbox-sets.ts`) through the playtest matrix, tune presets/draft weights, promote proven cards into the library; changes + report via PR. Engine constants stay with `combat-tuning`. |
+| `combat-playtest` | `skills/combat-playtest.md` | Supercharged Hazard-Pattern Combat playtest — the stage-profile x policy matrix (`npm run combat-playtest`) plus `playtester` sub-agents playing real seeded encounters; synthesizes a doctrine verdict (is status play the fun path at every stage?) into a report PR. **Report only** — numeric follow-ups hand off to `combat-tuning` / `deck-tuning`. |
 | `legacy-combat-tuning` | `skills/legacy-combat-tuning.md` | **Legacy** turn-based combat (`resolveCombatRound`) balance loop — run the playstyle matrix, A/B-test numeric changes; data report → `main`, suggestions + winners → PR. Remains until live encounters migrate off the legacy engine. |
 | `hazard-tuning` | `skills/hazard-tuning.md` | Hazard minigame balance loop — use hazard CLI evidence to analyse card ratios, thresholds, mana economy against CDR-0006 targets; numeric changes + report via PR. |
 | `gathering-tuning` | `skills/gathering-tuning.md` | Gathering minigame (The Gleaning) balance loop — policy-sim + CLI evidence against the greed<restraint<skill doctrine; numeric changes + report via PR. |
@@ -190,6 +192,8 @@ Also available (project-specific):
 /oversight              # course-correct
 /loop 30m /march        # autonomous loop
 /jot <observation>      # quick CRITIQUE.md note
+/deck-tuning [--focus="..."]   # card forge: sandbox-first card/deck balance PR
+/combat-playtest [--focus="..."] # stage matrix + playtester agents; report-only PR
 /hazard-tuning [--focus="..."] # hazard minigame tuning evidence + guarded balance PR
 /gathering-tuning [--focus="..."] # gleaning tuning evidence + guarded balance PR
 /quest-board-tuning [--focus="..."] # quest board tuning evidence + guarded balance PR
@@ -204,6 +208,7 @@ Also available (project-specific):
 | `scout` | Open-web research: TTRPG specs, game design patterns, references |
 | `mechanics-expert` | Game mechanic review, balance analysis, spec alignment checks |
 | `balance-analyst` | Reads tuning-run logs/reports; returns balance recommendations (registry auto-apply candidates + propose-only ideas). |
+| `playtester` | Plays seeded Hazard-Pattern Combat encounters via the CLI as a real player, chooses its own deck, and returns a structured quant + fun/status-engagement report. Spawned in parallel batches by `combat-playtest`. |
 
 The main agent handles code, wiring, decisions. Spawn sub-agents for research
 and domain analysis.

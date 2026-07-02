@@ -2369,6 +2369,59 @@ export const TheLichOfMissingSteps = createEnemy({
     tags: ['mid-game', 'boss', 'enemy'],
 });
 
+// ─── THE INCOMPLETENESS (2026-07-02) — the impossible playtest ceiling ────────
+
+/**
+ * The Incompleteness — level 55 unique, the deliberately UNWINNABLE ceiling the
+ * playtest matrix measures the top of the curve against.
+ *
+ * DESIGN REQUIREMENT: this enemy must NEVER enter `EnemiesByMap` (the random
+ * map-encounter pools). It is reachable only through authored playtest stage
+ * profiles (`impossible`), never through wandering. Do not "fix" its absence
+ * from the pools below.
+ *
+ * No befriendabilityConfig: mercy is not an out. Loot is a single no-drop
+ * bucket: it drops nothing; the fight is the lesson.
+ */
+export const TheIncompleteness = createEnemy({
+    id: 'enemy-the-incompleteness',
+    name: 'The Incompleteness',
+    stanceHint: 'It cannot be read from inside any system you carry; every tell is consistent, and none is complete.',
+    description: 'A proof that cannot be finished, walking. It is true, it cannot be shown, and every axiom sent to contain it becomes the next sentence it is true about.',
+    level: 55,
+    baseStats: { heart: 92, body: 91, mind: 92 }, // 275 = 5 × 55 (stat law)
+    mapName: 'northern-forest',
+    difficulty: 'unique',
+    logic: 'boss',
+    tier1Overrides: T1_DEFAULT,
+    procUnlocks: {
+        body: { attack: 3, defend: 3 },
+        mind: { attack: 3, defend: 3 },
+        heart: { attack: 3, defend: 3 },
+    },
+    // It drops nothing; the fight is the lesson.
+    loot: [none(100)],
+    philosophicalAlignment: { epistemology: 67, outlook: 0, scope: 67 },
+    skills: [skill('bootstrap-paradox'), skill('eternal-regress'), skill('liars-echo')],
+    finalBlowLines: {
+        brutal: 'You do not finish the proof. You break the page it was written on, and the page stops holding sentences.',
+        quiet: 'It remains true. It simply stops insisting, and the wood is quiet where the argument stood.',
+        ironic: 'The unfinishable proof ends on the one thing it could not contain: you, still standing outside it.',
+    },
+    causeLines: {
+        brutal: 'It opens you along the seam every system shares — the place where the proof runs out.',
+        broken: 'You understand, at the last, that you were one of its examples all along.',
+        quiet: 'You are neither proved nor refuted. You are set outside the argument, and the margin closes over you.',
+    },
+    journalEntry: {
+        id: 'codex-the-incompleteness',
+        title: 'The Sentence That Outlived Its System',
+        body: 'Marginalia in an unsigned hand: "Within any house of axioms sound enough to live in, there is a true thing the house cannot prove. We built the house anyway. Something walks the halls now, and it is not wrong." — final page of the Consistency Ledgers, unfinished',
+    },
+    addedIn: '2026-07-02',
+    tags: ['impossible', 'playtest-ceiling', 'late-game'],
+});
+
 // ─── Library indices ──────────────────────────────────────────────────────────
 
 /** Spec 07 + Phase 114 + Phase 127 — all 30 production enemies, in difficulty order. */
@@ -2400,9 +2453,17 @@ export const EnemyLibrary = [
     // 2026-06-07 late-game
     FamineOfTheDeepWood, CathedralOfDoubt, WarrantOfTheVoid, TheSchismarch, GravewardKeeper,
     ProsecutorOfTheReal, TheLastConsensus, AxiomBreaker, PallbearerOfReason, TheTerminalProof,
+    // 2026-07-02 impossible playtest ceiling — deliberately absent from EnemiesByMap.
+    TheIncompleteness,
 ] as const;
 
-/** Per-map enemy pools used by the encounter generator. */
+/**
+ * Per-map enemy pools used by the encounter generator.
+ *
+ * NOTE: `TheIncompleteness` is intentionally absent from every pool — it must
+ * never appear in random map encounters (design requirement; it is reached
+ * only through the authored `impossible` playtest stage).
+ */
 export const EnemiesByMap = {
     'fishing-village': [
         TidepoolCrab, SeaMistWisp,
@@ -2510,6 +2571,8 @@ export const ENEMY_REGISTRY = {
     'cindergeist-revenant':         CindergeistRevenantElemental,
     'obsidian-colossus':            ObsidianColossus,
     'the-lich-of-missing-steps':   TheLichOfMissingSteps,
+    // 2026-07-02 — impossible playtest ceiling (never in EnemiesByMap pools).
+    'the-incompleteness':           TheIncompleteness,
 } as const;
 
 export type EnemySlug = keyof typeof ENEMY_REGISTRY;

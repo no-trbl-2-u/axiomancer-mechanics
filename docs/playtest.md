@@ -1,288 +1,144 @@
-# Playtest Module
+# Hazard-Pattern Combat Playtest Reference
 
-> Automated combat simulation and balance testing framework for Axiomancer Mechanics
+> One-page reference for the combat playtest harness: stage profiles, the
+> sim-policy roster, the deck-selection grammar, the sandbox card workflow,
+> and the CLI cookbook. Doctrine: the enemy's SOLE bar is HP and status
+> effects are the EFFICIENT path to dropping it — the harness exists to keep
+> that true at every stage of the campaign.
+>
+> Loops that consume this: `/combat-playtest` (evidence + verdict, report
+> only), `/deck-tuning` (cards/decks), `/combat-tuning` (engine constants).
+> The LEGACY turn-based playtest module is documented separately in
+> `docs/playtest-legacy.md`.
 
-## Overview
+## Stage profiles
 
-The Playtest module provides a comprehensive testing framework for simulating combat scenarios with various player policies to validate game balance, identify potential issues, and generate performance metrics. It supports headless automation for continuous integration and provides detailed reports for analysis.
+Defined in `src/Combat/combat.stage-profiles.ts` (numbers marked
+`// PLAYTEST-CALIBRATION` — the source is authoritative). Each stage builds a
+deterministic player (`buildStagePlayer`) whose known skills are the stage's
+eligible card pool (`stageEligibleCardIds`: library + registered sandbox
+cards, filtered by `tier <= maxCardTier` and learning level).
 
-## Core Components
+| Id | Name | Player | HP | Max tier | Enemy roster (slugs) |
+|---|---|---|---|---|---|
+| `early` | The Shallows | level 3, 5/5/5 | 90 | 1 | tidepool-crab, salt-gnaw-rat, mournful-gull, hollow-eyed-beggar, hush-wraith, coastal-tyrant |
+| `mid` | The Long Road | level 20, 17/17/17 | 255 | 2 | audit-sentinel, rimeclaw-prowler, glassmind-oracle, mire-of-consensus, the-lich-of-missing-steps |
+| `late` | The Deep Wood | level 45, 37/39/38 | 570 | 3 | famine-of-the-deep-wood, warrant-of-the-void, graveward-keeper, the-last-consensus, axiom-breaker, the-terminal-proof |
+| `impossible` | The Unprovable | level 50, 40/44/42 | 630 | 3 | the-incompleteness |
 
-### Runner Engine (`playtest.runner.ts`)
+The `impossible` stage is a ceiling probe: The Incompleteness never appears
+in random map encounters and losing to it is the design — the bands assert a
+LOW win rate there, not a high one.
 
-The main engine that orchestrates playtest scenarios:
+## Sim-policy roster
 
-- **`runPlaytestScenario(scenario: PlaytestScenario): PlaytestReport`** — Executes a complete playtest scenario with multiple runs
-- **`aggregateMetrics(runs: PlaytestRunSummary[]): PlaytestMetrics`** — Aggregates results across multiple runs
+Defined in `src/Combat/combat.sim-policies.ts`; consult
+`COMBAT_SIM_POLICIES` for each policy's exact `preferredFocus` (used by
+`policy-pick` deck selection), signature list, and Conviction threshold.
 
-### Policy System (`policies.ts`)
+| Id | Sees hidden stances? | Plays like |
+|---|---|---|
+| `greedy` | yes (omniscient) | The canonical ceiling: the original bestCard ordering — payoff timing, new-status-first, status-over-strike. Bit-identical to the pre-roster sim. |
+| `blind` | no | The canonical player-feel witness: greedy's ordering on revealed information only. Bit-identical to the pre-roster sim. |
+| `dot-weaver` | yes | DoT and rupture/amplify payoffs above all; utility only once the enemy is already bleeding. |
+| `control-lock` | yes | Control and stat-debuffs first — aims to deny the enemy's telegraphed threat phases. |
+| `aggro-brute` | yes | Raw bottom-damage preview, no payoff timing. The doctrine's weak baseline — its underperformance IS the design. |
+| `turtle` | yes | Guard/barrier/defend first, DoT second; hoards Conviction (high signature threshold). |
+| `chaos` | no | Uniform-random card play and random affordable signatures (seeded rng) — the noise floor. |
+| `mercy-seeker` | yes | Controls to survive, befriends as soon as the HP gate opens, always spares. |
 
-Defines automated player behavior patterns:
+Tune player-facing difficulty against `blind`; ceilings against `greedy`;
+doctrine assertions against the archetype pairs (e.g. `dot-weaver` must beat
+`aggro-brute` on the late stage).
 
-- **`selectPolicyAction(policy: PlaytestPolicy, combat: CombatState): CombatAction`** — Selects actions based on policy
+## Deck-selection grammar
 
-#### Available Policies
+One grammar shared by `npm run combat-playtest --deck=...`,
+`npm run combat -- --deck ...`, and `CombatDeckSelection`
+(`src/Combat/combat.deck-draft.ts`):
 
-| Policy | Behavior |
-|--------|----------|
-| `aggressive` | Prioritizes attacking with occasional skill usage |
-| `defensive` | Uses healing items when low HP, defends when moderate HP |
-| `friendship` | Always uses heart stance + defend to maximize friendship counter |
-| `resource-optimal` | Uses skills when available resources permit, otherwise attacks |
-| `random` | Randomized actions across all available options |
-| `mixed` | Rotates through all other policies each round |
+| Form | Meaning |
+|---|---|
+| `preset:<id>` | A curated preset: `dot-erosion`, `control-lock`, `utility-bulwark`, `aggro-strike`, `balanced` (`src/Combat/combat.deck-presets.ts`) |
+| `draft:<focus>` | Seeded weighted draft from the eligible pool: `dot`, `control`, `utility`, `damage`, `balanced` (focus-fitting verb classes at 4x weight; default size 10, max 2 copies; always >= 1 defend and >= 1 status card when the pool allows) |
+| `cards:a,b,c` | An explicit card-id list (invalid ids dropped) |
+| `policy-pick` | The harness drafts from the running policy's `preferredFocus` — the default |
 
-### CLI Interface (`cli.ts`)
+Every resolved deck gets `card-retreat` appended. Drafts are deterministic
+for a given seed.
 
-Command-line interface for running playtests interactively or in automation pipelines.
+## Sandbox card workflow (register → A/B → promote)
 
-### Report Generation (`report.ts`)
+Experimental cards and numeric overrides live OUTSIDE the shipped library in
+`src/Cards/cards.sandbox-sets.ts` (registry mechanics:
+`src/Cards/cards.sandbox.ts`). `getCardById` consults the sandbox first, so
+a loaded set is visible to the whole engine — decks, drafts, sims, CLIs.
 
-Generates formatted output from playtest metrics for analysis and review.
-
-## Reference Fixtures (Phase 104)
-
-The Playtest module includes two canonical reference scenarios that anchor balance decisions with reproducible data:
-
-### Early-Game Reference
-
-- **Fixture**: `earlyGameFixture` 
-- **Character**: Level 1 apprentice preset (5/5/5 base stats)
-- **Enemy**: Tidepool Crab (weakest fishing village enemy)
-- **Purpose**: Tests start-of-game balance and progression gates
-
-### Endgame Reference
-
-- **Fixture**: `endgameFixture`
-- **Character**: Max-level (20/20/20 stats) with all skills and rare equipment
-- **Enemy**: Coastal Tyrant (primary boss encounter)
-- **Purpose**: Tests late-game balance and boss mercy routes
-
-These fixtures provide consistent baselines for:
-- Survivability analysis (win/friendship rates vs defeat/timeout)
-- Combat duration patterns (rounds-to-resolve distribution)  
-- Damage efficiency ratios (player vs enemy damage per round)
-
-Use these references when making balance changes to validate that early-game accessibility and endgame challenge remain appropriately tuned.
-
-## Phase 107 tuning loop
-
-Axiomancer combat doctrine: status effects are central. A player may sometimes win by basic attacking or friendliness, but the intended mastery path is skill use, resource planning, status application, and status synergy. Playtest evidence must include AGGRESSIVE, DEFENSIVE, MIXED, and STRATEGIST styles; STRATEGIST is the witness for skill/status planning.
-
-The current roster-wide difficulty mandate is empirical: verify the combat machinery, tune parameters, playtest, read the report, and repeat until the current report reaches approximately **65–75% resolution success rate** (victory plus friendship/mercy resolution, not raw win rate) for every current strategy.
-
-Preflight before tuning:
-
-- Token resource generation must be correct: basic-action grants, equipment/set generation bonuses, and resource events should match combat state.
-- Skills must be correct: known/unlocked skills are available without an equipped-skill gate, affordable-skill filtering is honest, and `canUseSkill` / `spendResources` / `executeSkill` agree with playtest skill-use metrics.
-- Status effects must be correct: applied effects land under the Phase 80 contract where applicable, tick/expire correctly, and modify stats as documented.
-
-Authorized first-pass tuning surface:
-
-- enemy stats and level
-- player stats and level
-- player equipment
-- player skills
-
-Do not change core mechanics silently. If parameter tuning cannot reach the target, stop for T discussion before altering friendship semantics, token formulae, skill costs, damage/resistance, action economy, status-effect rules, or AI rules beyond authored enemy parameters. Current accepted friendship proposal: do not merely lower boss HP gates; keep HP pressure and prototype Befriend as a starting heart-based skill requiring 5 heart tokens to attempt, followed by a player choice to spare/befriend or exploit the opening for a free guaranteed critical hit. See `docs/adr/ADR-0007-befriend-is-heart-skill-with-mercy-choice.md`.
-
-## Data Types
-
-### Scenario Configuration
-
-```typescript
-interface PlaytestScenario {
-    id: string;
-    description?: string;
-    preset: string;           // Character preset ID
-    enemy: string;            // Enemy slug from registry
-    runs: number;             // Number of simulation runs
-    maxRounds: number;        // Timeout threshold
-    seed: string;             // Base seed for reproducibility
-    policies: PlaytestPolicy[]; // Policies to test (rotates per run)
-}
+```
+  cards.sandbox-sets.ts                 combat-playtest matrix              cards.library.ts
+ +---------------------+   --sandbox=  +----------------------+  proven    +----------------+
+ | SandboxCardSet      | ------------> | same seeds, with vs  | ---------> | literal moved  |
+ |  new Card literals  |    <setId>    | without the set:     |  >=2 stages| into library,  |
+ |  + {cardId, patch}  |               | winRate / statusEng  |  >=2 pols  | same PR, with  |
+ |    overrides        |               | / per-card usage     |  bands OK  | evidence table |
+ +---------------------+               +----------------------+            +----------------+
 ```
 
-### Metrics and Analysis
+1. **Register.** Add a named `SandboxCardSet` (new cards must have NEW ids;
+   overrides patch existing library cards). Example set: `forge-example`.
+2. **A/B.** Run the identical matrix invocation with and without
+   `--sandbox=<setId>` — same stages, policies, runs, seeds. The delta is
+   the card's evidence.
+3. **Promote.** A card that proves out across >= 2 stages and >= 2 policies
+   without breaking the balance bands moves into `cards.library.ts` in the
+   same PR (the `/deck-tuning` skill owns this path). Sandbox content itself
+   never ships.
 
-```typescript
-interface PlaytestMetrics {
-    totalRuns: number;
-    outcomes: Record<PlaytestOutcome, number>;
-    winRate: number;
-    defeatRate: number;
-    friendshipRate: number;
-    timeoutRate: number;
-    averageRounds: number;
-    medianRounds: number;
-    stanceUse: Record<Stance, number>;
-    actionUse: Record<string, number>;
-    skillUse: Record<string, number>;
-    itemUse: Record<string, number>;
-    enemyActionUse: Record<string, number>;
-    policySummaries: PlaytestPolicySummary[];
-}
-```
+## CLI cookbook
 
-## Usage Examples
-
-### Basic Scenario
-
-```typescript
-import { runPlaytestScenario } from 'axiomancer-mechanics/Playtest';
-
-const scenario: PlaytestScenario = {
-    id: 'goblin-balance-test',
-    description: 'Testing goblin encounter balance across policies',
-    preset: 'apprentice',
-    enemy: 'goblin',
-    runs: 100,
-    maxRounds: 50,
-    seed: 'balance-test-2024',
-    policies: ['aggressive', 'defensive', 'friendship']
-};
-
-const report = runPlaytestScenario(scenario);
-console.log(`Win rate: ${report.metrics.winRate * 100}%`);
-console.log(`Findings: ${report.findings.join('; ')}`);
-```
-
-### Analyzing Results
-
-The framework automatically generates findings based on metrics:
-
-- **High timeout rate** — Combat may be taking too long to resolve
-- **Extreme win/loss rates** — Encounter may be over/under-tuned
-- **Stalled friendship attempts** — Peaceful resolution may be too costly
-- **Dominant action patterns** — Combat may lack strategic depth
-
-### Reproducibility
-
-Each run uses a deterministic seed derived from the scenario seed and run number:
-```
-runSeed = `${scenario.seed}:${runNumber}`
-```
-
-Failed or interesting runs include their seeds in the report for replay and debugging.
-
-## Reference Probes
-
-The playtest framework includes standardized reference probes for measuring combat balance across difficulty tiers:
-
-### Mid-game Reference Probe (Phase 119)
-
-Measures level-6 Wanderer performance against northern-forest elite-tier enemies.
-
-**Command:**
 ```bash
-node automation/playtest/mid-game-reference-probe.mjs
+# Full matrix: all stages, greedy policy, policy-pick decks, 60 runs/cell, seed 1
+npm run combat-playtest
+
+# One stage under the player-feel witness, with the per-card usage table
+npm run combat-playtest -- --stage=early --policy=blind --runs=100 --seed=7 --cards
+
+# Every policy on the late stage (doctrine check: dot-weaver vs aggro-brute)
+npm run combat-playtest -- --stage=late --policy=all --runs=60 --seed=1
+
+# A curated preset against one enemy, machine-readable for agents
+npm run combat-playtest -- --stage=mid --enemy=audit-sentinel --deck=preset:dot-erosion --json
+
+# Sandbox A/B treatment arm (run the same line without --sandbox for control)
+npm run combat-playtest -- --stage=mid --policy=dot-weaver --runs=60 --seed=1 --sandbox=forge-example
+
+# The ceiling probe: greedy should still lose to The Incompleteness
+npm run combat-playtest -- --stage=impossible --policy=greedy --runs=60 --seed=1
+
+# A single auto-played encounter through the interactive CLI (fast qualitative sweep)
+npm run combat -- --enemy mournful-gull --auto --policy status --seed 5 --deck preset:dot-erosion --max-turns 6
+
+# A hand-playable encounter: stage player, drafted deck, JSONL answers on stdin
+npm run combat -- --enemy audit-sentinel --stage mid --deck draft:dot --seed 11 --stdin --json-events
 ```
 
-**Target Metrics (Spec 15):**
-- Expected rounds: 5-8 rounds
-- Player survivability: 70-85%
-- Damage ratio: 1.2:1 to 1.8:1 (player advantage)
-- Friendship reachability: 55-70%
+The `combat-playtest` CLI (`src/CLI/combat-playtest.cli.ts`) accepts
+`--stage=early|mid|late|impossible|all`, `--policy=<id|all>`,
+`--deck=<grammar above>`, `--enemy=<slug>`, `--runs=N`, `--seed=N`,
+`--sandbox=<setId>`, `--cards`, `--json`. The interactive `combat` CLI's
+answer protocol (script/stdin JSONL) lives in `src/CLI/io.ts`.
 
-**Scenarios Tested:**
-- `mid-game-hush-wraith` — vs Hush-Wraith (mind-focused elite)
-- `mid-game-hollow-saint` — vs Hollow Saint (heart-focused elite)  
-- `mid-game-frostbound-hunter` — vs Frostbound Hunter (body-focused elite)
+## The e2e bands are the balance contract
 
-### Late-game Reference Probe
-
-Measures endgame Sage preset performance against boss-tier enemies.
-
-**Command:**
-```bash
-npm run playtest -- --scenario=automation/playtest/scenarios/late-game-coastal-tyrant.json
-```
-
-**Target Metrics (Spec 15):**
-- Expected rounds: 8-15 rounds
-- Player survivability: 55-75% 
-- Damage ratio: 0.8:1 to 1.4:1 (balanced to slight player advantage)
-- Friendship reachability: 40-60%
-
-### Phase 121 Three-Anchor Balance Scaffold
-
-Phase 121 established a three-anchor playtest matrix for systematic Sage balance validation:
-
-**Easy Anchor:**
-- Preset: Sage (level 15)
-- Enemy: Coastal Tyrant (level 6)
-- Target: 100% actual wins
-- Scenario: `sage-anchor-easy`
-
-**Normal Anchor:**
-- Preset: Sage (level 15)
-- Enemy: Audit Sentinel (level 15)
-- Target: 75-100% actual wins
-- Scenario: `sage-anchor-normal`
-
-**Difficult Anchor:**
-- Preset: Sage (level 15)
-- Enemy: Balance Judge (level 18)
-- Target: 25-50% actual wins
-- Scenario: `sage-anchor-difficult`
-
-Each scenario runs 25 times per policy (100 total runs per enemy) across aggressive, defensive, mixed, and strategist policies. Results are recorded in `automation/playtest/BALANCE_LEDGER.md`.
-
-### When to Run Reference Probes
-
-- **After major balance changes**: Validate that adjustments haven't broken difficulty progression
-- **Post-content expansion**: Ensure new content aligns with existing difficulty curves
-- **Before releases**: Gate releases on probe results staying within target bands
-- **During iterative tuning**: Use probe feedback to guide balance adjustments
-
-## Integration
-
-### Character Presets
-
-The module integrates with the Character preset system (`src/Character/presets.ts`) for consistent test subjects across scenarios.
-
-### Enemy Registry
-
-Uses the Enemy library (`src/Enemy/enemy.library.ts`) to resolve enemy slugs to full enemy definitions.
-
-### Combat Engine
-
-Drives the core combat resolver (`src/Combat/combat.resolver.ts`) with policy-generated actions.
-
-### RNG Control
-
-Leverages the seeded RNG system (`src/Utils/rng.ts`) for reproducible test runs.
-
-## Hermetic Testing
-
-The module includes comprehensive engine tests (`e2e/playtest-harness.engine.test.ts`) that validate:
-
-- Scenario execution
-- Metrics aggregation
-- Policy behavior
-- Report generation
-- Error handling
-
-All tests use controlled RNG seeds and synthetic scenarios to ensure deterministic results.
-
-## Automation Support
-
-The playtest framework is designed for CI/CD integration:
-
-- Headless execution (no user interaction required)
-- Deterministic seeding for reproducible results
-- Structured JSON output for automated analysis
-- Configurable timeout thresholds
-- Policy-based testing covers diverse play patterns
-
-## Related Modules
-
-- **Combat** — Core combat resolution engine
-- **Character** — Character creation and preset system
-- **Enemy** — Enemy definitions and behavior
-- **Skills** — Skill library and execution
-- **Utils/rng** — Seeded random number generation
-
-## Notes
-
-The Playtest module serves as both a balance validation tool and a regression testing framework for combat mechanics. It provides quantitative data to guide design decisions and catch performance regressions in automated testing pipelines.
+`src/Combat/e2e/combat-playtest.balance-bands.sim.test.ts` pins per-stage
+bands over the matrix (blind win-rate floors per stage, the impossible
+ceiling `winRate <= 0.15` with `defeats > 0`, `statusEngagement > 0.2` on
+every non-impossible stage, `dotHpFraction > 0.25` under greedy, and the
+doctrine assertion that `dot-weaver` beats `aggro-brute` late). Every
+threshold is marked `// PLAYTEST-CALIBRATION`: currently generous
+placeholders that tighten as calibration runs land. Because the bands run in
+`npm run verify`, any card, deck, or constant change that breaks the
+doctrine fails the gate — that is the point. Companion witnesses:
+`combat-playtest.matrix.sim.test.ts` (determinism + invariants) and
+`combat-playtest.card-coverage.sim.test.ts` (every library card must be
+playable — dead cards fail the build).

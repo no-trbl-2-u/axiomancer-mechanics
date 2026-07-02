@@ -28,6 +28,7 @@
     "quest-board": "ts-node src/CLI/game.cli.ts quest-board",
     "combat": "ts-node src/CLI/game.cli.ts combat",
     "combat-sim": "ts-node src/CLI/combat-sim.cli.ts",
+    "combat-playtest": "ts-node src/CLI/combat-playtest.cli.ts",
     "agent-e2e": "node automation/agent-e2e.mjs",
     "dev": "echo Please use check 'package.json' or README.md for available commands...\n ",
     "lint:fix": "eslint \"**/*.ts\" --fix",
