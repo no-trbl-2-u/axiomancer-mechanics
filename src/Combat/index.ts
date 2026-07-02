@@ -202,6 +202,8 @@ export {
 } from './combat.threat';
 export { simulateHazardPatternCombat } from './combat.encounter.sim';
 export type { CombatSimStats, CombatSimPolicyId } from './combat.encounter.sim';
+export { runHazardCombatAutoEncounter } from './combat.autoplay';
+export type { HazardAutoPolicyId, HazardCombatAutoOptions, HazardCombatAutoResult } from './combat.autoplay';
 // Spec 26b tuning §B/§C/§D — archetype signatures, deckbuilder rewards, unlock hook
 export { SIGNATURE_KITS, signaturesForArchetype, playerArchetype, CONCLUDE_DMG_PER_STACK } from './combat.signature';
 export {

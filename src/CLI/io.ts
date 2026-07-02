@@ -29,10 +29,17 @@ export interface CliFlags {
      * tabs durable across sessions.
      */
     saveFile?: string;
+    /** Comma-separated explicit node ids to walk without prompts. */
+    route?: string[];
+    /** Auto-run Hazard-Pattern combat when a route encounter fires. */
+    autoCombat: boolean;
+    combatPolicy?: string;
+    combatMaxTurns?: number;
+    combatSeed?: number;
 }
 
 export function parseArgv(args: string[]): CliFlags {
-    const flags: CliFlags = { stdin: false, jsonEvents: false };
+    const flags: CliFlags = { stdin: false, jsonEvents: false, autoCombat: false };
     let i = 0;
     while (i < args.length) {
         const arg = args[i]!;
@@ -72,10 +79,47 @@ export function parseArgv(args: string[]): CliFlags {
             }
             flags.saveFile = next;
             i += 2;
+        } else if (arg.startsWith('--route=')) {
+            flags.route = arg.slice('--route='.length).split(',').map(s => s.trim()).filter(Boolean);
+            i++;
+        } else if (arg === '--route') {
+            const next = args[i + 1];
+            if (!next || next.startsWith('--')) {
+                throw new Error('--route requires a comma-separated node list.');
+            }
+            flags.route = next.split(',').map(s => s.trim()).filter(Boolean);
+            i += 2;
+        } else if (arg === '--auto-combat') {
+            flags.autoCombat = true;
+            i++;
+        } else if (arg.startsWith('--combat-policy=')) {
+            flags.combatPolicy = arg.slice('--combat-policy='.length);
+            i++;
+        } else if (arg === '--combat-policy') {
+            const next = args[i + 1];
+            if (!next || next.startsWith('--')) throw new Error('--combat-policy requires a value.');
+            flags.combatPolicy = next;
+            i += 2;
+        } else if (arg.startsWith('--combat-max-turns=')) {
+            flags.combatMaxTurns = Number(arg.slice('--combat-max-turns='.length));
+            i++;
+        } else if (arg === '--combat-max-turns') {
+            const next = args[i + 1];
+            if (!next || next.startsWith('--')) throw new Error('--combat-max-turns requires a number.');
+            flags.combatMaxTurns = Number(next);
+            i += 2;
+        } else if (arg.startsWith('--combat-seed=')) {
+            flags.combatSeed = Number(arg.slice('--combat-seed='.length));
+            i++;
+        } else if (arg === '--combat-seed') {
+            const next = args[i + 1];
+            if (!next || next.startsWith('--')) throw new Error('--combat-seed requires a number.');
+            flags.combatSeed = Number(next);
+            i += 2;
         } else {
             throw new Error(
                 `Unknown CLI flag: '${arg}'.\n` +
-                `Usage: npm run game -- [--script <path>] [--stdin] [--json-events] [--state-log <path>] [--save-file <path>]`,
+                `Usage: npm run game -- [--script <path>] [--stdin] [--json-events] [--state-log <path>] [--save-file <path>] [--route <nodes>] [--auto-combat] [--combat-policy <policy>] [--combat-max-turns <n>] [--combat-seed <n>]`,
             );
         }
     }
